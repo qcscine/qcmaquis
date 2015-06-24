@@ -61,4 +61,20 @@ bool all_true (InputIterator first, InputIterator last, Predicate pred)
     return allTrue;
 }
 
+template <class Pair>
+struct compare_pair
+{
+    bool operator()(Pair const & i,
+                    Pair const & j) const
+    {
+        if (i.first < j.first)
+            return true;
+        else if (i.first > j.first)
+            return false;
+        else
+            return i.second < j.second;
+    }
+};
+
+
 #endif /* UTILS_HPP_ */

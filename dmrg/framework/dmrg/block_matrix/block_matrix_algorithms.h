@@ -33,12 +33,15 @@
 #include "utils/traits.hpp"
 #include "utils/bindings.hpp"
 
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
 
 #include "dmrg/utils/parallel.hpp"
 

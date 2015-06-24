@@ -62,10 +62,11 @@ class TagHandler
 public:
     typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
     typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+    typedef std::pair<tag_type, tag_type> tag_pair_t;
 
 protected:
     typedef typename Matrix::value_type value_type;
-    typedef std::map<std::pair<tag_type, tag_type>, std::pair<tag_type, value_type>, tag_detail::pair_cmp> pair_map_t;
+    typedef std::map<tag_pair_t, std::pair<tag_type, value_type>, compare_pair<tag_pair_t> > pair_map_t;
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 
 public:
@@ -163,10 +164,13 @@ public:
 
     KronHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_)
     :   base(tbl_)
-      , kronecker_table(new OPTable<Matrix, SymmGroup>()) {}
+      , kronecker_table(new OPTable<Matrix, SymmGroup>()) { }
 
-    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2);
-     
+    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin);
+
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }
 

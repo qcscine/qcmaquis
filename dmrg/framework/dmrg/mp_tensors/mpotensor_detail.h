@@ -27,48 +27,60 @@
 #ifndef MPOTENSOR_DETAIL_H
 #define MPOTENSOR_DETAIL_H
 
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
+
 template<class Matrix, class SymmGroup>
 class MPOTensor;
 
 namespace MPOTensor_detail
 {
-    template <class Matrix, class SymmGroup>
+    template <class T, bool C>
+    struct const_type { typedef T type; };
+
+    template <class T>
+    struct const_type<T, true> { typedef const T type; };
+
+    template <class Matrix, class SymmGroup, bool Const, typename = void>
     class term_descriptor {
         typedef typename Matrix::value_type value_type;
-    public:
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
+    public:
         term_descriptor() {}
-        term_descriptor(op_t & op_, value_type & s_) : op(op_), scale(s_) {}
+        term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
+                        op_table_ptr op_tbl)
+            : op_(op_tbl->operator[](term_descs[0].first)), scale_(term_descs[0].second) {}
 
-        op_t & op;
-        value_type & scale;
+        typename const_type<op_t, Const>::type & op(std::size_t i=0) { return op_; }
+        typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return scale_; }
+
+    private:
+        typename const_type<op_t, Const>::type & op_;
+        typename const_type<value_type, Const>::type & scale_;
     };
 
-    template <class Matrix, class SymmGroup>
-    term_descriptor<Matrix, SymmGroup> make_term_descriptor(
-        typename term_descriptor<Matrix, SymmGroup>::op_t & op_, typename Matrix::value_type & s_)
+    template <class Matrix, class SymmGroup, bool Const>
+    class term_descriptor<Matrix, SymmGroup, Const, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type >
     {
-        return term_descriptor<Matrix, SymmGroup>(op_, s_);
-    }
-
-    template <class Matrix, class SymmGroup>
-    class const_term_descriptor {
         typedef typename Matrix::value_type value_type;
-    public:
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        const_term_descriptor() {}
-        const_term_descriptor(op_t const & op_, value_type s_) : op(op_), scale(s_) {}
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
+    public:
+        term_descriptor() {}
+        term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
+                        op_table_ptr op_tbl_)
+            : operator_table(op_tbl_), term_descriptors(term_descs) {}
 
-        op_t const & op;
-        value_type const scale;
+        std::size_t size() const { return term_descriptors.size(); }
+        typename const_type<op_t, Const>::type & op(std::size_t i=0) { return (*operator_table)[term_descriptors[i].first]; }
+        typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return term_descriptors[i].second; }
+    private:
+        typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descriptors;
+        op_table_ptr operator_table;
     };
-
-    template <class Matrix, class SymmGroup, typename Scale>
-    const_term_descriptor<Matrix, SymmGroup> make_const_term_descriptor(
-        typename const_term_descriptor<Matrix, SymmGroup>::op_t const & op_, Scale s_)
-    {
-        return const_term_descriptor<Matrix, SymmGroup>(op_, s_);
-    }
 
     template <class ConstIterator>
     class IteratorWrapper

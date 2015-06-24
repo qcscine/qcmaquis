@@ -52,6 +52,7 @@ public:
     typedef typename base::measurements_type measurements_type;
 
     typedef typename Matrix::value_type value_type;
+    typedef Lattice::pos_t pos_t;
     
     FermiHubbardSU2(const Lattice& lat_, BaseParameters & parms_)
     : lat(lat_)
@@ -64,6 +65,9 @@ public:
         C[0] = 1; C[1] = -1; // 1-1
         // D = 00
 
+        SpinDescriptor<typename symm_traits::SymmType<SU2U1>::type> one_half_up(1,0,1);
+        SpinDescriptor<typename symm_traits::SymmType<SU2U1>::type> one_half_down(1,1,0);
+
         phys.insert(std::make_pair(A,1));
         phys.insert(std::make_pair(B,1));
         phys.insert(std::make_pair(C,1));
@@ -75,45 +79,45 @@ public:
         identity_op.insert_block(Matrix(1,1,1), C, C);
         identity_op.insert_block(Matrix(1,1,1), D, D);
 
-        op_t fill_ccdag_op;
-        fill_ccdag_op.insert_block(Matrix(1,1,1),  A, A);
-        fill_ccdag_op.insert_block(Matrix(1,1,1),  D, D);
-        fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B); 
-        fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C); 
-        fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C); 
-        fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B); 
+        op_t fill_op;
+        fill_op.insert_block(Matrix(1,1,1),  A, A);
+        fill_op.insert_block(Matrix(1,1,1),  D, D);
+        fill_op.insert_block(Matrix(1,1,-1), B, B); 
+        fill_op.insert_block(Matrix(1,1,-1), C, C); 
+        fill_op.insert_block(Matrix(1,1,-1),  B, C); 
+        fill_op.insert_block(Matrix(1,1,-1),  C, B); 
 
-        op_t fill_cdagc_op;
-        fill_cdagc_op.insert_block(Matrix(1,1,1),  A, A);
-        fill_cdagc_op.insert_block(Matrix(1,1,1),  D, D);
-        fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B); 
-        fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C); 
-        fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C); 
-        fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B); 
+        /*************************************************************/
 
-        op_t create_tail_op;
-        create_tail_op.insert_block(Matrix(1,1,-2.), B, A);       
-        create_tail_op.insert_block(Matrix(1,1,2.), C, A);        
-        create_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B); 
-        create_tail_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);  
+        op_t create_fill_op;
+        create_fill_op.spin() = one_half_up;
+        create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+        create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+        create_fill_op.insert_block(Matrix(1,1,1), D, B);
+        create_fill_op.insert_block(Matrix(1,1,1), D, C);
 
-        op_t destroy_tail_op;
-        destroy_tail_op.insert_block(Matrix(1,1,1), A, B);        
-        destroy_tail_op.insert_block(Matrix(1,1,-1), A, C);       
-        destroy_tail_op.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
-        destroy_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+        op_t destroy_op;
+        destroy_op.spin() = one_half_down;
+        destroy_op.insert_block(Matrix(1,1,1), A, B);
+        destroy_op.insert_block(Matrix(1,1,1), A, C);
+        destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
+        destroy_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
-        op_t create_head_op;
-        create_head_op.insert_block(Matrix(1,1,2.), B, A);
-        create_head_op.insert_block(Matrix(1,1,2.), C, A);        
-        create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, B);
-        create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);  
+        op_t destroy_fill_op;
+        destroy_fill_op.spin() = one_half_up;
+        destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
+        destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
+        destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
+        destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
-        op_t destroy_head_op;
-        destroy_head_op.insert_block(Matrix(1,1,1), A, B);        
-        destroy_head_op.insert_block(Matrix(1,1,1), A, C);        
-        destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
-        destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), C, D); 
+        op_t create_op;
+        create_op.spin() = one_half_down;
+        create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+        create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+        create_op.insert_block(Matrix(1,1,-1), D, B);
+        create_op.insert_block(Matrix(1,1,-1), D, C);
+
+        /*************************************************************/
 
         op_t count_op;
         count_op.insert_block(Matrix(1,1,2), A, A);
@@ -127,32 +131,40 @@ public:
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
         
-#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+        #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
         
-        REGISTER(identity,        tag_detail::bosonic)
-        REGISTER(fill_ccdag,   tag_detail::bosonic)
-        REGISTER(fill_cdagc,   tag_detail::fermionic)
-        REGISTER(create_head,  tag_detail::fermionic)
-        REGISTER(create_tail,  tag_detail::fermionic)
-        REGISTER(destroy_head, tag_detail::fermionic)
-        REGISTER(destroy_tail, tag_detail::bosonic)
+        REGISTER(identity,     tag_detail::bosonic)
+        REGISTER(fill,         tag_detail::bosonic)
+        REGISTER(create_fill,  tag_detail::fermionic)
+        REGISTER(create,       tag_detail::fermionic)
+        REGISTER(destroy,      tag_detail::fermionic)
+        REGISTER(destroy_fill, tag_detail::fermionic)
         REGISTER(count,        tag_detail::bosonic)
         REGISTER(doubly_occ,   tag_detail::bosonic)
         
-#undef REGISTER
+        #undef REGISTER
         /**********************************************************************/
 
-#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
-        PRINT(identity)
-        PRINT(fill_ccdag)  
-        PRINT(fill_cdagc)  
-        PRINT(create_head) 
-        PRINT(create_tail) 
-        PRINT(destroy_head)
-        PRINT(destroy_tail)
-        PRINT(count)       
-        PRINT(doubly_occ)  
-#undef PRINT
+        struct TM {
+            static term_descriptor positional_two_term(bool sign, tag_type full_ident, value_type scale, pos_t i, pos_t j,
+                                                       tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
+            {
+                term_descriptor term;
+                term.is_fermionic = sign;
+                term.coeff = scale;
+
+                tag_type op1_use = (i<j) ? op1_fill : op2_fill;
+                tag_type op2_use = (i<j) ? op2 : op1;
+                if (j<i && sign) term.coeff = -term.coeff;
+
+                int start = std::min(i,j), end = std::max(i,j);
+                term.push_back( boost::make_tuple(start, op1_use) );
+
+                term.push_back( boost::make_tuple(end, op2_use) );
+
+                return term;
+            }
+        };
         
         value_type U = parms["U"];
         std::pair<tag_type, value_type> ptag;
@@ -170,42 +182,14 @@ public:
             {
                 value_type ti = get_t(parms,
                                   lat.get_prop<int>("type", p, *hopto));
-                { // t*cdag*c
-                    term_descriptor term;
-                    term.is_fermionic = true;
-                    term.coeff = -ti;
 
-                    for (int fs=0; fs < std::min(*hopto, p); ++fs)
-                        term.push_back( boost::make_tuple(fs, identity) );
-                    term.push_back( boost::make_tuple(std::min(*hopto,p), create_head) );
-
-                    for (int fs = std::min(*hopto, p)+1; fs < std::max(*hopto, p); ++fs)
-                        term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                    term.push_back( boost::make_tuple(std::max(*hopto,p), destroy_head) );
-
-                    for (int fs = std::max(*hopto, p)+1; fs < lat.size(); ++fs)
-                        term.push_back( boost::make_tuple(fs, identity) );
-
-                    this->terms_.push_back(term);
-                }
-                { // t*c*cdag
-                    term_descriptor term;
-                    term.is_fermionic = true;
-                    term.coeff = -ti;
-
-                    for (int fs=0; fs < std::min(*hopto, p); ++fs)
-                        term.push_back( boost::make_tuple(fs, identity) );
-                    term.push_back( boost::make_tuple(std::min(*hopto,p), destroy_tail) );
-
-                    for (int fs = std::min(*hopto, p)+1; fs < std::max(*hopto, p); ++fs)
-                        term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                    term.push_back( boost::make_tuple(std::max(*hopto,p), create_tail) );
-
-                    for (int fs = std::max(*hopto, p)+1; fs < lat.size(); ++fs)
-                        term.push_back( boost::make_tuple(fs, identity) );
-
-                    this->terms_.push_back(term);
-                }
+                // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+                this->terms_.push_back(TM::positional_two_term(
+                    true, identity, std::sqrt(2.) * ti, *hopto, p, create, create_fill, destroy, destroy_fill
+                ));
+                this->terms_.push_back(TM::positional_two_term(
+                    true, identity, std::sqrt(2.) * ti, p, *hopto, create, create_fill, destroy, destroy_fill
+                ));
             }
         }
     }
@@ -285,30 +269,32 @@ public:
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill_cdagc;
+        return fill;
     }
     typename SU2U1::charge total_quantum_numbers(BaseParameters & parms) const
     {
         typename SU2U1::charge ret(0);
         ret[0] = static_cast<int>(parms["u1_total_charge1"]);
-        ret[1] = static_cast<int>(parms["u1_total_charge2"]);
+        ret[1] = static_cast<int>(parms["su2_total_charge"]);
         return ret;
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (name == "create_head")
-            return create_head;
-        else if (name == "create_tail")
-            return create_tail;
-        else if (name == "destroy_head")
-            return destroy_head;
-        else if (name == "destroy_tail")
-            return destroy_tail;
+        if (name == "create")
+            return create;
+        else if (name == "create_fill")
+            return create_fill;
+        else if (name == "destroy")
+            return destroy;
+        else if (name == "destroy_fill")
+            return destroy_fill;
         else if (name == "count")
             return count;
         else if (name == "doubly_occ")
             return doubly_occ;
+        else if (name == "ident_full")
+            return identity;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -326,9 +312,9 @@ private:
     BaseParameters & parms;
 
     boost::shared_ptr<TagHandler<Matrix, SU2U1> > tag_handler;
-    tag_type create_head, create_tail, destroy_head, destroy_tail,
+    tag_type create, create_fill, destroy, destroy_fill,
              count, doubly_occ,
-             identity, fill_cdagc, fill_ccdag;
+             identity, fill;
     
 
     double get_t (BaseParameters & parms, int i) const

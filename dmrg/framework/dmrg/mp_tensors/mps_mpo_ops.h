@@ -29,6 +29,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/twositetensor.h"
 
 #include "dmrg/mp_tensors/special_mpos.h"
 #include "dmrg/mp_tensors/contractions.h"

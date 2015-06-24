@@ -341,6 +341,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
             typename SymmGroup::subcharge irr = lat.get_prop<typename SymmGroup::subcharge>("type", same_idx);
 
+            // create_s * create_s' or destroy_s * destroy_s' technically have a fill operator in between, but it doesnt have an influence
             term_assistant.add_term(
                 this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_up, create_down , destroy_down, destroy_up
             );
