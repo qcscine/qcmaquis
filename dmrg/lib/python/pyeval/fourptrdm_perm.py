@@ -4,8 +4,8 @@
 #*
 #* ALPS MPS DMRG Project
 #*
-#* Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
-#*               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+#* Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
+#*               2015-2015 by Stefan Knecht <stefan.knecht@phys.chem.ethz.ch>
 #*
 #* 
 #* This software is part of the ALPS Applications, published under the ALPS
