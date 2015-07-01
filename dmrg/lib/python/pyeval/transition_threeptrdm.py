@@ -37,12 +37,11 @@ def load_3rdm(inputfile):
     rdm.y[0] = rdm.y[0]
     return rdm
 
-def print_3rdm(rdm,tag1):
-    fmt = '% -020.14E'
-    #fmt = '%e'
+def print_3rdm(rdm,tag1,tag2):
+    #fmt = '% -020.14E'
 
     # fix correct naming with tag1
-    f=open('threeparticle.tdm.%s' % (tag1),'w')
+    f=open('threeparticle.tdm.%s.%s' % (tag1,tag2),'w')
 
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]+1
@@ -76,4 +75,4 @@ def dump_element(f,value,i,j,k,l,m,n):
 if __name__ == '__main__':
 
     rdm = load_3rdm(sys.argv[1])
-    print_3rdm(rdm,sys.argv[2])
+    print_3rdm(rdm,sys.argv[2],sys.argv[3])

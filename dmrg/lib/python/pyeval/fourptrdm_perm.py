@@ -200,7 +200,7 @@ def print_4rdm_compressed(rdm,tag1):
     #fmt = '%e'
 
     # fix correct naming with tag1
-    f=open('fourparticle.rdm.%s' % (tag1),'w')
+    f=open('fourparticle.rdm.%s.%s' % (tag1,tag1),'w')
 
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]+1
