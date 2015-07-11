@@ -38,10 +38,11 @@ def load_3rdm(inputfile):
     return rdm
 
 def print_3rdm(rdm,tag1,tag2):
-    #fmt = '% -020.14E'
+    fmt = '% -020.14E'
 
     # fix correct naming with tag1
     f=open('threeparticle.tdm.%s.%s' % (tag1,tag2),'w')
+    print 'start of 3-TDM for states %s --> %s' %(tag1,tag2)
 
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]+1
@@ -55,7 +56,7 @@ def print_3rdm(rdm,tag1,tag2):
         if i == j and i == k: continue 
         if l == m and l == n: continue
 
-        #print i+1,j+1,k+1,l+1,m+1,n+1, fmt%val
+        print i,j,k,l,m,n, fmt%val
 
         # 6 permutations (dealing with the transition 3-RDM)
         dump_element(f,val,i,j,k,l,m,n)
@@ -66,6 +67,7 @@ def print_3rdm(rdm,tag1,tag2):
         dump_element(f,val,k,j,i,n,m,l)
 
     f.close()
+    print 'end of 3-TDM for states %s --> %s' %(tag1,tag2)
 
 def dump_element(f,value,i,j,k,l,m,n):
     
