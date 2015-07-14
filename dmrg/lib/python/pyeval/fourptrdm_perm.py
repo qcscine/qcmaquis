@@ -278,6 +278,17 @@ def print_4rdm_compressed(rdm,tag1):
                     dump_element(f,val,i,j,k,l,n,m,p,n)
                     dump_element(f,val,i,j,k,l,n,m,n,p)
                     dump_element(f,val,i,j,k,l,n,p,n,m)
+               elif n < o and p != m:
+                    #default
+                    dump_element(f,val,i,j,k,l,m,n,o,p)
+
+                    dump_element(f,val,i,j,k,l,m,n,p,o)
+                    dump_element(f,val,i,j,k,l,n,m,p,o)
+                    dump_element(f,val,i,j,k,l,n,m,o,p)
+                    dump_element(f,val,i,j,k,l,o,p,m,n)
+                    dump_element(f,val,i,j,k,l,o,p,n,m)
+                    dump_element(f,val,i,j,k,l,p,o,n,m)
+                    dump_element(f,val,i,j,k,l,p,o,m,n)
                else:
                     if o > p:
                         #default
@@ -291,14 +302,14 @@ def print_4rdm_compressed(rdm,tag1):
                         dump_element(f,val,i,j,k,l,p,o,n,m)
                         dump_element(f,val,i,j,k,l,p,o,m,n)
 
-                        dump_element(f,valm2,i,j,k,l,m,p,n,o)
-                        dump_element(f,valm2,i,j,k,l,m,p,o,n)
-                        dump_element(f,valm2,i,j,k,l,p,m,o,n)
-                        dump_element(f,valm2,i,j,k,l,p,m,n,o)
-                        dump_element(f,valm2,i,j,k,l,n,o,p,m)
-                        dump_element(f,valm2,i,j,k,l,n,o,m,p)
-                        dump_element(f,valm2,i,j,k,l,o,n,m,p)
-                        dump_element(f,valm2,i,j,k,l,o,n,p,m)
+                       #dump_element(f,valm2,i,j,k,l,m,p,n,o)
+                       #dump_element(f,valm2,i,j,k,l,m,p,o,n)
+                       #dump_element(f,valm2,i,j,k,l,p,m,o,n)
+                       #dump_element(f,valm2,i,j,k,l,p,m,n,o)
+                       #dump_element(f,valm2,i,j,k,l,n,o,p,m)
+                       #dump_element(f,valm2,i,j,k,l,n,o,m,p)
+                       #dump_element(f,valm2,i,j,k,l,o,n,m,p)
+                       #dump_element(f,valm2,i,j,k,l,o,n,p,m)
                     elif p > o:
                         #default
                         dump_element(f,val,i,j,k,l,m,n,o,p)
@@ -408,11 +419,14 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,val,i,j,k,l,m,n,o,p)
 
                dump_element(f,val,i,j,k,l,n,m,p,o)
-           if m==n and o==p:
+           elif m==n and o==p:
                #default
                dump_element(f,val,i,j,k,l,m,n,o,p)
 
                dump_element(f,val,i,j,k,l,o,o,m,m)
+           else:
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
 
     f.close()
 
