@@ -434,7 +434,7 @@ if __name__ == '__main__':
 
     rdm       = load_4rdm(sys.argv[1])
 
-    if sys.argc > 2: 
+    if len(sys.argv) > 2: 
         print_4rdm_compressed(rdm,sys.argv[2])
     else:
         print_4rdm(rdm)
