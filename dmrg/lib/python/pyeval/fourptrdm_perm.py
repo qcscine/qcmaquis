@@ -214,7 +214,6 @@ def print_4rdm_compressed(rdm,tag1):
 
         if abs(val) == 0: continue
 
-        dump_element(f,val,i,j,k,l,m,n,o,p)
 
         valm05 = val*(-0.5)
         valm2  = val*(-2.0)
@@ -222,6 +221,9 @@ def print_4rdm_compressed(rdm,tag1):
         # print permutations
         if i==j and k==l: # case 1: i==j k==l
            if m==n and o==p:
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,o,o,m,m)
 
                dump_element(f,valm05,i,j,k,l,m,o,o,m)
@@ -229,6 +231,7 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,valm05,i,j,k,l,o,m,m,o)
                dump_element(f,valm05,i,j,k,l,o,m,o,m)
            elif m==n and o!=p:
+               dump_element(f,val,i,j,k,l,m,n,o,p)
                # regular permutations
                dump_element(f,val,i,j,k,l,m,m,p,o)
                dump_element(f,val,i,j,k,l,o,p,m,m)
@@ -243,6 +246,8 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,valm05,i,j,k,l,m,p,m,o)
                dump_element(f,valm05,i,j,k,l,m,o,m,p)
            elif m!=n and o==p:
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
                # regular permutations
                dump_element(f,val,i,j,k,l,n,m,o,o)
                dump_element(f,val,i,j,k,l,o,o,m,n)
@@ -258,6 +263,9 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,valm05,i,j,k,l,n,o,m,o)
            elif m!=n and o!=p:
                if n == o:
+                    #default
+                    dump_element(f,val,i,j,k,l,m,n,o,p)
+
                     dump_element(f,valm2,i,j,k,l,n,n,m,p)
                     dump_element(f,valm2,i,j,k,l,n,n,p,m)
                     dump_element(f,valm2,i,j,k,l,m,p,n,n)
@@ -272,6 +280,9 @@ def print_4rdm_compressed(rdm,tag1):
                     dump_element(f,val,i,j,k,l,n,p,n,m)
                else:
                     if o > p:
+                        #default
+                        dump_element(f,val,i,j,k,l,m,n,o,p)
+
                         dump_element(f,val,i,j,k,l,m,n,p,o)
                         dump_element(f,val,i,j,k,l,n,m,p,o)
                         dump_element(f,val,i,j,k,l,n,m,o,p)
@@ -289,6 +300,9 @@ def print_4rdm_compressed(rdm,tag1):
                         dump_element(f,valm2,i,j,k,l,o,n,m,p)
                         dump_element(f,valm2,i,j,k,l,o,n,p,m)
                     elif p > o:
+                        #default
+                        dump_element(f,val,i,j,k,l,m,n,o,p)
+
                         dump_element(f,val,i,j,k,l,m,n,p,o)
                         dump_element(f,val,i,j,k,l,n,m,p,o)
                         dump_element(f,val,i,j,k,l,n,m,o,p)
@@ -299,6 +313,9 @@ def print_4rdm_compressed(rdm,tag1):
 
         elif i==j and k!=l: # case 2: i==j k!=l
            if m==n and o==p: # 2x2 equal
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,o,o,m,m)
 
                dump_element(f,valm05,i,j,k,l,m,o,o,m)
@@ -306,17 +323,29 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,valm05,i,j,k,l,o,m,o,m)
                dump_element(f,valm05,i,j,k,l,m,o,m,o)
            if m==n and o!=p: # 1 equal (first 2)
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,valm05,i,j,k,l,m,o,m,p)
                dump_element(f,valm05,i,j,k,l,m,p,o,m)
                dump_element(f,valm05,i,j,k,l,o,m,m,p)
                dump_element(f,valm05,i,j,k,l,p,m,o,m)
            if m!=n and o==p: # 1 equal (latter 2)
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,n,m,o,o)
            if m!=n and n!=o and o!=p and m!=p: # all different
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,n,m,o,p)
 
         elif i!=j and j==k and k!=l: # case 3: i!=j j==k k!=l
            if m==n and o==p: # 2x2 equal
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,o,o,m,m)
                dump_element(f,val,i,j,k,l,o,m,o,m)
                dump_element(f,val,i,j,k,l,m,o,m,o)
@@ -324,18 +353,30 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,valm2,i,j,k,l,m,o,o,m)
                dump_element(f,valm2,i,j,k,l,o,m,m,o)
            if m!=n and o==p: # 1 equal (latter 2)
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,o,o,m,n)
                dump_element(f,val,i,j,k,l,o,m,o,n)
                dump_element(f,val,i,j,k,l,m,o,n,o)
 
                dump_element(f,valm2,i,j,k,l,m,o,o,n)
            if m!=n and o!=p and m==p: # 1 equal (first and last)
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,m,o,n,m)
            if m!=n and n!=o and o!=p and m!=p: # all different
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,m,o,n,p)
 
         elif i!=j and k==l: # case 4: i!=j k==l
            if m==n and o==p: # 2x2 equal
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,o,o,m,m)
 
                dump_element(f,valm05,i,j,k,l,m,o,o,m)
@@ -343,19 +384,34 @@ def print_4rdm_compressed(rdm,tag1):
                dump_element(f,valm05,i,j,k,l,o,m,o,m)
                dump_element(f,valm05,i,j,k,l,m,o,m,o)
            if m==n and o!=p: # 1 equal (first 2)
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,m,m,p,o)
            if m!=n and o==p: # 1 equal (latter 2)
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,valm05,i,j,k,l,m,o,n,o)
                dump_element(f,valm05,i,j,k,l,m,o,o,n)
                dump_element(f,valm05,i,j,k,l,o,n,o,m)
                dump_element(f,valm05,i,j,k,l,o,n,m,o)
            if m!=n and n!=o and o!=p and m!=p: # all different
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,m,n,p,o)
 
         elif i!=j and k!=l and j!=k: # case 5: i!=j j!=k k!=l
            if (m==o and n==p) or (m==p and n==o):
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,n,m,p,o)
            if m==n and o==p:
+               #default
+               dump_element(f,val,i,j,k,l,m,n,o,p)
+
                dump_element(f,val,i,j,k,l,o,o,m,m)
 
     f.close()

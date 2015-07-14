@@ -646,7 +646,8 @@ namespace measurements {
                                   // set restrictions on index p7
                                   pos_t p7_end = 0;
                                   if (double_equal)
-                                      p7_end = p6+1;
+                                      // previous version with wrong terms for nevpt: p7_end = p6+1;
+                                      p7_end = p5+1;
                                   else
                                       p7_end = p1+1;
 
@@ -670,7 +671,8 @@ namespace measurements {
                                               if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) continue;
 
                                               // case 1
-                                              if(double_equal && p8 > p7 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                              if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                              if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
                                               // case 2/3/4: 2x2 equal indices
                                               if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) continue;
 
