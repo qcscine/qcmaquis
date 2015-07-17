@@ -646,7 +646,6 @@ namespace measurements {
                                   // set restrictions on index p7
                                   pos_t p7_end = 0;
                                   if (double_equal)
-                                      // previous version with wrong terms for nevpt: p7_end = p6+1;
                                       p7_end = p5+1;
                                   else
                                       p7_end = p1+1;
