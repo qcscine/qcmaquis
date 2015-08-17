@@ -45,8 +45,11 @@ def plot(fname):
         sweeps += list(sw[0].y)
 
     ydata = np.array(sweeps)
+
+    if np.min(ydata.imag) != 0: 
+        print "Warning! complex energy value detected"
   
-    print "Minimum energy:", np.min(ydata)
+    print "Minimum energy:", np.min(ydata.real)
 
 if __name__=='__main__':
     rfile = sys.argv[1]
