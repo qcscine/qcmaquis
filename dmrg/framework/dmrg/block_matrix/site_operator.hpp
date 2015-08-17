@@ -47,15 +47,9 @@ SiteOperator<Matrix, SymmGroup>::SiteOperator(DualIndex<SymmGroup> const & basis
 }
 
 template<class Matrix, class SymmGroup>
-SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator const& rhs)
-: bm_(rhs.bm_)
-{
-}
-
-template<class Matrix, class SymmGroup>
-template <class OtherMatrix>
-SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const& rhs)
-: bm_(rhs.bm_)
+SiteOperator<Matrix, SymmGroup>::SiteOperator(block_matrix<Matrix,SymmGroup> const& rhs,
+                                              typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const& sb)
+: spin_basis(sb), bm_(rhs), sparse_op(rhs, sb)
 {
 }
 
@@ -71,21 +65,73 @@ template<class OtherMatrix>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(const SiteOperator<OtherMatrix, SymmGroup> & rhs)
 {
     block_matrix<Matrix, SymmGroup> cpy = rhs.bm_;
+    sparse_op = rhs.sparse_op;
+    spin_basis = rhs.spin_basis;
     swap(bm_, cpy);
+    spin_ = rhs.spin();
     return *this;
+}
+
+namespace SiteOperator_detail
+{
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
+    extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
+                      typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
+    {
+    } 
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
+    extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
+                      typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
+    {
+        for (typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type::const_iterator it = rhs.begin(); it != rhs.end(); ++it)
+        {
+            std::vector<int>        & sbr = spin_basis[it->first].first;
+            std::vector<int>        & sbl = spin_basis[it->first].second;
+            std::vector<int> const & rhsr = it->second.first;
+            std::vector<int> const & rhsl = it->second.second;
+
+            sbr.resize(std::max(sbr.size(), rhsr.size()));
+            sbl.resize(std::max(sbl.size(), rhsl.size()));
+
+            for (std::size_t i = 0; i < std::min(sbr.size(), rhsr.size()); ++i)
+                if(rhsr[i] != 0)
+                    sbr[i] = rhsr[i];
+
+            for (std::size_t i = 0; i < std::min(sbl.size(), rhsl.size()); ++i)
+                if(rhsl[i] != 0)
+                    sbl[i] = rhsl[i];
+        }
+    } 
 }
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator+=(SiteOperator const & rhs)
 {
+    assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+
+    if (n_blocks() == 0) spin_ = rhs.spin();
     bm_ += rhs.bm_;
+
+    SiteOperator_detail::extend_spin_basis<Matrix, SymmGroup>(spin_basis, rhs.spin_basis);
+
     return *this;
 }
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator-=(SiteOperator const & rhs)
 {
+    assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+
+    if (n_blocks() == 0) spin_ = rhs.spin();
+
     bm_ -= rhs.bm_;
+
+    SiteOperator_detail::extend_spin_basis<Matrix, SymmGroup>(spin_basis, rhs.spin_basis);
+
     return *this;
 }
 
@@ -200,15 +246,40 @@ template<class Matrix, class SymmGroup>
 void SiteOperator<Matrix, SymmGroup>::clear()
 {
     bm_.clear();
+    spin_.clear();
 }
 
 template<class Matrix, class SymmGroup>
-std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix, SymmGroup> const & m)
+std::ostream& operator<<(typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, std::ostream&>::type os, SiteOperator<Matrix, SymmGroup> const & m)
+//std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix, SymmGroup> const & m)
 {
     os << "Basis: " << m.basis() << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
            << "):\n" << m[k] << std::endl;
+    os << std::endl;
+    return os;
+}
+
+template<class Matrix, class SymmGroup>
+std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::ostream&>::type os, SiteOperator<Matrix, SymmGroup> const & m)
+{
+    os << "Basis: " << m.basis() << std::endl;
+    os << m.spin() << std::endl;
+    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+    {
+        os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
+           << "):\n" << m[k];// << std::endl;
+
+        try {
+        std::vector<int> const & sbr = m.spin_basis.at(std::make_pair(m.basis()[k].lc, m.basis()[k].rc)).first;
+        std::vector<int> const & sbl = m.spin_basis.at(std::make_pair(m.basis()[k].lc, m.basis()[k].rc)).second;
+        std::copy(sbr.begin(), sbr.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << " | ";
+        std::copy(sbl.begin(), sbl.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << std::endl << std::endl;
+        }
+        catch(...) {}
+    }
+
     os << std::endl;
     return os;
 }
@@ -255,3 +326,35 @@ void SiteOperator<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int
     ar & bm_;
 }
 
+namespace SiteOperator_detail {
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
+    check_spin_basis(block_matrix<Matrix, SymmGroup> const & bm,
+                     typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type &)
+    {
+    } 
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
+    check_spin_basis(block_matrix<Matrix, SymmGroup> const & bm,
+                     typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis)
+    {
+        //if (spin_basis.size() != bm.n_blocks())
+        if (spin_basis.size() == 0)
+        for(std::size_t b = 0; b < bm.n_blocks(); ++b)
+            if (spin_basis.count(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))) == 0)
+                spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))]
+                    = std::make_pair(std::vector<typename SymmGroup::subcharge>(num_rows(bm[b]), std::abs(SymmGroup::spin(bm.basis().left_charge(b)))),
+                                     std::vector<typename SymmGroup::subcharge>(num_cols(bm[b]), std::abs(SymmGroup::spin(bm.basis().right_charge(b))))
+                                     );
+    } 
+
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::update_sparse()
+{
+    SiteOperator_detail::check_spin_basis(bm_, spin_basis);
+    sparse_op.update(bm_, spin_basis);
+}

@@ -31,6 +31,7 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/apply_op_rp.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 

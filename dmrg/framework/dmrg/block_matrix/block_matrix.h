@@ -46,7 +46,6 @@ template<class Matrix, class SymmGroup>
 struct operator_selector
 {
     typedef SiteOperator<Matrix, SymmGroup> type;
-    //typedef block_matrix<Matrix, SymmGroup> type;
 };
 
 template<class Matrix, class SymmGroup>
@@ -207,6 +206,12 @@ block_matrix<Matrix, SymmGroup> operator-(block_matrix<Matrix,SymmGroup> b1, blo
     return b1;
 }
 
+
+template<class Matrix, class SymmGroup>
+bool shape_equal(block_matrix<Matrix, SymmGroup> const & a, block_matrix<Matrix, SymmGroup> const & b)
+{
+    return (a.basis() == b.basis());
+}
 
 template<class Matrix, class SymmGroup>
 std::size_t size_of(block_matrix<Matrix, SymmGroup> const & m)

@@ -142,6 +142,9 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename OPTable<Matrix, Sy
         if (sign_table[t1] != sign_table[t2])
             prod_kind = tag_detail::fermionic;
 
+        // set the product spin descriptor
+        product.spin() = couple(get_op(t2).spin(), get_op(t1).spin());
+
         std::pair<tag_type, value_type> ret = this->checked_register(product, prod_kind);
         product_tags[std::make_pair(t1, t2)] = ret;
         assert( operator_table->size() == sign_table.size());
@@ -205,7 +208,10 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
             Index<SymmGroup> const & phys_i1,
             Index<SymmGroup> const & phys_i2,
             typename OPTable<Matrix, SymmGroup>::tag_type t1,
-            typename OPTable<Matrix, SymmGroup>::tag_type t2)
+            typename OPTable<Matrix, SymmGroup>::tag_type t2,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
     assert( t1 < base::get_operator_table()->size() && t2 < base::get_operator_table()->size() );
 
@@ -224,10 +230,10 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
     catch(const std::out_of_range& e) {
 
         op_t product;
-        op_t& op1 = (*base::get_operator_table())[t1];
-        op_t& op2 = (*base::get_operator_table())[t2];
+        op_t const& op1 = (*base::get_operator_table())[t1];
+        op_t const& op2 = (*base::get_operator_table())[t2];
 
-        op_kron(phys_i1, phys_i2, op1, op2, product);
+        op_kron(phys_i1, phys_i2, op1, op2, product, lspin, mspin, rspin);
 
         tag_detail::remove_empty_blocks(product);
         
