@@ -34,13 +34,10 @@ import pyalps
 def load_2rdm(inputfile):
     # load data from the HDF5 result file
     rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twoptdm')[0][0]
-    rdm.y[0] = 0.5 * rdm.y[0]
-    # uncomment for CASPT2 comparison
-    # rdm.y[0] = rdm.y[0]
     return rdm
 
 def print_2rdm(rdm):
-    fmt = '% -016.10E'
+    #fmt = '% -016.10E'
     #fmt = '%e'
 
     for lab, val in zip(rdm.x, rdm.y[0]):
@@ -49,18 +46,9 @@ def print_2rdm(rdm):
         k = lab[2]
         l = lab[3]
 
-        if abs(val) == 0: continue
+        if abs(val.real) and abs(val.imag) == 0: continue
  
-        print i+1,j+1,k+1,l+1, fmt%val
-
-        # print duplicates
-        if l!=k:
-            print j+1,i+1,l+1,k+1, fmt%val
-
-        if not min(i,j) == min(l,k):
-            print k+1,l+1,i+1,j+1, fmt%val
-            if k!=l:
-                print l+1,k+1,j+1,i+1, fmt%val
+        print i+1,j+1,k+1,l+1, "\t", (val.real, val.imag)
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
