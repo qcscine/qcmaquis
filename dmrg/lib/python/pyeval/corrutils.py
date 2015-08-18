@@ -50,6 +50,31 @@ def assemble_halfcorr(diag, triang):
 
     return ret
 
+def assemble_halfcorr_complex(diag, triang):
+    """From the diagonal and upper triangle, construct a symmetric complex matrix
+       diag: diagonal (real)
+       triang: upper triangle, sequential reversed rows, complex"""
+
+    L = len(diag)
+
+    ret_real = np.zeros((L,L))
+    ret_cplx = np.zeros((L,L))
+
+    # set the diagonal
+    for i in range(L):
+        ret_real[i,i] = diag[i]
+
+    for lab, val in zip(triang.x, triang.y[0]):
+        #print val
+        i = lab[0]
+        j = lab[1]
+        ret_real[i,j] = val.real
+        ret_real[j,i] = val.real
+        ret_cplx[i,j] = val.imag
+        ret_cplx[j,i] = val.imag
+
+    return (ret_real,ret_cplx)
+
 def pretty_print(mat):
     for i in range(len(mat)):
         for j in range(len(mat[i])):

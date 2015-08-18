@@ -145,10 +145,10 @@ namespace measurements {
 							//////////////////////////////////
 
 							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(ket_mps, mpo);
+							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
 							
-							//if(dct != 0.0) {
-								//maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
+							if(dct != 0.0) {
+								maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
 							
 							
 								std::vector<pos_t> label; label.push_back(i); label.push_back(j); label.push_back(k); label.push_back(l);
@@ -158,7 +158,7 @@ namespace measurements {
 								
 								this->vector_results.push_back(dct);
 								this->labels.push_back(lbt[0]);
-							//} 
+							} 
 
 						} // i loop
 					} // j loop
