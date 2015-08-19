@@ -39,16 +39,31 @@ def load_2rdm(inputfile):
 def print_2rdm(rdm):
     #fmt = '% -016.10E'
     #fmt = '%e'
+    tag1 = 0
+    tag2 = 0
+
+    f=open('twoparticle.rdm.%s.%s' % (tag1,tag2),'w')
 
     for lab, val in zip(rdm.x, rdm.y[0]):
-        i = lab[0]
-        j = lab[1]
-        k = lab[2]
-        l = lab[3]
+        m = lab[0]
+        n = lab[1]
+        o = lab[2]
+        p = lab[3]
 
         if abs(val.real) and abs(val.imag) == 0: continue
  
-        print i+1,j+1,k+1,l+1, "\t", (val.real, val.imag)
+        dump_element(f, val,m,n,o,p)
+        dump_element(f, val,o,p,m,n)
+        dump_element(f,-val,m,p,o,n)
+        dump_element(f,-val,o,n,m,p)
+
+    f.close()
+
+def dump_element(f,value,i,j,k,l):
+    
+    print i,j,k,l, "\t", (value.real, value.imag)
+    #fmt  = '% -020.14E'
+    #f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  ('+str(fmt%value.real)+' , '+'+str(fmt%value.imag)+'\n')
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]

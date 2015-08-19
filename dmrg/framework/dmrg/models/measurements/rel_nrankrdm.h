@@ -118,14 +118,19 @@ namespace measurements {
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(2)
             #endif
-			for (pos_t l = 0; l < lattice.size(); ++l){
-				for (pos_t k = 0; k < lattice.size(); ++k){
-					for (pos_t j = 0; j < lattice.size(); ++j){
-						for (pos_t i = 0; i < lattice.size(); ++i){
+		     	for (pos_t i = 0; i < lattice.size(); ++i){
+				for (pos_t j = 0; j < lattice.size(); ++j){
+					for (pos_t k = ((bra_neq_ket) ? 0 : std::min(i, j)); k < lattice.size(); ++k){
+						for (pos_t l = ((bra_neq_ket) ? 0 : std::min(i, j)); l < k+1; ++l){
+
+                                          if(i == j && i == k && i == l)
+                                                continue;
+                                          if((i == j && i == std::min(k,l)) || (i == k && i == std::min(j,l)) || (j == k && j == std::min(i,l)))
+                                                continue;
 
 							pos_t idx[] = { i,k,l,j };
 							pos_t inv_count=0, n=4;
-        					for(pos_t c1 = 0; c1 < n - 1; c1++)
+        					      for(pos_t c1 = 0; c1 < n - 1; c1++)
             					for(pos_t c2 = c1+1; c2 < n; c2++)
                 					if(idx[c1] > idx[c2]) inv_count++;
 
@@ -160,10 +165,10 @@ namespace measurements {
 								this->labels.push_back(lbt[0]);
 							} 
 
-						} // i loop
-					} // j loop
-				} // k loop
-			} // l loop
+						} // l loop
+					} // k loop
+				} // j loop
+			} // i loop
         }
         
     private:
