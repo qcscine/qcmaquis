@@ -41,6 +41,35 @@
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
 
+namespace deas_detail
+{
+    // free functions
+
+    /*
+        template <class SymmGroup, class = void>
+        class PGCharge
+        {
+        public:
+            typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
+            {
+                return rhs;
+            }
+        };
+
+        template <class SymmGroup>
+        class  PGCharge<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
+        {
+        public:
+            typedef typename SymmGroup::subcharge subcharge;
+            typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, subcharge irr)
+            {
+                SymmGroup::irrep(rhs) = irr;
+                return rhs;
+            }
+        };
+    */
+}
+
 template<class Matrix, class SymmGroup, class=void>
 struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 {
@@ -59,6 +88,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -73,204 +103,219 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
       //actual initialization; check for sector and fill it with ones
       //max_charge is accumulated charge of the sites
-        typename SymmGroup::charge max_charge,search_charge,first_charge = SymmGroup::IdentityCharge;
+        typename SymmGroup::charge max_charge, search_charge, first_charge = SymmGroup::IdentityCharge;
 
-      //initialize updown and empty inidices that will be needed later fo determination of the target size
+        // NO! -- access mps[i].site_dim() gives the Index with correct charges
+        //initialize updown and empty inidices that will be needed later fo determination of the target size
         typename SymmGroup::charge ud(1), em(0);
         typename SymmGroup::charge up(0), down(0);
         up[0] = down[1] = 1;
 
-      //go through determinants and get possible charges
-        std::map <typename SymmGroup::charge, int> charge_to_int;
-        typename std::map <typename SymmGroup::charge, int>::iterator it;
+        //go through determinants and get possible charges
+        std::map<typename SymmGroup::charge, int> charge_to_int;
+        typename std::map<typename SymmGroup::charge, int>::iterator it;
         int sc = 1;
         int count = 0;
-        typename SymmGroup::charge site_charge = SymmGroup::IdentityCharge;
-        for(int d = 0; d<dets.size(); d++){
-           max_charge = SymmGroup::IdentityCharge;           
-           for(int i = 0; i<dets[0].size(); i++){
-               //search if max_charge is already in map
-               it = charge_to_int.find(max_charge);
-               if(it == charge_to_int.end()){
-                  charge_to_int[max_charge] = count;
+        for(int d = 0; d < dets.size(); d++)
+        {
+            accumulated_charge = SymmGroup::IdentityCharge;           
+            for(int i = 0; i < dets[0].size(); i++)
+            {
+                //search if accumulated_charge is already in map
+                it = charge_to_int.find(accumulated_charge);
+                if(it == charge_to_int.end())
+                {
+                  charge_to_int[accumulated_charge] = count;
                   count++;
-               }
-              site_charge = charge_from_int(dets[d][i]);
-              if(dets[d][i]==2||dets[d][i]==3){site_charge[2]=site_types[i];}
-              max_charge = SymmGroup::fuse(max_charge, site_charge);
-           }
+                }
+                charge site_charge = charge_from_int(dets[d][i]);
+                
+                if (SymmGroup::particleNumber(site_charge) %2 == 1)
+                    PGCharge<SymmGroup>()(site_charge, site_types[i]);
+
+                accumulated_charge = SymmGroup::fuse(accumulated_charge, site_charge);
+            }
         }
 
-//New Approach including subsectors
+        //New Approach including subsectors
 
-// initialize objects required 
-   std::vector<std::vector<int > > rows_to_fill(dets.size(), std::vector <int> (dets[0].size()));
-   std::vector<std::vector<std::map<std::string, int > > > str_to_col_map(dets[0].size(), std::vector<std::map<std::string, int> > (charge_to_int.size()));
-   std::string str;
-   int ifc, max_value, prev_row, nrows, nrows_fill, off = 0;
-   int Mmax = 0;
+        // initialize objects required 
+        std::vector<std::vector<int > > rows_to_fill(dets.size(), std::vector <int> (dets[0].size()));
+        std::vector<std::vector<std::map<std::string, int> > > str_to_col_map(dets[0].size(),
+                                                                              std::vector<std::map<std::string, int> > (charge_to_int.size())
+                                                                              );
+        std::string str;
+        int ifc, max_value, prev_row, nrows, nrows_fill, off = 0;
 
-//main loop
-   for(int d= 0; d<dets.size(); d++){
-       max_charge = right_end;
-       for(int s = dets[0].size()-1; s > 0; s--){
-          site_charge = charge_from_int(dets[d][s]);
-          if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
-          max_charge = SymmGroup::fuse(max_charge,-site_charge);
-          str = det_string(s, dets[d]);
-          ifc = charge_to_int[max_charge];
-          if(str_to_col_map[s-1][ifc][str]){
-             rows_to_fill[d][s]=str_to_col_map[s-1][ifc][str]-1;
-          }
-          else{
-             //get largest element in map
-             max_value = str_to_col_map[s-1][ifc].size();
-             str_to_col_map[s-1][ifc][str]=max_value;
-             rows_to_fill[d][s] = max_value -1;
-            //get size of largest sector
-             Mmax = std::max(Mmax, max_value);
+        // needed?
+        int Mmax = 0;
+
+         //main loop
+         for(int d= 0; d<dets.size(); d++)
+         {
+             max_charge = right_end;
+             for(int s = dets[0].size()-1; s > 0; s--){
+                 charge site_charge = charge_from_int(dets[d][s]);
+
+                if (SymmGroup::particleNumber(site_charge) %2 == 1)
+                    PGCharge<SymmGroup>()(site_charge, site_types[i]);
+
+                 max_charge = SymmGroup::fuse(max_charge, -site_charge);
+                 str = det_string(s, dets[d]);
+                 ifc = charge_to_int[max_charge];
+
+                 if (str_to_col_map[s-1][ifc][str])
+                    rows_to_fill[d][s] = str_to_col_map[s-1][ifc][str]-1;
+
+                 else
+                 {
+                    //get largest element in map
+                    max_value = str_to_col_map[s-1][ifc].size();
+                    str_to_col_map[s-1][ifc][str] = max_value;
+                    rows_to_fill[d][s] = max_value - 1;
+                    //get size of largest sector
+                    Mmax = std::max(Mmax, max_value);
+                 }
+             }
+         } 
+
+          //this now calls a function which is part of this structure
+          init_sect(mps, str_to_col_map, charge_to_int, true, 0); 
+
+          //this here is absolutely necessary
+          for(pos_t i = 0; i < mps.length(); ++i)
+             mps[i].multiply_by_scalar(0.0);
+
+
+       //fill loop
+       for(int d= 0; d<dets.size();d++){
+          max_charge = right_end;
+          prev_row = 0;
+          for(int s = dets[0].size()-1;s > 0; s--){
+              charge site_charge = charge_from_int(dets[d][s]);
+              if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
+              search_charge = SymmGroup::fuse(max_charge,-site_charge);
+              nrows_fill = mps[s].row_dim().size_of_block(search_charge);
+             //get current matrix
+             size_t max_pos = mps[s].data().left_basis().position(max_charge);
+             Matrix & m_insert = mps[s].data()[max_pos];
+             nrows = m_insert.num_rows();
+             //get additional offsets for subsectors
+             off = 0;
+             if(dets[d][s] == 3){
+                if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-ud))){
+                  off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-ud));
+                }
+             }
+             else if(dets[d][s] == 2){
+               if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-em))){
+                 off = nrows - nrows_fill - mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-em));
+               }else{off = nrows-nrows_fill;}
+             }
+             else if(dets[d][s] == 1){off = nrows- nrows_fill;}
+          //actual insertion
+             m_insert(off+rows_to_fill[d][s],prev_row) = 1;
+             prev_row = rows_to_fill[d][s];
+             max_charge = SymmGroup::fuse(max_charge,-site_charge);
           }
        }
-   } 
 
-     //this now calls a function which is part of this structure
-      init_sect(mps, str_to_col_map, charge_to_int, true, 0); 
+         //first site needs to be filled as well
+       int fill = 0;
+       for(int d = 0; d<dets.size(); d++){
+          fill = dets[d][0];
+          first_charge = charge_from_int(fill);
+          size_t first_pos = mps[0].data().left_basis().position(first_charge);
+          Matrix & m_first = mps[0].data()[first_pos];
+          m_first(0,0) = 1;
+       }
 
-     //this here is absolutely necessary
-      for(pos_t i = 0; i < mps.length(); ++i){
-         mps[i].multiply_by_scalar(0.0);
-      }
-
-
-//fill loop
-   for(int d= 0; d<dets.size();d++){
-      max_charge = right_end;
-      prev_row = 0;
-      for(int s = dets[0].size()-1;s > 0; s--){
-          site_charge = charge_from_int(dets[d][s]);
-          if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
-          search_charge = SymmGroup::fuse(max_charge,-site_charge);
-          nrows_fill = mps[s].row_dim().size_of_block(search_charge);
-      //get current matrix
-         size_t max_pos = mps[s].data().left_basis().position(max_charge);
-         Matrix & m_insert = mps[s].data()[max_pos];
-         nrows = m_insert.num_rows();
-      //get additional offsets for subsectors
-         off = 0;
-         if(dets[d][s] == 3){
-            if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-ud))){
-              off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-ud));
-            }
-         }
-         else if(dets[d][s] == 2){
-           if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-em))){
-             off = nrows - nrows_fill - mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-em));
-           }else{off = nrows-nrows_fill;}
-         }
-         else if(dets[d][s] == 1){off = nrows- nrows_fill;}
-      //actual insertion
-         m_insert(off+rows_to_fill[d][s],prev_row) = 1;
-         prev_row = rows_to_fill[d][s];
-         max_charge = SymmGroup::fuse(max_charge,-site_charge);
-      }
-   }
-
-     //first site needs to be filled as well
-   int fill = 0;
-   for(int d = 0; d<dets.size(); d++){
-      fill = dets[d][0];
-      first_charge = charge_from_int(fill);
-      size_t first_pos = mps[0].data().left_basis().position(first_charge);
-      Matrix & m_first = mps[0].data()[first_pos];
-      m_first(0,0) = 1;
-   }
-
-}//end of main initialization function 
+    }//end of main initialization function 
 
 
-//function to get string of left or right part from det
-std::string det_string(int s, std::vector<size_t> det){
-   std::string str;
-   char c;
-   int L = det.size();
-   if(s > L/2){
-      for(int i = s; i<det.size(); i++){
-         c = boost::lexical_cast<char>(det[i]);
-         str.push_back(c);
-      }
-   }else{
-      for(int i = 0; i<s; i++){
-         c = boost::lexical_cast<char>(det[i]);
-         str.push_back(c);
-      }
-   }
-return str;
-}
+    //function to get string of left or right part from det
+    std::string det_string(int s, std::vector<size_t> det){
+       std::string str;
+       char c;
+       int L = det.size();
+       if(s > L/2){
+          for(int i = s; i<det.size(); i++){
+             c = boost::lexical_cast<char>(det[i]);
+             str.push_back(c);
+          }
+       }else{
+          for(int i = 0; i<s; i++){
+             c = boost::lexical_cast<char>(det[i]);
+             str.push_back(c);
+          }
+       }
+    return str;
+    }
 
 
-//function to get charge from int
-typename SymmGroup::charge charge_from_int (int sc_input){
-  typename SymmGroup::charge site_charge(0);
-   switch(sc_input) {
-       case 4:
-       site_charge = phys_dims[site_types[0]][0].first; // updown                   
-       break;
-       case 3:
-       site_charge = phys_dims[site_types[0]][1].first; // up
-       break;
-       case 2:
-       site_charge = phys_dims[site_types[0]][2].first; // down
-       break;
-       case 1:
-       site_charge = phys_dims[site_types[0]][3].first; // empty
-       break;
-   }   
-   return site_charge;
-}
+    //function to get charge from int
+    typename SymmGroup::charge charge_from_int (int sc_input){
+      typename SymmGroup::charge site_charge(0);
+       switch(sc_input) {
+           case 4:
+           site_charge = phys_dims[site_types[0]][0].first; // updown                   
+           break;
+           case 3:
+           site_charge = phys_dims[site_types[0]][1].first; // up
+           break;
+           case 2:
+           site_charge = phys_dims[site_types[0]][2].first; // down
+           break;
+           case 1:
+           site_charge = phys_dims[site_types[0]][3].first; // empty
+           break;
+       }   
+       return site_charge;
+    }
 
-//function to initalize sectors -> copied from mps-initializers
+    //function to initalize sectors -> copied from mps-initializers
 
-void init_sect(MPS<Matrix, SymmGroup> & mps,
-               const std::vector<std::vector<std::map<std::string, int > > > & str_to_col_map, 
-               std::map <typename SymmGroup::charge, int> &charge_to_int,
-               bool fillrand = true, 
-               typename Matrix::value_type val = 0)
-{
-    parallel::scheduler_balanced scheduler(mps.length());
-    std::size_t L = mps.length();
+    void init_sect(MPS<Matrix, SymmGroup> & mps,
+                   const std::vector<std::vector<std::map<std::string, int > > > & str_to_col_map, 
+                   std::map <typename SymmGroup::charge, int> &charge_to_int,
+                   bool fillrand = true, 
+                   typename Matrix::value_type val = 0)
+    {
+        parallel::scheduler_balanced scheduler(mps.length());
+        std::size_t L = mps.length();
 
-    std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_types, phys_dims, right_end, 5);
-    maquis::cout << "allowed sectors created" <<std::endl;
-    allowed = adapt_allowed(allowed, str_to_col_map, charge_to_int);
+        std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_types, phys_dims, right_end, 5);
+        maquis::cout << "allowed sectors created" <<std::endl;
+        allowed = adapt_allowed(allowed, str_to_col_map, charge_to_int);
 
-    maquis::cout << "size of sectors succesfully adapted" << std::endl;
+        maquis::cout << "size of sectors succesfully adapted" << std::endl;
 
-    omp_for(size_t i, parallel::range<size_t>(0,L), {
-        parallel::guard proc(scheduler(i));
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_types[i]], allowed[i], allowed[i+1], fillrand, val);
-        mps[i].divide_by_scalar(mps[i].scalar_norm());
-    });
-}
+        omp_for(size_t i, parallel::range<size_t>(0,L), {
+            parallel::guard proc(scheduler(i));
+            mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_types[i]], allowed[i], allowed[i+1], fillrand, val);
+            mps[i].divide_by_scalar(mps[i].scalar_norm());
+        });
+    }
 
-std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allowed,
-                                                 const std::vector<std::vector<std::map<std::string, int > > > &str_to_col_map,
-                                                 std::map <typename SymmGroup::charge, int> &charge_to_int)
-{
-   std::vector<Index<SymmGroup> > adapted = allowed;
-   int ifc = 0, Mmax = 0;
-   int L = str_to_col_map.size();
-   for(int i = 1; i<L+1; ++i){
-      for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
-                 it != adapted[i].end(); ++it){
-         ifc = charge_to_int[it->first];
-         Mmax = str_to_col_map[i-1][ifc].size();
-         if(Mmax>0){
-           it->second = str_to_col_map[i-1][ifc].size();
-         }
-      }
-   }
-   return adapted;
-}
+    std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allowed,
+                                                     const std::vector<std::vector<std::map<std::string, int > > > &str_to_col_map,
+                                                     std::map <typename SymmGroup::charge, int> &charge_to_int)
+    {
+       std::vector<Index<SymmGroup> > adapted = allowed;
+       int ifc = 0, Mmax = 0;
+       int L = str_to_col_map.size();
+       for(int i = 1; i<L+1; ++i){
+          for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
+                     it != adapted[i].end(); ++it){
+             ifc = charge_to_int[it->first];
+             Mmax = str_to_col_map[i-1][ifc].size();
+             if(Mmax>0){
+               it->second = str_to_col_map[i-1][ifc].size();
+             }
+          }
+       }
+       return adapted;
+    }
 
 
     BaseParameters parms;
