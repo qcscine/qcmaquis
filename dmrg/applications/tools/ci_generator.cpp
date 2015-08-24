@@ -272,8 +272,8 @@ int main(int argc, char ** argv)
        std::cout <<std::endl;
 
     //subtract left part, size is 2 in first microiteration
-        int left = 26;
-        int Mmax = 20000;
+        int left = 0;
+        int Mmax = 10000;
         int length = 0;
         if(left!=0){
            int L_env = L-left;
