@@ -92,6 +92,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
+        pos_t L = mps.length();
 
      //get hf determinant, should be extended to a vector of determinants
         std::vector<std::vector<std::size_t> > dets=det_list;
@@ -103,7 +104,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
       //actual initialization; check for sector and fill it with ones
       //max_charge is accumulated charge of the sites
-        typename SymmGroup::charge max_charge, search_charge, first_charge = SymmGroup::IdentityCharge;
+        typename SymmGroup::charge search_charge, first_charge = SymmGroup::IdentityCharge;
 
         // NO! -- access mps[i].site_dim() gives the Index with correct charges
         //initialize updown and empty inidices that will be needed later fo determination of the target size
@@ -111,10 +112,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         typename SymmGroup::charge up(0), down(0);
         up[0] = down[1] = 1;
 
-        //go through determinants and get possible charges
+        //go through determinants and get possible sectors
+        /*
         std::map<typename SymmGroup::charge, int> charge_to_int;
-        typename std::map<typename SymmGroup::charge, int>::iterator it;
-        int sc = 1;
         int count = 0;
         for(int d = 0; d < dets.size(); d++)
         {
@@ -122,12 +122,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             for(int i = 0; i < dets[0].size(); i++)
             {
                 //search if accumulated_charge is already in map
-                it = charge_to_int.find(accumulated_charge);
-                if(it == charge_to_int.end())
-                {
-                  charge_to_int[accumulated_charge] = count;
-                  count++;
-                }
+                if (charge_to_int.count(accumulated_charge) == 0)
+                  charge_to_int[accumulated_charge] = count++;
+
                 charge site_charge = charge_from_int(dets[d][i]);
                 if (SymmGroup::particleNumber(site_charge) %2 == 1)
                   site_charge =  PGCharge<SymmGroup>()(site_charge, site_types[i]);
@@ -135,21 +132,21 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 accumulated_charge = SymmGroup::fuse(accumulated_charge, site_charge);
             }
         }
+        */
 
         //New Approach including subsectors
 
         // initialize objects required 
         std::vector<std::vector<int > > rows_to_fill(dets.size(), std::vector <int> (dets[0].size()));
-        std::vector<std::vector<std::map<std::string, int> > > str_to_col_map(dets[0].size(),
-                                                                              std::vector<std::map<std::string, int> > (charge_to_int.size())
-                                                                              );
+        std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(dets[0].size());
+
         std::string str;
         int ifc, max_value, prev_row, nrows, nrows_fill, off = 0;
 
          //main loop
-         for(int d= 0; d<dets.size(); d++)
+         for(int d = 0; d < dets.size(); d++)
          {
-             max_charge = right_end;
+             charge max_charge = right_end;
              for(int s = dets[0].size()-1; s > 0; s--){
                  charge site_charge = charge_from_int(dets[d][s]);
 
@@ -158,21 +155,24 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
                  max_charge = SymmGroup::fuse(max_charge, -site_charge);
                  str = det_string(s, dets[d]);
-                 ifc = charge_to_int[max_charge];
 
-                 if (str_to_col_map[s-1][ifc][str]){
-                    rows_to_fill[d][s] = str_to_col_map[s-1][ifc][str]-1;
-                 }else{
+                 std::map<std::string, int> & str_map = str_to_col_map[s-1][max_charge];
+
+                 if (str_map[str])
+                    rows_to_fill[d][s] = str_map[str]-1;
+
+                 else
+                 {
                     //get largest element in map
-                    max_value = str_to_col_map[s-1][ifc].size();
-                    str_to_col_map[s-1][ifc][str] = max_value;
+                    max_value = str_map.size();
+                    str_map[str] = max_value;
                     rows_to_fill[d][s] = max_value - 1;
                  }
              }
          } 
 
           //this now calls a function which is part of this structure
-          init_sect(mps, str_to_col_map, charge_to_int, true, 0); 
+          init_sect(mps, str_to_col_map, true, 0); 
 
           //this here is absolutely necessary
           for(pos_t i = 0; i < mps.length(); ++i)
@@ -180,8 +180,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
 
        //fill loop
-       for(int d = 0; d < dets.size(); d++){
-          max_charge = right_end;
+       for(int d= 0; d<dets.size();d++){
+          charge max_charge = right_end;
           prev_row = 0;
           for(int s = dets[0].size()-1; s > 0; s--){
               charge site_charge = charge_from_int(dets[d][s]);
@@ -275,8 +275,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     //function to initalize sectors -> copied from mps-initializers
 
     void init_sect(MPS<Matrix, SymmGroup> & mps,
-                   const std::vector<std::vector<std::map<std::string, int > > > & str_to_col_map, 
-                   std::map <typename SymmGroup::charge, int> &charge_to_int,
+                   const std::vector<std::map<charge, std::map<std::string, int > > > & str_to_col_map, 
                    bool fillrand = true, 
                    typename Matrix::value_type val = 0)
     {
@@ -285,7 +284,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_types, phys_dims, right_end, 5);
         maquis::cout << "allowed sectors created" <<std::endl;
-        allowed = adapt_allowed(allowed, str_to_col_map, charge_to_int);
+        allowed = adapt_allowed(allowed, str_to_col_map);
         maquis::cout << "size of sectors succesfully adapted" << std::endl;
 
         omp_for(size_t i, parallel::range<size_t>(0,L), {
@@ -296,8 +295,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     }
 
     std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allowed,
-                                                     const std::vector<std::vector<std::map<std::string, int > > > &str_to_col_map,
-                                                     std::map <typename SymmGroup::charge, int> &charge_to_int)
+                                                     const std::vector<std::map<charge, std::map<std::string, int > > > &str_to_col_map)
     {
        std::vector<Index<SymmGroup> > adapted = allowed;
        int ifc = 0, Mmax = 0;
@@ -305,10 +303,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
        for(int i = 1; i<L+1; ++i){
           for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
                      it != adapted[i].end(); ++it){
-             ifc = charge_to_int[it->first];
-             Mmax = str_to_col_map[i-1][ifc].size();
+             Mmax = str_to_col_map[i-1].at(it->first).size();
              if(Mmax>0){
-               it->second = str_to_col_map[i-1][ifc].size();
+               it->second = str_to_col_map[i-1].at(it->first).size();
              }
           }
        }
