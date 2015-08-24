@@ -113,6 +113,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
         //go through determinants and get possible charges
         std::map<typename SymmGroup::charge, int> charge_to_int;
+        typename std::map<typename SymmGroup::charge, int>::iterator it;
         int sc = 1;
         int count = 0;
         for(int d = 0; d < dets.size(); d++)
@@ -121,16 +122,15 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             for(int i = 0; i < dets[0].size(); i++)
             {
                 //search if accumulated_charge is already in map
-                typename std::map<charge, int>::iterator it = charge_to_int.find(accumulated_charge);
+                it = charge_to_int.find(accumulated_charge);
                 if(it == charge_to_int.end())
                 {
                   charge_to_int[accumulated_charge] = count;
                   count++;
                 }
                 charge site_charge = charge_from_int(dets[d][i]);
-                
                 if (SymmGroup::particleNumber(site_charge) %2 == 1)
-                    PGCharge<SymmGroup>()(site_charge, site_types[i]);
+                  site_charge =  PGCharge<SymmGroup>()(site_charge, site_types[i]);
 
                 accumulated_charge = SymmGroup::fuse(accumulated_charge, site_charge);
             }
@@ -146,9 +146,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::string str;
         int ifc, max_value, prev_row, nrows, nrows_fill, off = 0;
 
-        // needed?
-        int Mmax = 0;
-
          //main loop
          for(int d= 0; d<dets.size(); d++)
          {
@@ -157,23 +154,19 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                  charge site_charge = charge_from_int(dets[d][s]);
 
                 if (SymmGroup::particleNumber(site_charge) %2 == 1)
-                    PGCharge<SymmGroup>()(site_charge, site_types[s]);
+                    site_charge = PGCharge<SymmGroup>()(site_charge, site_types[s]);
 
                  max_charge = SymmGroup::fuse(max_charge, -site_charge);
                  str = det_string(s, dets[d]);
                  ifc = charge_to_int[max_charge];
 
-                 if (str_to_col_map[s-1][ifc][str])
+                 if (str_to_col_map[s-1][ifc][str]){
                     rows_to_fill[d][s] = str_to_col_map[s-1][ifc][str]-1;
-
-                 else
-                 {
+                 }else{
                     //get largest element in map
                     max_value = str_to_col_map[s-1][ifc].size();
                     str_to_col_map[s-1][ifc][str] = max_value;
                     rows_to_fill[d][s] = max_value - 1;
-                    //get size of largest sector
-                    Mmax = std::max(Mmax, max_value);
                  }
              }
          } 
@@ -187,29 +180,36 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
 
        //fill loop
-       for(int d= 0; d<dets.size();d++){
+       for(int d = 0; d < dets.size(); d++){
           max_charge = right_end;
           prev_row = 0;
-          for(int s = dets[0].size()-1;s > 0; s--){
+          for(int s = dets[0].size()-1; s > 0; s--){
               charge site_charge = charge_from_int(dets[d][s]);
-              if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
+
+              if (SymmGroup::particleNumber(site_charge) %2 == 1)
+                    site_charge = PGCharge<SymmGroup>()(site_charge, site_types[s]);
+
               search_charge = SymmGroup::fuse(max_charge,-site_charge);
               nrows_fill = mps[s].row_dim().size_of_block(search_charge);
+
              //get current matrix
-             size_t max_pos = mps[s].data().left_basis().position(max_charge);
-             Matrix & m_insert = mps[s].data()[max_pos];
-             nrows = m_insert.num_rows();
+              size_t max_pos = mps[s].data().left_basis().position(max_charge);
+              Matrix & m_insert = mps[s].data()[max_pos];
+              nrows = m_insert.num_rows();
+
              //get additional offsets for subsectors
-             off = 0;
-             if(dets[d][s] == 3){
-                if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-ud))){
-                  off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-ud));
-                }
+              off = 0;
+              if(dets[d][s] == 3){
+
+                if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-ud)))
+                    off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-ud));
+                
              }
              else if(dets[d][s] == 2){
-               if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-em))){
-                 off = nrows - nrows_fill - mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-em));
-               }else{off = nrows-nrows_fill;}
+              
+                 if(mps[s].row_dim().has(SymmGroup::fuse(max_charge,-em))){
+                     off = nrows - nrows_fill - mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge,-em));
+                 }else{off = nrows-nrows_fill;}
              }
              else if(dets[d][s] == 1){off = nrows- nrows_fill;}
           //actual insertion
@@ -221,7 +221,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
          //first site needs to be filled as well
        int fill = 0;
-       for(int d = 0; d<dets.size(); d++){
+       for(int d = 0; d < dets.size(); d++){
           fill = dets[d][0];
           first_charge = charge_from_int(fill);
           size_t first_pos = mps[0].data().left_basis().position(first_charge);
@@ -286,7 +286,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_types, phys_dims, right_end, 5);
         maquis::cout << "allowed sectors created" <<std::endl;
         allowed = adapt_allowed(allowed, str_to_col_map, charge_to_int);
-
         maquis::cout << "size of sectors succesfully adapted" << std::endl;
 
         omp_for(size_t i, parallel::range<size_t>(0,L), {
