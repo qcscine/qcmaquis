@@ -113,7 +113,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
         //go through determinants and get possible charges
         std::map<typename SymmGroup::charge, int> charge_to_int;
-        typename std::map<typename SymmGroup::charge, int>::iterator it;
         int sc = 1;
         int count = 0;
         for(int d = 0; d < dets.size(); d++)
@@ -122,7 +121,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             for(int i = 0; i < dets[0].size(); i++)
             {
                 //search if accumulated_charge is already in map
-                it = charge_to_int.find(accumulated_charge);
+                typename std::map<charge, int>::iterator it = charge_to_int.find(accumulated_charge);
                 if(it == charge_to_int.end())
                 {
                   charge_to_int[accumulated_charge] = count;
