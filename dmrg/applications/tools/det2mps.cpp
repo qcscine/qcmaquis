@@ -117,7 +117,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         int count = 0;
         for(int d = 0; d < dets.size(); d++)
         {
-            accumulated_charge = SymmGroup::IdentityCharge;           
+            charge accumulated_charge = SymmGroup::IdentityCharge;           
             for(int i = 0; i < dets[0].size(); i++)
             {
                 //search if accumulated_charge is already in map
@@ -157,7 +157,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                  charge site_charge = charge_from_int(dets[d][s]);
 
                 if (SymmGroup::particleNumber(site_charge) %2 == 1)
-                    PGCharge<SymmGroup>()(site_charge, site_types[i]);
+                    PGCharge<SymmGroup>()(site_charge, site_types[s]);
 
                  max_charge = SymmGroup::fuse(max_charge, -site_charge);
                  str = det_string(s, dets[d]);
