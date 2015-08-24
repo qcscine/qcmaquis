@@ -88,6 +88,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -115,7 +116,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         typename std::map<typename SymmGroup::charge, int>::iterator it;
         int sc = 1;
         int count = 0;
-        typename SymmGroup::charge site_charge = SymmGroup::IdentityCharge;
         for(int d = 0; d < dets.size(); d++)
         {
             accumulated_charge = SymmGroup::IdentityCharge;           
@@ -128,7 +128,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                   charge_to_int[accumulated_charge] = count;
                   count++;
                 }
-                site_charge = charge_from_int(dets[d][i]);
+                charge site_charge = charge_from_int(dets[d][i]);
                 
                 if (SymmGroup::particleNumber(site_charge) %2 == 1)
                     PGCharge<SymmGroup>()(site_charge, site_types[i]);
@@ -155,7 +155,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
          {
              max_charge = right_end;
              for(int s = dets[0].size()-1; s > 0; s--){
-                 site_charge = charge_from_int(dets[d][s]);
+                 charge site_charge = charge_from_int(dets[d][s]);
 
                 if (SymmGroup::particleNumber(site_charge) %2 == 1)
                     PGCharge<SymmGroup>()(site_charge, site_types[i]);
@@ -192,7 +192,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
           max_charge = right_end;
           prev_row = 0;
           for(int s = dets[0].size()-1;s > 0; s--){
-              site_charge = charge_from_int(dets[d][s]);
+              charge site_charge = charge_from_int(dets[d][s]);
               if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
               search_charge = SymmGroup::fuse(max_charge,-site_charge);
               nrows_fill = mps[s].row_dim().size_of_block(search_charge);
