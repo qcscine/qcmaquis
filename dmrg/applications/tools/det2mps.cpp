@@ -297,18 +297,18 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allowed,
                                                      const std::vector<std::map<charge, std::map<std::string, int > > > &str_to_col_map)
     {
-       std::vector<Index<SymmGroup> > adapted = allowed;
-       pos_t L = str_to_col_map.size();
-       for(pos_t i = 1; i < L+1; ++i){
-          for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
+        std::vector<Index<SymmGroup> > adapted = allowed;
+        pos_t L = str_to_col_map.size();
+        for(pos_t i = 1; i < L+1; ++i)
+        {
+            for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
                      it != adapted[i].end(); ++it)
-          {
-             int Mmax = str_to_col_map[i-1].at(it->first).size();
-             if(Mmax>0)
-               it->second = str_to_col_map[i-1].at(it->first).size();
-          }
-       }
-       return adapted;
+            {
+                if (str_to_col_map[i-1].count(it->first) != 0)
+                    it->second = str_to_col_map[i-1].at(it->first).size();
+            }
+        }
+        return adapted;
     }
 
 
