@@ -146,28 +146,44 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         //main loop
         for(int d = 0; d < determinants.size(); ++d)
         {
-            charge accumulated_charge = right_end;
-            for(int s = L - 1; s > 0; --s){
-                charge site_charge = determinants[d][s][0];
-
-                accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-                std::string str = det_string(s, det_list[d]);
-
-                std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
-
-                if (str_map[str])
-                   rows_to_fill[d][s] = str_map[str] - 1;
-
-                else
+            std::vector<charge> bond_charge, accumulated_charge, site_charge;
+            bond_charge.push_back(right_end);
+            for(int s = L - 1; s > 0; --s)
+            {
+                site_charge = determinants[d][s];
+       		for (typename std::vector<charge>::const_iterator it = bond_charge.begin(); it != bond_charge.end(); ++it)
                 {
-                   //get largest element in map
-                   int max_value = str_map.size();
-                   str_map[str] = max_value;
-                   rows_to_fill[d][s] = max_value - 1;
-                }
-            }
-        } 
+                    for (typename std::vector<charge>::const_iterator it2 = site_charge.begin(); it2 != site_charge.end(); ++it2)
+                    {
+                        charge current_charge = SymmGroup::fuse(*it, -*it2);
+                        if (charge_detail::physical<SymmGroup>(current_charge))
+                        {
+                            accumulated_charge.push_back(current_charge);
 
+                            std::string str = det_string(s, det_list[d]);
+  
+                            std::map<std::string, int> & str_map = str_to_col_map[s-1][current_charge];
+
+                            if (str_map[str])
+                                rows_to_fill[d][s] = str_map[str] - 1;
+
+                            else
+                            {
+                                //get largest element in map
+                                int max_value = str_map.size();
+                                str_map[str] = max_value;
+                                rows_to_fill[d][s] = max_value - 1;
+                            }
+                        }
+                    }
+                }
+                bond_charge = accumulated_charge;
+                accumulated_charge.clear();
+            }
+            bond_charge.clear();
+        }
+
+ 
         //this now calls a function which is part of this structure
         init_sect(mps, str_to_col_map, true, 0); 
 
