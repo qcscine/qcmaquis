@@ -28,18 +28,39 @@
 
 #include <iostream>
 #include <algorithm>
-//#include <boost/bimap.hpp>
-//#include <boost/bimap/multiset_of.hpp>
 #include <boost/lexical_cast.hpp>
+
 #include "dmrg/sim/matrix_types.h"
-//#include "dmrg/mp_tensors/compression.h"
 #include "dmrg/models/model.h"
 //#include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/compression.h"
 #include "dmrg/models/lattice.h"
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
+
+
+#ifdef USE_AMBIENT
+    #include "dmrg/block_matrix/detail/ambient.hpp"
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+#else
+    #include "dmrg/block_matrix/detail/alps.hpp"
+    typedef alps::numeric::matrix<double> matrix;
+#endif
+
+
+#if defined(USE_TWOU1)
+typedef TwoU1 grp;
+#elif defined(USE_TWOU1PG)
+typedef TwoU1PG grp;
+#elif defined(USE_SU2U1)
+typedef SU2U1 grp;
+#elif defined(USE_SU2U1PG)
+typedef SU2U1PG grp;
+#elif defined(USE_NONE)
+typedef TrivialGroup grp;
+#elif defined(USE_U1)
+typedef U1 grp;
+#endif
 
 namespace deas_detail
 {
@@ -151,7 +172,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             for(int s = L - 1; s > 0; --s)
             {
                 site_charge = determinants[d][s];
-       		for (typename std::vector<charge>::const_iterator it = bond_charge.begin(); it != bond_charge.end(); ++it)
+                for (typename std::vector<charge>::const_iterator it = bond_charge.begin(); it != bond_charge.end(); ++it)
                 {
                     for (typename std::vector<charge>::const_iterator it2 = site_charge.begin(); it2 != site_charge.end(); ++it2)
                     {
@@ -365,31 +386,28 @@ int main(int argc, char ** argv){
         ar["/parameters"] >> parms;
         Lattice lat(parms);
 
-        typedef alps::numeric::matrix<double> Matrix;
+        /***Create TEST environment not needed in actual implementation***/
+        size_t L = parms["L"];
 
+        //create symmetry vector -> site_types
+        int max_site_type = 0;
+        std::vector<int> site_types(lat.size());
+        for (int i = 0; i<lat.size(); i++){
+           site_types[i] = lat.get_prop<int>("type", i);
+           max_site_type =std::max(site_types[i],max_site_type);
+        }
+        std::cout <<"site_types: ";
+        for(int i = 0; i<site_types.size(); i++){
+           std::cout << site_types[i] <<", "; 
+        }
+        std::cout <<std::endl;
+        maquis::cout << "maximal site type: " << max_site_type << std::endl;
 
-/***Create TEST environment not needed in actual implementation***/
-   size_t L = parms["L"];
+    //create vector of indices -> phys_dims
+    grp::charge a(0), b(0), c(0), d(1);
+    b[0]=c[1] = 1;
 
-//create symmetry vector -> site_types
-   int max_site_type = 0;
-   std::vector<int> site_types(lat.size());
-   for (int i = 0; i<lat.size(); i++){
-      site_types[i] = lat.get_prop<int>("type", i);
-      max_site_type =std::max(site_types[i],max_site_type);
-   }
-   std::cout <<"site_types: ";
-   for(int i = 0; i<site_types.size(); i++){
-      std::cout << site_types[i] <<", "; 
-   }
-   std::cout <<std::endl;
-   maquis::cout << "maximal site type: " << max_site_type << std::endl;
-
-//create vector of indices -> phys_dims
-TwoU1PG::charge a(0), b(0), c(0), d(1);
-b[0]=c[1] = 1;
-
-   std::vector<Index<TwoU1PG> > phys_dims(4);
+   std::vector<Index<grp> > phys_dims(4);
    for(int i = 0; i< max_site_type+1; i++){
       b[2]=c[2]=i;
       phys_dims[i].insert(std::make_pair(a,1));
@@ -401,12 +419,12 @@ b[0]=c[1] = 1;
       std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
    }
 
-//get right end charge
- TwoU1PG::charge right_end = chem_detail::qn_helper<TwoU1PG>().total_qn(parms);
- maquis::cout << "Right end: " << right_end <<std::endl;
+   //get right end charge
+   grp::charge right_end = chem_detail::qn_helper<grp>().total_qn(parms);
+   maquis::cout << "Right end: " << right_end <<std::endl;
 
-//det_list as function parameter
-  std::vector<std::vector<std::size_t> >  det_list = dets_from_file(det_file);
+    //det_list as function parameter
+    std::vector<std::vector<std::size_t> >  det_list = dets_from_file(det_file);
 
    std::cout <<"hf_determinant = 1st determinant in list: ";
    for(int i = 0; i<det_list[0].size(); i++){
@@ -416,9 +434,9 @@ b[0]=c[1] = 1;
    
 
 
-//create MPS
-   MPS<Matrix,TwoU1PG> hf_mps(L);;
-   deas_mps_init<Matrix,TwoU1PG> hf(parms,phys_dims,right_end,site_types,det_list);
+   //create MPS
+   MPS<matrix,grp> hf_mps(L);
+   deas_mps_init<matrix,grp> hf(parms,phys_dims,right_end,site_types,det_list);
    hf(hf_mps); 
    maquis::cout << "MPS created" << std::endl;
    save("test",hf_mps);
