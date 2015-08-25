@@ -43,6 +43,62 @@
 
 namespace deas_detail
 {
+    template <class SymmGroup, class = void>
+    class charge_from_int
+    {
+    public:
+        typename SymmGroup::charge charge_from_int (int sc_input)
+        {
+            typename SymmGroup::charge site_charge(0);
+            switch(sc_input) 
+            {
+                case 4:
+                site_charge = phys_dims[site_types[0]][0].first; // updown                   
+                break;
+                case 3:
+                site_charge = phys_dims[site_types[0]][1].first; // up
+                break;
+                case 2:
+                site_charge = phys_dims[site_types[0]][2].first; // down
+                break;
+                case 1:
+                site_charge = phys_dims[site_types[0]][3].first; // empty
+                break;
+            }   
+            return site_charge;
+         }
+    };
+   
+    template <class SymmGroup>
+    class charge_from_int<SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
+    {
+    public:
+        typename SymmGroup::charge charge_from_int (int sc_input)
+        {
+            typename SymmGroup::charge site_charge(0);
+            switch(sc_input) {
+                case 4:
+                    site_charges.insert(phys_dims[site_types[i]][0].first); // doubly-occ
+                    break;
+                case 3:
+                    site_charges.insert(phys_dims[site_types[i]][1].first); // singly-occ
+                    site_charges.insert(phys_dims[site_types[i]][2].first); // singly-occ
+                    break;
+                case 2:
+                    site_charges.insert(phys_dims[site_types[i]][1].first); // singly-occ
+                    site_charges.insert(phys_dims[site_types[i]][2].first); // singly-occ
+                    break;
+                case 1:
+                    site_charges.insert(phys_dims[site_types[i]][3].first); // empty
+                    break;
+            }
+            return site_charge;
+        }
+    };
+
+
+
+
     // free functions
 
     /*
@@ -252,7 +308,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     }
 
 
-    //function to get charge from int
+/*    //function to get charge from int
     typename SymmGroup::charge charge_from_int (int sc_input){
       typename SymmGroup::charge site_charge(0);
        switch(sc_input) {
@@ -271,6 +327,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
        }   
        return site_charge;
     }
+*/
+
 
     //function to initalize sectors -> copied from mps-initializers
 
