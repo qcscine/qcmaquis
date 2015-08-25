@@ -137,30 +137,26 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         if (determinants[0].size() != L)
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        // NO! -- access mps[i].site_dim() gives the Index with correct charges
-        //initialize updown and empty inidices that will be needed later fo determination of the target size
-        charge ud(1), em(0);
-        charge up(0), down(0);
-        up[0] = down[1] = 1;
+        charge doubly_occ = phys_dims[0].begin()->first, empty = phys_dims[0].rbegin()->first;
 
         // initialize objects required 
         std::vector<std::vector<int > > rows_to_fill(determinants.size(), std::vector <int> (L));
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
 
         //main loop
-        for(int d = 0; d < determinants.size(); d++)
+        for(int d = 0; d < determinants.size(); ++d)
         {
-            charge max_charge = right_end;
-            for(int s = L - 1; s > 0; s--){
+            charge accumulated_charge = right_end;
+            for(int s = L - 1; s > 0; --s){
                 charge site_charge = determinants[d][s][0];
 
-                max_charge = SymmGroup::fuse(max_charge, -site_charge);
+                accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
                 std::string str = det_string(s, det_list[d]);
 
-                std::map<std::string, int> & str_map = str_to_col_map[s-1][max_charge];
+                std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
 
                 if (str_map[str])
-                   rows_to_fill[d][s] = str_map[str]-1;
+                   rows_to_fill[d][s] = str_map[str] - 1;
 
                 else
                 {
@@ -176,14 +172,14 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         init_sect(mps, str_to_col_map, true, 0); 
 
         //this here is absolutely necessary
-        for(pos_t i = 0; i < mps.length(); ++i)
+        for(pos_t i = 0; i < L; ++i)
             mps[i].multiply_by_scalar(0.0);
 
         //fill loop
-        for(int d = 0; d < determinants.size(); d++){
+        for(int d = 0; d < determinants.size(); ++d){
             charge max_charge = right_end;
             int prev_row = 0;
-            for(int s = L - 1; s > 0; s--)
+            for(int s = L - 1; s > 0; --s)
             {
                 charge site_charge = determinants[d][s][0];
 
@@ -199,14 +195,14 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 //get additional offsets for subsectors
                 if(determinants[d][s][0] == phys_dims[site_types[s]][1].first){
 
-                  if(mps[s].row_dim().has(SymmGroup::fuse(max_charge, -ud)))
-                      off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge, -ud));
+                  if(mps[s].row_dim().has(SymmGroup::fuse(max_charge, -doubly_occ)))
+                      off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge, -doubly_occ));
                   
                 }
                 else if(determinants[d][s][0] == phys_dims[site_types[s]][2].first)
                 {
-                    if(mps[s].row_dim().has(SymmGroup::fuse(max_charge, -em))){
-                        off = nrows - nrows_fill - mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge, -em));
+                    if(mps[s].row_dim().has(SymmGroup::fuse(max_charge, -empty))){
+                        off = nrows - nrows_fill - mps[s].row_dim().size_of_block(SymmGroup::fuse(max_charge, -empty));
                     }
                     else {
                         off = nrows - nrows_fill;
