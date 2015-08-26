@@ -207,12 +207,12 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     {
         pos_t L = mps.length();
         std::cout << " size of det_list_new is: " << det_list_new.size()<<std::endl; 
-        for (int i = 0; i < det_list_new.size(); ++i)
-        {
-            for (int j = 0; j < det_list_new[0].size(); ++j)
-                std::cout << det_list_new[i][j];
-            std::cout << std::endl;
-        }
+ //       for (int i = 0; i < det_list_new.size(); ++i)
+ //       {
+ //           for (int j = 0; j < det_list_new[0].size(); ++j)
+ //               std::cout << det_list_new[i][j];
+ //           std::cout << std::endl;
+ //       }
 
         std::cout << " size of determinants is: " << determinants.size()<<std::endl; 
         if (determinants[0].size() != L)
@@ -225,24 +225,14 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::vector<std::vector< int > > rows_to_fill(determinants.size(), std::vector<int > (L));
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
         //main loop
-        //
         for(int d = 0; d < determinants.size(); ++d)
         {
-           // std::vector<charge> bond_charge, accumulated_charge;
-           // bond_charge.push_back(right_end);
             charge accumulated_charge = right_end;
             for(int s = L - 1; s > 0; --s)
             {
                 charge site_charge = determinants[d][s];
-              //  for (typename std::vector<charge>::const_iterator it = bond_charge.begin(); it != bond_charge.end(); ++it)
-              //  {
-               //     for (typename std::vector<charge>::const_iterator it2 = site_charge.begin(); it2 != site_charge.end(); ++it2)
-               //     {
                         accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
                 
-                   //     if (charge_detail::physical<SymmGroup>(current_charge))
-                   //     {
-                   //         accumulated_charge.push_back(current_charge);
 
                             std::string str = det_string(s, det_list_new[d]);
                             std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
@@ -257,13 +247,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                                 str_map[str] = max_value;
                                 rows_to_fill[d][s] = max_value - 1;
                             }
-         //               }
-         //           }
-         //       }
-         //       bond_charge = accumulated_charge;
-         //       accumulated_charge.clear();
             }
-         //   bond_charge.clear();
         }
         //this now calls a function which is part of this structure
         init_sect(mps, str_to_col_map, true, 0); 
@@ -275,67 +259,47 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         //fill loop
         for(int d = 0; d < determinants.size(); ++d)
             {
-         //   std::vector<charge> bond_charge, accumulated_charge;
-         //   bond_charge.push_back(right_end);
-           // std::map<charge,int> prev_row;
-           // prev_row[right_end] = 0;
             charge accumulated_charge = right_end;
             int prev_row = 0;
             for(int s = L - 1; s > 0; --s)
             {
                 charge site_charge = determinants[d][s];
-        //        for (typename std::vector<charge>::const_iterator it = bond_charge.begin(); it != bond_charge.end(); ++it)
-        //        {
-        //            for (typename std::vector<charge>::const_iterator it2 = site_charge.begin(); it2 != site_charge.end(); ++it2)
-        //            {
-                        charge search_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-        //                if (charge_detail::physical<SymmGroup>(current_charge) && mps[s].row_dim().has(current_charge))
-        //                {
-                           int nrows_fill = mps[s].row_dim().size_of_block(search_charge);
-                            //get current matrix
-                            size_t max_pos = mps[s].data().left_basis().position(accumulated_charge);
-                            Matrix & m_insert = mps[s].data()[max_pos];
-                     
-                            int nrows = m_insert.num_rows(), off = 0;
-                     
-                            //get additional offsets for subsectors
-                            if(site_charge == phys_dims[site_types[s]][1].first){
-                     
-                                if(mps[s].row_dim().has(SymmGroup::fuse(accumulated_charge, -doubly_occ)))
-                                    off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(accumulated_charge, -doubly_occ));
-                          
-                            }
-                            else if(site_charge == phys_dims[site_types[s]][2].first)
-                            {
-                                if(mps[s].row_dim().has(accumulated_charge)){
-                                    off = nrows - nrows_fill - mps[s].row_dim().size_of_block(accumulated_charge);
-                                }
-                                else {
-                                    off = nrows - nrows_fill;
-                                } 
-                            }  
-                            else if(site_charge == phys_dims[site_types[s]][3].first){
-                                off = nrows - nrows_fill;
-                            }
-                            //actual insertion
-                            m_insert(off+rows_to_fill[d][s],prev_row) = 1;
-                            prev_row = rows_to_fill[d][s];
-                            accumulated_charge = search_charge;
-         //                   accumulated_charge.push_back(current_charge); 
-        //                }
+                charge search_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
+                   int nrows_fill = mps[s].row_dim().size_of_block(search_charge);
+                    //get current matrix
+                    size_t max_pos = mps[s].data().left_basis().position(accumulated_charge);
+                    Matrix & m_insert = mps[s].data()[max_pos];
+                
+                    int nrows = m_insert.num_rows(), off = 0;
+                
+                    //get additional offsets for subsectors
+                    if(site_charge == phys_dims[site_types[s]][1].first)
+                    {
+                
+                        if(mps[s].row_dim().has(SymmGroup::fuse(accumulated_charge, -doubly_occ)))
+                            off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(accumulated_charge, -doubly_occ));
+                  
                     }
-       //         }
-        //        bond_charge = accumulated_charge;
-        //        accumulated_charge.clear();
-        //    }
-        //    bond_charge.clear();
-        //    prev_row.clear();
-       //     std::cout <<"Determinant " << d << " still works! " << std::endl;
+                    else if(site_charge == phys_dims[site_types[s]][2].first)
+                    {
+                        if(mps[s].row_dim().has(accumulated_charge))
+                            off = nrows - nrows_fill - mps[s].row_dim().size_of_block(accumulated_charge);
+                        else 
+                            off = nrows - nrows_fill;
+                    }  
+                    else if(site_charge == phys_dims[site_types[s]][3].first){
+                        off = nrows - nrows_fill;
+                    }
+                    //actual insertion
+                    m_insert(off+rows_to_fill[d][s],prev_row) = 1;
+                    prev_row = rows_to_fill[d][s];
+                    accumulated_charge = search_charge;
+            }
        }
 
        //first site needs to be filled as well
        for(int d = 0; d < determinants.size(); d++){
-          charge first_charge = determinants[d][0][0];
+          charge first_charge = determinants[d][0];
           size_t first_pos = mps[0].data().left_basis().position(first_charge);
           Matrix & m_first = mps[0].data()[first_pos];
           m_first(0,0) = 1;
@@ -460,7 +424,7 @@ std::vector<std::vector<std::size_t> > dets_from_file(std::string file){
                     tmp.push_back(3); // up
                     break;
                 case 2:
-                    tmp.push_back(2); // down 
+                    tmp.push_back(3); // down 
                     break;
                 case 1:
                     tmp.push_back(1); // empty
