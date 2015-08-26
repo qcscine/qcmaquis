@@ -216,7 +216,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             {
             std::vector<charge> bond_charge, accumulated_charge, site_charge;
             bond_charge.push_back(right_end);
-            int prev_row = 0;
+            std::map<charge,int> prev_row;
+            prev_row[right_end] = 0;
             for(int s = L - 1; s > 0; --s)
             {
                 site_charge = determinants[d][s];
@@ -254,8 +255,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                                 off = nrows - nrows_fill;
                             }
                             //actual insertion
-                            m_insert(off+rows_to_fill[d][s],prev_row) = 1;
-                            prev_row = rows_to_fill[d][s];//hier wird es kompliziert!!! Er geht ja mehrere Kombinationen durch
+                            m_insert(off+rows_to_fill[d][s],prev_row[*it]) = 1;
+                            prev_row[current_charge] = rows_to_fill[d][s];//hier wird es kompliziert!!! Er geht ja mehrere Kombinationen durch
                             accumulated_charge.push_back(current_charge); 
                         }
                     }
@@ -264,6 +265,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 accumulated_charge.clear();
             }
             bond_charge.clear();
+            prev_row.clear();
        }
 
        //first site needs to be filled as well
@@ -418,6 +420,9 @@ int main(int argc, char ** argv){
     grp::charge a(2), b(1), c(1), d(0);
     a[1]= 0;
     c[1] = -1;
+
+//   grp::charge a(1), b(0), c(0), d(0);
+//   b[0] = c[1] = 1;
 
    std::vector<Index<grp> > phys_dims(4);
    for(int i = 0; i< max_site_type+1; i++){
