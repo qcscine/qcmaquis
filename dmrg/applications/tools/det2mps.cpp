@@ -124,6 +124,44 @@ namespace deas_detail
             return site_charges;
         }
     };
+
+
+    template <class SymmGroup, class = void>
+    class charge_vector
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef std::vector<Index<SymmGroup> > index_vec;
+        typedef std::vector<typename SymmGroup::subcharge> site_vec;
+    public:
+        std::vector<std::vector<std::vector< charge > > > operator()(std::vector<std::vector<std::size_t> > const & det_list, index_vec const & phys_dims, site_vec const & site_types)
+        {
+             std::vector<std::vector<std::vector< charge > > > determinants;
+             std::vector<std::vector< charge> > dummy_vec;
+             for (size_t i = 0; i < det_list.size(); ++i)
+             {
+                 for (size_t j = 0; j < det_list[i].size(); ++j)
+                     dummy_vec.push_back(deas_detail::charge_from_int<SymmGroup>()(det_list[i][j], j, phys_dims, site_types));
+
+                 if(std::find(determinants.begin(),determinants.end(), dummy_vec) == determinants.end())
+                     determinants.push_back(dummy_vec);
+                 dummy_vec.clear();
+             }
+             return determinants;
+        }
+    };
+
+
+    template <class SymmGroup, class = void>
+    class adapt_det_list
+    {
+    public:
+        std::vector<std::vector<size_t> > operator()(std::vector<std::vector<std::size_t> > const & det_list)
+        {
+            std::vector<std::vector<size_t> > adapted_det_list;
+
+
+        }
+    };
 }
 
 template<class Matrix, class SymmGroup, class=void>
@@ -140,12 +178,13 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , di(parms, phys_dims_, right_end_, site_type)
     , right_end(right_end_)
     , det_list(det_list_)
-    , determinants(det_list.size())
+    , determinants()
     {
         // convert det_list to vec<vec<charge>>
-        for (size_t i = 0; i < det_list.size(); ++i)
-            for (size_t j = 0; j < det_list[i].size(); ++j)
-                determinants[i].push_back(deas_detail::charge_from_int<SymmGroup>()(det_list[i][j], j, phys_dims, site_types));
+        //determinant list needs to be adapted as well to give correct keys
+//       det_list = deas_detail::adapt_det_list(det_list)
+       determinants = deas_detail::charge_vector<SymmGroup>()(det_list, phys_dims, site_types);
+
     }
 
     typedef Lattice::pos_t pos_t;
@@ -155,6 +194,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
         pos_t L = mps.length();
+        std::cout << " size of determinants is: " << determinants.size()<<std::endl; 
         if (determinants[0].size() != L)
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
@@ -163,8 +203,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         // initialize objects required 
         std::vector<std::vector<int > > rows_to_fill(determinants.size(), std::vector <int> (L));
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
-
         //main loop
+        //
         for(int d = 0; d < determinants.size(); ++d)
         {
             std::vector<charge> bond_charge, accumulated_charge, site_charge;
@@ -203,7 +243,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             }
             bond_charge.clear();
         }
-
         //this now calls a function which is part of this structure
         init_sect(mps, str_to_col_map, true, 0); 
 
@@ -332,7 +371,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                      it != adapted[i].end(); ++it)
             {
                 if (str_to_col_map[i-1].count(it->first) != 0)
-                    it->second = str_to_col_map[i-1].at(it->first).size()+300;
+                    it->second = str_to_col_map[i-1].at(it->first).size();
             }
         }
         return adapted;
