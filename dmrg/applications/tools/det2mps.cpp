@@ -266,6 +266,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             }
             bond_charge.clear();
             prev_row.clear();
+            std::cout <<"Determinant " << d << " still works! " << std::endl;
        }
 
        //first site needs to be filled as well
@@ -331,7 +332,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                      it != adapted[i].end(); ++it)
             {
                 if (str_to_col_map[i-1].count(it->first) != 0)
-                    it->second = str_to_col_map[i-1].at(it->first).size();
+                    it->second = str_to_col_map[i-1].at(it->first).size()+300;
             }
         }
         return adapted;
