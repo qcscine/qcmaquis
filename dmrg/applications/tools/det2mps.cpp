@@ -141,17 +141,53 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , di(parms, phys_dims_, right_end_, site_type)
     , right_end(right_end_)
     , det_list(det_list_)
-    , determinants(det_list.size())
+    , determinants()
     {
+       typedef typename SymmGroup::charge charge;
+       std::vector<std::vector<charge> > single_det;
+       std::vector< std::vector<std::vector< charge > > > dummy_dets(det_list.size());
+       std::vector<std::vector<std::string> > det_list_new;
         // convert det_list to vec<vec<charge>>
        for (size_t i = 0; i < det_list.size(); ++i)
             for (size_t j = 0; j < det_list[i].size(); ++j)
-                determinants[i].push_back(deas_detail::charge_from_int<SymmGroup>()(det_list[i][j], j, phys_dims, site_types));
+                dummy_dets[i].push_back(deas_detail::charge_from_int<SymmGroup>()(det_list[i][j], j, phys_dims, site_types));
+
+       for (int i = 0; i<det_list.size(); ++i)
+           for (int j = 0; j < det_list[i].size(); ++j)
+           {
+               if (dummy_dets[i][j].size() != 1)
+               {
+                   int times = single_det.size();
+                   for (int k = 0; k < times; k++)
+                       single_det.push_back(single_det[0]);
+               
+                   for (int k = 0; k < single_det.size(); ++k)
+                   {
+                       if (k % dummy_dets[i][j].size() == 0) //works only if there are two options, like (1,1) and (1,-1)
+                           single_det[k].push_back(dummy_dets[i][j][0]);
+                       else
+                           single_det[k].push_back(dummy_dets[i][j][1]);
+                   }        
+                   
+               }
+               else{
+                   for (int k = 0; k < single_det.size(); ++k)
+                       single_det[k].push_back(dummy_dets[i][j][0]); 
+               }
+           }
+           for (int m = 0; m < single_det.size(); ++m)
+           {
+               determinants.push_back(single_det[m]);
+               det_list_new.push_back(str_from_det(single_det[m]),phys_dims,site_types);
+           }
+           single_det.clear();
     }
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
     typedef typename SymmGroup::charge charge;
+    typedef std::vector<Index<SymmGroup> > index_vec;
+    typedef std::vector<typename SymmGroup::subcharge> site_vec;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -165,7 +201,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
         // initialize objects required 
         //idea: include current charges in rows_to_fill, should not affect 2U1
-        std::vector<std::vector<std::map<charge, int> > > rows_to_fill(determinants.size(), std::vector<std::map<charge,int> > (L));
+        std::vector<std::vector< int > > rows_to_fill(determinants.size(), std::vector<int > (L));
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
         //main loop
         //
@@ -190,14 +226,14 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                             std::map<std::string, int> & str_map = str_to_col_map[s-1][current_charge];
 
                             if (str_map[str])
-                                rows_to_fill[d][s][*it] = str_map[str] - 1;
+                                rows_to_fill[d][s] = str_map[str] - 1;
 
                             else
                             {
                                 //get largest element in map
                                 int max_value = str_map.size();
                                 str_map[str] = max_value;
-                                rows_to_fill[d][s][*it] = max_value - 1;
+                                rows_to_fill[d][s] = max_value - 1;
                             }
                         }
                     }
@@ -258,8 +294,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                                 off = nrows - nrows_fill;
                             }
                             //actual insertion
-                            m_insert(off+rows_to_fill[d][s][*it],prev_row[*it]) = 1;
-                            prev_row[current_charge] = rows_to_fill[d][s][*it];
+                            m_insert(off+rows_to_fill[d][s],prev_row[*it]) = 1;
+                            prev_row[current_charge] = rows_to_fill[d][s];
                             accumulated_charge.push_back(current_charge); 
                         }
                     }
@@ -341,13 +377,36 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         return adapted;
     }
 
+    std::vector<std::string> str_from_det(std::vector <charge> & charge_vec, index_vec const & phys_dims, site_vec const & site_types){
+       std::vector<std::string> str(charge_vec.size());
+       for (size_t i; i < charge_vec.size(); ++i)
+       {
+           if (charge_vec[i] == phys_dims[site_types[i]][0].first)
+           {
+               str[i] = "4";
+           }else if (charge_vec[i] == phys_dims[site_types[i]][1].first)
+           {
+               str[i] = "3";
+           }else if (charge_vec[i] == phys_dims[site_types[i]][2].first) // singly-occ (2)
+           {
+               str[i] = "2";
+           }else if (charge_vec[i] == phys_dims[site_types[i]][3].first)
+           {
+               str[i] = "1";
+           }
+       }
+       return str; 
+    }
+
+
+
 
     BaseParameters parms;
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<typename SymmGroup::subcharge> site_types;
     default_mps_init<Matrix, SymmGroup> di;
     std::vector<std::vector<size_t> > det_list;
-    std::vector<std::vector<std::vector<charge> > > determinants;
+    std::vector<std::vector<charge> >  determinants;
     charge right_end;
 };
 
@@ -375,7 +434,7 @@ std::vector<std::vector<std::size_t> > dets_from_file(std::string file){
                     tmp.push_back(3); // up
                     break;
                 case 2:
-                    tmp.push_back(2); // down 
+                    tmp.push_back(3); // down 
                     break;
                 case 1:
                     tmp.push_back(1); // empty
@@ -387,6 +446,8 @@ std::vector<std::vector<std::size_t> > dets_from_file(std::string file){
     }
     return configs;
 }
+
+
 
 
 int main(int argc, char ** argv){
@@ -422,12 +483,12 @@ int main(int argc, char ** argv){
         maquis::cout << "maximal site type: " << max_site_type << std::endl;
 
     //create vector of indices -> phys_dims
-//    grp::charge a(2), b(1), c(1), d(0);
-//    a[1]= 0;
-//    c[1] = -1;
+    grp::charge a(2), b(1), c(1), d(0);
+    a[1]= 0;
+    c[1] = -1;
 
-   grp::charge a(1), b(0), c(0), d(0);
-   b[0] = c[1] = 1;
+//     grp::charge a(1), b(0), c(0), d(0);
+//     b[0] = c[1] = 1;
 
    std::vector<Index<grp> > phys_dims(4);
    for(int i = 0; i< max_site_type+1; i++){
