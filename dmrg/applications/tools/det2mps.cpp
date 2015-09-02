@@ -150,7 +150,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
        for (size_t i = 0; i < det_list.size(); ++i)
             for (size_t j = 0; j < det_list[i].size(); ++j)
                 dummy_dets[i].push_back(deas_detail::charge_from_int<SymmGroup>()(det_list[i][j], j, phys_dims, site_types));
-
+       std::cout << "size of dummy_dets: "<< dummy_dets.size() <<std::endl;
+       int L = dummy_dets[0].size();
        for (int i = 0; i<det_list.size(); ++i)
        {
            std::vector<std::vector<charge> > single_det(1);
@@ -180,13 +181,14 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
            {
                bool valid = true;
                charge accumulated_charge = single_det[m][0];
-               for (int l = 1; l < single_det[m].size(); ++l)
+               for (int l = 1; l < L; ++l)
                {
                    accumulated_charge = SymmGroup::fuse(accumulated_charge, single_det[m][l]);
                    if (!charge_detail::physical<SymmGroup>(accumulated_charge))
                        valid = false;
                }
-               if(valid == true && accumulated_charge == right_end && std::find(determinants.begin(), determinants.end(), single_det[m]) == determinants.end())//letzte Bedingung kann später geloescht werden
+               charge identity(0);
+               if(valid == true  && accumulated_charge == right_end && std::find(determinants.begin(), determinants.end(), single_det[m]) == determinants.end())//letzte Bedingung kann später geloescht werden
                {
                    determinants.push_back(single_det[m]);
                    std::vector<std::size_t> str = str_from_det(single_det[m],phys_dims,site_types);
@@ -231,8 +233,10 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             for(int s = L - 1; s > 0; --s)
             {
                 charge site_charge = determinants[d][s];
-                        accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
                 
+                        accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
+                        if(charge_detail::physical<SymmGroup>(accumulated_charge))
+                        {
 
                             std::string str = det_string(s, det_list_new[d]);
                             std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
@@ -247,6 +251,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                                 str_map[str] = max_value;
                                 rows_to_fill[d][s] = max_value - 1;
                             }
+                        }
             }
         }
         //this now calls a function which is part of this structure
@@ -258,51 +263,60 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
         //fill loop
         for(int d = 0; d < determinants.size(); ++d)
-            {
+        {
             charge accumulated_charge = right_end;
             int prev_row = 0;
             for(int s = L - 1; s > 0; --s)
             {
                 charge site_charge = determinants[d][s];
                 charge search_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
+//                std::cout << "accu: " <<accumulated_charge << " and search charge: " << search_charge <<std::endl;
+                if (charge_detail::physical<SymmGroup>(search_charge) && mps[s].row_dim().has(search_charge))
+                {
                    int nrows_fill = mps[s].row_dim().size_of_block(search_charge);
-                    //get current matrix
-                    size_t max_pos = mps[s].data().left_basis().position(accumulated_charge);
-                    Matrix & m_insert = mps[s].data()[max_pos];
-                
-                    int nrows = m_insert.num_rows(), off = 0;
-                
-                    //get additional offsets for subsectors
-                    if(site_charge == phys_dims[site_types[s]][1].first)
-                    {
-                
-                        if(mps[s].row_dim().has(SymmGroup::fuse(accumulated_charge, -doubly_occ)))
-                            off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(accumulated_charge, -doubly_occ));
+                   //get current matrix
+                   size_t max_pos = mps[s].data().left_basis().position(accumulated_charge);
+                   Matrix & m_insert = mps[s].data()[max_pos];
                   
-                    }
-                    else if(site_charge == phys_dims[site_types[s]][2].first)
-                    {
-                        if(mps[s].row_dim().has(accumulated_charge))
-                            off = nrows - nrows_fill - mps[s].row_dim().size_of_block(accumulated_charge);
-                        else 
-                            off = nrows - nrows_fill;
-                    }  
-                    else if(site_charge == phys_dims[site_types[s]][3].first){
-                        off = nrows - nrows_fill;
-                    }
-                    //actual insertion
-                    m_insert(off+rows_to_fill[d][s],prev_row) = 1;
-                    prev_row = rows_to_fill[d][s];
-                    accumulated_charge = search_charge;
+                   int nrows = m_insert.num_rows(), off = 0;
+                  
+                   //get additional offsets for subsectors
+                   if(site_charge == phys_dims[site_types[s]][1].first)
+                   {
+                  
+                       if(mps[s].row_dim().has(SymmGroup::fuse(accumulated_charge, -doubly_occ)))
+                           off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(accumulated_charge, -doubly_occ));
+                  
+                   }
+                   else if(site_charge == phys_dims[site_types[s]][2].first)
+                   {
+                       if(mps[s].row_dim().has(accumulated_charge))
+                           off = nrows - nrows_fill - mps[s].row_dim().size_of_block(accumulated_charge);
+                       else 
+                           off = nrows - nrows_fill;
+                   }  
+                   else if(site_charge == phys_dims[site_types[s]][3].first){
+                       off = nrows - nrows_fill;
+                   }
+                   //actual insertion
+                   m_insert(off+rows_to_fill[d][s],prev_row) = 1;
+                   prev_row = rows_to_fill[d][s];
+                   accumulated_charge = search_charge;
+                }
             }
+//            std::cout << "det nr: " << d << std::endl;
        }
+       std::cout << "fill worked" << std::endl;
 
        //first site needs to be filled as well
        for(int d = 0; d < determinants.size(); d++){
           charge first_charge = determinants[d][0];
-          size_t first_pos = mps[0].data().left_basis().position(first_charge);
-          Matrix & m_first = mps[0].data()[first_pos];
-          m_first(0,0) = 1;
+          if (charge_detail::physical<SymmGroup>(first_charge))
+          {
+             size_t first_pos = mps[0].data().left_basis().position(first_charge);
+             Matrix & m_first = mps[0].data()[first_pos];
+             m_first(0,0) = 1;
+          }
        }
 
     }//end of main initialization function 
@@ -424,7 +438,7 @@ std::vector<std::vector<std::size_t> > dets_from_file(std::string file){
                     tmp.push_back(3); // up
                     break;
                 case 2:
-                    tmp.push_back(3); // down 
+                    tmp.push_back(2); // down 
                     break;
                 case 1:
                     tmp.push_back(1); // empty
@@ -473,12 +487,12 @@ int main(int argc, char ** argv){
         maquis::cout << "maximal site type: " << max_site_type << std::endl;
 
     //create vector of indices -> phys_dims
-    grp::charge a(2), b(1), c(1), d(0);
-    a[1]= 0;
-    c[1] = -1;
+//    grp::charge a(2), b(1), c(1), d(0);
+//    a[1]= 0;
+//    c[1] = -1;
 
-//     grp::charge a(1), b(0), c(0), d(0);
-//     b[0] = c[1] = 1;
+     grp::charge a(1), b(0), c(0), d(0);
+     b[0] = c[1] = 1;
 
    std::vector<Index<grp> > phys_dims(4);
    for(int i = 0; i< max_site_type+1; i++){
