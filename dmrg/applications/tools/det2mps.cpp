@@ -270,7 +270,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             {
                 charge site_charge = determinants[d][s];
                 charge search_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-//                std::cout << "accu: " <<accumulated_charge << " and search charge: " << search_charge <<std::endl;
                 if (charge_detail::physical<SymmGroup>(search_charge) && mps[s].row_dim().has(search_charge))
                 {
                    int nrows_fill = mps[s].row_dim().size_of_block(search_charge);
@@ -304,7 +303,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                    accumulated_charge = search_charge;
                 }
             }
-//            std::cout << "det nr: " << d << std::endl;
        }
        std::cout << "fill worked" << std::endl;
 
@@ -493,8 +491,9 @@ int main(int argc, char ** argv){
 
      grp::charge a(1), b(0), c(0), d(0);
      b[0] = c[1] = 1;
-
-   std::vector<Index<grp> > phys_dims(4);
+   
+   
+   std::vector<Index<grp> > phys_dims(8);
    for(int i = 0; i< max_site_type+1; i++){
       b[2]=c[2]=i;
       phys_dims[i].insert(std::make_pair(a,1));
