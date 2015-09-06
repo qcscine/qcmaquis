@@ -49,7 +49,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, init_bond_dimension, true, 0);
+        di.init_sectors(mps, init_bond_dimension, false, 0);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -83,6 +83,10 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 			site_charge = phys_dims[site_types[i]][loc_dim-sc_input].first;
 
             max_charge = SymmGroup::fuse(max_charge, site_charge);
+
+            #ifndef NDEBUG
+            maquis::cout << "site " << i << " activating sector " << max_charge << std::endl;
+            #endif
 
             // Set largest charge sector = all 1
             size_t max_pos = mps[i].data().left_basis().position(max_charge);
