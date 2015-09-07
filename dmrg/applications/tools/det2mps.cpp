@@ -235,24 +235,24 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             {
                 charge site_charge = determinants[d][s];
                 
-                        accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-                        if(charge_detail::physical<SymmGroup>(accumulated_charge))
+                    accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
+                    if(charge_detail::physical<SymmGroup>(accumulated_charge))
+                    {
+
+                        std::string str = det_string(s, det_list_new[d]);
+                        std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
+
+                        if (str_map[str])
+                            rows_to_fill[d][s] = str_map[str] - 1;
+
+                        else
                         {
-
-                            std::string str = det_string(s, det_list_new[d]);
-                            std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
-
-                            if (str_map[str])
-                                rows_to_fill[d][s] = str_map[str] - 1;
-
-                            else
-                            {
-                                //get largest element in map
-                                int max_value = str_map.size();
-                                str_map[str] = max_value;
-                                rows_to_fill[d][s] = max_value - 1;
-                            }
+                            //get largest element in map
+                            int max_value = str_map.size();
+                            str_map[str] = max_value;
+                            rows_to_fill[d][s] = max_value - 1;
                         }
+                    }
             }
         }
         //this now calls a function which is part of this structure
