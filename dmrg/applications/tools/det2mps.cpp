@@ -229,6 +229,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         //main loop
         for(int d = 0; d < determinants.size(); ++d)
         {
+            std::cout << "in det " << d <<std::endl;
             charge accumulated_charge = right_end;
             for(int s = L - 1; s > 0; --s)
             {
@@ -493,13 +494,15 @@ int main(int argc, char ** argv){
      b[0] = c[1] = 1;
    
    
-   std::vector<Index<grp> > phys_dims(8);
+   std::vector<Index<grp> > phys_dims;
    for(int i = 0; i< max_site_type+1; i++){
       b[2]=c[2]=i;
-      phys_dims[i].insert(std::make_pair(a,1));
-      phys_dims[i].insert(std::make_pair(b,1));
-      phys_dims[i].insert(std::make_pair(c,1));
-      phys_dims[i].insert(std::make_pair(d,1));
+      Index<grp> phys_index;
+      phys_index.insert(std::make_pair(a,1));
+      phys_index.insert(std::make_pair(b,1));
+      phys_index.insert(std::make_pair(c,1));
+      phys_index.insert(std::make_pair(d,1));
+      phys_dims.push_back(phys_index);
    }
    for(int i = 0; i<max_site_type+1; i++){
       std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
