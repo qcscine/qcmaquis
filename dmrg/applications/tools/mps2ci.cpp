@@ -135,7 +135,7 @@ int main(int argc, char ** argv)
         phys_dims.push_back(mps[p].site_dim());
     
     // load the determinants
-    std::vector<std::vector<typename grp::charge> > determinants = parse_config<matrix, grp>(std::string(argv[2]), phys_dims);
+    std::vector<std::vector<grp::charge> > determinants = parse_config<matrix, grp>(std::string(argv[2]), phys_dims);
     // printout the determinants
     for (pos_t q = 0;q < determinants.size(); ++q){
        for (pos_t p = 0; p < L; ++p){
@@ -146,7 +146,7 @@ int main(int argc, char ** argv)
 
     // compute the CI coefficients for all determinants in the input
     int i = 1;
-    for (typename std::vector< std::vector<grp::charge> >::iterator it = determinants.begin();
+    for (std::vector< std::vector<grp::charge> >::iterator it = determinants.begin();
         it != determinants.end(); ++it){
         maquis::cout << "CI coefficient of det " << i <<": " << extract_coefficient(mps, *it) << std::endl;
         i++;
