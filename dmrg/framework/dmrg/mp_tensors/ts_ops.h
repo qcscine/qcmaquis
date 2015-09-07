@@ -113,7 +113,6 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
             row_proxy row1 = mpo1.row(b1);
 
             op_t b3_op;
-            std::pair<tag_type, value_type> scaled_tag;
             std::set<index_type> summands;
 
             for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it)
@@ -128,18 +127,18 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 for (typename std::map<typename SymmGroup::subcharge, op_t>::const_iterator it = coupled_ops.begin();
                         it != coupled_ops.end(); ++it)
                 {
-                    scaled_tag = kron_handler.get_kronecker_table()->checked_register(it->second);
-                    prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+                    tag_type new_tag = kron_handler.get_kronecker_table()->register_op(it->second);
+                    prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
                 }
             }
             else if (summands.size() == 1)
             {
                 index_type b2 = *summands.begin();
                 term_descriptor<MPOMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
-                scaled_tag.first = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
+                tag_type p_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
                                                              mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
-                scaled_tag.second = p1.scale() * p2.scale();
-                prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+                value_type p_scale = p1.scale() * p2.scale();
+                prempo.push_back(boost::make_tuple(b1, b3, p_tag, p_scale));
             }
 
         } // b3
