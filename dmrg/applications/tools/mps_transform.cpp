@@ -206,9 +206,9 @@ void transform_site(Index<SymmIn> const & physical_i,
                     std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
                     std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
 
-                    int ja, jb, jc;
-                    int ma, mb, mc;
-                    double clebsch_gordan = gsl_sf_coupling_3j(0,0,0,0,0,0);
+                    int l1, l2, l3;
+                    int m1, m2, m3;
+                    double clebsch_gordan = pow(-1.0,l1-l2+m3)*sqrt(2.0*l3+1.0)*gsl_sf_coupling_3j(l1,l2,l3,m1,m2,-m3);
                     for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
                         std::transform(source_block.col(ci).first, source_block.col(ci).second,
                                        current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
