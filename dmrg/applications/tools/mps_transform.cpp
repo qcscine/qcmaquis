@@ -202,13 +202,16 @@ void transform_site(Index<SymmIn> const & physical_i,
 
                     Matrix & current_block = m2(rightc, rightc); // left_paired
 
-                    std::size_t out_left_offset_2u1 = out_left_pb(physc, leftc);
+                    std::size_t  out_left_offset_2u1 = out_left_pb(physc, leftc);
                     std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
                     std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
 
-                    int l1, l2, l3;
-                    int m1, m2, m3;
-                    double clebsch_gordan = pow(-1.0,l1-l2+m3)*sqrt(2.0*l3+1.0)*gsl_sf_coupling_3j(l1,l2,l3,m1,m2,-m3);
+                    int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i[s].first)), l3 = SymmIn::spin(in_r_charge);
+                    int m1 = leftc[0] - leftc[1], m2 = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
+                    maquis::cout << l1 << l2 << l3 << m1 << m2 << m3 << "\t";
+                    double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*gsl_sf_coupling_3j(l1,l2,l3,m1,m2,-m3);
+                    maquis::cout << " clebsch_gordan " << clebsch_gordan << std::endl;
+
                     for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
                         std::transform(source_block.col(ci).first, source_block.col(ci).second,
                                        current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
@@ -258,7 +261,6 @@ int main(int argc, char ** argv)
 
         // the output MPS
         MPS<Matrix, mapgrp> mps_out(lat.size(), *(model.initializer(lat, parms)));
-        save("mps_transformed.h5", mps_out);
         
         for (int i = 0; i < mps_out.length(); ++i) {
             
@@ -270,7 +272,11 @@ int main(int argc, char ** argv)
             transform_site(mps[i].site_dim(),     mps[i].row_dim(),     mps[i].col_dim(),
                            mps_out[i].site_dim(), mps_out[i].row_dim(), mps_out[i].col_dim(),
                            mps[i].data(), tdata);
+
+            mps_out[i].replace_left_paired(tdata);
         }
+
+        save("mps_transformed.h5", mps_out);
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
