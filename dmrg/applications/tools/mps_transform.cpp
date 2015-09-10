@@ -53,6 +53,8 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
+
 #if defined(USE_SU2U1)
 typedef SU2U1 grp;
 typedef TwoU1 mapgrp;
@@ -95,19 +97,38 @@ void transform_site(Index<SymmIn> const & physical_i,
                     block_matrix<Matrix, SymmIn> const & m1,
                     block_matrix<Matrix, SymmOut> & m2)
 {
-    m2 = block_matrix<Matrix, SymmOut>();
-
     typedef std::size_t size_t;
     typedef typename SymmIn::charge charge;
     typedef typename SymmOut::charge out_charge;
 
-    ProductBasis<SymmIn> in_left(physical_i, left_i);
-    ProductBasis<SymmOut> out_left(physical_i_out, left_i_out);
+    ProductBasis<SymmIn> in_left_pb(physical_i, left_i);
 
+    // data for the layout of the output MPS/block_matrix
     typedef std::map<out_charge, Index<SymmIn> > subsector_map_t;
     subsector_map_t left_subblocks, right_subblocks;
+    Index<SymmOut> new_left_i, new_right_i;
 
     for (int pass = 0; pass < 2; ++pass)
+    {
+        // allocate blocks in output 2u1 block_matrix
+        if (pass == 1)
+        {
+            for (typename subsector_map_t::iterator it = left_subblocks.begin(); it != left_subblocks.end(); ++it)
+                new_left_i.insert(std::make_pair(it->first, (it->second).sum_of_sizes()));
+
+            for (typename subsector_map_t::iterator it = right_subblocks.begin(); it != right_subblocks.end(); ++it)
+                new_right_i.insert(std::make_pair(it->first, (it->second).sum_of_sizes()));
+
+            MPSTensor<Matrix, SymmOut> new_mps(physical_i_out, new_left_i, new_right_i, false, 0.);
+            m2 = new_mps.data();
+
+            maquis::cout << new_left_i << std::endl;
+            maquis::cout << new_mps.row_dim() << std::endl;
+            //maquis::cout << m2.basis() << std::endl;
+        }    
+
+        ProductBasis<SymmOut> out_left_pb(physical_i_out, new_left_i);
+
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
         size_t r = right_i.position(m1.basis().right_charge(block));
@@ -137,10 +158,10 @@ void transform_site(Index<SymmIn> const & physical_i,
             // record positions of the SU2 blocks within the larger 2U1 blocks
             if (pass == 0)
             {
-                maquis::cout << "sector " << in_l_charge << " " << in_r_charge << "  " << left_i[l].second << "x" << right_i[r].second << std::endl << "  ";
-                for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
-                    maquis::cout << it->first << " " << it->second << "   ";
-                maquis::cout << std::endl << std::endl;
+                //maquis::cout << "sector " << in_l_charge << " " << in_r_charge << "  " << left_i[l].second << "x" << right_i[r].second << std::endl << "  ";
+                //for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
+                //    maquis::cout << it->first << " " << it->second << "   ";
+                //maquis::cout << std::endl << std::endl;
 
                 // insert the source sector into a non-paired target symmetry block_matrix
                 for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
@@ -156,18 +177,17 @@ void transform_site(Index<SymmIn> const & physical_i,
                     if (!left_subblocks[leftc].has(in_l_charge))
                         left_subblocks[leftc].insert(left_i[l]);
 
-                    assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
-
                     if (!right_subblocks[rightc].has(in_r_charge))
                         right_subblocks[rightc].insert(right_i[r]);
 
+                    assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
                     assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i[r].second);
                 }
             }
             // transfer the blocks
             else
             {
-                std::size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
+                std::size_t in_left_offset = in_left_pb(physical_i[s].first, left_i[l].first);
                 std::size_t ldim = left_i[l].second;
                 Matrix const & iblock = m1[block];
                 Matrix source_block(ldim, right_i[r].second);
@@ -178,22 +198,26 @@ void transform_site(Index<SymmIn> const & physical_i,
 
                 for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
                 {
-                    out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(leftc, -rightc);
+                    out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(-leftc, rightc);
 
-                    if (m2.has_block(leftc, rightc))
-                    {
-                        Matrix & current_block = m2(leftc, rightc);
-                        std::size_t old_num_rows = num_rows(current_block);
-                        //m2.resize_block(rightc, rightc, old_num_rows + ldim, num_cols(current_block));
-                    }
-                    else
-                    {
-                        m2.insert_block(source_block, leftc, rightc);
-                    }
+                    Matrix & current_block = m2(rightc, rightc); // left_paired
+
+                    std::size_t out_left_offset_2u1 = out_left_pb(physc, leftc);
+                    std::size_t  out_left_offset_su2 = left_subblocks[leftc].position(std::make_pair(in_l_charge, 0));
+                    std::size_t out_right_offset_su2 = right_subblocks[rightc].position(std::make_pair(in_r_charge, 0));
+
+                    int ja, jb, jc;
+                    int ma, mb, mc;
+                    double clebsch_gordan = gsl_sf_coupling_3j(0,0,0,0,0,0);
+                    for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
+                        std::transform(source_block.col(ci).first, source_block.col(ci).second,
+                                       current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
+                                       boost::lambda::_1*clebsch_gordan);
                 }
             }
         } // SU2 input physical_i
     } // m1 block
+    } // pass
 
     //for (typename subsector_map_t::iterator it = left_subblocks.begin(); it != left_subblocks.end(); ++it)
     //    maquis::cout << "L " << it->first << "2u1 " << it->second << std::endl;
@@ -201,9 +225,12 @@ void transform_site(Index<SymmIn> const & physical_i,
     //for (typename subsector_map_t::iterator it = right_subblocks.begin(); it != right_subblocks.end(); ++it)
     //    maquis::cout << "R " << it->first << "2u1 " << it->second << std::endl;
 
-    maquis::cout << std::endl;
+    //maquis::cout << "new_left_i:\n" << new_left_i << std::endl;
+    //maquis::cout << "new_right_i:\n" << new_right_i << std::endl;
     
-    //maquis::cout << m2 << std::endl;
+    //maquis::cout << std::endl;
+
+    maquis::cout << m2 << std::endl;
 }
 
 
