@@ -99,4 +99,25 @@ public:
     }
 };
 
+template <class SymmGroup, class = void>
+class getPG
+{
+public:
+    typename SymmGroup::subcharge operator()(typename SymmGroup::charge rhs)
+    { 
+        return 0;
+    }
+};
+
+template <class SymmGroup>
+class  getPG<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
+{
+public:
+    typedef typename SymmGroup::subcharge subcharge;
+    typename SymmGroup::subcharge operator()(typename SymmGroup::charge rhs)
+    {
+        return SymmGroup::irrep(rhs);
+    }
+};
+
 #endif
