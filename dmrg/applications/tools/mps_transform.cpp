@@ -155,50 +155,51 @@ void transform_site(Index<SymmIn> const & physical_i,
 
                     if (!left_subblocks[leftc].has(in_l_charge))
                         left_subblocks[leftc].insert(left_i[l]);
-                    else
-                    {
-                        assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
-                    }
+
+                    assert(left_subblocks[leftc].size_of_block(in_l_charge) == left_i[l].second);
 
                     if (!right_subblocks[rightc].has(in_r_charge))
                         right_subblocks[rightc].insert(right_i[r]);
-                    else
-                    {
-                        assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i[r].second);
-                    }
+
+                    assert(right_subblocks[rightc].size_of_block(in_r_charge) == right_i[r].second);
                 }
             }
             // transfer the blocks
             else
             {
-                //std::size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
-                //std::size_t ldim = left_i[l].second;
-                //Matrix const & iblock = m1[block];
-                //Matrix source_block(ldim, right_i[r].second);
+                std::size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
+                std::size_t ldim = left_i[l].second;
+                Matrix const & iblock = m1[block];
+                Matrix source_block(ldim, right_i[r].second);
 
-                //// extract source block
-                //for (std::size_t ci = 0; ci < num_cols(iblock); ++ci)
-                //    std::copy(iblock.col(ci).first + in_left_offset, iblock.col(ci).first + in_left_offset + ldim, source_block.col(ci).first);
+                // extract source block
+                for (std::size_t ci = 0; ci < num_cols(iblock); ++ci)
+                    std::copy(iblock.col(ci).first + in_left_offset, iblock.col(ci).first + in_left_offset + ldim, source_block.col(ci).first);
 
-                //if (m2.has_block(leftc, rightc))
-                //{
-                //    Matrix & current_block = m2(leftc, rightc);
-                //    std::size_t old_num_rows = num_rows(current_block);
-                //    //m2.resize_block(rightc, rightc, old_num_rows + ldim, num_cols(current_block));
-                //}
-                //else
-                //{
-                //    m2.insert_block(source_block, leftc, rightc);
-                //}
+                for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
+                {
+                    out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(leftc, -rightc);
+
+                    if (m2.has_block(leftc, rightc))
+                    {
+                        Matrix & current_block = m2(leftc, rightc);
+                        std::size_t old_num_rows = num_rows(current_block);
+                        //m2.resize_block(rightc, rightc, old_num_rows + ldim, num_cols(current_block));
+                    }
+                    else
+                    {
+                        m2.insert_block(source_block, leftc, rightc);
+                    }
+                }
             }
-        }
-    }
+        } // SU2 input physical_i
+    } // m1 block
 
-    for (typename subsector_map_t::iterator it = left_subblocks.begin(); it != left_subblocks.end(); ++it)
-        maquis::cout << "L " << it->first << "2u1 " << it->second << std::endl;
+    //for (typename subsector_map_t::iterator it = left_subblocks.begin(); it != left_subblocks.end(); ++it)
+    //    maquis::cout << "L " << it->first << "2u1 " << it->second << std::endl;
 
-    for (typename subsector_map_t::iterator it = right_subblocks.begin(); it != right_subblocks.end(); ++it)
-        maquis::cout << "R " << it->first << "2u1 " << it->second << std::endl;
+    //for (typename subsector_map_t::iterator it = right_subblocks.begin(); it != right_subblocks.end(); ++it)
+    //    maquis::cout << "R " << it->first << "2u1 " << it->second << std::endl;
 
     maquis::cout << std::endl;
     
