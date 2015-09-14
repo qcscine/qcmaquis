@@ -33,6 +33,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
+#include <boost/filesystem.hpp>
+
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -88,22 +90,29 @@ std::vector<typename SymmOut::charge> transform_charge(typename SymmIn::charge c
 }
 
 template<class Matrix, class SymmIn, class SymmOut>
-void transform_site(Index<SymmIn> const & physical_i,
-                    Index<SymmIn> const & left_i,
-                    Index<SymmIn> const & right_i,
-                    Index<SymmOut> const & physical_i_out,
-                    Index<SymmOut> const & left_i_out,
-                    Index<SymmOut> const & right_i_out,
-                    block_matrix<Matrix, SymmIn> const & m1,
-                    block_matrix<Matrix, SymmOut> & m2)
+void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
+                    MPSTensor<Matrix, SymmOut> & mps_out)
 {
     typedef std::size_t size_t;
     typedef typename SymmIn::charge charge;
     typedef typename SymmOut::charge out_charge;
 
+    Index<SymmIn> const & physical_i = mps_in.site_dim();
+    Index<SymmIn> const & left_i = mps_in.row_dim();
+    Index<SymmIn> const & right_i = mps_in.col_dim();
+
+    Index<SymmOut> const & physical_i_out = mps_out.site_dim();
+    Index<SymmOut> const & left_i_out = mps_out.row_dim();
+    Index<SymmOut> const & right_i_out = mps_out.col_dim();
+
+    block_matrix<Matrix, SymmIn> const & m1 = mps_in.data();
+    block_matrix<Matrix, SymmOut> m2;
+
     ProductBasis<SymmIn> in_left_pb(physical_i, left_i);
 
     // data for the layout of the output MPS/block_matrix
+    // each 2u1 sector (out_charge) contains a SU2 Index to describe the SU2 blocks within
+    // the larger 2u1 block
     typedef std::map<out_charge, Index<SymmIn> > subsector_map_t;
     subsector_map_t left_subblocks, right_subblocks;
     Index<SymmOut> new_left_i, new_right_i;
@@ -124,7 +133,6 @@ void transform_site(Index<SymmIn> const & physical_i,
 
             maquis::cout << new_left_i << std::endl;
             maquis::cout << new_mps.row_dim() << std::endl;
-            //maquis::cout << m2.basis() << std::endl;
         }    
 
         ProductBasis<SymmOut> out_left_pb(physical_i_out, new_left_i);
@@ -170,7 +178,7 @@ void transform_site(Index<SymmIn> const & physical_i,
 
                     if ( !left_i_out.has(leftc) || !right_i_out.has(rightc) )
                     {
-                        maquis::cout << "XX " << leftc << rightc << "  not allowed\n";
+                        //maquis::cout << "XX " << leftc << rightc << "  not allowed\n";
                         continue;
                     }
 
@@ -200,6 +208,8 @@ void transform_site(Index<SymmIn> const & physical_i,
                 {
                     out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(-leftc, rightc);
 
+                    if (!m2.has_block(rightc, rightc))
+                        continue;
                     Matrix & current_block = m2(rightc, rightc); // left_paired
 
                     std::size_t  out_left_offset_2u1 = out_left_pb(physc, leftc);
@@ -208,9 +218,9 @@ void transform_site(Index<SymmIn> const & physical_i,
 
                     int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i[s].first)), l3 = SymmIn::spin(in_r_charge);
                     int m1 = leftc[0] - leftc[1], m2 = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
-                    maquis::cout << l1 << l2 << l3 << m1 << m2 << m3 << "\t";
+                    //maquis::cout << l1 << l2 << l3 << m1 << m2 << m3 << "\t";
                     double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*gsl_sf_coupling_3j(l1,l2,l3,m1,m2,-m3);
-                    maquis::cout << " clebsch_gordan " << clebsch_gordan << std::endl;
+                    //maquis::cout << " clebsch_gordan " << clebsch_gordan << std::endl;
 
                     for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
                         std::transform(source_block.col(ci).first, source_block.col(ci).second,
@@ -233,7 +243,10 @@ void transform_site(Index<SymmIn> const & physical_i,
     
     //maquis::cout << std::endl;
 
-    maquis::cout << m2 << std::endl;
+    mps_out = MPSTensor<Matrix, SymmOut>(physical_i_out, new_left_i, new_right_i, false, 0.);
+    mps_out.data() = m2;
+
+    //maquis::cout << mps_out.data() << std::endl;
 }
 
 
@@ -245,38 +258,76 @@ int main(int argc, char ** argv)
             return 1;
         }
 
+        std::string mps_in_file = argv[1];
+
+        if (!boost::filesystem::exists(mps_in_file))
+            throw std::runtime_error("input MPS " + mps_in_file + " does not exist\n");
+        if (*(mps_in_file.rbegin()) == '/')
+            mps_in_file.erase(mps_in_file.size()-1, 1);
+
         // load source MPS
         MPS<Matrix, grp> mps;
-        load(argv[1], mps);
+        load(mps_in_file, mps);
 
         // fetch parameters and modify symmetry
-        storage::archive ar_in(std::string(argv[1])+"/props.h5");
+        storage::archive ar_in(mps_in_file + "/props.h5");
         BaseParameters parms;
         ar_in["/parameters"] >> parms;
         parms.set("symmetry", "2u1pg");
+        parms.set("init_state", "const");
 
-        // create model related objects
-        Lattice lat(parms);
-        Model<Matrix, mapgrp> model(lat, parms);
+        int N = parms["nelec"];
+        int TwoS = parms["spin"];
 
-        // the output MPS
-        MPS<Matrix, mapgrp> mps_out(lat.size(), *(model.initializer(lat, parms)));
-        
-        for (int i = 0; i < mps_out.length(); ++i) {
+        for (int Sz = -TwoS; Sz <= TwoS; Sz += 2)
+        {
+            int Nup = (N + Sz) / 2;
+            int Ndown = (N - Sz) / 2;
+
+            parms.set("u1_total_charge1", Nup);
+            parms.set("u1_total_charge2", Ndown);
+
+            // create model related objects
+            Lattice lat(parms);
+            Model<Matrix, mapgrp> model(lat, parms);
+
+            // the output MPS
+            MPS<Matrix, mapgrp> mps_out(lat.size(), *(model.initializer(lat, parms)));
             
-            Index<grp>    site_dim_in = mps[i].site_dim();
-            Index<mapgrp> site_dim_out = mps_out[i].site_dim();
+            for (int i = 0; i < mps_out.length(); ++i) {
+                
+                Index<grp>    site_dim_in = mps[i].site_dim();
+                Index<mapgrp> site_dim_out = mps_out[i].site_dim();
 
-            mps[i].make_left_paired();
-            block_matrix<Matrix, mapgrp> tdata;
-            transform_site(mps[i].site_dim(),     mps[i].row_dim(),     mps[i].col_dim(),
-                           mps_out[i].site_dim(), mps_out[i].row_dim(), mps_out[i].col_dim(),
-                           mps[i].data(), tdata);
+                mps[i].make_left_paired();
+                transform_site(mps[i], mps_out[i]);
 
-            mps_out[i].replace_left_paired(tdata);
+                //if(i > 0)
+                //{
+                //    maquis::cout << "MPS bond " << i << "  " << mps_out[i-1].col_dim() << std::endl;
+                //    maquis::cout << "MPS bond " << i << "  " << mps_out[i].row_dim() << std::endl;
+                //    maquis::cout << std::endl << "--------------------\n" << std::endl << std::endl;
+                //}
+            }
+
+            std::string mps_out_file = mps_in_file;
+            std::size_t pos = mps_out_file.find(".h5");
+            if (pos != mps_out_file.size())
+                mps_out_file.erase(pos, 3);
+            mps_out_file += "." + boost::lexical_cast<std::string>(TwoS) + "." + boost::lexical_cast<std::string>(Nup-Ndown) + ".h5";
+
+            maquis::cout << "mps_in_file " << mps_in_file << std::endl;
+            maquis::cout << "mps_out_file " << mps_out_file << std::endl;
+            save(mps_out_file, mps_out);
+
+            maquis::cout << mps_out_file + "/props.h5" << std::endl;
+            if (boost::filesystem::exists(mps_out_file + "/props.h5"))
+                boost::filesystem::remove(mps_out_file + "/props.h5");
+            boost::filesystem::copy(mps_in_file + "/props.h5", mps_out_file + "/props.h5");
+
+            storage::archive ar_out(mps_out_file + "/props.h5", "w");
+            ar_out["/parameters"] << parms;
         }
-
-        save("mps_transformed.h5", mps_out);
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
