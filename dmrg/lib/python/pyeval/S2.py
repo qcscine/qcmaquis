@@ -52,9 +52,12 @@ if __name__ == '__main__':
           + 2*0.25*(sum(nup_nup) - sum(nup_ndown) - sum(ndown_nup) + sum(ndown_ndown))
     s_z = 0.5*(sum(nup) - sum(ndown))
 
+    S2 = sminusplus + s_z2 + s_z
+
     print "  <psi|S_z|psi>:", s_z
     print "<psi|S_z^2|psi>:", s_z2
-    print "  <psi|S^2|psi>:", sminusplus + s_z2 + s_z
+    print "  <psi|S^2|psi>:", S2
+    print "       S       :", (-1 + (1+4*S2)**0.5)/2
 
     #print "sum(splus_sminus)", sum(splus_sminus)
     #print "sum(ndown) - sum(nupdown)", sum(ndown) - sum(nupdown)
