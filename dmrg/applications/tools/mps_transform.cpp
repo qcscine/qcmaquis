@@ -166,21 +166,13 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
             // record positions of the SU2 blocks within the larger 2U1 blocks
             if (pass == 0)
             {
-                //maquis::cout << "sector " << in_l_charge << " " << in_r_charge << "  " << left_i[l].second << "x" << right_i[r].second << std::endl << "  ";
-                //for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
-                //    maquis::cout << it->first << " " << it->second << "   ";
-                //maquis::cout << std::endl << std::endl;
-
                 // insert the source sector into a non-paired target symmetry block_matrix
                 for (typename std::vector<std::pair<out_charge, out_charge> >::const_iterator it = sectors.begin(); it != sectors.end(); ++it)
                 {
                     out_charge leftc = it->first, rightc = it->second, physc = SymmOut::fuse(leftc, -rightc);
 
                     if ( !left_i_out.has(leftc) || !right_i_out.has(rightc) )
-                    {
-                        //maquis::cout << "XX " << leftc << rightc << "  not allowed\n";
                         continue;
-                    }
 
                     if (!left_subblocks[leftc].has(in_l_charge))
                         left_subblocks[leftc].insert(left_i[l]);
@@ -218,9 +210,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
 
                     int l1 = SymmIn::spin(in_l_charge), l2 = std::abs(SymmIn::spin(physical_i[s].first)), l3 = SymmIn::spin(in_r_charge);
                     int m1 = leftc[0] - leftc[1], m2 = physc[0] - physc[1], m3 = rightc[0] - rightc[1];
-                    //maquis::cout << l1 << l2 << l3 << m1 << m2 << m3 << "\t";
                     double clebsch_gordan = pow(-1.0,(l1-l2+m3)/2)*sqrt(l3+1.0)*gsl_sf_coupling_3j(l1,l2,l3,m1,m2,-m3);
-                    //maquis::cout << " clebsch_gordan " << clebsch_gordan << std::endl;
 
                     for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
                         std::transform(source_block.col(ci).first, source_block.col(ci).second,
@@ -232,21 +222,8 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     } // m1 block
     } // pass
 
-    //for (typename subsector_map_t::iterator it = left_subblocks.begin(); it != left_subblocks.end(); ++it)
-    //    maquis::cout << "L " << it->first << "2u1 " << it->second << std::endl;
-
-    //for (typename subsector_map_t::iterator it = right_subblocks.begin(); it != right_subblocks.end(); ++it)
-    //    maquis::cout << "R " << it->first << "2u1 " << it->second << std::endl;
-
-    //maquis::cout << "new_left_i:\n" << new_left_i << std::endl;
-    //maquis::cout << "new_right_i:\n" << new_right_i << std::endl;
-    
-    //maquis::cout << std::endl;
-
     mps_out = MPSTensor<Matrix, SymmOut>(physical_i_out, new_left_i, new_right_i, false, 0.);
     mps_out.data() = m2;
-
-    //maquis::cout << mps_out.data() << std::endl;
 }
 
 
@@ -301,13 +278,6 @@ int main(int argc, char ** argv)
 
                 mps[i].make_left_paired();
                 transform_site(mps[i], mps_out[i]);
-
-                //if(i > 0)
-                //{
-                //    maquis::cout << "MPS bond " << i << "  " << mps_out[i-1].col_dim() << std::endl;
-                //    maquis::cout << "MPS bond " << i << "  " << mps_out[i].row_dim() << std::endl;
-                //    maquis::cout << std::endl << "--------------------\n" << std::endl << std::endl;
-                //}
             }
 
             std::string mps_out_file = mps_in_file;
