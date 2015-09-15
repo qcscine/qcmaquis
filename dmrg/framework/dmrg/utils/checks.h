@@ -24,14 +24,13 @@
  *
  *****************************************************************************/
 
-#ifndef CHECKS_HPP_
-#define CHECKS_HPP_
+#ifndef CHECKS_H_
+#define CHECKS_H_
 
 
 #include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/utils/guess_symmetry.h"
 #include "dmrg/mp_tensors/mps.h"
-
-std::string guess_alps_symmetry(BaseParameters & parms);
 
 namespace maquis {
 namespace checks {

@@ -45,7 +45,7 @@ public:
     static const charge IdentityCharge;
     static const bool finite = false;
 
-    subcharge particleNumber(charge rhs) { return rhs[0]; }
+    static subcharge particleNumber(charge rhs) { return rhs[0]; }
 
     static subcharge & spin(charge & rhs) { return rhs[1]; }
     static subcharge const & spin(charge const & rhs) { return rhs[1]; }

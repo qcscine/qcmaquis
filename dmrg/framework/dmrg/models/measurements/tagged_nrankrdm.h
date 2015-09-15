@@ -519,25 +519,24 @@ namespace measurements {
                                     operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
                                     operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
     
-                                    //maquis::cout << " point group check: term is allowed? --> " << measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local) << std::endl;
-    
                                     // check if term is allowed by symmetry
                                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
                                     //if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                                     //     continue;
                                     measured = true;
     
-                                    //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                                     MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                                     value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
     
                                 }
+
                                 // debug print
                                 if (std::abs(value) > 0)
                                 {
                                     std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                                     maquis::cout << " " << value << std::endl;
                                 }
+
                                 if(measured)
                                 {
                                      dct.push_back(value);
@@ -857,9 +856,6 @@ namespace measurements {
                 measure_correlation(bra_mps, ket_mps);
             else if (this->name() == "twoptdm")
                 measure_2rdm(bra_mps, ket_mps);
-            //else
-            //    throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators, size is "
-            //                              + boost::lexical_cast<std::string>(operator_terms[0].first.size()));
         }
         
     protected:

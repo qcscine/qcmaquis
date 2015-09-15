@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2015 Laboratory of Physical Chemistry, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS

@@ -4,7 +4,12 @@ enable_omp_if_found()
 
 if(USE_AMBIENT)
   compile_with_ambient()
-endif(USE_AMBIENT)  
+endif(USE_AMBIENT)
+
+# Utils
+macro(add_line_to VARNAME LINE)
+  set(${VARNAME} "${${VARNAME}}\n${LINE}")
+endmacro(add_line_to)
 
 
 # *** Configure ALPS SymmGroup
@@ -12,14 +17,34 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/block_matrix/symmetry/nu1.h.in
                 ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h )
 
 # *** List all needed sources
-set(DMRG_MODELS_SOURCES "models/factory/lattice_factory.cpp")
-get_symm_files(APPEND DMRG_MODELS_SOURCES "models/factory/model_factory_{SYMM}.cpp")
+## Lattice library
+set(DMRG_MODELS_SOURCES "models/lattice_factory.cpp")
+## Model library
+## Set the variable MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} for each symmetry
+foreach(SYMM ${BUILD_SYMMETRIES})
+  get_symm_suffix(SYMM_SUFFIX ${SYMM})
+  get_symm_group_name(GROUP_NAME ${SYMM})
+  set(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME})
+  
+  set(TRIAL_INCLUDE_FACTORY "models/coded/factory_${SYMM_SUFFIX}.ipp")
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${TRIAL_INCLUDE_FACTORY}")
+    add_line_to(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} "#include \"dmrg/${TRIAL_INCLUDE_FACTORY}\"")
+  endif()
+  set(TRIAL_INCLUDE_FACTORY "models/continuum/factory_${SYMM_SUFFIX}.ipp")
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${TRIAL_INCLUDE_FACTORY}")
+    add_line_to(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} "#include \"dmrg/${TRIAL_INCLUDE_FACTORY}\"")
+  endif()
+endforeach(SYMM)
+configure_symm_file("models/model_factory_symm/model_factory_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_{SYMM}.cpp" CMAKE_SYMM_GROUP)
+get_symm_files(APPEND DMRG_MODELS_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_{SYMM}.cpp")
 
+## ALPS model library
 if(ENABLE_ALPS_MODELS)
   add_definitions(-DENABLE_ALPS_MODELS)
   get_symm_files(APPEND DMRG_MODELS_SOURCES "models/alps/symm_handler_impl/model_{SYMM}.cpp")
 endif(ENABLE_ALPS_MODELS)
 
+## Other model libraries
 if(ENABLE_LL_MODELS)
   list(APPEND DMRG_MODELS_SOURCES "models/ll/ll_models.cpp")
 endif(ENABLE_LL_MODELS)

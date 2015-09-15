@@ -33,8 +33,12 @@ create_tools_symm_target("mps_join_u1"   "U1"     "mps_join.cpp"  "${DMRG_APP_LI
 # create_tools_symm_target("mps_join_2u1"  "TWOU1"  "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
 # create_tools_symm_target("mps_join_none" "NONE"   "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("mps_stats_u1"   "U1"     "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_stats_2u1"  "TWOU1"  "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_u1"      "U1"      "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_2u1"     "TWOU1"   "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_2u1pg"   "TWOU1PG" "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_u1df"    "U1DG"    "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_su2u1"   "SU2U1"   "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_su2u1pg" "SU2U1PG" "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("mpo_stats_u1"      "U1"      "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mpo_stats_2u1"     "TWOU1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
@@ -50,6 +54,9 @@ create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_
 
 create_tools_symm_target("nrdmexpect_2u1pg"   "TWOU1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("nrdmexpect_su2u1pg" "SU2U1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+
+create_tools_symm_target("mps_transform"    "SU2U1"   "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_transform_pg" "SU2U1PG" "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578

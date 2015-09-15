@@ -24,11 +24,10 @@
  *
  *****************************************************************************/
 
-#include "matrices.h"
-
+#include "dmrg/models/model.h"
 #include "dmrg/models/coded/factory.h"
-#include "dmrg/models/continuum/factory.h" // temporary fix until model can be patched to new format.
-#include "dmrg/models/factory/initializer_factory.h"
+#include "dmrg/models/continuum/factory.h"
+#include "dmrg/models/initializer_factory.h"
 
 #ifdef ENABLE_ALPS_MODELS
 #include "dmrg/models/alps/model.hpp"
@@ -39,9 +38,10 @@
 #endif
 
 // init MACROS
-#define impl_model_factory(MATRIX, SYMMGROUP)                                           \
+#define impl_model_factory(MATRIX,SYMMGROUP)                                            \
 template boost::shared_ptr<model_impl<MATRIX, SYMMGROUP> >                              \
 model_factory<MATRIX,SYMMGROUP>(Lattice const&, BaseParameters &);
+
 
 // Implementation
 template <class Matrix, class SymmGroup>

@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,16 +24,10 @@
  *
  *****************************************************************************/
 
-#include "model_factory_symm.h"
-#include "dmrg/models/coded/factory_nu1.hpp"
-#include "dmrg/models/continuum/factory_nu1.hpp"
+#include "dmrg/sim/matrix_types.h"
+#include "dmrg/models/model_factory.ipp"
 
-typedef NU1 grp;
+${MAQUIS_INCLUDE_FACTORIES_${CMAKE_SYMM_GROUP}}
 
-#if defined USE_AMBIENT
-impl_model_factory(pmatrix, grp)
-impl_model_factory(cpmatrix, grp)
-#else
-impl_model_factory(matrix, grp)
-impl_model_factory(cmatrix, grp)
-#endif
+impl_model_factory(matrix, @CMAKE_SYMM_GROUP@)
+impl_model_factory(cmatrix, @CMAKE_SYMM_GROUP@)

@@ -65,7 +65,8 @@ public:
               Index<SymmGroup> const& ld,
               Index<SymmGroup> const& rd,
               block_matrix<Matrix, SymmGroup> const& block,
-              MPSStorageLayout layout);
+              MPSStorageLayout layout,
+              Indicator = Unorm);
 
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
