@@ -65,7 +65,8 @@ public:
 
 protected:
     typedef typename Matrix::value_type value_type;
-    typedef std::map<std::pair<tag_type, tag_type>, std::pair<tag_type, value_type>, tag_detail::pair_cmp> pair_map_t;
+    typedef std::pair<tag_type, tag_type> tag_pair_t;
+    typedef std::map<tag_pair_t, std::pair<tag_type, value_type>, compare_pair<tag_pair_t> > pair_map_t;
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 
 public:
