@@ -38,12 +38,10 @@ namespace chem_detail {
     public:
         typedef typename M::value_type value_type;
         typedef ::term_descriptor<value_type> term_descriptor;
-        typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
 
-        ChemHelperSU2(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
-            : ident(ident_), fill(fill_), tag_handler(tag_handler_)
+        ChemHelperSU2(BaseParameters & parms, Lattice const & lat, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
+            : tag_handler(tag_handler_)
         {
             boost::tie(idx_, matrix_elements) = parse_integrals<value_type, S>(parms, lat);
 
@@ -112,7 +110,6 @@ namespace chem_detail {
     
     private:
 
-        tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
 
         std::vector<value_type> matrix_elements;

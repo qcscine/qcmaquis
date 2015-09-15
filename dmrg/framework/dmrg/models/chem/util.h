@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -61,7 +61,7 @@ namespace chem_detail {
         U1DG::charge total_qn(BaseParameters & parms)
         {
             U1DG::charge ret(0);
-            ret[0] = parms["u1_total_charge"];
+            ret[0] = parms["nelec"];
             ret[1] = parms["irrep"];
             return ret;
         }
@@ -91,7 +91,6 @@ namespace chem_detail {
             return ret;
         }
     };
-
 
     class IndexTuple : public NU1Charge<4>
     {
@@ -164,6 +163,13 @@ namespace chem_detail {
             for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
         }
     };
+
+    template <class T>
+    void append(std::vector<T> & target, std::vector<T> const & source)
+    {
+        std::copy(source.begin(), source.end(), std::back_inserter(target));
+    }
+
 }
 
 #endif
