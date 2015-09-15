@@ -101,13 +101,8 @@ int main(int argc, char ** argv)
 
             // the output MPS
             MPS<Matrix, mapgrp> mps_out(lat.size(), *(model.initializer(lat, parms)));
+            transform_mps<Matrix, grp>()(mps, mps_out);
             
-            for (int i = 0; i < mps_out.length(); ++i)
-            {
-                mps[i].make_left_paired();
-                transform_site(mps[i], mps_out[i]);
-            }
-
             std::string mps_out_file = mps_in_file;
             std::size_t pos = mps_out_file.find(".h5");
             if (pos != mps_out_file.size())

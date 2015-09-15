@@ -27,6 +27,8 @@
 #ifndef TRANSFORM_SYMMETRY_HPP
 #define TRANSFORM_SYMMETRY_HPP
 
+#include <boost/mpl/if.hpp>
+
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 
@@ -187,5 +189,30 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     } // m1 block
     } // pass
 }
+
+template <class Matrix, class SymmGroup, class = void>
+struct transform_mps
+{
+    typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+
+    void operator()(MPS<Matrix, SymmGroup> const & mps_in, MPS<Matrix, SymmOut> & mps_out)
+    {}
+};
+
+template <class Matrix, class SymmGroup>
+struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+{
+    typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+
+    void operator()(MPS<Matrix, SymmGroup> const & mps_in, MPS<Matrix, SymmOut> & mps_out)
+    {
+        for (Lattice::pos_t p = 0; p < mps_out.length(); ++p)
+        {
+            mps_in[p].make_left_paired();
+            transform_site(mps_in[p], mps_out[p]);
+        }
+    }
+};
+
 
 #endif
