@@ -353,13 +353,13 @@ void reshape_right_to_left_new(Index<SymmGroup> const & physical_i,
 // Moving two auxiliary indexes to the right
 // [(phys_i, left_i), right_i]  -->  [phys_i, (-left_i, right_i)]
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>
-reshape_left_to_physleft(Index<SymmGroup> physical_i,
-                         Index<SymmGroup> left_i,
-                         Index<SymmGroup> right_i,
-                         block_matrix<Matrix, SymmGroup> const & m1)
+void reshape_left_to_physleft(Index<SymmGroup> const& physical_i,
+                              Index<SymmGroup> const& left_i,
+                              Index<SymmGroup> const& right_i,
+                              block_matrix<Matrix, SymmGroup> const & m1,
+                              block_matrix<Matrix, SymmGroup> & m2)
 {
-    block_matrix<Matrix, SymmGroup> m2;
+    m2 = block_matrix<Matrix, SymmGroup>();
     
     typedef std::size_t size_t;
     typedef typename SymmGroup::charge charge;
@@ -405,16 +405,76 @@ reshape_left_to_physleft(Index<SymmGroup> physical_i,
             }
         }
     }
+}
+
+// Split merged auxiliary indexes
+// [phys_i, (-left_i, right_i)]  -->  [(phys_i, left_i), right_i]
+template<class Matrix, class SymmGroup>
+void reshape_physleft_to_left(Index<SymmGroup> const& physical_i,
+                              Index<SymmGroup> const& left_i,
+                              Index<SymmGroup> const& right_i,
+                              block_matrix<Matrix, SymmGroup> const & m1,
+                              block_matrix<Matrix, SymmGroup> & m2)
+{
+    m2 = block_matrix<Matrix, SymmGroup>();
     
-    return m2;
+    typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
+    
+    ProductBasis<SymmGroup> out_left(physical_i, left_i);
+    ProductBasis<SymmGroup> in_right(left_i, right_i,
+                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                          -boost::lambda::_1, boost::lambda::_2));
+    
+    for (size_t block = 0; block < m1.n_blocks(); ++block)
+    {
+        charge const& s_charge = m1.basis().left_charge(block);
+        size_t s = physical_i.position(s_charge);
+        if (s == physical_i.size()) continue;
+        
+        for (size_t l = 0; l < left_i.size(); ++l)
+        {
+            charge const& l_charge = left_i[l].first;
+            
+            size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block),
+                                                       l_charge));
+            if(r == right_i.size()) continue;
+            charge const& r_charge = right_i[r].first;
+            
+            {
+                charge in_l_charge = s_charge;
+                charge in_r_charge = SymmGroup::fuse(-l_charge, r_charge);
+                charge out_l_charge = SymmGroup::fuse(s_charge, l_charge);
+                charge out_r_charge = r_charge;
+                
+                if (! m1.has_block(in_l_charge, in_r_charge) )
+                    continue;
+                
+                if (! m2.has_block(out_l_charge, out_r_charge) )
+                    m2.insert_block(Matrix(out_left.size(out_l_charge), right_i[r].second, 0),
+                                    out_l_charge, out_r_charge);
+                
+                size_t in_right_offset = in_right(l_charge, r_charge);
+                size_t out_left_offset = out_left(s_charge, l_charge);
+                
+                Matrix const & in_block = m1(in_l_charge, in_r_charge);
+                Matrix & out_block = m2(out_l_charge, out_r_charge);
+                
+                for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                    for (size_t ss = 0; ss < physical_i[s].second; ++ss)
+                        for (size_t ll = 0; ll < left_i[l].second; ++ll)
+                            out_block(out_left_offset + ss*left_i[l].second+ll, rr) = in_block(ss, in_right_offset + ll*right_i[r].second+rr);
+            }
+        }
+    }
 }
 
 // Split merged auxiliary indexes
 // [(left_i, -right_i), phys_i]  -->  [(phys_i, left_i), right_i]
 template<class Matrix, class SymmGroup>
-void reshape_physright_to_left(Index<SymmGroup> physical_i,
-                               Index<SymmGroup> left_i,
-                               Index<SymmGroup> right_i,
+void reshape_physright_to_left(Index<SymmGroup> const& physical_i,
+                               Index<SymmGroup> const& left_i,
+                               Index<SymmGroup> const& right_i,
                                block_matrix<Matrix, SymmGroup> const & m1,
                                block_matrix<Matrix, SymmGroup> & m2)
 {

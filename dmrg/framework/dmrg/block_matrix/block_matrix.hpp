@@ -343,6 +343,17 @@ void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 }
 
 template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::cleanup_zeros(value_type const& tol)
+{
+    for (std::size_t i=n_blocks(); i >=1; --i) {
+        const std::size_t k = i-1;
+        const std::size_t nzeros = maquis::dmrg::detail::zeroout((*this)[k], tol);
+        if (nzeros == num_rows((*this)[k])*num_cols((*this)[k]))
+            remove_block(k);
+    }
+}
+
+template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::clear()
 {
     data_.clear();

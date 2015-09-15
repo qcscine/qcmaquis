@@ -30,6 +30,7 @@
 #include <iostream>
 #include <vector>
 #include <list>
+#include <numeric>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>

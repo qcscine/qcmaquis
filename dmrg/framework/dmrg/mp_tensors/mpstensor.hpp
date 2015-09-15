@@ -81,13 +81,14 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
                                         Index<SymmGroup> const& ld,
                                         Index<SymmGroup> const& rd,
                                         block_matrix<Matrix, SymmGroup> const& block,
-                                        MPSStorageLayout layout)
+                                        MPSStorageLayout layout,
+                                        Indicator normalization)
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
 , data_(block)
 , cur_storage(layout)
-, cur_normalization(Unorm)
+, cur_normalization(normalization)
 {
     if (cur_storage == LeftPaired) {
         Index<SymmGroup> new_right_i = data_.right_basis();
