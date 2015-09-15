@@ -264,11 +264,8 @@ int main(int argc, char ** argv)
             // the output MPS
             MPS<Matrix, mapgrp> mps_out(lat.size(), *(model.initializer(lat, parms)));
             
-            for (int i = 0; i < mps_out.length(); ++i) {
-                
-                Index<grp>    site_dim_in = mps[i].site_dim();
-                Index<mapgrp> site_dim_out = mps_out[i].site_dim();
-
+            for (int i = 0; i < mps_out.length(); ++i)
+            {
                 mps[i].make_left_paired();
                 transform_site(mps[i], mps_out[i]);
             }
