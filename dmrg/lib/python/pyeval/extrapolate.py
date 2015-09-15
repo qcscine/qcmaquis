@@ -71,7 +71,7 @@ def plot(flist, sweepnr=None):
     ax = fig.add_subplot(111)
     dots = plt.plot(xdata, ydata, 'o', xf, yf, '-')
 
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(3,4), useOffset=False)
+    #plt.ticklabel_format(style='sci', axis='x', scilimits=(3,4), useOffset=False)
     xfmt = plt.ScalarFormatter(useOffset=False, useMathText=True)
     xfmt.set_scientific(True)
     ax.yaxis.set_major_formatter(xfmt)
