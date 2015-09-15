@@ -46,16 +46,19 @@ class Chiral_ext : public model_impl<Matrix, U1>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
+
+    typedef std::vector<op_t> op_vec;
     
 public:
     // This can only work for complex types, that's why there's a callback to do_init with a tag
     Chiral_ext(const Lattice & lat, BaseParameters & parms)
     : tag_handler(new table_type())
+    , lat(lat)
     {
-        do_init(lat, parms, typename Matrix::value_type());
+        do_init(parms, typename Matrix::value_type());
     }
     
-    void do_init(const Lattice & lat, BaseParameters & parms, double)
+    void do_init(BaseParameters & parms, double)
     {
         phys.insert(std::make_pair(0, 1));
         phys.insert(std::make_pair(1, 1));
@@ -66,19 +69,23 @@ public:
     
     void ZZ(int p1, int p2)
     {
-//        mterm_t measterm;
-//        std::ostringstream name_oss;
-//        name_oss << "ZZ " << p1 << " " << p2;
-//        measterm.name = name_oss.str();
-//        measterm.type = mterm_t::Custom;
-//        std::vector< std::pair<int, op_t> > t;
-//        t.push_back( std::make_pair(p1, sz) );
-//        t.push_back( std::make_pair(p2, sz) );
+        std::ostringstream name_oss;
+        name_oss << "ZZ " << p1 << " " << p2;
+        std::vector< std::pair<int, op_t> > t;
+        t.push_back( std::make_pair(p1, sz_op) );
+        t.push_back( std::make_pair(p2, sz_op) );
 //        measterm.custom_ops.push_back(t);
 //        m_terms.push_back(measterm);
+
+        typedef std::vector< std::vector< std::pair<int, op_t> > > craptype;
+
+        meas.push_back( new measurements::custom<Matrix, U1>(name_oss.str(), lat,
+                                                             op_vec(1,ident_op),
+                                                             op_vec(1,ident_op),
+                                                             craptype(1, t) ) );
     }
     
-    void do_init(const Lattice & lat, BaseParameters & parms, std::complex<double>)
+    void do_init(BaseParameters & parms, std::complex<double>)
     {
         if (parms.get<double>("spin") == 1) {
             phys.insert(std::make_pair(-1, 1));
@@ -126,14 +133,37 @@ public:
             for (p2 = 1; p2 < lat.size(); ++p2)
                 ZZ(p1,p2);
             
-            for (p1 = 0; p1 < lat.size()-1; ++p1)
-                ZZ(p1,p1+1);
+            //for (p1 = 0; p1 < lat.size()-1; ++p1)
+            //    ZZ(p1,p1+1);
             
-            p1 = (lat.size()-1)/2;
-            for (p2 = 0; p2 < lat.size(); ++p2)
-                if (p1 != p2)
-                    ZZ(p1,p2);
-            
+            //p1 = (lat.size()-1)/2;
+            //for (p2 = 0; p2 < lat.size(); ++p2)
+            //    if (p1 != p2)
+            //        ZZ(p1,p2);
+           
+            int n = (lat.size()-1)/4;
+            for (int o = 0; o < n; ++o) {
+#define upperleft(i) (2*n-2-2*(i))
+#define upperright(i) (2*n+1+2*(i))
+#define lowerright(i) (2*n+2+2*(i))
+                ZZ(upperleft(o), lowerright(o));
+                ZZ(upperleft(o), upperright(o));
+                ZZ(upperright(o), lowerright(o));
+                if (o < n-1) {
+                    ZZ(upperleft(o+1), lowerright(o));
+                    ZZ(upperleft(o+1), upperright(o));
+                    ZZ(upperright(o+1), lowerright(o));
+
+                    ZZ(upperleft(o), lowerright(o+1));
+                    ZZ(upperleft(o), upperright(o+1));
+                    ZZ(upperright(o), lowerright(o+1));
+                }
+#undef upperleft
+#undef upperright
+#undef lowerright
+            }
+
+
         }
         
         maquis::cout << "Reading model from " << parms.get<std::string>("mfile") << std::endl;
@@ -180,6 +210,15 @@ public:
                 p2 = boost::lexical_cast<int>(toks[2]);
                 
                 TERM2(p1, p2, boost::lexical_cast<double>(toks[3]));
+            } else if (toks[0] == "c") {
+                maquis::cout << "CURRENT term: ";
+                std::copy(toks.begin()+1, toks.end(), std::ostream_iterator<std::string>(maquis::cout, " "));
+                maquis::cout << std::endl;
+                
+                int p1 = boost::lexical_cast<int>(toks[1]),
+                p2 = boost::lexical_cast<int>(toks[2]);
+                
+                TERM2C(p1, p2, boost::lexical_cast<double>(toks[3]));
             }
         }
         
@@ -194,17 +233,17 @@ public:
                 this->terms_.push_back(term);
             }
         }
+
+        meas.push_back( new measurements::local<Matrix, U1>("Sz", lat,
+                                                            op_vec(1,ident_op),
+                                                            op_vec(1,ident_op),
+                                                            op_vec(1,tag_handler->get_op(sz))) );
         
     }
     
     measurements_type measurements () const
     {
-        return measurements_type();
-//        Measurements<Matrix, U1> ret;
-//        for (typename std::vector<mterm_t>::const_iterator it = m_terms.begin(); it != m_terms.end(); ++it)
-//            ret.add_term(*it);
-//        ret.set_identity(ident);
-//        return ret;
+        return meas;
     }
     
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -268,7 +307,7 @@ this->terms_.push_back(term); }
 //t__.push_back( boost::make_tuple(p3, op3) ); \
 //measterm.custom_ops.push_back(t__); }
         
-        maquis::cout << "Operator on " << p1 << " " << p2 << " " << p3 << std::endl;
+        maquis::cout << "Operator on " << p1 << " " << p2 << " " << p3 << " " << f << std::endl;
         {
             NNN(p1, splus, p2, sminus, p3, sz, f);
             NNN(p1, splus, p2, sz, p3, sminus, -f);
@@ -306,11 +345,30 @@ term.push_back( boost::make_tuple(p1, op1) ); \
 term.push_back( boost::make_tuple(p2, op2) ); \
 this->terms_.push_back(term); }
         
-        maquis::cout << "Operator on " << p1 << " " << p2 << std::endl;
+        maquis::cout << "Operator on " << p1 << " " << p2 << " " << J << std::endl;
         
         NN(p1, splus, p2, sminus, J*0.5);
         NN(p1, sminus, p2, splus, J*0.5);
         NN(p1, sz, p2, sz, J);
+        
+#undef NN
+        
+    }
+    
+    void TERM2C(int p1, int p2, double J)
+    {
+        
+#define NN(p1,op1,p2,op2,val) \
+{ term_descriptor term; \
+term.coeff = val; \
+term.push_back( boost::make_tuple(p1, op1) ); \
+term.push_back( boost::make_tuple(p2, op2) ); \
+this->terms_.push_back(term); }
+        
+        maquis::cout << "Current operator on " << p1 << " " << p2 << " " << J << std::endl;
+        
+        NN(p1, splus, p2, sminus, std::complex<double>(0, J));
+        NN(p1, sminus, p2, splus, std::complex<double>(0, -J));
         
 #undef NN
         
@@ -321,10 +379,10 @@ this->terms_.push_back(term); }
     tag_type ident, splus, sminus, sz;
     
     Index<U1> phys;
+    Lattice const & lat;
     
-//    std::vector<term_descriptor> terms;
-//    std::vector<term_descriptor> m_terms;
-    
+    measurements_type meas;
+
     std::complex<double> f;
 };
 

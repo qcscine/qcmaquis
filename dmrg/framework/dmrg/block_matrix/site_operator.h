@@ -133,6 +133,15 @@ public:
         return bm_.blocks();
     }
     
+    block_matrix<Matrix, SymmGroup> & bm()
+    {
+        return bm_;
+    }
+    block_matrix<Matrix, SymmGroup> const & bm() const
+    {
+        return bm_;
+    }
+    
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);
     

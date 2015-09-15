@@ -125,7 +125,8 @@ public:
     void clear();
     template<class Generator>
     void generate(Generator g);
-
+    void cleanup_zeros(value_type const&);
+    
     void match_and_add_block(Matrix const &, charge, charge);
     
     void reserve(charge, charge, std::size_t, std::size_t);

@@ -324,7 +324,7 @@ private:
             prempo[0].push_back  ( pretensor_value(0, b, left_tag.first,  s ) );
             prempo[L-1].push_back( pretensor_value(b, 0, right_tag.first, 1.) );
             for (std::size_t p=1; p<L-1; ++p)
-                prempo[p].push_back( pretensor_value(b, b, fill[lattice.get_prop<int>("prop",pos1+p)], 1.) );
+                prempo[p].push_back( pretensor_value(b, b, fill[lattice.get_prop<int>("type",pos1+p)], 1.) );
         }
         return maximum_b;
     }
