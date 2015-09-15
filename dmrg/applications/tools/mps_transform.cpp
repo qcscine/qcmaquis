@@ -106,7 +106,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     Index<SymmOut> const & right_i_out = mps_out.col_dim();
 
     block_matrix<Matrix, SymmIn> const & m1 = mps_in.data();
-    block_matrix<Matrix, SymmOut> m2;
+    block_matrix<Matrix, SymmOut> & m2 = mps_out.data();
 
     ProductBasis<SymmIn> in_left_pb(physical_i, left_i);
 
@@ -128,11 +128,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
             for (typename subsector_map_t::iterator it = right_subblocks.begin(); it != right_subblocks.end(); ++it)
                 new_right_i.insert(std::make_pair(it->first, (it->second).sum_of_sizes()));
 
-            MPSTensor<Matrix, SymmOut> new_mps(physical_i_out, new_left_i, new_right_i, false, 0.);
-            m2 = new_mps.data();
-
-            maquis::cout << new_left_i << std::endl;
-            maquis::cout << new_mps.row_dim() << std::endl;
+            mps_out = MPSTensor<Matrix, SymmOut>(physical_i_out, new_left_i, new_right_i, false, 0.);
         }    
 
         ProductBasis<SymmOut> out_left_pb(physical_i_out, new_left_i);
@@ -221,9 +217,6 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
         } // SU2 input physical_i
     } // m1 block
     } // pass
-
-    mps_out = MPSTensor<Matrix, SymmOut>(physical_i_out, new_left_i, new_right_i, false, 0.);
-    mps_out.data() = m2;
 }
 
 
@@ -286,11 +279,8 @@ int main(int argc, char ** argv)
                 mps_out_file.erase(pos, 3);
             mps_out_file += "." + boost::lexical_cast<std::string>(TwoS) + "." + boost::lexical_cast<std::string>(Nup-Ndown) + ".h5";
 
-            maquis::cout << "mps_in_file " << mps_in_file << std::endl;
-            maquis::cout << "mps_out_file " << mps_out_file << std::endl;
             save(mps_out_file, mps_out);
 
-            maquis::cout << mps_out_file + "/props.h5" << std::endl;
             if (boost::filesystem::exists(mps_out_file + "/props.h5"))
                 boost::filesystem::remove(mps_out_file + "/props.h5");
             boost::filesystem::copy(mps_in_file + "/props.h5", mps_out_file + "/props.h5");
