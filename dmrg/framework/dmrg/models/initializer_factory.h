@@ -92,6 +92,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     maquis::cout << std::endl;
 #endif
     
+    std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
     for (int type = 0; type < site_bases.size(); ++type) {
         site_bases[type] = this->phys_dim(type);
 #ifdef NDEBUG
