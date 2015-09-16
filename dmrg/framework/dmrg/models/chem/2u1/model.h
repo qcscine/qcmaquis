@@ -210,7 +210,7 @@ public:
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
-        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
+        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
