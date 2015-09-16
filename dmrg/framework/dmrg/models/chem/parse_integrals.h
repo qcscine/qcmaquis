@@ -64,11 +64,6 @@ namespace chem_detail {
         for (int p = 0; p < order.size(); ++p)
             inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
 
-        std::copy(order.begin(), order.end(), maquis::ostream_iterator<Lattice::pos_t>(std::cout, " "));
-        maquis::cout << std::endl;
-        std::copy(inv_order.begin(), inv_order.end(), maquis::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
-        maquis::cout << std::endl;
-
         // ********************************************************************
         // *** Parse orbital data *********************************************
         // ********************************************************************
@@ -158,11 +153,6 @@ namespace chem_detail {
         for (int p = 0; p < order.size(); ++p)
             inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
 
-        std::copy(order.begin(), order.end(), maquis::ostream_iterator<Lattice::pos_t>(std::cout, " "));
-        maquis::cout << std::endl;
-        std::copy(inv_order.begin(), inv_order.end(), maquis::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
-        maquis::cout << std::endl;
-
         // ********************************************************************
         // *** Parse orbital data *********************************************
         // ********************************************************************
@@ -210,8 +200,6 @@ namespace chem_detail {
             it += 4;
             row++;
         }
-
-        maquis::cout << "Integrals parsed with parse_complex_integrals routine\n";
 
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
