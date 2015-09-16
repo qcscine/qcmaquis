@@ -104,8 +104,6 @@ namespace chem_detail {
             row++;
         }
 
-        maquis::cout << "Integrals parsed with parse_real_integrals routine\n";
-
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
         {
