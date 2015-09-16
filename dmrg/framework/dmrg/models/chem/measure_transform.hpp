@@ -75,8 +75,10 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
 
         DmrgParameters parms_tmp;
         parms_tmp.set("model_library", "coded");
+        parms_tmp.set("LATTICE", "orbitals");
         parms_tmp.set("MODEL", "quantum_chemistry");
         parms_tmp.set("integral_file", parms["integral_file"]);
+        parms_tmp.set("integral_cutoff", 1000);
 
         parms_tmp.set("u1_total_charge1", Nup);
         parms_tmp.set("u1_total_charge2", Ndown);
@@ -86,7 +88,7 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
 
         transform_detail::insert_symmetry<SymmGroup>()(parms, parms_tmp);
 
-        Model<Matrix, SymmOut> model_tmp(lat, parms);
+        Model<Matrix, SymmOut> model_tmp(lat, parms_tmp);
 
         MPS<Matrix, SymmOut> mps_tmp(lat.size(), *(model_tmp.initializer(lat, parms_tmp)));
         transform_mps<Matrix, SymmGroup>()(mps, mps_tmp);

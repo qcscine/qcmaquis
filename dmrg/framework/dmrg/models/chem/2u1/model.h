@@ -208,8 +208,8 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_twoptdm("^MEASURE[2rdm](.*)$");
-        boost::regex expression_transition_twoptdm("^MEASURE[trans2rdm](.*)$");
+        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
         boost::smatch what;
 
