@@ -89,7 +89,7 @@ private:
         add_option("chkp_each", "", value(1)); 
         add_option("update_each", "", value(-1));
         add_option("entanglement_spectra", "", value(0));
-        
+        add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
         
         add_option("expm_method", "algorithm used for exp(-i H dt): heev (default), geev", value("heev"));
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
