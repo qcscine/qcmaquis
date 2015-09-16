@@ -86,7 +86,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         max_site_type = std::max(site_types[p], max_site_type);
     }
     
-#ifdef NDEBUG
+#ifndef NDEBUG
     maquis::cout << "site_types: ";
     std::copy(site_types.begin(), site_types.end(), maquis::ostream_iterator<int>(maquis::cout, " "));
     maquis::cout << std::endl;
@@ -95,7 +95,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
     for (int type = 0; type < site_bases.size(); ++type) {
         site_bases[type] = this->phys_dim(type);
-#ifdef NDEBUG
+#ifndef NDEBUG
         maquis::cout << "phys["<<type <<"]: " << site_bases[type] << std::endl;
 #endif
     }
