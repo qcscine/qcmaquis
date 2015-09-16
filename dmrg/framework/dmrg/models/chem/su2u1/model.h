@@ -143,9 +143,9 @@ public:
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_element;
 
-        boost::regex expression_oneptdm("^MEASURE[1rdm](.*)$");
-        boost::regex expression_twoptdm("^MEASURE[2rdm](.*)$");
-        boost::regex expression_transition_twoptdm("^MEASURE[trans2rdm](.*)$");
+        boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
