@@ -38,6 +38,7 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
 
+#include "dmrg/models/chem/measure_transform.hpp"
 
 template <class Matrix, class SymmGroup>
 class measure_sim : public sim<Matrix, SymmGroup> {
@@ -95,6 +96,8 @@ public:
             }
         }
 
+        if (parms.is_set("MEASURE[ChemEntropy]"))
+            measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", parms, base::lat, mps);
     }
 };
 
