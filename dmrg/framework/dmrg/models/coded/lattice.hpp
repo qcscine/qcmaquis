@@ -181,10 +181,6 @@ public:
             for (int p = 0; p < L; ++p)
                 irreps[p] = symm_vec[order[p]-1];
 
-            maquis::cout << "Symmetry string (reordered): ";
-            std::copy(irreps.begin(), irreps.end(), maquis::ostream_iterator<subcharge>(maquis::cout, ","));
-            maquis::cout << std::endl;
-
             orb_file.close();
 
             maximum_vertex = *std::max_element(irreps.begin(), irreps.end());
