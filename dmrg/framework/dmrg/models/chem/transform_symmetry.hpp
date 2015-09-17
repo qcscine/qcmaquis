@@ -29,8 +29,8 @@
 
 #include <boost/mpl/if.hpp>
 
-#include "dmrg/mp_tensors/mps.h"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
+#include "dmrg/mp_tensors/mps.h"
 
 namespace transform_detail
 {
@@ -213,6 +213,5 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
         }
     }
 };
-
 
 #endif

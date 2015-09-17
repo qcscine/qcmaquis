@@ -208,11 +208,11 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
-        boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
-        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
-        boost::regex expression_transition_threeptdm("^MEASURE_TRANSITION_THREEPTDM(.*)$");
-        boost::regex expression_fourptdm("^MEASURE_FOURPTDM(.*)$");
+        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
+        boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
+        boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -249,7 +249,7 @@ public:
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
-                if(lhs == "MEASURE_TRANSITION_TWOPTDM"){
+                if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it->value();
                 }
