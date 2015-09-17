@@ -227,10 +227,11 @@ namespace storage {
         template<class T> class serializable : public descriptor {
         public: 
             ~serializable(){
-                std::remove(disk::fp(sid).c_str()); // it will return 1 in case the file does not exist, but we do not care.
+                if (dumped) std::remove(disk::fp(sid).c_str()); // only delete existing file, too slow otherwise on NFS or similar
             }
             serializable& operator = (const serializable& rhs){
                 this->join();
+                if(dumped) std::remove(disk::fp(sid).c_str());
                 descriptor::operator=(rhs);
                 return *this;
             }
@@ -259,7 +260,7 @@ namespace storage {
                 assert(this->state != prefetching); // evict of prefetched
             }
             void drop(){
-                std::remove(disk::fp(sid).c_str());
+                if(dumped) std::remove(disk::fp(sid).c_str());
                 if(state == core) drop_request<T>(disk::fp(sid), (T*)this)();
                 assert(this->state != storing);     // drop of already stored data
                 assert(this->state != uncore);      // drop of already stored data
