@@ -247,7 +247,7 @@ public:
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
-                if(lhs == "MEASURE_TRANSITION_TWOPTDM"){
+                if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it->value();
                 }
