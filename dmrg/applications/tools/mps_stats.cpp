@@ -64,6 +64,8 @@ typedef SU2U1PG grp;
 typedef TrivialGroup grp;
 #elif defined(USE_U1)
 typedef U1 grp;
+#elif defined(USE_U1DG)
+typedef U1DG grp;
 #endif
 
 int main(int argc, char ** argv)
