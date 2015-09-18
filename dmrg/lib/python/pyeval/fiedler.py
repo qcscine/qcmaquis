@@ -33,21 +33,12 @@
 
 
 import sys                
-import s2
 import numpy as np
-
-
-if __name__ == '__main__':
-    inputfile = sys.argv[1]
-
-    guinea_pig = s2.MaquisMeasurement(inputfile)
-
-
 import matplotlib.pyplot as plt
 from matplotlib import lines
 from pylab import *
 
-#define functions
+import s2
 
 #calculate graph laplacian
 def get_laplacian(mat_I):
@@ -160,13 +151,13 @@ def plot_mutinf(new_mutinf,s1,ord,nr,title,cost):
 
     plt.title(title+'\nResults file: '+sys.argv[1]+'\n entanglement distance: '+str(cost))
 
-#this is dummy:
+    #this is dummy:
     c1 = plt.scatter(theta,(r+0.1),c="red",s=0)
 
     legendlines = {}
 
     for i in range(N):
-#  plt.annotate(int(labels[i]),xy=(theta[i],(r[i]+0.2)),size='xx-large',)
+        #plt.annotate(int(labels[i]),xy=(theta[i],(r[i]+0.2)),size='xx-large',)
         plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='medium',ha='center',va='center')
   
     
@@ -191,77 +182,67 @@ def plot_mutinf(new_mutinf,s1,ord,nr,title,cost):
     #plt.savefig(str(nr)+'.pdf')
 
 #main program
+if __name__ == '__main__':
+    inputfile = sys.argv[1]
 
-#Input from result file
+    guinea_pig = s2.MaquisMeasurement(inputfile)
 
-#mutual information matrix:
-mat_I=guinea_pig.I()
-#single entropy vector:
-vec_s1=guinea_pig.s1()
-
-#occ = np.array([0])
-
-#primitive Fiedler ordering
-L = get_laplacian(mat_I)
-fiedler_vec = fiedler(L)
-
-#order
-order = fiedler_vec.argsort()
-ofv = fiedler_vec[order]
-
-
-new_s1, new_mutinf = reorder(vec_s1,mat_I,order)
-cost_old = cost_meas(mat_I)
-cost_new = cost_meas(new_mutinf)
-
-
-#Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
-
-#var1_mutinf = mat_I
-#final_order1 = range(order.shape[0])
-#final_mutinf1 = mat_I
-#final_s1_1 = vec_s1
-#final_cost1 = cost_old
-#j = 0
-#while j < 5:
-#    cond_mutinf = condense(var1_mutinf,occ.shape[0]-1,occ)
-#    L_cond = get_laplacian(cond_mutinf)
-#    cond_fv = fiedler(L_cond)
-#    order1 = cond_fv.argsort()
-#    c_new_s1, c_new_mutinf = reorder(cond_mutinf[:,1],cond_mutinf,order1)
-#    block_reord, occ_new = block_order(mat_I.shape[0],occ,order1)
-#    block_s1, block_mutinf = reorder(vec_s1,mat_I,block_reord)
-#    blocked_f_order = bfo_gfv(occ_new, order)
-#    var1_s1, var1_mutinf = reorder(vec_s1,mat_I,blocked_f_order)
-#    
-#    if cost_meas(var1_mutinf) < final_cost1:
-#        final_cost1 = cost_meas(var1_mutinf)
-#        final_mutinf1 = var1_mutinf
-#        final_order1 = blocked_f_order
-#        final_s1_1 = var1_s1
-#    else: j += 1
+    #mutual information matrix:
+    mat_I = guinea_pig.I()
+    #single entropy vector:
+    vec_s1 = guinea_pig.s1()
     
+    #occ = np.array([0])
     
+    #primitive Fiedler ordering
+    L = get_laplacian(mat_I)
+    fiedler_vec = fiedler(L)
     
+    #order
+    order = fiedler_vec.argsort()
+    ofv = fiedler_vec[order]
+    
+    new_s1, new_mutinf = reorder(vec_s1,mat_I,order)
+    cost_old = cost_meas(mat_I)
+    cost_new = cost_meas(new_mutinf)
+    
+    #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
+    
+    #var1_mutinf = mat_I
+    #final_order1 = range(order.shape[0])
+    #final_mutinf1 = mat_I
+    #final_s1_1 = vec_s1
+    #final_cost1 = cost_old
+    #j = 0
+    #while j < 5:
+    #    cond_mutinf = condense(var1_mutinf,occ.shape[0]-1,occ)
+    #    L_cond = get_laplacian(cond_mutinf)
+    #    cond_fv = fiedler(L_cond)
+    #    order1 = cond_fv.argsort()
+    #    c_new_s1, c_new_mutinf = reorder(cond_mutinf[:,1],cond_mutinf,order1)
+    #    block_reord, occ_new = block_order(mat_I.shape[0],occ,order1)
+    #    block_s1, block_mutinf = reorder(vec_s1,mat_I,block_reord)
+    #    blocked_f_order = bfo_gfv(occ_new, order)
+    #    var1_s1, var1_mutinf = reorder(vec_s1,mat_I,blocked_f_order)
+    #    
+    #    if cost_meas(var1_mutinf) < final_cost1:
+    #        final_cost1 = cost_meas(var1_mutinf)
+    #        final_mutinf1 = var1_mutinf
+    #        final_order1 = blocked_f_order
+    #        final_s1_1 = var1_s1
+    #    else: j += 1
+        
+    #print cost_old, cost_new, final_cost1
+    print cost_old, cost_new
+    print order+1
+    
+    #print final_order1+1
 
-#print cost_old, cost_new, final_cost1
-print cost_old, cost_new
-print order+1
-
-#print final_order1+1
-
-
-
-
-#plotting
-t1 = 'mutual information plot from HF ordering'
-plot_mutinf(mat_I,vec_s1,range(order.shape[0]),1,t1,cost_old)
-t2 = 'mutual information plot from primitive Fiedler ordering'
-plot_mutinf(new_mutinf,new_s1,order,2,t2,cost_new)
-#t3 = 'mutual information plot from Fiedler block ordering'
-#plot_mutinf(final_mutinf1,final_s1_1,final_order1,3,t3,final_cost1)
-plt.show()
-
-
-
-
+    #plotting
+    t1 = 'mutual information plot from HF ordering'
+    plot_mutinf(mat_I,vec_s1,range(order.shape[0]),1,t1,cost_old)
+    t2 = 'mutual information plot from primitive Fiedler ordering'
+    plot_mutinf(new_mutinf,new_s1,order,2,t2,cost_new)
+    #t3 = 'mutual information plot from Fiedler block ordering'
+    #plot_mutinf(final_mutinf1,final_s1_1,final_order1,3,t3,final_cost1)
+    plt.show()
