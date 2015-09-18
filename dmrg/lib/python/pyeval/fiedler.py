@@ -38,8 +38,9 @@ import matplotlib.pyplot as plt
 from matplotlib import lines
 from pylab import *
 
-import s2
 import input as DmrgInput
+import s2
+import mutinf
 
 #calculate graph laplacian
 def get_laplacian(mat_I):
@@ -130,57 +131,6 @@ def bfo_gfv(occ_new, global_fo):
                 i += 1
     return orbvec
 
-#plot of new mutual information
-def plot_mutinf(new_mutinf, s1, ord, nr, title, cost):
-    plt.figure(nr)
-    N = len(new_mutinf)
-    theta = np.zeros(N)
-    r = np.zeros(N)
-    labels = np.zeros(N)
-    area = np.zeros(N)
-    for i in range(N):
-        theta[i] = -2*np.pi/N*i + np.pi/2
-        r[i] = 1.0
-        labels[i] = ord[i]
-        area[i] = s1[i]*250
-
-    ax = plt.subplot(111, polar=True)
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.grid(b=False)
-    c = plt.scatter(theta, r, c="Red", s=area)
-
-    plt.title(title+'\nResults file: '+sys.argv[1]+'\n entanglement distance: '+str(cost))
-
-    #this is dummy:
-    c1 = plt.scatter(theta,(r+0.1),c="red",s=0)
-
-    legendlines = {}
-
-    for i in range(N):
-        #plt.annotate(int(labels[i]),xy=(theta[i],(r[i]+0.2)),size='xx-large',)
-        plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='medium',ha='center',va='center')
-  
-    
-        for j in range(i,N):
-             x =[theta[i],theta[j]]
-             y =[1,1]
-             if new_mutinf[i,j] >= 0.1:
-                line = lines.Line2D(x, y, linewidth=2*5*new_mutinf[i,j], color='black',linestyle='-', alpha=1,label='0.1')
-                legendlines['0.1'] = line
-                ax.add_line(line)
-             elif new_mutinf[i,j] >=0.01:
-                 line = lines.Line2D(x, y, linewidth=2*15*new_mutinf[i,j], color='gray',linestyle='--', alpha=1,label='0.01')
-                 legendlines['0.01'] = line
-                 ax.add_line(line)
-             elif new_mutinf[i,j] >=0.001:
-                 line = lines.Line2D(x, y, linewidth=1.5, color='lime',linestyle=':', alpha=1,label='0.001')
-                 legendlines['0.001'] = line
-                 ax.add_line(line)
-
-
-    ax.legend(legendlines.values(),[l.get_label() for l in legendlines.values()],bbox_to_anchor=(0.00,1.0),fancybox=True,shadow=True)
-    #plt.savefig(str(nr)+'.pdf')
 
 #main program
 if __name__ == '__main__':
@@ -242,11 +192,10 @@ if __name__ == '__main__':
 
     #plotting
     t1 = 'mutual information plot from original ordering'
-    #plot_mutinf(mat_I, vec_s1, range(order.shape[0]), 1, t1, cost_old)
-    plot_mutinf(mat_I, vec_s1, original_order, 1, t1, cost_old)
+    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=t1)
 
     t2 = 'mutual information plot from primitive Fiedler ordering'
-    plot_mutinf(new_mutinf, new_s1, new_order, 2, t2, cost_new)
+    mutinf.plot_mutinf(new_mutinf, new_s1, new_order, title=t2)
 
     #t3 = 'mutual information plot from Fiedler block ordering'
     #plot_mutinf(final_mutinf1,final_s1_1,final_order1,3,t3,final_cost1)

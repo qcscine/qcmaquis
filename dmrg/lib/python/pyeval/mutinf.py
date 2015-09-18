@@ -5,6 +5,8 @@
 #* ALPS MPS DMRG Project
 #*
 #* Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
+#*               2014-2014 by Lorenzo Tenti
+#*               2014-2014 by Leon Freitag 
 #*               2012-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
 #*
 #* 
@@ -36,8 +38,9 @@ from pylab import pi
 import s2
 import input as DmrgInput
 
-def plot_mutinf(mat_I, vec_s1, order):
-    #MUTUALI INFORMATION PLOT:
+def plot_mutinf(mat_I, vec_s1, order, title = None):
+    #MUTUAL INFORMATION PLOT:
+    plt.figure()
 
     N = len(mat_I)
     theta = np.zeros(N)
@@ -58,7 +61,7 @@ def plot_mutinf(mat_I, vec_s1, order):
     ax.grid(b=False)
     c = plt.scatter(theta,r,c="Red",s=area)
 
-    plt.title('N = '+str(N/2)+', Results file: '+sys.argv[1], y = 1.2)
+    plt.title(title)
 
     #this is dummy:
     c1 = plt.scatter(theta,(r+0.1),c="red",s=0)
@@ -106,7 +109,7 @@ def plot_mutinf(mat_I, vec_s1, order):
     #plt.subplots_adjust(bottom=0.2)
 
     ax.legend(legendlines.values(),[l.get_label() for l in legendlines.values()],bbox_to_anchor=(0.00,1.0),fancybox=True,shadow=True)
-    plt.show()
+    #plt.show()
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
@@ -120,3 +123,4 @@ if __name__ == '__main__':
     order = map(int, props["orbital_order"].split(','))
 
     plot_mutinf(guinea_pig.I(), guinea_pig.s1(), order) 
+    plt.show()
