@@ -39,6 +39,7 @@ from matplotlib import lines
 from pylab import *
 
 import s2
+import input as DmrgInput
 
 #calculate graph laplacian
 def get_laplacian(mat_I):
@@ -130,24 +131,24 @@ def bfo_gfv(occ_new, global_fo):
     return orbvec
 
 #plot of new mutual information
-def plot_mutinf(new_mutinf,s1,ord,nr,title,cost):
+def plot_mutinf(new_mutinf, s1, ord, nr, title, cost):
     plt.figure(nr)
     N = len(new_mutinf)
     theta = np.zeros(N)
-    r=np.zeros(N)
-    labels=np.zeros(N)
-    area=np.zeros(N)
+    r = np.zeros(N)
+    labels = np.zeros(N)
+    area = np.zeros(N)
     for i in range(N):
-        theta[i]=-2*np.pi/N*i+np.pi/2
-        r[i]=1.0
-        labels[i]=ord[i]+1
-        area[i]=s1[i]*250
+        theta[i] = -2*np.pi/N*i + np.pi/2
+        r[i] = 1.0
+        labels[i] = ord[i]
+        area[i] = s1[i]*250
 
-    ax = plt.subplot(111,polar=True)
+    ax = plt.subplot(111, polar=True)
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     ax.grid(b=False)
-    c = plt.scatter(theta,r,c="Red",s=area)
+    c = plt.scatter(theta, r, c="Red", s=area)
 
     plt.title(title+'\nResults file: '+sys.argv[1]+'\n entanglement distance: '+str(cost))
 
@@ -185,24 +186,25 @@ def plot_mutinf(new_mutinf,s1,ord,nr,title,cost):
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    guinea_pig = s2.MaquisMeasurement(inputfile)
+    entropies = s2.MaquisMeasurement(inputfile)
+    props = DmrgInput.loadProperties(inputfile)
 
     #mutual information matrix:
-    mat_I = guinea_pig.I()
+    mat_I = entropies.I()
     #single entropy vector:
-    vec_s1 = guinea_pig.s1()
-    
-    #occ = np.array([0])
+    vec_s1 = entropies.s1()
     
     #primitive Fiedler ordering
     L = get_laplacian(mat_I)
     fiedler_vec = fiedler(L)
     
     #order
+    original_order = map(int, props["orbital_order"].split(','))
     order = fiedler_vec.argsort()
     ofv = fiedler_vec[order]
+    new_order = [ original_order[order[i]] for i in range(len(order)) ]
     
-    new_s1, new_mutinf = reorder(vec_s1,mat_I,order)
+    new_s1, new_mutinf = reorder(vec_s1, mat_I, order)
     cost_old = cost_meas(mat_I)
     cost_new = cost_meas(new_mutinf)
     
@@ -234,15 +236,19 @@ if __name__ == '__main__':
         
     #print cost_old, cost_new, final_cost1
     print cost_old, cost_new
-    print order+1
+    print new_order
     
     #print final_order1+1
 
     #plotting
-    t1 = 'mutual information plot from HF ordering'
-    plot_mutinf(mat_I,vec_s1,range(order.shape[0]),1,t1,cost_old)
+    t1 = 'mutual information plot from original ordering'
+    #plot_mutinf(mat_I, vec_s1, range(order.shape[0]), 1, t1, cost_old)
+    plot_mutinf(mat_I, vec_s1, original_order, 1, t1, cost_old)
+
     t2 = 'mutual information plot from primitive Fiedler ordering'
-    plot_mutinf(new_mutinf,new_s1,order,2,t2,cost_new)
+    plot_mutinf(new_mutinf, new_s1, new_order, 2, t2, cost_new)
+
     #t3 = 'mutual information plot from Fiedler block ordering'
     #plot_mutinf(final_mutinf1,final_s1_1,final_order1,3,t3,final_cost1)
+
     plt.show()
