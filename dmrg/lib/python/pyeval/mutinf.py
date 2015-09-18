@@ -34,20 +34,12 @@ from matplotlib import lines
 from pylab import pi
 
 import s2
-import h5props
+import input as DmrgInput
 
-def plot_mutinf(entanglement_measurement, props):
+def plot_mutinf(mat_I, vec_s1, order):
     #MUTUALI INFORMATION PLOT:
 
-    #mutual information matrix:
-    mat_I = entanglement_measurement.I()
-    #single entropy vector:
-    vec_s1= entanglement_measurement.s1()
-
-    #orbital ordering
-    order = map(int, props["orbital_order"].split(','))
-
-    N = len(entanglement_measurement.I())
+    N = len(mat_I)
     theta = np.zeros(N)
     r = np.zeros(N)
     labels = np.zeros(N)
@@ -95,8 +87,8 @@ def plot_mutinf(entanglement_measurement, props):
         ax.add_artist(ab)
         
       for j in range(i,N):
-        x =[theta[i],theta[j]]
-        y =[1,1]
+        x = [theta[i],theta[j]]
+        y = [1,1]
         if mat_I[i,j] >= 0.1:
           line = lines.Line2D(x, y, linewidth=2*10*mat_I[i,j], color='black',linestyle='-', alpha=1,label='0.1')
           legendlines['0.1'] = line
@@ -109,7 +101,6 @@ def plot_mutinf(entanglement_measurement, props):
           line = lines.Line2D(x, y, linewidth=1.5, color='lime',linestyle=':', alpha=1,label='0.001')
           legendlines['0.001'] = line
           ax.add_line(line)
-
 
     #plt.tight_layout(h_pad = 0.5)
     #plt.subplots_adjust(bottom=0.2)
@@ -125,13 +116,7 @@ if __name__ == '__main__':
     print "s1 matrix"
     print guinea_pig.s1()
 
-    print "s2 matrix"
-    s2m = guinea_pig.s2()
-    s2.pretty_print(s2m)
+    props = DmrgInput.loadProperties(inputfile)
+    order = map(int, props["orbital_order"].split(','))
 
-    print "I (mutual information)"
-    s2.pretty_print(guinea_pig.I())
-
-    props = h5props.loadProperties(inputfile)
-
-    plot_mutinf(guinea_pig, props) 
+    plot_mutinf(guinea_pig.I(), guinea_pig.s1(), order) 
