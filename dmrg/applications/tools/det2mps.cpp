@@ -509,8 +509,10 @@ int main(int argc, char ** argv){
         deas_mps_init<matrix,grp> hf(parms,phys_dims,right_end,site_types,det_list);
         hf(hf_mps); 
         maquis::cout << "MPS created" << std::endl;
-        save("test",hf_mps);
-        storage::archive ar("test/props.h5", "w");
+
+        std::string chkp = parms["chkpfile"].str();
+        save(chkp,hf_mps);
+        storage::archive ar(chkp+"/props.h5", "w");
         ar["/parameters"] << parms;
 //        ar["/version"] << DMRG_VERSION_STRING;
         ar["/status/sweep"] << -1;
