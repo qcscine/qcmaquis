@@ -32,15 +32,12 @@
 
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/model.h"
-//#include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/lattice.h"
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/models/chem/su2u1/model.h"
-#include "dmrg/models/chem/2u1/model.h"
 #include "dmrg/models/model.h"
 
 #ifdef USE_AMBIENT

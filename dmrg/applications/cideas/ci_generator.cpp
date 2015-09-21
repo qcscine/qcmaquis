@@ -30,6 +30,7 @@
 
 #include "dmrg/models/lattice.h"
 #include "../applications/tools/deas.hpp"
+#include "../applications/cideas/determinant.hpp"
 
 
 //function to get orb under consideration
@@ -215,6 +216,7 @@ int main(int argc, char ** argv)
 
         // get hf_occ vector
         std::vector<int> hf_occ = parms["hf_occ"];
+        Determinant haf(hf_occ);
 
         // get CAS vector
         std::vector<mpair> casv_sort(L);
