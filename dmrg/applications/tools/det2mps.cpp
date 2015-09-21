@@ -213,12 +213,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     {
         pos_t L = mps.length();
         std::cout << " size of det_list_new is: " << det_list_new.size()<<std::endl; 
- //       for (int i = 0; i < det_list_new.size(); ++i)
- //       {
- //           for (int j = 0; j < det_list_new[0].size(); ++j)
- //               std::cout << det_list_new[i][j];
- //           std::cout << std::endl;
- //       }
 
         std::cout << " size of determinants is: " << determinants.size()<<std::endl; 
         if (determinants[0].size() != L)
@@ -238,24 +232,24 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             {
                 charge site_charge = determinants[d][s];
                 
-                        accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-                        if(charge_detail::physical<SymmGroup>(accumulated_charge))
-                        {
+                accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
+                if(charge_detail::physical<SymmGroup>(accumulated_charge))
+                {
 
-                            std::string str = det_string(s, det_list_new[d]);
-                            std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
+                    std::string str = det_string(s, det_list_new[d]);
+                    std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
 
-                            if (str_map[str])
-                                rows_to_fill[d][s] = str_map[str] - 1;
+                    if (str_map[str])
+                        rows_to_fill[d][s] = str_map[str] - 1;
 
-                            else
-                            {
-                                //get largest element in map
-                                int max_value = str_map.size();
-                                str_map[str] = max_value;
-                                rows_to_fill[d][s] = max_value - 1;
-                            }
-                        }
+                    else
+                    {
+                        //get largest element in map
+                        int max_value = str_map.size();
+                        str_map[str] = max_value;
+                        rows_to_fill[d][s] = max_value - 1;
+                    }
+                }
             }
         }
         //this now calls a function which is part of this structure
@@ -286,10 +280,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                    //get additional offsets for subsectors
                    if(site_charge == phys_dims[site_types[s]][1].first)
                    {
-                  
                        if(mps[s].row_dim().has(SymmGroup::fuse(accumulated_charge, -doubly_occ)))
                            off =  mps[s].row_dim().size_of_block(SymmGroup::fuse(accumulated_charge, -doubly_occ));
-                  
                    }
                    else if(site_charge == phys_dims[site_types[s]][2].first)
                    {

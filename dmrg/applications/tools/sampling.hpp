@@ -78,13 +78,13 @@ void quick_sort (double data[], int left,
 	int pivot = data[p];
 	int i = left,j = right;
 	for ( ; i < j;) {
-		while (! (i>= p || fabs(pivot) < fabs(data[i])))
+		while (! (i>= p || std::abs(pivot) < std::abs(data[i])))
 			++i;
 		if (i < p) {
 			data[p] = data[i];
 			p = i;
 		}
-		while (! (j <= p || fabs(data[j]) < fabs(pivot)))
+		while (! (j <= p || std::abs(data[j]) < std::abs(pivot)))
 			--j;
 		if (j > p) {
 			data[p] = data[j];
@@ -100,12 +100,12 @@ void quick_sort (double data[], int left,
 
 void quicksort(string dets[], double b[], int left, int right) {
 
-    double pivot = fabs(b[(left+right)/2]);
+    double pivot = std::abs(b[(left+right)/2]);
     int l = left;
     int r = right;
     while(l <= r) {
-     while (fabs(b[l]) < pivot) l++;
-     while (fabs(b[r]) > pivot) r--;
+     while (std::abs(b[l]) < pivot) l++;
+     while (std::abs(b[r]) > pivot) r--;
      if (l <= r) {
 
         double tmp;
@@ -286,7 +286,7 @@ struct Sampling
 // Use Hash(Map) technique, in order to quick access the data
             iter = hash.find(det_bee);
             if(iter == hash.end()){
-              if(fabs(ci) >= CI_threshold){
+              if(std::abs(ci) >= CI_threshold){
                 hash[det_bee]=ci;
                 iaccept++;
                 }

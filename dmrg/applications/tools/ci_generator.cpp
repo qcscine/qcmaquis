@@ -198,36 +198,36 @@ int main(int argc, char ** argv)
 
         int L = parms["L"];
 
-  //create product table
-   alps::numeric::matrix<int> prd(8,8,0);
-   prd(0,1)=prd(2,3)=prd(4,5)=prd(6,7)=1;
-   prd(0,2)=prd(1,3)=prd(4,6)=prd(5,7)=2;
-   prd(0,3)=prd(1,2)=prd(4,7)=prd(5,6)=3;
-   prd(0,4)=prd(1,5)=prd(2,6)=prd(3,7)=4;
-   prd(0,5)=prd(1,4)=prd(2,7)=prd(3,6)=5;
-   prd(0,6)=prd(1,7)=prd(2,4)=prd(3,5)=6;
-   prd(0,7)=prd(1,6)=prd(2,5)=prd(3,4)=7;
-   for(int i=0;i<8; i++){
-      for(int j=0; j<i;j++){
-         prd(i,j)=prd(j,i);
-      }
-   }
+        //create product table
+        alps::numeric::matrix<int> prd(8,8,0);
+        prd(0,1)=prd(2,3)=prd(4,5)=prd(6,7)=1;
+        prd(0,2)=prd(1,3)=prd(4,6)=prd(5,7)=2;
+        prd(0,3)=prd(1,2)=prd(4,7)=prd(5,6)=3;
+        prd(0,4)=prd(1,5)=prd(2,6)=prd(3,7)=4;
+        prd(0,5)=prd(1,4)=prd(2,7)=prd(3,6)=5;
+        prd(0,6)=prd(1,7)=prd(2,4)=prd(3,5)=6;
+        prd(0,7)=prd(1,6)=prd(2,5)=prd(3,4)=7;
+        for(int i=0;i<8; i++){
+           for(int j=0; j<i;j++){
+              prd(i,j)=prd(j,i);
+           }
+        }
 
-    // get hf_occ vector
-       std::vector<int> hf_occ = parms["hf_occ"];
+        // get hf_occ vector
+        std::vector<int> hf_occ = parms["hf_occ"];
 
-    // get CAS vector
-       std::vector<mpair> casv_sort(L);
-       std::vector<int> casv(L);
-       for(int i = 0; i<L; i++){
-          casv_sort[i].first = em.s1_(0,i);
-          casv_sort[i].second = i;
-       }
-       std::sort(casv_sort.begin(),casv_sort.end(), comp); 
-       for(int i = 0; i<L; i++){
-          casv[i] = casv_sort[i].second;
-        } 
-    // print CAS vector and HF vector
+        // get CAS vector
+        std::vector<mpair> casv_sort(L);
+        std::vector<int> casv(L);
+        for(int i = 0; i<L; i++){
+           casv_sort[i].first = em.s1_(0,i);
+           casv_sort[i].second = i;
+        }
+        std::sort(casv_sort.begin(),casv_sort.end(), comp); 
+        for(int i = 0; i<L; i++){
+           casv[i] = casv_sort[i].second;
+         } 
+        // print CAS vector and HF vector
         std::cout << "CAS vector: ";
         for(int i =0; i<L; i++){std::cout << casv[i] << " ";}
         std::cout <<std::endl;
@@ -236,113 +236,112 @@ int main(int argc, char ** argv)
         for(int i =0; i<L; i++){std::cout << hf_occ[i];}
         std::cout <<std::endl;
 
-    //get symmetry vector
-       Lattice lat(parms);
-       std::vector<int> sym_vec(lat.size());
-       for (int i = 0; i<lat.size(); i++){
-          sym_vec[i] = lat.get_prop<int>("type", i);
-       }
+        //get symmetry vector
+        Lattice lat(parms);
+        std::vector<int> sym_vec(lat.size());
+        for (int i = 0; i<lat.size(); i++){
+           sym_vec[i] = lat.get_prop<int>("type", i);
+        }
 
-     //implement symmetry test for a given part of the HF determinant
-       int target_sym,hf_sym;
-       target_sym = parms["irrep"];
-       hf_sym = sym_check(hf_occ, sym_vec, prd);
-       std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;      
+        //implement symmetry test for a given part of the HF determinant
+        int target_sym,hf_sym;
+        target_sym = parms["irrep"];
+        hf_sym = sym_check(hf_occ, sym_vec, prd);
+        std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;      
 
-    // get number of electrons
-       int nelec = 0;
-       nelec = num_el(hf_occ);
-       std::cout << "number of electrons: " << nelec <<std::endl;
+        // get number of electrons
+        int nelec = 0;
+        nelec = num_el(hf_occ);
+        std::cout << "number of electrons: " << nelec <<std::endl;
 
-    //get spin
-       int spin = 0;
-       spin = spin_check(hf_occ);
-       std::cout << "spin of HF determinant: " << spin << std::endl;
+        //get spin
+        int spin = 0;
+        spin = spin_check(hf_occ);
+        std::cout << "spin of HF determinant: " << spin << std::endl;
 
 
-    //initialize stuff
-       std::vector<std::vector<int> > dets_left, dets_right, deas_dets, ci_dets;
-    //get possible ci_levels (include 0 for HF determinant!!!)
-       int ci_level_fill[4] = {0,1,2,4};
-       std::vector<int> ci_level;
-       for(int i = 0; i<4; i++){ci_level.push_back(ci_level_fill[i]);}
+        //initialize stuff
+        std::vector<std::vector<int> > dets_left, dets_right, deas_dets, ci_dets;
+        //get possible ci_levels (include 0 for HF determinant!!!)
+        int ci_level_fill[4] = {0,1,2,4};
+        std::vector<int> ci_level;
+        for(int i = 0; i<4; i++){ci_level.push_back(ci_level_fill[i]);}
 
-       std::cout << "excitation levels allowed: ";
-       for(int i =0; i<ci_level.size(); i++){std::cout << ci_level[i] << " ";}
-       std::cout <<std::endl;
+        std::cout << "excitation levels allowed: ";
+        for(int i =0; i<ci_level.size(); i++){std::cout << ci_level[i] << " ";}
+        std::cout <<std::endl;
 
-    //subtract left part, size is 2 in first microiteration
+        //subtract left part, size is 2 in first microiteration
         int left = 0;
         int Mmax = 10000;
         int length = 0;
         if(left!=0){
-           int L_env = L-left;
-           std::vector<int> hf_right = hf_occ;
-           std::vector<int> symvec_left = sym_vec;
-           std::vector<int> symvec_right = sym_vec;
-           hf_right.erase(hf_right.begin(), hf_right.begin()+left);
-           symvec_right.erase(symvec_right.begin(), symvec_right.begin()+left);
-           symvec_left.erase(symvec_left.begin()+left,symvec_left.end());
+            int L_env = L-left;
+            std::vector<int> hf_right = hf_occ;
+            std::vector<int> symvec_left = sym_vec;
+            std::vector<int> symvec_right = sym_vec;
+            hf_right.erase(hf_right.begin(), hf_right.begin()+left);
+            symvec_right.erase(symvec_right.begin(), symvec_right.begin()+left);
+            symvec_left.erase(symvec_left.begin()+left,symvec_left.end());
  
  
-           std::cout << "environment only HF occupation  vector: ";
-           for(int i =0; i<L_env; i++){std::cout << ","<<hf_right[i];}
-           std::cout <<std::endl;
+            std::cout << "environment only HF occupation  vector: ";
+            for(int i =0; i<L_env; i++){std::cout << ","<<hf_right[i];}
+            std::cout <<std::endl;
  
-           std::cout << "environment only symmetry  vector: ";
-           for(int i =0; i<L_env; i++){std::cout << ","<<symvec_right[i];}
-           std::cout <<std::endl;
-           std::cout << "system only symmetry vector: ";
-           for(int i =0; i<left; i++){std::cout << ","<<symvec_left[i];}
-           std::cout <<std::endl;
+            std::cout << "environment only symmetry  vector: ";
+            for(int i =0; i<L_env; i++){std::cout << ","<<symvec_right[i];}
+            std::cout <<std::endl;
+            std::cout << "system only symmetry vector: ";
+            for(int i =0; i<left; i++){std::cout << ","<<symvec_left[i];}
+            std::cout <<std::endl;
  
-       //create first set of determinants by DEAS procedure
-           std::vector<int> casv_right;
-           casv_right = el_casv(0,left,casv);
+            //create first set of determinants by DEAS procedure
+            std::vector<int> casv_right;
+            casv_right = el_casv(0,left,casv);
  
-           int act_orb_right = casv_right[0]-left;
+            int act_orb_right = casv_right[0]-left;
  
-           std::cout << "CAS vector after elimination: ";
-           for(int i =0; i<L_env; i++){std::cout << ","<<casv_right[i];}
-           std::cout <<std::endl;
+            std::cout << "CAS vector after elimination: ";
+            for(int i =0; i<L_env; i++){std::cout << ","<<casv_right[i];}
+            std::cout <<std::endl;
  
-           //some initializations
-           int nelec_right = 0, nelec_left = 0;
-           int spin_right = 0, spin_left = 0;
-           int sym_right = 0, sym_left = 0;
-           std::vector<int> half_filled;
-           //determine occupied orbitals in first det
-           std::vector<std::pair<int,int> > hf_occ_orb = get_orb(hf_right);
+            //some initializations
+            int nelec_right = 0, nelec_left = 0;
+            int spin_right = 0, spin_left = 0;
+            int sym_right = 0, sym_left = 0;
+            std::vector<int> half_filled;
+            //determine occupied orbitals in first det
+            std::vector<std::pair<int,int> > hf_occ_orb = get_orb(hf_right);
 
-           //reduce sym left
-           std::vector<std::pair<int,int> > red_sym = reduce_symvec(symvec_left);
+            //reduce sym left
+            std::vector<std::pair<int,int> > red_sym = reduce_symvec(symvec_left);
 
-           //create map that connects number of multiplications (half filled orbitals) to possible symmetries
-           std::map<int, std::vector<int> > sym_map;
-           std::vector<int> irreps, irreps_old;
-           int irrep = 0;
-           irreps.push_back(0);
-          //case: no multiplication
-           sym_map[0] = irreps;
-           irreps.clear();
-          //case: 1 multiplication 
-           for(int i = 0; i< red_sym.size(); i++){irreps.push_back(red_sym[i].first);}
-           sym_map[1] = irreps;
-           irreps.clear();          
-          //case n multiplications, nr_irreps>=n>1
-           for(int i = 2; i<8; i++){
-              irreps_old = sym_map[i-1];
-              for(int j = 0; j<irreps_old.size();j++){
-                  for(int k= 0; k<red_sym.size();k++){
-                     irrep = prd(irreps_old[j],red_sym[k].first);
-                     if(std::find(irreps.begin(), irreps.end(), irrep) == irreps.end()){
-                        irreps.push_back(irrep);
-                     }
-                  }
-              }
-              sym_map[i]=irreps;
-              irreps.clear();
-           }
+            //create map that connects number of multiplications (half filled orbitals) to possible symmetries
+            std::map<int, std::vector<int> > sym_map;
+            std::vector<int> irreps, irreps_old;
+            int irrep = 0;
+            irreps.push_back(0);
+            //case: no multiplication
+            sym_map[0] = irreps;
+            irreps.clear();
+            //case: 1 multiplication 
+            for(int i = 0; i< red_sym.size(); i++){irreps.push_back(red_sym[i].first);}
+            sym_map[1] = irreps;
+            irreps.clear();          
+            //case n multiplications, nr_irreps>=n>1
+            for(int i = 2; i<8; i++){
+                irreps_old = sym_map[i-1];
+                for(int j = 0; j<irreps_old.size();j++){
+                    for(int k= 0; k<red_sym.size();k++){
+                        irrep = prd(irreps_old[j],red_sym[k].first);
+                        if(std::find(irreps.begin(), irreps.end(), irrep) == irreps.end())
+                            irreps.push_back(irrep);
+                    }
+                }
+                sym_map[i]=irreps;
+                irreps.clear();
+            }
 
 //  for(int i = 0; i< sym_map.size(); i++){
 //     maquis::cout << " Nr of mults = " <<i<< ", possible irreps: "<< sym_map[i].size() <<std::endl; 

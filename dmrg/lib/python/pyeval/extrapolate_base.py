@@ -99,8 +99,11 @@ class extrapolator(object):
         if num_points is None:
             num_points = len(self._ydata)
 
+        lf = self.linfit()
+
         ff = lambda self, x, pars: pars[0]()*(x**pars[1]()) + pars[2]()
-        pars = [fw.Parameter(0.), fw.Parameter(0.01), fw.Parameter(self._ydata[0])]
+        #pars = [fw.Parameter(1.0), fw.Parameter(1.01), fw.Parameter(self._ydata[0])]
+        pars = [fw.Parameter(lf(1)-lf(0)), fw.Parameter(1.01), fw.Parameter(lf(0))]
         fw.fit(None, ff, pars, np.array(self._ydata[0:num_points]), np.array(self._xdata[0:num_points]))
         
         fit_func = lambda x: pars[0].get()*(x**pars[1].get()) + pars[2].get()
