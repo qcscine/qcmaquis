@@ -489,32 +489,38 @@ int main(int argc, char ** argv){
            std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
 
 
-   //get right end charge
-   grp::charge right_end = chem_detail::qn_helper<grp>().total_qn(parms);
-   maquis::cout << "Right end: " << right_end <<std::endl;
-
-    //det_list as function parameter
-    std::vector<std::vector<std::size_t> >  det_list = dets_from_file(det_file);
-
-   std::cout <<"hf_determinant = 1st determinant in list: ";
-   for(int i = 0; i<det_list[0].size(); i++){
-      std::cout << det_list[0][i] <<", "; 
-   }
-   std::cout <<std::endl;
-   
-
-
-   //create MPS
-   MPS<matrix,grp> hf_mps(L);
-   deas_mps_init<matrix,grp> hf(parms,phys_dims,right_end,site_types,det_list);
-   hf(hf_mps); 
-   maquis::cout << "MPS created" << std::endl;
-   save("test",hf_mps);
-   maquis::cout << "MPS saved" << std::endl; 
-
-
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
-    }
+        //get right end charge
+        grp::charge right_end = chem_detail::qn_helper<grp>().total_qn(parms);
+        maquis::cout << "Right end: " << right_end <<std::endl;
+  
+         //det_list as function parameter
+        std::vector<std::vector<std::size_t> >  det_list = dets_from_file(det_file);
+  
+        std::cout <<"hf_determinant = 1st determinant in list: ";
+        for(int i = 0; i<det_list[0].size(); i++){
+           std::cout << det_list[0][i] <<", "; 
+        }
+        std::cout <<std::endl;
+        
+  
+  
+        //create MPS
+        MPS<matrix,grp> hf_mps(L);
+        deas_mps_init<matrix,grp> hf(parms,phys_dims,right_end,site_types,det_list);
+        hf(hf_mps); 
+        maquis::cout << "MPS created" << std::endl;
+        save("test",hf_mps);
+        storage::archive ar("test/props.h5", "w");
+        ar["/parameters"] << parms;
+//        ar["/version"] << DMRG_VERSION_STRING;
+        ar["/status/sweep"] << -1;
+        ar["/status/site"] << -1;
+        
+        maquis::cout << "MPS saved" << std::endl; 
+  
+  
+        } catch (std::exception& e) {
+            std::cerr << "Error:" << std::endl << e.what() << std::endl;
+            return 1;
+        }
 }
