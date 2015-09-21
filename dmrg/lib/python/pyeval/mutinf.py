@@ -48,12 +48,13 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
     labels = np.zeros(N)
     area = np.zeros(N)
 
-    for i in range(N):
-      theta[i] = -2*pi/N*i+pi/2
-      r[i] = 1.0
-      labels[i] = order[i]
-      area[i] = vec_s1[i]*500
 
+    slice_ = -2*pi/N 
+    for i in range(N):
+        theta[i] = i * slice_ + pi/2 + slice_/2
+        r[i] = 1.0
+        labels[i] = order[i]
+        area[i] = vec_s1[i]*500
 
     ax = plt.subplot(111, polar=True)
     ax.set_xticklabels([])
@@ -61,10 +62,11 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
     ax.grid(b=False)
     c = plt.scatter(theta,r,c="Red",s=area)
 
-    plt.title(title)
+    if title is not None:
+        plt.title(title)
 
     #this is dummy:
-    c1 = plt.scatter(theta,(r+0.1),c="red",s=0)
+    c1 = plt.scatter(theta - slice_/2 ,(r+0.1),c="red",s=0)
 
     # generation of orbital images. If "-i" switch is passed to the script, the script will incorporate orbital pictures into the image. Pictures must be present in the current directory with names #.png where # is the number of each site. Such images can be conveniently generated with gabedit, vmd or any other orbital plotting program you desire.
 
@@ -85,8 +87,8 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
         from matplotlib.cbook import get_sample_data
         from matplotlib._png import read_png
         
-        img=OffsetImage(read_png(str(int(labels[i]))+".png"),zoom=0.2) # The zoom factor should be ideally adjusted to the size of the images
-        ab=AnnotationBbox(img,[theta[i],r[i]+0.57], frameon=False) # pass Frameon=False to disable the frames around the images
+        img = OffsetImage(read_png(str(int(labels[i]))+".png"),zoom=0.2) # The zoom factor should be ideally adjusted to the size of the images
+        ab = AnnotationBbox(img,[theta[i],r[i]+0.57], frameon=False) # pass Frameon=False to disable the frames around the images
         ax.add_artist(ab)
         
       for j in range(i,N):

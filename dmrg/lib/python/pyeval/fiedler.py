@@ -57,8 +57,6 @@ def get_laplacian(mat_I):
 
 #extract Fiedler vector
 def fiedler(L):
-    print len(L)
-    print len(L[0])
     eigenvalues, eigenvectors = np.linalg.eig(L)
     idx = eigenvalues.argsort()
     sort_ev = eigenvalues[idx]
@@ -192,10 +190,10 @@ if __name__ == '__main__':
 
     #plotting
     t1 = 'mutual information plot from original ordering'
-    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=t1)
+    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=None)
 
     t2 = 'mutual information plot from primitive Fiedler ordering'
-    mutinf.plot_mutinf(new_mutinf, new_s1, new_order, title=t2)
+    mutinf.plot_mutinf(new_mutinf, new_s1, new_order, title=None)
 
     #t3 = 'mutual information plot from Fiedler block ordering'
     #plot_mutinf(final_mutinf1,final_s1_1,final_order1,3,t3,final_cost1)
