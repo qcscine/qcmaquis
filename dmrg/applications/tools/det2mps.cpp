@@ -37,7 +37,11 @@
 #include "dmrg/models/lattice.h"
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
-
+#include "dmrg/utils/DmrgOptions.h"
+#include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/models/chem/su2u1/model.h"
+#include "dmrg/models/chem/2u1/model.h"
+#include "dmrg/models/model.h"
 
 #ifdef USE_AMBIENT
     #include "dmrg/block_matrix/detail/ambient.hpp"
@@ -229,7 +233,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         //main loop
         for(int d = 0; d < determinants.size(); ++d)
         {
-            std::cout << "in det " << d <<std::endl;
             charge accumulated_charge = right_end;
             for(int s = L - 1; s > 0; --s)
             {
@@ -456,26 +459,27 @@ std::vector<std::vector<std::size_t> > dets_from_file(std::string file){
 int main(int argc, char ** argv){
     try {
         if (argc != 3) {
-            std::cout << "Usage: " << argv[0] << " <result.h5>" << "determinants.txt" << std::endl;
+            std::cout << "Usage: " << argv[0] << " dmrg-input file" << "determinants.txt" << std::endl;
             return 1;
         }
 
-        std::string rfile(argv[1]);
         std::string det_file(argv[2]);
+        DmrgOptions opt(argc-1, argv);
+        DmrgParameters parms = opt.parms;
 
-        storage::archive ar(rfile, "r");
-        BaseParameters parms;
-        ar["/parameters"] >> parms;
         Lattice lat(parms);
+        Model<matrix,grp> mod(lat,parms);
 
         /***Create TEST environment not needed in actual implementation***/
         size_t L = parms["L"];
 
         //create symmetry vector -> site_types
         int max_site_type = 0;
-        std::vector<int> site_types(lat.size());
+        std::vector<int> site_types(lat.size()), site_types_distinct;
         for (int i = 0; i<lat.size(); i++){
            site_types[i] = lat.get_prop<int>("type", i);
+           if(std::find(site_types_distinct.begin(),site_types_distinct.end(),site_types[i]) == site_types_distinct.end())
+              site_types_distinct.push_back(site_types[i]);
            max_site_type =std::max(site_types[i],max_site_type);
         }
         std::cout <<"site_types: ";
@@ -485,30 +489,12 @@ int main(int argc, char ** argv){
         std::cout <<std::endl;
         maquis::cout << "maximal site type: " << max_site_type << std::endl;
 
-    //create vector of indices -> phys_dims
-//    grp::charge a(2), b(1), c(1), d(0);
-//    a[1]= 0;
-//    c[1] = -1;
+        std::vector<Index<grp> > phys_dims;
+        for(int i = 0; i<site_types_distinct.size(); i++)
+           phys_dims.push_back(mod.phys_dim(site_types_distinct[i]));
 
-     grp::charge a(1), b(0), c(0), d(0);
-     b[0] = c[1] = 1;
-   
-   
-   std::vector<Index<grp> > phys_dims;
-   for(int i = 0; i< max_site_type+1; i++){
-      b[2]=c[2]=i;
-      Index<grp> phys_index;
-      phys_index.insert(std::make_pair(a,1));
-      phys_index.insert(std::make_pair(b,1));
-      phys_index.insert(std::make_pair(c,1));
-      phys_index.insert(std::make_pair(d,1));
-      phys_dims.push_back(phys_index);
-   }
-   for(int i = 0; i<max_site_type+1; i++){
-      std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
-   }
-
-
+        for(int i = 0; i<max_site_type+1; i++)
+           std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
 
 
    //get right end charge

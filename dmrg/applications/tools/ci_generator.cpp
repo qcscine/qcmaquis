@@ -273,7 +273,7 @@ int main(int argc, char ** argv)
 
     //subtract left part, size is 2 in first microiteration
         int left = 0;
-        int Mmax = 5000;
+        int Mmax = 10000;
         int length = 0;
         if(left!=0){
            int L_env = L-left;
