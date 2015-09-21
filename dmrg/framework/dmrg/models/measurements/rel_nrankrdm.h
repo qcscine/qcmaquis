@@ -121,8 +121,8 @@ namespace measurements {
 		     	for (pos_t i = 0; i < lattice.size(); ++i){
 				for (pos_t j = 0; j < lattice.size(); ++j){
 					for (pos_t k = ((bra_neq_ket) ? 0 : std::min(i, j)); k < lattice.size(); ++k){
-						for (pos_t l = ((bra_neq_ket) ? k : k); l < lattice.size(); ++l){
-						//for (pos_t l = ((bra_neq_ket) ? 0 : std::min(i, j)); l < k+1; ++l){
+						//for (pos_t l = ((bra_neq_ket) ? k : k); l < lattice.size(); ++l){
+						for (pos_t l = ((bra_neq_ket) ? 0 : std::min(i, j)); l < lattice.size(); ++l){
 
                                           if(i == j && i == k && i == l)
                                                 continue;
