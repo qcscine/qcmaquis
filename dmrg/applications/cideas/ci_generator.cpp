@@ -49,7 +49,7 @@ std::vector<int>  el_casv(const int &side, const int &left, std::vector<int> &ca
 }
 
 //function to copy determinants
-std::vector<std::vector<int> > copy_det(const int &pos, std::vector<std::vector<int> > dets){
+std::vector<Determinant> copy_det(const int &pos, std::vector<Determinant> dets){
    int end = dets.size();
    for(int i= 0; i<3; i++){    //number of copies
       for(int j =0;j<end;j++){ //number of already existing determinants
@@ -60,7 +60,7 @@ std::vector<std::vector<int> > copy_det(const int &pos, std::vector<std::vector<
 }
 
 //function to actually perform deas
-std::vector<std::vector<int> > deas(const int &pos, const int &act_orb, std::vector<std::vector<int> > dets){
+std::vector<Determinant> deas(const int &pos, const int &act_orb, std::vector<Determinant> dets){
    std::vector<int> orb_list;
    for(int i=0;i<4;i++){orb_list.push_back(i+1);}
    orb_list.erase(orb_list.begin()+dets[0][act_orb]-1);
@@ -109,72 +109,6 @@ std::vector<std::pair<int,int> > get_orb(std::vector<int> hf_occ){
    return occ_orb;
 }
 
-//function to extract ci determinants of a given level
-bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,int> > &hf_occ_orb, const std::vector<int> &det ){
-   bool wrong_level = false;
-   int diff = 0;
-//first check number of changes
-   for(int i = 0; i <hf_occ_orb.size(); i++){
-      if(det[hf_occ_orb[i].first] != hf_occ_orb[i].second){
-         if(hf_occ_orb[i].second == 4 && det[hf_occ_orb[i].first] == 3){
-            diff++;
-         }else if(hf_occ_orb[i].second == 4 && det[hf_occ_orb[i].first] == 2){
-            diff++;
-         }else if(hf_occ_orb[i].second == 4 && det[hf_occ_orb[i].first] == 1){
-            diff = diff + 2;
-         }else if(hf_occ_orb[i].second == 3 && det[hf_occ_orb[i].first] == 1){
-            diff++;
-         }else if(hf_occ_orb[i].second == 2 && det[hf_occ_orb[i].first] == 1){
-            diff++;
-         }
-      }
-   }
-//check if number of changes agrees with ci_level 
-   for(int i = 0; i<ci_level.size(); i++){
-      if(ci_level[i] != diff){
-         wrong_level = true;
-      }else{
-         wrong_level = false;
-         break;
-      }
-   }
-   return wrong_level;
-}
-
-
-//get number of electrons in a determinant
-int num_el(const std::vector<int> &det){
-    int nelec = 0;
-    int L = det.size();
-    for(int i=0; i<L; i++){
-       if(det[i] == 4){nelec+=2;}
-       else if(det[i] == 1){;}
-       else{nelec+=1;}
-    }
-   return nelec;
-}
-
-//check symmetry of a determinant
-int sym_check(const std::vector<int> &det, const std::vector<int> &sym_vec, const alps::numeric::matrix<int> &prd){
-  int sym = 0;
-  for(int i=0; i<det.size(); i++){
-     if(det[i]==2||det[i]==3){
-        sym = prd(sym,sym_vec[i]);
-     }
-  }
-   return sym;
-}
-
-//check spin of a determinant
-int spin_check(const std::vector<int> &det){
-   int spin = 0;
-   for(int i=0;i<det.size();i++){
-      if(det[i]==2){spin = spin-1;}
-      else if(det[i]==3){spin = spin+1;}
-   }
-   return spin;
-}
-
 
 int main(int argc, char ** argv)
 {
@@ -215,12 +149,11 @@ int main(int argc, char ** argv)
         }
 
         // get hf_occ vector
-        std::vector<int> hf_occ = parms["hf_occ"];
-        Determinant haf(hf_occ);
+        Determinant hf_occ(parms.get<std::vector<int> >("hf_occ"));
 
         // get CAS vector
         std::vector<mpair> casv_sort(L);
-        std::vector<int> casv(L);
+        Determinant casv(L);
         for(int i = 0; i<L; i++){
            casv_sort[i].first = em.s1_(0,i);
            casv_sort[i].second = i;
@@ -246,24 +179,24 @@ int main(int argc, char ** argv)
         }
 
         //implement symmetry test for a given part of the HF determinant
-        int target_sym,hf_sym;
+        int target_sym, hf_sym;
         target_sym = parms["irrep"];
-        hf_sym = sym_check(hf_occ, sym_vec, prd);
+        hf_sym = hf_occ.sym_check(sym_vec, prd);
         std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;      
 
         // get number of electrons
         int nelec = 0;
-        nelec = num_el(hf_occ);
+        nelec = hf_occ.num_el();
         std::cout << "number of electrons: " << nelec <<std::endl;
 
         //get spin
         int spin = 0;
-        spin = spin_check(hf_occ);
+        spin = hf_occ.spin_check();
         std::cout << "spin of HF determinant: " << spin << std::endl;
 
 
         //initialize stuff
-        std::vector<std::vector<int> > dets_left, dets_right, deas_dets, ci_dets;
+        std::vector<Determinant> dets_left, dets_right, deas_dets, ci_dets;
         //get possible ci_levels (include 0 for HF determinant!!!)
         int ci_level_fill[4] = {0,1,2,4};
         std::vector<int> ci_level;
@@ -279,9 +212,9 @@ int main(int argc, char ** argv)
         int length = 0;
         if(left!=0){
             int L_env = L-left;
-            std::vector<int> hf_right = hf_occ;
-            std::vector<int> symvec_left = sym_vec;
-            std::vector<int> symvec_right = sym_vec;
+            Determinant hf_right = hf_occ;
+            Determinant symvec_left = sym_vec;
+            Determinant symvec_right = sym_vec;
             hf_right.erase(hf_right.begin(), hf_right.begin()+left);
             symvec_right.erase(symvec_right.begin(), symvec_right.begin()+left);
             symvec_left.erase(symvec_left.begin()+left,symvec_left.end());
@@ -345,13 +278,6 @@ int main(int argc, char ** argv)
                 irreps.clear();
             }
 
-//  for(int i = 0; i< sym_map.size(); i++){
-//     maquis::cout << " Nr of mults = " <<i<< ", possible irreps: "<< sym_map[i].size() <<std::endl; 
-//     maquis::cout << "  irreps: " ; for(int j = 0; j <sym_map[i].size(); j++){maquis::cout << sym_map[i][j];}
-//     maquis::cout << std::endl;
-//  }
-           
-
            //create first four determinants of right part
            dets_right.push_back(hf_right);
            int count = 0;
@@ -369,15 +295,15 @@ int main(int argc, char ** argv)
            for(int pos = 0; pos<L_env; pos++){
              for(int i = length; i<dets_right.size(); i++){
            //collect information
-                nelec_right = num_el(dets_right[i]);
+                nelec_right = dets_right[i].num_el();
                 nelec_left = nelec-nelec_right;
-                spin_right = spin_check(dets_right[i]);
+                spin_right = dets_right[i].spin_check();
                 spin_left = spin-spin_right;
-                sym_right = sym_check(dets_right[i],symvec_right,prd);
+                sym_right = dets_right[i].sym_check(symvec_right,prd);
  
              //left part is forced to be totally symmetric
                 if(nelec_left == 2*left){
-                   if(prd(0,sym_right)==target_sym&&spin_right==spin&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){ci_dets.push_back(dets_right[i]);}
+                   if(prd(0,sym_right)==target_sym&&spin_right==spin&&!dets_right[i].ci_check(ci_level,hf_occ_orb)){ci_dets.push_back(dets_right[i]);}
                 }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left!=abs(spin_left)){
 
                    half_filled = get_half_filled(nelec_left,left);
@@ -406,15 +332,15 @@ int main(int argc, char ** argv)
                          break;
                       }
                    }
-                   if(sym_check==true&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){ci_dets.push_back(dets_right[i]);}
+                   if(sym_check==true&&!dets_right[i].ci_check(ci_level,hf_occ_orb)){ci_dets.push_back(dets_right[i]);}
                 //if configuration on the left is completely determined by the spin, the symmetry is forced to be the direct product of the entries of the sym_left vector
                 }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left==abs(spin_left)){
                    int force_sym = 0;
                    for(int k = 0; k<left; k++){
                       force_sym = prd(force_sym,symvec_left[k]);
                    }
-                   if(prd(force_sym,sym_right)==target_sym&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){ci_dets.push_back(dets_right[i]);}
-                }else if(nelec_right==nelec&&spin_right == spin &&sym_right==target_sym&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){
+                   if(prd(force_sym,sym_right)==target_sym&&!dets_right[i].ci_check(ci_level,hf_occ_orb)){ci_dets.push_back(dets_right[i]);}
+                }else if(nelec_right==nelec&&spin_right == spin &&sym_right==target_sym&&!dets_right[i].ci_check(ci_level,hf_occ_orb)){
                    ci_dets.push_back(dets_right[i]);
                 }
                 if(ci_dets.size()>=Mmax){break;}
@@ -456,11 +382,11 @@ int main(int argc, char ** argv)
         //check ci-dets vector for correct spatial symmetry, spin, number of electrons (and later ci-level)
             int nel_det,sym_det,spin_det = 0;
             for(int i = length; i<deas_dets.size(); i++){
-               nel_det = num_el(deas_dets[i]);
-               sym_det = sym_check(deas_dets[i], sym_vec, prd); 
-               spin_det = spin_check(deas_dets[i]);
+               nel_det = deas_dets[i].num_el();
+               sym_det = deas_dets[i].sym_check(sym_vec, prd); 
+               spin_det = deas_dets[i].spin_check();
         //later also check for suitable ci_level
-               if(nel_det==nelec &&sym_det==target_sym &&spin_det==spin &&!ci_check(ci_level,hf_occ_orb,deas_dets[i])){
+               if(nel_det==nelec &&sym_det==target_sym &&spin_det==spin &&!deas_dets[i].ci_check(ci_level,hf_occ_orb)){
                   ci_dets.push_back(deas_dets[i]);
                   if(ci_dets.size()>=Mmax){break;}
                }

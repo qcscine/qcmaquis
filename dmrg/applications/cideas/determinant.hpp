@@ -24,15 +24,23 @@
  *
  *****************************************************************************/
 
+#include <alps/numeric/matrix.hpp>
 
-class Determinant
+class Determinant : public std::vector<int>
 {
-   std::vector<int> det;
+    typedef std::vector<int> base;
 public:
    //constructor
-   Determinant(std::vector<int> input_det);
+    Determinant(base input_det) : base(input_det)  {}
+     
+    Determinant(int L) : base(L) {}
+   //default constructor
+    Determinant() {}
+   //copy constructor
+    Determinant(const Determinant& Copy) {*this = Copy;}
+
 //get number of electrons in a determinant
-/*   int determinant::num_el()
+   int num_el()
    {
       int nelec = 0;
       for(int i=0; i<(*this).size(); i++){
@@ -42,6 +50,59 @@ public:
       }
      return nelec;
    }
-*/
+
+//check symmetry of a determinant
+   int sym_check(const base &sym_vec, const alps::numeric::matrix<int> &prd){
+     int sym = 0;
+     for(int i=0; i<(*this).size(); i++){
+        if((*this)[i]==2||(*this)[i]==3){
+           sym = prd(sym,sym_vec[i]);
+        }
+      }
+      return sym;
+   }
+
+//check spin of a determinant
+   int spin_check(){
+      int spin = 0;
+      for(int i=0;i<(*this).size();i++){
+         if((*this)[i]==2){spin = spin-1;}
+         else if((*this)[i]==3){spin = spin+1;}
+      }
+      return spin;
+   }
+
+//function to extract ci determinants of a given level
+    bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,int> > &hf_occ_orb){
+      bool wrong_level = false;
+      int diff = 0;
+    //first check number of changes
+      for(int i = 0; i <hf_occ_orb.size(); i++){
+         if((*this)[hf_occ_orb[i].first] != hf_occ_orb[i].second){
+            if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 3){
+               diff++;
+            }else if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 2){
+               diff++;
+            }else if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 1){
+               diff = diff + 2;
+            }else if(hf_occ_orb[i].second == 3 && (*this)[hf_occ_orb[i].first] == 1){
+               diff++;
+            }else if(hf_occ_orb[i].second == 2 && (*this)[hf_occ_orb[i].first] == 1){
+               diff++;
+            }
+         }
+      }
+     //check if number of changes agrees with ci_level 
+      for(int i = 0; i<ci_level.size(); i++){
+         if(ci_level[i] != diff){
+            wrong_level = true;
+         }else{
+            wrong_level = false;
+            break;
+         }
+      }
+      return wrong_level;
+   }
 
 };
+
