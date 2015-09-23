@@ -114,6 +114,8 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
+            int ecounter = 0;
+
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(2)
@@ -121,15 +123,18 @@ namespace measurements {
 		     	for (pos_t i = 0; i < lattice.size(); ++i){
 				for (pos_t j = 0; j < lattice.size(); ++j){
 					for (pos_t k = ((bra_neq_ket) ? 0 : std::min(i, j)); k < lattice.size(); ++k){
-						//for (pos_t l = ((bra_neq_ket) ? k : k); l < lattice.size(); ++l){
-						for (pos_t l = ((bra_neq_ket) ? 0 : std::min(i, j)); l < lattice.size(); ++l){
+						//for (pos_t l = ((bra_neq_ket) ? 0 : std::min(i, j)); l < lattice.size(); ++l){
+						for (pos_t l = ((bra_neq_ket) ? 0 : 0); l < lattice.size(); ++l){
 
                                           if(i == j && i == k && i == l)
                                                 continue;
                                           if((i == l && k > j) || (j == k && l > i))
                                                 continue;
-                                          //if(std::max(i,j) < std::max(k,l) && l < j)
-                                          //      continue;
+                                          if(std::max(i,j) < std::max(k,l) && j > l)
+                                                continue;
+                                          // test
+                                          if(std::max(i,j) < std::max(k,l) && l > k)
+                                                continue;
                                           if(std::min(i,j) == std::min(k,l) && std::max(i,j) == std::max(k,l))
                                                 continue;
                                           if((i == j && i == std::min(k,l)) || (i == k && i == std::min(j,l)) || (j == k && j == std::min(i,l)))
@@ -159,6 +164,8 @@ namespace measurements {
 							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
 							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
 							
+                                          ecounter++;
+                                           
 							if(dct != 0.0) {
 								maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
 							
@@ -176,6 +183,8 @@ namespace measurements {
 					} // k loop
 				} // j loop
 			} // i loop
+
+			maquis::cout << std::fixed << std::setprecision(10) << " number of elements measured: " << ecounter << std::endl;
         }
         
     private:
