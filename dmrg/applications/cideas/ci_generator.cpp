@@ -199,7 +199,7 @@ int main(int argc, char ** argv)
         std::vector<Determinant> dets_left, dets_right, deas_dets, ci_dets;
         //get possible ci_levels (include 0 for HF determinant!!!)
         int ci_level_fill[4] = {0,1,2,4};
-        std::vector<int> ci_level;
+        std::vector<int> ci_level(parms.get<std::vector<int> >("ci_level"));
         for(int i = 0; i<4; i++){ci_level.push_back(ci_level_fill[i]);}
 
         std::cout << "excitation levels allowed: ";
@@ -207,7 +207,7 @@ int main(int argc, char ** argv)
         std::cout <<std::endl;
 
         //subtract left part, size is 2 in first microiteration
-        int left = 0;
+        int left = 3;
         int Mmax = 10000;
         int length = 0;
         if(left!=0){
