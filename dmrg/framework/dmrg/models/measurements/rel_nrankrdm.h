@@ -130,12 +130,11 @@ namespace measurements {
                                                 continue;
                                           if((i == l && k > j) || (j == k && l > i))
                                                 continue;
-                                          if(std::max(i,j) < std::max(k,l) && j > l)
-                                                continue;
-                                          // test
-                                          if(std::max(i,j) < std::max(k,l) && l > k)
+                                          if(std::max(i,j) < std::max(k,l) && (j > l || l > k))
                                                 continue;
                                           if(std::min(i,j) == std::min(k,l) && std::max(i,j) == std::max(k,l))
+                                                continue;
+                                          if(std::min(i,j) == std::min(k,l) && std::max(i,j) < std::max(k,l))
                                                 continue;
                                           if((i == j && i == std::min(k,l)) || (i == k && i == std::min(j,l)) || (j == k && j == std::min(i,l)))
                                                 continue;
