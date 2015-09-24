@@ -132,6 +132,8 @@ namespace measurements {
                                                 continue;
                                           if(std::max(i,j) < std::max(k,l) && (j > l || l > k))
                                                 continue;
+                                          if(std::max(i,j) > std::max(k,l) && (l > j))
+                                                continue;
                                           if(std::min(i,j) == std::min(k,l) && std::max(i,j) == std::max(k,l))
                                                 continue;
                                           if(std::min(i,j) == std::min(k,l) && std::max(i,j) < std::max(k,l))
