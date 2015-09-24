@@ -114,7 +114,7 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            int ecounter = 0;
+            //int ecounter = 0;
 
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
@@ -164,10 +164,10 @@ namespace measurements {
 							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
 							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
 							
-                                          ecounter++;
+                                          //ecounter++;
                                            
 							if(dct != 0.0) {
-								maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
+								//maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
 							
 							
 								std::vector<pos_t> label; label.push_back(i); label.push_back(j); label.push_back(k); label.push_back(l);
@@ -184,7 +184,7 @@ namespace measurements {
 				} // j loop
 			} // i loop
 
-			maquis::cout << std::fixed << std::setprecision(10) << " number of elements measured: " << ecounter << std::endl;
+			//maquis::cout << std::fixed << std::setprecision(10) << " number of elements measured: " << ecounter << std::endl;
         }
         
     private:
