@@ -123,22 +123,21 @@ namespace measurements {
 		     	for (pos_t i = 0; i < lattice.size(); ++i){
 				for (pos_t j = 0; j < lattice.size(); ++j){
 					for (pos_t k = ((bra_neq_ket) ? 0 : std::min(i, j)); k < lattice.size(); ++k){
-						//for (pos_t l = ((bra_neq_ket) ? 0 : std::min(i, j)); l < lattice.size(); ++l){
-						for (pos_t l = ((bra_neq_ket) ? 0 : 0); l < lattice.size(); ++l){
+                                    if(i == j && i  == k)
+                                         continue;
+						for (pos_t l = 0; l < lattice.size(); ++l){
 
-                                          if(i == j && i == k && i == l)
+                                          if(i == l && k > j)
                                                 continue;
-                                          if((i == l && k > j) || (j == k && l > i))
+                                          if(std::max(i,j)  < std::max(k,l)  && (j > l || l > k))
                                                 continue;
-                                          if(std::max(i,j) < std::max(k,l) && (j > l || l > k))
+                                          if(std::max(i,j)  > std::max(k,l)  && std::max(k,l) > j)
                                                 continue;
-                                          if(std::max(i,j) > std::max(k,l) && (l > j))
+                                          if(std::max(i,j) == std::max(k,l)  && i > l)
                                                 continue;
-                                          if(std::min(i,j) == std::min(k,l) && std::max(i,j) == std::max(k,l))
+                                          if(std::min(i,j) == std::min(k,l)  && std::max(i,j) <= std::max(k,l))
                                                 continue;
-                                          if(std::min(i,j) == std::min(k,l) && std::max(i,j) < std::max(k,l))
-                                                continue;
-                                          if((i == j && i == std::min(k,l)) || (i == k && i == std::min(j,l)) || (j == k && j == std::min(i,l)))
+                                          if((i == j && l  == i) || (i == k && l == i) || (j == k && (l == j || l > i)))
                                                 continue;
 
 							pos_t idx[] = { i,k,l,j };
