@@ -49,7 +49,7 @@ std::vector<int>  el_casv(const int &side, const int &left, std::vector<int> &ca
 }
 
 //function to copy determinants
-std::vector<Determinant> copy_det(const int &pos, std::vector<Determinant> dets){
+std::vector<Determinant> copy_det(std::vector<Determinant> dets){
    int end = dets.size();
    for(int i= 0; i<3; i++){    //number of copies
       for(int j =0;j<end;j++){ //number of already existing determinants
@@ -60,12 +60,14 @@ std::vector<Determinant> copy_det(const int &pos, std::vector<Determinant> dets)
 }
 
 //function to actually perform deas
-std::vector<Determinant> deas(const int &pos, const int &act_orb, std::vector<Determinant> dets){
+std::vector<Determinant> deas(const int &pos, const int &act_orb, std::vector<Determinant> dets)
+{
    std::vector<int> orb_list;
    for(int i=0;i<4;i++){orb_list.push_back(i+1);}
    orb_list.erase(orb_list.begin()+dets[0][act_orb]-1);
-   for(int i=0;i<3;i++){ //loop over possibilities
-      for(int j=0;j<pow(4,pos);j++){//loop over blocks
+   std::cout << dets.size() << std::endl;
+   for(int i=0; i<3; i++){ 					//loop over possibilities
+      for(int j=0; j<pow(4,pos); j++){				//loop over blocks
          dets[pow(4,pos)*(i+1)+j][act_orb] = orb_list[i];
       }
    }
@@ -109,31 +111,10 @@ std::vector<std::pair<int,int> > get_orb(std::vector<int> hf_occ){
    return occ_orb;
 }
 
-
-int main(int argc, char ** argv)
+std::vector<Determinant> generate_determinants(DmrgParameters &parms, EntanglementData<matrix> &em)
 {
-    std::cout.precision(12);
-
-    try {
-        if (argc != 3) {
-            std::cout << "Usage: " << argv[0] << " <result.h5>" << "output.file" << std::endl;
-            return 1;
-        }
-
-        std::string rfile(argv[1]);
-        std::ofstream wfile;
-        wfile.open(argv[2], std::ios::out);
-
-        EntanglementData<matrix> em(rfile);
-       
-        storage::archive ar(rfile, "r");
-        DmrgParameters parms;
-        ar["/parameters"] >> parms;
-
-
         int L = parms["L"];
 
-        //create product table
         alps::numeric::matrix<int> prd(8,8,0);
         prd(0,1)=prd(2,3)=prd(4,5)=prd(6,7)=1;
         prd(0,2)=prd(1,3)=prd(4,6)=prd(5,7)=2;
@@ -148,21 +129,19 @@ int main(int argc, char ** argv)
            }
         }
 
-        // get hf_occ vector
         Determinant hf_occ(parms.get<std::vector<int> >("hf_occ"));
 
-        // get CAS vector
         std::vector<mpair> casv_sort(L);
         Determinant casv(L);
         for(int i = 0; i<L; i++){
            casv_sort[i].first = em.s1_(0,i);
            casv_sort[i].second = i;
         }
-        std::sort(casv_sort.begin(),casv_sort.end(), comp); 
+        std::sort(casv_sort.begin(),casv_sort.end(), comp);
         for(int i = 0; i<L; i++){
            casv[i] = casv_sort[i].second;
-         } 
-        // print CAS vector and HF vector
+         }
+
         std::cout << "CAS vector: ";
         for(int i =0; i<L; i++){std::cout << casv[i] << " ";}
         std::cout <<std::endl;
@@ -171,45 +150,39 @@ int main(int argc, char ** argv)
         for(int i =0; i<L; i++){std::cout << hf_occ[i];}
         std::cout <<std::endl;
 
-        //get symmetry vector
         Lattice lat(parms);
         std::vector<int> sym_vec(lat.size());
         for (int i = 0; i<lat.size(); i++){
            sym_vec[i] = lat.get_prop<int>("type", i);
         }
 
-        //implement symmetry test for a given part of the HF determinant
         int target_sym, hf_sym;
         target_sym = parms["irrep"];
         hf_sym = hf_occ.sym_check(sym_vec, prd);
-        std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;      
+        std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;
 
-        // get number of electrons
         int nelec = 0;
         nelec = hf_occ.num_el();
         std::cout << "number of electrons: " << nelec <<std::endl;
-
-        //get spin
         int spin = 0;
         spin = hf_occ.spin_check();
         std::cout << "spin of HF determinant: " << spin << std::endl;
 
-
-        //initialize stuff
         std::vector<Determinant> dets_left, dets_right, deas_dets, ci_dets;
-        //get possible ci_levels (include 0 for HF determinant!!!)
-        int ci_level_fill[4] = {0,1,2,4};
+
         std::vector<int> ci_level(parms.get<std::vector<int> >("ci_level"));
-        for(int i = 0; i<4; i++){ci_level.push_back(ci_level_fill[i]);}
+        if(std::find(ci_level.begin(), ci_level.end(), 0) == ci_level.end())
+           ci_level.push_back(0);
 
         std::cout << "excitation levels allowed: ";
         for(int i =0; i<ci_level.size(); i++){std::cout << ci_level[i] << " ";}
         std::cout <<std::endl;
 
-        //subtract left part, size is 2 in first microiteration
-        int left = 3;
+        int left = 0;
         int Mmax = 10000;
         int length = 0;
+
+
         if(left!=0){
             int L_env = L-left;
             Determinant hf_right = hf_occ;
@@ -349,7 +322,7 @@ int main(int argc, char ** argv)
              length = dets_right.size();
              if(pos!=L_env-1){
                  maquis::cout << "DEAS step "<<pos+2 << ": " << dets_right.size() << " DEAS dets and " << ci_dets.size() << " CI dets" << std::endl;
-                 dets_right = copy_det(pos,dets_right);
+                 dets_right = copy_det(dets_right);
                  act_orb_right = casv_right[pos+1]-left;
                  dets_right = deas(pos+1,act_orb_right,dets_right);
              }
@@ -375,7 +348,7 @@ int main(int argc, char ** argv)
   //main loop for deas and all checks
   //    first create new set of deas determinantes iteratively
         for(int pos = 0; pos<L-1; pos++){
-           deas_dets = copy_det(pos,deas_dets);
+           deas_dets = copy_det(deas_dets);
            act_orb = casv[pos+1];
            deas_dets = deas(pos+1,act_orb,deas_dets);
 
@@ -400,20 +373,137 @@ int main(int argc, char ** argv)
         }
 
      }//end of if case left = 0
+     return ci_dets;
+}
+
+std::vector<Determinant> generate_deas(DmrgParameters &parms, EntanglementData<matrix> &em, int &run, std::vector<Determinant> &deas_dets)
+{
+    int L = parms["L"];
+
+    alps::numeric::matrix<int> prd(8,8,0);
+    prd(0,1)=prd(2,3)=prd(4,5)=prd(6,7)=1;
+    prd(0,2)=prd(1,3)=prd(4,6)=prd(5,7)=2;
+    prd(0,3)=prd(1,2)=prd(4,7)=prd(5,6)=3;
+    prd(0,4)=prd(1,5)=prd(2,6)=prd(3,7)=4;
+    prd(0,5)=prd(1,4)=prd(2,7)=prd(3,6)=5;
+    prd(0,6)=prd(1,7)=prd(2,4)=prd(3,5)=6;
+    prd(0,7)=prd(1,6)=prd(2,5)=prd(3,4)=7;
+    for(int i=0;i<8; i++){
+       for(int j=0; j<i;j++){
+          prd(i,j)=prd(j,i);
+       }
+    }
+
+    Determinant hf_occ(parms.get<std::vector<int> >("hf_occ"));
+
+    std::vector<mpair> casv_sort(L);
+    Determinant casv(L);
+    for(int i = 0; i<L; i++){
+       casv_sort[i].first = em.s1_(0,i);
+       casv_sort[i].second = i;
+    }
+    std::sort(casv_sort.begin(),casv_sort.end(), comp);
+    for(int i = 0; i<L; i++){
+       casv[i] = casv_sort[i].second;
+     }
+
+    std::cout << "CAS vector: ";
+    for(int i =0; i<L; i++){std::cout << casv[i] << " ";}
+    std::cout <<std::endl;
+
+    std::cout << "HF occupation  vector: ";
+    for(int i =0; i<L; i++){std::cout << hf_occ[i];}
+    std::cout <<std::endl;
+
+    Lattice lat(parms);
+    std::vector<int> sym_vec(lat.size());
+    for (int i = 0; i<lat.size(); i++){
+       sym_vec[i] = lat.get_prop<int>("type", i);
+    }
+
+    int target_sym, hf_sym;
+    target_sym = parms["irrep"];
+    hf_sym = hf_occ.sym_check(sym_vec, prd);
+    std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;
+
+    int nelec = 0;
+    nelec = hf_occ.num_el();
+    std::cout << "number of electrons: " << nelec <<std::endl;
+    int spin = 0;
+    spin = hf_occ.spin_check();
+    std::cout << "spin of HF determinant: " << spin << std::endl;
+
+    std::vector<int> ci_level(parms.get<std::vector<int> >("ci_level"));
+    if(std::find(ci_level.begin(), ci_level.end(), 0) == ci_level.end())
+       ci_level.push_back(0);
+
+    std::cout << "excitation levels allowed: ";
+    for(int i =0; i<ci_level.size(); i++){std::cout << ci_level[i] << " ";}
+    std::cout <<std::endl;
+
+    int act_orb = casv[0];
+    if(run == 0){
+       deas_dets.push_back(hf_occ);
+       int count = 0;
+       for(int i = 1; i<5; i++){
+          if(hf_occ[act_orb]!=i){
+             deas_dets.push_back(hf_occ);
+             count++;
+             deas_dets[count][act_orb] =i;
+          }
+       }
+    }
+    else if (run != 0){
+
+        assert(deas_dets.size() == pow(4,run));
+        std::vector<Determinant> new_deas;
+
+        deas_dets = copy_det(deas_dets);
+        std::cout << "size of deas_dets: " << deas_dets.size() << std::endl;
+        act_orb = casv[run];
+        deas_dets = deas(run,act_orb,deas_dets);
+        std::cout << "size of deas_dets: " << deas_dets.size() << std::endl;
+    }
 
 
-           //print determinants
+    return deas_dets;
+}
+
+
+int main(int argc, char ** argv)
+{
+    std::cout.precision(12);
+
+    try {
+        if (argc != 3) {
+            std::cout << "Usage: " << argv[0] << " <result.h5>" << "output.file" << std::endl;
+            return 1;
+        }
+
+        std::string rfile(argv[1]);
+
+        EntanglementData<matrix> em(rfile);
+       
+        storage::archive ar(rfile, "r");
+        DmrgParameters parms;
+        ar["/parameters"] >> parms;
+
+      //  std::vector<Determinant> ci_dets = generate_determinants(parms,em);
+        std::vector<Determinant> ci_dets;
+        for (int run = 0; run<8; ++run)
+           ci_dets = generate_deas(parms,em,run,ci_dets);
+
+        std::ofstream wfile;
+        wfile.open(argv[2], std::ios::out);
         for(int i = 0; i<ci_dets.size();i++){
            for(int j = 0; j < ci_dets[i].size();j++){
-      //        std::cout << ci_dets[i][j] << "  ";
               wfile << ci_dets[i][j] ;
            }
-      //     std::cout << std::endl;
            wfile <<std::endl;
         }
         std::cout <<"size of ci_dets: " << ci_dets.size() << std::endl;
-        std::cout <<"size of deas_dets: " << deas_dets.size() << std::endl;
-        std::cout << "size of deas dets_right: " <<dets_right.size()<<std::endl;
+//        std::cout <<"size of deas_dets: " << deas_dets.size() << std::endl;
+//        std::cout << "size of deas dets_right: " <<dets_right.size()<<std::endl;
 
 
     } catch (std::exception& e) {
