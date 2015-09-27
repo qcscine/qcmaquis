@@ -33,21 +33,6 @@
 #include "../applications/cideas/determinant.hpp"
 
 
-#if defined(USE_TWOU1)
-typedef TwoU1 grp;
-#elif defined(USE_TWOU1PG)
-typedef TwoU1PG grp;
-#elif defined(USE_SU2U1)
-typedef SU2U1 grp;
-#elif defined(USE_SU2U1PG)
-typedef SU2U1PG grp;
-#elif defined(USE_NONE)
-typedef TrivialGroup grp;
-#elif defined(USE_U1)
-typedef U1 grp;
-#endif
-
-
 //function to get orb under consideration
 std::vector<int>  el_casv(const int &side, const int &left, std::vector<int> &casv){
    int len = casv.size();
