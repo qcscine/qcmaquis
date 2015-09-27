@@ -63,70 +63,7 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
-namespace deas_detail
-{
-    template <class SymmGroup, class = void>
-    class charge_from_int
-    {
-        typedef Lattice::pos_t pos_t;
-        typedef typename SymmGroup::charge charge;
-        typedef std::vector<Index<SymmGroup> > index_vec;
-        typedef std::vector<typename SymmGroup::subcharge> site_vec;
-    public:
-        std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
-        {
-            std::vector<charge> site_charges;
-            switch(sc_input) 
-            {
-                case 4:
-                    site_charges.push_back(phys_dims[site_types[p]][0].first); // updown                   
-                    break;
-                case 3:
-                    site_charges.push_back(phys_dims[site_types[p]][1].first); // up
-                    break;
-                case 2:
-                    site_charges.push_back(phys_dims[site_types[p]][2].first); // down
-                    break;
-                case 1:
-                    site_charges.push_back(phys_dims[site_types[p]][3].first); // empty
-                    break;
-            }   
-            return site_charges;
-         }
-    };
-   
-    template <class SymmGroup>
-    class charge_from_int<SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
-    {
-        typedef Lattice::pos_t pos_t;
-        typedef typename SymmGroup::charge charge;
-        typedef std::vector<Index<SymmGroup> > index_vec;
-        typedef std::vector<typename SymmGroup::subcharge> site_vec;
-    public:
-        std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
-        {
-            std::vector<charge> site_charges;
-            switch(sc_input) {
-                case 4:
-                    site_charges.push_back(phys_dims[site_types[p]][0].first); // doubly-occ
-                    break;
-                case 3:
-                    site_charges.push_back(phys_dims[site_types[p]][1].first); // singly-occ
-                    site_charges.push_back(phys_dims[site_types[p]][2].first); // singly-occ
-                    break;
-                case 2:
-                    site_charges.push_back(phys_dims[site_types[p]][1].first); // singly-occ
-                    site_charges.push_back(phys_dims[site_types[p]][2].first); // singly-occ
-                    break;
-                case 1:
-                    site_charges.push_back(phys_dims[site_types[p]][3].first); // empty
-                    break;
-            }
-            return site_charges;
-        }
-    };
 
-}
 
 template<class Matrix, class SymmGroup, class=void>
 struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
@@ -144,13 +81,12 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , det_list(det_list_)
     , det_list_new()
     , determinants()
-    {
+    {  //this constructor should become a separate function such that it can be called several times while creating the determinants
        typedef typename SymmGroup::charge charge;
-       std::vector< std::vector<std::vector< charge > > > dummy_dets(det_list.size());
+       std::vector< std::vector<std::vector< charge > > > dummy_dets;
         // convert det_list to vec<vec<charge>>
        for (size_t i = 0; i < det_list.size(); ++i)
-            for (size_t j = 0; j < det_list[i].size(); ++j)
-                dummy_dets[i].push_back(deas_detail::charge_from_int<SymmGroup>()(det_list[i][j], j, phys_dims, site_types));
+           dummy_dets.push_back(det_list[i].charge_det(phys_dims, site_types));
        std::cout << "size of dummy_dets: "<< dummy_dets.size() <<std::endl;
        int L = dummy_dets[0].size();
        for (int i = 0; i<det_list.size(); ++i)
@@ -171,7 +107,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                        else
                            single_det[k].push_back(dummy_dets[i][j][1]);
                    }        
-                   
                }
                else{
                    for (int k = 0; k < single_det.size(); ++k)
@@ -221,7 +156,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         //idea: include current charges in rows_to_fill, should not affect 2U1
         std::vector<std::vector< int > > rows_to_fill(determinants.size(), std::vector<int > (L));
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
-        //main loop
+
+   	//another loop has to be inserted here where determinants are generated until m is reached at some site; correct numbers have to be checked here
+	//main loop
         for(int d = 0; d < determinants.size(); ++d)
         {
             charge accumulated_charge = right_end;

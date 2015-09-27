@@ -470,7 +470,7 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
         std::cout << "size of deas_dets: " << deas_dets.size() << std::endl;
     }
 
-
+//insert ci check here
     return deas_dets;
 }
 

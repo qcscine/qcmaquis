@@ -26,12 +26,80 @@
 
 #include <alps/numeric/matrix.hpp>
 
+namespace deas_detail
+{
+    template <class SymmGroup, class = void>
+    class charge_from_int
+    {
+        typedef Lattice::pos_t pos_t;
+        typedef typename SymmGroup::charge charge;
+        typedef std::vector<Index<SymmGroup> > index_vec;
+        typedef std::vector<typename SymmGroup::subcharge> site_vec;
+    public:
+        std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
+        {
+            std::vector<charge> site_charges;
+            switch(sc_input) 
+            {
+                case 4:
+                    site_charges.push_back(phys_dims[site_types[p]][0].first); // updown                   
+                    break;
+                case 3:
+                    site_charges.push_back(phys_dims[site_types[p]][1].first); // up
+                    break;
+                case 2:
+                    site_charges.push_back(phys_dims[site_types[p]][2].first); // down
+                    break;
+                case 1:
+                    site_charges.push_back(phys_dims[site_types[p]][3].first); // empty
+                    break;
+            }   
+            return site_charges;
+         }
+    };
+   
+    template <class SymmGroup>
+    class charge_from_int<SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
+    {
+        typedef Lattice::pos_t pos_t;
+        typedef typename SymmGroup::charge charge;
+        typedef std::vector<Index<SymmGroup> > index_vec;
+        typedef std::vector<typename SymmGroup::subcharge> site_vec;
+    public:
+        std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
+        {
+            std::vector<charge> site_charges;
+            switch(sc_input) {
+                case 4:
+                    site_charges.push_back(phys_dims[site_types[p]][0].first); // doubly-occ
+                    break;
+                case 3:
+                    site_charges.push_back(phys_dims[site_types[p]][1].first); // singly-occ
+                    site_charges.push_back(phys_dims[site_types[p]][2].first); // singly-occ
+                    break;
+                case 2:
+                    site_charges.push_back(phys_dims[site_types[p]][1].first); // singly-occ
+                    site_charges.push_back(phys_dims[site_types[p]][2].first); // singly-occ
+                    break;
+                case 1:
+                    site_charges.push_back(phys_dims[site_types[p]][3].first); // empty
+                    break;
+            }
+            return site_charges;
+        }
+    };
+
+}
+
 
 
 template <class SymmGroup>
 class Determinant : public std::vector<int>
 {
     typedef std::vector<int> base;
+    typedef typename SymmGroup::charge charge;
+    typedef std::vector<Index<SymmGroup> > index_vec;
+    typedef std::vector<typename SymmGroup::subcharge> site_vec;
 public:
    //constructor
     Determinant(base input_det) : base(input_det)  {}
@@ -107,6 +175,13 @@ public:
       return wrong_level;
    }
 
+//function to make charge_vector from int vector    
+    std::vector<std::vector<charge > > charge_det(index_vec const &phys_dims, site_vec const &site_types){
+       std::vector<std::vector< charge > >  c_det;
+       for (size_t j = 0; j < (*this).size(); ++j)
+           c_det.push_back(deas_detail::charge_from_int<SymmGroup>()((*this)[j], j, phys_dims, site_types));
 
+    return c_det;
+    }
 };
 
