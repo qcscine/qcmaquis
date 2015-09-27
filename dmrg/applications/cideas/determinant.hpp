@@ -26,6 +26,9 @@
 
 #include <alps/numeric/matrix.hpp>
 
+
+
+template <class SymmGroup>
 class Determinant : public std::vector<int>
 {
     typedef std::vector<int> base;
@@ -103,6 +106,7 @@ public:
       }
       return wrong_level;
    }
+
 
 };
 

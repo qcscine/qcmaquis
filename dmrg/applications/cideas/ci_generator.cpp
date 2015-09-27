@@ -33,6 +33,21 @@
 #include "../applications/cideas/determinant.hpp"
 
 
+#if defined(USE_TWOU1)
+typedef TwoU1 grp;
+#elif defined(USE_TWOU1PG)
+typedef TwoU1PG grp;
+#elif defined(USE_SU2U1)
+typedef SU2U1 grp;
+#elif defined(USE_SU2U1PG)
+typedef SU2U1PG grp;
+#elif defined(USE_NONE)
+typedef TrivialGroup grp;
+#elif defined(USE_U1)
+typedef U1 grp;
+#endif
+
+
 //function to get orb under consideration
 std::vector<int>  el_casv(const int &side, const int &left, std::vector<int> &casv){
    int len = casv.size();
@@ -49,7 +64,8 @@ std::vector<int>  el_casv(const int &side, const int &left, std::vector<int> &ca
 }
 
 //function to copy determinants
-std::vector<Determinant> copy_det(std::vector<Determinant> dets){
+template <class SymmGroup>
+std::vector<Determinant<SymmGroup> > copy_det(std::vector<Determinant<SymmGroup> > dets){
    int end = dets.size();
    for(int i= 0; i<3; i++){    //number of copies
       for(int j =0;j<end;j++){ //number of already existing determinants
@@ -60,7 +76,8 @@ std::vector<Determinant> copy_det(std::vector<Determinant> dets){
 }
 
 //function to actually perform deas
-std::vector<Determinant> deas(const int &pos, const int &act_orb, std::vector<Determinant> dets)
+template <class SymmGroup>
+std::vector<Determinant<SymmGroup> > deas(const int &pos, const int &act_orb, std::vector<Determinant<SymmGroup> > dets)
 {
    std::vector<int> orb_list;
    for(int i=0;i<4;i++){orb_list.push_back(i+1);}
@@ -111,7 +128,8 @@ std::vector<std::pair<int,int> > get_orb(std::vector<int> hf_occ){
    return occ_orb;
 }
 
-std::vector<Determinant> generate_determinants(DmrgParameters &parms, EntanglementData<matrix> &em)
+template <class SymmGroup>
+std::vector<Determinant<SymmGroup> > generate_determinants(DmrgParameters &parms, EntanglementData<matrix> &em)
 {
         int L = parms["L"];
 
@@ -129,10 +147,10 @@ std::vector<Determinant> generate_determinants(DmrgParameters &parms, Entangleme
            }
         }
 
-        Determinant hf_occ(parms.get<std::vector<int> >("hf_occ"));
+        Determinant<SymmGroup> hf_occ(parms.get<std::vector<int> >("hf_occ"));
 
         std::vector<mpair> casv_sort(L);
-        Determinant casv(L);
+	std::vector<int> casv(L);
         for(int i = 0; i<L; i++){
            casv_sort[i].first = em.s1_(0,i);
            casv_sort[i].second = i;
@@ -168,7 +186,7 @@ std::vector<Determinant> generate_determinants(DmrgParameters &parms, Entangleme
         spin = hf_occ.spin_check();
         std::cout << "spin of HF determinant: " << spin << std::endl;
 
-        std::vector<Determinant> dets_left, dets_right, deas_dets, ci_dets;
+        std::vector<Determinant<SymmGroup> > dets_left, dets_right, deas_dets, ci_dets;
 
         std::vector<int> ci_level(parms.get<std::vector<int> >("ci_level"));
         if(std::find(ci_level.begin(), ci_level.end(), 0) == ci_level.end())
@@ -185,9 +203,9 @@ std::vector<Determinant> generate_determinants(DmrgParameters &parms, Entangleme
 
         if(left!=0){
             int L_env = L-left;
-            Determinant hf_right = hf_occ;
-            Determinant symvec_left = sym_vec;
-            Determinant symvec_right = sym_vec;
+            Determinant<SymmGroup> hf_right = hf_occ;
+            Determinant<SymmGroup> symvec_left = sym_vec;
+            Determinant<SymmGroup> symvec_right = sym_vec;
             hf_right.erase(hf_right.begin(), hf_right.begin()+left);
             symvec_right.erase(symvec_right.begin(), symvec_right.begin()+left);
             symvec_left.erase(symvec_left.begin()+left,symvec_left.end());
@@ -376,7 +394,9 @@ std::vector<Determinant> generate_determinants(DmrgParameters &parms, Entangleme
      return ci_dets;
 }
 
-std::vector<Determinant> generate_deas(DmrgParameters &parms, EntanglementData<matrix> &em, int &run, std::vector<Determinant> &deas_dets)
+
+template <class SymmGroup>
+std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, EntanglementData<matrix> &em, int &run, std::vector<Determinant<SymmGroup> > &deas_dets)
 {
     int L = parms["L"];
 
@@ -394,10 +414,10 @@ std::vector<Determinant> generate_deas(DmrgParameters &parms, EntanglementData<m
        }
     }
 
-    Determinant hf_occ(parms.get<std::vector<int> >("hf_occ"));
+    Determinant<SymmGroup> hf_occ(parms.get<std::vector<int> >("hf_occ"));
 
     std::vector<mpair> casv_sort(L);
-    Determinant casv(L);
+    std::vector<int> casv(L);
     for(int i = 0; i<L; i++){
        casv_sort[i].first = em.s1_(0,i);
        casv_sort[i].second = i;
@@ -456,7 +476,7 @@ std::vector<Determinant> generate_deas(DmrgParameters &parms, EntanglementData<m
     else if (run != 0){
 
         assert(deas_dets.size() == pow(4,run));
-        std::vector<Determinant> new_deas;
+        std::vector<Determinant<SymmGroup> > new_deas;
 
         deas_dets = copy_det(deas_dets);
         std::cout << "size of deas_dets: " << deas_dets.size() << std::endl;
@@ -468,7 +488,6 @@ std::vector<Determinant> generate_deas(DmrgParameters &parms, EntanglementData<m
 
     return deas_dets;
 }
-
 
 int main(int argc, char ** argv)
 {
@@ -488,8 +507,8 @@ int main(int argc, char ** argv)
         DmrgParameters parms;
         ar["/parameters"] >> parms;
 
-      //  std::vector<Determinant> ci_dets = generate_determinants(parms,em);
-        std::vector<Determinant> ci_dets;
+      //  std::vector<Determinant<grp> > ci_dets = generate_determinants(parms,em);
+        std::vector<Determinant<grp> > ci_dets;
         for (int run = 0; run<8; ++run)
            ci_dets = generate_deas(parms,em,run,ci_dets);
 

@@ -38,7 +38,6 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/models/model.h"
 #include "../applications/cideas/determinant.hpp"
 
 #ifdef USE_AMBIENT
@@ -136,7 +135,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 std::vector<Index<SymmGroup> > const& phys_dims_,
                 typename SymmGroup::charge right_end_,
                 std::vector<int> const& site_type,
-                std::vector<Determinant> const& det_list_)
+                std::vector<Determinant<SymmGroup> > const& det_list_)
     : parms(parms_)
     , phys_dims(phys_dims_)
     , site_types(site_type)
@@ -400,18 +399,19 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<typename SymmGroup::subcharge> site_types;
     default_mps_init<Matrix, SymmGroup> di;
-    std::vector<Determinant> det_list;
+    std::vector<Determinant<SymmGroup> > det_list;
     std::vector<std::vector<std::size_t> > det_list_new;
     std::vector<std::vector<charge> >  determinants;
     charge right_end;
 };
 
 //parse determinants
-std::vector<Determinant> dets_from_file(std::string file){
+template <class SymmGroup>
+std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
     std::ifstream config_file;
     config_file.open(file.c_str());
 
-    std::vector<Determinant> configs;
+    std::vector<Determinant<SymmGroup> > configs;
 
     for (std::string line; std::getline(config_file, line); ) {
         std::vector<std::string> det_coeff;
@@ -419,7 +419,7 @@ std::vector<Determinant> dets_from_file(std::string file){
 
         std::string det = det_coeff[0];
 
-        Determinant tmp;
+        Determinant<SymmGroup> tmp;
         for (std::size_t i = 0; i < det.size(); ++i) {
             int occ = boost::lexical_cast<size_t>(det[i]);
             switch(occ) {
@@ -492,7 +492,7 @@ int main(int argc, char ** argv){
         maquis::cout << "Right end: " << right_end <<std::endl;
   
          //det_list as function parameter
-        std::vector<Determinant>  det_list = dets_from_file(det_file);
+        std::vector<Determinant<grp> >  det_list = dets_from_file<grp>(det_file);
   
         std::cout <<"hf_determinant = 1st determinant in list: ";
         for(int i = 0; i<det_list[0].size(); i++){
