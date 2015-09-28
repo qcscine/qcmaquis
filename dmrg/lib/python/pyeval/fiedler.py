@@ -39,7 +39,7 @@ from matplotlib import lines
 from pylab import *
 
 import input as DmrgInput
-import s2
+import entropy
 import mutinf
 
 #calculate graph laplacian
@@ -134,7 +134,7 @@ def bfo_gfv(occ_new, global_fo):
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    entropies = s2.MaquisMeasurement(inputfile)
+    entropies = entropy.MaquisMeasurement(inputfile)
     props = DmrgInput.loadProperties(inputfile)
 
     #mutual information matrix:
