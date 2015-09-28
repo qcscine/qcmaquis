@@ -30,32 +30,56 @@
 import sys
 import pyalps
 
-#import numpy as np
+class spinMeasurement:
+
+    def __init__(self, inputfile):
+    self.loc_nup          = pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0].y[0]
+    self.loc_ndown        = pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0].y[0]
+    self.loc_nupdown      = pyalps.loadEigenstateMeasurements([inputfile], what='Nupdown')[0][0].y[0]
+
+    self.loc_nup_nup      = pyalps.loadEigenstateMeasurements([inputfile], what='nupnup')[0][0].y[0]
+    self.loc_ndown_nup    = pyalps.loadEigenstateMeasurements([inputfile], what='nupndown')[0][0].y[0]
+    self.loc_nup_ndown    = pyalps.loadEigenstateMeasurements([inputfile], what='ndownnup')[0][0].y[0]
+    self.loc_ndown_ndown  = pyalps.loadEigenstateMeasurements([inputfile], what='ndownndown')[0][0].y[0]
+    self.loc_splus_sminus = pyalps.loadEigenstateMeasurements([inputfile], what='splus_sminus')[0][0].y[0]
+
+    def sminusplus(self):
+        nupdown   = self.loc_nupdown
+        ndown     = self.loc_ndown
+        splusminus = self.loc_splus_sminus
+
+        return (sum(ndown) - sum(nupdown) + 2*sum(splus_sminus))
+
+    def sz2(self):
+        nup         = self.loc_nup
+        ndown       = self.loc_ndown
+        nupdown     = self.loc_nupdown
+        nup_nup     = self.loc_nup_nup
+        ndown_ndown = self.loc_ndown_ndown
+        nup_ndown   = self.loc_nup_ndown
+        ndown_nup   = self.loc_ndown_nup
+
+        return ( 0.25*sum(nup) - 0.5*sum(nupdown)  + 0.25*sum(ndown) \
+          + 2*0.25*(sum(nup_nup) - sum(nup_ndown) - sum(ndown_nup) + sum(ndown_ndown)))
+
+    def sz(self):
+        nup   = self.loc_nup
+        ndown = self.loc_ndown
+
+        return (0.5*(sum(nup) - sum(ndown)))
+
+    S2 = sminusplus + s_z2 + s_z
+
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    # load data from the HDF5 result file
-    nup = pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0].y[0]
-    ndown = pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0].y[0]
-    nupdown = pyalps.loadEigenstateMeasurements([inputfile], what='Nupdown')[0][0].y[0]
+    guinea_pig = spinMeasurement(inputfile)
 
-    nup_nup = pyalps.loadEigenstateMeasurements([inputfile], what='nupnup')[0][0].y[0]
-    ndown_nup = pyalps.loadEigenstateMeasurements([inputfile], what='nupndown')[0][0].y[0]
-    nup_ndown = pyalps.loadEigenstateMeasurements([inputfile], what='ndownnup')[0][0].y[0]
-    ndown_ndown = pyalps.loadEigenstateMeasurements([inputfile], what='ndownndown')[0][0].y[0]
-    splus_sminus =  pyalps.loadEigenstateMeasurements([inputfile], what='splus_sminus')[0][0].y[0]
+    S2 = guinea_pig.sminusplus() + guinea_pig.sz2() + guinea_pig.sz()
 
-
-    sminusplus =  sum(ndown) - sum(nupdown) + 2*sum(splus_sminus)
-    s_z2 =  0.25*sum(nup) - 0.5*sum(nupdown)  + 0.25*sum(ndown) \
-          + 2*0.25*(sum(nup_nup) - sum(nup_ndown) - sum(ndown_nup) + sum(ndown_ndown))
-    s_z = 0.5*(sum(nup) - sum(ndown))
-
-    S2 = sminusplus + s_z2 + s_z
-
-    print "  <psi|S_z|psi>:", s_z
-    print "<psi|S_z^2|psi>:", s_z2
+    print "  <psi|S_z|psi>:", guinea_pig.sz()
+    print "<psi|S_z^2|psi>:", guinea_pig.sz2()
     print "  <psi|S^2|psi>:", S2
     print "       S       :", (-1 + (1+4*S2)**0.5)/2
 
