@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 from matplotlib import lines
 from pylab import pi
 
-import s2
+import entropy
 import input as DmrgInput
 
 def plot_mutinf(mat_I, vec_s1, order, title = None):
@@ -116,7 +116,7 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    guinea_pig = s2.MaquisMeasurement(inputfile)
+    guinea_pig = entropy.MaquisMeasurement(inputfile)
 
     print "s1 matrix"
     print guinea_pig.s1()
