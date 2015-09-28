@@ -473,7 +473,7 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
 //insert ci check here
     return deas_dets;
 }
-
+/*
 int main(int argc, char ** argv)
 {
     std::cout.precision(12);
@@ -515,3 +515,4 @@ int main(int argc, char ** argv)
         return 1;
     }
 }
+*/
