@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <omp.h>
 #include <boost/lexical_cast.hpp>
 
 #include "dmrg/sim/matrix_types.h"
@@ -100,7 +101,8 @@ std::vector<std::vector<typename SymmGroup::charge> >  get_charge_determinants(s
         dummy_dets.push_back(det_list[i].charge_det(phys_dims, site_types));
     std::cout << "size of dummy_dets: "<< dummy_dets.size() <<std::endl;
     int L = dummy_dets[0].size();
-    for (int i = 0; i<det_list.size(); ++i)
+    #pragma omp parallel for
+    for (int i = 0; i<dummy_dets.size(); ++i)
     {
         std::vector<std::vector<charge> > single_det(1);
         for (int j = 0; j < det_list[i].size(); ++j)
@@ -137,13 +139,16 @@ std::vector<std::vector<typename SymmGroup::charge> >  get_charge_determinants(s
             charge identity(0);
             if(valid == true  && accumulated_charge == right_end && std::find(determinants.begin(), determinants.end(), single_det[m]) == determinants.end())//letzte Bedingung kann später geloescht werden
             {
+		#pragma omp critical
                 determinants.push_back(single_det[m]);
                 Determinant<SymmGroup> det_str = str_from_det(single_det[m],phys_dims,site_types);
+		#pragma omp critical
                 det_list_new.push_back(det_str);
             }
         }
         single_det.clear();
     }
+    #pragma omp barrier
     return determinants;
 }
 
@@ -203,14 +208,19 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         bool keep_running = true;
         int det_nr = 0;
 	//main loop
-	for(int run = 0; run < 11; ++run){ 
+	for(int run = 0; run < 13; ++run){ 
            //generate deas determinants
            deas_dets = generate_deas(parms,em,run,deas_dets);
+
+	   size_t loop_start = pow(4,run)-1;
+	   size_t loop_end = pow(4,run+1);
            #pragma omp parallel for
-           for(int i = pow(4,run)-1; i<pow(4,run+1); ++i){
+           for(int i = loop_start; i < loop_end; ++i){
               if(!deas_dets[i].ci_check(ci_level,hf_occ_orb))
+		 #pragma omp critical
                  new_det_list.push_back(deas_dets[i]);
            }
+           #pragma omp barrier
            //convert to charge_vec -> determinants
            std::cout << "size of new_det_list: "<< new_det_list.size() << std::endl;
            determinants = get_charge_determinants(new_det_list, det_list_new, phys_dims, site_types, right_end);
@@ -444,7 +454,7 @@ int main(int argc, char ** argv){
             return 1;
         }
 
-        DmrgOptions opt(argc-1, argv);
+        DmrgOptions opt(argc, argv);
         DmrgParameters parms = opt.parms;
 
 
