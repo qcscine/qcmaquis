@@ -208,7 +208,9 @@ private:
 
         add_option("orbital_order", "comma separated list of orbital numbers");
         add_option("hf_occ", "comma separated list of orbital occupancies for Hartree Fock initial state");
-        add_option("ci_level", "number of electrons excited from HF determinant", "");
+        add_option("ci_level", "number of electrons excited from HF determinant", "1,2,4");
+        add_option("init_resultfile", "");
+        add_option("init_chkpfile", "");
 
         add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(1.e-20));
         

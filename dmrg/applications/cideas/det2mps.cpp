@@ -156,71 +156,17 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 EntanglementData<Matrix> em_,
                 std::vector<Index<SymmGroup> > const& phys_dims_,
                 typename SymmGroup::charge right_end_,
-                std::vector<int> const& site_type,
-                std::vector<Determinant<SymmGroup> > const& det_list_)
+                std::vector<int> const& site_type)
     : parms(parms_)
     , em(em_)
     , phys_dims(phys_dims_)
     , site_types(site_type)
     , di(parms, phys_dims_, right_end_, site_type)
     , right_end(right_end_)
-    , det_list(det_list_)
+    , det_list()
     , det_list_new()
     , determinants()
    {}
-  /*  {  //this constructor should become a separate function such that it can be called several times while creating the determinants
-       typedef typename SymmGroup::charge charge;
-       std::vector< std::vector<std::vector< charge > > > dummy_dets;
-        // convert det_list to vec<vec<charge>>
-       for (size_t i = 0; i < det_list.size(); ++i)
-           dummy_dets.push_back(det_list[i].charge_det(phys_dims, site_types));
-       std::cout << "size of dummy_dets: "<< dummy_dets.size() <<std::endl;
-       int L = dummy_dets[0].size();
-       for (int i = 0; i<det_list.size(); ++i)
-       {
-           std::vector<std::vector<charge> > single_det(1);
-           for (int j = 0; j < det_list[i].size(); ++j)
-           {
-               if (dummy_dets[i][j].size() != 1)
-               {
-                   int times = single_det.size();
-                   for (int k = 0; k < times; k++)
-                       single_det.push_back(single_det[k]);
-                   
-                   for (int k = 0; k < single_det.size(); ++k)
-                   {
-                       if (k < single_det.size()/2) //works only if there are two options, like (1,1) and (1,-1)
-                           single_det[k].push_back(dummy_dets[i][j][0]);
-                       else
-                           single_det[k].push_back(dummy_dets[i][j][1]);
-                   }        
-               }
-               else{
-                   for (int k = 0; k < single_det.size(); ++k)
-                       single_det[k].push_back(dummy_dets[i][j][0]); 
-               }
-           }
-           for (int m = 0; m < single_det.size(); ++m)
-           {
-               bool valid = true;
-               charge accumulated_charge = single_det[m][0];
-               for (int l = 1; l < L; ++l)
-               {
-                   accumulated_charge = SymmGroup::fuse(accumulated_charge, single_det[m][l]);
-                   if (!charge_detail::physical<SymmGroup>(accumulated_charge))
-                       valid = false;
-               }
-               charge identity(0);
-               if(valid == true  && accumulated_charge == right_end && std::find(determinants.begin(), determinants.end(), single_det[m]) == determinants.end())//letzte Bedingung kann später geloescht werden
-               {
-                   determinants.push_back(single_det[m]);
-                   std::vector<std::size_t> str = str_from_det(single_det[m],phys_dims,site_types);
-                   det_list_new.push_back(str);
-               }
-           }
-           single_det.clear();
-       }
-    }*/
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
@@ -231,10 +177,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
         pos_t L = mps.length();
-        //determinants = get_charge_determinants(det_list, det_list_new, phys_dims, site_types, right_end);
-       // std::cout << " size of det_list_new is: " << det_list_new.size()<<std::endl; 
-
-        //std::cout << " size of determinants is: " << determinants.size()<<std::endl; 
 
         charge doubly_occ = phys_dims[0].begin()->first, empty = phys_dims[0].rbegin()->first;
 
@@ -255,21 +197,24 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
    	//another loop has to be inserted here where determinants are generated until m is reached at some site; correct numbers have to be checked here
         std::vector<Determinant<SymmGroup> > deas_dets, new_det_list;
+        std::vector<std::vector<charge> >  total_dets;
         std::vector<int> dummy_vec(L);
         std::vector<int> sum_size(L);
         bool keep_running = true;
         int det_nr = 0;
 	//main loop
-	for(int run = 0; run < L; ++run){ 
+	for(int run = 0; run < 11; ++run){ 
            //generate deas determinants
            deas_dets = generate_deas(parms,em,run,deas_dets);
+           #pragma omp parallel for
            for(int i = pow(4,run)-1; i<pow(4,run+1); ++i){
               if(!deas_dets[i].ci_check(ci_level,hf_occ_orb))
                  new_det_list.push_back(deas_dets[i]);
            }
            //convert to charge_vec -> determinants
+           std::cout << "size of new_det_list: "<< new_det_list.size() << std::endl;
            determinants = get_charge_determinants(new_det_list, det_list_new, phys_dims, site_types, right_end);
-           std::cout << determinants.size() << std::endl;
+           std::cout << "size of determinants: "<< determinants.size() << std::endl;
 
            for(int d = 0; d < determinants.size(); ++d)
            {
@@ -278,7 +223,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                for(int s = L - 1; s > 0; --s)
                {
                    charge site_charge = determinants[d][s];
-                   
                    accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
                    if(charge_detail::physical<SymmGroup>(accumulated_charge))
                    {
@@ -303,6 +247,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                       break;
                    }
                }
+               det_nr ++;
+               total_dets.push_back(determinants[d]);
                if(keep_running == false)
                   break;
            }
@@ -311,6 +257,12 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
               break;
         }
         //this now calls a function which is part of this structure
+        std::cout <<"THE NUMBER OF SUITABLE DETS: " << det_nr <<std::endl;
+        std::cout << "sum of sector sizes: " ;
+        for (int i = 0; i < L; ++i)
+           std::cout << sum_size[i] << " ";
+        std::cout << std::endl;
+
         init_sect(mps, str_to_col_map, true, 0); 
 
         //this here is absolutely necessary
@@ -318,13 +270,13 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             mps[i].multiply_by_scalar(0.0);
 
         //fill loop
-        for(int d = 0; d < determinants.size(); ++d)
+        for(int d = 0; d < total_dets.size(); ++d)
         {
             charge accumulated_charge = right_end;
             int prev_row = 0;
             for(int s = L - 1; s > 0; --s)
             {
-                charge site_charge = determinants[d][s];
+                charge site_charge = total_dets[d][s];
                 charge search_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
                 if (charge_detail::physical<SymmGroup>(search_charge) && mps[s].row_dim().has(search_charge))
                 {
@@ -361,8 +313,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
        std::cout << "fill worked" << std::endl;
 
        //first site needs to be filled as well
-       for(int d = 0; d < determinants.size(); d++){
-          charge first_charge = determinants[d][0];
+       for(int d = 0; d < total_dets.size(); d++){
+          charge first_charge = total_dets[d][0];
           if (charge_detail::physical<SymmGroup>(first_charge))
           {
              size_t first_pos = mps[0].data().left_basis().position(first_charge);
@@ -433,39 +385,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     }
 
 
-/*    charge get_accu_charge(std::vector<charge> &det)
-    {
-       charge accu_charge = SymmGroup::IdentityCharge;
-       for (int i = 0; i < det.size(); ++i)
-          SymmGroup::fuse(accu_charge, det[i]);
-       return accu_charge
-    }
-
-
-    std::vector<std::size_t> str_from_det(std::vector <charge> & charge_vec, index_vec const & phys_dims, site_vec const & site_types){
-       std::vector<std::size_t> str(charge_vec.size());
-       for (int i = 0; i < charge_vec.size(); ++i)
-       {
-           if (charge_vec[i] == phys_dims[site_types[i]][0].first)
-           {   
-               str[i] = 4;
-           }else if (charge_vec[i] == phys_dims[site_types[i]][1].first)
-           {
-               str[i] = 3;
-           }else if (charge_vec[i] == phys_dims[site_types[i]][2].first) // singly-occ (2)
-           {
-               str[i] = 2;
-           }else if (charge_vec[i] == phys_dims[site_types[i]][3].first)
-           {
-               str[i] = 1;
-           }
-       }
-       return str; 
-    }
-*/
-
-
-
     DmrgParameters parms;
     EntanglementData<Matrix> em;
     std::vector<Index<SymmGroup> > phys_dims;
@@ -520,24 +439,18 @@ std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
 
 int main(int argc, char ** argv){
     try {
-        if (argc != 3) {
-            std::cout << "Usage: " << argv[0] << "result file" << "determinants.txt" << std::endl;
+        if (argc != 2) {
+            std::cout << "Usage: " << argv[0] << "dmrg-input file" << std::endl;
             return 1;
         }
 
-        std::string det_file(argv[2]);
-       // DmrgOptions opt(argc-1, argv);
-       // DmrgParameters parms = opt.parms;
+        DmrgOptions opt(argc-1, argv);
+        DmrgParameters parms = opt.parms;
 
 
-        std::string rfile(argv[1]);
-
+        std::string rfile(parms.get<std::string>("init_resultfile"));
         EntanglementData<matrix> em(rfile);
        
-        storage::archive ar(rfile, "r");
-        DmrgParameters parms;
-        ar["/parameters"] >> parms;
-
         Lattice lat(parms);
         Model<matrix,grp> mod(lat,parms);
 
@@ -572,20 +485,9 @@ int main(int argc, char ** argv){
         grp::charge right_end = chem_detail::qn_helper<grp>().total_qn(parms);
         maquis::cout << "Right end: " << right_end <<std::endl;
   
-         //det_list as function parameter
-        std::vector<Determinant<grp> >  det_list = dets_from_file<grp>(det_file);
-  
-        std::cout <<"hf_determinant = 1st determinant in list: ";
-        for(int i = 0; i<det_list[0].size(); i++){
-           std::cout << det_list[0][i] <<", "; 
-        }
-        std::cout <<std::endl;
-        
-  
-  
         //create MPS
         MPS<matrix,grp> hf_mps(L);
-        deas_mps_init<matrix,grp> hf(parms,em,phys_dims,right_end,site_types,det_list);
+        deas_mps_init<matrix,grp> hf(parms,em,phys_dims,right_end,site_types);
         hf(hf_mps); 
         maquis::cout << "MPS created" << std::endl;
 
