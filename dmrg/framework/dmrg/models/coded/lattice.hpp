@@ -171,12 +171,15 @@ public:
             boost::split(split_line, line, boost::is_any_of("="));
             std::vector<subcharge> symm_vec;
 
+            // record the site_types in parameters
+            model.set("site_types", split_line[1]);
+
             std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
             std::istringstream iss(split_line[1]);
             subcharge number;
             while( iss >> number )
                 symm_vec.push_back(number-1);
-
+            
             assert( L == symm_vec.size() );
             for (int p = 0; p < L; ++p)
                 irreps[p] = symm_vec[order[p]-1];
