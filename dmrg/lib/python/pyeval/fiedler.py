@@ -155,6 +155,10 @@ if __name__ == '__main__':
     new_s1, new_mutinf = reorder(vec_s1, mat_I, order)
     cost_old = cost_meas(mat_I)
     cost_new = cost_meas(new_mutinf)
+
+    site_types = [int(x) for x in props["site_types"].split(',')[:-1]]
+    print site_types
+    print len(site_types)
     
     #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
     
