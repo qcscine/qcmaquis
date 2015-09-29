@@ -28,7 +28,7 @@
 #ifndef AMBIENT_CONTAINER_NUMERIC_DIAGONAL_MATRIX_H
 #define AMBIENT_CONTAINER_NUMERIC_DIAGONAL_MATRIX_H
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
    
     template<typename T, class Allocator>
     class matrix;
@@ -69,15 +69,15 @@ namespace ambient { namespace numeric {
 namespace ambient {
 
     template <typename S>
-    struct info < numeric::diagonal_matrix<S> > {
-        typedef numeric::diagonal_matrix<S> type;
+    struct info < diagonal_matrix<S> > {
+        typedef diagonal_matrix<S> type;
         template <typename U> static U& unfold(type& folded){ return *static_cast<U*>(&folded.get_data()); }
     };
 
     template <typename S>
-    struct info < const numeric::diagonal_matrix<S> > {
-        typedef const numeric::diagonal_matrix<S> type;
-        template <typename U> static const numeric::matrix<S, ambient::default_allocator<S> >& unfold(type& folded){ return folded.get_data(); }
+    struct info < const diagonal_matrix<S> > {
+        typedef const diagonal_matrix<S> type;
+        template <typename U> static const matrix<S>& unfold(type& folded){ return folded.get_data(); }
     };
 }
 

@@ -35,6 +35,7 @@
 #include <vector>
 #include <set>
 #include <boost/lexical_cast.hpp>
+#include <boost/lambda/lambda.hpp>
 
 #include "dmrg/utils/BaseParameters.h"
 
@@ -147,13 +148,15 @@ public:
     Orbitals (BaseParameters & model)
     : L(model["L"])
     , irreps(L, 0)
+    , order(L)
     {
-        std::vector<pos_t> order(L);
         if (!model.is_set("orbital_order"))
             for (pos_t p = 0; p < L; ++p)
-                order[p] = p+1;
-        else
+                order[p] = p;
+        else {
             order = model["orbital_order"].as<std::vector<pos_t> >();
+            std::for_each(order.begin(), order.end(), boost::lambda::_1 = boost::lambda::_1 -1);
+        }
 
         if (model.is_set("integral_file")) {
             std::string integral_file = model["integral_file"];
@@ -171,15 +174,18 @@ public:
             boost::split(split_line, line, boost::is_any_of("="));
             std::vector<subcharge> symm_vec;
 
+            // record the site_types in parameters
+            model.set("site_types", split_line[1]);
+
             std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
             std::istringstream iss(split_line[1]);
             subcharge number;
             while( iss >> number )
                 symm_vec.push_back(number-1);
-
+            
             assert( L == symm_vec.size() );
             for (int p = 0; p < L; ++p)
-                irreps[p] = symm_vec[order[p]-1];
+                irreps[p] = symm_vec[order[p]];
 
             orb_file.close();
 
@@ -211,9 +217,9 @@ public:
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
         if (property == "label" && pos.size() == 1)
-            return boost::any( site_label(pos[0]) );
+            return boost::any( site_label(order[pos[0]]) );
         else if (property == "label" && pos.size() == 2)
-            return boost::any( bond_label(pos[0], pos[1]) );
+            return boost::any( bond_label(order[pos[0]], order[pos[1]]) );
         else if (property == "type" && pos.size() == 1)
             return boost::any( irreps[pos[0]] );
         else if (property == "type" && pos.size() == 2)
@@ -255,6 +261,7 @@ private:
     int maximum_vertex;
 
     std::vector<subcharge> irreps;
+    std::vector<pos_t> order;
 };
 
 class SquareLattice : public lattice_impl

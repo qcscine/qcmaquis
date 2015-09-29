@@ -104,6 +104,24 @@ namespace chem_detail {
             row++;
         }
 
+        // dump the integrals into the result file for reproducibility
+        if (parms["donotsave"] == 0)
+        {
+            std::vector<double> m_;
+            std::vector<Lattice::pos_t> i_;
+
+            it = raw.begin();
+            while (it != raw.end()) {
+                m_.push_back(*it++);
+                std::copy(it, it+4, std::back_inserter(i_));
+                it += 4;
+            }
+
+            storage::archive ar(parms["resultfile"], "w");
+            ar["/integrals/elements"] << m_;
+            ar["/integrals/indices"] << i_;
+        }
+
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
         {
@@ -197,6 +215,28 @@ namespace chem_detail {
 
             it += 4;
             row++;
+        }
+
+        // dump the integrals into the result file for reproducibility
+        if (parms["donotsave"] == 0)
+        {
+            std::vector<T> m_;
+            std::vector<Lattice::pos_t> i_;
+
+            it = raw.begin();
+            while (it != raw.end()) {
+                double re = *it++;
+                double im = *it++;
+                T integral_value(re, im);
+
+                m_.push_back(integral_value);
+                std::copy(it, it+4, std::back_inserter(i_));
+                it += 4;
+            }
+
+            storage::archive ar(parms["resultfile"], "w");
+            ar["/integrals/elements"] << m_;
+            ar["/integrals/indices"] << i_;
         }
 
         #ifndef NDEBUG

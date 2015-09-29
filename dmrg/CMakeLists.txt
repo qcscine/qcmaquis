@@ -411,7 +411,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 ######################################################################
 
 install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
-        DESTINATION include COMPONENT headers)
+        DESTINATION include/framework/dmrg COMPONENT headers)
 
 #TODO: improve using GLOB
 install(DIRECTORY framework/dmrg framework/ietl framework/utils

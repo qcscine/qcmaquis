@@ -47,12 +47,12 @@ namespace ambient {
     /* prohibited in async mode (sync mode only) */
 
     template<class T, class Allocator>
-    vector<T,Allocator>::vector(size_t n, T value) : AMBIENT_ALLOC(n*sizeof(T)+sizeof(size_t)), cached_size_(n) {
+    vector<T,Allocator>::vector(size_t n, T value) : ambient_allocator(n*sizeof(T)+sizeof(size_t)), cached_size_(n) {
         this->init(value);
     }
 
     template <typename T, class Allocator>
-    vector<T,Allocator>::vector(const vector& a) : AMBIENT_ALLOC(a.capacity()*sizeof(T)+sizeof(size_t)) {
+    vector<T,Allocator>::vector(const vector& a) : ambient_allocator(a.capacity()*sizeof(T)+sizeof(size_t)) {
         ambient::merge(a, *this);
     }
     
@@ -124,7 +124,7 @@ namespace ambient {
 
     template<class T, class Allocator>
     void vector<T,Allocator>::swap(vector<T,Allocator>& r){
-        ambient::swap_with(*this, r);
+        ambient::ext::swap(*this, r);
         std::swap(this->cached_size_, r.cached_size_);
     }
 

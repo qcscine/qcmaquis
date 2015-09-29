@@ -29,6 +29,7 @@
 #include "tevol_sim.h"
 #include "dmrg/evolve/tevol_nn_sim.h"
 #include "dmrg/evolve/tevol_mpo_sim.h"
+#include "dmrg/evolve/tevol_circuit_sim.h"
 #include "simulation.h"
 
 #include <boost/scoped_ptr.hpp>
@@ -42,11 +43,15 @@ void simulation<SymmGroup>::run(DmrgParameters & parms)
             sim.reset(new tevol_sim<cmatrix, SymmGroup, nearest_neighbors_evolver<cmatrix, SymmGroup> >(parms));
         else if (parms["te_type"] == "mpo")
             sim.reset(new tevol_sim<cmatrix, SymmGroup, mpo_evolver<cmatrix, SymmGroup> >(parms));
+        else if (parms["te_type"] == "circuit")
+            sim.reset(new tevol_sim<cmatrix, SymmGroup, circuit_evolver<cmatrix, SymmGroup> >(parms));
     } else {
         if (parms["te_type"] == "nn")
             sim.reset(new tevol_sim<matrix, SymmGroup, nearest_neighbors_evolver<matrix, SymmGroup> >(parms));
         else if (parms["te_type"] == "mpo")
             sim.reset(new tevol_sim<matrix, SymmGroup, mpo_evolver<matrix, SymmGroup> >(parms));
+        else if (parms["te_type"] == "circuit")
+            sim.reset(new tevol_sim<matrix, SymmGroup, circuit_evolver<matrix, SymmGroup> >(parms));
     }
     
     /// Run

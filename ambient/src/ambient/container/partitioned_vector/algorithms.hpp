@@ -38,9 +38,9 @@ namespace ambient {
     void for_each(InputIterator begin, InputIterator end, Function fn){
         typedef block_iterator<typename InputIterator::container_type> iterator;
         for(iterator bit(begin,end); bit != end; ++bit)
-            ambient::async([fn](typename iterator::block_type& block, size_t first, size_t second){
-                               std::for_each(block.begin()+first, block.begin()+second, fn);
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([fn](typename iterator::block_type& block, size_t first, size_t second){
+                                  std::for_each(block.begin()+first, block.begin()+second, fn);
+                              }, *bit, bit.first, bit.second);
     }
 
     template<class InputIterator>
@@ -48,12 +48,12 @@ namespace ambient {
         typedef block_iterator<typename InputIterator::container_type> iterator;
         for(iterator bit(begin,end); bit != end; ++bit){
             size_t offset = bit.offset();
-            ambient::async([offset](typename iterator::block_type& block, size_t first, size_t second){
-                               typename iterator::block_type::iterator it = block.begin()+first;
-                               std::for_each(it, block.begin()+second, [offset,it](typename iterator::block_type::value_type& e){
-                                   e = offset + (&e - it);
-                               });
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([offset](typename iterator::block_type& block, size_t first, size_t second){
+                                  typename iterator::block_type::iterator it = block.begin()+first;
+                                  std::for_each(it, block.begin()+second, [offset,it](typename iterator::block_type::value_type& e){
+                                      e = offset + (&e - it);
+                                  });
+                              }, *bit, bit.first, bit.second);
         }
     }
 
@@ -61,9 +61,9 @@ namespace ambient {
     void fill(ForwardIterator begin, ForwardIterator end, const T& val){
         typedef block_iterator<typename ForwardIterator::container_type> iterator;
         for(iterator bit(begin,end); bit != end; ++bit){
-            ambient::async([&val](typename iterator::block_type& block, size_t first, size_t second){
-                               std::fill(block.begin()+first, block.begin()+second, val);
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([&val](typename iterator::block_type& block, size_t first, size_t second){
+                                  std::fill(block.begin()+first, block.begin()+second, val);
+                              }, *bit, bit.first, bit.second);
         }
     }
 
@@ -71,9 +71,9 @@ namespace ambient {
     void generate(ForwardIterator begin, ForwardIterator end, Generator gen){
         typedef block_iterator<typename ForwardIterator::container_type> iterator;
         for(iterator bit(begin,end); bit != end; ++bit){
-            ambient::async([gen](typename iterator::block_type& block, size_t first, size_t second){
-                               std::generate(block.begin()+first, block.begin()+second, gen);
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([gen](typename iterator::block_type& block, size_t first, size_t second){
+                                  std::generate(block.begin()+first, block.begin()+second, gen);
+                              }, *bit, bit.first, bit.second);
         }
     }
 
@@ -87,14 +87,14 @@ namespace ambient {
                                      OutputIterator> iterator;
 
         for(iterator bit(begin1,begin2,result,end1-begin1); bit != end1; ++bit){
-            ambient::async([binary_op](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
-                                       const typename iterator::template get_block_type<1>& block2, size_t first2,
-                                             typename iterator::template get_block_type<2>& block3, size_t first3){
-                                        std::transform(block1.cbegin()+first1, block1.cbegin()+second1,
-                                                       block2.cbegin()+first2, block3.begin()+first3, binary_op);
-                                      }, bit.template locate<0>(), bit.first[0], bit.second[0],
-                                         bit.template locate<1>(), bit.first[1],
-                                         bit.template locate<2>(), bit.first[2]);
+            ambient::bind_cpu([binary_op](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
+                                          const typename iterator::template get_block_type<1>& block2, size_t first2,
+                                                typename iterator::template get_block_type<2>& block3, size_t first3){
+                                           std::transform(block1.cbegin()+first1, block1.cbegin()+second1,
+                                                          block2.cbegin()+first2, block3.begin()+first3, binary_op);
+                                         }, bit.template locate<0>(), bit.first[0], bit.second[0],
+                                            bit.template locate<1>(), bit.first[1],
+                                            bit.template locate<2>(), bit.first[2]);
         }
     }
 
@@ -106,12 +106,12 @@ namespace ambient {
                                      OutputIterator> iterator;
 
         for(iterator bit(begin,result,end-begin); bit != end; ++bit){
-            ambient::async([op](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
-                                      typename iterator::template get_block_type<1>& block2, size_t first2){
-                                 std::transform(block1.cbegin()+first1, block1.cbegin()+second1,
-                                                block2.begin()+first2, op);
-                               }, bit.template locate<0>(), bit.first[0], bit.second[0],
-                                  bit.template locate<1>(), bit.first[1]);
+            ambient::bind_cpu([op](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
+                                         typename iterator::template get_block_type<1>& block2, size_t first2){
+                                    std::transform(block1.cbegin()+first1, block1.cbegin()+second1,
+                                                   block2.begin()+first2, op);
+                                  }, bit.template locate<0>(), bit.first[0], bit.second[0],
+                                     bit.template locate<1>(), bit.first[1]);
         }
     }
 
@@ -121,11 +121,11 @@ namespace ambient {
                                      OutputIterator> iterator;
 
         for(iterator bit(begin,result,end-begin); bit != end; ++bit){
-            ambient::async([](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
-                                    typename iterator::template get_block_type<1>& block2, size_t first2){
-                               std::copy(block1.cbegin()+first1, block1.cbegin()+second1, block2.begin()+first2);
-                             }, bit.template locate<0>(), bit.first[0], bit.second[0],
-                                bit.template locate<1>(), bit.first[1]);
+            ambient::bind_cpu([](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
+                                       typename iterator::template get_block_type<1>& block2, size_t first2){
+                                  std::copy(block1.cbegin()+first1, block1.cbegin()+second1, block2.begin()+first2);
+                                }, bit.template locate<0>(), bit.first[0], bit.second[0],
+                                   bit.template locate<1>(), bit.first[1]);
         }
         return result+(end-begin);
     }
@@ -134,9 +134,9 @@ namespace ambient {
     void replace(ForwardIterator begin, ForwardIterator end, T old_value, T new_value){
         typedef block_iterator<typename ForwardIterator::container_type> iterator;
         for(iterator bit(begin,end); bit != end; ++bit){
-            ambient::async([old_value,new_value](typename iterator::block_type& block, size_t first, size_t second){
-                               std::replace(block.begin()+first, block.begin()+second, old_value, new_value);
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([old_value,new_value](typename iterator::block_type& block, size_t first, size_t second){
+                                  std::replace(block.begin()+first, block.begin()+second, old_value, new_value);
+                              }, *bit, bit.first, bit.second);
         }
     }
 
@@ -149,19 +149,19 @@ namespace ambient {
         block_type reduced(bit.n_blocks());
 
         for(size_t b = 0; bit != end; ++bit){
-            ambient::async([](const block_type& block, size_t first, size_t second, const block_type& res, size_t idx){
-                               const typename block_type::value_type* array = block.cbegin();
-                               const_cast<block_type&>(res)[idx] = __sec_reduce_add(array[first:second]);
-                           }, *bit, bit.first, bit.second, reduced, b);
+            ambient::bind_cpu([](const block_type& block, size_t first, size_t second, const block_type& res, size_t idx){
+                                  const typename block_type::value_type* array = block.cbegin();
+                                  const_cast<block_type&>(res)[idx] = __sec_reduce_add(array[first:second]);
+                              }, *bit, bit.first, bit.second, reduced, b);
             b++;
         }
 
         ambient::atomic<T> res(init);
-        ambient::async([](const block_type& block, ambient::atomic<T>& value){
-                           const typename block_type::value_type* array = block.cbegin();
-                           while(!ambient::locked_once(block)) continue;
-                           value.set(value.get()+__sec_reduce_add(array[0:block.size()]));
-                       }, reduced, res);
+        ambient::bind_cpu([](const block_type& block, ambient::atomic<T>& value){
+                              const typename block_type::value_type* array = block.cbegin();
+                              while(!ambient::locked_once(block)) continue;
+                              value.set(value.get()+__sec_reduce_add(array[0:block.size()]));
+                          }, reduced, res);
         return res; 
     }
 
@@ -174,19 +174,19 @@ namespace ambient {
         block_type reduced(bit.n_blocks());
 
         for(size_t b = 0; bit != end; ++bit){
-            ambient::async([op](const block_type& block, size_t first, size_t second, const block_type& res, size_t idx){
-                               const typename block_type::value_type* array = block.cbegin();
-                               const_cast<block_type&>(res)[idx] = __sec_reduce(0, array[first:second], op);
-                           }, *bit, bit.first, bit.second, reduced, b);
+            ambient::bind_cpu([op](const block_type& block, size_t first, size_t second, const block_type& res, size_t idx){
+                                  const typename block_type::value_type* array = block.cbegin();
+                                  const_cast<block_type&>(res)[idx] = __sec_reduce(0, array[first:second], op);
+                              }, *bit, bit.first, bit.second, reduced, b);
             b++;
         }
 
         ambient::atomic<T> res(init);
-        ambient::async([op](const block_type& block, ambient::atomic<T>& value){
-                           const typename block_type::value_type* array = block.cbegin();
-                           while(!ambient::locked_once(block)) continue;
-                           value.set(__sec_reduce(value.get(), array[0:block.size()], op));
-                       }, reduced, res);
+        ambient::bind_cpu([op](const block_type& block, ambient::atomic<T>& value){
+                              const typename block_type::value_type* array = block.cbegin();
+                              while(!ambient::locked_once(block)) continue;
+                              value.set(__sec_reduce(value.get(), array[0:block.size()], op));
+                          }, reduced, res);
         return res;
     }
 
@@ -216,21 +216,21 @@ namespace ambient {
 
         for(size_t b = 0; bit != end; ++bit){
             size_t offset = bit.offset();
-            ambient::async([val,offset](const block_type& block, size_t first, size_t second, const ambient::vector<int>& res, size_t idx){
-                               const typename block_type::value_type* array = block.cbegin();
-                               for(size_t i = first; i < second; i++) if(array[i] == val)
-                                   const_cast<ambient::vector<int>&>(res)[idx] = (int)(offset + i - first);
-                           }, *bit, bit.first, bit.second, positions, b);
+            ambient::bind_cpu([val,offset](const block_type& block, size_t first, size_t second, const ambient::vector<int>& res, size_t idx){
+                                  const typename block_type::value_type* array = block.cbegin();
+                                  for(size_t i = first; i < second; i++) if(array[i] == val)
+                                      const_cast<ambient::vector<int>&>(res)[idx] = (int)(offset + i - first);
+                              }, *bit, bit.first, bit.second, positions, b);
             b++;
         }
         ambient::atomic<InputIterator> res(end);
-        ambient::async([val,begin](const ambient::vector<int>& positions, ambient::atomic<InputIterator>& match){
-                           while(!ambient::locked_once(positions)) continue;
-                           for(size_t i = 0; i < positions.size(); i++) if(positions[i] != -1){
-                               match.set(begin+positions[i]);
-                               return;
-                           }
-                       }, positions, res);
+        ambient::bind_cpu([val,begin](const ambient::vector<int>& positions, ambient::atomic<InputIterator>& match){
+                              while(!ambient::locked_once(positions)) continue;
+                              for(size_t i = 0; i < positions.size(); i++) if(positions[i] != -1){
+                                  match.set(begin+positions[i]);
+                                  return;
+                              }
+                          }, positions, res);
         return res;
     }
 
@@ -242,13 +242,13 @@ namespace ambient {
         typedef typename iterator::block_type block_type;
 
         for(iterator bit(begin,end); bit != end; ++bit){
-            ambient::async([val](block_type& block, size_t first, size_t second){
-                               typename block_type::iterator r_end = std::remove(block.begin()+first, block.begin()+second, val);
-                               if(r_end == block.begin()+second) return;
-                               if(block.begin()+second != block.end())
-                                   std::copy(block.begin()+second, block.end(), r_end);
-                               block.resize(block.size() - ((block.begin()+second)-r_end));
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([val](block_type& block, size_t first, size_t second){
+                                  typename block_type::iterator r_end = std::remove(block.begin()+first, block.begin()+second, val);
+                                  if(r_end == block.begin()+second) return;
+                                  if(block.begin()+second != block.end())
+                                      std::copy(block.begin()+second, block.end(), r_end);
+                                  block.resize(block.size() - ((block.begin()+second)-r_end));
+                              }, *bit, bit.first, bit.second);
         }
     }
 
@@ -261,13 +261,13 @@ namespace ambient {
         typedef typename iterator::block_type block_type;
 
         for(iterator bit(begin,end); bit != end; ++bit){
-            ambient::async([pred](block_type& block, size_t first, size_t second){
-                               typename block_type::iterator r_end = std::unique(block.begin()+first, block.begin()+second, pred);
-                               if(r_end == block.begin()+second) return;
-                               if(block.begin()+second != block.end())
-                                   std::copy(block.begin()+second, block.end(), r_end);
-                               block.resize(block.size() - ((block.begin()+second)-r_end));
-                           }, *bit, bit.first, bit.second);
+            ambient::bind_cpu([pred](block_type& block, size_t first, size_t second){
+                                  typename block_type::iterator r_end = std::unique(block.begin()+first, block.begin()+second, pred);
+                                  if(r_end == block.begin()+second) return;
+                                  if(block.begin()+second != block.end())
+                                      std::copy(block.begin()+second, block.end(), r_end);
+                                  block.resize(block.size() - ((block.begin()+second)-r_end));
+                              }, *bit, bit.first, bit.second);
         }
     }
 

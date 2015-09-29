@@ -36,7 +36,7 @@ typedef alps::numeric::matrix<double> amatrix;
 
 #ifdef USE_AMBIENT
 #include "dmrg/block_matrix/detail/ambient.hpp"
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > pmatrix;
+typedef ambient::tiles<ambient::matrix<double> > pmatrix;
 typedef pmatrix matrix;
 #else
 typedef amatrix matrix;

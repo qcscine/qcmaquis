@@ -99,7 +99,7 @@ extern "C" {
 #undef MKL_INT
 #undef MKL_Complex16
 
-namespace ambient { namespace numeric { namespace mkl {
+namespace ambient { inline namespace numeric { namespace mkl {
 
     template<class T, class D>
     struct helper_cast;

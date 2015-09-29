@@ -1,6 +1,7 @@
 #include "ambient/ambient.hpp"
 #include "ambient/utils/math.hpp"
-#include "utils/timings.hpp"
+#include "utils/static_bind.hpp"
+#include "utils/timer.hpp"
 #define IB 256
 
 template<typename T> class stencil;
@@ -227,14 +228,14 @@ namespace detail {
 
 }
 
-AMBIENT_EXPORT_TEMPLATE(detail::partial_init_value, partial_init_value)
-AMBIENT_EXPORT_TEMPLATE(detail::reduce, reduce)
-AMBIENT_EXPORT_TEMPLATE(detail::reduce_moment, reduce_moment)
-AMBIENT_EXPORT_TEMPLATE(detail::evolve, evolve)
-AMBIENT_EXPORT_TEMPLATE(detail::contract_border_top, contract_border_top)
-AMBIENT_EXPORT_TEMPLATE(detail::contract_border_bottom, contract_border_bottom)
-AMBIENT_EXPORT_TEMPLATE(detail::contract_border_left, contract_border_left)
-AMBIENT_EXPORT_TEMPLATE(detail::contract_border_right, contract_border_right)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::partial_init_value, partial_init_value)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::reduce, reduce)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::reduce_moment, reduce_moment)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::evolve, evolve)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_top, contract_border_top)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_bottom, contract_border_bottom)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_left, contract_border_left)
+AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_right, contract_border_right)
 
 template<typename T>
 void partial_init(ambient::block<T>& b, T value, double posi, double posj, double dr, double bound){
@@ -380,7 +381,7 @@ class Diffusion2D {
                 grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
-                ambient::actor select(ambient::actor_t::common);
+                ambient::actor_common select;
                 null_stencil.fill(0.0);
             }
 

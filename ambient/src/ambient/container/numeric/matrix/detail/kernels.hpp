@@ -33,55 +33,58 @@
 #include "ambient/container/numeric/traits.hpp"
 #include "ambient/container/numeric/bindings/mkl.hpp"
 #include "ambient/container/numeric/bindings/plasma.hpp"
+#include "ambient/container/numeric/bindings/cublas_xt.hpp"
+#include "ambient/container/numeric/bindings/libsci.hpp"
 
-namespace ambient { namespace numeric { namespace kernels {
+#include "utils/static_bind.hpp"
+
+namespace ambient { inline namespace numeric { namespace kernels {
     namespace detail {
 
-        using ambient::numeric::matrix;
+        using ambient::matrix;
         using ambient::numeric::traits::real_type;
-        using ambient::memory::data_bulk;
        
         template<typename T, typename IB>
         void geqrt(matrix<T>& a, volatile matrix<T>& t){
             matrix<T>& t_ = const_cast<matrix<T>&>(t);
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>(); 
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* tau  = (T*)std::malloc(sizeof(T)*IB::value); 
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::geqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
                                      a.data(), a.num_rows(),
                                      t_.data(), t_.num_rows(),
                                      tau, work);
-            ambient::memory::data_bulk::reuse(tau); 
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
+            std::free(tau);
         }
        
         template<typename T, typename TR, typename IB>
         void ormqr(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::ormqr(PlasmaLeft, TR::value, c.num_rows(), c.num_cols(), k, PLASMA_IB,
                                      a.data(), a.num_rows(),
                                      t.data(), t.num_rows(),
                                      c.data(), c.num_rows(),
                                      work, IB::value);
-            ambient::memory::data_bulk::reuse(work);
+            std::free(work);
         }
        
         template<typename T, typename IB>
         void tsqrt(matrix<T>& a1, matrix<T>& a2, volatile matrix<T>& t){
             matrix<T>& t_ = const_cast<matrix<T>&>(t);
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* tau  = (T*)std::malloc(sizeof(T)*IB::value);
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::tsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                                      a1.data(), a1.num_rows(),
                                      a2.data(), a2.num_rows(),
                                      t_.data(), t_.num_rows(),
                                      tau, work);
-            ambient::memory::data_bulk::reuse(tau); 
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
+            std::free(tau);
         }
        
         template<typename T, typename TR, typename IB>
         void tsmqr(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::tsmqr(PlasmaLeft, TR::value,
                                      IB::value, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
                                      a1.data(), a1.num_rows(),
@@ -89,51 +92,51 @@ namespace ambient { namespace numeric { namespace kernels {
                                      (T*)v.data(), v.num_rows(), // warning: const v might be modified
                                      (T*)t.data(), t.num_rows(), // warning: const t might be modified
                                      work, PLASMA_IB);
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
         }
        
         template<typename T, typename IB>
         void gelqt(matrix<T>& a, volatile matrix<T>& t){
             matrix<T>& t_ = const_cast<matrix<T>&>(t);
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* tau  = (T*)std::malloc(sizeof(T)*IB::value);
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::gelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
                                      a.data(), a.num_rows(), 
                                      t_.data(), t_.num_rows(),
                                      tau, work);
-            ambient::memory::data_bulk::reuse(tau); 
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
+            std::free(tau);
         }
        
         template<typename T, typename TR, typename IB>
         void ormlq(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::ormlq(PlasmaRight, TR::value,
                                      c.num_rows(), c.num_cols(), k, PLASMA_IB,
                                      a.data(), a.num_rows(),
                                      t.data(), t.num_rows(),
                                      c.data(), c.num_rows(),
                                      work, IB::value);
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
         }
        
         template<typename T, typename IB>
         void tslqt(matrix<T>& a1, matrix<T>& a2, volatile matrix<T>& t){
             matrix<T>& t_ = const_cast<matrix<T>&>(t);
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* tau  = (T*)std::malloc(sizeof(T)*IB::value);
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::tslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                                      a1.data(), a1.num_rows(),
                                      a2.data(), a2.num_rows(),
                                      t_.data(), t_.num_rows(),
                                      tau, work);
-            ambient::memory::data_bulk::reuse(tau); 
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
+            std::free(tau);
         }
        
         template<typename T, typename TR, typename IB>
         void tsmlq(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            T* work = (T*)std::malloc(sizeof(T)*IB::value*PLASMA_IB);
             plasma::lapack<T>::tsmlq(PlasmaRight, TR::value,
                                      a1.num_rows(), IB::value, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
                                      a1.data(), a1.num_rows(),
@@ -141,14 +144,13 @@ namespace ambient { namespace numeric { namespace kernels {
                                      (T*)v.data(), v.num_rows(), // warning: const v might be modified
                                      (T*)t.data(), t.num_rows(), // warning: const t might be modified
                                      work, IB::value);
-            ambient::memory::data_bulk::reuse(work); 
+            std::free(work);
         }
        
         template<class ViewA, class ViewB, class ViewC, typename T>
         void gemm_fma(const matrix<T,typename ViewA::allocator_type>& a, 
                       const matrix<T,typename ViewB::allocator_type>& b, 
                             matrix<T,typename ViewC::allocator_type>& c){
-            if(!a.ambient_before->valid() || !b.ambient_before->valid()) return;
             const T* ad = a.data();
             const T* bd = b.data();
             T* cd = c.data();
@@ -168,10 +170,6 @@ namespace ambient { namespace numeric { namespace kernels {
                   const matrix<T,typename ViewB::allocator_type>& b, 
                   volatile matrix<T,typename ViewC::allocator_type>& c){
             matrix<T,typename ViewC::allocator_type>& c_ = const_cast<matrix<T,typename ViewC::allocator_type>&>(c);
-            if(!a.ambient_before->valid() || !b.ambient_before->valid()){
-                memset(c_.data(), 0, ambient::extent(c_)); 
-                return;
-            }
             const T* ad = a.data();
             const T* bd = b.data();
             T* cd = c_.data();
@@ -672,21 +670,17 @@ namespace ambient { namespace numeric { namespace kernels {
             int m = a.num_rows();
             int info, lwork = -1;
             T wkopt;
-            T* work;
             T* ad = a.data();
             typename real_type<T>::type* wd = w.data();
-       
             mkl::lapack<T>::heev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
-       
+
             typename real_type<T>::type s;
             for(int i = 0; i < (int)(m/2); i++){
-                s = wd[i];
-                wd[i] = wd[m-i-1];
-                wd[m-i-1] = s;
-            } 
+                s = wd[i]; wd[i] = wd[m-1-i]; wd[m-1-i] = s;
+            }
             // reversing eigenvectors
             size_t len = m*sizeof(T);
-            work = (T*)std::malloc(len);
+            T* work = (T*)std::malloc(len);
             for (int i = 0; i < (int)(m/2); i++){
                 std::memcpy(work, &ad[i*m], len);
                 std::memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
@@ -694,59 +688,58 @@ namespace ambient { namespace numeric { namespace kernels {
             }
             std::free(work);
         }
-    
     }
 
-    AMBIENT_EXPORT_TEMPLATE(detail::geqrt, geqrt)
-    AMBIENT_EXPORT_TEMPLATE(detail::ormqr, ormqr)
-    AMBIENT_EXPORT_TEMPLATE(detail::tsqrt, tsqrt)
-    AMBIENT_EXPORT_TEMPLATE(detail::tsmqr, tsmqr)
-    AMBIENT_EXPORT_TEMPLATE(detail::gelqt, gelqt)
-    AMBIENT_EXPORT_TEMPLATE(detail::ormlq, ormlq)
-    AMBIENT_EXPORT_TEMPLATE(detail::tslqt, tslqt)
-    AMBIENT_EXPORT_TEMPLATE(detail::tsmlq, tsmlq)
-    AMBIENT_EXPORT_TEMPLATE(detail::gemm,  gemm)
-    AMBIENT_EXPORT_TEMPLATE(detail::gemm_fma, gemm_fma)
-    AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal_lhs, gemm_diagonal_lhs)
-    AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal_rhs, gemm_diagonal_rhs)
-    AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal, gemm_diagonal)
-    AMBIENT_EXPORT_TEMPLATE(detail::trace, trace)
-    AMBIENT_EXPORT_TEMPLATE(detail::scalar_norm, scalar_norm)
-    AMBIENT_EXPORT_TEMPLATE(detail::overlap, overlap)
-    AMBIENT_EXPORT_TEMPLATE(detail::add, add)
-    AMBIENT_EXPORT_TEMPLATE(detail::sub, sub)
-    AMBIENT_EXPORT_TEMPLATE(detail::scale, scale)
-    AMBIENT_EXPORT_TEMPLATE(detail::scale_offset, scale_offset)
-    AMBIENT_EXPORT_TEMPLATE(detail::scale_inverse, scale_inverse)
-    AMBIENT_EXPORT_TEMPLATE(detail::sqrt_diagonal, sqrt_diagonal)
-    AMBIENT_EXPORT_TEMPLATE(detail::exp_diagonal, exp_diagonal)
-    AMBIENT_EXPORT_TEMPLATE(detail::transpose_out,transpose_out)
-    AMBIENT_EXPORT_TEMPLATE(detail::conj_inplace, conj_inplace)
-    AMBIENT_EXPORT_TEMPLATE(detail::resize, resize)
-    AMBIENT_EXPORT_TEMPLATE(detail::init_identity, init_identity)
-    AMBIENT_EXPORT_TEMPLATE(detail::init_value, init_value)
-    AMBIENT_EXPORT_TEMPLATE(detail::round_square, round_square)
-    AMBIENT_EXPORT_TEMPLATE(detail::cast_to_vector, cast_to_vector)
-    AMBIENT_EXPORT_TEMPLATE(detail::cast_from_vector, cast_from_vector)
-    AMBIENT_EXPORT_TEMPLATE(detail::cast_from_vector_t, cast_from_vector_t)
-    AMBIENT_EXPORT_TEMPLATE(detail::cast_double_complex, cast_double_complex)
-    AMBIENT_EXPORT_TEMPLATE(detail::touch, touch)
-    AMBIENT_EXPORT_TEMPLATE(detail::migrate, migrate)
-    AMBIENT_EXPORT_TEMPLATE(detail::hint, hint)
-    AMBIENT_EXPORT_TEMPLATE(detail::svd, svd)
-    AMBIENT_EXPORT_TEMPLATE(detail::inverse, inverse)
-    AMBIENT_EXPORT_TEMPLATE(detail::geev, geev)
-    AMBIENT_EXPORT_TEMPLATE(detail::heev, heev)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_rt, copy_rt)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_lt, copy_lt)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_block_unbound, copy_block_unbound)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_block_s_unbound, copy_block_s_unbound)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_block, copy_block)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_block_s, copy_block_s)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_block_sa, copy_block_sa)
-    AMBIENT_EXPORT_TEMPLATE(detail::init_random, init_random)
-    AMBIENT_EXPORT_TEMPLATE(detail::init_random_hermitian, init_random_hermitian)
-    AMBIENT_EXPORT_TEMPLATE(detail::validation, validation)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::geqrt, geqrt)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::ormqr, ormqr)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::tsqrt, tsqrt)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::tsmqr, tsmqr)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::gelqt, gelqt)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::ormlq, ormlq)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::tslqt, tslqt)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::tsmlq, tsmlq)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::gemm,  gemm)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::gemm_fma, gemm_fma)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::gemm_diagonal_lhs, gemm_diagonal_lhs)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::gemm_diagonal_rhs, gemm_diagonal_rhs)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::gemm_diagonal, gemm_diagonal)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::trace, trace)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::scalar_norm, scalar_norm)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::overlap, overlap)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::add, add)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::sub, sub)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::scale, scale)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::scale_offset, scale_offset)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::scale_inverse, scale_inverse)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::sqrt_diagonal, sqrt_diagonal)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::exp_diagonal, exp_diagonal)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::transpose_out,transpose_out)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::conj_inplace, conj_inplace)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::resize, resize)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_identity, init_identity)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_value, init_value)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::round_square, round_square)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::cast_to_vector, cast_to_vector)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::cast_from_vector, cast_from_vector)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::cast_from_vector_t, cast_from_vector_t)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::cast_double_complex, cast_double_complex)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::touch, touch)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::migrate, migrate)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::hint, hint)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::svd, svd)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::inverse, inverse)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::geev, geev)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::heev, heev)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_rt, copy_rt)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_lt, copy_lt)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_block_unbound, copy_block_unbound)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_block_s_unbound, copy_block_s_unbound)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_block, copy_block)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_block_s, copy_block_s)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_block_sa, copy_block_sa)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_random, init_random)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_random_hermitian, init_random_hermitian)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::validation, validation)
 
 } } }
 

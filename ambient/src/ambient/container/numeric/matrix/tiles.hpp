@@ -34,7 +34,7 @@
 // {{{ tiles< subset_view<Matrix> >
 #define size_type typename tiles<subset_view<Matrix>, IB>::size_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template<class Matrix, int IB>
     inline tiles<subset_view<Matrix>, IB> tiles<subset_view<Matrix>, IB>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
@@ -147,7 +147,7 @@ namespace ambient { namespace numeric {
 #define value_type  typename tiles<Matrix,IB>::value_type
 #define scalar_type typename tiles<Matrix,IB>::scalar_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template <class Matrix, int IB>
     inline tiles<Matrix, IB> tiles<Matrix, IB>::identity_matrix(size_type size){
@@ -414,7 +414,7 @@ namespace ambient { namespace numeric {
 #define value_type  typename tiles<diagonal_matrix<T>, IB>::value_type
 #define scalar_type typename tiles<diagonal_matrix<T>, IB>::scalar_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template <typename T, int IB>
     inline tiles<diagonal_matrix<T>, IB> tiles<diagonal_matrix<T>, IB>::identity_matrix(size_type size){

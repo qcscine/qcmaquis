@@ -39,7 +39,7 @@ using std::endl;
 
 #ifdef USE_AMBIENT
 #include "dmrg/block_matrix/detail/ambient.hpp"
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+typedef ambient::tiles<ambient::matrix<double> > matrix;
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> matrix;
@@ -77,12 +77,6 @@ MPO<matrix, symm> rdm2(Model<matrix, symm> const & model, Lattice const & lattic
 
         int pos_[4] = {0, 1, 2, 3};
         std::vector<int> pos(pos_, pos_ + 4);
-
-        // A
-        //tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
-        //tag_type op2 = model.get_operator_tag("create_couple_up", lattice.get_prop<symm::subcharge>("type", pos[1]));
-        //tag_type op3 = model.get_operator_tag("destroy_fill_couple_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
-        //tag_type op4 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[3]));
 
         // B
         tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));

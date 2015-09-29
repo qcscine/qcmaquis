@@ -36,7 +36,7 @@ void mul(std::vector<Matrix>& left, std::vector<Matrix>& right, std::vector<Matr
 }
 
 int main(){
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > mtx;
+    typedef ambient::tiles<ambient::matrix<double> > mtx;
     size_t x = 1024, y = 1024, length = 10;
 
     std::vector<mtx> left_first;  std::vector<mtx> left_second;
