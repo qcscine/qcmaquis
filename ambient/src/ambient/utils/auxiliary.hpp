@@ -30,7 +30,7 @@
 
 namespace ambient {
 
-    using ambient::models::ssm::revision;
+    using model::revision;
 
     inline void sync(){
         ambient::select().sync();
@@ -76,12 +76,12 @@ namespace ambient {
 
     template<typename V>
     inline bool weak(const V& obj){
-        return obj.ambient_rc.desc->weak();
+        return obj.ambient_allocator.desc->weak();
     }
 
     template<typename V>
     inline dim2 get_dim(const V& obj){
-        return obj.ambient_rc.desc->dim;
+        return obj.ambient_allocator.desc->dim;
     }
 
     template<typename V> 
@@ -96,17 +96,17 @@ namespace ambient {
     
     template<typename V> 
     inline size_t extent(V& obj){ 
-        return obj.ambient_rc.desc->extent;
+        return obj.ambient_allocator.desc->extent;
     }
 
     template<typename V>
     inline rank_t get_owner(const V& o){
-        return o.ambient_rc.desc->current->owner;
+        return o.ambient_allocator.desc->current->owner;
     }
 
     template<typename V>
     inline bool locked_once(const V& o){
-        return o.ambient_before->locked_once();
+        return o.ambient_allocator.before->locked_once();
     }
 
     inline rank_t which(){

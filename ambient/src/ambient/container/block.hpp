@@ -28,9 +28,11 @@
 #ifndef AMBIENT_CONTAINER_BLOCK
 #define AMBIENT_CONTAINER_BLOCK
 
+#include "utils/static_bind.hpp"
+
 namespace ambient {
      
-    template<typename T> class block;
+    template<typename T, class Allocator = default_allocator> class block;
     namespace detail { 
         template<typename T>
         void fill_value(volatile block<T>& a, T& value){
@@ -41,13 +43,14 @@ namespace ambient {
         }
     }
 
-    AMBIENT_EXPORT_TEMPLATE(detail::fill_value, fill_value)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::fill_value, fill_value)
 
-    template <class T>
+    template <class T, class Allocator>
     class block {
     public:
+        typedef Allocator allocator_type;
         typedef T value_type;
-        block(size_t m, size_t n) : AMBIENT_ALLOC_2D(m, n, sizeof(T)) {}
+        block(size_t m, size_t n) : ambient_allocator(sizeof(T), m, n) {}
         size_t lda() const {
             return ambient::get_dim(*this).y;
         }
@@ -66,8 +69,7 @@ namespace ambient {
         const value_type* data() const volatile {
             return ambient::delegated(*this).data;
         }
-    AMBIENT_DELEGATE
-    (
+    AMBIENT_DELEGATE(
         value_type data[ AMBIENT_VAR_LENGTH ]; 
     )};
 

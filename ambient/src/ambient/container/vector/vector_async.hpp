@@ -58,7 +58,7 @@ namespace ambient {
 
     template<class T, class Allocator>
     void vector_async<T,Allocator>::swap(vector<T,Allocator>& r){
-        std::swap(this->ambient_after->data, r.ambient_after->data);
+        std::swap(this->ambient_allocator.after->data, r.ambient_allocator.after->data);
     }
 
     template<class T, class Allocator>

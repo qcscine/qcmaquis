@@ -54,7 +54,7 @@ typedef alps::numeric::matrix<double> matrix;
 
 BOOST_AUTO_TEST_CASE( test )
 {
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     typedef std::vector<op_t> op_vec;
     int Nrep = 6;
     int M = 50;

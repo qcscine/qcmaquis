@@ -29,7 +29,7 @@
 #define AMBIENT_CONTAINER_NUMERIC_DIAGONAL_MATRIX_HPP
 #include "ambient/container/numeric/matrix/diagonal_matrix.h" 
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     #define size_type   typename diagonal_matrix<T>::size_type
     #define value_type  typename diagonal_matrix<T>::value_type
@@ -156,6 +156,6 @@ namespace ambient { namespace numeric {
     #undef value_type
     #undef size_type
 
-} } // namespace ambient::numeric
+} }
 
 #endif

@@ -31,7 +31,6 @@
 #include "ambient/container/numeric/matrix/tiles.h"
 #include "ambient/container/iterator/block_pair_iterator.hpp"
 #include "ambient/utils/reduce.hpp"
-#include <utility>
 
 #define value_type      typename tiles<Matrix, IB>::value_type
 #define size_type       typename tiles<Matrix, IB>::size_type
@@ -39,7 +38,7 @@
 #define scalar_type     typename tiles<Matrix, IB>::scalar_type
 #define allocator_type  typename tiles<Matrix, IB>::allocator_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template<class Matrix, int IB>
     bool is_hermitian(const tiles<Matrix, IB>& a){

@@ -28,12 +28,14 @@
 #ifndef AMBIENT_CONTAINER_ATOMIC_HPP
 #define AMBIENT_CONTAINER_ATOMIC_HPP
 
+#include "utils/static_bind.hpp"
+
 namespace ambient {
 
     // atomic: single value of T that has versioning symantics
     // note: do not use it unless you know what you are doing
 
-    template <class T, class Allocator = ambient::default_allocator<T> >
+    template <class T, class Allocator = default_allocator>
     class atomic {
     public:
         typedef Allocator allocator_type;
@@ -54,8 +56,7 @@ namespace ambient {
         value_type get() const;
         void set(value_type value);
     public:
-    AMBIENT_DELEGATE
-    (
+    AMBIENT_DELEGATE(
         value_type value;
     )};
 
@@ -70,17 +71,17 @@ namespace ambient {
         }
     }
 
-    AMBIENT_EXPORT_TEMPLATE(detail::init_value_atomic, init_value_atomic)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_atomic,       copy_atomic)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_value_atomic, init_value_atomic)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_atomic,       copy_atomic)
 
 
     template<class T, class Allocator>
-    atomic<T,Allocator>::atomic(T value) : AMBIENT_ALLOC(sizeof(T)) {
+    atomic<T,Allocator>::atomic(T value) : ambient_allocator(sizeof(T)) {
         this->init(value);
     }
 
     template <typename T, class Allocator>
-    atomic<T,Allocator>::atomic(const atomic& a) : AMBIENT_ALLOC(sizeof(T)) {
+    atomic<T,Allocator>::atomic(const atomic& a) : ambient_allocator(sizeof(T)) {
         ambient::merge(a, *this);
     }
     
@@ -111,7 +112,7 @@ namespace ambient {
 
     template<class T, class Allocator>
     void atomic<T,Allocator>::swap(atomic<T,Allocator>& r){
-        ambient::swap_with(*this, r);
+        ambient::ext::swap(*this, r);
     }
 
     template<typename T, class Allocator>
