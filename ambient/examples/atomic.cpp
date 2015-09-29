@@ -7,7 +7,7 @@ int main(){
     std::vector<ambient::atomic<int> > a(N, ambient::atomic<int>(1));
 
     ambient::reduce(a, [](ambient::atomic<int>& a, const ambient::atomic<int>& b){
-        ambient::async([](ambient::atomic<int>& dst, const ambient::atomic<int>& src){
+        ambient::bind_cpu([](ambient::atomic<int>& dst, const ambient::atomic<int>& src){
             dst.set(dst.get()+src.get());
         }, a, b);
     });

@@ -159,7 +159,7 @@ extern "C" {
                        std::complex<double> *tileA, int ldtilea);
 }
 
-namespace ambient { namespace numeric { namespace plasma {
+namespace ambient { inline namespace numeric { namespace plasma {
 
     template<class T>
     struct lapack;

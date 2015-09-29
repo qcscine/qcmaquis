@@ -31,7 +31,7 @@
 namespace ambient {
 
     template<typename F, typename... T>
-    struct lambda_kernel : public ambient::kernel< lambda_kernel<F, T...> > {
+    struct lambda_kernel : public kernel< lambda_kernel<F, T...> > {
         typedef void(*ftype)(T..., F&);
         static void fw(T... args, F& func){ func(args...); }
         static constexpr ftype c = &fw;
@@ -67,13 +67,13 @@ namespace ambient {
     }
 
     template <class L, class... Args>
-    void async(L l, Args&& ... args){
+    void bind_cpu(L l, Args&& ... args){
         lambda(l)(std::forward<Args>(args)...);
     }
 
     template <class... L, class... Args>
-    void async(void(*l)(L...), Args&& ... args){
-        async(std::function<void(L...)>(l), std::forward<Args>(args)...);
+    void bind_cpu(void(*l)(L...), Args&& ... args){
+        ambient::bind_cpu(std::function<void(L...)>(l), std::forward<Args>(args)...);
     }
 
 }

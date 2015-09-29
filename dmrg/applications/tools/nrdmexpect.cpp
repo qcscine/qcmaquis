@@ -39,7 +39,7 @@ using std::endl;
 
 #ifdef USE_AMBIENT
 #include "dmrg/block_matrix/detail/ambient.hpp"
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+typedef ambient::tiles<ambient::matrix<double> > matrix;
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> matrix;
@@ -90,8 +90,8 @@ int main(int argc, char ** argv)
         int pos_[4] = {0, 1, 2, 3};
         std::vector<int> pos(pos_, pos_ + 4);
 
-        typedef typename operator_selector<matrix, symm>::type op_t;
-        typedef typename OPTable<matrix, symm>::tag_type tag_type;
+        typedef operator_selector<matrix, symm>::type op_t;
+        typedef OPTable<matrix, symm>::tag_type tag_type;
 
         tag_type op1 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[0]));
         tag_type op2 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[1]));

@@ -55,9 +55,9 @@ namespace maquis {
 #include <ambient/container/numeric/bindings/alps.hpp>
 namespace maquis { 
     namespace bindings {
-        #define am_tiles    ambient::numeric::tiles            
-        #define am_diagonal ambient::numeric::diagonal_matrix  
-        #define am_matrix   ambient::numeric::matrix           
+        #define am_tiles    ambient::tiles            
+        #define am_diagonal ambient::diagonal_matrix  
+        #define am_matrix   ambient::matrix           
         #define al_diagonal alps::numeric::diagonal_matrix 
         #define al_matrix   alps::numeric::matrix              
 

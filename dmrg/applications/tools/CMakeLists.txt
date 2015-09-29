@@ -41,6 +41,8 @@ create_tools_symm_target("mpo_stats_u1df"    "U1DG"    "mpo_stats.cpp"  "dmrg_mo
 create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+# create_tools_symm_target("visual_mpo_u1"      "U1"      "visual_mpo.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+# create_tools_symm_target("visual_mpo_2u1"     "TWOU1"   "visual_mpo.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")

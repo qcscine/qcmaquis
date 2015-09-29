@@ -39,7 +39,7 @@ using std::endl;
 
 #ifdef USE_AMBIENT
     #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > Matrix;
+    typedef ambient::tiles<ambient::matrix<double> > Matrix;
 #else
     #include "dmrg/block_matrix/detail/alps.hpp"
     typedef alps::numeric::matrix<double> Matrix;
@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
         }
         
         if (false) {
-            typename operator_selector<Matrix, grp>::type ident;
+            operator_selector<Matrix, grp>::type ident;
             for (int i=0; i<mps1.site_dim(0).size(); ++i)
                 ident.insert_block(Matrix::identity_matrix(mps1.site_dim(0)[i].second),
                                    mps1.site_dim(0)[i].first, mps1.site_dim(0)[i].first);

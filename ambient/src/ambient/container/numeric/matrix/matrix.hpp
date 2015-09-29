@@ -31,7 +31,7 @@
 #include "ambient/container/numeric/matrix/matrix.h"
 #include "ambient/container/numeric/matrix/matrix_algorithms.hpp"
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     // {{{ transpose_view
 
@@ -191,7 +191,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline void matrix<T,A>::swap(matrix& r){ 
-        ambient::swap_with(*this, r);
+        ambient::ext::swap(*this, r);
     }
 
     template<typename T, class A>

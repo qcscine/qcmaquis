@@ -33,7 +33,7 @@
 namespace ambient {
 
     template <class Vector, int IB = AMBIENT_DEFAULT_IB>
-    class partitioned_vector : public ambient::memory::use_fixed_new<partitioned_vector<Vector,IB> > {
+    class partitioned_vector : public ambient::memory::cpu::use_fixed_new<partitioned_vector<Vector,IB> > {
     public:
         typedef typename Vector::value_type value_type;
         typedef typename Vector::size_type size_type;

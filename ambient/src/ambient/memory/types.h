@@ -28,8 +28,41 @@
 #ifndef AMBIENT_MEMORY_TYPES
 #define AMBIENT_MEMORY_TYPES
 
-namespace ambient {
-    enum class region_t { bulk, standard, delegated };
-}
+namespace ambient { namespace memory {
+
+    namespace cpu {
+        class standard;
+        class bulk;
+    }
+    class delegated;
+
+    struct memory_tuple {
+        typedef std::tuple< memory::cpu::bulk,
+                            memory::cpu::standard,
+                            memory::delegated > type;
+    };
+
+    template<int N, int Limit>
+    constexpr int lower_bound(){
+        return (N > Limit ? N : Limit);
+    }
+
+    template<class T, class Tuple, int I = std::tuple_size<Tuple>::value>
+    constexpr int find_type(){
+        return I ? std::is_same< typename std::tuple_element<lower_bound<I-1,0>(),Tuple>::type, T >::value ? I-1 : find_type<T,Tuple,lower_bound<I-1,0>()>()
+                 : -1;
+    }
+
+    template<int Offset>
+    struct checked_get { static constexpr int value = Offset; };
+
+    template<>
+    struct checked_get< -1 > { /* type not found */ };
+
+    template<typename T>
+    constexpr int serial_id(){
+        return checked_get< find_type<T,memory_tuple::type>() >::value;
+    }
+} }
 
 #endif

@@ -71,9 +71,7 @@ namespace ambient { namespace memory {
         factory& operator=(const factory&) = delete;
         factory(){
             this->buffers.push_back(std::malloc(S));
-            this->counts.push_back(0);
             this->buffer = &this->buffers[0];
-            this->reuse_count = 0;
         }
     public:
         static factory& instance(){
@@ -84,74 +82,31 @@ namespace ambient { namespace memory {
             guard g(s.mtx);
             void* chunk;
 
-            if(s.r_buffers.empty()){
-                chunk = *s.buffer;
-                if(*s.buffer == s.buffers.back()){
-                    s.buffers.push_back(std::malloc(S));
-                    s.counts.push_back(0);
-                    s.buffer = &s.buffers.back();
-                }else
-                    s.buffer++;
-            }else{
-                chunk = s.r_buffers.back();
-                s.r_buffers.pop_back();
-                s.reuse_count++;
-            }
+            chunk = *s.buffer;
+            if(*s.buffer == s.buffers.back()){
+                s.buffers.push_back(std::malloc(S));
+                s.buffer = &s.buffers.back();
+            }else
+                s.buffer++;
 
             return chunk;
-        }
-        static void collect(void* chunk, long int usage){
-            factory& s = instance();
-            guard g(s.mtx);
-
-            for(int i = 0; i < s.buffers.size(); i++){
-                if(s.buffers[i] == chunk){
-                    s.counts[i] += usage;
-                    if(s.counts[i] == 0) s.r_buffers.push_back(chunk);
-                    break;
-                }
-            }
-        }
-        static void reuse(void* ptr){
-            factory& s = instance();
-            guard g(s.mtx);
-            for(int i = 0; i < s.buffers.size(); i++){
-                if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
-                    s.counts[i]--;
-                    if(s.counts[i] == 0) s.r_buffers.push_back(s.buffers[i]);
-                    break;
-                }
-            }
         }
         static void deallocate(){
             factory& s = instance();
             for(int i = 1; i < s.buffers.size(); i++) std::free(s.buffers[i]);
-            s.buffers.resize(1); s.counts.resize(1);
+            s.buffers.resize(1);
         }
         static void reset(){
             factory& s = instance();
             s.buffer = &s.buffers[0];
-            s.r_buffers.clear();
-            for(int i = 0; i < s.counts.size(); i++)
-                s.counts[i] = 0;
-            s.reuse_count = 0;
         }
         static size_t size(){
             factory& s = instance();
             return (s.buffer - &s.buffers[0]);
         }
-        static size_t reused(){
-            return instance().reuse_count;
-        }
-        static size_t reserved(){
-            return instance().counts.size();
-        }
     private:
         mutex mtx;
-        std::vector<long int> counts;
         std::vector<void*> buffers;
-        std::vector<void*> r_buffers;
-        size_t reuse_count;
         void** buffer;
     };
 

@@ -15,6 +15,8 @@ endmacro(add_line_to)
 # *** Configure ALPS SymmGroup
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/block_matrix/symmetry/nu1.h.in
                 ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h
+DESTINATION include/dmrg/block_matrix/symmetry)
 
 # *** List all needed sources
 ## Lattice library
@@ -54,6 +56,7 @@ endif(ENABLE_LL_MODELS)
 add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp utils/DmrgOptions.cpp utils/time_stopper.cpp utils/proc_statm.cpp utils/proc_status.cpp)
 add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
+set_property(TARGET dmrg_utils dmrg_models PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 # *** Install
 
