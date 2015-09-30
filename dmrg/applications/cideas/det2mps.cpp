@@ -207,8 +207,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::vector<int> sum_size(L);
         bool keep_running = true;
         int det_nr = 0;
+        int num_runs = std::min(L,15);
 	//main loop
-	for(int run = 0; run < 13; ++run){ 
+	for(int run = 0; run < num_runs; ++run){ 
            //generate deas determinants
            deas_dets = generate_deas(parms,em,run,deas_dets);
 
