@@ -157,40 +157,47 @@ if __name__ == '__main__':
     cost_new = cost_meas(new_mutinf)
 
     site_types = [int(x) for x in props["site_types"].split(',')[:-1]]
-    print site_types
-    print len(site_types)
+    print "site_types", site_types
     
     #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
-    
-    #var1_mutinf = mat_I
-    #final_order1 = range(order.shape[0])
-    #final_mutinf1 = mat_I
-    #final_s1_1 = vec_s1
-    #final_cost1 = cost_old
-    #j = 0
-    #while j < 5:
-    #    cond_mutinf = condense(var1_mutinf,occ.shape[0]-1,occ)
-    #    L_cond = get_laplacian(cond_mutinf)
-    #    cond_fv = fiedler(L_cond)
-    #    order1 = cond_fv.argsort()
-    #    c_new_s1, c_new_mutinf = reorder(cond_mutinf[:,1],cond_mutinf,order1)
-    #    block_reord, occ_new = block_order(mat_I.shape[0],occ,order1)
-    #    block_s1, block_mutinf = reorder(vec_s1,mat_I,block_reord)
-    #    blocked_f_order = bfo_gfv(occ_new, order)
-    #    var1_s1, var1_mutinf = reorder(vec_s1,mat_I,blocked_f_order)
-    #    
-    #    if cost_meas(var1_mutinf) < final_cost1:
-    #        final_cost1 = cost_meas(var1_mutinf)
-    #        final_mutinf1 = var1_mutinf
-    #        final_order1 = blocked_f_order
-    #        final_s1_1 = var1_s1
-    #    else: j += 1
+
+    occ = np.array([0])
+    for i in range(len(site_types)-1):
+        if site_types[i] < site_types[i+1]:
+            occ = np.append(occ, np.array([i+1]))
+    occ = np.append(occ, np.array(len(site_types)))
+
+    var1_mutinf = mat_I
+    final_order1 = range(order.shape[0])
+    final_mutinf1 = mat_I
+    final_s1_1 = vec_s1
+    final_cost1 = cost_old
+    j = 0
+    while j < 5:
+        cond_mutinf = condense(var1_mutinf, len(occ) - 1, occ)
+        L_cond = get_laplacian(cond_mutinf)
+        cond_fv = fiedler(L_cond)
+        order1 = cond_fv.argsort()
+        c_new_s1, c_new_mutinf = reorder(cond_mutinf[:,1], cond_mutinf, order1)
+        block_reord, occ_new = block_order(mat_I.shape[0], occ,order1)
+        block_s1, block_mutinf = reorder(vec_s1, mat_I, block_reord)
+        blocked_f_order = bfo_gfv(occ_new, order)
+        var1_s1, var1_mutinf = reorder(vec_s1, mat_I, blocked_f_order)
         
-    #print cost_old, cost_new, final_cost1
-    print cost_old, cost_new
+        if cost_meas(var1_mutinf) < final_cost1:
+            final_cost1 = cost_meas(var1_mutinf)
+            final_mutinf1 = var1_mutinf
+            final_order1 = blocked_f_order
+            final_s1_1 = var1_s1
+        else: j += 1
+        
+    print cost_old, cost_new, final_cost1
     print new_order
     
-    #print final_order1+1
+    print [site_types[final_order1[i]] for i in range(len(site_types))]
+
+    final_order1 += 1
+    print final_order1
 
     #plotting
     t1 = 'mutual information plot from original ordering'
@@ -199,7 +206,7 @@ if __name__ == '__main__':
     t2 = 'mutual information plot from primitive Fiedler ordering'
     mutinf.plot_mutinf(new_mutinf, new_s1, new_order, title=None)
 
-    #t3 = 'mutual information plot from Fiedler block ordering'
-    #plot_mutinf(final_mutinf1,final_s1_1,final_order1,3,t3,final_cost1)
+    t3 = 'mutual information plot from Fiedler block ordering'
+    mutinf.plot_mutinf(final_mutinf1, final_s1_1, final_order1, title=None)
 
     plt.show()
