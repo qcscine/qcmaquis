@@ -132,7 +132,29 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
        }
     }
 
-    Determinant<SymmGroup> hf_occ(parms.get<std::vector<int> >("hf_occ"));
+    Determinant<SymmGroup> hf_unordered(parms.get<std::vector<int> >("hf_occ")), hf_occ;
+//this takes orbital ordering in account; It only adapts the HF occupation! 
+//This means, that it is assumed that the preliminary calculation has been carried out with the ordering specified in the input file!!
+//If Fiedler ordering is applied AFTER(!) first run, also the CAS Vektor needs to be adopted.
+//Discuss on monday!!!
+
+
+    std::vector<int> order(hf_unordered.size());
+    if (!parms.is_set("orbital_order"))
+        for (int p = 0; p < hf_unordered.size(); ++p)
+            order[p] = p+1;
+    else
+        order = parms["orbital_order"].template as<std::vector<int> >();
+
+    std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+
+    for (int i = 0; i < order.size(); ++i)
+	hf_occ.push_back(hf_unordered[order[i]]);
+
+    std::cout << "hf_occ: ";
+    for (int i = 0 ; i < hf_occ.size(); ++i)
+        std::cout << " " << hf_occ[i];
+    std::cout << std::endl;
 
     std::vector<mpair> casv_sort(L);
     std::vector<int> casv(L);
