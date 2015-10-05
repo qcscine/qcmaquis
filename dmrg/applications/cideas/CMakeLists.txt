@@ -23,15 +23,3 @@ create_init_target("det2mps_2u1"     "TWOU1"   "det2mps.cpp"  "dmrg_models;${DMR
 create_init_target("det2mps_2u1pg"   "TWOU1PG" "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_init_target("det2mps_su2u1"   "SU2U1"   "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_init_target("det2mps_su2u1pg" "SU2U1PG" "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-
-# *** Configure symmetries
-configure_symm_file("simulation_symm/simulation_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp" CMAKE_SYMM_GROUP)
-get_symm_files(APPEND DMRGINIT_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp")
-
-
-# *** Targets
-add_executable(dmrginit ${DMRGINIT_SYMM_SOURCES} dmrginit.cpp)
-target_link_libraries(dmrginit ${DMRG_APP_LIBRARIES})
-
-# *** Install
-install(TARGETS dmrginit RUNTIME DESTINATION bin COMPONENT applications)
