@@ -1,5 +1,25 @@
-import sys
-import subprocess
+import sys,glob,shlex,subprocess
+
+def DMRGinit():
+    usage = """%prog [options] INPUT 
+Initialize a DMRG calculation with the CI-DEAS procedure starting from the given input file.
+Use --launcher="mpirun OPTIONS" with the appropriate OPTIONS to run an mpi job.
+"""
+    parser = optparse.OptionParser(usage)
+
+    parser.add_option('-v','--verbose', action='store_true', dest="verbose",
+		     help='Print more information')
+
+    group = optparse.OptionGroup(parser, 'General options')
+    group.add_option('--launcher', type='string', default=None,dest="launcher",
+		     help='Command used to launch the main executable, i.e. "OMP_NUM_THREADS=2"',metavar="COMMAND")
+    parser.add_option_group(group)
+
+    (options, args) = parser.parse_args(rcargs+sys.argv[1:])
+
+    verbose  = options.verbose
+    launcher = options.launcher
+
 
 def write_di(settings, di):
    difile = open(settings['difile'], 'w')
@@ -54,12 +74,20 @@ elif settings['symmetry'][1:-1] == '2u1':
 
 write_di(settings, sys.argv[1])
 
+def set_fullexe(exename):
+    if options.launcher is None:
+        return (exename+' ')
+    else:
+        return (' ' + shlex.split(options.launcher)+[exename+' '])
+
 if settings['symmetry'][1:-1] == '2u1pg' or settings['symmetry'][1:-1] == '2u1':
    try:
-      return_calc = subprocess.Popen(["dmrg "+settings['difile']],shell=True)
+      return_calc = subprocess.Popen([set_fullexe("dmrg ") +" "+settings['difile']],shell=True)
+      #return_calc = subprocess.Popen(["dmrg "+settings['difile']],shell=True)
       return_calc.wait()
       try:
-         return_meas = subprocess.Popen(["dmrg_meas "+settings['difile']],shell=True)
+         return_meas = subprocess.Popen([set_fullexe("dmrg_meas ")+settings['difile']],shell=True)
+         #return_meas = subprocess.Popen(["dmrg_meas "+settings['difile']],shell=True)
          return_meas.wait()
          try: 
             return_det2mps = subprocess.Popen([settings['det2mps']+' '+settings['old_di']],shell= True)
@@ -72,7 +100,8 @@ if settings['symmetry'][1:-1] == '2u1pg' or settings['symmetry'][1:-1] == '2u1':
       print 'DMRG failed with ', e
 else:
    try:
-      return_calc = subprocess.Popen(["dmrg "+settings['difile']],shell=True)
+      return_calc = subprocess.Popen([set_fullexe("dmrg ") +" "+settings['difile']],shell=True)
+      #return_calc = subprocess.Popen(["dmrg "+settings['difile']],shell=True)
       return_calc.wait()
       cp1 = subprocess.Popen(["mv "+settings['chkpfile']+' '+settings['chkp_adapted']], shell=True)
       try:
@@ -83,7 +112,8 @@ else:
             settings['symmetry'] = settings['new_sym']
             write_di(settings, sys.argv[1])
             cp2 = subprocess.Popen(["mv "+settings['chkpfile'][1:-4]+'_adapted.*.h5 '+settings['chkpfile'][1:-1]], shell=True)
-            return_meas = subprocess.Popen(["dmrg_meas "+settings['difile']],shell=True)
+            return_meas = subprocess.Popen([set_fullexe("dmrg_meas ")+settings['difile']],shell=True)
+            #return_meas = subprocess.Popen(["dmrg_meas "+settings['difile']],shell=True)
             return_meas.wait()
             try:
                return_det2mps = subprocess.Popen([settings['det2mps']+' '+settings['old_di']],shell= True)
