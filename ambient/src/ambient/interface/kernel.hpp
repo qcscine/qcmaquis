@@ -33,8 +33,7 @@
 
 namespace ambient {
 
-    using ambient::controllers::ssm::functor;
-    using ambient::memory::instr_bulk;
+    using model::functor;
 
     template<class K>
     class kernel : public functor {
@@ -42,7 +41,7 @@ namespace ambient {
         #define inliner kernel_inliner<typename K::ftype,K::c>
         inline void operator delete (void* ptr){ }
         inline void* operator new (size_t size){
-            return ambient::pool::malloc<instr_bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
+            return ambient::memory::malloc<memory::cpu::instr_bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
         }
         virtual bool ready(){ 
             return inliner::ready(this);
@@ -61,21 +60,6 @@ namespace ambient {
         }
         #undef inliner
     };
-
-    #define AMBIENT_EXPORT_TEMPLATE(fn, name)  template<typename... TF> \
-                                               struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
-                                                   typedef decltype(&fn<TF...>) ftype; \
-                                                   static constexpr ftype c = &fn<TF...>; \
-                                               }; \
-                                               template<typename... TF, typename... Args> \
-                                               void name(Args&... args){ name ## _kernel<TF...>::spawn(args...); }
-
-    #define AMBIENT_EXPORT(fn, name)           struct name ## _kernel : public ambient::kernel< name ## _kernel > { \
-                                                   typedef decltype(&fn) ftype; \
-                                                   static constexpr ftype c = &fn; \
-                                               }; \
-                                               template<typename... Args> \
-                                               void name(Args&... args){ name ## _kernel::spawn(args...); }
 }
 
 #endif

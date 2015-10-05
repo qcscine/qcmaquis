@@ -63,7 +63,23 @@ namespace maquis { namespace dmrg { namespace detail {
     {
         throw std::runtime_error("Not implemented.");
     }
-
+    
+    template <typename T, class A>
+    std::size_t zeroout(alps::numeric::matrix<T,A>& m, T const& tol)
+    {
+        std::size_t nzeros = 0;
+        typedef typename alps::numeric::matrix<T,A>::size_type size_type;
+        for (size_type j=0; j<num_cols(m); ++j) {
+            for (size_type i=0; i<num_rows(m); ++i) {
+                if (std::abs(m(i,j)) < tol) {
+                    m(i,j) = 0.;
+                    ++nzeros;
+                }
+            }
+        }
+        return nzeros;
+    }
+    
     //template <typename T, class A>
     //void op_kron(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, const alps::numeric::matrix<T,A>& alfa,
     template <class Matrix1, class Matrix2>

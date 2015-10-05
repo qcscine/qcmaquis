@@ -28,6 +28,8 @@
 #ifndef AMBIENT_CONTAINER_VECTOR_DETAIL_HPP
 #define AMBIENT_CONTAINER_VECTOR_DETAIL_HPP
 
+#include "utils/static_bind.hpp"
+
 namespace ambient {
      
     template<class T, class Allocator> class vector;
@@ -57,11 +59,11 @@ namespace ambient {
         }
     }
 
-    AMBIENT_EXPORT_TEMPLATE(detail::set_size,          set_size)
-    AMBIENT_EXPORT_TEMPLATE(detail::measure_size,      measure_size)
-    AMBIENT_EXPORT_TEMPLATE(detail::init_value_vector, init_value_vector)
-    AMBIENT_EXPORT_TEMPLATE(detail::copy_vector,       copy_vector)
-    AMBIENT_EXPORT_TEMPLATE(detail::add,               add)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::set_size,          set_size)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::measure_size,      measure_size)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_value_vector, init_value_vector)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_vector,       copy_vector)
+    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::add,               add)
 }
 
 #endif

@@ -35,16 +35,21 @@ class block_matrix;
 
 namespace maquis { namespace dmrg { namespace detail {
 
-    using ambient::numeric::tiles;
+    using ambient::tiles;
 
 
     template <class M, class Generator>
-    void generate_impl(ambient::numeric::tiles<M>& m, Generator g){
+    void generate_impl(ambient::tiles<M>& m, Generator g){
         ambient::numeric::generate(m); // ignoring generator as not thread-safe
     }
 
+    template <class M, class Generator>
+    size_t zeroout(ambient::tiles<M>& m, const value_type& tol){
+        return 0;
+    }
+
     template <typename M>
-    inline void op_kron(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
+    inline void op_kron(ambient::tiles<M>& out, const ambient::tiles<M>& in, const ambient::tiles<M>& alfa,
                         size_t out_y_offset, size_t out_x_offset, 
                         size_t ldim1, size_t ldim2, 
                         size_t rdim1, size_t rdim2)
@@ -56,7 +61,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <class M>
-    inline void reshape_l2b(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
+    inline void reshape_l2b(ambient::tiles<M>& out, const ambient::tiles<M>& in,
                             size_t in_left_offset, size_t in_phys_offset, 
                             size_t out_left_offset, size_t out_right_offset,
                             size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
@@ -76,7 +81,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <class M>
-    inline void reshape_b2l(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
+    inline void reshape_b2l(ambient::tiles<M>& out, const ambient::tiles<M>& in,
                             size_t in_left_offset, size_t in_right_offset, 
                             size_t out_left_offset, size_t out_phys_offset,
                             size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
@@ -97,7 +102,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <class M>
-    inline void reshape_b2r(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
+    inline void reshape_b2r(ambient::tiles<M>& out, const ambient::tiles<M>& in,
                             size_t in_left_offset, size_t in_right_offset, 
                             size_t out_right_offset, size_t out_phys_offset,
                             size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
@@ -118,7 +123,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <class M1, class M2>
-    inline void reshape_l2r(const ambient::numeric::tiles<M1>& left, ambient::numeric::tiles<M2>& right,
+    inline void reshape_l2r(const ambient::tiles<M1>& left, ambient::tiles<M2>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss){
@@ -129,7 +134,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
     
     template <class M1, class M2>
-    inline void reshape_r2l(ambient::numeric::tiles<M1>& left, const ambient::numeric::tiles<M2>& right,
+    inline void reshape_r2l(ambient::tiles<M1>& left, const ambient::tiles<M2>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss)
@@ -139,7 +144,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
     
     template <class M, class M2, class M3>
-    inline void lb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
+    inline void lb_tensor_mpo(ambient::tiles<M>& out, const ambient::tiles<M2>& in, const ambient::tiles<M3>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
@@ -150,7 +155,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
     
     template <class M, class M2, class M3>
-    inline void rb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
+    inline void rb_tensor_mpo(ambient::tiles<M>& out, const ambient::tiles<M2>& in, const ambient::tiles<M3>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
@@ -161,7 +166,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
     
     template <class M1, class M2, class M3>
-    void mwt(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
+    void mwt(ambient::tiles<M1>& out, const ambient::tiles<M2>& in, const ambient::tiles<M3>& alfa,
              size_t out_y_offset,  size_t out_x_offset,
              size_t in_y_offset,   size_t in_x_offset,
              size_t alfa_y_offset, size_t alfa_x_offset,
@@ -180,7 +185,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
    
     template<class M, class SymmGroup>
-    std::vector<double> bond_renyi_entropies(const block_matrix<ambient::numeric::tiles<M>, SymmGroup>& set){
+    std::vector<double> bond_renyi_entropies(const block_matrix<ambient::tiles<M>, SymmGroup>& set){
         size_t nblocks = 0;
         size_t k_max = set.n_blocks();
         for(size_t k = 0; k < k_max; ++k)
@@ -204,7 +209,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
 
     template <class M>
-    inline void left_right_boundary_init(ambient::numeric::tiles<M>& a){
+    inline void left_right_boundary_init(ambient::tiles<M>& a){
         size_t k_max = a.data.size();
         for(size_t k = 0; k < k_max; ++k)
             fill_value(a[k], value_type(1.0));

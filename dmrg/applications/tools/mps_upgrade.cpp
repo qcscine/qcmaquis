@@ -39,7 +39,7 @@ using std::endl;
 
 #ifdef USE_AMBIENT
     #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+    typedef ambient::tiles<ambient::matrix<double> > matrix;
 #else
     #include "dmrg/block_matrix/detail/alps.hpp"
     typedef alps::numeric::matrix<double> matrix;

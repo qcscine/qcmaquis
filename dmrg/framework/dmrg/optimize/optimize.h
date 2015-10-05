@@ -46,7 +46,7 @@
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
-#include "dmrg/utils/checks.hpp"
+#include "dmrg/utils/checks.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem

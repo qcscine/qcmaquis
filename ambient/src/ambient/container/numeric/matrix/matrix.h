@@ -31,10 +31,10 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/future.hpp"
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
-    template <typename T, class Allocator = ambient::default_allocator<T> >
-    class matrix : public ambient::block<T>, public ambient::memory::use_fixed_new<matrix<T,Allocator> > {
+    template <typename T, class Allocator = default_allocator>
+    class matrix : public ambient::block<T,Allocator>, public ambient::memory::cpu::use_fixed_new<matrix<T,Allocator> > {
     public:
         typedef T value_type;
         typedef size_t size_type;
@@ -97,7 +97,7 @@ namespace ambient { namespace numeric {
     };
 
     template <class Matrix>
-    class transpose_view : public ambient::proxy<Matrix>, public ambient::memory::use_fixed_new<transpose_view<Matrix> > {
+    class transpose_view : public ambient::proxy<Matrix>, public ambient::memory::cpu::use_fixed_new<transpose_view<Matrix> > {
     public:
         typedef typename Matrix::real_type real_type;
         typedef typename Matrix::size_type size_type; 
@@ -123,14 +123,14 @@ namespace ambient { namespace numeric {
 namespace ambient {
 
     template <class Matrix>
-    struct info < const numeric::transpose_view<Matrix> > {
-        typedef const numeric::transpose_view<Matrix> type;
+    struct info < const transpose_view<Matrix> > {
+        typedef const transpose_view<Matrix> type;
         template <typename U> static const Matrix& unfold(type& folded){ return *(const Matrix*)&folded; }
     };
 
     template <class Matrix>
-    struct info < numeric::transpose_view<Matrix> > {
-        typedef numeric::transpose_view<Matrix> type;
+    struct info < transpose_view<Matrix> > {
+        typedef transpose_view<Matrix> type;
         template <typename U> static Matrix& unfold(type& folded){ return *(Matrix*)&folded; }
     };
 }

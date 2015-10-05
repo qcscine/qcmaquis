@@ -98,6 +98,8 @@ public:
                 
                 optimizer->sweep(sweep, Both);
                 storage::disk::sync();
+
+                bool converged = false;
                 
                 if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
@@ -107,6 +109,23 @@ public:
                         ar[results_archive_path(sweep) + "/parameters"] << parms;
                         ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
                         // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+
+                        // stop simulation if an energy threshold has been specified
+                        int prev_sweep = sweep - meas_each;
+                        if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
+                        {
+                            typedef typename maquis::traits::real_type<Matrix>::type real_type;
+                            std::vector<real_type> energies;
+
+                            ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
+                            real_type emin = *std::min_element(energies.begin(), energies.end());
+                            ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
+                            real_type emin_prev = *std::min_element(energies.begin(), energies.end());
+                            real_type e_diff = std::abs(emin - emin_prev);
+
+                            if (e_diff < parms["conv_thresh"])
+                                converged = true;
+                        }
                     }
                     
                     /// measure observables specified in 'always_measure'
@@ -115,7 +134,7 @@ public:
                 }
                 
                 /// write checkpoint
-                bool stopped = stop_callback();
+                bool stopped = stop_callback() || converged;
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
                     checkpoint_simulation(mps, sweep, -1);
                 

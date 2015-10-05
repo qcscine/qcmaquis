@@ -64,11 +64,6 @@ namespace chem_detail {
         for (int p = 0; p < order.size(); ++p)
             inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
 
-        std::copy(order.begin(), order.end(), maquis::ostream_iterator<Lattice::pos_t>(std::cout, " "));
-        maquis::cout << std::endl;
-        std::copy(inv_order.begin(), inv_order.end(), maquis::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
-        maquis::cout << std::endl;
-
         // ********************************************************************
         // *** Parse orbital data *********************************************
         // ********************************************************************
@@ -109,7 +104,23 @@ namespace chem_detail {
             row++;
         }
 
-        maquis::cout << "Integrals parsed with parse_real_integrals routine\n";
+        // dump the integrals into the result file for reproducibility
+        if (parms["donotsave"] == 0)
+        {
+            std::vector<double> m_;
+            std::vector<Lattice::pos_t> i_;
+
+            it = raw.begin();
+            while (it != raw.end()) {
+                m_.push_back(*it++);
+                std::copy(it, it+4, std::back_inserter(i_));
+                it += 4;
+            }
+
+            storage::archive ar(parms["resultfile"], "w");
+            ar["/integrals/elements"] << m_;
+            ar["/integrals/indices"] << i_;
+        }
 
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
@@ -157,11 +168,6 @@ namespace chem_detail {
         inv_order.resize(order.size());
         for (int p = 0; p < order.size(); ++p)
             inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
-
-        std::copy(order.begin(), order.end(), maquis::ostream_iterator<Lattice::pos_t>(std::cout, " "));
-        maquis::cout << std::endl;
-        std::copy(inv_order.begin(), inv_order.end(), maquis::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
-        maquis::cout << std::endl;
 
         // ********************************************************************
         // *** Parse orbital data *********************************************
@@ -211,7 +217,27 @@ namespace chem_detail {
             row++;
         }
 
-        maquis::cout << "Integrals parsed with parse_complex_integrals routine\n";
+        // dump the integrals into the result file for reproducibility
+        if (parms["donotsave"] == 0)
+        {
+            std::vector<T> m_;
+            std::vector<Lattice::pos_t> i_;
+
+            it = raw.begin();
+            while (it != raw.end()) {
+                double re = *it++;
+                double im = *it++;
+                T integral_value(re, im);
+
+                m_.push_back(integral_value);
+                std::copy(it, it+4, std::back_inserter(i_));
+                it += 4;
+            }
+
+            storage::archive ar(parms["resultfile"], "w");
+            ar["/integrals/elements"] << m_;
+            ar["/integrals/indices"] << i_;
+        }
 
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)

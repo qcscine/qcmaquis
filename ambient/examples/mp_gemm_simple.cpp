@@ -1,6 +1,6 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/numeric/matrix.hpp"
-#include "utils/timings.hpp"
+#include "utils/timer.hpp"
 
 #define N AMBIENT_DEFAULT_IB*4 
 
@@ -11,7 +11,7 @@ ambient::scope::const_iterator where(int i, int j){
 }
 
 int main(){
-    ambient::numeric::tiles< ambient::numeric::matrix<double> > a(N,N), b(N,N), c(N,N);
+    ambient::tiles< ambient::matrix<double> > a(N,N), b(N,N), c(N,N);
 
     for(int i = 0; i < a.mt; i++)
     for(int j = 0; j < a.nt; j++){

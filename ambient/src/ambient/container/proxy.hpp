@@ -34,15 +34,12 @@ namespace ambient {
     class proxy {
         typedef typename T::value_type value_type;
     public:
-        proxy(const T& p) : ambient_rc(p.ambient_rc) {}
+        proxy(const T& p) : ambient_allocator(p.ambient_allocator) {}
         size_t lda() const {
             return ambient::get_dim(*this).y;
         }
-    AMBIENT_DISABLE_DESTRUCTOR 
-    AMBIENT_DELEGATE
-    (
-        value_type data[ AMBIENT_VAR_LENGTH ]; 
-    )};
+        AMBIENT_PROXY_DELEGATE(T)
+    };
 
 }
 

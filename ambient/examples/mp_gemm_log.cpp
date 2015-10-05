@@ -1,11 +1,11 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/numeric/matrix.hpp"
-#include "utils/timings.hpp"
+#include "utils/timer.hpp"
 
 #define GRAN 2
 #define N AMBIENT_DEFAULT_IB*GRAN*2
 
-namespace ambient { namespace numeric {
+namespace ambient {
 
     int where(int i, int j){
         static int nq = ambient::scope::size();
@@ -53,11 +53,10 @@ namespace ambient { namespace numeric {
             for(auto x : ctree) delete x.first;
         }
     }
-} }
+}
 
 int main(){
     using namespace ambient;
-    using namespace ambient::numeric;
     typedef tiles<matrix<double> > mtx;
 
     mtx pA(N,N); mp_generate<GRAN>(pA);

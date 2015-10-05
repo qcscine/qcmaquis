@@ -143,6 +143,41 @@ public:
 
         measurements_type meas;
 
+        {
+            if (parms.is_set("MEASURE[ChemEntropy]"))
+            {
+                parms.set("MEASURE_LOCAL[Nup]", "Nup");
+                parms.set("MEASURE_LOCAL[Ndown]", "Ndown");
+                parms.set("MEASURE_LOCAL[Nupdown]", "Nup*Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[dm_up]", "cdag_up:c_up");
+                parms.set("MEASURE_HALF_CORRELATIONS[dm_down]", "cdag_down:c_down");
+
+                parms.set("MEASURE_HALF_CORRELATIONS[nupnup]", "Nup:Nup");
+                parms.set("MEASURE_HALF_CORRELATIONS[nupndown]", "Nup:Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[ndownnup]", "Ndown:Nup");
+                parms.set("MEASURE_HALF_CORRELATIONS[ndownndown]", "Ndown:Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[doccdocc]", "Nup*Ndown:Nup*Ndown");
+
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_up_while_down]", "cdag_up*Ndown:c_up*Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_down_while_up]", "cdag_down*Nup:c_down*Nup");
+
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_up_while_down_at_2]", "cdag_up:c_up*Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_up_while_down_at_1]", "cdag_up*Ndown:c_up");
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_down_while_up_at_2]", "cdag_down:c_down*Nup");
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_down_while_up_at_1]", "cdag_down*Nup:c_down");
+
+                parms.set("MEASURE_HALF_CORRELATIONS[transfer_pair]", "cdag_up*cdag_down:c_up*c_down");
+                parms.set("MEASURE_HALF_CORRELATIONS[spinflip]", "cdag_up*c_down:cdag_down*c_up");
+
+                parms.set("MEASURE_HALF_CORRELATIONS[nupdocc]", "Nup:Nup*Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[ndowndocc]", "Ndown:Nup*Ndown");
+                parms.set("MEASURE_HALF_CORRELATIONS[doccnup]", "Nup*Ndown:Nup");
+                parms.set("MEASURE_HALF_CORRELATIONS[doccndown]", "Nup*Ndown:Ndown");
+
+                parms.set("MEASURE_HALF_CORRELATIONS[splus_sminus]", "splus:sminus");
+            }
+        }
+
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_tag_element;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
@@ -173,9 +208,9 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
-        boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
-        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
+        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -212,7 +247,7 @@ public:
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
-                if(lhs == "MEASURE_TRANSITION_TWOPTDM"){
+                if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it->value();
                 }
