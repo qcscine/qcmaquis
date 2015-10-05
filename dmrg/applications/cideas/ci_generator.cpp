@@ -30,7 +30,7 @@
 
 #include "dmrg/models/lattice.h"
 #include "../applications/tools/deas.hpp"
-#include "../applications/cideas/determinant.hpp"
+#include "determinant.hpp"
 
 
 //function to get orb under consideration
