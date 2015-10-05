@@ -13,7 +13,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "utils/catch.hpp"
-#include "utils/timings.hpp"
+#include "utils/timer.hpp"
 
 #define TOLERANCE (double)1/0xF4240
 #define REQUIRE_CLOSE(a,b) REQUIRE(ambient::utils::require_close(a,b,TOLERANCE))
@@ -87,8 +87,8 @@ namespace ambient { namespace utils {
 } }
 
 
-template<class T> using matrix = ambient::numeric::tiles<ambient::numeric::matrix<T> >;
-template<class T> using diagonal = ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >;
+template<class T> using matrix = ambient::tiles<ambient::matrix<T> >;
+template<class T> using diagonal = ambient::tiles<ambient::diagonal_matrix<T> >;
 
 #ifdef AMBIENT_ALPS
 template<class T> using matrix_ = alps::numeric::matrix<T>;

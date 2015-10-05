@@ -52,10 +52,10 @@ using std::endl;
 typedef U1 SymmGroup;
 typedef alps::numeric::matrix<double> matrix;
 
-double measure_local_expval(MPS<matrix, SymmGroup> const & mps, typename operator_selector<matrix, SymmGroup>::type const & ident,
-                            typename operator_selector<matrix, SymmGroup>::type const & op, size_t pos)
+double measure_local_expval(MPS<matrix, SymmGroup> const & mps, operator_selector<matrix, SymmGroup>::type const & ident,
+                            operator_selector<matrix, SymmGroup>::type const & op, size_t pos)
 {
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     typedef std::vector<op_t> op_vec;
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
     Lattice lattice(lat_ptr);
@@ -71,7 +71,7 @@ double measure_local_expval(MPS<matrix, SymmGroup> const & mps, typename operato
 }
 
 double measure_local_overlap(MPS<matrix, SymmGroup> const & mps,
-                             typename operator_selector<matrix, SymmGroup>::type const & op, size_t pos)
+                             operator_selector<matrix, SymmGroup>::type const & op, size_t pos)
 {
     // asuming mps is canonized at site pos!
     return mps[pos].scalar_overlap(contraction::local_op(mps[pos], op));
@@ -99,7 +99,7 @@ double measure_local_trace_2(MPS<matrix, SymmGroup> const & mps,
 
 BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
 {
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     typedef block_matrix<matrix, SymmGroup> bm_t;
     
     int Nrep = 8;

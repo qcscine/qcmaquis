@@ -39,7 +39,7 @@ using std::endl;
 
 #ifdef USE_AMBIENT
     #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > Matrix;
+    typedef ambient::tiles<ambient::matrix<double> > Matrix;
 #else
     #include "dmrg/block_matrix/detail/alps.hpp"
     typedef alps::numeric::matrix<double> Matrix;
@@ -64,6 +64,8 @@ typedef SU2U1PG grp;
 typedef TrivialGroup grp;
 #elif defined(USE_U1)
 typedef U1 grp;
+#elif defined(USE_U1DG)
+typedef U1DG grp;
 #endif
 
 int main(int argc, char ** argv)

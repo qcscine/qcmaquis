@@ -38,7 +38,7 @@ using std::endl;
 #include "dmrg/block_matrix/detail/alps.hpp"
 
 typedef alps::numeric::matrix<double> alps_matrix;
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > ambient_matrix;
+typedef ambient::tiles<ambient::matrix<double> > ambient_matrix;
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"

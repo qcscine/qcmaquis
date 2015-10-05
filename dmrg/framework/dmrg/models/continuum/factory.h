@@ -34,7 +34,13 @@
 template<class Matrix, class SymmGroup>
 struct cont_model_factory {
     static boost::shared_ptr<model_impl<Matrix, SymmGroup> >
-    parse(Lattice const &, BaseParameters &);
+    parse(Lattice const &, BaseParameters &)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, SymmGroup> > impl_ptr;
+        throw std::runtime_error("Don't know any continuum model with this symmetry group!");
+        return impl_ptr();
+
+    }
 };
 
 #include "factory_lattice.hpp"

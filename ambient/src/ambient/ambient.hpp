@@ -37,6 +37,9 @@
 #ifndef AMBIENT_DATA_BULK_CHUNK
 #define AMBIENT_DATA_BULK_CHUNK      67108864 // 64 MB
 #endif
+#ifndef AMBIENT_COMM_BULK_CHUNK
+#define AMBIENT_COMM_BULK_CHUNK      67108864 // 64 MB
+#endif
 #ifndef AMBIENT_MPI
 #define AMBIENT_MPI                  MPI_THREAD_FUNNELED
 #endif
@@ -68,25 +71,26 @@
 #include <stdexcept>
 #include <type_traits>
 #include <functional>
+#include <utility>
+#include <atomic>
+#include <tuple>
 // }}}
 
 #include "ambient/utils/dim2.hpp"
-#include "ambient/utils/tree.hpp"
 #include "ambient/utils/guard_once.hpp"
-#include "ambient/utils/threads.hpp"
+#include "ambient/utils/threading.hpp"
 #include "ambient/utils/math.hpp"
 #include "ambient/utils/rank_t.hpp"
 #include "ambient/utils/io.hpp"
 
 #include "ambient/memory/pool.hpp"
-#include "ambient/memory/new.h"
-#include "ambient/memory/allocator.h"
+#include "ambient/memory/cpu/new.h"
 
-#include "ambient/models/ssm/locality.h"
-#include "ambient/models/ssm/revision.h"
-#include "ambient/models/ssm/history.h"
-#include "ambient/models/ssm/transformable.h"
-#include "ambient/models/ssm/model.h"
+#include "ambient/model/locality.h"
+#include "ambient/model/functor.h"
+#include "ambient/model/revision.h"
+#include "ambient/model/history.h"
+#include "ambient/model/transformable.h"
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.h"
@@ -97,29 +101,27 @@
 #include "ambient/channels/nop/channel.h"
 #endif
 
-#include "ambient/controllers/ssm/functor.h"
-#include "ambient/controllers/ssm/collector.h"
-#include "ambient/controllers/ssm/controller.h"
-#include "ambient/controllers/ssm/meta.h"
-#include "ambient/controllers/ssm/get.h"
-#include "ambient/controllers/ssm/set.h"
-#include "ambient/controllers/ssm/scope.h"
-#include "ambient/controllers/ssm/actor.h"
-#include "ambient/controllers/ssm/context_mt.h"
-#include "ambient/controllers/ssm/context_serial.h"
-#include "ambient/controllers/ssm/backbone.h"
+#include "ambient/controllers/collector.h"
+#include "ambient/controllers/controller.h"
+#include "ambient/controllers/meta.h"
+#include "ambient/controllers/get.h"
+#include "ambient/controllers/set.h"
+#include "ambient/controllers/scope.h"
+#include "ambient/controllers/actor.h"
+#include "ambient/controllers/context.h"
+#include "ambient/controllers/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
 
-#include "ambient/memory/new.hpp"
-#include "ambient/memory/allocator.hpp"
-#include "ambient/memory/data_bulk.hpp"
-#include "ambient/memory/instr_bulk.hpp"
+#include "ambient/memory/cpu/new.hpp"
+#include "ambient/memory/cpu/data_bulk.hpp"
+#include "ambient/memory/cpu/comm_bulk.hpp"
+#include "ambient/memory/cpu/instr_bulk.hpp"
 
-#include "ambient/models/ssm/revision.hpp"
-#include "ambient/models/ssm/history.hpp"
-#include "ambient/models/ssm/transformable.hpp"
-#include "ambient/models/ssm/model.hpp"
+#include "ambient/model/revision.hpp"
+#include "ambient/model/history.hpp"
+#include "ambient/model/transformable.hpp"
+#include "ambient/model/model.hpp"
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.hpp"
@@ -128,18 +130,18 @@
 #include "ambient/channels/mpi/collective.hpp"
 #endif
 
-#include "ambient/controllers/ssm/meta.hpp"
-#include "ambient/controllers/ssm/get.hpp"
-#include "ambient/controllers/ssm/set.hpp"
-#include "ambient/controllers/ssm/collector.hpp"
-#include "ambient/controllers/ssm/controller.hpp"
-#include "ambient/controllers/ssm/scope.hpp"
-#include "ambient/controllers/ssm/actor.hpp"
-#include "ambient/controllers/ssm/context_mt.hpp"
-#include "ambient/controllers/ssm/context_serial.hpp"
-#include "ambient/controllers/ssm/backbone.hpp"
+#include "ambient/controllers/meta.hpp"
+#include "ambient/controllers/get.hpp"
+#include "ambient/controllers/set.hpp"
+#include "ambient/controllers/collector.hpp"
+#include "ambient/controllers/controller.hpp"
+#include "ambient/controllers/scope.hpp"
+#include "ambient/controllers/actor.hpp"
+#include "ambient/controllers/context.hpp"
+#include "ambient/controllers/backbone.hpp"
 
 #include "ambient/interface/typed.hpp"
+#include "ambient/interface/allocator.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/access.hpp"
 #include "ambient/interface/lambda.hpp"

@@ -33,15 +33,15 @@ namespace parallel {
     #ifdef USE_AMBIENT
     struct guard {
         typedef ambient::actor proc_guard;
+        typedef ambient::actor_common proc_guard_common;
         typedef ambient::scope group_guard;
         typedef typename traits::resource_iterator iter;
         typedef typename traits::resource_iterator_nop iter_nop;
 
         struct serial {
-            serial() : proc(ambient::actor_t::common) { }
            ~serial(){ ambient::sync(); }
         private:
-            proc_guard proc;
+            proc_guard_common proc;
         };
 
         explicit guard(const iter& r) : group(NULL) {

@@ -377,8 +377,10 @@ namespace contraction {
         Index<SymmGroup> left_i = ket_tensor.row_dim();
         Index<SymmGroup> right_i = ket_tensor.col_dim();
         
-        block_matrix<Matrix, SymmGroup> ket_mat = reshape_left_to_physleft(phys_i, left_i, right_i, ket_tensor.data());
-        block_matrix<Matrix, SymmGroup> bra_mat = reshape_left_to_physleft(phys_i, left_i, right_i, bra_tensor.data());
+        block_matrix<Matrix, SymmGroup> ket_mat;
+        reshape_left_to_physleft(phys_i, left_i, right_i, ket_tensor.data(), ket_mat);
+        block_matrix<Matrix, SymmGroup> bra_mat;
+        reshape_left_to_physleft(phys_i, left_i, right_i, bra_tensor.data(), bra_mat);
 
         block_matrix<Matrix, SymmGroup> dm;
         gemm(ket_mat, transpose(conjugate(bra_mat)), dm);

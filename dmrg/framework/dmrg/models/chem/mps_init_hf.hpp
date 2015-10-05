@@ -49,7 +49,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, 4, false, 1.);
+        di.init_sectors(mps, 5, false, 1.);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -143,7 +143,7 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, 4, false, 1.0);
+        di.init_sectors(mps, 5, false, 1.0);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 

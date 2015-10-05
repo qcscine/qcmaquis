@@ -67,7 +67,7 @@ namespace ambient {
                        const T* src, int lda, dim2 src_p, 
                        dim2 size, T alfa = 0.0)
     {
-        #ifdef AMBIENT_MEMPTF_CHECK_BOUNDARIES
+        #ifdef AMBIENT_CHECK_BOUNDARIES
         if(ambient::dim(dst).x - dst_p.x < size.x || ambient::dim(dst).y - dst_p.y < size.y ||
            ambient::dim(src).x - src_p.x < size.x || ambient::dim(src).y - src_p.y < size.y){
             std::cout << "Error: invalid memory movement: \n";

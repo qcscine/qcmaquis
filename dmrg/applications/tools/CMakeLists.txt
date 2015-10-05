@@ -33,19 +33,22 @@ create_tools_symm_target("mps_join_u1"   "U1"     "mps_join.cpp"  "${DMRG_APP_LI
 # create_tools_symm_target("mps_join_2u1"  "TWOU1"  "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
 # create_tools_symm_target("mps_join_none" "NONE"   "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("mps_stats_u1"       "U1"       "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_stats_2u1"      "TWOU1"    "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_stats_2u1pg"    "TWOU1PG"  "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_stats_su2u1"    "SU2U1"    "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_stats_su2u1pg"  "SU2U1PG"  "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_u1"      "U1"      "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_2u1"     "TWOU1"   "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_2u1pg"   "TWOU1PG" "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_u1df"    "U1DG"    "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_su2u1"   "SU2U1"   "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_su2u1pg" "SU2U1PG" "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("mpo_stats_u1"      "U1"      "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mpo_stats_2u1"     "TWOU1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mpo_stats_2u1pg"   "TWOU1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_u1df"    "U1DG"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_u1dg"    "U1DG"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+# create_tools_symm_target("visual_mpo_u1"      "U1"      "visual_mpo.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+# create_tools_symm_target("visual_mpo_2u1"     "TWOU1"   "visual_mpo.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
@@ -57,18 +60,11 @@ create_tools_symm_target("nrdmexpect_su2u1pg" "SU2U1PG" "nrdmexpect.cpp"  "dmrg_
 create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
-#create_tools_symm_target("ci_generator_2u1"     "TWOU1"   "ci_generator.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-#create_tools_symm_target("ci_generator_2u1pg"   "TWOU1PG" "ci_generator.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-
 create_tools_symm_target("deas_2u1"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("deas_2u1pg"           "TWOU1PG" "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
-#create_tools_symm_target("det2mps_2u1"     "TWOU1"   "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-#create_tools_symm_target("det2mps_2u1pg"   "TWOU1PG" "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-#create_tools_symm_target("det2mps_su2u1"   "SU2U1"   "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-#create_tools_symm_target("det2mps_su2u1pg" "SU2U1PG" "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-
-
+create_tools_symm_target("mps_transform"    "SU2U1"   "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_transform_pg" "SU2U1PG" "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578

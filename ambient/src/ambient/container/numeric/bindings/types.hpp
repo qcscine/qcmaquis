@@ -28,11 +28,11 @@
 #ifndef AMBIENT_CONTAINER_NUMERIC_BINDINGS_TYPES
 #define AMBIENT_CONTAINER_NUMERIC_BINDINGS_TYPES
 
-namespace ambient { namespace numeric { namespace bindings {
+namespace ambient { inline namespace numeric { namespace bindings {
 
     // {{{ overloaded convertion functions
     template <typename T, typename D, int IB>
-    void convert(ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB>& pm, const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D>, IB>& m){
+    void convert(ambient::tiles<ambient::diagonal_matrix<T>, IB>& pm, const ambient::tiles<ambient::diagonal_matrix<D>, IB>& m){
         for(size_t k = 0; k < m.data.size(); ++k)
             ambient::numeric::kernels::template cast_double_complex<T,D>(pm[k],m[k]);
     } 
@@ -45,9 +45,9 @@ namespace ambient { namespace numeric { namespace bindings {
     }
 
     template <typename T, typename D, int IB>
-    struct adaptor< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB>, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D>, IB> >{
-        static ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB> convert(const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D>, IB>& m){
-            ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB> pm(num_rows(m), num_cols(m));
+    struct adaptor< ambient::tiles<ambient::diagonal_matrix<T>, IB>, ambient::tiles<ambient::diagonal_matrix<D>, IB> >{
+        static ambient::tiles<ambient::diagonal_matrix<T>, IB> convert(const ambient::tiles<ambient::diagonal_matrix<D>, IB>& m){
+            ambient::tiles<ambient::diagonal_matrix<T>, IB> pm(num_rows(m), num_cols(m));
             ambient::numeric::bindings::template convert<T,D>(pm, m);
             return pm;
         }

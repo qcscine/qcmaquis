@@ -30,7 +30,7 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    class request_impl : public memory::use_bulk_new<request_impl> {
+    class request_impl : public memory::cpu::use_bulk_new<request_impl> {
     public:
         request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, rank_t target, int tag = 0);
         request_impl(void(*impl)(request_impl*), typename channel::block_type& r, rank_t target, int tag = 0);
@@ -45,14 +45,14 @@ namespace ambient { namespace channels { namespace mpi {
     };
 
     class request {
-        typedef ambient::bulk_allocator<request_impl*> allocator;
+        typedef memory::cpu::instr_bulk::allocator<request_impl*> allocator_type;
     public:
         bool operator()();
         void operator &= (request_impl* r);
         void operator += (request_impl* r);
     private:
-        std::vector<request_impl*,allocator> primaries;
-        std::vector<request_impl*,allocator> callbacks;
+        std::vector<request_impl*,allocator_type> primaries;
+        std::vector<request_impl*,allocator_type> callbacks;
     };
 
 } } }

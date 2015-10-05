@@ -1,11 +1,10 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/numeric/matrix.hpp"
-#include "utils/timings.hpp"
+#include "utils/timer.hpp"
 #include "utils/mkl_parallel.hpp"
 
 int main(){
     using namespace ambient;
-    using namespace ambient::numeric;
     typedef tiles<matrix<double> > mtx;
 
     size_t m = 16384;

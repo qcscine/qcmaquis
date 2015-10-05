@@ -30,9 +30,7 @@
 
 namespace ambient { namespace memory {
 
-    constexpr size_t paged(size_t size, size_t page){  return page * (size_t)((size+page-1)/page); } // (page example: 4096)
     constexpr size_t aligned_64(size_t size){ return 64 * (size_t)((size+63)/64); }
-    constexpr size_t aligned_8(size_t size){ return 8 * (size_t)((size+7)/8); }
     template<size_t S> constexpr size_t aligned_64(){ return 64 * (size_t)((S+63)/64); }
 
     template<size_t S, class Factory>
@@ -88,30 +86,11 @@ namespace ambient { namespace memory {
         typedef ambient::guard<mutex> guard;
         typedef serial_region<S,Factory> base;
 
-        region() : count(0) {}
-    private:
-        void realloc(){
-            if(this->count){
-                Factory::collect(this->buffer, this->count);
-                this->count = 0;
-            }
-            base::realloc();
-        }
-    public:
         void* malloc(size_t sz){
             guard g(this->mtx);
-            if(((size_t)this->iterator + sz - (size_t)this->buffer) >= S) realloc();
-            this->count++;
-            void* m = (void*)this->iterator;
-            this->iterator += aligned_64(sz);
-            return m;
-        }
-        void reset(){
-            base::reset();
-            this->count = 0; 
+            return base::malloc(sz);
         }
     private:
-        long int count;
         mutex mtx;
     };
 

@@ -35,8 +35,8 @@ namespace ambient {
     public:
         void* operator new (size_t size, void* ptr){ return ptr; }
         void  operator delete (void*, void*){ /* doesn't throw */ }
-        void* operator new (size_t sz){ return ambient::pool::malloc<ambient::memory::fixed,T>(); }
-        void operator delete (void* ptr){ ambient::pool::free<ambient::memory::fixed,sizeof(T)>(ptr); }
+        void* operator new (size_t sz){ return ambient::memory::malloc<ambient::memory::cpu::fixed,T>(); }
+        void operator delete (void* ptr){ ambient::memory::free<ambient::memory::cpu::fixed,sizeof(T)>(ptr); }
     };
 
 }
