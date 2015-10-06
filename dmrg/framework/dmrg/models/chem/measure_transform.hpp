@@ -84,6 +84,7 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
         parms_tmp.set("u1_total_charge2", Ndown);
         parms_tmp.set("L", parms["L"]);
         parms_tmp.set("init_state", "const");
+        parms_tmp.set("resultfile", parms["resultfile"]);
         parms_tmp.set("MEASURE[ChemEntropy]", 1);
 
         transform_detail::insert_symmetry<SymmGroup>()(parms, parms_tmp);
