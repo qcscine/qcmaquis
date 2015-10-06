@@ -57,7 +57,6 @@ using std::endl;
 
 namespace entanglement_detail {
 
-    //function definition get_labels 
     std::vector<std::pair<int, int> > get_labels(const std::vector<std::string> & quant_label)
     {
        std::vector<std::pair<int, int> > labels;
@@ -69,6 +68,17 @@ namespace entanglement_detail {
              ++beg;
              lab.second = boost::lexical_cast<int>(*beg);
              labels.push_back(lab);         
+          }
+          return labels;
+    }
+
+    std::vector<int> get_labels_vec(const std::vector<std::string> & quant_label)
+    {
+       std::vector<int> labels;
+          for(int j = 0; j < quant_label.size(); j++){
+             boost::tokenizer<> tok(quant_label[j]);
+             boost::tokenizer<>::iterator beg = tok.begin();
+             labels.push_back(boost::lexical_cast<int>(*tok.begin()));
           }
           return labels;
     }
@@ -100,12 +110,14 @@ namespace entanglement_detail {
         std::vector<std::string> x;
         Matrix y;
 
-        ar[path + "/mean/labels"] >> x;
+        ar[path + "/labels"] >> x;
+        std::vector<int> labels = get_labels_vec(x);
+
         ar[path + "/mean/value"] >> y;
+        Matrix ret(num_rows(y), 1);
 
-        std::vector<std::pair<int,int> > labels = get_labels(x);
-
-        Matrix ret(num_rows(y));
+        for (int i = 0; i < num_rows(y); ++i)
+            ret(labels[i], 0) = y(i, 0); 
 
         return ret;
     }
@@ -152,14 +164,9 @@ namespace entanglement_detail {
         EntropyData<Matrix> data; 
 
         // load quantities needed for s1
-        ar["/spectrum/results/Nup/mean/value"] >> data.Nup;
-        //std::cout << "Nup: " << data.Nup << std::endl;
-        ar["/spectrum/results/Ndown/mean/value"] >> data.Ndown;
-        //std::cout << "Ndown " << data.Ndown << std::endl;
-        ar["/spectrum/results/Nupdown/mean/value"] >> data.Nupdown;
-        //std::cout << "docc: " << data.Nupdown << std::endl;
-
-        //Matrix mm = load_vector<Matrix>(ar, "/spectrum/results/Nup");
+        data.Nup     = load_vector<Matrix>(ar, "/spectrum/results/Nup");
+        data.Ndown   = load_vector<Matrix>(ar, "/spectrum/results/Ndown");
+        data.Nupdown = load_vector<Matrix>(ar, "/spectrum/results/Nupdown");
 
         // load quantities needed for s2
         Matrix dm_up;
