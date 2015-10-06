@@ -41,9 +41,9 @@ int main(int argc, char ** argv)
         std::string rfile(argv[1]);
 
         EntanglementData<matrix> em(rfile);
-        std::cout << "single orbital entropy:" << std::endl << em.s1_ << std::endl;
-        std::cout << "two orbital entropy:" << std::endl << em.s2_ << std::endl;
-        std::cout << "mutual information:" << std::endl << em.I_ << std::endl;
+        std::cout << "single orbital entropy:" << std::endl << em.s1() << std::endl;
+        std::cout << "two orbital entropy:" << std::endl << em.s2() << std::endl;
+        std::cout << "mutual information:" << std::endl << em.I() << std::endl;
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

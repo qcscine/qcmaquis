@@ -73,34 +73,31 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
-//additional functions - only reason why functions appear here is my (yet) poor c++ knowledge
-
-//function declaration get_labels
-extern std::vector<std::pair<int,int> > get_labels(const std::vector<std::string> & quant_label);
-//function definition get_labels 
-std::vector<std::pair<int,int> > get_labels(const std::vector<std::string> & quant_label)
-{
-   std::vector<std::pair<int,int> > labels;
-   std::pair<int,int> lab;
-      for(int j=0;j<quant_label.size();j++){
-         boost::tokenizer<> tok(quant_label[j]);
-         boost::tokenizer<>::iterator beg= tok.begin();
-         lab.first = boost::lexical_cast<int>(*beg);
-         ++beg;
-         lab.second = boost::lexical_cast<int>(*beg);
-         labels.push_back(lab);         
-      }
-      return labels;
-}
-
-//comparison function
-
-typedef std::pair<double,int> mpair;
-
-bool comp(const mpair& l, const mpair& r){return l.first > r.first;}
-
 
 namespace entanglement_detail {
+
+    //function definition get_labels 
+    std::vector<std::pair<int, int> > get_labels(const std::vector<std::string> & quant_label)
+    {
+       std::vector<std::pair<int, int> > labels;
+       std::pair<int, int> lab;
+          for(int j = 0; j < quant_label.size(); j++){
+             boost::tokenizer<> tok(quant_label[j]);
+             boost::tokenizer<>::iterator beg= tok.begin();
+             lab.first = boost::lexical_cast<int>(*beg);
+             ++beg;
+             lab.second = boost::lexical_cast<int>(*beg);
+             labels.push_back(lab);         
+          }
+          return labels;
+    }
+
+    //comparison function
+    typedef std::pair<double,int> mpair;
+    bool comp(const mpair& l, const mpair& r)
+    {
+        return l.first > r.first;
+    }
 
     template <class Matrix>
     Matrix assy_hc(const std::vector<std::string> & label_str, Matrix const & values, const int L)
@@ -110,12 +107,27 @@ namespace entanglement_detail {
        Matrix ret(L,L,0);
        //symmetric Matrix build with entries and labels
        for(int i=0;i<labels.size();i++){
-          ret(labels[i].first,labels[i].second) = double(values(i,0));
-          ret(labels[i].second,labels[i].first) = double(values(i,0));
+          ret(labels[i].first, labels[i].second) = double(values(i,0));
+          ret(labels[i].second, labels[i].first) = double(values(i,0));
        }
        return ret;
     }
 
+    template <class Matrix>
+    Matrix load_vector(storage::archive & ar, std::string path)
+    {
+        std::vector<std::string> x;
+        Matrix y;
+
+        ar[path + "/mean/labels"] >> x;
+        ar[path + "/mean/value"] >> y;
+
+        std::vector<std::pair<int,int> > labels = get_labels(x);
+
+        Matrix ret;
+
+        return ret;
+    }
   
     template <class Matrix>
     struct EntropyData
@@ -154,11 +166,6 @@ namespace entanglement_detail {
 
         // chain-length   
         int L = parms["L"];
-        //std::cout << L << std::endl;
-        // load for instance the energy 
-        std::vector<value_type> energy;
-        ar["/spectrum/results/Energy/mean/value"] >> energy;
-        // change to observables  ar["/spectrum/results/Energy/mean/value"] >> energy;
 
         // collect all in EntropyData => get as e.g. data.Nup etc. 
         EntropyData<Matrix> data; 
@@ -171,6 +178,8 @@ namespace entanglement_detail {
         ar["/spectrum/results/Nupdown/mean/value"] >> data.Nupdown;
         //std::cout << "docc: " << data.Nupdown << std::endl;
 
+        Matrix mm = load_vector<Matrix>(ar, "/spectrum/results/Nup");
+
         // load quantities needed for s2
         Matrix dm_up;
         std::vector<std::string> dm_up_str;
@@ -178,7 +187,6 @@ namespace entanglement_detail {
         ar["/spectrum/results/dm_up/mean/value"] >> dm_up;
         data.dm_up_4x4 = assy_hc(dm_up_str,dm_up,L);
       
-
         Matrix dm_down;
         std::vector<std::string> dm_down_str;
         ar["/spectrum/results/dm_down/mean/value"] >> dm_down;
@@ -290,7 +298,6 @@ namespace entanglement_detail {
         return data;
     }
    
-   
 
     template <class Matrix>
     Matrix two_orb_rdm(int p, int q, EntropyData<Matrix> & data)
@@ -375,7 +382,6 @@ template <class Matrix>
 class EntanglementData
 {
 public:
-    // contructor
     EntanglementData(std::string rfile)
     {
         // Load results from rfile:
@@ -389,7 +395,7 @@ public:
 
         entanglement_detail::EntropyData<Matrix> data = entanglement_detail::loadData<Matrix>(ar);
 
-    //  calculate s1:
+        //  calculate s1:
         s1_.resize(1,L);
         Matrix m11(L,1),m22(L,1),m33(L,1),m44(L,1);
         for (int i=0; i<L; ++i)
@@ -398,14 +404,12 @@ public:
             m22(i,0) = (data.Ndown(i,0) - data.Nupdown(i,0)); // O(6)
             m33(i,0) = (1 - data.Nup(i,0) - data.Ndown(i,0) + data.Nupdown(i,0)); //O(1)
             m44(i,0) = data.Nupdown(i,0); // O(16)
-    //
             s1_(0,i) = -(m11(i,0)*log( m11(i,0) ) + m22(i,0)*log( m22(i,0) )\
                       + m33(i,0)*log( m33(i,0) ) + m44(i,0)*log( m44(i,0)) );
 
         }
-//        std::cout << "s1 vector: " << std::endl << s1_ <<std::endl;
 
-    // calculate s2
+        // calculate s2
         s2_.resize(L,L);
         for (int p=0; p<L; ++p)
         {    
@@ -425,9 +429,8 @@ public:
                 s2_(q,p) = s2_(p,q);
             }
         }
-//        std::cout << "s2 matrix:" << std::endl << s2_ << endl;
 
-    //  calculate I
+        //  calculate I
         I_.resize(L,L);
         for (int p=0; p<L; ++p)
         {    
@@ -437,33 +440,47 @@ public:
                 I_(q,p) = I_(p,q);
             }
         }
-//        std::cout << "I matrix:" << std::endl << I_ << endl;
-    // get hf_occ vector
-       std::vector<int> hf_occ = parms["hf_occ"];
-       std::vector<int> hf_sort(L);
+        std::vector<int> hf_occ = parms["hf_occ"];
+        std::vector<int> hf_sort(L);
 
-    // get CAS vector and sort HF occ vector
-       std::vector<mpair> casv_sort(L);
-       std::vector<int> casv(L);
-       for(int i = 0; i<L; i++){
-          casv_sort[i].first = s1_(0,i);
-          casv_sort[i].second = i;
-       }
-       std::sort(casv_sort.begin(),casv_sort.end(), comp); 
-       for(int i = 0; i<L; i++){
-          casv[i] = casv_sort[i].second;
-          hf_sort[i] = hf_occ[casv[i]];
-       }
-    // print CAS vector and sorted HF vector
-//       std::cout << "CAS vector: ";
-//       for(int i =0; i<L; i++){std::cout << ","<<casv[i];}
-//       std::cout <<std::endl;
+        // get CAS vector and sort HF occ vector
+        std::vector<entanglement_detail::mpair> casv_sort(L);
+        std::vector<int> casv(L);
+        for(int i = 0; i < L; i++){
+            casv_sort[i].first = s1_(0,i);
+            casv_sort[i].second = i;
+        }
+        std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp); 
+        for(int i = 0; i<L; i++){
+            casv[i] = casv_sort[i].second;
+            hf_sort[i] = hf_occ[casv[i]];
+        }
+        // print CAS vector and sorted HF vector
+        //std::cout << "CAS vector: ";
+        //for(int i =0; i<L; i++){std::cout << ","<<casv[i];}
+        //std::cout <<std::endl;
 
-//       std::cout << "sorted HF occupation  vector: ";
-//       for(int i =0; i<L; i++){std::cout << ","<<hf_sort[i];}
-//       std::cout <<std::endl;
+        //std::cout << "sorted HF occupation  vector: ";
+        //for(int i =0; i<L; i++){std::cout << ","<<hf_sort[i];}
+        //std::cout <<std::endl;
     }
-public:
+
+    Matrix s1()
+    {
+        return s1_;
+    }
+
+    Matrix s2()
+    {
+        return s2_;
+    }
+
+    Matrix I()
+    {
+        return I_;
+    }
+
+private:
     Matrix s1_, s2_, I_;
 };
 

@@ -114,7 +114,10 @@ std::vector<std::pair<int,int> > get_orb(std::vector<int> hf_occ){
 
 
 template <class SymmGroup>
-std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, EntanglementData<matrix> &em, int &run, std::vector<Determinant<SymmGroup> > &deas_dets)
+std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms,
+                                                   EntanglementData<matrix> &em,
+                                                   int &run,
+                                                   std::vector<Determinant<SymmGroup> > &deas_dets)
 {
     int L = parms["L"];
 
@@ -133,11 +136,10 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
     }
 
     Determinant<SymmGroup> hf_unordered(parms.get<std::vector<int> >("hf_occ")), hf_occ;
-//this takes orbital ordering in account; It only adapts the HF occupation! 
-//This means, that it is assumed that the preliminary calculation has been carried out with the ordering specified in the input file!!
-//If Fiedler ordering is applied AFTER(!) first run, also the CAS Vektor needs to be adopted.
-//Discuss on monday!!!
-
+    //this takes orbital ordering in account; It only adapts the HF occupation! 
+    //This means, that it is assumed that the preliminary calculation has been carried out with the ordering specified in the input file!!
+    //If Fiedler ordering is applied AFTER(!) first run, also the CAS Vektor needs to be adopted.
+    //Discuss on monday!!!
 
     std::vector<int> order(hf_unordered.size());
     if (!parms.is_set("orbital_order"))
@@ -149,36 +151,36 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
     std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
 
     for (int i = 0; i < order.size(); ++i)
-	hf_occ.push_back(hf_unordered[order[i]]);
+        hf_occ.push_back(hf_unordered[order[i]]);
 
     std::cout << "hf_occ: ";
     for (int i = 0 ; i < hf_occ.size(); ++i)
         std::cout << " " << hf_occ[i];
     std::cout << std::endl;
 
-    std::vector<mpair> casv_sort(L);
+    std::vector<entanglement_detail::mpair> casv_sort(L);
     std::vector<int> casv(L);
     for(int i = 0; i<L; i++){
-       casv_sort[i].first = em.s1_(0,i);
-       casv_sort[i].second = i;
+        casv_sort[i].first = em.s1()(0,i);
+        casv_sort[i].second = i;
     }
-    std::sort(casv_sort.begin(),casv_sort.end(), comp);
+    std::sort(casv_sort.begin(),casv_sort.end(), entanglement_detail::comp);
     for(int i = 0; i<L; i++){
-       casv[i] = casv_sort[i].second;
-     }
+        casv[i] = casv_sort[i].second;
+    }
 
     std::cout << "CAS vector: ";
     for(int i =0; i<L; i++){std::cout << casv[i] << " ";}
     std::cout <<std::endl;
 
-//    std::cout << "HF occupation  vector: ";
-//    for(int i =0; i<L; i++){std::cout << hf_occ[i];}
-//    std::cout <<std::endl;
+    //std::cout << "HF occupation  vector: ";
+    //for(int i =0; i<L; i++){std::cout << hf_occ[i];}
+    //std::cout <<std::endl;
 
     Lattice lat(parms);
     std::vector<int> sym_vec(lat.size());
     for (int i = 0; i<lat.size(); i++){
-       sym_vec[i] = lat.get_prop<int>("type", i);
+        sym_vec[i] = lat.get_prop<int>("type", i);
     }
 
     int target_sym, hf_sym;
@@ -195,7 +197,7 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
 
     std::vector<int> ci_level(parms.get<std::vector<int> >("ci_level"));
     if(std::find(ci_level.begin(), ci_level.end(), 0) == ci_level.end())
-       ci_level.push_back(0);
+        ci_level.push_back(0);
 
     std::cout << "excitation levels allowed: ";
     for(int i =0; i<ci_level.size(); i++){std::cout << ci_level[i] << " ";}
@@ -203,15 +205,15 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
 
     int act_orb = casv[0];
     if(run == 0){
-       deas_dets.push_back(hf_occ);
-       int count = 0;
-       for(int i = 1; i<5; i++){
-          if(hf_occ[act_orb]!=i){
-             deas_dets.push_back(hf_occ);
-             count++;
-             deas_dets[count][act_orb] =i;
-          }
-       }
+        deas_dets.push_back(hf_occ);
+        int count = 0;
+        for(int i = 1; i<5; i++){
+            if(hf_occ[act_orb]!=i){
+                deas_dets.push_back(hf_occ);
+                count++;
+                deas_dets[count][act_orb] =i;
+            }
+        }
     }
     else if (run != 0){
 
@@ -223,6 +225,6 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms, Entang
         deas_dets = deas(run,act_orb,deas_dets);
     }
 
-//insert ci check here
+    //insert ci check here
     return deas_dets;
 }
