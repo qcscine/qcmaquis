@@ -95,11 +95,11 @@ namespace entanglement_detail {
     {
        std::vector<std::pair<int,int> > labels;
        labels = get_labels(label_str);
-       Matrix ret(L,L,0);
+       Matrix ret(L, L, 0);
        //symmetric Matrix build with entries and labels
        for(int i=0;i<labels.size();i++){
-          ret(labels[i].first, labels[i].second) = double(values(i,0));
-          ret(labels[i].second, labels[i].first) = double(values(i,0));
+          ret(labels[i].first, labels[i].second) = values(i,0);
+          ret(labels[i].second, labels[i].first) = values(i,0);
        }
        return ret;
     }
@@ -121,6 +121,16 @@ namespace entanglement_detail {
 
         return ret;
     }
+
+    template <class Matrix>
+    Matrix load_matrix(storage::archive & ar, std::string path, int L)
+    {
+        std::vector<std::string> x;
+        Matrix y;
+        ar[path + "/labels"] >> x;
+        ar[path + "/mean/value"] >> y;
+        return assy_hc(x, y, L);
+    }
   
     template <class Matrix>
     struct EntropyData
@@ -128,25 +138,25 @@ namespace entanglement_detail {
         Matrix Nup;
         Matrix Ndown; 
         Matrix Nupdown; 
-        Matrix dm_up_4x4;
-        Matrix dm_down_4x4;
-        Matrix nupnup_4x4;
-        Matrix nupndown_4x4;
-        Matrix ndownnup_4x4;
-        Matrix ndownndown_4x4;
-        Matrix doccdocc_4x4;
-        Matrix transfer_up_while_down_4x4;
-        Matrix transfer_down_while_up_4x4;
-        Matrix transfer_up_while_down_at_2_4x4;
-        Matrix transfer_down_while_up_at_2_4x4;
-        Matrix transfer_up_while_down_at_1_4x4;
-        Matrix transfer_down_while_up_at_1_4x4;
-        Matrix transfer_pair_4x4;
-        Matrix spinflip_4x4;
-        Matrix nupdocc_4x4;
-        Matrix ndowndocc_4x4;
-        Matrix doccnup_4x4;
-        Matrix doccndown_4x4;
+        Matrix dm_up;
+        Matrix dm_down;
+        Matrix nupnup;
+        Matrix nupndown;
+        Matrix ndownnup;
+        Matrix ndownndown;
+        Matrix doccdocc;
+        Matrix transfer_up_while_down;
+        Matrix transfer_down_while_up;
+        Matrix transfer_up_while_down_at_2;
+        Matrix transfer_down_while_up_at_2;
+        Matrix transfer_up_while_down_at_1;
+        Matrix transfer_down_while_up_at_1;
+        Matrix transfer_pair;
+        Matrix spinflip;
+        Matrix nupdocc;
+        Matrix ndowndocc;
+        Matrix doccnup;
+        Matrix doccndown;
     }; 
 
 
@@ -159,6 +169,7 @@ namespace entanglement_detail {
 
         // chain-length   
         int L = parms["L"];
+        std::string rpath = "/spectrum/results/";
 
         // collect all in EntropyData => get as e.g. data.Nup etc. 
         EntropyData<Matrix> data; 
@@ -169,119 +180,26 @@ namespace entanglement_detail {
         data.Nupdown = load_vector<Matrix>(ar, "/spectrum/results/Nupdown");
 
         // load quantities needed for s2
-        Matrix dm_up;
-        std::vector<std::string> dm_up_str;
-        ar["/spectrum/results/dm_up/labels"] >> dm_up_str;
-        ar["/spectrum/results/dm_up/mean/value"] >> dm_up;
-        data.dm_up_4x4 = assy_hc(dm_up_str,dm_up,L);
-      
-        Matrix dm_down;
-        std::vector<std::string> dm_down_str;
-        ar["/spectrum/results/dm_down/mean/value"] >> dm_down;
-        ar["/spectrum/results/dm_down/labels"] >> dm_down_str;
-        data.dm_down_4x4 = assy_hc(dm_down_str,dm_down,L);
-
-        Matrix nupnup;
-        std::vector<std::string> nupnup_str;
-        ar["/spectrum/results/nupnup/mean/value"] >> nupnup;
-        ar["/spectrum/results/nupnup/labels"] >> nupnup_str;
-        data.nupnup_4x4 = assy_hc(nupnup_str,nupnup,L);
-
-        Matrix nupndown;
-        std::vector<std::string> nupndown_str;
-        ar["/spectrum/results/nupndown/mean/value"] >> nupndown;
-        ar["/spectrum/results/nupndown/labels"] >> nupndown_str;
-        data.nupndown_4x4 = assy_hc(nupndown_str, nupndown,L);
-
-        Matrix ndownnup;
-        std::vector<std::string> ndownnup_str;
-        ar["/spectrum/results/ndownnup/mean/value"] >> ndownnup;
-        ar["/spectrum/results/ndownnup/labels"] >> ndownnup_str;
-        data.ndownnup_4x4 = assy_hc(ndownnup_str,ndownnup,L);
-
-        Matrix ndownndown;
-        std::vector<std::string> ndownndown_str;
-        ar["/spectrum/results/ndownndown/mean/value"] >> ndownndown;
-        ar["/spectrum/results/ndownndown/labels"] >> ndownndown_str;
-        data.ndownndown_4x4 = assy_hc(ndownndown_str,ndownndown,L);
-
-        Matrix doccdocc;
-        std::vector<std::string> doccdocc_str;
-        ar["/spectrum/results/doccdocc/mean/value"] >> doccdocc;
-        ar["/spectrum/results/doccdocc/labels"] >> doccdocc_str;
-        data.doccdocc_4x4 = assy_hc(doccdocc_str,doccdocc,L);
-
-        Matrix transfer_up_while_down;
-        std::vector<std::string> transfer_up_while_down_str;
-        ar["/spectrum/results/transfer_up_while_down/mean/value"] >> transfer_up_while_down;
-        ar["/spectrum/results/transfer_up_while_down/labels"] >> transfer_up_while_down_str;
-        data.transfer_up_while_down_4x4 = assy_hc(transfer_up_while_down_str,transfer_up_while_down,L);
-
-        Matrix transfer_down_while_up;
-        std::vector<std::string> transfer_down_while_up_str;
-        ar["/spectrum/results/transfer_down_while_up/mean/value"] >> transfer_down_while_up;
-        ar["/spectrum/results/transfer_down_while_up/labels"] >> transfer_down_while_up_str;
-        data.transfer_down_while_up_4x4 = assy_hc(transfer_down_while_up_str,transfer_down_while_up,L);
-
-        Matrix transfer_up_while_down_at_2;
-        std::vector<std::string> transfer_up_while_down_at_2_str;
-        ar["/spectrum/results/transfer_up_while_down_at_2/mean/value"] >> transfer_up_while_down_at_2;
-        ar["/spectrum/results/transfer_up_while_down_at_2/labels"] >> transfer_up_while_down_at_2_str;
-        data.transfer_up_while_down_at_2_4x4 = assy_hc(transfer_up_while_down_at_2_str,transfer_up_while_down_at_2,L);
-
-        Matrix transfer_up_while_down_at_1;
-        std::vector<std::string> transfer_up_while_down_at_1_str;
-        ar["/spectrum/results/transfer_up_while_down_at_1/mean/value"] >> transfer_up_while_down_at_1;
-        ar["/spectrum/results/transfer_up_while_down_at_1/labels"] >> transfer_up_while_down_at_1_str;
-        data.transfer_up_while_down_at_1_4x4 = assy_hc(transfer_up_while_down_at_1_str,transfer_up_while_down_at_1,L);
-
-        Matrix transfer_down_while_up_at_2;
-        std::vector<std::string> transfer_down_while_up_at_2_str;
-        ar["/spectrum/results/transfer_down_while_up_at_2/mean/value"] >> transfer_down_while_up_at_2;
-        ar["/spectrum/results/transfer_down_while_up_at_2/labels"] >> transfer_down_while_up_at_2_str;
-        data.transfer_down_while_up_at_2_4x4 = assy_hc(transfer_down_while_up_at_2_str,transfer_down_while_up_at_2,L);
-
-        Matrix transfer_down_while_up_at_1;
-        std::vector<std::string> transfer_down_while_up_at_1_str;
-        ar["/spectrum/results/transfer_down_while_up_at_1/mean/value"] >> transfer_down_while_up_at_1;
-        ar["/spectrum/results/transfer_down_while_up_at_1/labels"] >> transfer_down_while_up_at_1_str;
-        data.transfer_down_while_up_at_1_4x4 = assy_hc(transfer_down_while_up_at_1_str,transfer_down_while_up_at_1,L);
-
-        Matrix transfer_pair;
-        std::vector<std::string> transfer_pair_str;
-        ar["/spectrum/results/transfer_pair/mean/value"] >> transfer_pair;
-        ar["/spectrum/results/transfer_pair/labels"] >> transfer_pair_str;
-        data.transfer_pair_4x4 = assy_hc(transfer_pair_str,transfer_pair,L);
-
-        Matrix spinflip;
-        std::vector<std::string> spinflip_str;
-        ar["/spectrum/results/spinflip/mean/value"] >> spinflip;
-        ar["/spectrum/results/spinflip/labels"] >> spinflip_str;
-        data.spinflip_4x4 = assy_hc(spinflip_str,spinflip,L);
-
-        Matrix nupdocc;
-        std::vector<std::string> nupdocc_str;
-        ar["/spectrum/results/nupdocc/mean/value"] >> nupdocc;
-        ar["/spectrum/results/nupdocc/labels"] >> nupdocc_str;
-        data.nupdocc_4x4 = assy_hc(nupdocc_str,nupdocc,L);
-
-        Matrix ndowndocc;
-        std::vector<std::string> ndowndocc_str;
-        ar["/spectrum/results/ndowndocc/mean/value"] >> ndowndocc;
-        ar["/spectrum/results/ndowndocc/labels"] >> ndowndocc_str;
-        data.ndowndocc_4x4 = assy_hc(ndowndocc_str,ndowndocc,L);
-
-        Matrix doccnup;
-        std::vector<std::string> doccnup_str;
-        ar["/spectrum/results/doccnup/mean/value"] >> doccnup;
-        ar["/spectrum/results/doccnup/labels"] >> doccnup_str;
-        data.doccnup_4x4 = assy_hc(doccnup_str,doccnup,L);
-
-        Matrix doccndown;
-        std::vector<std::string> doccndown_str;
-        ar["/spectrum/results/doccndown/mean/value"] >> doccndown;
-        ar["/spectrum/results/doccndown/labels"] >> doccndown_str;
-        data.doccndown_4x4 = assy_hc(doccndown_str,doccndown,L);
+        #define LOAD(path) data.path = load_matrix<Matrix>(ar, rpath + #path, L);
+        LOAD(dm_up)
+        LOAD(dm_down)
+        LOAD(nupnup)
+        LOAD(nupndown)
+        LOAD(ndownnup)
+        LOAD(ndownndown)
+        LOAD(doccdocc)
+        LOAD(transfer_up_while_down)
+        LOAD(transfer_down_while_up)
+        LOAD(transfer_up_while_down_at_2)
+        LOAD(transfer_up_while_down_at_1)
+        LOAD(transfer_down_while_up_at_2)
+        LOAD(transfer_down_while_up_at_1)
+        LOAD(transfer_pair)
+        LOAD(spinflip)
+        LOAD(nupdocc)
+        LOAD(ndowndocc)
+        LOAD(doccnup)
+        LOAD(doccndown)
 
         return data;
     }
@@ -291,75 +209,75 @@ namespace entanglement_detail {
     Matrix two_orb_rdm(int p, int q, EntropyData<Matrix> & data)
     {
             Matrix pq_dm_matrix(16,16);
-            pq_dm_matrix( 0, 0) = 1 + data.Nupdown(p,0)  + data.Nupdown(q,0) + data.doccdocc_4x4(p,q) - data.Ndown(p,0)\
-                                  - data.ndowndocc_4x4(p,q) - data.Ndown(q,0) - data.doccndown_4x4(p,q)\
-                                  + data.ndownndown_4x4(p,q) - data.Nup(p,0) - data.nupdocc_4x4(p,q) + data.nupndown_4x4(p,q)\
-                                  - data.Nup(q,0) - data.doccnup_4x4(p,q) + data.ndownnup_4x4(p,q) + data.nupnup_4x4(p,q);
+            pq_dm_matrix( 0, 0) = 1 + data.Nupdown(p,0)  + data.Nupdown(q,0) + data.doccdocc(p,q) - data.Ndown(p,0)\
+                                  - data.ndowndocc(p,q) - data.Ndown(q,0) - data.doccndown(p,q)\
+                                  + data.ndownndown(p,q) - data.Nup(p,0) - data.nupdocc(p,q) + data.nupndown(p,q)\
+                                  - data.Nup(q,0) - data.doccnup(p,q) + data.ndownnup(p,q) + data.nupnup(p,q);
             // O(6)/O(1)
-            pq_dm_matrix( 1, 1) = - data.Nupdown(p,0) - data.doccdocc_4x4(p,q) + data.Ndown(p,0) + data.ndowndocc_4x4(p,q) \
-                                  + data.doccndown_4x4(p,q) - data.ndownndown_4x4(p,q) + data.doccnup_4x4(p,q) - data.ndownnup_4x4(p,q);
+            pq_dm_matrix( 1, 1) = - data.Nupdown(p,0) - data.doccdocc(p,q) + data.Ndown(p,0) + data.ndowndocc(p,q) \
+                                  + data.doccndown(p,q) - data.ndownndown(p,q) + data.doccnup(p,q) - data.ndownnup(p,q);
             // O(11)O(1)
-            pq_dm_matrix( 2, 2) = - data.Nupdown(p,0) - data.doccdocc_4x4(p,q) + data.doccndown_4x4(p,q) + data.Nup(p,0) \
-                                  + data.nupdocc_4x4(p,q) - data.nupndown_4x4(p,q) + data.doccnup_4x4(p,q) - data.nupnup_4x4(p,q); 
+            pq_dm_matrix( 2, 2) = - data.Nupdown(p,0) - data.doccdocc(p,q) + data.doccndown(p,q) + data.Nup(p,0) \
+                                  + data.nupdocc(p,q) - data.nupndown(p,q) + data.doccnup(p,q) - data.nupnup(p,q); 
             // O(16)O(1)
-            pq_dm_matrix( 3, 3) =  data.Nupdown(p,0)  - data.doccndown_4x4(p,q) - data.doccnup_4x4(p,q) + data.doccdocc_4x4(p,q); 
+            pq_dm_matrix( 3, 3) =  data.Nupdown(p,0)  - data.doccndown(p,q) - data.doccnup(p,q) + data.doccdocc(p,q); 
             // O(1)O(6)
-            pq_dm_matrix( 4, 4) = -data.Nupdown(q,0)  - data.doccdocc_4x4(p,q)  + data.ndowndocc_4x4(p,q) + data.Ndown(q,0) \
-                                +  data.doccndown_4x4(p,q) - data.ndownndown_4x4(p,q) + data.nupdocc_4x4(p,q) - data.nupndown_4x4(p,q);
+            pq_dm_matrix( 4, 4) = -data.Nupdown(q,0)  - data.doccdocc(p,q)  + data.ndowndocc(p,q) + data.Ndown(q,0) \
+                                +  data.doccndown(p,q) - data.ndownndown(p,q) + data.nupdocc(p,q) - data.nupndown(p,q);
             // O(6)O(6) 
-            pq_dm_matrix( 5, 5) = data.ndownndown_4x4(p,q) - data.ndowndocc_4x4(p,q) - data.doccndown_4x4(p,q) + data.doccdocc_4x4(p,q);
+            pq_dm_matrix( 5, 5) = data.ndownndown(p,q) - data.ndowndocc(p,q) - data.doccndown(p,q) + data.doccdocc(p,q);
             // O(11)O(6)
-            pq_dm_matrix( 6, 6) = data.nupndown_4x4(p,q) - data.doccndown_4x4(p,q) - data.nupdocc_4x4(p,q) + data.doccdocc_4x4(p,q); 
+            pq_dm_matrix( 6, 6) = data.nupndown(p,q) - data.doccndown(p,q) - data.nupdocc(p,q) + data.doccdocc(p,q); 
             // O(16)O(11)
-            pq_dm_matrix( 7, 7) = data.doccndown_4x4(p,q) - data.doccdocc_4x4(p,q); 
+            pq_dm_matrix( 7, 7) = data.doccndown(p,q) - data.doccdocc(p,q); 
             // O(1)O(11)
-            pq_dm_matrix( 8, 8) = -data.Nupdown(q,0) - data.doccdocc_4x4(p,q) + data.ndowndocc_4x4(p,q) + data.nupdocc_4x4(p,q) 
-                                  + data.Nup(q,0) + data.doccnup_4x4(p,q) - data.ndownnup_4x4(p,q) - data.nupnup_4x4(p,q); 
+            pq_dm_matrix( 8, 8) = -data.Nupdown(q,0) - data.doccdocc(p,q) + data.ndowndocc(p,q) + data.nupdocc(p,q) 
+                                  + data.Nup(q,0) + data.doccnup(p,q) - data.ndownnup(p,q) - data.nupnup(p,q); 
             // O(6)O(11)
-            pq_dm_matrix( 9, 9) = data.ndownnup_4x4(p,q) - data.ndowndocc_4x4(p,q) - data.doccnup_4x4(p,q) + data.doccdocc_4x4(p,q);
+            pq_dm_matrix( 9, 9) = data.ndownnup(p,q) - data.ndowndocc(p,q) - data.doccnup(p,q) + data.doccdocc(p,q);
             // O(11)O(11)
-            pq_dm_matrix(10,10) = data.nupnup_4x4(p,q) - data.nupdocc_4x4(p,q) - data.doccnup_4x4(p,q) + data.doccdocc_4x4(p,q); 
+            pq_dm_matrix(10,10) = data.nupnup(p,q) - data.nupdocc(p,q) - data.doccnup(p,q) + data.doccdocc(p,q); 
             // O(16)O(11)
-            pq_dm_matrix(11,11) = data.doccnup_4x4(p,q) - data.doccdocc_4x4(p,q); 
+            pq_dm_matrix(11,11) = data.doccnup(p,q) - data.doccdocc(p,q); 
             // O(1)O(16)
-            pq_dm_matrix(12,12) = data.Nupdown(q,0) - data.nupdocc_4x4(p,q) - data.ndowndocc_4x4(p,q) + data.doccdocc_4x4(p,q); 
+            pq_dm_matrix(12,12) = data.Nupdown(q,0) - data.nupdocc(p,q) - data.ndowndocc(p,q) + data.doccdocc(p,q); 
             // O(1)O(16)
-            pq_dm_matrix(13,13) = data.ndowndocc_4x4(p,q) - data.doccdocc_4x4(p,q);
+            pq_dm_matrix(13,13) = data.ndowndocc(p,q) - data.doccdocc(p,q);
             // O(11)O(16)
-            pq_dm_matrix(14,14) = data.nupdocc_4x4(p,q) - data.doccdocc_4x4(p,q);
+            pq_dm_matrix(14,14) = data.nupdocc(p,q) - data.doccdocc(p,q);
             // O(16)O(16)
-            pq_dm_matrix(15,15) = data.doccdocc_4x4(p,q);
+            pq_dm_matrix(15,15) = data.doccdocc(p,q);
             // O(9)O(2)
-            pq_dm_matrix(1,4)  = data.dm_down_4x4(p,q) - data.transfer_down_while_up_at_1_4x4(p,q) - data.transfer_down_while_up_at_2_4x4(p,q) 
-                               + data.transfer_down_while_up_4x4(p,q);
+            pq_dm_matrix(1,4)  = data.dm_down(p,q) - data.transfer_down_while_up_at_1(p,q) - data.transfer_down_while_up_at_2(p,q) 
+                               + data.transfer_down_while_up(p,q);
             pq_dm_matrix(4,1)  = pq_dm_matrix(1,4);
             // O(9)O(2)         
-            pq_dm_matrix(2,8)  =  data.dm_up_4x4(p,q) - data.transfer_up_while_down_at_1_4x4(p,q) - data.transfer_up_while_down_at_2_4x4(p,q)
-                               +  data.transfer_up_while_down_4x4(p,q);
+            pq_dm_matrix(2,8)  =  data.dm_up(p,q) - data.transfer_up_while_down_at_1(p,q) - data.transfer_up_while_down_at_2(p,q)
+                               +  data.transfer_up_while_down(p,q);
             pq_dm_matrix(8,2)  = pq_dm_matrix(2,8);                   
             // O(15)O(2)
-            pq_dm_matrix(3,6) = data.transfer_down_while_up_at_1_4x4(p,q) - data.transfer_down_while_up_4x4(p,q);
+            pq_dm_matrix(3,6) = data.transfer_down_while_up_at_1(p,q) - data.transfer_down_while_up(p,q);
             pq_dm_matrix(6,3) = pq_dm_matrix(3,6);
             // O(14)O(3)
-            pq_dm_matrix(3,9) = -data.transfer_up_while_down_at_1_4x4(p,q) + data.transfer_up_while_down_4x4(p,q);
+            pq_dm_matrix(3,9) = -data.transfer_up_while_down_at_1(p,q) + data.transfer_up_while_down(p,q);
             pq_dm_matrix(9,3) = pq_dm_matrix(3,9);
             // O(10)O(7)
-            pq_dm_matrix(6,9) = data.spinflip_4x4(p,q);
+            pq_dm_matrix(6,9) = data.spinflip(p,q);
             pq_dm_matrix(9,6) = pq_dm_matrix(6,9);
             // O(13)O(4)
-            pq_dm_matrix(3,12) = data.transfer_pair_4x4(p,q);
+            pq_dm_matrix(3,12) = data.transfer_pair(p,q);
             pq_dm_matrix(12,3) = pq_dm_matrix(3,12);
             // O(9)O(8)
-            pq_dm_matrix(6,12) = -data.transfer_up_while_down_at_2_4x4(p,q) + data.transfer_up_while_down_4x4(p,q);
+            pq_dm_matrix(6,12) = -data.transfer_up_while_down_at_2(p,q) + data.transfer_up_while_down(p,q);
             pq_dm_matrix(12,6) = pq_dm_matrix(6,12);
             // O(8)O(9)
-            pq_dm_matrix(9,12) = data.transfer_down_while_up_at_2_4x4(p,q) - data.transfer_down_while_up_4x4(p,q);
+            pq_dm_matrix(9,12) = data.transfer_down_while_up_at_2(p,q) - data.transfer_down_while_up(p,q);
             pq_dm_matrix(12,9) = pq_dm_matrix(9,12);
             // O(14)O(8)
-            pq_dm_matrix(7,13) = data.transfer_up_while_down_4x4(p,q); 
+            pq_dm_matrix(7,13) = data.transfer_up_while_down(p,q); 
             pq_dm_matrix(13,7) = pq_dm_matrix(7,13);
             // O(15)O(12)
-            pq_dm_matrix(11,14) = data.transfer_down_while_up_4x4(p,q);
+            pq_dm_matrix(11,14) = data.transfer_down_while_up(p,q);
             pq_dm_matrix(14,11) = pq_dm_matrix(11,14);
 
             return pq_dm_matrix;
