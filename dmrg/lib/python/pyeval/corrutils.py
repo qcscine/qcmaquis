@@ -50,6 +50,21 @@ def assemble_halfcorr(diag, triang):
 
     return ret
 
+def assemble_vector(dataset):
+    """From the diagonal and upper triangle, construct a symmetric matrix
+       diag: diagonal
+       triang: upper triangle, sequential reversed rows"""
+
+    L = len(dataset.y[0])
+
+    ret = np.zeros(L)
+
+    for lab, val in zip(dataset.x, dataset.y[0]):
+        i = lab
+        ret[i] = val
+
+    return ret
+
 def pretty_print(mat):
     for i in range(len(mat)):
         for j in range(len(mat[i])):
