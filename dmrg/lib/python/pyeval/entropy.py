@@ -36,14 +36,15 @@ import scipy.linalg as sl
 from copy import deepcopy
 
 from corrutils import assemble_halfcorr as assy_hc
+from corrutils import assemble_vector as assy_vec
 from corrutils import pretty_print
 
 class MaquisMeasurement:
 
     def __init__(self, inputfile):
-        self.loc_nup = pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0].y[0]
-        self.loc_ndown = pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0].y[0]
-        self.loc_docc = pyalps.loadEigenstateMeasurements([inputfile], what='Nupdown')[0][0].y[0]
+        self.loc_nup = assy_vec(pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0])
+        self.loc_ndown = assy_vec(pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0])
+        self.loc_docc = assy_vec(pyalps.loadEigenstateMeasurements([inputfile], what='Nupdown')[0][0])
 
         self.norb = len(self.loc_nup)
         empty_diag = np.zeros(self.norb)
