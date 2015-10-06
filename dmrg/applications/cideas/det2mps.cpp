@@ -464,7 +464,7 @@ int main(int argc, char ** argv){
         DmrgOptions opt(argc, argv);
         DmrgParameters parms = opt.parms;
 
-        std::string rfile(parms.get<std::string>("init_resultfile"));
+        std::string rfile(parms.get<std::string>("resultfile"));
         EntanglementData<matrix> em(rfile);
        
         Lattice lat(parms);
