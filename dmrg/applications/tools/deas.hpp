@@ -52,26 +52,7 @@ using std::endl;
 #endif
 
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/block_matrix/indexing.h"
-#include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/contractions.h"
-#include "dmrg/mp_tensors/mps_mpo_ops.h"
-#include "dmrg/mp_tensors/mpo_ops.h"
-
-#if defined(USE_TWOU1)
-typedef TwoU1 grp;
-#elif defined(USE_TWOU1PG)
-typedef TwoU1PG grp;
-#elif defined(USE_SU2U1)
-typedef SU2U1 grp;
-#elif defined(USE_SU2U1PG)
-typedef SU2U1PG grp;
-#elif defined(USE_NONE)
-typedef TrivialGroup grp;
-#elif defined(USE_U1)
-typedef U1 grp;
-#endif
+#include "dmrg/utils/storage.h"
 
 
 namespace entanglement_detail {
@@ -124,7 +105,7 @@ namespace entanglement_detail {
 
         std::vector<std::pair<int,int> > labels = get_labels(x);
 
-        Matrix ret;
+        Matrix ret(num_rows(y));
 
         return ret;
     }
@@ -178,7 +159,7 @@ namespace entanglement_detail {
         ar["/spectrum/results/Nupdown/mean/value"] >> data.Nupdown;
         //std::cout << "docc: " << data.Nupdown << std::endl;
 
-        Matrix mm = load_vector<Matrix>(ar, "/spectrum/results/Nup");
+        //Matrix mm = load_vector<Matrix>(ar, "/spectrum/results/Nup");
 
         // load quantities needed for s2
         Matrix dm_up;
