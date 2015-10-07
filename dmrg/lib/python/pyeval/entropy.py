@@ -245,5 +245,5 @@ if __name__ == '__main__':
     print "I (mutual information)"
     pretty_print(guinea_pig.I())
 
-    guinea_pig.dump_raw()
+    #guinea_pig.dump_raw()
 
