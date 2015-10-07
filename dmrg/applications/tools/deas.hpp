@@ -91,20 +91,6 @@ namespace entanglement_detail {
     }
 
     template <class Matrix>
-    Matrix assy_hc(const std::vector<std::string> & label_str, Matrix const & values, const int L)
-    {
-       std::vector<std::pair<int,int> > labels;
-       labels = get_labels(label_str);
-       Matrix ret(L, L, 0);
-       //symmetric Matrix build with entries and labels
-       for(int i=0;i<labels.size();i++){
-          ret(labels[i].first, labels[i].second) = values(i,0);
-          ret(labels[i].second, labels[i].first) = values(i,0);
-       }
-       return ret;
-    }
-
-    template <class Matrix>
     Matrix load_vector(storage::archive & ar, std::string path)
     {
         std::vector<std::string> x;
@@ -123,6 +109,20 @@ namespace entanglement_detail {
     }
 
     template <class Matrix>
+    Matrix assy_hc(const std::vector<std::string> & label_str, Matrix const & values, const int L)
+    {
+        std::vector<std::pair<int,int> > labels;
+        labels = get_labels(label_str);
+        Matrix ret(L, L, 0);
+        for(int i=0;i<labels.size();i++)
+        {
+            ret(labels[i].first, labels[i].second) = values(i,0);
+            ret(labels[i].second, labels[i].first) = values(i,0);
+        }
+        return ret;
+    }
+
+    template <class Matrix>
     Matrix load_matrix(storage::archive & ar, std::string path, int L)
     {
         std::vector<std::string> x;
@@ -130,6 +130,42 @@ namespace entanglement_detail {
         ar[path + "/labels"] >> x;
         ar[path + "/mean/value"] >> y;
         return assy_hc(x, y, L);
+    }
+
+    template <class Matrix>
+    Matrix merge_transform(const std::vector<std::string> & lstr1, Matrix const & values1,
+                           const std::vector<std::string> & lstr2, Matrix const & values2, const int L)
+    {
+        assert(lstr1.size() == lstr2.size());
+
+        // output observable = input1 + transpose(input2)     
+        std::vector<std::pair<int,int> > labels1, labels2;
+        labels1 = get_labels(lstr1);
+        labels2 = get_labels(lstr2);
+
+        Matrix ret(L, L, 0);
+
+        for(int i = 0; i < labels1.size(); i++)
+        {
+            ret(labels1[i].first, labels1[i].second) = values1(i,0);
+            ret(labels2[i].second, labels2[i].first) = values2(i,0);
+        }
+        return ret;
+    }
+
+    template <class Matrix>
+    Matrix load_matrix_pair(storage::archive & ar, std::string path1, std::string path2, int L)
+    {
+        std::vector<std::string> x1, x2;
+        Matrix y1, y2;
+
+        ar[path1 + "/labels"] >> x1;
+        ar[path1 + "/mean/value"] >> y1;
+
+        ar[path2 + "/labels"] >> x2;
+        ar[path2 + "/mean/value"] >> y2;
+
+        return merge_transform(x1, y1, x2, y2, L);
     }
   
     template <class Matrix>
@@ -190,16 +226,20 @@ namespace entanglement_detail {
         LOAD(doccdocc)
         LOAD(transfer_up_while_down)
         LOAD(transfer_down_while_up)
-        LOAD(transfer_up_while_down_at_2)
-        LOAD(transfer_up_while_down_at_1)
-        LOAD(transfer_down_while_up_at_2)
-        LOAD(transfer_down_while_up_at_1)
         LOAD(transfer_pair)
         LOAD(spinflip)
-        LOAD(nupdocc)
-        LOAD(ndowndocc)
-        LOAD(doccnup)
-        LOAD(doccndown)
+        #undef LOAD
+
+        #define LOAD_PAIR(path1, path2) data.path1 = load_matrix_pair<Matrix>(ar, rpath + #path1, rpath + #path2, L);
+        LOAD_PAIR(transfer_up_while_down_at_2, transfer_up_while_down_at_1)
+        LOAD_PAIR(transfer_up_while_down_at_1, transfer_up_while_down_at_2)
+        LOAD_PAIR(transfer_down_while_up_at_2, transfer_down_while_up_at_1)
+        LOAD_PAIR(transfer_down_while_up_at_1, transfer_down_while_up_at_2)
+        LOAD_PAIR(nupdocc, doccnup)
+        LOAD_PAIR(doccnup, nupdocc)
+        LOAD_PAIR(ndowndocc, doccndown)
+        LOAD_PAIR(doccndown, ndowndocc)
+        #undef LOAD_PAIR
 
         return data;
     }
