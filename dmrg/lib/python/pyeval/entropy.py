@@ -36,6 +36,7 @@ import scipy.linalg as sl
 from copy import deepcopy
 
 from corrutils import assemble_halfcorr as assy_hc
+from corrutils import merge_transpose as assy_c
 from corrutils import assemble_vector as assy_vec
 from corrutils import pretty_print
 
@@ -60,18 +61,29 @@ class MaquisMeasurement:
         self.corr_docc =       assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='doccdocc')[0][0])
         self.corr_trans_up =   assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_up_while_down')[0][0])
         self.corr_trans_down = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_down_while_up')[0][0])
-        self.corr_trans_up_down2 = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_up_while_down_at_2')[0][0])
-        self.corr_trans_up_down1 = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_up_while_down_at_1')[0][0])
-        self.corr_trans_down_up2 = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_down_while_up_at_2')[0][0])
-        self.corr_trans_down_up1 = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_down_while_up_at_1')[0][0])
+
+        u1 = pyalps.loadEigenstateMeasurements([inputfile], what='transfer_up_while_down_at_2')[0][0]
+        u2 = pyalps.loadEigenstateMeasurements([inputfile], what='transfer_up_while_down_at_1')[0][0]
+        d1 = pyalps.loadEigenstateMeasurements([inputfile], what='transfer_down_while_up_at_2')[0][0]
+        d2 = pyalps.loadEigenstateMeasurements([inputfile], what='transfer_down_while_up_at_1')[0][0]
+        self.corr_trans_up_down2 = assy_c(empty_diag, u1, u2)
+        self.corr_trans_up_down1 = assy_c(empty_diag, u2, u1)
+        self.corr_trans_down_up2 = assy_c(empty_diag, d1, d2)
+        self.corr_trans_down_up1 = assy_c(empty_diag, d2, d1)
+
         self.corr_trans_pair = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='transfer_pair')[0][0])
 
         self.corr_spinflip = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='spinflip')[0][0])
 
-        self.corr_nupdocc =    assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='nupdocc')[0][0])
-        self.corr_ndowndocc =  assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='ndowndocc')[0][0])
-        self.corr_doccnup =    assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='doccnup')[0][0])
-        self.corr_doccndown =  assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='doccndown')[0][0])
+        u1 = pyalps.loadEigenstateMeasurements([inputfile], what='nupdocc')[0][0]
+        u2 = pyalps.loadEigenstateMeasurements([inputfile], what='doccnup')[0][0]
+        self.corr_nupdocc = assy_c(empty_diag, u1, u2)
+        self.corr_doccnup = assy_c(empty_diag, u2, u1)
+
+        u1 = pyalps.loadEigenstateMeasurements([inputfile], what='ndowndocc')[0][0]
+        u2 = pyalps.loadEigenstateMeasurements([inputfile], what='doccndown')[0][0]
+        self.corr_ndowndocc = assy_c(empty_diag, u1, u2)
+        self.corr_doccndown = assy_c(empty_diag, u2, u1)
 
     def one_pt_dm(self):
         
@@ -233,5 +245,5 @@ if __name__ == '__main__':
     print "I (mutual information)"
     pretty_print(guinea_pig.I())
 
-    #ozone.dump_raw()
+    guinea_pig.dump_raw()
 
