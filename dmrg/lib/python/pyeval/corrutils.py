@@ -90,6 +90,23 @@ def assemble_vector(dataset):
 
     return ret
 
+def merge_transpose(diag, obs1, obs2):
+    L = len(diag)
+
+    ret = np.zeros((L,L))
+
+    for lab, val in zip(obs1.x, obs1.y[0]):
+        i = lab[0]
+        j = lab[1]
+        ret[i,j] = val
+
+    for lab, val in zip(obs2.x, obs2.y[0]):
+        i = lab[0]
+        j = lab[1]
+        ret[j,i] = val
+
+    return ret
+
 def pretty_print(mat):
     for i in range(len(mat)):
         for j in range(len(mat[i])):
