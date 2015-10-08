@@ -162,8 +162,7 @@ namespace measurements {
         }
         
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                                 MPS<Matrix, SymmGroup> const & ket_mps,
-                                 std::vector<pos_t> const & order = std::vector<pos_t>())
+                                 MPS<Matrix, SymmGroup> const & ket_mps)
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
@@ -178,7 +177,6 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                bool measured = false;
                 for (pos_t p2 = p1+1; p2 < lattice.size(); ++p2)
                 { 
                     pos_t pos_[2] = {p1, p2};
@@ -190,23 +188,22 @@ namespace measurements {
 
                     // check if term is allowed by symmetry
                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                          continue;
-                    measured = true;
-                    
-                    //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
-
-                    if(measured)
+                    if(measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                     {
-                         dct.push_back(value);
-                         num_labels.push_back(positions);
+                        MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                        typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+
+                        dct.push_back(value);
+                        num_labels.push_back(positions);
+                    }
+                    else {
+                        dct.push_back(0.0);
+                        num_labels.push_back(positions);
                     }
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                            ? detail::resort_labels(num_labels, order, false) : num_labels );
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
                 #pragma omp critical
@@ -222,8 +219,7 @@ namespace measurements {
         }
 
         void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps,
-                          std::vector<pos_t> const & order = std::vector<pos_t>())
+                          MPS<Matrix, SymmGroup> const & ket_mps)
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
@@ -258,7 +254,7 @@ namespace measurements {
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                        bool measured = false;
+                        bool checkpass = false;
                         for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                             tag_vec operators(4);
@@ -269,24 +265,22 @@ namespace measurements {
 
                             // check if term is allowed by symmetry
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                            if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                                  continue;
-
-                            measured = true;
-                            
-                            //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                            MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                            value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                            if(checkpass || measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                            {
+                                checkpass = true;
+                                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                            }
+                            else break;
                         }
-                        if(measured)
+                        if(checkpass)
                         {
                              dct.push_back(value);
                              num_labels.push_back(positions);
                         }
                     }
 
-                    std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                ? detail::resort_labels(num_labels, order, false) : num_labels );
+                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP
@@ -304,8 +298,7 @@ namespace measurements {
         }
 
         void measure_3rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps,
-                          std::vector<pos_t> const & order = std::vector<pos_t>())
+                          MPS<Matrix, SymmGroup> const & ket_mps)
         {
             // Test if a separate bra state has been specified bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
@@ -376,8 +369,7 @@ namespace measurements {
                                 }
                             }
     
-                            std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                        ? detail::resort_labels(num_labels, order, false) : num_labels );
+                            std::vector<std::string> lbt = label_strings(lattice,  num_labels);
 
                             // save results and labels
                             #ifdef MAQUIS_OPENMP
