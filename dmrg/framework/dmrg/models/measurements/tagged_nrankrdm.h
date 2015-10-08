@@ -254,7 +254,7 @@ namespace measurements {
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                        bool measured = false;
+                        bool checkpass = false;
                         for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                             tag_vec operators(4);
@@ -265,15 +265,15 @@ namespace measurements {
 
                             // check if term is allowed by symmetry
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                            if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                                  continue;
-
-                            measured = true;
-                            
-                            MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                            value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                            if(checkpass || measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                            {
+                                checkpass = true;
+                                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                            }
+                            else break;
                         }
-                        if(measured)
+                        if(checkpass)
                         {
                              dct.push_back(value);
                              num_labels.push_back(positions);
