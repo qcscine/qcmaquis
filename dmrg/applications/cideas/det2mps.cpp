@@ -248,7 +248,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
            ci_level.push_back(0);
 
         std::vector<std::pair<int,int> > hf_occ_orb = get_orb(hf_occ);
-        int m_value = parms.get<int>("max_bond_dimension");
+        int m_value = parms.get<int>("init_bond_dimension");
         if (hf_occ.size() != L)
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
