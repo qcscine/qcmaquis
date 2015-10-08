@@ -91,12 +91,15 @@ Determinant<SymmGroup> str_from_det(std::vector<typename SymmGroup::charge> cons
 
 template<class SymmGroup>
 std::vector<std::vector<typename SymmGroup::charge> >
-get_charge_determinants(std::vector<Determinant<SymmGroup> > &det_list,
+get_charge_determinants(std::vector<Determinant<SymmGroup> > const & det_list,
                         std::vector<Determinant<SymmGroup> > &det_list_new,
                         std::vector<Index<SymmGroup> > const &phys_dims,
                         std::vector<typename SymmGroup::subcharge> site_types,
                         typename SymmGroup::charge right_end)
 {
+    // convert determinant strings into charge vectors
+    // and generate all SU2 possibilites at singly occupied sites
+
     typedef typename SymmGroup::charge charge;
     std::vector<std::vector<charge> > determinants;
     std::vector< std::vector<std::vector< charge > > > dummy_dets;
@@ -140,7 +143,6 @@ get_charge_determinants(std::vector<Determinant<SymmGroup> > &det_list,
                 if (!charge_detail::physical<SymmGroup>(accumulated_charge))
                     valid = false;
             }
-            charge identity(0);
             //letzte Bedingung kann später geloescht werden
             if(valid == true  && accumulated_charge == right_end
                               && std::find(determinants.begin(),
@@ -149,7 +151,7 @@ get_charge_determinants(std::vector<Determinant<SymmGroup> > &det_list,
 		        #pragma omp critical
                 {
                 determinants.push_back(single_det[m]);
-                Determinant<SymmGroup> det_str = str_from_det(single_det[m],phys_dims,site_types);
+                Determinant<SymmGroup> det_str = str_from_det(single_det[m], phys_dims, site_types);
                 det_list_new.push_back(det_str);
                 }
             }
@@ -175,9 +177,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , site_types(site_type)
     , di(parms, phys_dims_, right_end_, site_type)
     , right_end(right_end_)
-    , det_list()
-    , det_list_new()
-    , determinants()
+    , total_dets()
     {}
 
     typedef Lattice::pos_t pos_t;
@@ -208,9 +208,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
 
         //another loop has to be inserted here where determinants are generated until m is reached at some site; correct numbers have to be checked here
-        std::vector<Determinant<SymmGroup> > deas_dets, new_det_list;
-        std::vector<std::vector<charge> >  total_dets;
-        std::vector<int> dummy_vec(L);
+        std::vector<Determinant<SymmGroup> > det_list_new;
         std::vector<int> sum_size(L);
         bool keep_running = true;
         int det_nr = 0;
@@ -218,14 +216,17 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         //main loop
         for(int run = 0; run < num_runs; ++run)
         { 
-            //generate deas determinants
-            deas_dets = generate_deas(parms,em,run,deas_dets);
+            std::vector<std::vector<charge> >  determinants;
+            std::vector<Determinant<SymmGroup> > new_det_list;
 
-            size_t loop_start = pow(4,run)-1;
-            size_t loop_end = pow(4,run+1);
+            //generate deas determinants
+            std::vector<Determinant<SymmGroup> > deas_dets = generate_deas(parms, em, run, deas_dets);
+
+            size_t loop_start = pow(4, run) - 1;
+            size_t loop_end = pow(4, run + 1);
             #pragma omp parallel for
             for(int i = loop_start; i < loop_end; ++i){
-                if(!deas_dets[i].ci_check(ci_level,hf_occ_orb))
+                if(!deas_dets[i].ci_check(ci_level, hf_occ_orb))
                     #pragma omp critical
                     new_det_list.push_back(deas_dets[i]);
             }
@@ -236,7 +237,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
             for(int d = 0; d < determinants.size(); ++d)
             {
-                rows_to_fill.push_back(dummy_vec);
+                rows_to_fill.push_back(std::vector<int>(L));
                 charge accumulated_charge = right_end;
                 for(int s = L - 1; s > 0; --s)
                 {
@@ -269,7 +270,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 if(keep_running == false)
                     break;
             }
-            new_det_list.clear();
             if(keep_running == false)
                 break;
         }
@@ -407,9 +407,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<typename SymmGroup::subcharge> site_types;
     default_mps_init<Matrix, SymmGroup> di;
-    std::vector<Determinant<SymmGroup> > det_list;
-    std::vector<Determinant<SymmGroup> > det_list_new;
-    std::vector<std::vector<charge> >  determinants;
+    std::vector<std::vector<charge> >  total_dets;
     charge right_end;
 };
 
@@ -470,12 +468,10 @@ int main(int argc, char ** argv){
         Lattice lat(parms);
         Model<matrix,grp> model(lat,parms);
 
-        /***Create TEST environment not needed in actual implementation***/
-        size_t L = parms["L"];
-
         //create symmetry vector -> site_types
         std::vector<grp::subcharge> site_types(lat.size()), site_types_distinct;
-        for (int i = 0; i<lat.size(); i++){
+        for (int i = 0; i < lat.size(); i++)
+        {
             site_types[i] = lat.get_prop<grp::subcharge>("type", i);
             if(std::find(site_types_distinct.begin(),site_types_distinct.end(),site_types[i]) == site_types_distinct.end())
                 site_types_distinct.push_back(site_types[i]);
@@ -489,7 +485,8 @@ int main(int argc, char ** argv){
 
         std::vector<Index<grp> > phys_dims;
         for (int i = 0; i < site_types_distinct.size(); i++)
-            phys_dims.push_back(model.phys_dim(site_types_distinct[i]));
+            //phys_dims.push_back(model.phys_dim(site_types_distinct[i]));
+            phys_dims.push_back(model.phys_dim(i));
 
         for (int i = 0; i < phys_dims.size(); i++)
             std::cout << "phys_dims["<<i<<"] = " << phys_dims[i] << std::endl; 
@@ -499,7 +496,7 @@ int main(int argc, char ** argv){
         maquis::cout << "Right end: " << right_end <<std::endl;
   
         //create MPS
-        MPS<matrix, grp> mps(L);
+        MPS<matrix, grp> mps(lat.size());
         deas_mps_init<matrix, grp> deas_creator(parms, em, phys_dims, right_end, site_types);
         deas_creator(mps); 
         maquis::cout << "MPS created" << std::endl;

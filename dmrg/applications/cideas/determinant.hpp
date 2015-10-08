@@ -133,8 +133,8 @@ public:
       return sym;
    }
 
-//check spin of a determinant
-   int spin_check(){
+    //check spin of a determinant
+    int spin_check(){
       int spin = 0;
       for(int i=0;i<(*this).size();i++){
          if((*this)[i]==2){spin = spin-1;}
@@ -143,11 +143,11 @@ public:
       return spin;
    }
 
-//function to extract ci determinants of a given level
+    //function to extract ci determinants of a given level
     bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,int> > &hf_occ_orb){
       bool wrong_level = false;
       int diff = 0;
-    //first check number of changes
+     //first check number of changes
       for(int i = 0; i <hf_occ_orb.size(); i++){
          if((*this)[hf_occ_orb[i].first] != hf_occ_orb[i].second){
             if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 3){
@@ -163,7 +163,7 @@ public:
             }
          }
       }
-     //check if number of changes agrees with ci_level 
+      //check if number of changes agrees with ci_level 
       for(int i = 0; i<ci_level.size(); i++){
          if(ci_level[i] != diff){
             wrong_level = true;
@@ -175,8 +175,9 @@ public:
       return wrong_level;
    }
 
-//function to make charge_vector from int vector    
-    std::vector<std::vector<charge > > charge_det(index_vec const &phys_dims, site_vec const &site_types){
+    //function to make charge_vector from int vector    
+    std::vector<std::vector<charge > > charge_det(index_vec const &phys_dims, site_vec const &site_types) const
+    {
        std::vector<std::vector< charge > >  c_det;
        for (size_t j = 0; j < (*this).size(); ++j)
            c_det.push_back(deas_detail::charge_from_int<SymmGroup>()((*this)[j], j, phys_dims, site_types));

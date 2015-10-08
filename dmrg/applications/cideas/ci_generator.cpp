@@ -104,11 +104,12 @@ std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_le
 
 
 //function to determine occupied orbitals in det
-std::vector<std::pair<int,int> > get_orb(std::vector<int> hf_occ){
-   std::vector<std::pair<int,int> > occ_orb;
-   for(int i= 0; i< hf_occ.size(); i++){
-      if(hf_occ[i]!=1){occ_orb.push_back(std::make_pair(i, hf_occ[i]));}
-   }
+std::vector<std::pair<int, int> > get_orb(std::vector<int> hf_occ){
+    std::vector<std::pair<int, int> > occ_orb;
+    for(int i = 0; i < hf_occ.size(); i++)
+        if(hf_occ[i] != 1)
+            occ_orb.push_back(std::make_pair(i, hf_occ[i]));
+
    return occ_orb;
 }
 
@@ -166,41 +167,12 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms,
     }
     std::sort(casv_sort.begin(),casv_sort.end(), entanglement_detail::comp);
     for(int i = 0; i<L; i++){
-        casv[i] = casv_sort[i].second;
+        casv[i] = casv_sort[order[i]].second;
     }
 
     std::cout << "CAS vector: ";
-    for(int i =0; i<L; i++){std::cout << casv[i] << " ";}
-    std::cout <<std::endl;
-
-    //std::cout << "HF occupation  vector: ";
-    //for(int i =0; i<L; i++){std::cout << hf_occ[i];}
-    //std::cout <<std::endl;
-
-    Lattice lat(parms);
-    std::vector<int> sym_vec(lat.size());
-    for (int i = 0; i<lat.size(); i++){
-        sym_vec[i] = lat.get_prop<int>("type", i);
-    }
-
-    int target_sym, hf_sym;
-    target_sym = parms["irrep"];
-    hf_sym = hf_occ.sym_check(sym_vec, prd);
-    std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;
-
-    int nelec = 0;
-    nelec = hf_occ.num_el();
-    std::cout << "number of electrons: " << nelec <<std::endl;
-    int spin = 0;
-    spin = hf_occ.spin_check();
-    std::cout << "spin of HF determinant: " << spin << std::endl;
-
-    std::vector<int> ci_level(parms.get<std::vector<int> >("ci_level"));
-    if(std::find(ci_level.begin(), ci_level.end(), 0) == ci_level.end())
-        ci_level.push_back(0);
-
-    std::cout << "excitation levels allowed: ";
-    for(int i =0; i<ci_level.size(); i++){std::cout << ci_level[i] << " ";}
+    for(int i =0; i<L; i++)
+        std::cout << casv[i] << " ";
     std::cout <<std::endl;
 
     int act_orb = casv[0];
