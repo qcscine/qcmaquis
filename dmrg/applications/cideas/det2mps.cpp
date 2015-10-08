@@ -166,6 +166,13 @@ get_charge_determinants(std::vector<Determinant<SymmGroup> > const & det_list,
 template<class Matrix, class SymmGroup, class=void>
 struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 {
+
+    typedef Lattice::pos_t pos_t;
+    typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
+    typedef std::vector<Index<SymmGroup> > index_vec;
+    typedef std::vector<typename SymmGroup::subcharge> site_vec;
+
     deas_mps_init(DmrgParameters parms_,
                   EntanglementData<Matrix> em_,
                   std::vector<Index<SymmGroup> > const& phys_dims_,
@@ -178,13 +185,57 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , di(parms, phys_dims_, right_end_, site_type)
     , right_end(right_end_)
     , total_dets()
-    {}
+    {
+        using entanglement_detail::comp;
+        using entanglement_detail::mpair;
 
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
-    typedef std::vector<Index<SymmGroup> > index_vec;
-    typedef std::vector<typename SymmGroup::subcharge> site_vec;
+        int L = parms["L"];
+        cas_vector.resize(L);
+
+        Determinant<SymmGroup> hf_unordered(parms.get<std::vector<int> >("hf_occ"));
+
+        std::vector<int> order(hf_unordered.size());
+        if (!parms.is_set("orbital_order"))
+            for (int p = 0; p < hf_unordered.size(); ++p)
+                order[p] = p+1;
+        else
+            order = parms["orbital_order"].template as<std::vector<int> >();
+
+        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::vector<int> inv_order(L);
+        for (int p = 0; p < order.size(); ++p)
+            inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
+
+        std::copy(order.begin(), order.end(), std::ostream_iterator<int>(std::cout, " "));
+        maquis::cout << std::endl;
+
+        for (int i = 0; i < order.size(); ++i)
+            hf_occ.push_back(hf_unordered[order[i]]);
+
+        std::cout << "hf_occ: ";
+        std::copy(hf_occ.begin(), hf_occ.end(), std::ostream_iterator<int>(std::cout, " "));
+        maquis::cout << std::endl;
+
+        std::vector<mpair> casv_sort(L);
+        for(int i = 0; i < L; i++){
+            casv_sort[i].first = em.s1()(0,i);
+            casv_sort[i].second = inv_order[i];
+        }
+
+        std::sort(casv_sort.begin(),casv_sort.end(), comp<mpair>);
+        for(int i = 0; i < L; i++)
+            maquis::cout << casv_sort[i].first << " " << casv_sort[i].second << std::endl;
+
+        ///////////////////////////////////////////////////////////////////////
+        for(int i = 0; i < L; i++){
+            cas_vector[i] = casv_sort[i].second;
+        }
+
+        std::cout << "CAS vector: ";
+        for(int i =0; i < L; i++)
+            std::cout << cas_vector[i] << " ";
+        std::cout <<std::endl;
+    }
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -196,7 +247,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         if(std::find(ci_level.begin(), ci_level.end(), 0) == ci_level.end())
            ci_level.push_back(0);
 
-        Determinant<SymmGroup> hf_occ(parms.get<std::vector<int> >("hf_occ"));
         std::vector<std::pair<int,int> > hf_occ_orb = get_orb(hf_occ);
         int m_value = parms.get<int>("max_bond_dimension");
         if (hf_occ.size() != L)
@@ -208,7 +258,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
 
         //another loop has to be inserted here where determinants are generated until m is reached at some site; correct numbers have to be checked here
-        std::vector<Determinant<SymmGroup> > det_list_new;
+        std::vector<Determinant<SymmGroup> > det_list_new, deas_dets;
         std::vector<int> sum_size(L);
         bool keep_running = true;
         int det_nr = 0;
@@ -220,7 +270,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             std::vector<Determinant<SymmGroup> > new_det_list;
 
             //generate deas determinants
-            std::vector<Determinant<SymmGroup> > deas_dets = generate_deas(parms, em, run, deas_dets);
+            deas_dets = generate_deas(hf_occ, cas_vector, run, deas_dets);
 
             size_t loop_start = pow(4, run) - 1;
             size_t loop_end = pow(4, run + 1);
@@ -401,7 +451,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         return adapted;
     }
 
-
+private:
     DmrgParameters parms;
     EntanglementData<Matrix> em;
     std::vector<Index<SymmGroup> > phys_dims;
@@ -409,6 +459,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     default_mps_init<Matrix, SymmGroup> di;
     std::vector<std::vector<charge> >  total_dets;
     charge right_end;
+    Determinant<SymmGroup> hf_occ;
+    std::vector<int> cas_vector;
 };
 
 //parse determinants

@@ -85,7 +85,9 @@ namespace entanglement_detail {
 
     //comparison function
     typedef std::pair<double,int> mpair;
-    bool comp(const mpair& l, const mpair& r)
+
+    template <class P>
+    bool comp(const P l, const P r)
     {
         return l.first > r.first;
     }
@@ -396,7 +398,7 @@ public:
             casv_sort[i].first = s1_(0,i);
             casv_sort[i].second = i;
         }
-        std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp); 
+        std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp<entanglement_detail::mpair>); 
         for(int i = 0; i<L; i++){
             casv[i] = casv_sort[i].second;
             hf_sort[i] = hf_occ[casv[i]];

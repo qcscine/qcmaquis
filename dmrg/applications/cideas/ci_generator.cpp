@@ -115,13 +115,11 @@ std::vector<std::pair<int, int> > get_orb(std::vector<int> hf_occ){
 
 
 template <class SymmGroup>
-std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms,
-                                                   EntanglementData<matrix> &em,
+std::vector<Determinant<SymmGroup> > generate_deas(Determinant<SymmGroup> const & hf_occ,
+                                                   std::vector<int> const & casv,
                                                    int &run,
                                                    std::vector<Determinant<SymmGroup> > &deas_dets)
 {
-    int L = parms["L"];
-
     alps::numeric::matrix<int> prd(8,8,0);
     prd(0,1)=prd(2,3)=prd(4,5)=prd(6,7)=1;
     prd(0,2)=prd(1,3)=prd(4,6)=prd(5,7)=2;
@@ -136,54 +134,24 @@ std::vector<Determinant<SymmGroup> > generate_deas(DmrgParameters &parms,
        }
     }
 
-    Determinant<SymmGroup> hf_unordered(parms.get<std::vector<int> >("hf_occ")), hf_occ;
-    //this takes orbital ordering in account; It only adapts the HF occupation! 
-    //This means, that it is assumed that the preliminary calculation has been carried out with the ordering specified in the input file!!
-    //If Fiedler ordering is applied AFTER(!) first run, also the CAS Vektor needs to be adopted.
-    //Discuss on monday!!!
-
-    std::vector<int> order(hf_unordered.size());
-    if (!parms.is_set("orbital_order"))
-        for (int p = 0; p < hf_unordered.size(); ++p)
-            order[p] = p+1;
-    else
-        order = parms["orbital_order"].template as<std::vector<int> >();
-
-    std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
-
-    for (int i = 0; i < order.size(); ++i)
-        hf_occ.push_back(hf_unordered[order[i]]);
-
-    std::cout << "hf_occ: ";
-    for (int i = 0 ; i < hf_occ.size(); ++i)
-        std::cout << " " << hf_occ[i];
-    std::cout << std::endl;
-
-    std::vector<entanglement_detail::mpair> casv_sort(L);
-    std::vector<int> casv(L);
-    for(int i = 0; i<L; i++){
-        casv_sort[i].first = em.s1()(0,i);
-        casv_sort[i].second = i;
-    }
-    std::sort(casv_sort.begin(),casv_sort.end(), entanglement_detail::comp);
-    for(int i = 0; i<L; i++){
-        casv[i] = casv_sort[order[i]].second;
-    }
-
-    std::cout << "CAS vector: ";
-    for(int i =0; i<L; i++)
-        std::cout << casv[i] << " ";
-    std::cout <<std::endl;
+    for (int i=0; i < hf_occ.size(); ++i)
+        maquis::cout << hf_occ[i] << " ";
+    maquis::cout << std::endl;
+    for (int i=0; i < casv.size(); ++i)
+        maquis::cout << casv[i] << " ";
+    maquis::cout << std::endl;
 
     int act_orb = casv[0];
     if(run == 0){
         deas_dets.push_back(hf_occ);
+        maquis::cout << deas_dets.size() << std::endl;
         int count = 0;
-        for(int i = 1; i<5; i++){
-            if(hf_occ[act_orb]!=i){
+        for(int i = 1; i < 5; i++){
+            if(hf_occ[act_orb] != i){
                 deas_dets.push_back(hf_occ);
+                maquis::cout << deas_dets.size() << std::endl;
                 count++;
-                deas_dets[count][act_orb] =i;
+                deas_dets[count][act_orb] = i;
             }
         }
     }
