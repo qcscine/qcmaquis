@@ -388,8 +388,6 @@ public:
                 I_(q,p) = I_(p,q);
             }
         }
-        std::vector<int> hf_occ = parms["hf_occ"];
-        std::vector<int> hf_sort(L);
 
         // get CAS vector and sort HF occ vector
         std::vector<entanglement_detail::mpair> casv_sort(L);
@@ -401,16 +399,12 @@ public:
         std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp<entanglement_detail::mpair>); 
         for(int i = 0; i<L; i++){
             casv[i] = casv_sort[i].second;
-            hf_sort[i] = hf_occ[casv[i]];
         }
         // print CAS vector and sorted HF vector
         //std::cout << "CAS vector: ";
         //for(int i =0; i<L; i++){std::cout << ","<<casv[i];}
         //std::cout <<std::endl;
 
-        //std::cout << "sorted HF occupation  vector: ";
-        //for(int i =0; i<L; i++){std::cout << ","<<hf_sort[i];}
-        //std::cout <<std::endl;
     }
 
     Matrix s1()
