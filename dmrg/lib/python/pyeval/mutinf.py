@@ -48,13 +48,14 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
     labels = np.zeros(N)
     area = np.zeros(N)
 
+    o = np.array(order) - 1
 
     slice_ = -2*pi/N 
     for i in range(N):
         theta[i] = i * slice_ + pi/2 + slice_/2
         r[i] = 1.0
         labels[i] = order[i]
-        area[i] = vec_s1[i]*500
+        area[i] = vec_s1[o[i]]*500
 
     ax = plt.subplot(111, polar=True)
     ax.set_xticklabels([])
@@ -78,6 +79,7 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
 
     legendlines = {}
 
+
     for i in range(N):
     #  plt.annotate(int(labels[i]),xy=(theta[i],(r[i]+0.2)),size='xx-large',)
       plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='xx-large',ha='center',va='center')
@@ -94,15 +96,16 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
       for j in range(i,N):
         x = [theta[i],theta[j]]
         y = [1,1]
-        if mat_I[i,j] >= 0.1:
-          line = lines.Line2D(x, y, linewidth=2*10*mat_I[i,j], color='black',linestyle='-', alpha=1,label='0.1')
+        Iij = mat_I[o[i],o[j]]
+        if Iij >= 0.1:
+          line = lines.Line2D(x, y, linewidth=2*10*Iij, color='black',linestyle='-', alpha=1,label='0.1')
           legendlines['0.1'] = line
           ax.add_line(line)
-        elif mat_I[i,j] >=0.01:
-          line = lines.Line2D(x, y, linewidth=2*30*mat_I[i,j], color='gray',linestyle='--', alpha=1,label='0.01')
+        elif Iij >=0.01:
+          line = lines.Line2D(x, y, linewidth=2*30*Iij, color='gray',linestyle='--', alpha=1,label='0.01')
           legendlines['0.01'] = line
           ax.add_line(line)
-        elif mat_I[i,j] >=0.001:
+        elif Iij >=0.001:
           line = lines.Line2D(x, y, linewidth=1.5, color='lime',linestyle=':', alpha=1,label='0.001')
           legendlines['0.001'] = line
           ax.add_line(line)
