@@ -32,7 +32,7 @@ import pyalps
 
 import numpy as np
 
-from corrutils import pretty_print,assemble_halfcorr
+from corrutils import pretty_print, assemble_halfcorr
 
 def load_1spd(inputfile):
     """From the diagonal and upper triangle, construct a symmetric matrix
@@ -53,24 +53,8 @@ def load_1spd(inputfile):
 
     return ds
 
-def print_1spdm(rdm):
-    #fmt = '% -016.10E'
-    fmt = '%e'
-
-    L = int(rdm.props["L"])
-    mat = np.zeros((L,L))
-
-    for lab, val in zip(rdm.x, rdm.y[0]):
-        i = lab[0]
-        j = lab[1]
-
-        mat[i,j] = val;
-        mat[j,i] = val;
-
-    pretty_print(mat)
-
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
     spdm = load_1spdm(inputfile)
-    print_1spdm(spdm)
+    pretty_print(spdm)
