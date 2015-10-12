@@ -137,38 +137,41 @@ if __name__ == '__main__':
     entropies = entropy.MaquisMeasurement(inputfile)
     props = DmrgInput.loadProperties(inputfile)
 
+    original_order = np.array(map(int, props["orbital_order"].split(','))) - 1
+
     #mutual information matrix:
     mat_I = entropies.I()
     #single entropy vector:
     vec_s1 = entropies.s1()
+
+    vec_s1, mat_I = reorder(vec_s1, mat_I, original_order)
     
     #primitive Fiedler ordering
     L = get_laplacian(mat_I)
     fiedler_vec = fiedler(L)
     
     #order
-    original_order = map(int, props["orbital_order"].split(','))
     order = fiedler_vec.argsort()
     ofv = fiedler_vec[order]
-    new_order = [ original_order[order[i]] for i in range(len(order)) ]
     
     new_s1, new_mutinf = reorder(vec_s1, mat_I, order)
     cost_old = cost_meas(mat_I)
     cost_new = cost_meas(new_mutinf)
 
     site_types = [int(x) for x in props["site_types"].split(',')[:-1]]
+    site_types = [site_types[original_order[i]] for i in range(len(site_types))]
     print "site_types", site_types
     
     #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
 
     occ = np.array([0])
     for i in range(len(site_types)-1):
-        if site_types[i] < site_types[i+1]:
+        if site_types[i] != site_types[i+1]:
             occ = np.append(occ, np.array([i+1]))
     occ = np.append(occ, np.array(len(site_types)))
 
     var1_mutinf = mat_I
-    final_order1 = range(order.shape[0])
+    final_order1 = original_order
     final_mutinf1 = mat_I
     final_s1_1 = vec_s1
     final_cost1 = cost_old
@@ -192,6 +195,8 @@ if __name__ == '__main__':
         else: j += 1
         
     print cost_old, cost_new, final_cost1
+
+    new_order = np.array([ original_order[order[i]] for i in range(len(order)) ]) + 1
     print new_order
     
     print [site_types[final_order1[i]] for i in range(len(site_types))]
