@@ -36,11 +36,11 @@ def load_2rdm(inputfile):
     rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twoptdm')[0][0]
     return rdm
 
-def print_2rdm(rdm):
+def print_2rdm(rdm,tag):
     #fmt = '% -016.10E'
     #fmt = '%e'
-    tag1 = 0
-    tag2 = 0
+    tag1 = tag
+    tag2 = tag
 
     f=open('twoparticle.rdm.%s.%s' % (tag1,tag2),'w')
 
@@ -62,11 +62,12 @@ def print_2rdm(rdm):
 def dump_element(f,value,i,j,k,l):
     
     print i,j,k,l, "\t", (value.real, value.imag)
-    #fmt  = '% -020.14E'
-    #f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  ('+str(fmt%value.real)+' , '+'+str(fmt%value.imag)+'\n')
+    fmt  = '% -020.14E'
+    f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  ('+str(fmt%value.real)+' , '++str(fmt%value.imag)+'\n')
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
+    tag       = sys.argv[2]
 
     rdm = load_2rdm(inputfile)
-    print_2rdm(rdm)
+    print_2rdm(rdm,tag)
