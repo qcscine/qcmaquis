@@ -58,7 +58,6 @@ namespace SU2 {
             index_type b1 = col_it.index();
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
-            Index<SymmGroup> t_right_basis = T.right_basis();
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
