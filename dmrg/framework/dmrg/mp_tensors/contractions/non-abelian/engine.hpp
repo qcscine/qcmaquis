@@ -34,6 +34,7 @@
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op_rp.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/h_diag.hpp"
 
 #include "dmrg/mp_tensors/contractions/common/common.h"
 
