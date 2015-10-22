@@ -59,33 +59,52 @@
         for (size_t block = 0; block < bm.n_blocks(); ++block)
         {
             size_t r = right_i.position(bm.basis().right_charge(block));
+            assert(r == block);
             if(r == right_i.size()) continue;
             charge in_r_charge = right_i[r].first;
             charge in_l_charge = bm.basis().left_charge(block);
 
-            maquis::cout << bm.basis().left_charge(block) << bm.basis().right_charge(block) << std::endl;
+            maquis::cout << in_l_charge << in_r_charge << std::endl;
+
+            ///////////////////////////////////////////////////////////////////////
+            Matrix ret2(bm.basis().left_size(block), bm.basis().right_size(block));
+            for (size_t b2 = 0; b2 < H.right.aux_dim(); ++b2)
+            {
+                Matrix la = contraction::SU2::h_diag2(b2, H.left, H.mpo, bm.basis(),
+                                                      x.row_dim(), x.col_dim(), physical_i,
+                                                      in_right_pb, out_left_pb,
+                                                      block);
+
+                size_t rblock = H.right[b2].find_block(in_r_charge, in_r_charge);
+                if (rblock != H.right[b2].n_blocks())
+                {
+                    for (size_t c = 0; c < num_cols(la); ++c)
+                        std::transform(la.col(c).first, la.col(c).second, la.col(c).first, boost::lambda::_1*= H.right[b2][rblock](c,c));
+
+                    ret2 += la;
+                }
+            }
+            ///////////////////////////////////////////////////////////////////////
+
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
                 charge phys_charge = physical_i[s].first;
-                size_t l = left_i.position(SymmGroup::fuse(bm.basis().left_charge(block), -phys_charge));
+                size_t l = left_i.position(SymmGroup::fuse(in_l_charge, -phys_charge));
                 if(l == left_i.size()) continue;
 
                 size_t in_left_offset = out_left_pb(phys_charge, left_i[l].first);
 
                 for (size_t in_phys_offset = 0; in_phys_offset < physical_i[s].second; ++in_phys_offset)
                 {
-                    //for (size_t i = left_i[l].second * in_phys_offset; i < left_i[l].second * (in_phys_offset+1); ++i)
                     for (size_t i = 0; i < left_i[l].second; ++i)
                     for (size_t j = 0; j < num_cols(bm[block]); ++j)
                     {
-                        assert(right_i[r].second == num_cols(bm[block]));
-
                         value_type ret = 0.0;
                         for (size_t b2 = 0; b2 < H.right.aux_dim(); ++b2)
                         {
-                            value_type la = contraction::SU2::h_diag(b2, H.left, H.mpo, bm.basis(), x.col_dim(),
+                            value_type la = contraction::SU2::h_diag(b2, H.left, H.mpo,
+                                                                     x.row_dim(), x.col_dim(), physical_i,
                                                                      in_right_pb, out_left_pb,
-                                                                     left_i[l].first,
                                                                      left_i[l].first,
                                                                      phys_charge,
                                                                      in_phys_offset,
@@ -103,11 +122,11 @@
                         value_type ret_ref = prod.data()[block](total_index, j);
                         bm[block](total_index,j) = 0;    
 
-                        maquis::cout << "  " << total_index << "," << j << "  " << ret-ret_ref << std::endl;
+                        maquis::cout << "  " << total_index << "," << j << "  " << ret_ref << " " << ret2(total_index, j) << std::endl;
 
-                    }
-                }
-            }
+                    } // i,j
+                } // phys offset
+            } // physical_i s
         }
 
         //for (size_t b = 0; b < bm.n_blocks(); ++b)
