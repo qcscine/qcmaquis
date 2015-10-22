@@ -27,29 +27,111 @@
 #ifndef REF_H_DIAG_H
 #define REF_H_DIAG_H
 
+    //template<class Matrix, class SymmGroup>
+    //void ref_diag(SiteProblem<Matrix, SymmGroup> const & H,
+    //              MPSTensor<Matrix, SymmGroup> x)
+    //{
+    //}
+
     template<class Matrix, class SymmGroup>
     void ref_diag(SiteProblem<Matrix, SymmGroup> const & H,
                   MPSTensor<Matrix, SymmGroup> x)
     {
         typedef typename Matrix::value_type value_type;
+        typedef typename SymmGroup::charge charge;
 
         x.make_left_paired();
         x.multiply_by_scalar(.0);
         block_matrix<Matrix, SymmGroup> & bm = x.data();
 
-        for (size_t b = 0; b < bm.n_blocks(); ++b)
+
+        Index<SymmGroup> const & physical_i = x.site_dim(),
+                               & left_i = x.row_dim();
+        Index<SymmGroup> right_i = x.col_dim(),
+                         out_left_i = physical_i * left_i;
+
+        common_subset(out_left_i, right_i);
+        ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
+        ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
+                                boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                        -boost::lambda::_1, boost::lambda::_2));
+
+        for (size_t block = 0; block < bm.n_blocks(); ++block)
         {
-            maquis::cout << bm.basis().left_charge(b) << bm.basis().right_charge(b) << std::endl;
-            for (size_t i = 0; i < num_rows(bm[b]); ++i)
-            for (size_t j = 0; j < num_cols(bm[b]); ++j)
+            size_t r = right_i.position(bm.basis().right_charge(block));
+            if(r == right_i.size()) continue;
+            charge in_r_charge = right_i[r].first;
+            charge in_l_charge = bm.basis().left_charge(block);
+
+            maquis::cout << bm.basis().left_charge(block) << bm.basis().right_charge(block) << std::endl;
+            for (size_t s = 0; s < physical_i.size(); ++s)
             {
-                bm[b](i,j) = 1;    
-                MPSTensor<Matrix, SymmGroup> prod;
-                ietl::mult(H, x, prod);
-                maquis::cout << "  " << i << "," << j << "  " << prod.data()[b](i,j) << std::endl;;
-                bm[b](i,j) = 0;    
+                charge phys_charge = physical_i[s].first;
+                size_t l = left_i.position(SymmGroup::fuse(bm.basis().left_charge(block), -phys_charge));
+                if(l == left_i.size()) continue;
+
+                size_t in_left_offset = out_left_pb(phys_charge, left_i[l].first);
+
+                for (size_t in_phys_offset = 0; in_phys_offset < physical_i[s].second; ++in_phys_offset)
+                {
+                    //for (size_t i = left_i[l].second * in_phys_offset; i < left_i[l].second * (in_phys_offset+1); ++i)
+                    for (size_t i = 0; i < left_i[l].second; ++i)
+                    for (size_t j = 0; j < num_cols(bm[block]); ++j)
+                    {
+                        assert(right_i[r].second == num_cols(bm[block]));
+
+                        value_type ret = 0.0;
+                        for (size_t b2 = 0; b2 < H.right.aux_dim(); ++b2)
+                        {
+                            value_type la = contraction::SU2::h_diag(b2, H.left, H.mpo, bm.basis(), x.col_dim(),
+                                                                     in_right_pb, out_left_pb,
+                                                                     left_i[l].first,
+                                                                     left_i[l].first,
+                                                                     phys_charge,
+                                                                     in_phys_offset,
+                                                                     i);
+                            size_t rblock = H.right[b2].find_block(in_r_charge, in_r_charge);
+                            if (rblock != H.right[b2].n_blocks())
+                                ret += la * H.right[b2][rblock](j,j);
+
+                        }
+
+                        size_t total_index = i + in_left_offset + in_phys_offset * left_i[l].second;
+                        bm[block](total_index, j) = 1;    
+                        MPSTensor<Matrix, SymmGroup> prod;
+                        ietl::mult(H, x, prod);
+                        value_type ret_ref = prod.data()[block](total_index, j);
+                        bm[block](total_index,j) = 0;    
+
+                        maquis::cout << "  " << total_index << "," << j << "  " << ret-ret_ref << std::endl;
+
+                    }
+                }
             }
         }
+
+        //for (size_t b = 0; b < bm.n_blocks(); ++b)
+        //{
+        //    maquis::cout << bm.basis().left_charge(b) << bm.basis().right_charge(b) << std::endl;
+        //    for (size_t i = 0; i < num_rows(bm[b]); ++i)
+        //    for (size_t j = 0; j < num_cols(bm[b]); ++j)
+        //    {
+        //        bm[b](i,j) = 1;    
+        //        MPSTensor<Matrix, SymmGroup> prod;
+        //        ietl::mult(H, x, prod);
+        //        maquis::cout << "  " << i << "," << j << "  " << prod.data()[b](i,j) << std::endl;
+        //        bm[b](i,j) = 0;    
+        //    }
+        //}
     }
+
+    //template<class Matrix, class SymmGroup>
+    //void exp_diag(SiteProblem<Matrix, SymmGroup> const & H,
+    //              MPSTensor<Matrix, SymmGroup> x)
+    //{
+    //    typedef typename Matrix::value_type value_type;
+
+    //    value_type la = contraction::SU2::h_diag(0, H.left, H.right, 
+    //}
 
 #endif 
