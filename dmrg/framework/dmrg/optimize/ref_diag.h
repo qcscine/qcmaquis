@@ -27,12 +27,6 @@
 #ifndef REF_H_DIAG_H
 #define REF_H_DIAG_H
 
-    //template<class Matrix, class SymmGroup>
-    //void ref_diag(SiteProblem<Matrix, SymmGroup> const & H,
-    //              MPSTensor<Matrix, SymmGroup> x)
-    //{
-    //}
-
     template<class Matrix, class SymmGroup>
     void ref_diag(SiteProblem<Matrix, SymmGroup> const & H,
                   MPSTensor<Matrix, SymmGroup> x)
@@ -45,34 +39,7 @@
         block_matrix<Matrix, SymmGroup> & bm = x.data();
 
 
-        Index<SymmGroup> const & physical_i = x.site_dim(),
-                               & left_i = x.row_dim();
-        Index<SymmGroup> right_i = x.col_dim(),
-                         out_left_i = physical_i * left_i;
-
-        common_subset(out_left_i, right_i);
-        ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
-
-        block_matrix<Matrix, SymmGroup> ret2;
-        for (size_t b2 = 0; b2 < H.right.aux_dim(); ++b2)
-        {
-            block_matrix<Matrix, SymmGroup> la = contraction::SU2::h_diag(b2, H.left, H.mpo, bm.basis(),
-                                                                          x.row_dim(), x.col_dim(), physical_i,
-                                                                          out_left_pb);
-
-            for (size_t block = 0; block < la.n_blocks(); ++block)
-            {
-                charge in_r_charge = la.basis().right_charge(block);
-                size_t rblock = H.right[b2].find_block(in_r_charge, in_r_charge);
-                if (rblock != H.right[b2].n_blocks())
-                {
-                    for (size_t c = 0; c < num_cols(la[block]); ++c)
-                        std::transform(la[block].col(c).first, la[block].col(c).second, la[block].col(c).first,
-                                       boost::lambda::_1*= H.right[b2][rblock](c,c));
-                    ret2.match_and_add_block(la[block], in_r_charge, in_r_charge);
-                }
-            }
-        }
+        block_matrix<Matrix, SymmGroup> ret2 = contraction::SU2::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
 
         for (size_t b = 0; b < bm.n_blocks(); ++b)
         {
@@ -85,17 +52,10 @@
                 ietl::mult(H, x, prod);
                 maquis::cout << "  " << i << "," << j << "  " << prod.data()[b](i,j) << " " << ret2[b](i,j) << std::endl;
                 bm[b](i,j) = 0;    
+
+                //maquis::cout << "  " << i << "," << j << "  " << ret2[b](i,j) << std::endl;
             }
         }
     }
-
-    //template<class Matrix, class SymmGroup>
-    //void exp_diag(SiteProblem<Matrix, SymmGroup> const & H,
-    //              MPSTensor<Matrix, SymmGroup> x)
-    //{
-    //    typedef typename Matrix::value_type value_type;
-
-    //    value_type la = contraction::SU2::h_diag(0, H.left, H.right, 
-    //}
 
 #endif 

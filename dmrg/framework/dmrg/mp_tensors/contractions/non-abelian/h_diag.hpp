@@ -37,19 +37,20 @@ namespace SU2 {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     block_matrix<Matrix, SymmGroup>
-    h_diag(size_t b2,
-           Boundary<OtherMatrix, SymmGroup> const & left,
-           MPOTensor<Matrix, SymmGroup> const & mpo,
-           DualIndex<SymmGroup> const & ket_basis,
-           Index<SymmGroup> const & left_i,
-           Index<SymmGroup> const & right_i,
-           Index<SymmGroup> const & phys_i,
-           ProductBasis<SymmGroup> const & left_pb)
+    lbtm_diag_kernel(size_t b2,
+                     Boundary<OtherMatrix, SymmGroup> const & left,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     Index<SymmGroup> const & out_left_i,
+                     Index<SymmGroup> const & left_i,
+                     Index<SymmGroup> const & right_i,
+                     Index<SymmGroup> const & phys_i,
+                     ProductBasis<SymmGroup> const & left_pb)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
+        typedef typename Matrix::value_type value_type;
 
         block_matrix<Matrix, SymmGroup> ret;
 
@@ -64,23 +65,28 @@ namespace SU2 {
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            for (size_t block = 0; block < ket_basis.size(); ++block)
+            // out_left_i and right_i have identical charges, but different sector sizes
+            for (size_t block = 0; block < right_i.size(); ++block)
             {
-                charge in_l_charge = ket_basis.left_charge(block);
-                charge in_r_charge = ket_basis.right_charge(block);
-                size_t o = ret.find_block(in_l_charge, in_r_charge);
+                charge in_charge = right_i[block].first;
+
+                size_t o = ret.find_block(in_charge, in_charge);
                 if ( o == ret.n_blocks() )
-                    o = ret.insert_block(Matrix(ket_basis.left_size(block), ket_basis.right_size(block)), in_l_charge, in_r_charge);
+                    o = ret.insert_block(Matrix(out_left_i[block].second, right_i[block].second), in_charge, in_charge);
 
                 for (size_t s = 0; s < phys_i.size(); ++s)
                 {
                     charge phys_charge = phys_i[s].first;
-                    size_t l = left_i.position(SymmGroup::fuse(in_l_charge, -phys_charge));
+                    size_t l = left_i.position(SymmGroup::fuse(in_charge, -phys_charge));
                     if(l == left_i.size()) continue;
                     charge lc = left_i[l].first;
      
                     size_t l_block = left[b1].find_block(lc, lc);
                     if (l_block == left[b1].n_blocks()) continue;
+
+                    // copy the diagonal elements of the boundary into a vector
+                    std::vector<value_type> left_diagonal(left_i[l].second);
+                    std::copy(left[b1][l_block].diagonal().first, left[b1][l_block].diagonal().second, left_diagonal.begin()); 
 
                     size_t left_offset = left_pb(phys_charge, lc);
 
@@ -88,13 +94,10 @@ namespace SU2 {
                     {
                         charge phys_in = W.basis().left_charge(w_block);
                         charge phys_out = W.basis().right_charge(w_block);
-                        if (phys_in != phys_charge || phys_in != phys_out) continue;
+                        if (phys_charge != phys_in || phys_in != phys_out) continue;
 
-                        charge out_r_charge = SymmGroup::fuse(lc, phys_in); // rc is paired with -pc, so lc == rc
-                        if (!right_i.has(out_r_charge)) continue;
-
-                        int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_r_charge);
-                        int j = SymmGroup::spin(lc), jp = SymmGroup::spin(out_r_charge);
+                        int i = SymmGroup::spin(lc), ip = SymmGroup::spin(in_charge);
+                        int j = SymmGroup::spin(lc), jp = SymmGroup::spin(in_charge);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
                         typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
@@ -105,7 +108,7 @@ namespace SU2 {
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                        for (block_iterator it = blocks.first; it != blocks.second; ++it)
                         {
                             std::size_t ss1 = it->row;
                             if (ss1 != it->col) continue;
@@ -116,20 +119,57 @@ namespace SU2 {
 
                             typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
 
-                            for (size_t col_i = 0; col_i < ket_basis.right_size(block); ++col_i)
-                                for (size_t row_i = 0; row_i < left_i[l].second; ++row_i)
-                                {
-                                    size_t effective_row_i = row_i + left_offset + ss1 * left_i[l].second;
-                                    typename Matrix::value_type val_ = alfa_t * left[b1][l_block](row_i, row_i);
-                                    ret[o](effective_row_i, col_i) += val_;
-                                }
+                            // copy the diagonal multplied by alfa_t into the output result: ret(·, col_i) += alfa_t * diag(L)
+                            for (size_t col_i = 0; col_i < right_i[block].second; ++col_i)
+                                std::transform(left_diagonal.begin(), left_diagonal.end(),
+                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                               boost::lambda::_2 += boost::lambda::_1 * alfa_t);
                         }
-
                     } // wblock
                 } // phys_i s
             } // ket block
         } // op_index
         } // b1
+        return ret;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    block_matrix<Matrix, SymmGroup>
+    diagonal_hamiltonian(Boundary<OtherMatrix, SymmGroup> const & left,
+                         Boundary<OtherMatrix, SymmGroup> const & right,
+                         MPOTensor<Matrix, SymmGroup> const & mpo,                         
+                         MPSTensor<Matrix, SymmGroup> const & x)
+    {
+        typedef typename SymmGroup::charge charge;
+
+        Index<SymmGroup> const & physical_i = x.site_dim();
+        Index<SymmGroup> right_i = x.col_dim(),
+                         out_left_i = physical_i * x.row_dim();
+
+        common_subset(out_left_i, right_i);
+        ProductBasis<SymmGroup> out_left_pb(physical_i, x.row_dim());
+
+        block_matrix<Matrix, SymmGroup> ret;
+        for (size_t b2 = 0; b2 < right.aux_dim(); ++b2)
+        {
+            block_matrix<Matrix, SymmGroup> lb2 = lbtm_diag_kernel(b2, left, mpo, out_left_i,
+                                                                   x.row_dim(), x.col_dim(), physical_i,
+                                                                   out_left_pb);
+
+            for (size_t block = 0; block < lb2.n_blocks(); ++block)
+            {
+                charge in_r_charge = lb2.basis().right_charge(block);
+                size_t rblock = right[b2].find_block(in_r_charge, in_r_charge);
+                if (rblock != right[b2].n_blocks())
+                {
+                    for (size_t c = 0; c < num_cols(lb2[block]); ++c)
+                        std::transform(lb2[block].col(c).first, lb2[block].col(c).second, lb2[block].col(c).first,
+                                       boost::lambda::_1 * right[b2][rblock](c,c));
+                    ret.match_and_add_block(lb2[block], in_r_charge, in_r_charge);
+                }
+            }
+        }
         return ret;
     }
 
