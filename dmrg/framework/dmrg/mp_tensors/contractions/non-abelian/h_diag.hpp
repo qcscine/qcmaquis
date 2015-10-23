@@ -127,7 +127,7 @@ namespace SU2 {
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    Matrix
+    block_matrix<Matrix, SymmGroup>
     h_diag2(size_t b2,
             Boundary<OtherMatrix, SymmGroup> const & left,
             MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -136,8 +136,7 @@ namespace SU2 {
             Index<SymmGroup> const & right_i,
             Index<SymmGroup> const & phys_i,
             ProductBasis<SymmGroup> const & in_right_pb,
-            ProductBasis<SymmGroup> const & left_pb,
-            size_t block)
+            ProductBasis<SymmGroup> const & left_pb)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
@@ -145,7 +144,7 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
-        Matrix ret(ket_basis.left_size(block), ket_basis.right_size(block));
+        block_matrix<Matrix, SymmGroup> ret;
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
@@ -158,66 +157,70 @@ namespace SU2 {
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            charge in_r_charge = ket_basis.right_charge(block);
-            charge in_l_charge = ket_basis.left_charge(block);
-
-            for (size_t s = 0; s < phys_i.size(); ++s)
+            for (size_t block = 0; block < ket_basis.size(); ++block)
             {
-                charge phys_charge = phys_i[s].first;
-                size_t l = left_i.position(SymmGroup::fuse(in_l_charge, -phys_charge));
-                if(l == left_i.size()) continue;
-                charge lc = left_i[l].first;
- 
-                size_t l_block = left[b1].find_block(lc, lc);
-                if (l_block == left[b1].n_blocks()) continue;
+                charge in_l_charge = ket_basis.left_charge(block);
+                charge in_r_charge = ket_basis.right_charge(block);
+                size_t o = ret.find_block(in_l_charge, in_r_charge);
+                if ( o == ret.n_blocks() )
+                    o = ret.insert_block(Matrix(ket_basis.left_size(block), ket_basis.right_size(block)), in_l_charge, in_r_charge);
 
-                size_t left_offset = left_pb(phys_charge, lc);
-
-                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                for (size_t s = 0; s < phys_i.size(); ++s)
                 {
-                    charge phys_in = W.basis().left_charge(w_block);
-                    charge phys_out = W.basis().right_charge(w_block);
-                    if (phys_in != phys_charge || phys_in != phys_out) continue;
+                    charge phys_charge = phys_i[s].first;
+                    size_t l = left_i.position(SymmGroup::fuse(in_l_charge, -phys_charge));
+                    if(l == left_i.size()) continue;
+                    charge lc = left_i[l].first;
+     
+                    size_t l_block = left[b1].find_block(lc, lc);
+                    if (l_block == left[b1].n_blocks()) continue;
 
-                    charge out_r_charge = SymmGroup::fuse(lc, phys_in); // rc is paired with -pc, so lc == rc
-                    if (!right_i.has(out_r_charge)) continue;
+                    size_t left_offset = left_pb(phys_charge, lc);
 
-                    int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_r_charge);
-                    int j = SymmGroup::spin(lc), jp = SymmGroup::spin(out_r_charge);
-                    int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-
-                    typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                    typename Matrix::value_type couplings[2];
-                    couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                    couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
-
-                    typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                    std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-
-                    for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
-                        std::size_t ss1 = it->row;
-                        if (ss1 != it->col) continue;
+                        charge phys_in = W.basis().left_charge(w_block);
+                        charge phys_out = W.basis().right_charge(w_block);
+                        if (phys_in != phys_charge || phys_in != phys_out) continue;
 
-                        std::size_t rspin = it->row_spin;
-                        std::size_t casenr = 0;
-                        if (rspin == 2) casenr = 1;
+                        charge out_r_charge = SymmGroup::fuse(lc, phys_in); // rc is paired with -pc, so lc == rc
+                        if (!right_i.has(out_r_charge)) continue;
 
-                        typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+                        int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_r_charge);
+                        int j = SymmGroup::spin(lc), jp = SymmGroup::spin(out_r_charge);
+                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        for (size_t col_i = 0; col_i < ket_basis.right_size(block); ++col_i)
+                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+                        typename Matrix::value_type couplings[2];
+                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
+
+                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+
+                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
                         {
-                            for (size_t row_i = 0; row_i < left_i[l].second; ++row_i)
-                            {
-                                size_t effective_row_i = row_i + left_offset + ss1 * left_i[l].second;
-                                typename Matrix::value_type val_ = alfa_t * left[b1][l_block](row_i, row_i);
-                                ret(effective_row_i, col_i) += val_;
-                            }
-                        }
-                    }
+                            std::size_t ss1 = it->row;
+                            if (ss1 != it->col) continue;
 
-                } // wblock
-            } // phys_i s
+                            std::size_t rspin = it->row_spin;
+                            std::size_t casenr = 0;
+                            if (rspin == 2) casenr = 1;
+
+                            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+
+                            for (size_t col_i = 0; col_i < ket_basis.right_size(block); ++col_i)
+                                for (size_t row_i = 0; row_i < left_i[l].second; ++row_i)
+                                {
+                                    size_t effective_row_i = row_i + left_offset + ss1 * left_i[l].second;
+                                    typename Matrix::value_type val_ = alfa_t * left[b1][l_block](row_i, row_i);
+                                    ret[o](effective_row_i, col_i) += val_;
+                                }
+                        }
+
+                    } // wblock
+                } // phys_i s
+            } // ket block
         } // op_index
         } // b1
         return ret;

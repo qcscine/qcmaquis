@@ -56,6 +56,29 @@
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
 
+        ///////////////////////////////////////////////////////////////////////
+        block_matrix<Matrix, SymmGroup> ret2;
+        for (size_t b2 = 0; b2 < H.right.aux_dim(); ++b2)
+        {
+            block_matrix<Matrix, SymmGroup> la = contraction::SU2::h_diag2(b2, H.left, H.mpo, bm.basis(),
+                                                                           x.row_dim(), x.col_dim(), physical_i,
+                                                                           in_right_pb, out_left_pb);
+
+            for (size_t block = 0; block < la.n_blocks(); ++block)
+            {
+                charge in_r_charge = la.basis().right_charge(block);
+                size_t rblock = H.right[b2].find_block(in_r_charge, in_r_charge);
+                if (rblock != H.right[b2].n_blocks())
+                {
+                    for (size_t c = 0; c < num_cols(la[block]); ++c)
+                        std::transform(la[block].col(c).first, la[block].col(c).second, la[block].col(c).first,
+                                       boost::lambda::_1*= H.right[b2][rblock](c,c));
+                    ret2.match_and_add_block(la[block], in_r_charge, in_r_charge);
+                }
+            }
+        }
+        ///////////////////////////////////////////////////////////////////////
+
         for (size_t block = 0; block < bm.n_blocks(); ++block)
         {
             size_t r = right_i.position(bm.basis().right_charge(block));
@@ -65,26 +88,6 @@
             charge in_l_charge = bm.basis().left_charge(block);
 
             maquis::cout << in_l_charge << in_r_charge << std::endl;
-
-            ///////////////////////////////////////////////////////////////////////
-            Matrix ret2(bm.basis().left_size(block), bm.basis().right_size(block));
-            for (size_t b2 = 0; b2 < H.right.aux_dim(); ++b2)
-            {
-                Matrix la = contraction::SU2::h_diag2(b2, H.left, H.mpo, bm.basis(),
-                                                      x.row_dim(), x.col_dim(), physical_i,
-                                                      in_right_pb, out_left_pb,
-                                                      block);
-
-                size_t rblock = H.right[b2].find_block(in_r_charge, in_r_charge);
-                if (rblock != H.right[b2].n_blocks())
-                {
-                    for (size_t c = 0; c < num_cols(la); ++c)
-                        std::transform(la.col(c).first, la.col(c).second, la.col(c).first, boost::lambda::_1*= H.right[b2][rblock](c,c));
-
-                    ret2 += la;
-                }
-            }
-            ///////////////////////////////////////////////////////////////////////
 
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
@@ -122,7 +125,8 @@
                         value_type ret_ref = prod.data()[block](total_index, j);
                         bm[block](total_index,j) = 0;    
 
-                        maquis::cout << "  " << total_index << "," << j << "  " << ret_ref << " " << ret2(total_index, j) << std::endl;
+                        size_t ret2bl = ret2.find_block(in_r_charge, in_l_charge);
+                        maquis::cout << "  " << total_index << "," << j << "  " << ret_ref << " " << ret2[ret2bl](total_index, j) << std::endl;
 
                     } // i,j
                 } // phys offset
