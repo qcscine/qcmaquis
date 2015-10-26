@@ -58,8 +58,26 @@
         //}
     }
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class SymmGroup, class = void>
     class MultDiagonal
+    {
+        typedef MPSTensor<Matrix, SymmGroup> vector_type;
+        typedef typename Matrix::value_type value_type;
+
+    public:
+
+        MultDiagonal(SiteProblem<Matrix, SymmGroup> const& H, vector_type const& x)
+        {
+            throw std::runtime_error("Davidson only implemented for spin-adapted Hamiltonians\n"); 
+        }
+
+        void precondition(vector_type& r, vector_type& V, value_type theta)
+        {
+        }
+    };
+
+    template<class Matrix, class SymmGroup>
+    class MultDiagonal<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
     {
         typedef MPSTensor<Matrix, SymmGroup> vector_type;
         typedef typename Matrix::value_type value_type;
