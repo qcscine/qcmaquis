@@ -40,7 +40,6 @@
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
-#include "ref_diag.h"
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/results_collector.h"
