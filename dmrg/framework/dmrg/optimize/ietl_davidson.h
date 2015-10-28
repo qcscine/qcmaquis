@@ -119,9 +119,11 @@ namespace ietl
         vector_type uA = new_vector(vecspace_);
         // vector_type vA = new_vector(vecspace_);
         vector_type r  = new_vector(vecspace_);
+
         std::vector<scalar_type> s(iter.max_iterations());
-        std::vector<vector_type> V(iter.max_iterations());
-        std::vector<vector_type> VA(iter.max_iterations());
+        std::vector<vector_type> V;
+        std::vector<vector_type> VA;
+
         unsigned int i,j;
         M.resize(iter.max_iterations(), iter.max_iterations());
         magnitude_type theta, tau;
@@ -138,18 +140,20 @@ namespace ietl
         {
             // Modified Gram-Schmidt Orthogonalization with Refinement
             tau = ietl::two_norm(t);
-            for (i=1;i<=iter.iterations();i++)
-                t -= ietl::dot(V[i-1],t)*V[i-1];
+            for (i = 0; i < V.size(); i++)
+                t -= ietl::dot(V[i], t) * V[i];
             if (ietl::two_norm(t) < kappa * tau)
-                for (i=1;i<=iter.iterations();i++)
-                    t -= ietl::dot(V[i-1],t) * V[i-1];
+                for (i = 0; i < V.size(); i++)
+                    t -= ietl::dot(V[i], t) * V[i];
             
             // Project out orthogonal subspace
-            ietl::project(t,vecspace_);
+            ietl::project(t, vecspace_);
             
             // v_m = t / |t|_2,  v_m^A = A v_m
-            V[iter.iterations()] = t/ietl::two_norm(t);
-            ietl::mult(matrix_, V[iter.iterations()], VA[iter.iterations()]);
+            V.push_back(t/ietl::two_norm(t));
+            VA.resize(V.size());
+            ietl::mult(matrix_, V[V.size() - 1], VA[V.size() - 1]);
+            
             
             /////////////////////////////////////////////////7
  
@@ -191,12 +195,12 @@ namespace ietl
             //  // std::cout << "Expansion? " << ietl::dot(t, told) << std::endl;
             /////////////////////////////////////////////////7
 
-            std::size_t iter_dim = iter.iterations() + 1;
+            std::size_t iter_dim = V.size();
             matrix_t Mp(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
 
-            for (i = 0; i <= iter.iterations(); ++i)
-            for (j = i; j <= iter.iterations(); ++j)
+            for (i = 0; i < iter_dim; ++i)
+            for (j = i; j < iter_dim; ++j)
             {
                 Mp(i,j) = ietl::dot(V[i], VA[j]);
                 Mp(j,i) = Mp(i,j);
@@ -232,6 +236,12 @@ namespace ietl
             mdiag.precondition(r, V[0], Mevals[0]);
             std::swap(t,r);  
             t /= ietl::two_norm(t);
+
+            if (V.size() >= 20)
+            {
+                V.resize(2);
+                VA.resize(2);
+            }
 
             /////////////////////////////////////////////////7
 
