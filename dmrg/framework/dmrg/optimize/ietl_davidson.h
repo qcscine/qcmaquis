@@ -202,10 +202,8 @@ namespace ietl
                 Mp(j,i) = Mp(i,j);
             }
 
-            heev(Mp, Mevecs, Mevals);
-            //if(std::abs(Mevals[iter_dim-1] - theta) > 1e-12)
-            //    std::cout << Mevals[iter_dim-1] << "  " << theta << std::endl;
-            //assert(std::abs(Mevals[iter_dim-1] - theta) < 1e-12);
+            boost::numeric::bindings::lapack::heevd('V', Mp, Mevals);
+            Mevecs = Mp;
 
             std::vector<vector_type> Vp = V, VAp = VA;
             for (i = 0; i < iter_dim; ++i)
@@ -221,16 +219,17 @@ namespace ietl
                     VA[j] += VAp[i] * Mevecs(i,j);
                 }
 
-            r = VA[iter_dim-1] - V[iter_dim-1] * Mevals[iter_dim-1];
+            r = VA[0] - V[0] * Mevals[0];
 
-            theta = Mevals[iter_dim-1];
-            u = V[iter_dim-1];
+            theta = Mevals[0];
+            u = V[0];
+
             //  // if (|r|_2 < \epsilon) stop
             ++iter;
-            if (iter.finished(ietl::two_norm(r), Mevals[iter_dim-1]))
+            if (iter.finished(ietl::two_norm(r), Mevals[0]))
                 break;
 
-            mdiag.precondition(r, V[iter_dim-1], Mevals[iter_dim-1]);
+            mdiag.precondition(r, V[0], Mevals[0]);
             std::swap(t,r);  
             t /= ietl::two_norm(t);
 
