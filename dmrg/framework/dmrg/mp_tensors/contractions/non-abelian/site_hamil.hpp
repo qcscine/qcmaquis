@@ -90,40 +90,6 @@ namespace contraction {
                 block_matrix<Matrix, SymmGroup> tmp2;
                 reshape_right_to_left_new(physical_i, left_i, right_i, contr_grid(0,0), tmp2);
 
-                ///////////////////////////////////////////////
-                //size_t cgs = contr_grid(0,0).basis().memory_size(),
-                //       tmp2s = tmp2.basis().memory_size();
-                //{
-                //    typedef typename Matrix::value_type value_type;
-                //    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator; 
-                //    block_matrix<Matrix, SymmGroup> & A = tmp2;
-                //    block_matrix<Matrix, SymmGroup> const & B = right[b2];
-
-                //    const_iterator B_begin = B.basis().begin();
-                //    const_iterator B_end = B.basis().end();
-                //    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-
-                //        charge ar = A.basis().right_charge(k);
-                //        const_iterator it = B.basis().left_lower_bound(ar);
-
-                //        bool has = false;
-                //        for ( ; it != B_end && it->lc == ar; ++it)
-                //        {
-                //            if (A.basis().left_charge(k) != it->rc) continue;
-                //            has = true;
-                //        }
-                //        if (!has) A.remove_block(k--);
-                //    }
-                //}
-
-                //size_t new_tmps2 = tmp2.basis().memory_size();
-
-                //parallel_critical
-                //{
-                //    maquis::cout << double(tmp2s) / cgs << "  " << double(new_tmps2) / cgs << std::endl;
-                //}
-                ///////////////////////////////////////////////
-
                 contr_grid(0,0).clear();
                 ::SU2::gemm_trim(tmp2, right[b2], tmp);
 
