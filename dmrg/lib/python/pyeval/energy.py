@@ -49,7 +49,8 @@ def plot(fname):
     if np.min(ydata.imag) != 0: 
         print "Warning! complex energy value detected"
   
-    print "Minimum energy:", np.min(ydata.real)
+    print "Minimum energy:"
+    print np.min(ydata.real)
 
 if __name__=='__main__':
     rfile = sys.argv[1]

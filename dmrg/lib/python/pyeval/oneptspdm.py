@@ -34,7 +34,7 @@ import numpy as np
 
 from corrutils import pretty_print, assemble_halfcorr
 
-def load_1spd(inputfile):
+def load_1spdm(inputfile):
     """From the diagonal and upper triangle, construct a symmetric matrix
        diag: diagonal
        triang: upper triangle, sequential reversed rows"""

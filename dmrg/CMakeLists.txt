@@ -429,5 +429,6 @@ install(DIRECTORY framework/dmrg framework/ietl framework/utils
         )
 
 install(DIRECTORY lib/python DESTINATION lib  COMPONENT python
+        USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*.py" PATTERN "*.pyc"
         PATTERN ".svn" EXCLUDE PATTERN "CVS" EXCLUDE)
