@@ -36,34 +36,45 @@
 
 namespace davidson_detail {
 
-    template<class Matrix, class SymmGroup>
-    void ref_diag(SiteProblem<Matrix, SymmGroup> const & H,
-                  MPSTensor<Matrix, SymmGroup> x)
+    template<class Matrix, class SymmGroup, class = void>
+    class ref_diag
     {
-        typedef typename Matrix::value_type value_type;
-        typedef typename SymmGroup::charge charge;
+    public:
+        void operator()(SiteProblem<Matrix, SymmGroup> const & H, MPSTensor<Matrix, SymmGroup> x){}
+    };
 
-        x.make_left_paired();
-        x.multiply_by_scalar(.0);
-        block_matrix<Matrix, SymmGroup> & bm = x.data();
-
-
-        block_matrix<Matrix, SymmGroup> ret2 = contraction::SU2::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
-
-        for (size_t b = 0; b < bm.n_blocks(); ++b)
+    template<class Matrix, class SymmGroup>
+    class ref_diag<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+    {
+    public:
+        void operator()(SiteProblem<Matrix, SymmGroup> const & H, MPSTensor<Matrix, SymmGroup> x)
         {
-            maquis::cout << bm.basis().left_charge(b) << bm.basis().right_charge(b) << std::endl;
-            for (size_t i = 0; i < num_rows(bm[b]); ++i)
-            for (size_t j = 0; j < num_cols(bm[b]); ++j)
+            typedef typename Matrix::value_type value_type;
+            typedef typename SymmGroup::charge charge;
+
+            x.make_left_paired();
+            x.multiply_by_scalar(.0);
+            block_matrix<Matrix, SymmGroup> & bm = x.data();
+
+
+            block_matrix<Matrix, SymmGroup> ret2 = contraction::SU2::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
+
+            for (size_t b = 0; b < bm.n_blocks(); ++b)
             {
-                bm[b](i,j) = 1;    
-                MPSTensor<Matrix, SymmGroup> prod;
-                ietl::mult(H, x, prod);
-                maquis::cout << "  " << i << "," << j << "  " << prod.data()[b](i,j) << " " << ret2[b](i,j) << std::endl;
-                bm[b](i,j) = 0;    
+                maquis::cout << bm.basis().left_charge(b) << bm.basis().right_charge(b) << std::endl;
+                for (size_t i = 0; i < num_rows(bm[b]); ++i)
+                for (size_t j = 0; j < num_cols(bm[b]); ++j)
+                {
+                    bm[b](i,j) = 1;    
+                    MPSTensor<Matrix, SymmGroup> prod;
+                    ietl::mult(H, x, prod);
+                    maquis::cout << "  " << i << "," << j << "  " << prod.data()[b](i,j) << " " << ret2[b](i,j) << std::endl;
+                    if (std::abs(prod.data()[b](i,j) - ret2[b](i,j)) > 1e-12) throw std::runtime_error("diagonal wrong\n");
+                    bm[b](i,j) = 0;    
+                }
             }
         }
-    }
+    };
 
     template<class Matrix, class SymmGroup, class = void>
     class MultDiagonal
