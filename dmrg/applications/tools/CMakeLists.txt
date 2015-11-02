@@ -62,8 +62,12 @@ create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_mo
 
 create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+if(DMRG_HAS_TWOU1)
 create_tools_symm_target("mps_transform"    "SU2U1"   "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+endif(DMRG_HAS_TWOU1)
+if(DMRG_HAS_TWOU1PG)
 create_tools_symm_target("mps_transform_pg" "SU2U1PG" "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+endif(DMRG_HAS_TWOU1PG)
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578

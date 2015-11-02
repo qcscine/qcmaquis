@@ -45,7 +45,8 @@ namespace SU2 {
                         Index<SymmGroup> const & right_i,
                         Index<SymmGroup> const & out_left_i,
                         ProductBasis<SymmGroup> const & in_right_pb,
-                        ProductBasis<SymmGroup> const & out_left_pb)
+                        ProductBasis<SymmGroup> const & out_left_pb,
+                        DualIndex<SymmGroup> const & right_basis)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
@@ -58,7 +59,6 @@ namespace SU2 {
             index_type b1 = col_it.index();
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
-            Index<SymmGroup> t_right_basis = T.right_basis();
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
@@ -92,6 +92,17 @@ namespace SU2 {
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
                         if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
+                        // optimization: avoid creating blocks which will not be used
+                        const_iterator right_it = right_basis.left_lower_bound(out_r_charge);
+                        bool right_match = false;
+                        for ( ; right_it != right_basis.end() && right_it->lc == out_r_charge; ++right_it)
+                        {
+                            if (out_l_charge == right_it->rc)
+                                right_match = true;
+                        }
+                        if (!right_match) continue;
+                        //////////////////////////////////////////
+
                         charge out_r_charge_rp = SymmGroup::fuse(out_r_charge, -phys_out);
 
                         size_t r_size = right_i.size_of_block(out_r_charge);
@@ -120,7 +131,6 @@ namespace SU2 {
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
                         size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
-                        //size_t out_left_offset = out_left_pb(phys_out, lc);
                         size_t out_right_offset = in_right_pb(phys_out, out_r_charge);
                         Matrix const & wblock = W[w_block];
                         Matrix const & iblock = T[t_block];
