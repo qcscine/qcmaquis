@@ -45,7 +45,8 @@ namespace SU2 {
                         Index<SymmGroup> const & right_i,
                         Index<SymmGroup> const & out_left_i,
                         ProductBasis<SymmGroup> const & in_right_pb,
-                        ProductBasis<SymmGroup> const & out_left_pb)
+                        ProductBasis<SymmGroup> const & out_left_pb,
+                        DualIndex<SymmGroup> const & right_basis)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
@@ -90,6 +91,17 @@ namespace SU2 {
 
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
                         if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
+
+                        // optimization: avoid creating blocks which will not be used
+                        const_iterator right_it = right_basis.left_lower_bound(out_r_charge);
+                        bool right_match = false;
+                        for ( ; right_it != right_basis.end() && right_it->lc == out_r_charge; ++right_it)
+                        {
+                            if (out_l_charge == right_it->rc)
+                                right_match = true;
+                        }
+                        if (!right_match) continue;
+                        //////////////////////////////////////////
 
                         charge out_r_charge_rp = SymmGroup::fuse(out_r_charge, -phys_out);
 

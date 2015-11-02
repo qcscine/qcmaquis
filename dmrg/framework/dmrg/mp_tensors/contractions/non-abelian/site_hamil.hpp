@@ -86,19 +86,57 @@ namespace contraction {
             typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy cp = mpo.column(b2);
             index_type num_ops = std::distance(cp.begin(), cp.end());
             if (num_ops > 3) {
-                SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb, right[b2].basis());
                 block_matrix<Matrix, SymmGroup> tmp2;
                 reshape_right_to_left_new(physical_i, left_i, right_i, contr_grid(0,0), tmp2);
-                contr_grid(0,0).clear();
 
+                ///////////////////////////////////////////////
+                //size_t cgs = contr_grid(0,0).basis().memory_size(),
+                //       tmp2s = tmp2.basis().memory_size();
+                //{
+                //    typedef typename Matrix::value_type value_type;
+                //    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator; 
+                //    block_matrix<Matrix, SymmGroup> & A = tmp2;
+                //    block_matrix<Matrix, SymmGroup> const & B = right[b2];
+
+                //    const_iterator B_begin = B.basis().begin();
+                //    const_iterator B_end = B.basis().end();
+                //    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+
+                //        charge ar = A.basis().right_charge(k);
+                //        const_iterator it = B.basis().left_lower_bound(ar);
+
+                //        bool has = false;
+                //        for ( ; it != B_end && it->lc == ar; ++it)
+                //        {
+                //            if (A.basis().left_charge(k) != it->rc) continue;
+                //            has = true;
+                //        }
+                //        if (!has) A.remove_block(k--);
+                //    }
+                //}
+
+                //size_t new_tmps2 = tmp2.basis().memory_size();
+
+                //parallel_critical
+                //{
+                //    maquis::cout << double(tmp2s) / cgs << "  " << double(new_tmps2) / cgs << std::endl;
+                //}
+                ///////////////////////////////////////////////
+
+                contr_grid(0,0).clear();
                 ::SU2::gemm_trim(tmp2, right[b2], tmp);
+
+                for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
+                    if (!out_left_i.has(tmp.basis().left_charge(k)))
+                        tmp.remove_block(k--);
             }
 
             else {
-              SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-              ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp);
+                SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp);
 
-              contr_grid(0,0).clear();
+                contr_grid(0,0).clear();
             }
 
             parallel_critical
