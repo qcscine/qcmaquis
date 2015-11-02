@@ -131,7 +131,6 @@ namespace SU2 {
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
                         size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
-                        //size_t out_left_offset = out_left_pb(phys_out, lc);
                         size_t out_right_offset = in_right_pb(phys_out, out_r_charge);
                         Matrix const & wblock = W[w_block];
                         Matrix const & iblock = T[t_block];
