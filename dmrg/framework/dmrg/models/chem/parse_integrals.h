@@ -1,8 +1,8 @@
 /*****************************************************************************
  *
- * ALPS MPS DMRG Project
+ * QCMaquis DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
