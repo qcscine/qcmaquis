@@ -47,6 +47,29 @@ std::string MPS<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::reasonable() const
+{
+    (*this)[0].reasonable();
+
+    for (int i = 0; i < length()-1; ++i)
+    {
+        (*this)[i+1].reasonable();
+
+        (*this)[i].make_left_paired();
+        (*this)[i+1].make_right_paired();
+        
+        if( (*this)[i].data().right_basis() != (*this)[i+1].data().left_basis() )
+            throw std::runtime_error("MPSTensor mismatch\n");
+
+        //oss << "MPS site " << i << std::endl;
+        //oss << (*this)[i].row_dim() << std::endl;
+        //oss << "Sum: " << (*this)[i].row_dim().sum_of_sizes() << std::endl;
+        //oss << (*this)[i].col_dim() << std::endl;
+        //oss << "Sum: " << (*this)[i].col_dim().sum_of_sizes() << std::endl;
+    }
+}
+
+template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS()
 : canonized_i(std::numeric_limits<size_t>::max())
 { }
