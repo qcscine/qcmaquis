@@ -59,13 +59,15 @@ void MPS<Matrix, SymmGroup>::reasonable() const
         (*this)[i+1].make_right_paired();
         
         if( (*this)[i].data().right_basis() != (*this)[i+1].data().left_basis() )
-            throw std::runtime_error("MPSTensor mismatch\n");
-
-        //oss << "MPS site " << i << std::endl;
-        //oss << (*this)[i].row_dim() << std::endl;
-        //oss << "Sum: " << (*this)[i].row_dim().sum_of_sizes() << std::endl;
-        //oss << (*this)[i].col_dim() << std::endl;
-        //oss << "Sum: " << (*this)[i].col_dim().sum_of_sizes() << std::endl;
+        {
+            maquis::cout << "MPS site " << i << " right basis" << std::endl;
+            maquis::cout << (*this)[i].data().right_basis() << std::endl;
+            maquis::cout << "Sum: " << (*this)[i].data().right_basis().sum_of_sizes() << std::endl;
+            maquis::cout << "MPS site " << i+1 << " left basis" << std::endl;
+            maquis::cout << (*this)[i+1].data().left_basis() << std::endl;
+            maquis::cout << "Sum: " << (*this)[i+1].data().left_basis().sum_of_sizes() << std::endl;
+            throw std::runtime_error("The restored MPS is corrupt due to a bond dimension mismatch!\n");
+        }
     }
 }
 
