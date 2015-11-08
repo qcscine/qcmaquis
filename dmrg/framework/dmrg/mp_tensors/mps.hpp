@@ -47,6 +47,31 @@ std::string MPS<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::reasonable() const
+{
+    (*this)[0].reasonable();
+
+    for (int i = 0; i < length()-1; ++i)
+    {
+        (*this)[i+1].reasonable();
+
+        (*this)[i].make_left_paired();
+        (*this)[i+1].make_right_paired();
+        
+        if( (*this)[i].data().right_basis() != (*this)[i+1].data().left_basis() )
+        {
+            maquis::cout << "MPS site " << i << " right basis" << std::endl;
+            maquis::cout << (*this)[i].data().right_basis() << std::endl;
+            maquis::cout << "Sum: " << (*this)[i].data().right_basis().sum_of_sizes() << std::endl;
+            maquis::cout << "MPS site " << i+1 << " left basis" << std::endl;
+            maquis::cout << (*this)[i+1].data().left_basis() << std::endl;
+            maquis::cout << "Sum: " << (*this)[i+1].data().left_basis().sum_of_sizes() << std::endl;
+            throw std::runtime_error("The restored MPS is corrupt due to a bond dimension mismatch!\n");
+        }
+    }
+}
+
+template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS()
 : canonized_i(std::numeric_limits<size_t>::max())
 { }

@@ -356,7 +356,9 @@ namespace measurements {
 
             // if bra != ket, no transpose symmetry
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(2) schedule (dynamic,1)
+            // Intel Composer v15 patch 0 does not accept collapse(2) - FIXME! test v15 patch 5
+            //#pragma omp parallel for collapse(2) schedule (dynamic,1)
+            #pragma omp parallel for collapse(1) schedule (dynamic,1)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)

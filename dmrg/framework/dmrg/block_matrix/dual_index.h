@@ -259,6 +259,15 @@ public:
                               );
     }
 
+    std::size_t memory_size() const
+    {
+        return std::accumulate(data_.begin(), data_.end(), 0,
+                               boost::lambda::_1
+                               + boost::lambda::bind(&value_type::ls, boost::lambda::_2)
+                               * boost::lambda::bind(&value_type::rs, boost::lambda::_2)
+                              );
+    }
+
     // This is mostly forwarding of the std::vector
     iterator begin() { return data_.begin(); }
     iterator end() { return data_.end(); }

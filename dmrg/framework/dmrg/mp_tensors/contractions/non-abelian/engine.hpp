@@ -3,6 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -34,6 +35,7 @@
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op_rp.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/h_diag.hpp"
 
 #include "dmrg/mp_tensors/contractions/common/common.h"
 

@@ -96,8 +96,10 @@ public:
             }
         }
 
+        #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
         if (parms.is_set("MEASURE[ChemEntropy]"))
             measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", parms, base::lat, mps);
+        #endif
     }
 };
 

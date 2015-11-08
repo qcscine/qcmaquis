@@ -180,6 +180,10 @@ public:
             	    BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("JCD")
+                } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
+            	    BEGIN_TIMING("DAVIDSON")
+                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
+            	    END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
