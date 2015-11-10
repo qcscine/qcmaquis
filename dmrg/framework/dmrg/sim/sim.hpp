@@ -80,7 +80,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         maquis::checks::symmetry_check(parms, chkpfile);
         load(chkpfile, mps);
         maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-        mps.reasonable();
 
     } else if (!parms["initfile"].empty()) {
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
