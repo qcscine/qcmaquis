@@ -1,0 +1,10 @@
+#!/bin/bash
+
+[[ -z $1 ]] && echo "Please set the token, i.e. \"parseall log\"" && exit
+list=`ls ${1}*`
+
+for i in $list
+do
+    $ROOT_DIR/scripts/common/overseer/parse $i
+    echo
+done

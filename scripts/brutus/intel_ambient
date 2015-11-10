@@ -1,0 +1,47 @@
+#!/bin/bash
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="configure"
+# end of target states #
+PREFIX=ambient
+COMPILER=intel
+COMPILER_VERSION=13.1
+MPI_WRAPPER=mvapich2
+MPI_WRAPPER_VERSION=1.8.1
+ALPS_DIR=$HOME/opt/alps-ambient-mvapich
+
+export CC=mpicc
+export CXX=mpicxx
+
+export ALPS_ROOT=${ALPS_DIR}
+export PATH=${ALPS_DIR}/bin:${PATH}
+export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH}
+
+module purge
+module load goto2 python
+module load gcc/4.7.2
+module load ${COMPILER}/${COMPILER_VERSION}
+module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load hdf5
+module load cmake
+
+## common ##
+COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
+COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
+COMMON_AMBIENT_CPP11="-std=c++11 -gcc-name=g++-gcc-4.7.2"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
+COMMON_PLASMA_LIB_DIR="$HOME/opt/plasma-intel/lib"
+## ambient ##
+AMBIENT_ALPS_ROOT_DIR=$ALPS_ROOT
+AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
+AMBIENT_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark"
+## dmrg ##
+DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
+DMRG_ENABLE_OMP=OFF
+DMRG_BUILD_AMBIENT=ON
+DMRG_USE_AMBIENT=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=ON
+DMRG_BUILD_CUSTOMAPP=OFF
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

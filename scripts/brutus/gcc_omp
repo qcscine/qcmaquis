@@ -1,0 +1,27 @@
+#!/bin/bash
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="configure"
+# end of target states #
+PREFIX=omp
+COMPILER=gcc
+COMPILER_VERSION=4.7
+ALPS_DIR=$HOME/opt/alps-gcc
+
+export ALPS_ROOT=${ALPS_DIR}
+export PATH=${ALPS_DIR}/bin:${PATH}
+export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH}
+
+module purge
+module load ${COMPILER}/${COMPILER_VERSION}
+module load goto2 python
+module load mkl/13.0.0
+module load hdf5
+module load cmake
+
+DMRG_BLAS_LAPACK_SELECTOR="mkl_parallel"
+DMRG_ENABLE_OMP=ON
+DMRG_BUILD_MULTIGRID=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

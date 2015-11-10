@@ -1,0 +1,43 @@
+#!/bin/bash
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="build"
+# end of target states #
+PREFIX=ambient
+COMPILER=gcc
+COMPILER_VERSION=4.8.2
+MYAPPS=$SCRATCH/apps/gcc_4_8_2
+
+
+MAQUIS_INSTALL=$MYAPPS/maquis/$CONFIG_NAME
+
+echo $MAQUIS_INSTALL
+
+
+if [[ -z "$MAQUIS_ONCE" ]]
+then
+    export MAQUIS_ONCE=true
+    module switch PrgEnv-cray PrgEnv-gnu
+    module load cmake
+
+    export PLASMA_ROOT=$MYAPPS/plasma
+    export ALPS_ROOT=$MYAPPS/alps-cxx11
+    export PATH=$ALPS_ROOT/bin:$MYAPPS/hdf5/bin:$MYAPPS/bin:$PATH
+    export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
+    export CRAYPE_LINK_TYPE=dynamic
+    
+    export PATH=${MAQUIS_INSTALL}/bin:${PATH}
+
+    alias sync_maquis_deps='rsync -aut /project/s512/install.bkp/daint/apps/gcc_4_8_2/ $MYAPPS'
+fi
+
+COMMON_AMBIENT_THREADING="openmp"
+COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
+COMMON_MPI_CXX_FOUND=TRUE
+COMMON_BLAS_LAPACK_SELECTOR="manual"
+COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
+DMRG_BUILD_AMBIENT=ON
+DMRG_USE_AMBIENT=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*
