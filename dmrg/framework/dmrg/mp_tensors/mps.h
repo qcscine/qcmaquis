@@ -82,7 +82,6 @@ public:
     void move_normalization_r2l(size_t p1, size_t p2, DecompMethod method=DefaultSolver());
     
     std::string description() const;
-    void reasonable() const;
    
     template<class OtherMatrix>
     truncation_results grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
