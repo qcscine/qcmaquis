@@ -63,7 +63,7 @@ def dump_element(f,value,i,j,k,l):
     
     print i,j,k,l, "\t", (value.real, value.imag)
     fmt  = '% -020.14E'
-    f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  ('+str(fmt%value.real)+' , '++str(fmt%value.imag)+'\n')
+    f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  '+str(fmt%value.real)+'  '+str(fmt%value.imag)+'\n')
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]

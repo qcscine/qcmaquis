@@ -35,7 +35,7 @@ def dump_element(f,val_real,val_imag,i,j):
     
     print i, j, "\t", (val_real, val_imag)
     fmt  = '% -020.14E'
-    f.write(str(i)+' '+str(j)+'  ('+str(fmt%val_real)+' , '++str(fmt%val_imag)+'\n')
+    f.write(str(i)+' '+str(j)+'  '+str(fmt%val_real)+'  '+str(fmt%val_imag)+'\n')
 
 if __name__ == '__main__':
 
