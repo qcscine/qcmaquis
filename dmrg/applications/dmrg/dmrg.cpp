@@ -41,6 +41,15 @@
 
 int main(int argc, char ** argv)
 {
+    std::cout << "  QCMaquis - Quantum Chemical Density Matrix Renormalization group\n"
+              << "  available from http://www.reiher.ethz.ch/software\n"
+              << "  based on the ALPS MPS codes from http://alps.comp-phys.org/\n"
+              << "  copyright (c) 2015 Laboratory of Physical Chemistry, ETH Zurich\n"
+              << "  copyright (c) 2012-2015 by Sebastian Keller\n"
+              << "  for details see the publication: \n"
+              << "  S. Keller et al, arXiv:1510.02026\n"
+              << std::endl;
+
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
         maquis::cout.precision(10);
