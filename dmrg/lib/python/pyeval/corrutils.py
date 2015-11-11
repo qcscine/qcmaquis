@@ -42,11 +42,17 @@ def assemble_halfcorr(diag, triang):
     for i in range(L):
         ret[i,i] = diag[i]
 
-    for lab, val in zip(triang.x, triang.y[0]):
-        i = lab[0]
-        j = lab[1]
-        ret[i,j] = val
-        ret[j,i] = val
+    if len(triang.x) == 1:
+        i = 0
+        j = 1
+        ret[i,j] = triang.y[0]
+        ret[j,i] = triang.y[0]
+    else:
+        for lab, val in zip(triang.x, triang.y[0]):
+            i = lab[0]
+            j = lab[1]
+            ret[i,j] = val
+            ret[j,i] = val
 
     return ret
 
