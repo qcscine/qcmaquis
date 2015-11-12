@@ -76,15 +76,27 @@ def merge_transpose(diag, obs1, obs2):
 
     ret = np.zeros((L,L))
 
-    for lab, val in zip(obs1.x, obs1.y[0]):
-        i = lab[0]
-        j = lab[1]
-        ret[i,j] = val
+    if len(obs1.x) == 1:
+        i = 0
+        j = 1
+        ret[i,j] = obs1.y[0]
+        ret[j,i] = obs1.y[0]
+    else:
+        for lab, val in zip(obs1.x, obs1.y[0]):
+            i = lab[0]
+            j = lab[1]
+            ret[i,j] = val
 
-    for lab, val in zip(obs2.x, obs2.y[0]):
-        i = lab[0]
-        j = lab[1]
-        ret[j,i] = val
+    if len(obs2.x) == 1:
+        i = 0
+        j = 1
+        ret[i,j] = obs2.y[0]
+        ret[j,i] = obs2.y[0]
+    else:
+        for lab, val in zip(obs2.x, obs2.y[0]):
+            i = lab[0]
+            j = lab[1]
+            ret[j,i] = val
 
     return ret
 
