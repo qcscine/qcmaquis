@@ -39,8 +39,7 @@ def load_2rdm(inputfile):
     rdm.y[0] = 0.5 * rdm.y[0]
     return rdm
 
-def load_2rdm_matrix(inputfile):
-    rdm = load_2rdm(inputfile)
+def load_2rdm_matrix(rdm):
     L = rdm.props['L']
     odm = np.zeros([L,L,L,L])
 
