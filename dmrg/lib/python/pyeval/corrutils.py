@@ -103,6 +103,9 @@ def merge_transpose(diag, obs1, obs2):
 def pretty_print(mat):
     for i in range(len(mat)):
         for j in range(len(mat[i])):
-            print "{0: .5f}".format(mat[i,j]),
+            if (abs(mat[i,j]) > 1e-5):
+                print "{0: .5f}".format(mat[i,j]),
+            else:
+                print "  .     ",
 
         print ""
