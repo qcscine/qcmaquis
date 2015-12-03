@@ -176,6 +176,13 @@ class MaquisMeasurement:
             m33 = 1 - nu[i] - nd[i] + nud[i]
             m44 = nud[i]
 
+	    # make sure that in the unlikely case that one eigenvalue is 0, log(x) gives something meaningful...
+	    # meaning nothing since log(1) = 0.
+	    if m11 == 0: m11 = 1
+	    if m22 == 0: m22 = 1
+	    if m33 == 0: m33 = 1
+	    if m44 == 0: m44 = 1
+
             ret[i] = -sum(map(lambda x: x*np.log(x), [m11, m22, m33, m44]))
 
         return ret        
