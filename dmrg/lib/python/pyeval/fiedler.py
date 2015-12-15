@@ -66,14 +66,14 @@ def fiedler(L):
 
 
 #reorder mutinf according to new ordering
-def reorder(s1, mat_I, order):
-    s1 = s1[order]
+def reorder(s1, mat_I, ordering):
+    s1 = s1[ordering]
     new_mutinf = np.zeros(mat_I.shape)
     i = j = 0
-    while i < order.shape[0]:
+    while i < ordering.shape[0]:
         j = 0
-        while j < order.shape[0]:
-            new_mutinf[i,j] = mat_I[order[i],order[j]]
+        while j < ordering.shape[0]:
+            new_mutinf[i,j] = mat_I[ordering[i],ordering[j]]
             j += 1
         i += 1
     return s1, new_mutinf
@@ -137,19 +137,17 @@ if __name__ == '__main__':
     entropies = entropy.MaquisMeasurement(inputfile)
     props = DmrgInput.loadProperties(inputfile)
 
-    original_order = np.array(map(int, props["orbital_order"].split(','))) - 1
 
     #mutual information matrix:
     mat_I = entropies.I()
     #single entropy vector:
     vec_s1 = entropies.s1()
 
-    vec_s1, mat_I = reorder(vec_s1, mat_I, original_order)
+    original_order = map(int, props["orbital_order"].split(','))
    
     #plot mutual information without ordering
     t1 = 'mutual information plot from original ordering'
     mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=None)
-
 
     #primitive Fiedler ordering
     L = get_laplacian(mat_I)
@@ -163,19 +161,21 @@ if __name__ == '__main__':
     cost_old = cost_meas(mat_I)
     cost_new = cost_meas(new_mutinf)
 
-    new_order = np.array([ original_order[order[i]] for i in range(len(order)) ]) + 1
+    new_order = [original_order[order[i]] for i in range(len(order)) ]
+    for el in new_order:
+       el += 1
+ 
     print "\nFiedler ordering: "
     print new_order
 
     #plot mutual information with primitive Fiedler ordering 
     t2 = 'mutual information plot from primitive Fiedler ordering'
-    mutinf.plot_mutinf(new_mutinf, new_s1, new_order, title=None)
-
+    mutinf.plot_mutinf(mat_I, vec_s1, new_order, title=None)
 
 
     #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
     site_types = [int(x) for x in props["site_types"].split(',')[:-1]]
-    site_types = [site_types[original_order[i]] for i in range(len(site_types))]
+    site_types = [site_types[original_order[i]-1] for i in range(len(site_types))]
     
     if max(site_types) > 1:
         print "site_types", site_types
@@ -209,10 +209,10 @@ if __name__ == '__main__':
                 final_s1_1 = var1_s1
             else: j += 1
 
-        t3 = 'mutual information plot from Fiedler block ordering'
-        mutinf.plot_mutinf(final_mutinf1, final_s1_1, final_order1, title=None)
         print [site_types[final_order1[i]] for i in range(len(site_types))]
         final_order1 += 1
+        t3 = 'mutual information plot from Fiedler block ordering'
+        mutinf.plot_mutinf(mat_I, vec_s1, final_order1, title=None)
         print "\nsymmetry-respecting Fiedler ordering:"
         print final_order1
 
