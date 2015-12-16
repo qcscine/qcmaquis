@@ -50,7 +50,7 @@ namespace chem_detail {
             TwoU1PG::charge ret(0);
             ret[0] = parms["u1_total_charge1"];
             ret[1] = parms["u1_total_charge2"];
-            ret[2] = parms["irrep_charge"];
+            ret[2] = parms["irrep"];
             return ret;
         }
     };
