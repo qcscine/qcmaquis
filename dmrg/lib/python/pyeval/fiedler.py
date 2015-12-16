@@ -146,8 +146,8 @@ if __name__ == '__main__':
     original_order = map(int, props["orbital_order"].split(','))
    
     #plot mutual information without ordering
-    t1 = 'mutual information plot from original ordering'
-    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=None)
+    t1 = 'Mutual information plot for previous ordering'
+    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=t1)
 
     #primitive Fiedler ordering
     L = get_laplacian(mat_I)
@@ -169,8 +169,8 @@ if __name__ == '__main__':
     print new_order
 
     #plot mutual information with primitive Fiedler ordering 
-    t2 = 'mutual information plot from primitive Fiedler ordering'
-    mutinf.plot_mutinf(mat_I, vec_s1, new_order, title=None)
+    t2 = 'Mutual information plot for standard Fiedler ordering'
+    mutinf.plot_mutinf(mat_I, vec_s1, new_order, title=t2)
 
 
     #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
@@ -178,7 +178,6 @@ if __name__ == '__main__':
     site_types = [site_types[original_order[i]-1] for i in range(len(site_types))]
     
     if max(site_types) > 1:
-        print "site_types", site_types
         occ = np.array([0])
         for i in range(len(site_types)-1):
             if site_types[i] != site_types[i+1]:
@@ -209,10 +208,11 @@ if __name__ == '__main__':
                 final_s1_1 = var1_s1
             else: j += 1
 
+	print '\nnumber of irreducible representations in symmetry-respecting Fiedler ordering:'
         print [site_types[final_order1[i]] for i in range(len(site_types))]
         final_order1 += 1
-        t3 = 'mutual information plot from Fiedler block ordering'
-        mutinf.plot_mutinf(mat_I, vec_s1, final_order1, title=None)
+        t3 = 'Mutual information plot for symmetry-respecting Fiedler ordering'
+        mutinf.plot_mutinf(mat_I, vec_s1, final_order1, title=t3)
         print "\nsymmetry-respecting Fiedler ordering:"
         print final_order1
 
@@ -220,7 +220,7 @@ if __name__ == '__main__':
 	final_cost1 = cost_new
         print "\nNo symmetry: standard Fiedler ordering equals symmetry-respecting Fiedler ordering.\n"
 
-    print "cost measures:"
+    print "\ncost measures:"
     print "standard ordering: ", cost_old
     print "Fiedler ordering: ", cost_new
     print "symmetry-respecting Fiedler ordering: ", final_cost1
