@@ -149,16 +149,16 @@ class MaquisMeasurement:
         pq_dm_matrix[3,12] = self.corr_trans_pair[p,q]
         pq_dm_matrix[12,3] = pq_dm_matrix[3,12]
 
-        pq_dm_matrix[6,12] = -self.corr_trans_up_down2[p,q] + self.corr_trans_up[p,q]
+        pq_dm_matrix[6,12] = -(-self.corr_trans_up_down2[p,q] + self.corr_trans_up[p,q])
         pq_dm_matrix[12,6] = pq_dm_matrix[6,12]
 
-        pq_dm_matrix[9,12] = self.corr_trans_down_up2[p,q] - self.corr_trans_down[p,q]
+        pq_dm_matrix[9,12] = -(self.corr_trans_down_up2[p,q] - self.corr_trans_down[p,q])
         pq_dm_matrix[12,9] = pq_dm_matrix[9,12]
 
-        pq_dm_matrix[7,13] = self.corr_trans_up[p,q]
+        pq_dm_matrix[7,13] = -self.corr_trans_up[p,q]
         pq_dm_matrix[13,7] = pq_dm_matrix[7,13]
 
-        pq_dm_matrix[11,14] = self.corr_trans_down[p,q]
+        pq_dm_matrix[11,14] = -self.corr_trans_down[p,q]
         pq_dm_matrix[14,11] = pq_dm_matrix[11,14]
         
         #print "pqmatrix[3,3]{0},{1}".format(p,q), "and", "pqmatrix[12,12]{0},{1}".format(p,q), pq_dm_matrix[3,3], pq_dm_matrix[12,12]
@@ -176,6 +176,13 @@ class MaquisMeasurement:
             m22 = nd[i] - nud[i]
             m33 = 1 - nu[i] - nd[i] + nud[i]
             m44 = nud[i]
+
+	    # make sure that in the unlikely case that one eigenvalue is 0, log(x) gives something meaningful...
+	    # meaning nothing since log(1) = 0.
+	    if m11 == 0: m11 = 1
+	    if m22 == 0: m22 = 1
+	    if m33 == 0: m33 = 1
+	    if m44 == 0: m44 = 1
 
             ret[i] = -sum(map(lambda x: x*np.log(x), [m11, m22, m33, m44]))
 

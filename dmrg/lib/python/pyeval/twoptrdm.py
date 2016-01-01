@@ -30,6 +30,8 @@
 import sys
 import pyalps
 
+import numpy as np
+
 #import numpy as np
 def load_2rdm(inputfile):
     # load data from the HDF5 result file
@@ -38,6 +40,28 @@ def load_2rdm(inputfile):
     # uncomment for CASPT2 comparison
     # rdm.y[0] = rdm.y[0]
     return rdm
+
+def load_2rdm_matrix(rdm):
+    L = rdm.props['L']
+    odm = np.zeros([L,L,L,L])
+
+    for lab, val in zip(rdm.x, rdm.y[0]):
+        i = lab[0]
+        j = lab[1]
+        k = lab[2]
+        l = lab[3]
+
+        odm[i,j,k,l] = val
+
+        if l!=k:
+            odm[j,i,l,k] = val
+
+        if not min(i,j) == min(l,k):
+            odm[k,l,i,j] = val
+            if k!=l:
+                odm[l,k,j,i] = val
+
+    return odm
 
 def print_2rdm(rdm):
     fmt = '% -016.10E'

@@ -66,14 +66,14 @@ def fiedler(L):
 
 
 #reorder mutinf according to new ordering
-def reorder(s1, mat_I, order):
-    s1 = s1[order]
+def reorder(s1, mat_I, ordering):
+    s1 = s1[ordering]
     new_mutinf = np.zeros(mat_I.shape)
     i = j = 0
-    while i < order.shape[0]:
+    while i < ordering.shape[0]:
         j = 0
-        while j < order.shape[0]:
-            new_mutinf[i,j] = mat_I[order[i],order[j]]
+        while j < ordering.shape[0]:
+            new_mutinf[i,j] = mat_I[ordering[i],ordering[j]]
             j += 1
         i += 1
     return s1, new_mutinf
@@ -137,15 +137,18 @@ if __name__ == '__main__':
     entropies = entropy.MaquisMeasurement(inputfile)
     props = DmrgInput.loadProperties(inputfile)
 
-    original_order = np.array(map(int, props["orbital_order"].split(','))) - 1
 
     #mutual information matrix:
     mat_I = entropies.I()
     #single entropy vector:
     vec_s1 = entropies.s1()
 
-    vec_s1, mat_I = reorder(vec_s1, mat_I, original_order)
-    
+    original_order = map(int, props["orbital_order"].split(','))
+   
+    #plot mutual information without ordering
+    t1 = 'Mutual information plot for previous ordering'
+    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=t1)
+
     #primitive Fiedler ordering
     L = get_laplacian(mat_I)
     fiedler_vec = fiedler(L)
@@ -158,60 +161,70 @@ if __name__ == '__main__':
     cost_old = cost_meas(mat_I)
     cost_new = cost_meas(new_mutinf)
 
-    site_types = [int(x) for x in props["site_types"].split(',')[:-1]]
-    site_types = [site_types[original_order[i]] for i in range(len(site_types))]
-    print "site_types", site_types
-    
-    #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
-
-    occ = np.array([0])
-    for i in range(len(site_types)-1):
-        if site_types[i] != site_types[i+1]:
-            occ = np.append(occ, np.array([i+1]))
-    occ = np.append(occ, np.array(len(site_types)))
-
-    var1_mutinf = mat_I
-    final_order1 = original_order
-    final_mutinf1 = mat_I
-    final_s1_1 = vec_s1
-    final_cost1 = cost_old
-    j = 0
-    while j < 5:
-        cond_mutinf = condense(var1_mutinf, len(occ) - 1, occ)
-        L_cond = get_laplacian(cond_mutinf)
-        cond_fv = fiedler(L_cond)
-        order1 = cond_fv.argsort()
-        c_new_s1, c_new_mutinf = reorder(cond_mutinf[:,1], cond_mutinf, order1)
-        block_reord, occ_new = block_order(mat_I.shape[0], occ,order1)
-        block_s1, block_mutinf = reorder(vec_s1, mat_I, block_reord)
-        blocked_f_order = bfo_gfv(occ_new, order)
-        var1_s1, var1_mutinf = reorder(vec_s1, mat_I, blocked_f_order)
-        
-        if cost_meas(var1_mutinf) < final_cost1:
-            final_cost1 = cost_meas(var1_mutinf)
-            final_mutinf1 = var1_mutinf
-            final_order1 = blocked_f_order
-            final_s1_1 = var1_s1
-        else: j += 1
-        
-    print cost_old, cost_new, final_cost1
-
-    new_order = np.array([ original_order[order[i]] for i in range(len(order)) ]) + 1
+    new_order = [original_order[order[i]] for i in range(len(order)) ]
+    for el in new_order:
+       el += 1
+ 
+    print "\nFiedler ordering: "
     print new_order
-    
-    print [site_types[final_order1[i]] for i in range(len(site_types))]
 
-    final_order1 += 1
-    print final_order1
+    #plot mutual information with primitive Fiedler ordering 
+    t2 = 'Mutual information plot for standard Fiedler ordering'
+    mutinf.plot_mutinf(mat_I, vec_s1, new_order, title=t2)
+
+
+    #Fiedler ordering with symmetry blocks: variant 1 -> in-block ordering according to global Fiedler vector
+    site_types = [int(x) for x in props["site_types"].split(',')[:-1]]
+    site_types = [site_types[original_order[i]-1] for i in range(len(site_types))]
+    
+    if max(site_types) > 1:
+        occ = np.array([0])
+        for i in range(len(site_types)-1):
+            if site_types[i] != site_types[i+1]:
+                occ = np.append(occ, np.array([i+1]))
+        occ = np.append(occ, np.array(len(site_types)))
+ 
+        var1_mutinf = mat_I
+        final_order1 = original_order
+        final_mutinf1 = mat_I
+        final_s1_1 = vec_s1
+        final_cost1 = cost_old
+        j = 0
+        while j < 5:
+            cond_mutinf = condense(var1_mutinf, len(occ) - 1, occ)
+            L_cond = get_laplacian(cond_mutinf)
+            cond_fv = fiedler(L_cond)
+            order1 = cond_fv.argsort()
+            c_new_s1, c_new_mutinf = reorder(cond_mutinf[:,1], cond_mutinf, order1)
+            block_reord, occ_new = block_order(mat_I.shape[0], occ,order1)
+            block_s1, block_mutinf = reorder(vec_s1, mat_I, block_reord)
+            blocked_f_order = bfo_gfv(occ_new, order)
+            var1_s1, var1_mutinf = reorder(vec_s1, mat_I, blocked_f_order)
+            
+            if cost_meas(var1_mutinf) < final_cost1:
+                final_cost1 = cost_meas(var1_mutinf)
+                final_mutinf1 = var1_mutinf
+                final_order1 = blocked_f_order
+                final_s1_1 = var1_s1
+            else: j += 1
+
+	print '\nnumber of irreducible representations in symmetry-respecting Fiedler ordering:'
+        print [site_types[final_order1[i]] for i in range(len(site_types))]
+        final_order1 += 1
+        t3 = 'Mutual information plot for symmetry-respecting Fiedler ordering'
+        mutinf.plot_mutinf(mat_I, vec_s1, final_order1, title=t3)
+        print "\nsymmetry-respecting Fiedler ordering:"
+        print final_order1
+
+    else:
+	final_cost1 = cost_new
+        print "\nNo symmetry: standard Fiedler ordering equals symmetry-respecting Fiedler ordering.\n"
+
+    print "\ncost measures:"
+    print "standard ordering: ", cost_old
+    print "Fiedler ordering: ", cost_new
+    print "symmetry-respecting Fiedler ordering: ", final_cost1
+
 
     #plotting
-    t1 = 'mutual information plot from original ordering'
-    mutinf.plot_mutinf(mat_I, vec_s1, original_order, title=None)
-
-    t2 = 'mutual information plot from primitive Fiedler ordering'
-    mutinf.plot_mutinf(new_mutinf, new_s1, new_order, title=None)
-
-    t3 = 'mutual information plot from Fiedler block ordering'
-    mutinf.plot_mutinf(final_mutinf1, final_s1_1, final_order1, title=None)
-
     plt.show()
