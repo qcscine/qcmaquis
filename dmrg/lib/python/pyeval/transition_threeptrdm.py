@@ -56,8 +56,6 @@ def print_3rdm(rdm,tag1,tag2):
         if i == j and i == k: continue 
         if l == m and l == n: continue
 
-        print i,j,k,l,m,n, fmt%val
-
         # 6 permutations (dealing with the transition 3-RDM)
         dump_element(f,val,i,j,k,l,m,n)
         dump_element(f,val,i,k,j,l,n,m)
