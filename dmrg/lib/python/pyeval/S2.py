@@ -33,22 +33,22 @@ import pyalps
 class spinMeasurement:
 
     def __init__(self, inputfile):
-    self.loc_nup          = pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0].y[0]
-    self.loc_ndown        = pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0].y[0]
-    self.loc_nupdown      = pyalps.loadEigenstateMeasurements([inputfile], what='Nupdown')[0][0].y[0]
+        self.loc_nup          = pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0].y[0]
+        self.loc_ndown        = pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0].y[0]
+        self.loc_nupdown      = pyalps.loadEigenstateMeasurements([inputfile], what='Nupdown')[0][0].y[0]
 
-    self.loc_nup_nup      = pyalps.loadEigenstateMeasurements([inputfile], what='nupnup')[0][0].y[0]
-    self.loc_ndown_nup    = pyalps.loadEigenstateMeasurements([inputfile], what='nupndown')[0][0].y[0]
-    self.loc_nup_ndown    = pyalps.loadEigenstateMeasurements([inputfile], what='ndownnup')[0][0].y[0]
-    self.loc_ndown_ndown  = pyalps.loadEigenstateMeasurements([inputfile], what='ndownndown')[0][0].y[0]
-    self.loc_splus_sminus = pyalps.loadEigenstateMeasurements([inputfile], what='splus_sminus')[0][0].y[0]
+        self.loc_nup_nup      = pyalps.loadEigenstateMeasurements([inputfile], what='nupnup')[0][0].y[0]
+        self.loc_ndown_nup    = pyalps.loadEigenstateMeasurements([inputfile], what='nupndown')[0][0].y[0]
+        self.loc_nup_ndown    = pyalps.loadEigenstateMeasurements([inputfile], what='ndownnup')[0][0].y[0]
+        self.loc_ndown_ndown  = pyalps.loadEigenstateMeasurements([inputfile], what='ndownndown')[0][0].y[0]
+        self.loc_splus_sminus = pyalps.loadEigenstateMeasurements([inputfile], what='splus_sminus')[0][0].y[0]
 
     def sminusplus(self):
         nupdown   = self.loc_nupdown
         ndown     = self.loc_ndown
         splusminus = self.loc_splus_sminus
 
-        return (sum(ndown) - sum(nupdown) + 2*sum(splus_sminus))
+        return (sum(ndown) - sum(nupdown) + 2*sum(splusminus))
 
     def sz2(self):
         nup         = self.loc_nup
@@ -68,7 +68,7 @@ class spinMeasurement:
 
         return (0.5*(sum(nup) - sum(ndown)))
 
-    S2 = sminusplus + s_z2 + s_z
+    #S2 = self.sminusplus() + self.s_z2() + self.s_z()
 
 
 if __name__ == '__main__':
