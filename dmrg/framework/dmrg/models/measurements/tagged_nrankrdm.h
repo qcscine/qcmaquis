@@ -393,7 +393,7 @@ namespace measurements {
                                 // Loop over operator terms that are measured synchronously and added together
                                 // Used e.g. for the spin combos of the 3-RDM
                                 typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                                bool checkpass = false;
+                                bool measured = false;
                                 for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
     
                                     tag_vec operators(6);
@@ -406,15 +406,15 @@ namespace measurements {
     
                                     // check if term is allowed by symmetry
                                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                                    if(checkpass || measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                                    {
-                                        checkpass = true;
-                                        MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                        value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                                    }
-                                    else break;
+                                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                         continue;
+                                    measured = true;
+    
+                                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                    value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+
                                 }
-                                if(checkpass)
+                                if(measured)
                                 {
                                     dct.push_back(value);
                                     num_labels.push_back(positions);
@@ -574,7 +574,7 @@ namespace measurements {
                                               // Loop over operator terms that are measured synchronously and added together
                                               // Used e.g. for the 16 spin combos of the 4-RDM
                                               typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                                              bool checkpass = false;
+                                              bool measured = false;
                                               for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
      
                                                   tag_vec operators(8);
@@ -589,19 +589,25 @@ namespace measurements {
      
                                                   // check if term is allowed by symmetry
                                                   term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                                                  if(checkpass || measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                                                  {
-                                                      checkpass = true;
-                                                      MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                                      value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                                                  }
-                                                  else break;
+                                                  if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                                       continue;
+                                                  measured = true;
+     
+                                                  MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                                  typename MPS<Matrix, SymmGroup>::scalar_type local_value = expval(ket_mps_local, ket_mps_local, mpo);
+                                                  //maquis::cout << "synop term " << synop+1 << "--> local value: " << local_value << std::endl;
+                                                  //value += operator_terms[synop].second * expval(ket_mps_local, ket_mps_local, mpo);
+                                                  value += operator_terms[synop].second * local_value;
+
                                               }
-                                              if(checkpass)
+                                              if(measured)
                                               {
                                                   // debug print
-                                                  std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                                  maquis::cout << " " << value << std::endl;
+                                                  if (std::abs(value) > 0)
+                                                  {
+                                                      std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                                      maquis::cout << " " << value << std::endl;
+                                                  }
                                                   // defines position vector for contracted spin-free 4-RDM element
                                                   //pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
                                                   //pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
