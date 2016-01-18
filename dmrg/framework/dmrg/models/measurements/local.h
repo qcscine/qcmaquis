@@ -127,7 +127,7 @@ namespace measurements {
             if (this->is_super_meas)
                 nn = dm_trace(mps, this->phys_psi);
             
-            /// collect results from all mpo terms
+            /// collect results from all mpo terms, i.e. all requested combinations of operators.
             for (typename std::vector<bond_element>::const_iterator it = mpo_terms.begin(); it != mpo_terms.end(); ++it) {
                 typedef std::map<std::string, MPO<Matrix, SymmGroup> > mpo_map;
                 mpo_map mpos = meas_prepare::local<Matrix, SymmGroup>(lattice, identities, fillings, *it);

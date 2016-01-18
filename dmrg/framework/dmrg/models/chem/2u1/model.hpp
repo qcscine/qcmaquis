@@ -58,6 +58,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
          count_up_op, count_down_op, count_up_down_op, docc_op, e2d_op, d2e_op,
+         d2u_op, u2d_op,
          ident_op, fill_op;
 
     ident_op.insert_block(Matrix(1, 1, 1), A, A);
@@ -102,6 +103,10 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     gemm(destroy_down_op, fill_op, tmp);
     destroy_down_op = tmp;
 
+    /// stknecht: needed for special 1-TDMs
+    gemm(destroy_down_op, create_up_op, d2u_op); // S_plus
+    gemm(destroy_up_op, create_down_op, u2d_op); // S_minus
+
     // only effective if point group symmetry is active, need to adapt operators to different irreps
     #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
@@ -117,6 +122,9 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     GENERATE_SITE_SPECIFIC(d2e_op)
     GENERATE_SITE_SPECIFIC(docc_op)
     GENERATE_SITE_SPECIFIC(count_up_down_op)
+
+    GENERATE_SITE_SPECIFIC(d2u_op)
+    GENERATE_SITE_SPECIFIC(u2d_op)
 
     #undef GENERATE_SITE_SPECIFIC
 
@@ -137,7 +145,10 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
-    REGISTER(count_up_down,         tag_detail::bosonic)
+    REGISTER(count_up_down,tag_detail::bosonic)
+
+    REGISTER(d2u,          tag_detail::bosonic)
+    REGISTER(u2d,          tag_detail::bosonic)
 
     #undef REGISTER
     /**********************************************************************/
