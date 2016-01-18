@@ -165,9 +165,6 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
-    maquis::cout << "Measurements." << std::endl;
-//  for (typename measurements_type::iterator m = meas.begin(); m != meas.end(); ++m)
-//	maquis::cout << m->name << std::endl;
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
 
     // TODO: move into special measurement
