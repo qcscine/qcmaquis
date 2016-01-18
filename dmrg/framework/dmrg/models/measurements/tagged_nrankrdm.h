@@ -190,8 +190,18 @@ namespace measurements {
                     throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
             }
 
-            if (operator_terms[0].first.size() == 2)
-                measure_correlation(bra_mps, ket_mps);
+            if (operator_terms[0].first.size() == 2)//{
+                //if(half_only)
+                    measure_correlation(bra_mps, ket_mps);
+                //else{
+                    //detail::CorrPermutator<Matrix, SymmGroup> perm(ops[0], is_nn);
+                    //for (int i=0; i<perm.size(); ++i) {
+                    //   std::vector<bond_element> perm_ops;
+                    //   perm_ops.push_back(perm[i]);
+                    //   measure_correlation(bra_mps, ket_mps, perm_ops, perm.order(i));
+                    //}
+                //}
+            //}
             else if (operator_terms[0].first.size() == 4)
                 measure_2rdm(bra_mps, ket_mps);
             else if (operator_terms[0].first.size() == 6)

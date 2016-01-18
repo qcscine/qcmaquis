@@ -114,6 +114,10 @@ public:
             return d2e[type];
         else if (name == "docc")
             return docc[type];
+	else if (name == "d2u")
+            return d2u[type];
+        else if (name == "u2d")
+            return u2d[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -208,6 +212,14 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
+        boost::regex expression_transition_oneptdm_uu("^MEASURE\\[1tdm_aa\\]");
+        boost::regex expression_oneptdm_dd("^MEASURE\\[1rdm_bb\\]");
+        boost::regex expression_transition_oneptdm_dd("^MEASURE\\[1tdm_bb\\]");
+        boost::regex expression_oneptdm_ud("^MEASURE\\[1rdm_ab\\]");
+        boost::regex expression_transition_oneptdm_ud("^MEASURE\\[1tdm_ab\\]");
+        boost::regex expression_oneptdm_du("^MEASURE\\[1rdm_ba\\]");
+        boost::regex expression_transition_oneptdm_du("^MEASURE\\[1tdm_ba\\]");
         boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
@@ -643,6 +655,110 @@ public:
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_uu) ||
+                     boost::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[1tdm_aa]"){
+                    name = "transition_oneptdm_aa";
+                    bra_ckp = it->value();
+                    half_only = false;
+                }
+                else{
+                    name = "oneptdm_aa";
+                    half_only = true;
+                }
+
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_dd) ||
+                     boost::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[1tdm_bb]"){
+                    name = "transition_oneptdm_bb";
+                    bra_ckp = it->value();
+                    half_only = false;
+                }
+                else{
+                    name = "oneptdm_bb";
+                    half_only = true;
+                }
+
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_ud) ||
+                     boost::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[1tdm_ab]"){
+                    name = "transition_oneptdm_ab";
+                    bra_ckp = it->value();
+                    half_only = false;
+                }
+                else{
+                    name = "oneptdm_ab";
+                    half_only = true;
+                }
+
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_du) ||
+                     boost::regex_match(lhs, what, expression_transition_oneptdm_du)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[1tdm_ba]"){
+                    name = "transition_oneptdm_ba";
+                    bra_ckp = it->value();
+                    half_only = false;
+                }
+                else{
+                    name = "oneptdm_ba";
+                    half_only = true;
+                }
+
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
 
             else if (!name.empty()) {
 
@@ -755,7 +871,8 @@ private:
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,
-                          count_up, count_down, count_up_down, docc, e2d, d2e;
+                          count_up, count_down, count_up_down, docc, e2d, d2e,
+			  d2u, u2d;
 
     typename SymmGroup::subcharge max_irrep;
 
