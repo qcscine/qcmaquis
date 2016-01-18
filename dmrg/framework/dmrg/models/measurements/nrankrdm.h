@@ -88,12 +88,28 @@ namespace measurements {
                     throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
             }
 
-            if (ops[0].size() == 2)
-                measure_correlation(bra_mps, ket_mps, ops);
+            if (ops[0].size() == 2){
+                if(half_only)
+                    measure_correlation(bra_mps, ket_mps, ops);
+                else{
+			  //measure_correlation(bra_mps, ket_mps, ops);
+                    //swap(ops[0][0],ops[0][1]);
+      		  //measure_correlation(bra_mps, ket_mps, ops);
+                    detail::CorrPermutator<Matrix, SymmGroup> perm(ops[0], is_nn);
+                    for (int i=0; i<perm.size(); ++i) {
+                       std::vector<bond_element> perm_ops;
+                       perm_ops.push_back(perm[i]);
+                       measure_correlation(bra_mps, ket_mps, perm_ops, perm.order(i));
+                    }
+                }
+            }
             else if (ops[0].size() == 4)
                 measure_2rdm(bra_mps, ket_mps, ops);
+            else if (ops[0].size() == 6)
+                measure_3rdm(bra_mps, ket_mps, ops);
             else
-                throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
+                throw std::runtime_error("correlation measurements at the moment supported with up to 6 operators, you have "
+                                          + boost::lexical_cast<std::string>(ops[0].size()) + "\n");
         }
         
     protected:
@@ -207,6 +223,67 @@ namespace measurements {
                     this->labels.reserve(this->labels.size() + dct.size());
                     std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                     }
+                }
+            }
+        }
+
+        void measure_3rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
+                          MPS<Matrix, SymmGroup> const & ket_mps,
+                          std::vector<bond_element> const & ops,
+                          std::vector<pos_t> const & order = std::vector<pos_t>())
+        {
+            // Test if a separate bra state has been specified
+            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+
+            // TODO: test with ambient in due time
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for collapse(2)
+            #endif
+            //throw std::runtime_error("stefan: 3RDM measurement not yet supported");
+            for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
+            for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
+            for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
+            for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
+            for (pos_t p5 = 0; p5 < lattice.size(); ++p5)
+            {
+                // Measurement positions p1,p2,p3,p4,p5 are fixed
+                std::vector<pos_t> ref;
+                ref.push_back(p1); ref.push_back(p2); ref.push_back(p3); ref.push_back(p4); ref.push_back(p5);
+
+                // ops[0] is the first set of 6 operators that will be measured 
+                maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[0], ref, true));
+                MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
+                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
+
+                // Loop over operator terms that are measured synchronously and added together
+                // Used e.g. for the four spin combos of the 2-RDM
+                for (std::size_t synop = 1; synop < ops.size(); ++synop) {
+                    maker_ptr syndcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[synop], ref, true));
+
+                    // measure
+                    MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
+                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(bra_mps, ket_mps, synmpo);
+
+                    // add synchronous terms
+                    std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
+                                   std::plus<typename MPS<Matrix, SymmGroup>::scalar_type>());
+                }
+                
+                // the label consists of p1,...,p5; the 6th label is implicit, because terms are in order
+                std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
+                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                // save results and labels
+                #ifdef MAQUIS_OPENMP
+                #pragma omp critical
+                #endif
+                {
+                this->vector_results.reserve(this->vector_results.size() + dct.size());
+                std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                this->labels.reserve(this->labels.size() + dct.size());
+                std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                 }
             }
         }
