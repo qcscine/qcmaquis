@@ -35,7 +35,7 @@
 
 #ifdef PDENSE
     #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> > Matrix;
+    typedef ambient::tiles<ambient::matrix<dmrg_value_type> > Matrix;
 #endif
 
 #ifdef DENSE

@@ -1,9 +1,9 @@
 /*****************************************************************************
  *
- * ALPS MPS DMRG Project
+ * QCMaquis DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -55,6 +55,43 @@ namespace chem_detail {
         }
     };
 
+    template <>
+    struct qn_helper<U1DG>
+    {
+        U1DG::charge total_qn(BaseParameters & parms)
+        {
+            U1DG::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["irrep"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<SU2U1>
+    {
+        SU2U1::charge total_qn(BaseParameters & parms)
+        {
+            SU2U1::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["spin"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<SU2U1PG>
+    {
+        SU2U1PG::charge total_qn(BaseParameters & parms)
+        {
+            SU2U1PG::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["spin"];
+            ret[2] = parms["irrep"];
+            return ret;
+        }
+    };
+
     class IndexTuple : public NU1Charge<4>
     {
     public:
@@ -64,6 +101,7 @@ namespace chem_detail {
         }
     };
 
+	template <class SymmGroup>
     inline IndexTuple align(int i, int j, int k, int l) {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
@@ -72,8 +110,14 @@ namespace chem_detail {
         return IndexTuple(i,j,k,l);
     }
     
+	template <>
+    inline IndexTuple align<U1DG>(int i, int j, int k, int l) {
+        return IndexTuple(i,j,k,l);
+    }
+    
+	template <class SymmGroup>
     inline IndexTuple align(IndexTuple const & rhs) {
-        return align(rhs[0], rhs[1], rhs[2], rhs[3]);
+        return align<SymmGroup>(rhs[0], rhs[1], rhs[2], rhs[3]);
     }
 
     inline int sign(IndexTuple const & idx)
@@ -119,6 +163,13 @@ namespace chem_detail {
             for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
         }
     };
+
+    template <class T>
+    void append(std::vector<T> & target, std::vector<T> const & source)
+    {
+        std::copy(source.begin(), source.end(), std::back_inserter(target));
+    }
+
 }
 
 #endif

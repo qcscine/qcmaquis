@@ -37,7 +37,7 @@
 #define scalar_type     typename matrix<T,A>::scalar_type
 #define difference_type typename matrix<T,A>::difference_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template<typename T, class A>
     bool is_hermitian(const matrix<T,A>& a)
@@ -74,7 +74,7 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     inline void touch(const diagonal_matrix<T>& a){
-        kernels::template touch<T,ambient::default_allocator<T> >(a); 
+        kernels::template touch<T,default_allocator>(a); 
     }
 
     template <typename T, class A>
@@ -84,7 +84,7 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     inline void migrate(diagonal_matrix<T>& a){
-        kernels::template migrate<T,ambient::default_allocator<T> >(a); 
+        kernels::template migrate<T,default_allocator>(a); 
     }
 
     template <typename T, class A>
@@ -94,7 +94,7 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     inline void hint(const diagonal_matrix<T>& a){
-        kernels::template hint<T,ambient::default_allocator<T> >(a); 
+        kernels::template hint<T,default_allocator>(a); 
     }
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
@@ -105,7 +105,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
-        if(ambient::weak(a) || ambient::weak(b)) return;
+        if(ambient::weak(a) || ambient::weak(b)) return; // c isn't cleared
         kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>(a, b, c);
     }
 

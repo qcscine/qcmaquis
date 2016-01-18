@@ -69,14 +69,14 @@ namespace storage {
     };
 }
 #ifdef USE_AMBIENT
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
     template <typename Matrix, int IB> class tiles;
     template <typename T, class Allocator> class matrix;
 } }
 namespace storage {
     template<typename T> 
-    struct constrained<ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > > {
-        typedef ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > type;
+    struct constrained<ambient::tiles<ambient::matrix<T> > > {
+        typedef ambient::tiles<ambient::matrix<T> > type;
     };
 }
 #endif
@@ -112,12 +112,12 @@ namespace storage {
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
-                        char* data = (char*)ambient::naked(m.tile(i,j));
+                        if(ambient::ext::naked(m.tile(i,j)).state != ambient::locality::local) continue;
+                        char* data = (char*)ambient::ext::naked(m.tile(i,j));
                         ofs.write(data, m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
                                   sizeof(typename Matrix::value_type)/sizeof(char));
                         std::free(data);
-                        ambient::naked(m.tile(i,j)).data = NULL;
+                        ambient::ext::naked(m.tile(i,j)).data = NULL;
                     }
 #else
                     for (std::size_t c = 0; c < num_cols(m); ++c)
@@ -149,9 +149,9 @@ namespace storage {
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
-                        ambient::naked(m.tile(i,j)).data = std::malloc(ambient::naked(m.tile(i,j)).spec.extent);
-                        ifs.read((char*)ambient::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
+                        if(ambient::ext::naked(m.tile(i,j)).state != ambient::locality::local) continue;
+                        ambient::ext::naked(m.tile(i,j)).data = std::malloc(ambient::ext::naked(m.tile(i,j)).spec.extent);
+                        ifs.read((char*)ambient::ext::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
                                  sizeof(typename Matrix::value_type)/sizeof(char));
                     }
 #else
@@ -183,9 +183,9 @@ namespace storage {
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
-                        char* data = (char*)ambient::naked(m.tile(i,j)); std::free(data);
-                        ambient::naked(m.tile(i,j)).data = NULL;
+                        if(ambient::ext::naked(m.tile(i,j)).state != ambient::locality::local) continue;
+                        char* data = (char*)ambient::ext::naked(m.tile(i,j)); std::free(data);
+                        ambient::ext::naked(m.tile(i,j)).data = NULL;
                     }
 #else
                     o[b][k] = Matrix();
@@ -227,10 +227,11 @@ namespace storage {
         template<class T> class serializable : public descriptor {
         public: 
             ~serializable(){
-                std::remove(disk::fp(sid).c_str()); // it will return 1 in case the file does not exist, but we do not care.
+                if (dumped) std::remove(disk::fp(sid).c_str()); // only delete existing file, too slow otherwise on NFS or similar
             }
             serializable& operator = (const serializable& rhs){
                 this->join();
+                if(dumped) std::remove(disk::fp(sid).c_str());
                 descriptor::operator=(rhs);
                 return *this;
             }
@@ -259,7 +260,7 @@ namespace storage {
                 assert(this->state != prefetching); // evict of prefetched
             }
             void drop(){
-                std::remove(disk::fp(sid).c_str());
+                if(dumped) std::remove(disk::fp(sid).c_str());
                 if(state == core) drop_request<T>(disk::fp(sid), (T*)this)();
                 assert(this->state != storing);     // drop of already stored data
                 assert(this->state != uncore);      // drop of already stored data

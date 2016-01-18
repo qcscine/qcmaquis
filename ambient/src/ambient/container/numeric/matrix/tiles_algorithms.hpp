@@ -31,7 +31,6 @@
 #include "ambient/container/numeric/matrix/tiles.h"
 #include "ambient/container/iterator/block_pair_iterator.hpp"
 #include "ambient/utils/reduce.hpp"
-#include <utility>
 
 #define value_type      typename tiles<Matrix, IB>::value_type
 #define size_type       typename tiles<Matrix, IB>::size_type
@@ -39,7 +38,7 @@
 #define scalar_type     typename tiles<Matrix, IB>::scalar_type
 #define allocator_type  typename tiles<Matrix, IB>::allocator_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template<class Matrix, int IB>
     bool is_hermitian(const tiles<Matrix, IB>& a){
@@ -103,7 +102,7 @@ namespace ambient { namespace numeric {
 
         tiles<diagonal_matrix<value_type>, IB> S(n,n), S1(n,n); 
 
-        for(size_t k = 0; k < Sv.data.size(); ++k)
+        for(size_t k = 0; k < Sv.num_tiles(); ++k)
              ambient::numeric::kernels::template cast_double_complex<value_type,double>(S[k],Sv[k]); //can be complex/double or double/double
 
         S1 = expi(S,alfa); 
@@ -129,7 +128,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, int IB>
     inline void conj_inplace(tiles<Matrix, IB>& a){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++)
             conj_inplace(a[i]);
     }
@@ -175,7 +174,7 @@ namespace ambient { namespace numeric {
     
     template<class Matrix, int IB>
     inline void merge(const tiles<Matrix, IB>& a){
-        if(a.data.size() == 1) return;
+        if(a.num_tiles() == 1) return;
 
         std::vector<Matrix*> m; 
         m.push_back(new Matrix(a.rows, a.cols));
@@ -193,7 +192,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, int IB>
     inline void split(const tiles<Matrix, IB>& a){
-        if(a.data.size() != 1) return;
+        if(a.num_tiles() != 1) return;
         if(a.mt == 1 && a.nt == 1) return;
 
         std::vector<Matrix*> s;
@@ -228,7 +227,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, int IB>
     inline void merge(const tiles<diagonal_matrix<T>, IB>& a){
-        if(a.data.size() == 1) return;
+        if(a.num_tiles() == 1) return;
 
         std::vector<diagonal_matrix<T> *> m; 
         m.push_back(new diagonal_matrix<T>(a.size, a.size));
@@ -244,7 +243,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, int IB>
     inline void split(const tiles<diagonal_matrix<T>, IB>& a){
-        if(a.data.size() != 1) return;
+        if(a.num_tiles() != 1) return;
         if(a.nt == 1) return;
 
         std::vector<diagonal_matrix<T> *> s;
@@ -712,7 +711,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, int IB>
     inline void sqrt_inplace(tiles<diagonal_matrix<T>, IB>& a){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             sqrt_inplace(a[i]);
         }
@@ -727,7 +726,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, int IB>
     inline void exp_inplace(tiles<diagonal_matrix<T>, IB>& a, const T& alfa = 1.){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             exp_inplace(a[i], alfa);
         }
@@ -822,7 +821,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, int IB>
     inline void generate(tiles<Matrix, IB>& a){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             fill_random(a[i]);
         }
@@ -843,7 +842,7 @@ namespace ambient { namespace numeric {
 
     template <class MatrixA, class MatrixB, int IB>
     inline void add_inplace(tiles<MatrixA, IB>& lhs, const tiles<MatrixB, IB>& rhs){
-        int size = lhs.data.size();
+        int size = lhs.num_tiles();
         for(int i = 0; i < size; i++){
             lhs[i] += rhs[i];
         }
@@ -851,7 +850,7 @@ namespace ambient { namespace numeric {
 
     template <class MatrixA, class MatrixB, int IB>
     inline void sub_inplace(tiles<MatrixA, IB>& lhs, const tiles<MatrixB, IB>& rhs){ 
-        int size = lhs.data.size();
+        int size = lhs.num_tiles();
         for(int i = 0; i < size; i++){
             lhs[i] -= rhs[i];
         }
@@ -860,7 +859,7 @@ namespace ambient { namespace numeric {
     template <class Matrix, int IB>
     inline void mul_inplace(tiles<Matrix, IB>& a, const scalar_type& rhs) {
         if((value_type)rhs == 1.) return; // gcc debug knob + early out
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             a[i] *= rhs;
         }
@@ -869,14 +868,14 @@ namespace ambient { namespace numeric {
     template <class Matrix, int IB>
     inline void div_inplace(tiles<Matrix, IB>& a, const scalar_type& rhs){
         if((value_type)rhs == 1.) return; // gcc debug knob + early out
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++)
             a[i] /= rhs;
     }
  
     template <class Matrix, int IB>
     std::ostream& operator << (std::ostream& o, const tiles<Matrix, IB>& a){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++)
             o << a[i];
         return o;

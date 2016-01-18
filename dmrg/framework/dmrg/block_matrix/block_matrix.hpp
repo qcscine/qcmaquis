@@ -35,7 +35,7 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix() 
+block_matrix<Matrix, SymmGroup>::block_matrix()
 {
 }
 
@@ -340,6 +340,17 @@ template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
     for(std::size_t k = 0; k < n_blocks(); ++k) maquis::dmrg::detail::generate_impl(data_[k], g);
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::cleanup_zeros(value_type const& tol)
+{
+    for (std::size_t i=n_blocks(); i >=1; --i) {
+        const std::size_t k = i-1;
+        const std::size_t nzeros = maquis::dmrg::detail::zeroout((*this)[k], tol);
+        if (nzeros == num_rows((*this)[k])*num_cols((*this)[k]))
+            remove_block(k);
+    }
 }
 
 template<class Matrix, class SymmGroup>

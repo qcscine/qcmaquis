@@ -38,6 +38,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
                 typename SymmGroup::charge right_end,
                 std::vector<int> const& site_type)
     : parms(parms_)
+    , init_bond_dimension(parms["init_bond_dimension"])
     , phys_dims(phys_dims_)
     , site_types(site_type)
     , di(parms, phys_dims_, right_end, site_type)
@@ -48,7 +49,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, 5, true, 0);
+        di.init_sectors(mps, 5, false, 1.);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -72,27 +73,20 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
             size_t sc_input = hf_init[order[i]];
             typename SymmGroup::charge site_charge(0);
 
-            if (sc_input > 4)
+			size_t loc_dim = phys_dims[0].size();
+
+            if (sc_input > loc_dim)
                 throw std::runtime_error(
-                    "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
+                    "The hf occ exceeds local basis dimension\n"
                 );
 
-            switch(sc_input) {
-                case 4:
-                    site_charge = phys_dims[site_types[i]][0].first; // updown
-                    break;
-                case 3:
-                    site_charge = phys_dims[site_types[i]][1].first; // up
-                    break;
-                case 2:
-                    site_charge = phys_dims[site_types[i]][2].first; // down
-                    break;
-                case 1:
-                    site_charge = phys_dims[site_types[i]][3].first; // empty
-                    break;
-            }
+			site_charge = phys_dims[site_types[i]][loc_dim-sc_input].first;
 
             max_charge = SymmGroup::fuse(max_charge, site_charge);
+
+            #ifndef NDEBUG
+            maquis::cout << "site " << i << " activating sector " << max_charge << std::endl;
+            #endif
 
             // Set largest charge sector = all 1
             size_t max_pos = mps[i].data().left_basis().position(max_charge);
@@ -111,10 +105,9 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
             mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
 
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
-
         }
 
-        //mps = compression::l2r_compress(mps, Mmax, 1e-6); 
+        //mps = compression::l2r_compress(mps, init_bond_dimension, 1e-6); 
 
         //maquis::cout << "\nMPS AFTER COMPRESSION:\n";
         //for(int i = 0; i < mps.length(); ++i) {
@@ -124,6 +117,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     }
 
     BaseParameters parms;
+    std::size_t init_bond_dimension;
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<int> site_types;
     default_mps_init<Matrix, SymmGroup> di;
@@ -149,7 +143,7 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, 5, true, 0);
+        di.init_sectors(mps, 5, false, 1.0);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -203,7 +197,7 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
                 {
                     charge sector = SymmGroup::fuse(*it, *it2);
                     if (mps[i].col_dim().has(sector))
-                        next_bond_charges.insert(SymmGroup::fuse(*it, *it2));
+                        next_bond_charges.insert(sector);
                 }
 
             #ifndef NDEBUG

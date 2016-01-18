@@ -68,16 +68,16 @@ namespace ambient {
         }
     }
 
-    template<class... PartitionedTypes>
+    template<class... IteratorTypes>
     class block_tuple_iterator {
     public:
-        static const int arity = sizeof...(PartitionedTypes);
-        typedef typename std::tuple_element<0, std::tuple<typename PartitionedTypes::iterator...> >::type base_iterator;
-        typedef typename std::tuple_element<0, std::tuple<typename PartitionedTypes::partition_type...> >::type base_block_type;
-        template<int N> using get_block_type = typename std::tuple_element<N, std::tuple<typename PartitionedTypes::partition_type...> >::type;
-        template<int N> constexpr int get_ib(){ return std::tuple_element<N, std::tuple<PartitionedTypes...> >::type::ib; }
+        static const int arity = sizeof...(IteratorTypes);
+        typedef typename std::tuple_element<0, std::tuple<IteratorTypes...> >::type base_iterator;
+        template<int N> using get_block_type = typename std::tuple_element<N, std::tuple<typename IteratorTypes::container_type::partition_type...> >::type;
+        template<int N> constexpr int get_ib(){ return std::tuple_element<N, std::tuple<typename IteratorTypes::container_type...> >::type::ib; }
+        std::tuple<IteratorTypes...> base;
 
-        block_tuple_iterator(typename PartitionedTypes::iterator... iterators, size_t size)
+        block_tuple_iterator(IteratorTypes... iterators, size_t size)
         : base(iterators...)
         {
             expand::latch_position<0,arity>(*this);
@@ -93,15 +93,15 @@ namespace ambient {
             expand::apply_step<0,arity>(*this);
         }
         bool operator != (base_iterator it){
-            return (position[0] != it-std::get<0>(base).get_container().begin());
+            return (position[0] != it-std::get<0>(base).get_container().cbegin());
         }
         template<int N>
-        typename std::tuple_element<N, std::tuple<typename PartitionedTypes::partition_type...> >::type& locate(){
+        auto locate() -> decltype(std::get<N>(this->base).get_container().locate(0)){
             return std::get<N>(base).get_container().locate(position[N]);
         }
         template<int N>
         void latch_position(){
-            position[N] = std::get<N>(base)-std::get<N>(base).get_container().begin();
+            position[N] = std::get<N>(base)-std::get<N>(base).get_container().cbegin();
         }
         template<int N>
         void advance(){
@@ -120,12 +120,12 @@ namespace ambient {
             return limit-position[0]; 
         }
 
-        std::tuple<typename PartitionedTypes::iterator...> base;
         size_t first[arity];
         size_t second[arity];
+        size_t step;
+    private:
         size_t position[arity];
         size_t limit;
-        size_t step;
     };
 
 }

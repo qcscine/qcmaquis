@@ -29,61 +29,44 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
-#include "ambient/utils/threads/mutex.hpp"
+#include "ambient/utils/mutex.hpp"
 #include "ambient/memory/factory.hpp"
 #include "ambient/memory/types.h"
 #include "ambient/memory/region.hpp"
-#include "ambient/memory/data_bulk.h"
-#include "ambient/memory/instr_bulk.h"
+#include "ambient/memory/delegated.h"
+#include "ambient/memory/cpu/bulk.h"
+#include "ambient/memory/cpu/data_bulk.h"
+#include "ambient/memory/cpu/comm_bulk.h"
+#include "ambient/memory/cpu/instr_bulk.h"
+#include "ambient/memory/cpu/standard.hpp"
+#include "ambient/memory/cpu/fixed.hpp"
 
 namespace ambient { namespace memory {
 
-    struct standard {
-        static void* malloc(size_t sz){ return std::malloc(sz); }
-        static void free(void* ptr){ std::free(ptr);  }
-        static region_t signature(){
-            return region_t::standard;
-        }
-    };
-
-    struct fixed {
-        // boost::singleton_pool<fixed,S> can be used instead (implicit mutex)
-        template<size_t S> static void* malloc(){ return std::malloc(S);   }
-        template<size_t S> static void* calloc(){ return std::calloc(1,S); }
-        template<size_t S> static void free(void* ptr){ std::free(ptr);    }
-    };
-
-} }
-
-namespace ambient { namespace pool {
-
-    using ambient::memory::data_bulk;
-    using ambient::memory::fixed;
-    using ambient::memory::standard;
-
     struct descriptor {
+        typedef int memory_id_type;
 
-        descriptor(size_t e, region_t r = region_t::standard) : extent(e), region(r), persistency(1), crefs(1) {}
+        descriptor(size_t e, memory_id_type r = cpu::standard::signature) : extent(e), signature(r), persistency(1), crefs(1) {}
 
         void protect(){
-            if(!(persistency++)) region = region_t::standard;
+            if(!(persistency++)) signature = cpu::standard::signature;
         }
         void weaken(){
-            if(!(--persistency)) region = region_t::bulk;
+            if(!(--persistency)) signature = cpu::bulk::signature;
         }
         void reuse(descriptor& d){
-            region   = d.region;
-            d.region = region_t::delegated;
+            signature = d.signature;
+            d.signature = delegated::signature;
         }
         bool conserves(descriptor& p){
-            assert(p.region != region_t::delegated && region != region_t::delegated);
+            assert(p.signature != delegated::signature && signature != delegated::signature);
             return (!p.bulked() || bulked());
         }
         bool bulked(){
-            return (region == region_t::bulk);
+            return (signature == cpu::bulk::signature);
         }
         size_t extent;
-        region_t region;
+        memory_id_type signature;
         int persistency;
         int crefs;
     };
@@ -100,25 +83,22 @@ namespace ambient { namespace pool {
 
     template<class Memory>
     static void* malloc(descriptor& d){
-        d.region = Memory::signature();
+        d.signature = Memory::signature;
         return Memory::malloc(d.extent);
     }
 
     static void* malloc(descriptor& d){
-        assert(d.region != region_t::delegated);
-        if(d.region == region_t::bulk){
-            #ifdef AMBIENT_USE_DATA_BULK
-            void* ptr = data_bulk::soft_malloc(d.extent);
+        assert(d.signature != delegated::signature);
+        if(d.signature == cpu::bulk::signature){
+            void* ptr = cpu::data_bulk::soft_malloc(d.extent);
             if(ptr) return ptr;
-            #endif
-            d.region = region_t::standard;
+            d.signature = cpu::standard::signature;
         }
-        return malloc<standard>(d.extent);
+        return malloc<cpu::standard>(d.extent);
     }
     static void free(void* ptr, descriptor& d){ 
-        if(ptr == NULL || d.region == region_t::delegated) return;
-        if(d.region == region_t::bulk) free<data_bulk>(ptr);
-        else free<standard>(ptr);
+        if(ptr == NULL || d.signature == delegated::signature) return;
+        if(d.signature == cpu::standard::signature) free<cpu::standard>(ptr);
     }
 
 } }

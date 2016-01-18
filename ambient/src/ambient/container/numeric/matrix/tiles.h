@@ -35,10 +35,10 @@
 #include <alps/hdf5/complex.hpp>
 #endif
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template <class Matrix, int IB = AMBIENT_DEFAULT_IB>
-    class tiles : public ambient::memory::use_fixed_new<tiles<Matrix,IB> > {
+    class tiles : public ambient::memory::cpu::use_fixed_new<tiles<Matrix,IB> > {
     public:
         typedef typename Matrix::value_type  value_type;
         typedef typename Matrix::size_type   size_type;
@@ -59,6 +59,7 @@ namespace ambient { namespace numeric {
         template <class MatrixB> tiles& operator  = (const tiles<MatrixB,IB>& rhs);
         size_type num_rows() const;
         size_type num_cols() const;
+        size_type num_tiles() const;
         scalar_type trace() const;
         void transpose();
         void conj();
@@ -113,8 +114,8 @@ namespace ambient { namespace numeric {
                     offset[offset_row_index] = i*IB;
                     offset[offset_col_index] = j*IB;
 
-                    if(!ambient::exclusive(m.tile(i,j)))
-                    ar.read(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), chunk, offset);
+                    if(!ambient::ext::exclusive(m.tile(i,j)))
+                    ar.read(path, (typename traits::real_type<value_type>::type *)ambient::ext::naked(m.tile(i,j)), chunk, offset);
                 }
             }
         }
@@ -152,9 +153,9 @@ namespace ambient { namespace numeric {
                     offset[offset_col_index] = j*IB;
                     
                     using alps::hdf5::detail::get_pointer;
-                    assert(ambient::naked(m.tile(i,j)).state == ambient::locality::local);
+                    assert(ambient::ext::naked(m.tile(i,j)).state == ambient::locality::local);
                     if(ambient::weak(m.tile(i,j))) throw std::runtime_error("Error: attempting to write uninitialised data!");
-                    ar.write(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), size, chunk, offset);
+                    ar.write(path, (typename traits::real_type<value_type>::type *)ambient::ext::naked(m.tile(i,j)), size, chunk, offset);
                 }
             }
         }
@@ -184,12 +185,14 @@ namespace ambient { namespace numeric {
         template <class MatrixB> tiles& operator -= (const tiles<MatrixB,IB>& rhs);
         template <class MatrixB> tiles& operator  = (const tiles<MatrixB,IB>& rhs);
         tiles& operator  = (const tiles& rhs);
-        std::vector<subset_view<Matrix> > data;
         size_type num_rows() const;
         size_type num_cols() const;
+        size_type num_tiles() const;
         Matrix& locate(size_type i, size_type j);
         const Matrix& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;
+    public:
+        std::vector<subset_view<Matrix> > data;
         size_type rows;
         size_type cols;
         size_type mt;
@@ -197,7 +200,7 @@ namespace ambient { namespace numeric {
     };
 
     template <typename T, int IB>
-    class tiles<diagonal_matrix<T>, IB> : public ambient::memory::use_fixed_new<tiles<diagonal_matrix<T>, IB> > {
+    class tiles<diagonal_matrix<T>, IB> : public ambient::memory::cpu::use_fixed_new<tiles<diagonal_matrix<T>, IB> > {
     public:
         typedef typename diagonal_matrix<T>::value_type  value_type;
         typedef typename diagonal_matrix<T>::size_type   size_type;
@@ -218,6 +221,7 @@ namespace ambient { namespace numeric {
         const value_type* end() const; // actual only for merged case
         size_type num_rows() const;
         size_type num_cols() const;
+        size_type num_tiles() const;
         void swap(tiles& r);
         void resize(size_type m, size_type n); 
         diagonal_matrix<T>& operator[] (size_type k);
@@ -235,7 +239,7 @@ namespace ambient { namespace numeric {
 #ifdef AMBIENT_ALPS_HDF5
 namespace alps { namespace hdf5 {
     template<class Matrix, int IB>
-    struct has_complex_elements<ambient::numeric::tiles<Matrix,IB> >
+    struct has_complex_elements<ambient::tiles<Matrix,IB> >
     : public has_complex_elements<typename alps::detail::remove_cvr<typename Matrix::value_type>::type>
     {};
 } }

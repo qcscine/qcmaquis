@@ -30,8 +30,11 @@
 
 namespace ambient {
 
-    using namespace ambient::models::ssm;
-    using ambient::memory::fixed;
+    using model::transformable;
+    using model::transformable_expr;
+    using model::transformable_value;
+    using model::sizeof_transformable;
+    using model::op_plus;
 
     template <typename T>
     class future {
@@ -42,7 +45,7 @@ namespace ambient {
         typedef T value_type;
 
         void init(value_type v = T()){
-            desc = new (ambient::pool::calloc<fixed,sizeof_transformable()>()) transformable_value<T>(v);
+            desc = new (ambient::memory::calloc<memory::cpu::fixed,sizeof_transformable()>()) transformable_value<T>(v);
             valid = true;
         }
         template<typename S>
@@ -132,8 +135,10 @@ namespace ambient {
 
         template <class Archive> void load(Archive & ar, const unsigned int version = 0){ }
         template <class Archive> void save(Archive & ar, const unsigned int version = 0) const { }
-    public:
+    private:
+        template <typename F> friend class future;
         mutable bool valid;
+    public:
         mutable transformable* desc;
     };
 
@@ -141,7 +146,7 @@ namespace ambient {
     future<T> operator + (const future<T>& l, const future<T>& r){
         transformable* a = l.desc; l.clear();
         transformable* b = r.desc; r.clear();
-        return future<T>(new (ambient::pool::calloc<fixed,sizeof_transformable()>()) 
+        return future<T>(new (ambient::memory::calloc<memory::cpu::fixed,sizeof_transformable()>()) 
                          transformable_expr<T, decltype(&op_plus<T>), op_plus>(a, b)
                         ); 
     }
@@ -169,7 +174,7 @@ namespace ambient {
     }
 }
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     inline double sqrt(const future<double>& f){ 
         return std::sqrt(f.load());

@@ -30,27 +30,15 @@
 #include "dmrg/models/generate_mpo/mpo_maker.hpp"
 #include "dmrg/models/generate_mpo/tagged_mpo_maker_optim.hpp"
 #include "dmrg/models/generate_mpo/corr_maker.hpp"
-#include "dmrg/models/generate_mpo/bg_corr_maker.hpp"
-
-#include "dmrg/models/chem/pg_symm_converter.h"
-
-#include "dmrg/models/model.h"
+#include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
 
 
 template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> const& model)
 {
-    //    typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-    //    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat.size(), model.identity_matrix_tag(), model.operators_table());
-    //    for (std::size_t i = 0; i < terms.size(); ++i)
-    //        mpom.add_term(terms[i], model.filling_matrix_tag());
-    
     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
     MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-    
-    //PGSymmetryConverter<Matrix, SymmGroup> symm_conv( parse_symm<SymmGroup>(lat.size(), parms) );
-    //symm_conv.convert_tags_to_symm_tags(mpo);
-    
+
     return mpo;
 }
 

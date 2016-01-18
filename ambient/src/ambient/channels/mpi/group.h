@@ -30,8 +30,7 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    class group {
-    public:
+    struct group {
         group(MPI_Comm parent);
         int rank;
         int size;

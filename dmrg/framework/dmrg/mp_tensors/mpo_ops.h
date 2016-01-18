@@ -57,13 +57,13 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
 {
     for (size_t k = 0; k < mpo[p].col_dim(); ++k)
     {
-        if (mpo[p].at(start,k).op.n_blocks() == 0)
+        if (mpo[p].at(start,k).op().n_blocks() == 0)
             continue;
         
         std::ostringstream oss;
 //        oss << mpo[p](start, k) << std::endl;
 //        oss << "(" << start << "," << k << ") ";
-        oss << " " << identify_op(mpo[p].at(start, k).op) << " ";
+        oss << " " << identify_op(mpo[p].at(start, k).op()) << " ";
         if (p+1 < mpo.length())
             follow_mpo(mpo, s+oss.str(), p+1, k);
         else
@@ -78,8 +78,8 @@ void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, in
     ss << s;
     
     if (p > -1) {
-        MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo[p].at(b1,b2);
-        scale *= access.scale;
+        MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo[p].at(b1,b2);
+        scale *= access.scale();
         ss << " {" << mpo[p].tag_number(b1,b2) << "}(" << p << ")";
     }
     
@@ -108,10 +108,10 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
     {
         if (!in_mpo[p].has(start,k))
             continue;
-        if (in_mpo[p].at(start,k).op.n_blocks() == 0)
+        if (in_mpo[p].at(start,k).op().n_blocks() == 0)
             continue;
         
-        ops[p] = boost::make_tuple(start, k, in_mpo[p].at(start, k).op * in_mpo[p].at(start, k).scale);
+        ops[p] = boost::make_tuple(start, k, in_mpo[p].at(start, k).op() * in_mpo[p].at(start, k).scale());
         
         if (p+1 < in_mpo.length())
             cleanup_mpo_(in_mpo, out_mpo, ops, p+1, k);
@@ -120,10 +120,10 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
             assert( ops.size() == out_mpo.length() );
             using boost::tuples::get;
             for (std::size_t t = 0; t < in_mpo.length(); ++t) {
-                MPOTensor_detail::term_descriptor<Matrix, SymmGroup> o = out_mpo[t].at(get<0>(ops[t]), get<1>(ops[t]));
-                if (o.op.n_blocks() == 0) {
-                    o.op    = get<2>(ops[t]);
-                    o.scale = 1.;
+                MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false> o = out_mpo[t].at(get<0>(ops[t]), get<1>(ops[t]));
+                if (o.op().n_blocks() == 0) {
+                    o.op()    = get<2>(ops[t]);
+                    o.scale() = 1.;
                 }
             }
         }
@@ -177,10 +177,10 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
                         assert(inp.has(r2, c2));
                         
                         typename operator_selector<Matrix, SymmGroup>::type t;
-                        gemm(inp.at(r1, c1).op, inp.at(r2, c2).op, t);
+                        gemm(inp.at(r1, c1).op(), inp.at(r2, c2).op(), t);
                         if (t.n_blocks() > 0)
                             ret.set(r1*inp.row_dim()+r2, c1*inp.col_dim()+c2, 
-                                        t * (inp.at(r1, c1).scale * inp.at(r2, c2).scale));
+                                        t * (inp.at(r1, c1).scale() * inp.at(r2, c2).scale()));
                     }
                 }
             }
@@ -210,10 +210,10 @@ zero_after(MPO<Matrix, SymmGroup> mpo, int p0)
         for (int k = 2; k < mpo[p].row_dim(); ++k)
             for (int l = 2; l < mpo[p].col_dim(); ++l)
                 if (mpo[p].has(k,l))
-                    mpo[p].set(k,l, mpo[p].at(k,l).op, 0.0);
+                    mpo[p].set(k,l, mpo[p].at(k,l).op(), 0.0);
     
         if (mpo[p].has(0,1))
-            mpo[p].set(0,1, mpo[p].at(0,1).op, 0.0);
+            mpo[p].set(0,1, mpo[p].at(0,1).op(), 0.0);
     }
     
     return mpo;

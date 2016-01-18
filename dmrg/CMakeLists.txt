@@ -82,6 +82,7 @@ macro(get_symm_suffix RET SYMM)
   string(REGEX REPLACE "^Z2$" "Ztwo" ${RET} ${${RET}})
   string(REGEX REPLACE "^SU2U1$" "su2u1" ${RET} ${${RET}})
   string(REGEX REPLACE "^SU2U1PG$" "su2u1pg" ${RET} ${${RET}})
+  string(REGEX REPLACE "^U1DG$" "u1dg" ${RET} ${${RET}})
 endmacro(get_symm_suffix)
 
 macro(get_symm_group_name RET SYMM)
@@ -96,6 +97,7 @@ macro(get_symm_group_name RET SYMM)
   string(REGEX REPLACE "^Z2$" "Ztwo" ${RET} ${${RET}})
   string(REGEX REPLACE "^SU2U1$" "SU2U1" ${RET} ${${RET}})
   string(REGEX REPLACE "^SU2U1PG$" "SU2U1PG" ${RET} ${${RET}})
+  string(REGEX REPLACE "^U1DG$" "U1DG" ${RET} ${${RET}})
 endmacro(get_symm_group_name)
 
 macro(get_symm_files TYPE RET FILEBASE)
@@ -409,7 +411,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 ######################################################################
 
 install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
-        DESTINATION include COMPONENT headers)
+        DESTINATION include/framework/dmrg COMPONENT headers)
 
 #TODO: improve using GLOB
 install(DIRECTORY framework/dmrg framework/ietl framework/utils
@@ -427,5 +429,6 @@ install(DIRECTORY framework/dmrg framework/ietl framework/utils
         )
 
 install(DIRECTORY lib/python DESTINATION lib  COMPONENT python
+        USE_SOURCE_PERMISSIONS
         FILES_MATCHING PATTERN "*.py" PATTERN "*.pyc"
         PATTERN ".svn" EXCLUDE PATTERN "CVS" EXCLUDE)

@@ -34,7 +34,7 @@ namespace ambient {
     class block_pair_iterator {
     public:
         block_pair_iterator(size_t first, size_t second, size_t size) 
-        : first(first), second(second), lim(first+size){
+        : first(first), second(second), limit(first+size){
             measure_step();
         }
         void operator++ (){
@@ -43,17 +43,18 @@ namespace ambient {
             measure_step();
         }
         bool end(){
-            return (first >= lim);
+            return (first >= limit);
         }
         void measure_step(){
             step = std::min(std::min((IB*__a_ceil((first+1)/IB) - first), 
                                      (IB*__a_ceil((second+1)/IB) - second)),
-                                     (lim-first));
+                                     (limit-first));
         }
         size_t first;
         size_t second;
         size_t step;
-        size_t lim;
+    private:
+        size_t limit;
     };
 
 }

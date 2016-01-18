@@ -29,6 +29,14 @@
 #define MAQUIS_DMRG_MODELS_OP_HANDLER_HPP
 
 template <class Matrix, class SymmGroup>
+TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
+    : operator_table(new OPTable<Matrix, SymmGroup>(*rhs.operator_table))
+    , sign_table(rhs.sign_table)
+    , product_tags(rhs.product_tags)
+{
+}
+
+template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type
 OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)
 {
@@ -65,6 +73,22 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::reg
     return ret;
 }
 
+template <class Matrix, class SymmGroup>
+typename OPTable<Matrix, SymmGroup>::value_type & TagHandler<Matrix, SymmGroup>::get_op(tag_type i) { return (*operator_table)[i]; }
+
+template <class Matrix, class SymmGroup>
+typename OPTable<Matrix, SymmGroup>::value_type const & TagHandler<Matrix, SymmGroup>::get_op(tag_type i) const { return (*operator_table)[i]; }
+
+template <class Matrix, class SymmGroup>
+std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::get_ops(std::vector<tag_type> const & tags) const
+{
+    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> ret(tags.size());
+    for (int k = 0; k < tags.size(); ++k)
+        ret[k] = (*operator_table)[tags[k]];
+
+    return ret;
+}
+
 /*
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::checked_register(op_t & sample) {
@@ -88,10 +112,8 @@ std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
           typename TagHandler<Matrix,SymmGroup>::value_type>
-TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
-                                                     OPTable<Matrix, SymmGroup>::tag_type t1,
-                                                     const typename
-                                                     OPTable<Matrix, SymmGroup>::tag_type t2)
+TagHandler<Matrix, SymmGroup>::get_product_tag(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
+                                               const typename OPTable<Matrix, SymmGroup>::tag_type t2)
 {
     assert( t1 < operator_table->size() && t2 < operator_table->size() );
     assert( operator_table->size() == sign_table.size());
@@ -119,6 +141,9 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
         tag_detail::operator_kind prod_kind = tag_detail::bosonic;
         if (sign_table[t1] != sign_table[t2])
             prod_kind = tag_detail::fermionic;
+
+        // set the product spin descriptor
+        product.spin() = couple(get_op(t2).spin(), get_op(t1).spin());
 
         std::pair<tag_type, value_type> ret = this->checked_register(product, prod_kind);
         product_tags[std::make_pair(t1, t2)] = ret;
@@ -183,7 +208,10 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
             Index<SymmGroup> const & phys_i1,
             Index<SymmGroup> const & phys_i2,
             typename OPTable<Matrix, SymmGroup>::tag_type t1,
-            typename OPTable<Matrix, SymmGroup>::tag_type t2)
+            typename OPTable<Matrix, SymmGroup>::tag_type t2,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
     assert( t1 < base::get_operator_table()->size() && t2 < base::get_operator_table()->size() );
 
@@ -202,10 +230,10 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
     catch(const std::out_of_range& e) {
 
         op_t product;
-        op_t& op1 = (*base::get_operator_table())[t1];
-        op_t& op2 = (*base::get_operator_table())[t2];
+        op_t const& op1 = (*base::get_operator_table())[t1];
+        op_t const& op2 = (*base::get_operator_table())[t2];
 
-        op_kron(phys_i1, phys_i2, op1, op2, product);
+        op_kron(phys_i1, phys_i2, op1, op2, product, lspin, mspin, rspin);
 
         tag_detail::remove_empty_blocks(product);
         

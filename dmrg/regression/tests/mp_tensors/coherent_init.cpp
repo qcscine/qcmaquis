@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE( manual_superposition )
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t, double> local_state;
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     
     using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE( coherent_init_L2Nmax2 )
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t, double> local_state;
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     using std::sqrt;
     
     int L = 2;
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE( coherent_init_Nmax2 )
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t, double> local_state;
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     using std::sqrt;
     
     int L = 4;

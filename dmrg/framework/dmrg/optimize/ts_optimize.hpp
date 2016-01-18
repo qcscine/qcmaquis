@@ -180,6 +180,10 @@ public:
             	    BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("JCD")
+                } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
+            	    BEGIN_TIMING("DAVIDSON")
+                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
+            	    END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
@@ -196,8 +200,13 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
 
-            maquis::cout << "Energy " << lr << " " << res.first << std::endl;
-            iteration_results_["Energy"] << res.first;
+            {
+                int prec = maquis::cout.precision();
+                maquis::cout.precision(15);
+                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy() << std::endl;
+                maquis::cout.precision(prec);
+            }
+            iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
             
             
             double alpha;

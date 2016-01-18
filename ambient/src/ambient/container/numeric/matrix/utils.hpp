@@ -31,32 +31,32 @@
 namespace ambient {
 
     template<class Matrix, int IB>
-    inline void touch(const numeric::tiles<Matrix, IB>& a){
-        int size = a.data.size();
+    inline void touch(const tiles<Matrix, IB>& a){
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             touch(a[i]);
         }
     }
 
     template<class Matrix, int IB>
-    inline void migrate(const numeric::tiles<Matrix, IB>& a){
-        numeric::tiles<Matrix, IB>& m = const_cast<numeric::tiles<Matrix, IB>&>(a);
-        int size = m.data.size();
+    inline void migrate(const tiles<Matrix, IB>& a){
+        tiles<Matrix, IB>& m = const_cast<tiles<Matrix, IB>&>(a);
+        int size = m.num_tiles();
         for(int i = 0; i < size; i++){
             migrate(m[i]);
         }
     }
 
     template<class Matrix, int IB>
-    inline void hint(const numeric::tiles<Matrix, IB>& a){
-        int size = a.data.size();
+    inline void hint(const tiles<Matrix, IB>& a){
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             hint(a[i]);
         }
     }
 
     template<class Matrix, int IB>
-    inline rank_t get_owner(const numeric::tiles<Matrix, IB>& a){
+    inline rank_t get_owner(const tiles<Matrix, IB>& a){
         return ambient::get_owner(a[0]);
     }
 

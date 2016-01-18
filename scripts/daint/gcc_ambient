@@ -24,9 +24,7 @@ then
     export ALPS_ROOT=$MYAPPS/alps-cxx11
     export PATH=$ALPS_ROOT/bin:$MYAPPS/hdf5/bin:$MYAPPS/bin:$PATH
     export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
-    #export CRAYPE_LINK_TYPE=dynamic
-    export CXX=CC.dynamic # CC -dynamic -lz $*
-    export CC=cc.dynamic  # cc -dynamic -lz $*
+    export CRAYPE_LINK_TYPE=dynamic
     
     export PATH=${MAQUIS_INSTALL}/bin:${PATH}
 

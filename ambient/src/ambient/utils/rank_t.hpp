@@ -29,7 +29,7 @@
 #define AMBIENT_UTILS_RANK_TYPE
 
 namespace ambient {
-    #ifdef AMBIENT_CHECK_RANK_TYPE
+    #if 0
     class rank_t {
     public:
         rank_t(){}

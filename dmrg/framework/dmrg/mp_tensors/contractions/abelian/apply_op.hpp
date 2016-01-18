@@ -3,6 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
@@ -55,8 +56,8 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
@@ -69,8 +70,13 @@ namespace contraction {
                 charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
+                    #ifdef USE_AMBIENT
+                    // both versions should be fine for AMBIENT
                     ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
                                      out_left_i.size_of_block(out_l_charge), r_size);
+                    #else
+                    ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge), r_size), out_l_charge, out_r_charge);
+                    #endif
             }
         }
         contr_grid.index_sizes(b2);
@@ -101,8 +107,8 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -138,7 +144,7 @@ namespace contraction {
                     parallel::guard proc(scheduler(o));
                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                                         out_left_offset, in_right_offset,
-                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale);
+                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale());
                 }
             } // right index block
         } // b1
@@ -162,8 +168,8 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
@@ -174,8 +180,13 @@ namespace contraction {
                 charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
                 size_t l_size = left_i[l].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
+                    #ifdef USE_AMBIENT
+                    // both versions should be fine for AMBIENT
                     ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
                                      l_size, out_right_i.size_of_block(out_r_charge));
+                    #else
+                    ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
+                    #endif
             }
         }
         ret.index_sizes();
@@ -205,8 +216,8 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -239,7 +250,7 @@ namespace contraction {
                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                                         out_right_offset, in_left_offset,
                                                         phys_s1, phys_s2,
-                                                        l_size, T.basis().right_size(t_block), access.scale);
+                                                        l_size, T.basis().right_size(t_block), access.scale());
                 }
             }
         }
@@ -277,6 +288,6 @@ namespace contraction {
         rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
     
-    } // namespace ablian
+    } // namespace abelian
 } // namespace contraction
 #endif

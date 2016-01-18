@@ -33,12 +33,15 @@
 #include "utils/traits.hpp"
 #include "utils/bindings.hpp"
 
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
 
 #include "dmrg/utils/parallel.hpp"
 
@@ -66,23 +69,30 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           const Scheduler& scheduler = Scheduler())
 {
     C.clear();
-    
+    assert(B.basis().is_sorted());
+
     typedef typename SymmGroup::charge charge;
-    Index<SymmGroup> B_left_basis = B.left_basis();
+    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+    const_iterator B_begin = B.basis().begin();
+    const_iterator B_end = B.basis().end();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
 
-        if ( matched_block == B.n_blocks() )
-            continue;
-        
-        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                               A.basis().left_charge(k), B.basis().right_charge(matched_block));
+        charge ar = A.basis().right_charge(k);
+        const_iterator it = B.basis().left_lower_bound(ar);
 
-        parallel::guard proc(scheduler(k));
-        gemm(A[k], B[matched_block], C[new_block]);
+        for ( ; it != B_end && it->lc == ar; ++it)
+        {
+            std::size_t matched_block = std::distance(B_begin, it);
+            Matrix3 tmp(num_rows(A[k]), it->rs);
+
+            parallel::guard proc(scheduler(k));
+            gemm(A[k], B[matched_block], tmp);
+            C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
+        }
     }
 
     if(scheduler.propagate()){
+        Index<SymmGroup> B_left_basis = B.left_basis();
         C.size_index.resize(C.n_blocks()); // propagating A size_index onto C - otherwise might C.index_sizes();
         for(size_t k = 0; k < A.n_blocks(); ++k){
             size_t matched_block = B_left_basis.position(A.basis().right_charge(k));

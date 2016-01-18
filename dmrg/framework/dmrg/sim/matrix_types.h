@@ -31,8 +31,8 @@
 #include "dmrg/block_matrix/detail/ambient.hpp"
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include <complex>
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
-typedef ambient::numeric::tiles<ambient::numeric::matrix< std::complex<double> > > cmatrix;
+typedef ambient::tiles<ambient::matrix<double> > matrix;
+typedef ambient::tiles<ambient::matrix< std::complex<double> > > cmatrix;
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include <complex>

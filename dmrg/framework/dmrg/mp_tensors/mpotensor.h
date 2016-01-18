@@ -41,8 +41,6 @@
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
 
-template <class Matrix, class SymmGroup, class Dummy> class PGSymmetryConverter;
-
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {
@@ -56,7 +54,7 @@ public:
     typedef boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_table_ptr;
 
 private:
-    typedef std::pair<tag_type, value_type> internal_value_type;
+    typedef std::vector<std::pair<tag_type, value_type> > internal_value_type;
 
     typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
                                                       boost::numeric::ublas::column_major
@@ -69,11 +67,13 @@ public:
     typedef MPOTensor_detail::row_proxy<typename RowIndex::value_type::const_iterator> row_proxy;
     typedef boost::numeric::ublas::matrix_column<const CSCMatrix> col_proxy;
 
-private:
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
+    typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
+    typedef std::vector<spin_desc_t> spin_index;
     
 public:
-    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr());
+    MPOTensor(index_type = 1, index_type = 1, prempo_t = prempo_t(), op_table_ptr = op_table_ptr(),
+              spin_index const & lspins = spin_index(), spin_index const & rspins = spin_index());
     
     index_type row_dim() const;
     index_type col_dim() const;
@@ -85,13 +85,13 @@ public:
     void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0);
 
     // tagged operator() const
-    MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
+    MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true>
     at(index_type left_index, index_type right_index) const;
 
     // warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will
     //          get a modified matrix!
     //          better design needed
-    MPOTensor_detail::term_descriptor<Matrix, SymmGroup>
+    MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false>
     at(index_type left_index, index_type right_index);
 
     row_proxy row(index_type row_i) const;
@@ -100,12 +100,15 @@ public:
     tag_type tag_number(index_type left_index, index_type right_index) const;
     op_table_ptr get_operator_table() const;
 
-    void multiply_by_scalar(const scalar_type&);
-    void divide_by_scalar(const scalar_type&);
+    void multiply_by_scalar(value_type);
+    void divide_by_scalar(value_type);
     
     bool has(index_type left_index, index_type right_index) const;
 
-    friend class PGSymmetryConverter<Matrix, SymmGroup, void>;
+    spin_desc_t left_spin(index_type left_index) const;
+    spin_desc_t right_spin(index_type right_index) const;
+    spin_index const & row_spin_dim() const;
+    spin_index const & col_spin_dim() const;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;
@@ -113,6 +116,7 @@ public:
     mutable std::vector<int> exceptions_r;
 private:
     index_type left_i, right_i;
+    spin_index left_spins, right_spins;
 
     CSCMatrix col_tags;
     RowIndex row_index;

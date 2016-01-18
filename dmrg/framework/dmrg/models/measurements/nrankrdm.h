@@ -173,7 +173,7 @@ namespace measurements {
 
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(2)
+            #pragma omp parallel for collapse(1)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)

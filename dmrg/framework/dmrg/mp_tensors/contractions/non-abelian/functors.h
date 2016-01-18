@@ -3,6 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -40,7 +41,7 @@ namespace SU2 {
                         block_matrix<Matrix2, SymmGroup> const & B,
                         block_matrix<Matrix3, SymmGroup> & C)
         {
-            SU2::gemm(A,B,C);
+            gemm(A,B,C);
         }
     };
 

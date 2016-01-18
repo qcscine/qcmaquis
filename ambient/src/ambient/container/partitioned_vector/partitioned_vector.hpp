@@ -36,7 +36,7 @@ namespace ambient {
      
     template <class Vector, int IB>
     partitioned_vector<Vector, IB>::~partitioned_vector(){
-        int n = this->data.size();
+        int n = this->num_parts();
         for(int i = 0; i < n; i++) delete this->data[i];
     }
      
@@ -69,7 +69,7 @@ namespace ambient {
     partitioned_vector<Vector,IB>::partitioned_vector(const partitioned_vector& a)
     : length(a.length), nt(a.nt)
     {
-        int nb = a.data.size();
+        int nb = a.num_parts();
         for(int k = 0; k < nb; k++) this->data.push_back(new Vector(a[k]));
     }
     
@@ -84,7 +84,7 @@ namespace ambient {
     template<class OtherVector, int OtherIB>
     partitioned_vector<Vector,IB>& partitioned_vector<Vector,IB>::operator = (const partitioned_vector<OtherVector,OtherIB>& rhs){
         // redo for OtherIB
-        int b = rhs.data.size();
+        int b = rhs.num_parts();
         for(int k = 0; k < b; k++)
             (*this).partition(k) = rhs.partition(k);
         return *this;
@@ -93,6 +93,11 @@ namespace ambient {
     template<class Vector, int IB>
     typename partitioned_vector<Vector,IB>::size_type partitioned_vector<Vector,IB>::size() const {
         return this->length;
+    }
+
+    template<class Vector, int IB>
+    typename partitioned_vector<Vector,IB>::size_type partitioned_vector<Vector,IB>::num_parts() const {
+        return this->data.size();
     }
         
     template<class Vector, int IB>
@@ -115,10 +120,10 @@ namespace ambient {
         int tail = std::min(r.partition(nb_min-1).size(), this->partition(nb_min-1).size());
         
         for(int k = 0; k < nb_min; k++){
-            r.partition(k) = a.partition(k);
+            r.partition(k) = this->partition(k);
         }
         r.partition(nb_min-1).resize(tail);
-        swap(a, r);
+        this->swap(r);
     }
         
     template<class Vector, int IB>

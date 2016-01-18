@@ -38,6 +38,7 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
 
+#include "dmrg/models/chem/measure_transform.hpp"
 
 template <class Matrix, class SymmGroup>
 class measure_sim : public sim<Matrix, SymmGroup> {
@@ -67,10 +68,11 @@ public:
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
 
-        double energy = maquis::real(expval(mps, mpoc));
+        double energy;
 
         if (parms["MEASURE[Energy]"]) {
-            maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
+            energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
+            maquis::cout << "Energy: " << energy << std::endl;
             {
                 storage::archive ar(rfile, "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
@@ -81,6 +83,7 @@ public:
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
             mpo2.compress(1e-12);
             
+            if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
             double energy2 = maquis::real(expval(mps, mpo2, true));
             
             maquis::cout << "Energy^2: " << energy2 << std::endl;
@@ -93,6 +96,10 @@ public:
             }
         }
 
+        #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
+        if (parms.is_set("MEASURE[ChemEntropy]"))
+            measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", parms, base::lat, mps);
+        #endif
     }
 };
 

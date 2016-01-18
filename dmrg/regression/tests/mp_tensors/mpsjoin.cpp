@@ -57,7 +57,7 @@ std::ostream& operator<< (std::ostream& os, std::vector<double> const& v){
     return os;
 }
 
-std::vector<double> measure_local(MPS<matrix, SymmGroup> & mps, typename operator_selector<matrix, SymmGroup>::type const & op)
+std::vector<double> measure_local(MPS<matrix, SymmGroup> & mps, operator_selector<matrix, SymmGroup>::type const & op)
 {
     std::vector<double> meas(mps.length());
     for (size_t p=0; p<mps.length(); ++p) {
@@ -67,49 +67,12 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> & mps, typename operato
     return meas;
 }
 
-template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
-mixed_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket)
-{
-    assert(ket.length() == bra.length());
-    Index<SymmGroup> i = ket[0].row_dim();
-    Index<SymmGroup> j = bra[0].row_dim();
-    Boundary<Matrix, SymmGroup> ret(i, j, 1);
-    
-    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
-    	for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
-            ret[0](*it1, *it2) = 1;
-    
-    return ret;
-}
-
-
-template<class Matrix, class SymmGroup>
-typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
-                                   MPS<Matrix, SymmGroup> const & ket,
-                                   MPO<Matrix, SymmGroup> const & mpo,
-                                   bool verbose = false)
-{
-    assert(mpo.length() == bra.length() && bra.length() == ket.length());
-    std::size_t L = bra.length();
-    
-    Boundary<Matrix, SymmGroup> left = mixed_left_boundary(bra, ket);
-    
-    for (int i = 0; i < L; ++i) {
-        if (verbose)
-            std::cout << "expval site " << i << std::endl;
-        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
-    }
-    
-    return left.traces()[0];
-}
-
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& bra, MPS<matrix, SymmGroup> const& ket,
-                                  typename operator_selector<matrix, SymmGroup>::type const & op,
-                                  typename operator_selector<matrix, SymmGroup>::type const & ident)
+                                  operator_selector<matrix, SymmGroup>::type const & op,
+                                  operator_selector<matrix, SymmGroup>::type const & ident)
 {
     assert(bra.length() == ket.length());
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     typedef std::vector<op_t> op_vec;
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(bra.length()));
     Lattice lattice(lat_ptr);
@@ -156,8 +119,8 @@ MPS<matrix, SymmGroup> state_mps(std::vector<std::pair<SymmGroup::charge, size_t
 }
 
 void run_test_bosons(int L, Index<SymmGroup> const& phys,
-                     typename operator_selector<matrix, SymmGroup>::type const & ident,
-                     typename operator_selector<matrix, SymmGroup>::type const & densop,
+                     operator_selector<matrix, SymmGroup>::type const & ident,
+                     operator_selector<matrix, SymmGroup>::type const & densop,
                      MPS<matrix,SymmGroup> & mps1, MPS<matrix,SymmGroup> & mps2,
                      bool verbose=false)
 {
@@ -235,7 +198,7 @@ void test_bosons(std::vector<std::pair<SymmGroup::charge, size_t> > const& b1,
                  int M,
                  bool verbose = false)
 {
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     assert(b1.size() == b2.size());
     int L = b1.size();
     
@@ -308,7 +271,7 @@ BOOST_AUTO_TEST_CASE( join_same_mps_cmp_dens )
 
 BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
 {
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     std::cout << std::endl << std::endl << "*** join_semirnd_mps_cmp_dens ***" << std::endl;
     int M = 10;
     int L = 4;
@@ -344,7 +307,7 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
 
 BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
 {
-    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     std::cout << std::endl << std::endl << "*** join_rnd_mps_cmp_dens ***" << std::endl;
     
     int Nmps = 4;

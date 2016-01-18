@@ -30,8 +30,7 @@
 
 namespace ambient{
 
-    class dim2 {
-    public:
+    struct dim2 {
         size_t x, y;
         dim2() 
         : x(0), y(0) 

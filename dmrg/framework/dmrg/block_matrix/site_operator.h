@@ -34,12 +34,16 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
 
+
+template<class Matrix, class SymmGroup, class Dummy> class SparseOperator;
+
 template<class Matrix, class SymmGroup>
 class SiteOperator
 {
     friend class SiteOperator<typename storage::constrained<Matrix>::type, SymmGroup>;
 private:
     typedef typename SymmGroup::charge charge;
+    typedef typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type spin_basis_type;
 public:
     typedef Matrix matrix_type;
     typedef typename Matrix::size_type size_type;
@@ -56,10 +60,7 @@ public:
 
     SiteOperator(DualIndex<SymmGroup> const & basis);
     
-    SiteOperator(SiteOperator const&);
-
-    template <class OtherMatrix>
-    SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const&);
+    SiteOperator(block_matrix<Matrix, SymmGroup> const&, spin_basis_type const &);
 
     SiteOperator& operator=(SiteOperator rhs);
     template<class OtherMatrix>
@@ -116,8 +117,20 @@ public:
     
     friend void swap(SiteOperator & x, SiteOperator & y)
     {
+        std::swap(x.spin_, y.spin_);
         swap(x.bm_, y.bm_);
+        swap(x.sparse_op, y.sparse_op);
+        std::swap(x.spin_basis, y.spin_basis);
     }
+
+    //template <class Matrix_, class SymmGroup_>
+    //friend std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix_, SymmGroup_> const & m);
+    template <class Matrix_, class SymmGroup_>
+    friend std::ostream& operator<<(typename boost::disable_if<symm_traits::HasSU2<SymmGroup_>, std::ostream&>::type os,
+                                    SiteOperator<Matrix_, SymmGroup_> const & m);
+    template <class Matrix_, class SymmGroup_>
+    friend std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup_>, std::ostream&>::type os,
+                                    SiteOperator<Matrix_, SymmGroup_> const & m);
 
     Matrix const & operator()(charge r, charge c) const
     {
@@ -133,11 +146,29 @@ public:
         return bm_.blocks();
     }
     
+    block_matrix<Matrix, SymmGroup> & bm()
+    {
+        return bm_;
+    }
+    block_matrix<Matrix, SymmGroup> const & bm() const
+    {
+        return bm_;
+    }
+    
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);
     
+    void update_sparse();
+    SparseOperator<Matrix, SymmGroup, void> const & get_sparse() const { return sparse_op; }
+    
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }
+    
 private:
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin_;
+    spin_basis_type spin_basis;
     block_matrix<Matrix, SymmGroup> bm_;
+    SparseOperator<Matrix, SymmGroup, void> sparse_op;
 };    
 
 #include "dmrg/block_matrix/site_operator.hpp"
@@ -172,6 +203,11 @@ SiteOperator<Matrix, SymmGroup> operator-(SiteOperator<Matrix,SymmGroup> b1, Sit
     return b1;
 }
 
+template<class Matrix, class SymmGroup>
+bool shape_equal(SiteOperator<Matrix, SymmGroup> const & a, SiteOperator<Matrix, SymmGroup> const & b)
+{
+    return (a.basis() == b.basis() && a.spin() == b.spin());
+}
 
 template<class Matrix, class SymmGroup>
 std::size_t size_of(SiteOperator<Matrix, SymmGroup> const & m)
@@ -179,5 +215,6 @@ std::size_t size_of(SiteOperator<Matrix, SymmGroup> const & m)
     return size_of(m);
 }
 
+#include "dmrg/block_matrix/sparse_operator.h"
 
 #endif

@@ -28,7 +28,7 @@
 #ifndef AMBIENT_CONTAINER_NUMERIC_TRAITS
 #define AMBIENT_CONTAINER_NUMERIC_TRAITS
 
-namespace ambient { namespace numeric { namespace traits {
+namespace ambient { inline namespace numeric { namespace traits {
 
     template<class T> struct real_type { typedef typename real_type<typename T::value_type>::type type; };
     template<>        struct real_type<double> { typedef double type; };

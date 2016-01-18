@@ -166,10 +166,14 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
             
-            maquis::cout << "Energy " << lr << " " << res.first << std::endl;
-//            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;
+            {
+                int prec = maquis::cout.precision();
+                maquis::cout.precision(15);
+                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy()<< std::endl;
+                maquis::cout.precision(prec);
+            }
             
-            iteration_results_["Energy"] << res.first;
+            iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
             
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");

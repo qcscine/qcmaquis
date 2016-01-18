@@ -32,10 +32,12 @@
 #include "dmrg/block_matrix/symmetry/2u1.h"
 #include "dmrg/block_matrix/symmetry/nu1.h"
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
+#include "dmrg/block_matrix/symmetry/nu1dg.h"
 #include "dmrg/block_matrix/symmetry/z2.h"
 #include "dmrg/block_matrix/symmetry/zq.h"
 #include "dmrg/block_matrix/symmetry/su2u1.h"
 
 #include "dmrg/block_matrix/symmetry/symmetry_traits.h"
+#include "dmrg/block_matrix/symmetry/spin_descriptor.h"
 
 #endif

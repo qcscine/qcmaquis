@@ -39,7 +39,7 @@ using std::endl;
 
 #ifdef USE_AMBIENT
 #include "dmrg/block_matrix/detail/ambient.hpp"
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+typedef ambient::tiles<ambient::matrix<double> > matrix;
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> matrix;
@@ -51,6 +51,8 @@ typedef alps::numeric::matrix<double> matrix;
 
 #if defined(USE_TWOU1)
 typedef TwoU1 symm;
+#elif defined(USE_U1DG)
+typedef U1DG symm;
 #elif defined(USE_TWOU1PG)
 typedef TwoU1PG symm;
 #elif defined(USE_SU2U1)

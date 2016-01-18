@@ -27,7 +27,6 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/block_matrix/symmetry.h"
 
-#include <boost/function.hpp>
 #undef tolower
 #undef toupper
 #include <boost/tokenizer.hpp>
@@ -36,26 +35,7 @@
 
 #include "utils/io.hpp"
 
-std::string guess_alps_symmetry(BaseParameters & parms)
-{
-    std::map<int, std::string> symm_names;
-    symm_names[0] = "none";
-    symm_names[1] = "u1";
-    symm_names[2] = "2u1";
-    
-    int n=0;
-    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-    if (parms.defined("CONSERVED_QUANTUMNUMBERS")) {
-        boost::char_separator<char> sep(" ,");
-        std::string qn_string = parms["CONSERVED_QUANTUMNUMBERS"].str();
-        tokenizer qn_tokens(qn_string, sep);
-        for (tokenizer::iterator it=qn_tokens.begin(); it != qn_tokens.end(); it++) {
-            if (parms.defined(*it + "_total"))
-                n += 1;
-        }
-    }
-    return symm_names[n];
-}
+#include "dmrg/utils/guess_symmetry.h"
 
 namespace dmrg {
     
@@ -77,6 +57,10 @@ namespace dmrg {
 #ifdef HAVE_U1
         factory_map["u1"] = ptr_type(new typename TR::template F<U1>::type());
         maquis::cout << "u1 ";
+#endif
+#ifdef HAVE_U1DG
+        factory_map["u1dg"] = ptr_type(new typename TR::template F<U1DG>::type());
+        maquis::cout << "u1dg ";
 #endif
 #ifdef HAVE_TwoU1
         factory_map["2u1"] = ptr_type(new typename TR::template F<TwoU1>::type());

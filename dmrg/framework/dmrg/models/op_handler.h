@@ -65,7 +65,8 @@ public:
 
 protected:
     typedef typename Matrix::value_type value_type;
-    typedef std::map<std::pair<tag_type, tag_type>, std::pair<tag_type, value_type>, tag_detail::pair_cmp> pair_map_t;
+    typedef std::pair<tag_type, tag_type> tag_pair_t;
+    typedef std::map<tag_pair_t, std::pair<tag_type, value_type>, compare_pair<tag_pair_t> > pair_map_t;
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 
 public:
@@ -76,6 +77,8 @@ public:
     TagHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_) :
         operator_table(tbl_)
         { }
+
+    TagHandler(TagHandler const & a);
     
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
 
@@ -114,8 +117,10 @@ public:
     }
 */
 
-    typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*operator_table)[i]; }
-    typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*operator_table)[i]; }
+    typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i);
+    typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const;
+
+    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> get_ops(std::vector<tag_type> const & i) const;
 
     bool is_fermionic (tag_type query_tag) const {
         if (query_tag >= sign_table.size()) maquis::cout << "query_tag " << query_tag << std::endl;
@@ -159,10 +164,13 @@ public:
 
     KronHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_)
     :   base(tbl_)
-      , kronecker_table(new OPTable<Matrix, SymmGroup>()) {}
+      , kronecker_table(new OPTable<Matrix, SymmGroup>()) { }
 
-    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2);
-     
+    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin);
+
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }
 

@@ -89,7 +89,7 @@ private:
         add_option("chkp_each", "", value(1)); 
         add_option("update_each", "", value(-1));
         add_option("entanglement_spectra", "", value(0));
-        
+        add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
         
         add_option("expm_method", "algorithm used for exp(-i H dt): heev (default), geev", value("heev"));
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
@@ -104,7 +104,8 @@ private:
         add_option("init_state", "", value("default"));
         add_option("init_coeff", "coefficients for coherent init", value(""));
         add_option("init_basis_state", "local indexes for basis state init", value(""));
-        
+        add_option("ci_level", "number of electrons excited from HF determinant", "1,2,3,4,5,6");
+
         add_option("symmetry", "none, u1 or 2u1", value("u1"));
         add_option("lattice_library", "", value("alps"));
         add_option("model_library", "", value("alps"));

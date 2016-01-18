@@ -34,7 +34,7 @@
 // {{{ tiles< subset_view<Matrix> >
 #define size_type typename tiles<subset_view<Matrix>, IB>::size_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template<class Matrix, int IB>
     inline tiles<subset_view<Matrix>, IB> tiles<subset_view<Matrix>, IB>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
@@ -73,7 +73,7 @@ namespace ambient { namespace numeric {
     template<class Matrix, int IB>
     template<class MatrixB>
     inline tiles<subset_view<Matrix>, IB>& tiles<subset_view<Matrix>, IB>::operator = (const tiles<MatrixB, IB>& rhs){
-        int size = rhs.data.size();
+        int size = rhs.num_tiles();
         for(int i = 0; i < size; i++)
             (*this)[i] = rhs[i];
         return *this;
@@ -81,7 +81,7 @@ namespace ambient { namespace numeric {
     
     template<class Matrix, int IB>
     inline tiles<subset_view<Matrix>, IB>& tiles<subset_view<Matrix>, IB>::operator = (const tiles<subset_view<Matrix>, IB>& rhs){
-        int size = rhs.data.size();
+        int size = rhs.num_tiles();
         for(int i = 0; i < size; i++)
             (*this)[i] = rhs[i];
         return *this;
@@ -118,6 +118,11 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix, int IB>
+    inline size_type tiles<subset_view<Matrix>, IB>::num_tiles() const {
+        return this->data.size();
+    }
+
+    template<class Matrix, int IB>
     inline Matrix& tiles<subset_view<Matrix>, IB>::locate(size_type i, size_type j){
         return this->tile(i/IB, j/IB);
     }
@@ -142,7 +147,7 @@ namespace ambient { namespace numeric {
 #define value_type  typename tiles<Matrix,IB>::value_type
 #define scalar_type typename tiles<Matrix,IB>::scalar_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template <class Matrix, int IB>
     inline tiles<Matrix, IB> tiles<Matrix, IB>::identity_matrix(size_type size){
@@ -208,7 +213,7 @@ namespace ambient { namespace numeric {
     inline tiles<Matrix, IB>::tiles(const tiles& a)
     : rows(a.rows), cols(a.cols), mt(a.mt), nt(a.nt)
     {
-        int nb = a.data.size();
+        int nb = a.num_tiles();
         for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(a[k]));
     }
     
@@ -222,7 +227,7 @@ namespace ambient { namespace numeric {
     template<class Matrix, int IB>
     template<class MatrixB>
     inline tiles<Matrix, IB>& tiles<Matrix, IB>::operator = (const tiles<MatrixB, IB>& rhs){
-        int size = rhs.data.size();
+        int size = rhs.num_tiles();
         for(int i = 0; i < size; i++)
             (*this)[i] = rhs[i];
         return *this;
@@ -230,7 +235,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix, int IB>
     tiles<Matrix, IB>::~tiles(){
-        int size = this->data.size();
+        int size = this->num_tiles();
         for(int i = 0; i < size; i++) 
             delete this->data[i];
     }
@@ -243,6 +248,11 @@ namespace ambient { namespace numeric {
     template<class Matrix, int IB>
     inline size_type tiles<Matrix, IB>::num_cols() const {
         return this->cols;
+    }
+
+    template<class Matrix, int IB>
+    inline size_type tiles<Matrix, IB>::num_tiles() const {
+        return this->data.size();
     }
 
     template<class Matrix, int IB>
@@ -282,11 +292,11 @@ namespace ambient { namespace numeric {
     template<class Matrix, class OtherMatrix, int IB>
     bool operator == (const tiles<Matrix, IB>& a, const tiles<OtherMatrix, IB>& b){
         bool result = true;
-        if(a.data.size() != b.data.size()){
-            printf("Blocks are different: %lu against %lu\n", a.data.size(), b.data.size());
+        if(a.num_tiles() != b.num_tiles()){
+            printf("Blocks are different: %lu against %lu\n", a.num_tiles(), b.num_tiles());
             return false;
         }
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             if(a[i] == b[i]) continue;
             else result = false;
@@ -321,13 +331,13 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, int IB>
     inline Matrix& tiles<Matrix, IB>::operator[] (size_type k){
-        assert(k < data.size());
+        assert(k < num_tiles());
         return *this->data[k];
     }
 
     template<class Matrix, int IB>
     inline const Matrix& tiles<Matrix, IB>::operator[] (size_type k) const {
-        assert(k < data.size());
+        assert(k < num_tiles());
         return *this->data[k];
     }
 
@@ -404,7 +414,7 @@ namespace ambient { namespace numeric {
 #define value_type  typename tiles<diagonal_matrix<T>, IB>::value_type
 #define scalar_type typename tiles<diagonal_matrix<T>, IB>::scalar_type
 
-namespace ambient { namespace numeric {
+namespace ambient { inline namespace numeric {
 
     template <typename T, int IB>
     inline tiles<diagonal_matrix<T>, IB> tiles<diagonal_matrix<T>, IB>::identity_matrix(size_type size){
@@ -434,7 +444,7 @@ namespace ambient { namespace numeric {
     inline tiles<diagonal_matrix<T>, IB>::tiles(const tiles& a)
     : size(a.size), nt(a.nt)
     {
-        int nb = a.data.size();
+        int nb = a.num_tiles();
         for(int k = 0; k < nb; k++) this->data.push_back(new diagonal_matrix<T>(a[k]));
     }
     
@@ -447,7 +457,7 @@ namespace ambient { namespace numeric {
 
     template <typename T, int IB>
     tiles<diagonal_matrix<T>, IB>::~tiles(){
-        int size = this->data.size();
+        int size = this->num_tiles();
         for(int i = 0; i < size; i++) delete this->data[i];
     }
 
@@ -474,6 +484,11 @@ namespace ambient { namespace numeric {
     template<typename T, int IB>
     inline size_type tiles<diagonal_matrix<T>, IB>::num_cols() const {
         return this->size;
+    }
+
+    template<typename T, int IB>
+    inline size_type tiles<diagonal_matrix<T>, IB>::num_tiles() const {
+        return this->data.size();
     }
 
     template<typename T, int IB>

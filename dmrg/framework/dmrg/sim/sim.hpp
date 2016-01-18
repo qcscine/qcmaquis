@@ -43,6 +43,13 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
     
+    /// Model initialization
+    lat = Lattice(parms);
+    model = Model<Matrix, SymmGroup>(lat, parms);
+    mpo = make_mpo(lat, model);
+    all_measurements = model.measurements();
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+    
     {
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
@@ -57,7 +64,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
                 
                 if (init_site == -1)
                     ++init_sweep;
-                
+
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
                 restore = true;
@@ -66,8 +73,28 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             }
         }
     }
+
+    /// MPS initialization
+    if (restore) {
+
+        maquis::checks::symmetry_check(parms, chkpfile);
+        load(chkpfile, mps);
+        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
+
+    } else if (!parms["initfile"].empty()) {
+        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+
+        maquis::checks::symmetry_check(parms, parms["initfile"].str());
+        load(parms["initfile"].str(), mps);
+        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
+
+    } else {
+        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+    }
+
+    assert(mps.length() == lat.size());
     
-    
+    /// Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
         
@@ -84,28 +111,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/version"] << DMRG_VERSION_STRING;
     }
     
-    
-    /// Model initialization
-    lat = Lattice(parms);
-    model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model);
-    all_measurements = model.measurements();
-    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    
-    
-    /// MPS initialization
-    if (restore) {
-        load(chkpfile, mps);
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-        load(parms["initfile"].str(), mps);
-    } else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-    }
-    
-    assert(mps.length() == lat.size());
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
-    
 }
 
 template <class Matrix, class SymmGroup>

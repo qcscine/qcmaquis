@@ -68,7 +68,11 @@ namespace detail {
  */
  
 template <class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
+typename boost::disable_if<
+                           boost::is_same<typename symm_traits::SymmType<SymmGroup>::type, symm_traits::SU2Tag>,
+                           MPS<Matrix, SymmGroup>
+                           >::type
+mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
 {
     typedef typename SymmGroup::charge charge;
     typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
@@ -109,8 +113,8 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                     boost::tie(l_charge, ll) = left_map[b1];
                     size_t l_size = left_i[left_i.position(l_charge)].second;
                     
-                    typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
-                    op_t const& in_block = mpo[i].at(b1, b2).op;
+                    typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
+                    op_t const& in_block = mpo[i].at(b1, b2).op();
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
@@ -179,6 +183,15 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
     return mps;
 }
 
+template <class Matrix, class SymmGroup>
+typename boost::enable_if<
+                           boost::is_same<typename symm_traits::SymmType<SymmGroup>::type, symm_traits::SU2Tag>,
+                           MPS<Matrix, SymmGroup>
+                           >::type
+mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
+{
+    throw std::runtime_error("There are no SuperMeasurements for SU2 symmetry");
+}
 
 
 /*
@@ -245,8 +258,8 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                         size_t     l_size   = left_i[l].second;
                         size_t     ll       = b1;
                         
-                        typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
-                        op_t const& in_block = mpo[i].at(b1, b2).op;
+                        typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
+                        op_t const& in_block = mpo[i].at(b1, b2).op();
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;

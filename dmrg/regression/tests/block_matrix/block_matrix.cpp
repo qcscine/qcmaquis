@@ -429,6 +429,93 @@ BOOST_AUTO_TEST_CASE(allocate_blocks){
 
 }
 
+BOOST_AUTO_TEST_CASE(cleanup_zeros_1){ // remove block in the middle
+    block_matrix<Matrix, U1> ba;
+    {
+        Matrix m(4, 6, 1.);
+        m(3,2) = m(2,2) = m(3,3) = 1e-15;
+        ba.insert_block(m, 0, 0);
+    }
+    {
+        Matrix m(3, 2, 1e-15);
+        ba.insert_block(m, 1, 1);
+    }
+    {
+        Matrix m(2, 1, 1.);
+        m(1,0) = 1e-15;
+        ba.insert_block(m, 2, 2);
+    }
+    
+    ba.cleanup_zeros(1e-10);
+
+    BOOST_CHECK_EQUAL(ba.n_blocks(),2);
+    BOOST_CHECK_EQUAL(ba(0,0)(3,2),0.);
+    BOOST_CHECK_EQUAL(ba(0,0)(2,2),0.);
+    BOOST_CHECK_EQUAL(ba(0,0)(3,3),0.);
+    BOOST_CHECK_EQUAL(ba(2,2)(1,0),0.);
+    
+    ba.cleanup_zeros(10.);
+    BOOST_CHECK_EQUAL(ba.n_blocks(),0);
+}
+
+BOOST_AUTO_TEST_CASE(cleanup_zeros_2){ // remove first block
+    block_matrix<Matrix, U1> ba;
+    {
+        Matrix m(3, 2, 1e-15);
+        ba.insert_block(m, 0, 0);
+    }
+    {
+        Matrix m(4, 6, 1.);
+        m(3,2) = m(2,2) = m(3,3) = 1e-15;
+        ba.insert_block(m, 1, 1);
+    }
+    {
+        Matrix m(2, 1, 1.);
+        m(1,0) = 1e-15;
+        ba.insert_block(m, 2, 2);
+    }
+    
+    ba.cleanup_zeros(1e-10);
+
+    BOOST_CHECK_EQUAL(ba.n_blocks(),2);
+    BOOST_CHECK_EQUAL(ba(1,1)(3,2),0.);
+    BOOST_CHECK_EQUAL(ba(1,1)(2,2),0.);
+    BOOST_CHECK_EQUAL(ba(1,1)(3,3),0.);
+    BOOST_CHECK_EQUAL(ba(2,2)(1,0),0.);
+    
+    ba.cleanup_zeros(10.);
+    BOOST_CHECK_EQUAL(ba.n_blocks(),0);
+}
+
+BOOST_AUTO_TEST_CASE(cleanup_zeros_3){ // remove last block
+    block_matrix<Matrix, U1> ba;
+    {
+        Matrix m(4, 6, 1.);
+        m(3,2) = m(2,2) = m(3,3) = 1e-15;
+        ba.insert_block(m, 0, 0);
+    }
+    {
+        Matrix m(2, 1, 1.);
+        m(1,0) = 1e-15;
+        ba.insert_block(m, 1, 1);
+    }
+    {
+        Matrix m(3, 2, 1e-15);
+        ba.insert_block(m, 2, 2);
+    }
+    
+    ba.cleanup_zeros(1e-10);
+
+    BOOST_CHECK_EQUAL(ba.n_blocks(),2);
+    BOOST_CHECK_EQUAL(ba(0,0)(3,2),0.);
+    BOOST_CHECK_EQUAL(ba(0,0)(2,2),0.);
+    BOOST_CHECK_EQUAL(ba(0,0)(3,3),0.);
+    BOOST_CHECK_EQUAL(ba(1,1)(1,0),0.);
+    
+    ba.cleanup_zeros(10.);
+    BOOST_CHECK_EQUAL(ba.n_blocks(),0);
+}
+
 
 
 

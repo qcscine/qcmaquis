@@ -40,12 +40,14 @@
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
+#include "ietl_davidson.h"
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
+#include "dmrg/utils/checks.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -107,7 +109,6 @@ public:
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
 
-        //if (northo > 0 && parms_["ortho_states"]=="")
         if (northo > 0 && !parms_.is_set("ortho_states"))
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
 
@@ -117,7 +118,11 @@ public:
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
+
+            maquis::checks::symmetry_check(parms, files[n]);
             load(files[n], ortho_mps[n]);
+            maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
+
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         

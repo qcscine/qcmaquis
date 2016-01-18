@@ -72,9 +72,9 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     }
     
     typename SymmGroup::charge maximum_total_charge=SymmGroup::IdentityCharge, minimum_total_charge=SymmGroup::IdentityCharge;
-    for (int i = 1; i < L; ++i) {
-        maximum_total_charge = SymmGroup::fuse(maximum_total_charge, maximum_charges[site_type[i-1]]);
-        minimum_total_charge = SymmGroup::fuse(minimum_total_charge, minimum_charges[site_type[i-1]]);
+    for (int i = 0; i < L; ++i) {
+        maximum_total_charge = SymmGroup::fuse(maximum_total_charge, maximum_charges[site_type[i]]);
+        minimum_total_charge = SymmGroup::fuse(minimum_total_charge, minimum_charges[site_type[i]]);
     }
     
     Index<SymmGroup> l_triv, r_triv;
@@ -89,6 +89,9 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     for (int i = 1; i < L+1; ++i) {
         left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
         typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i-1]]);
+        
         while ( it != left_allowed[i].end() )
         {
             if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < right_end)
@@ -102,14 +105,14 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 ++it;
             }
         }
-        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
-        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i-1]]);
     }
     
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
-        
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
+
         typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
         {
@@ -117,14 +120,13 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = right_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
                 it = right_allowed[i].erase(it);
+            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
+                it = right_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
                 ++it;
             }
         }
-        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
-        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
-        
     }
     
     for (int i = 0; i < L+1; ++i) {

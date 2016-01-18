@@ -80,7 +80,7 @@ public:
     virtual table_ptr operators_table() const=0;
     
     virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
-    
+
 protected:
     terms_type terms_;
 };
