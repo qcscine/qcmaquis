@@ -76,9 +76,21 @@ namespace generate_mpo
             bool operator<(prempo_key const& lhs) const
             {
                 if (kind != lhs.kind) return kind < lhs.kind;
+                //if (pos_op.size() != lhs.pos_op.size()) return pos_op.size() < lhs.pos_op.size();
                 return (pos_op == lhs.pos_op) ? offset < lhs.offset : pos_op < lhs.pos_op;
             }
         };
+    }
+
+    template <typename pos_t, typename tag_type, typename index_type>
+    std::ostream& operator << (std::ostream& os, detail::prempo_key<pos_t, tag_type, index_type> key)
+    {
+        unsigned s = key.pos_op.size();
+        for (int i = 0; i < s; ++i)
+            os << key.pos_op[i].first << ":" << key.pos_op[i].second << ", ";
+        os << "o" << key.offset;
+
+        return os;
     }
     
     template <typename T, typename U>
@@ -86,6 +98,8 @@ namespace generate_mpo
     {
         return std::make_pair( boost::get<0>(t), boost::get<1>(t) );
     }
+
+
 
     template<class Matrix, class SymmGroup>
     class TaggedMPOMaker
@@ -105,7 +119,8 @@ namespace generate_mpo
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
-        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
+        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
+                         compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
         
         enum merge_kind {attach, detach};
         
@@ -200,6 +215,8 @@ namespace generate_mpo
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
+
+                std::ofstream keyfile(std::string("key" + boost::lexical_cast<std::string>(p) +".dat").c_str());
                 
                 index_map right;
                 index_type r = 2;
@@ -219,11 +236,16 @@ namespace generate_mpo
                     else if (k2 == trivial_right && rr == right.end())
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, 1) );
                     else if (rr == right.end())
+                    {
+                        //maquis::cout << k2 << std::endl;
+                        keyfile << r << " " << k2 << std::endl;
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
+                    }
                     
                     index_type rr_dim = (p == length-1) ? 0 : rr->second;
                     pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
                 }
+                keyfile.close();
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
 
