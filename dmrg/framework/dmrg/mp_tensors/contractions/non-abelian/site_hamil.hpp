@@ -55,7 +55,10 @@ namespace contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        return site_hamil_lbtm(ket_tensor, left, right, mpo);
+        if ( (mpo.row_dim() - mpo.num_one_rows()) < (mpo.col_dim() - mpo.num_one_cols()) )
+            return site_hamil_lbtm(ket_tensor, left, right, mpo);
+        else
+            return site_hamil_rbtm(ket_tensor, left, right, mpo);
     }
 
     // *************************************************************
