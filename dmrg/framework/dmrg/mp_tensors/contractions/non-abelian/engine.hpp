@@ -150,10 +150,17 @@ namespace contraction {
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
                     MPOTensor<Matrix, SymmGroup> const & mpo);
+
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
     };
 
 } // namespace contraction
 
 #include "dmrg/mp_tensors/contractions/non-abelian/site_hamil.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/site_hamil_rbtm.hpp"
 
 #endif
