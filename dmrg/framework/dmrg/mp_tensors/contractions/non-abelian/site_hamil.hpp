@@ -30,6 +30,23 @@
 
 namespace contraction {
 
+    // forward declarations
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
+    site_hamil_lbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
+    site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
+    // *************************************************************
+
+
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
     Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>::
@@ -37,6 +54,19 @@ namespace contraction {
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        return site_hamil_lbtm(ket_tensor, left, right, mpo);
+    }
+
+    // *************************************************************
+    // specialized variants
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
+    site_hamil_lbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
@@ -111,6 +141,51 @@ namespace contraction {
                 ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
         });
 #endif
+        return ret;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
+    site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+
+        std::vector<block_matrix<Matrix, SymmGroup> > t
+            = common::mps_times_boundary<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, right, mpo);
+
+        Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
+                                 right_i = ket_tensor.col_dim();
+        Index<SymmGroup> left_i = ket_tensor.row_dim(),
+                         out_right_i = adjoin(physical_i) * right_i;
+
+        common_subset(out_right_i, left_i);
+        ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
+        ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                 -boost::lambda::_1, boost::lambda::_2));
+        block_matrix<Matrix, SymmGroup> collector;
+        MPSTensor<Matrix, SymmGroup> ret;
+        ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
+
+        index_type loop_max = mpo.row_dim();
+        omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
+
+            block_matrix<Matrix, SymmGroup> tmp, tmp2;
+            SU2::rbtm_kernel(b1, tmp, right, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
+
+            ::SU2::gemm_trim(transpose(left[b1]), tmp, tmp2);
+            tmp.clear();
+
+            parallel_critical
+            for (std::size_t k = 0; k < tmp2.n_blocks(); ++k)
+                collector.match_and_add_block(tmp2[k], tmp2.basis().left_charge(k), tmp2.basis().right_charge(k));
+        });
+
+        reshape_right_to_left_new(physical_i, left_i, right_i, collector, ret.data());
         return ret;
     }
 
