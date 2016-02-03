@@ -218,9 +218,16 @@ namespace SU2 {
                         int j = out_l_charge[1], jp = mc[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        //if (std::abs(coupling_coeff) < 1.e-40) continue;
+                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+
+                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+                        typename Matrix::value_type couplings[4];
+                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, two_sp, ip);
+                        couplings[2] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2,      ip);
+                        couplings[3] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
@@ -230,12 +237,37 @@ namespace SU2 {
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
 
-                        maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
-                                out_right_offset, in_left_offset,
-                                phys_s1, phys_s2, l_size, T.basis().right_size(t_block), coupling_coeff);
-                    }
+                        //maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
+                        //        out_right_offset, in_left_offset,
+                        //        phys_s1, phys_s2, l_size, T.basis().right_size(t_block), coupling_coeff);
+
+                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+
+                        size_t r_size = T.basis().right_size(t_block);
+                        for(size_t rr = 0; rr < r_size; ++rr) {
+                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                            {
+                                std::size_t ss1 = it->row;
+                                std::size_t ss2 = it->col;
+                                std::size_t rspin = it->row_spin;
+                                std::size_t cspin = it->col_spin;
+                                std::size_t casenr = 0; 
+                                if (rspin == 2 && cspin == 2) casenr = 3;
+                                else if (rspin == 2) casenr = 1;
+                                else if (cspin == 2) casenr = 2;
+
+                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+                                maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, rr),
+                                                                    &iblock(in_left_offset + ss1*l_size, rr) + l_size,
+                                                                    &oblock(0, out_right_offset + ss2*r_size + rr),
+                                                                    alfa_t);
+                            }
+                        }
+
+                    } // wblock
                 }
-            }
+            } // ket block
         } // op_index
         } // b1
     }

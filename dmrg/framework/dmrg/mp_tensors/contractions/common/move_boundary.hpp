@@ -258,12 +258,14 @@ namespace contraction {
             std::vector<block_matrix<Matrix, SymmGroup> > t
                 = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, right, mpo);
 
-            Index<SymmGroup> left_i = ket_tensor.row_dim();
-            Index<SymmGroup> const & right_i = bra_tensor.col_dim();
-            Index<SymmGroup> out_right_i = adjoin(ket_tensor.site_dim()) * right_i;
+            Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
+                                     right_i = bra_tensor.col_dim();
+            Index<SymmGroup> left_i = ket_tensor.row_dim(),
+                             out_right_i = adjoin(physical_i) * right_i;
+
             common_subset(out_right_i, left_i);
-            ProductBasis<SymmGroup> in_left_pb(ket_tensor.site_dim(), left_i);
-            ProductBasis<SymmGroup> out_right_pb(ket_tensor.site_dim(), right_i,
+            ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
+            ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                                  boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                      -boost::lambda::_1, boost::lambda::_2));
             Boundary<Matrix, SymmGroup> ret;
