@@ -41,22 +41,8 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-        //std::vector<block_matrix<Matrix, SymmGroup> > t
-        //    = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, left, mpo);
-
         std::vector<block_matrix<Matrix, SymmGroup> > t
             = common::mps_times_boundary<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, right, mpo);
-
-        //Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-        //                       & left_i = ket_tensor.row_dim();
-        //Index<SymmGroup> right_i = ket_tensor.col_dim(),
-        //                 out_left_i = physical_i * left_i;
-
-        //common_subset(out_left_i, right_i);
-        //ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
-        //ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-        //                        boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-        //                                -boost::lambda::_1, boost::lambda::_2));
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                  right_i = ket_tensor.col_dim();
@@ -68,13 +54,10 @@ namespace contraction {
         ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                  -boost::lambda::_1, boost::lambda::_2));
-
-        MPSTensor<Matrix, SymmGroup> ret;
         block_matrix<Matrix, SymmGroup> collector;
+        MPSTensor<Matrix, SymmGroup> ret;
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
 
-        //index_type loop_max = mpo.col_dim();
-        //omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         index_type loop_max = mpo.row_dim();
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
 

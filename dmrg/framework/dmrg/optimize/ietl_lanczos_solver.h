@@ -110,12 +110,6 @@ namespace ietl
               MPSTensor<Matrix, SymmGroup> & y)
     {  
         y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo);
-        MPSTensor<Matrix, SymmGroup> yp = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil_rbtm(x, H.left, H.right, H.mpo);
-        //maquis::cout << "*****************************************************\n"
-        //             << y.data();
-        //maquis::cout << yp.data();
-        assert(y.data().basis() == yp.data().basis());
-        //swap(y, yp);
         x.make_left_paired();
     }
     

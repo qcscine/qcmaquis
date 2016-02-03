@@ -55,12 +55,11 @@ namespace contraction {
         ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                  -boost::lambda::_1, boost::lambda::_2));
-
         block_matrix<Matrix, SymmGroup> collector;
         MPSTensor<Matrix, SymmGroup> ret;
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
-        index_type loop_max = mpo.row_dim();
 
+        index_type loop_max = mpo.row_dim();
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
 
             block_matrix<Matrix, SymmGroup> tmp, tmp2;
