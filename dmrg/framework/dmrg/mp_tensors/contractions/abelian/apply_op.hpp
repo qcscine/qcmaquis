@@ -91,7 +91,7 @@ namespace contraction {
                              Boundary<OtherMatrix, SymmGroup> const & left,
                              std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                             DualIndex<SymmGroup> const & ket_basis,
+                             MPSTensor<Matrix, SymmGroup> const & mps,
                              Index<SymmGroup> const & right_i,
                              Index<SymmGroup> const & out_left_i,
                              ProductBasis<SymmGroup> const & in_right_pb,
@@ -198,7 +198,7 @@ namespace contraction {
                              Boundary<OtherMatrix, SymmGroup> const & right,
                              std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                             DualIndex<SymmGroup> const & ket_basis,
+                             MPSTensor<Matrix, SymmGroup> const & mps,
                              Index<SymmGroup> const & left_i,
                              Index<SymmGroup> const & out_right_i,
                              ProductBasis<SymmGroup> const & in_left_pb,
@@ -262,14 +262,14 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
+                     MPSTensor<Matrix, SymmGroup> const & mps,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
         lbtm_kernel_allocate(b2, contr_grid, left_mult_mps, mpo, right_i, out_left_i);
-        lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
+        lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, mps, right_i, out_left_i, in_right_pb, out_left_pb);
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -278,14 +278,14 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & right,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
+                     MPSTensor<Matrix, SymmGroup> const & mps,
                      Index<SymmGroup> const & left_i,
                      Index<SymmGroup> const & out_right_i,
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
         rbtm_kernel_allocate(b1, ret, right_mult_mps, mpo, left_i, out_right_i);
-        rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
+        rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, mps, left_i, out_right_i, in_left_pb, out_right_pb);
     }
     
     } // namespace abelian

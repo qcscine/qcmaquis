@@ -33,6 +33,8 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
+#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
+
 namespace contraction {
 namespace SU2 {
 
@@ -42,7 +44,7 @@ namespace SU2 {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis,
+                     MPSTensor<Matrix, SymmGroup> const & mps,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
@@ -54,11 +56,21 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
+        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
+
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
+            block_matrix<Matrix, SymmGroup> local_T;
+            block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
+            if (mpo.num_row_non_zeros(b1) == 1)
+                ::SU2::gemm_trim_left(transpose(left[b1]), mps.data(), local_T);
+            else
+                Tp = &left_mult_mps[b1];
+
+            block_matrix<Matrix, SymmGroup> const & T = *Tp;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
@@ -162,7 +174,7 @@ namespace SU2 {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
-                DualIndex<SymmGroup> const & ket_basis,
+                MPSTensor<Matrix, SymmGroup> const & mps,
                 Index<SymmGroup> const & left_i,
                 Index<SymmGroup> const & out_right_i,
                 ProductBasis<SymmGroup> const & in_left_pb,
@@ -174,11 +186,22 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
+        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
+
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
+            block_matrix<Matrix, SymmGroup> local_T;
+            block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
+            if (mpo.num_col_non_zeros(b2) == 1)
+                gemm(mps.data(), right[b2], local_T);
+            else
+                Tp = &right_mult_mps[b2];
+
+            block_matrix<Matrix, SymmGroup> const & T = *Tp;
+
+            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
