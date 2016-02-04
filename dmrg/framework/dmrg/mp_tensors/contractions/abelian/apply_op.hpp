@@ -38,11 +38,47 @@ namespace contraction {
 
     using ::contraction::ContractionGrid;
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    block_matrix<Matrix, SymmGroup> const * setT_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
+                                                      std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                                      block_matrix<Matrix, SymmGroup> & local,
+                                                      MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                      MPSTensor<Matrix, SymmGroup> const & mps,
+                                                      typename MPOTensor<Matrix, SymmGroup>::index_type b)
+    {
+        block_matrix<Matrix, SymmGroup> const * Tp = &local;
+        if (mpo.num_row_non_zeros(b) == 1)
+            gemm_trim_left(transpose(boundary[b]), mps.data(), local);
+        else
+            Tp = &mult_mps[b];
+
+        return Tp;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    block_matrix<Matrix, SymmGroup> const * setT_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
+                                                       std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                                       block_matrix<Matrix, SymmGroup> & local,
+                                                       MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                       MPSTensor<Matrix, SymmGroup> const & mps,
+                                                       typename MPOTensor<Matrix, SymmGroup>::index_type b)
+    {
+        block_matrix<Matrix, SymmGroup> const * Tp = &local;
+        if (mpo.num_col_non_zeros(b) == 1)
+            gemm_trim_right(mps.data(), boundary[b], local);
+        else
+            Tp = &mult_mps[b];
+
+        return Tp;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_allocate(size_t b2,
                               ContractionGrid<Matrix, SymmGroup>& contr_grid,
+                              Boundary<OtherMatrix, SymmGroup> const & left,
                               std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
+                              MPSTensor<Matrix, SymmGroup> const & mps,
                               Index<SymmGroup> const & right_i,
                               Index<SymmGroup> const & out_left_i)
     {
@@ -55,7 +91,12 @@ namespace contraction {
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+
+            //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = *setT_left(left, left_mult_mps, local, mpo, mps, b1);
+                if(T.n_blocks() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
@@ -106,7 +147,12 @@ namespace contraction {
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+
+            //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = *setT_left(left, left_mult_mps, local, mpo, mps, b1);
+                if(T.n_blocks() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
@@ -150,11 +196,13 @@ namespace contraction {
         } // b1
     }
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel_allocate(size_t b1,
                               block_matrix<Matrix, SymmGroup> & ret,
+                              Boundary<OtherMatrix, SymmGroup> const & right,
                               std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
+                              MPSTensor<Matrix, SymmGroup> const & mps,
                               Index<SymmGroup> const & left_i,
                               Index<SymmGroup> const & out_right_i)
     {
@@ -167,7 +215,12 @@ namespace contraction {
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+
+            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = *setT_right(right, right_mult_mps, local, mpo, mps, b2);
+                if(T.n_blocks() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
@@ -215,7 +268,12 @@ namespace contraction {
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+
+            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = *setT_right(right, right_mult_mps, local, mpo, mps, b2);
+                if(T.n_blocks() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
@@ -268,7 +326,7 @@ namespace contraction {
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
-        lbtm_kernel_allocate(b2, contr_grid, left_mult_mps, mpo, right_i, out_left_i);
+        lbtm_kernel_allocate(b2, contr_grid, left, left_mult_mps, mpo, mps, right_i, out_left_i);
         lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, mps, right_i, out_left_i, in_right_pb, out_left_pb);
     }
 
@@ -284,7 +342,7 @@ namespace contraction {
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
-        rbtm_kernel_allocate(b1, ret, right_mult_mps, mpo, left_i, out_right_i);
+        rbtm_kernel_allocate(b1, ret, right, right_mult_mps, mpo, mps, left_i, out_right_i);
         rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, mps, left_i, out_right_i, in_left_pb, out_right_pb);
     }
     
