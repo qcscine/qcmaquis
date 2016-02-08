@@ -56,11 +56,22 @@ namespace SU2 {
         }
     };
 
+    struct su2gemm_trim_right
+    {
+        template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+        void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                        block_matrix<Matrix2, SymmGroup> const & B,
+                        block_matrix<Matrix3, SymmGroup> & C)
+        {
+            SU2::gemm_trim_right(A,B,C);
+        }
+    };
+
     struct SU2Gemms
     {
         typedef su2gemm gemm;
-        typedef su2gemm_trim_left gemm_trim_left;
-        typedef su2gemm           gemm_trim_right;
+        typedef su2gemm_trim_left  gemm_trim_left;
+        typedef su2gemm_trim_right gemm_trim_right;
     };
 
 } // namespace SU2

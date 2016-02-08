@@ -195,7 +195,7 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> local_T;
             block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
             if (mpo.num_col_non_zeros(b2) == 1)
-                gemm(mps.data(), right[b2], local_T);
+                ::SU2::gemm_trim_right(mps.data(), right[b2], local_T);
             else
                 Tp = &right_mult_mps[b2];
 
@@ -219,6 +219,7 @@ namespace SU2 {
                 {
                     charge rc = it->rc;
                     size_t t_block = T.basis().position(lc, rc); // t_block != ketblock in general
+                    if (t_block == T.basis().size()) continue;
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
