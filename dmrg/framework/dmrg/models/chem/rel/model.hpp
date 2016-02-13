@@ -137,11 +137,9 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create, destroy, tag_handler, lat)
             );
-            if (!parms["COMPLEX"]) {
                 this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term( 
-                    true, fill, matrix_elements[m], j, i, create, destroy, tag_handler, lat)
+                    true, fill, chem_detail::cconj(matrix_elements[m]), j, i, create, destroy, tag_handler, lat)
                 );
-            }
             used_elements[m] += 1;
         }
         #endif

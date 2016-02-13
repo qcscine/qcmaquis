@@ -175,6 +175,11 @@ namespace chem_detail {
     {
         return std::conj(a);
     }
+    template<class T>
+    typename boost::disable_if<boost::is_complex<T>,T>::type cconj(T a)
+    {
+        return a;
+    }
 
 }
 
