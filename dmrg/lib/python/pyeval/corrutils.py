@@ -74,10 +74,11 @@ def assemble_halfcorr_complex(diag, triang):
         #print val
         i = lab[0]
         j = lab[1]
-        ret_real[i,j] = val.real
-        ret_real[j,i] = val.real
-        ret_cplx[i,j] = val.imag
-        ret_cplx[j,i] = val.imag
+        ret_real[i,j] =  val.real
+        ret_cplx[i,j] =  val.imag
+        # dv(j,i) = dv(i,j)*
+        ret_real[j,i] =  val.real
+        ret_cplx[j,i] = -val.imag
 
     return (ret_real,ret_cplx)
 
