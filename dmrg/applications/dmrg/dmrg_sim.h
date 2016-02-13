@@ -111,6 +111,7 @@ public:
                         // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
 
                         // stop simulation if an energy threshold has been specified
+                        // FIXME: this does not work for complex numbers - stknecht feb 2016 
                         int prev_sweep = sweep - meas_each;
                         if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
                         {
