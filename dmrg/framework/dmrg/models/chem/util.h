@@ -170,6 +170,12 @@ namespace chem_detail {
         std::copy(source.begin(), source.end(), std::back_inserter(target));
     }
 
+    template<class T>
+    typename boost::enable_if<boost::is_complex<T>,T>::type cconj(T a)
+    {
+        return std::conj(a);
+    }
+
 }
 
 #endif
