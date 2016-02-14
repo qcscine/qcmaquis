@@ -243,6 +243,10 @@ public:
             if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
+                typedef std::vector<tag_type> tag_vec;
+                typedef std::vector<tag_vec> bond_tag_element;
+                typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
+
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
@@ -251,21 +255,20 @@ public:
                 else
                     name = "twoptdm";
 
-                std::vector<bond_element> synchronous_meas_operators;
+		std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_ops, true) );
-                meas_operators.push_back( std::make_pair(create_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create);
+                    meas_operators.push_back(create);
+                    meas_operators.push_back(destroy);
+                    meas_operators.push_back(destroy);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-				// has to be false if using Rel_NRankRDM
-                half_only = false;
-                nearest_neighbors_only = false;
+                half_only = true;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, 
+		                                                                    synchronous_meas_operators,half_only, 
+										    positions, bra_ckp));
             }
             else if (!name.empty()) {
                 typedef std::vector<tag_type> tag_vec;
