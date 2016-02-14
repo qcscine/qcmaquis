@@ -1040,7 +1040,7 @@ namespace measurements {
                              continue;
                        if(std::max(p1,p2) == std::max(p3,p4)  && p1 > p4)
                              continue;
-                       if(std::min(p1,p2) == std::min(p3,p4)  && std::max(p1,p2) <= std::max(k,p4))
+                       if(std::min(p1,p2) == std::min(p3,p4)  && std::max(p1,p2) <= std::max(p3,p4))
                              continue;
                        if((p1 == p2 && p4  == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && (p4 == p2 || p4 > p1)))
                              continue;
