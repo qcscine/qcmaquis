@@ -240,6 +240,7 @@ public:
                 meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
+            /* DEACTIVATED for NOW - there is a problem with elements where two ops are sitting on the same site...
             if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
@@ -270,6 +271,35 @@ public:
 		                                                                    synchronous_meas_operators,half_only, 
 										    positions, bra_ckp));
             }
+              */
+            // ... hence we are still using the old one until the problem is fixed (will need to consult Sebastian).
+              
+            if (boost::regex_match(lhs, what, expression_twoptdm) ||
+                    boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[trans2rdm]"){
+                    name = "transition_twoptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "twoptdm";
+
+                std::vector<bond_element> synchronous_meas_operators;
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+
+                half_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, 
+                                                                                  synchronous_meas_operators,half_only,
+                                                                                  nearest_neighbors_only, positions, bra_ckp));
+            }
+
             else if (!name.empty()) {
                 typedef std::vector<tag_type> tag_vec;
                 typedef std::vector<tag_vec> bond_tag_element;

@@ -79,9 +79,9 @@ namespace measurements_details {
 		                symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
                     else
 		            symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
-                maquis::cout << " accumulated charge (before) " << acc << " local charge " << local << std::endl;          
+                //maquis::cout << " accumulated charge (before) " << acc << " local charge " << local << std::endl;          
 		    acc = symm::fuse(acc, local);
-                maquis::cout << " accumulated charge (after)  " << acc << " local charge " << local << std::endl;          
+                //maquis::cout << " accumulated charge (after)  " << acc << " local charge " << local << std::endl;          
             }
          
 		if (acc == symm::IdentityCharge)
@@ -929,14 +929,14 @@ namespace measurements {
 
             if (operator_terms[0].first.size() == 2)
                 measure_correlation(bra_mps, ket_mps);
-            else if (operator_terms[0].first.size() == 4)
-                measure_2rdm(bra_mps, ket_mps);
+            //else if (operator_terms[0].first.size() == 4)
+            //    measure_2rdm(bra_mps, ket_mps);
           //else if (operator_terms[0].first.size() == 6)
           //    measure_3rdm(bra_mps, ket_mps);
           //else if (operator_terms[0].first.size() == 8)
           //    measure_4rdm(bra_mps, ket_mps);
             else
-                throw std::runtime_error("relativistic correlation measurements at the moment supported with 2, and 4 operators, size is "
+                throw std::runtime_error("relativistic correlation measurements at the moment supported with 2 operators, size is "
                                           + boost::lexical_cast<std::string>(operator_terms[0].first.size()));
         }
         
@@ -1049,7 +1049,7 @@ namespace measurements {
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                        bool checkpass = false;
+                        bool measured = false;
                         for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                             tag_vec operators(4);
@@ -1059,17 +1059,26 @@ namespace measurements {
                             operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
 
                             // check if term is allowed by symmetry
+                            maquis::cout << " checking term " << p1 << " " << p3 << " " << p4 << " " << p2 << std::endl;
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                            if(checkpass || measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                            {
-                                checkpass = true;
-                                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                            }
-                            else break;
+                            maquis::cout << " arranged term " << term << std::endl;
+                            if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                continue;
+                            measured = true;
+                            MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                            maquis::cout << " scaling factor" << operator_terms[synop].second << std::endl;
+                            maquis::cout << " actual  value " << expval(bra_mps, ket_mps, mpo) << std::endl;
+                            value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
                         }
-                        if(checkpass)
+                        if(measured)
                         {
+                             // debug print
+                             if (std::abs(value) >= 0)
+                             {
+                                 std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                 maquis::cout << " " << value << std::endl;
+                             }
+
                              dct.push_back(value);
                              num_labels.push_back(positions);
                         }
