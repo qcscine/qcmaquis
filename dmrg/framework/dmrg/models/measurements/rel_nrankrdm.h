@@ -91,10 +91,13 @@ namespace measurements {
                     throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
             }
 
-            if (ops[0].size() == 4)
-                measure_2rdm(bra_mps, ket_mps, ops);
+            if (ops[0].size() == 2)
+                measure_correlation(bra_mps, ket_mps);
+            else if (ops[0].size() == 4)
+                //measure_2rdm(bra_mps, ket_mps, ops);
+                measure_2rdm(bra_mps, ket_mps);
             else
-                throw std::runtime_error("rel_nrankrdm correlation measurements at the moment supported with 4 operators");
+                throw std::runtime_error("rel_nrankrdm correlation measurements at the moment supported with 2 and 4 operators");
         }
         
     protected:
@@ -105,10 +108,58 @@ namespace measurements {
             return new Rel_NRankRDM(*this);
         }
         
+        void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
+                                 MPS<Matrix, SymmGroup> const & ket_mps
+                                )
+        {
+            // Test if a separate bra state has been specified
+            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+
+            //int ecounter = 0;
+
+            // TODO: test with ambient in due time
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for schedule(dynamic)
+            #endif
+		for (pos_t i = 0; i < lattice.size(); ++i){
+			for (pos_t j = i; j < lattice.size(); ++j){
+
+				int phase = 1;
+				std::vector<pos_op_t> op_string;
+				op_string.push_back( std::make_pair(i, ops[0][0].first[lattice.get_prop<int>("type",i)]));
+				op_string.push_back( std::make_pair(j, ops[0][1].first[lattice.get_prop<int>("type",j)]));
+
+				////// CALL MPO MAKER /////////
+				NTermsMPO<Matrix, SymmGroup> rdm_elem(lattice, identities, fillings, op_string, phase);
+				MPO<Matrix, SymmGroup> mpo = rdm_elem.create_mpo();
+				//////////////////////////////////
+
+				//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
+				typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
+						
+                                         //ecounter++;
+                                          
+				if(dct != 0.0) {
+					//maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
+							
+							
+					std::vector<pos_t> label; label.push_back(i); label.push_back(j);
+					std::vector<std::vector<pos_t> > num_labels;
+					num_labels.push_back(label);
+					std::vector<std::string> lbt = label_strings(lattice, num_labels);
+								
+					this->vector_results.push_back(dct);
+					this->labels.push_back(lbt[0]);
+				} 
+			} // j loop
+		} // i loop
+        }
+
         void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps,
-                          std::vector<bond_element> const & ops,
-                          std::vector<pos_t> const & order = std::vector<pos_t>())
+                          MPS<Matrix, SymmGroup> const & ket_mps
+                          //std::vector<bond_element> const & ops,
+                         )
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);

@@ -33,7 +33,7 @@ import pyalps
 #import numpy as np
 def load_2rdm(inputfile):
     # load data from the HDF5 result file
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twoptdm')[0][0]
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='Rtwoptdm')[0][0]
     return rdm
 
 def print_2rdm(rdm,tag):
