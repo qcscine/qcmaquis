@@ -50,7 +50,9 @@ def print_2rdm(rdm,tag):
         o = lab[2]
         p = lab[3]
 
-        if abs(val.real) and abs(val.imag) == 0: continue
+        #print "raw data --> ", m,n,o,p, "\t", (val.real, val.imag)
+
+        if abs(val.real) == 0 and abs(val.imag) == 0: continue
  
         dump_element(f, val,m,n,o,p)
         dump_element(f, val,o,p,m,n)
