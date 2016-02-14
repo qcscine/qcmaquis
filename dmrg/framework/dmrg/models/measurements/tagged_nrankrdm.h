@@ -79,9 +79,9 @@ namespace measurements_details {
 		                symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
                     else
 		            symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
-              //maquis::cout << " accumulated charge (before) " << acc << " local charge " << local << std::endl;          
+                maquis::cout << " accumulated charge (before) " << acc << " local charge " << local << std::endl;          
 		    acc = symm::fuse(acc, local);
-              //maquis::cout << " accumulated charge (after)  " << acc << " local charge " << local << std::endl;          
+                maquis::cout << " accumulated charge (after)  " << acc << " local charge " << local << std::endl;          
             }
          
 		if (acc == symm::IdentityCharge)
@@ -1012,8 +1012,6 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            maquis::cout << "BLUBB here in the new part !" << std::endl;
-
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(1) schedule(dynamic)
             #endif
@@ -1056,9 +1054,9 @@ namespace measurements {
 
                             tag_vec operators(4);
                             operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
-                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
-                            operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
-                            operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
+                            operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                            operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
 
                             // check if term is allowed by symmetry
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
