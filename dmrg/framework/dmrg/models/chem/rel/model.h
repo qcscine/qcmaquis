@@ -181,10 +181,10 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_oneptdm("^MEASURE\\[R1rdm\\]");
-        boost::regex expression_transition_oneptdm("^MEASURE\\[Rtrans1rdm\\]");
-        boost::regex expression_twoptdm("^MEASURE\\[R2rdm\\]");
-        boost::regex expression_transition_twoptdm("^MEASURE\\[Rtrans2rdm\\]");
+        boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
+        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
@@ -219,12 +219,12 @@ public:
                     boost::regex_match(lhs, what, expression_transition_oneptdm)) {
 
                 std::string bra_ckp("");
-                if(lhs == "MEASURE[Rtrans1rdm]"){
-                    name = "Rtransition_oneptdm";
+                if(lhs == "MEASURE[trans1rdm]"){
+                    name = "transition_oneptdm";
                     bra_ckp = it->value();
                 }
                 else
-                    name = "Roneptdm";
+                    name = "oneptdm";
 
                 std::vector<bond_element> synchronous_meas_operators;
                 {
@@ -244,12 +244,12 @@ public:
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
-                if(lhs == "MEASURE[Rtrans2rdm]"){
-                    name = "Rtransition_twoptdm";
+                if(lhs == "MEASURE[trans2rdm]"){
+                    name = "transition_twoptdm";
                     bra_ckp = it->value();
                 }
                 else
-                    name = "Rtwoptdm";
+                    name = "twoptdm";
 
                 std::vector<bond_element> synchronous_meas_operators;
                 {
@@ -269,12 +269,11 @@ public:
             }
             else if (!name.empty()) {
                 typedef std::vector<tag_type> tag_vec;
-                //typedef std::vector<tag_vec> bond_tag_element;
+                typedef std::vector<tag_vec> bond_tag_element;
                 typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
 
                 int f_ops = 0;
-                //bond_tag_element meas_operators;
-                bond_element meas_operators;
+                bond_tag_element meas_operators;
                 
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
@@ -288,23 +287,19 @@ public:
                      it2++)
                 {
                     if (*it2 == "c_dag") {
-                        //meas_operators.push_back(create);
-                        meas_operators.push_back( std::make_pair(create_ops, true) );
+                        meas_operators.push_back(create);
                         ++f_ops;
                     }
                     else if (*it2 == "c") {
-                        //meas_operators.push_back(destroy);
-                        meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                        meas_operators.push_back(destroy);
                         ++f_ops;
                     }
                     else if (*it2 == "N") {
-                        //meas_operators.push_back(count);
-                        meas_operators.push_back( std::make_pair(count_ops, true) );
+                        meas_operators.push_back(count);
                         ++f_ops;
                     }
                     else if (*it2 == "id" || *it2 == "Id") {
-                        //meas_operators.push_back(ident);
-                        meas_operators.push_back( std::make_pair(ident_ops, true) );
+                        meas_operators.push_back(ident);
                     }
                     else
                         throw std::runtime_error("Unrecognized operator in correlation measurement: " 
@@ -323,15 +318,10 @@ public:
                                    static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
 
-                std::vector<bond_element> synchronous_meas_operators;
-                synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                                  half_only, nearest_neighbors_only, positions));
-                
-                //std::vector<scaled_bond_element> synchronous_meas_operators;
-                //synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                //meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                //                                                                    half_only, positions));
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions));
             }
         }
         }

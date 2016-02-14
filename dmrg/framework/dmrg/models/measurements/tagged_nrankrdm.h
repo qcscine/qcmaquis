@@ -72,8 +72,16 @@ namespace measurements_details {
             for (std::size_t p = 0; p < term.size(); ++p) {
 		    charge local = symm::IdentityCharge;
 		    if (tag_handler->is_fermionic(term.operator_tag(p)))
-		        symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+                    if(symm_traits::HasU1<symm>::value)
+                        if( p % 2 == 0)
+		                symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+                        else
+		                symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
+                    else
+		            symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+              //maquis::cout << " accumulated charge (before) " << acc << " local charge " << local << std::endl;          
 		    acc = symm::fuse(acc, local);
+              //maquis::cout << " accumulated charge (after)  " << acc << " local charge " << local << std::endl;          
             }
          
 		if (acc == symm::IdentityCharge)

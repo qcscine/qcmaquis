@@ -97,6 +97,12 @@ public:
         return a+b;
     }
 
+    static subcharge adjoin(subcharge I)
+    {
+        return I;
+    }
+
+
     template<int R> static charge fuse(boost::array<charge, R> const & v)
     {
         charge ret = v[0];
