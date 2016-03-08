@@ -214,13 +214,9 @@ namespace SU2 {
                         if ( o == ret.n_blocks() )
                             o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
-                        int i = out_r_charge[1], ip = rc[1];
-                        int j = out_l_charge[1], jp = mc[1];
+                        int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
+                        int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-
-                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        //if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 
                         typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                         typename Matrix::value_type couplings[4];
@@ -237,14 +233,10 @@ namespace SU2 {
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
 
-                        //maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
-                        //        out_right_offset, in_left_offset,
-                        //        phys_s1, phys_s2, l_size, T.basis().right_size(t_block), coupling_coeff);
-
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                        size_t r_size = T.basis().right_size(t_block);
+                        size_t r_size = it->rs;
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for( block_iterator it = blocks.first; it != blocks.second; ++it)
                             {
@@ -269,7 +261,7 @@ namespace SU2 {
                 }
             } // ket block
         } // op_index
-        } // b1
+        } // b2
     }
 } // namespace SU2
 } // namespace contraction
