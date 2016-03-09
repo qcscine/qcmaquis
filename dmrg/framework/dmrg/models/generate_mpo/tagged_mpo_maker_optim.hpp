@@ -216,7 +216,7 @@ namespace generate_mpo
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
 
-                std::ofstream keyfile(std::string("key" + boost::lexical_cast<std::string>(p) +".dat").c_str());
+                //std::ofstream keyfile(std::string("key" + boost::lexical_cast<std::string>(p) +".dat").c_str());
                 
                 index_map right;
                 index_type r = 2;
@@ -238,14 +238,14 @@ namespace generate_mpo
                     else if (rr == right.end())
                     {
                         //maquis::cout << k2 << std::endl;
-                        keyfile << r << " " << k2 << std::endl;
+                        //keyfile << r << " " << k2 << std::endl;
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
                     }
                     
                     index_type rr_dim = (p == length-1) ? 0 : rr->second;
                     pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
                 }
-                keyfile.close();
+                //keyfile.close();
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
 
