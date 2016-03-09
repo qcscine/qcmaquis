@@ -51,6 +51,15 @@ namespace detail {
     }
 }
 
+template <class I>
+bool safe_is_fermionic(alps::SiteBasisDescriptor<I> const& b, alps::SiteOperator const& op)
+{
+    using boost::bind;
+    std::set<std::string> operator_names = op.operator_names();
+    return std::count_if(operator_names.begin(), operator_names.end(), boost::bind(&alps::SiteBasisDescriptor<I>::is_fermionic, b, _1)) % 2;
+}
+
+
 template <class Matrix, class SymmGroup>
 class ALPSModel : public model_impl<Matrix, SymmGroup>
 {
@@ -161,6 +170,10 @@ public:
             int p = lattice.vertex_index(*it);
             int type = lattice.site_type(*it);
             
+            if (lattice.inhomogeneous_sites())
+                alps::throw_if_xyz_defined(parms,*it); // check whether x, y, or z is set
+            alps::expression::ParameterEvaluator<value_type> coords(coordinate_as_parameter(lattice.graph(), *it));
+            
             if (site_terms[type].size() == 0) {
                 typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator> > V;
                 V  ops = model.site_term(type).template templated_split<value_type>();
@@ -171,6 +184,9 @@ public:
                     if (match == operators.end())
                         match = register_operator(op, type, parms);
                     // site_terms[type].push_back( std::make_pair(boost::get<0>(ops[n]).value(), match->second)  );
+                    
+                    if (lattice.inhomogeneous_sites())
+                        boost::get<0>(ops[n]).partial_evaluate(coords);
                     
                     expression_term term;
                     term.coeff = boost::get<0>(ops[n]);
@@ -218,6 +234,9 @@ public:
             alps::SiteBasisDescriptor<I> const& b1 = basis_descriptors[type_s];
             alps::SiteBasisDescriptor<I> const& b2 = basis_descriptors[type_t];
             
+            if (lattice.inhomogeneous_bonds())
+                alps::throw_if_xyz_defined(parms, lattice.graph()); // check whether x, y, or z is set
+            alps::expression::ParameterEvaluator<value_type> coords(coordinate_as_parameter(lattice.graph(), *it));
             
             V  ops = bondop.template templated_split<value_type>(b1,b2);
             for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
@@ -232,6 +251,9 @@ public:
                     match2 = register_operator(op2, type_t, parms);
                 
                 bool with_sign = fermionic(b1, op1, b2, op2);
+                
+                if (lattice.inhomogeneous_bonds())
+                    boost::get<0>(*tit).partial_evaluate(coords);
                 
                 expression_term term;
                 term.coeff = boost::get<0>(*tit);
@@ -331,8 +353,10 @@ private:
     
     bool fermionic (alps::SiteBasisDescriptor<I> const& b1, SiteOperator const& op1,
                     alps::SiteBasisDescriptor<I> const& b2, SiteOperator const& op2) const
-    {
-        return b1.is_fermionic(simplify_name(op1)) && b2.is_fermionic(simplify_name(op2));
+    {  
+        bool is_ferm1 = safe_is_fermionic(b1, op1);
+        bool is_ferm2 = safe_is_fermionic(b2, op2);
+        return is_ferm1 || is_ferm2;
     }
     
     inline op_t convert_matrix (const alps_matrix& m, int type) const
@@ -369,7 +393,7 @@ private:
     {
         alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
         alps_matrix m = alps::get_matrix(value_type(), op, b, p, true);
-        tag_detail::operator_kind kind = b.is_fermionic(simplify_name(op)) ? tag_detail::fermionic : tag_detail::bosonic;
+        tag_detail::operator_kind kind = safe_is_fermionic(b, op) ? tag_detail::fermionic : tag_detail::bosonic;
         tag_type mytag = tag_handler->register_op(convert_matrix(m, type), kind);
         
         opmap_const_iterator match;
@@ -425,13 +449,19 @@ private:
             std::vector<op_t> tops(ntypes);
             for (int type=0; type<ntypes; ++type) {
                 alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
+                SiteOperator op;
                 if (b.has_operator(*it2)) {
-                    SiteOperator op = make_site_term(*it2, parms);
-                    bool is_ferm = b.is_fermionic(simplify_name(op));
+                    op = make_site_term(*it2, parms);
+                } else if (model.has_site_operator(*it2)) {
+                    op = model.get_site_operator(*it2);
+                }
+                if (op.term() != "") {
+                    bool is_ferm = safe_is_fermionic(b, op);
                     if (kind == uknown)
                         kind = is_ferm ? fermionic : bosonic;
                     else if ((is_ferm && kind==bosonic) || (!is_ferm && kind==fermionic))
                         throw std::runtime_error("Model is inconsitent. On some site the operator " + *it2 + "fermionic, on others is bosonic.");
+                    
                     tops[type] = this->get_operator(*it2, type);
                 }
             }
@@ -467,13 +497,31 @@ private:
         alps::Parameters parms_with_defaults(parms);
         parms_with_defaults.copy_undefined(model.model().default_parameters());
         
-        typedef typename boost::container::flat_map<expression_type, value_type>::iterator coeff_iterator;
-        for(coeff_iterator it = expression_coeff.begin(); it != expression_coeff.end(); ++it)
-            it->second = alps::evaluate<value_type>(it->first, parms_with_defaults);
+        // typedef typename boost::container::flat_map<expression_type, value_type>::iterator coeff_iterator;
+        // for(coeff_iterator it = expression_coeff.begin(); it != expression_coeff.end(); ++it)
+        //     it->second = alps::partial_evaluate<value_type>(it->first, parms_with_defaults);
         
         typedef typename std::vector<expression_term>::const_iterator terms_iterator;
         for(terms_iterator it = expression_terms.begin(); it != expression_terms.end(); ++it) {
-            value_type const& val = expression_coeff[it->coeff];
+            
+            value_type val = 0.;
+            if (lattice.inhomogeneous_sites() && it->size() == 1) {
+                alps::Parameters p(parms_with_defaults);
+                alps::throw_if_xyz_defined(p, lattice.graph()); // check whether x, y, or z is set
+                p << coordinate_as_parameter(lattice.graph(), lattice.site(it->position(0)));
+                
+                val = alps::evaluate<value_type>(it->coeff, p);
+            } else if(lattice.inhomogeneous_bonds() && it->size() == 2) {
+                alps::Parameters p(parms_with_defaults);
+                alps::throw_if_xyz_defined(p, lattice.graph()); // check whether x, y, or z is set
+                p << coordinate_as_parameter(lattice.graph(), lattice.site(it->position(0)), lattice.site(it->position(1)));
+                
+                val = alps::evaluate<value_type>(it->coeff, p);
+            } else {
+                val = alps::evaluate<value_type>(it->coeff, parms_with_defaults);
+            }
+            
+            // value_type const& val = expression_coeff[it->coeff];
             if ( alps::numeric::is_nonzero(val) ) {
                 value_term term;
                 term.is_fermionic = it->is_fermionic;
@@ -531,6 +579,8 @@ typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGro
             if (!p_.defined(pname))
                 throw std::runtime_error(pname + " required for local_quantumnumbers initial state.");
             initial_local_charges[*it] = p_[pname].as<std::vector<double> >();
+            if (initial_local_charges[*it].size() != lat.size())
+                throw std::runtime_error(pname + " does not match the lattice size.");
         }
         
         std::vector<boost::tuple<charge, size_t> > state(lat.size());
@@ -616,7 +666,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                                 
                                 unsigned ii = std::distance(ops.begin(), tit);
                                 {
-                                    operators[ii][0].second = b1.is_fermionic(simplify_name(op1));
+                                    operators[ii][0].second = safe_is_fermionic(b1, op1);
                                     op_t & m = operators[ii][0].first[type1];
                                     if (operators[ii][0].second)
                                         gemm(fillings[type1], this->get_operator(simplify_name(op1), type1), m); // Note inverse notation because of notation in operator.
@@ -625,7 +675,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                                     m = boost::get<0>(*tit).value() * m;
                                 }
                                 {
-                                    operators[ii][1].second = b2.is_fermionic(simplify_name(op2));
+                                    operators[ii][1].second = safe_is_fermionic(b2, op2);
                                     op_t & m = operators[ii][1].first[type2];
                                     m = this->get_operator(simplify_name(op2), type2);
                                 }
@@ -642,16 +692,29 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                         meas.push_back( new measurements::local<Matrix, SymmGroup>(obsname, raw_lattice, identitities, fillings, operators) );
                 } else {
                     std::vector<op_t> tops(ntypes);
+                    bool measurement_not_found = true;
                     for (int type=0; type<ntypes; ++type) {
                         alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
                         if (b.has_operator(it->value())) {
                             SiteOperator op = make_site_term(it->value(), parms);
-                            if (b.is_fermionic(simplify_name(op)))
+                            if (safe_is_fermionic(b, op))
                                 throw std::runtime_error("Cannot measure local fermionic operators.");
                             
                             tops[type] = this->get_operator(it->value(), type);
+                            measurement_not_found = false;
+                        } else if (model.has_site_operator(it->value())) {
+                            SiteOperator op = model.get_site_operator(it->value());
+                            
+                            if (safe_is_fermionic(b, op))
+                                throw std::runtime_error("Cannot measure local fermionic operators.");
+                            
+                            tops[type] = this->get_operator(it->value(), type);
+                            measurement_not_found = false;
                         }
                     }
+                    if (measurement_not_found)
+                        throw std::runtime_error("Operator "+it->value()+" not found.");
+                    
                     if (meas_found == is_average)
                         meas.push_back( new measurements::average<Matrix, SymmGroup>(obsname, raw_lattice, identitities, fillings, tops) );
                     else

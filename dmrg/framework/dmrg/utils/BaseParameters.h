@@ -143,7 +143,7 @@ public:
         for (alps::Parameters::const_iterator it=this->begin();it != this->end();++it) {
             std::string key = it->key();
             if (boost::regex_match(key, what, expression)) {
-                std::vector<value_type> v = (*this)[key];
+                std::vector<std::string> v = (*this)[key]; // use std::strign instead of value type, because value type is some alps internal type that can anyway be constructed from string.
                 if (val < v.size())
                     p.set(what.str(1), v[val]);
                 else

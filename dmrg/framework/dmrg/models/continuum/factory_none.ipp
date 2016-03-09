@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 //#include "dmrg/models/continuum/models_none.hpp"
+#include "dmrg/models/continuum/factory.h"
 
 
 template<class Matrix>

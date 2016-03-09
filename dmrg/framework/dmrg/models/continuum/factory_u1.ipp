@@ -24,11 +24,10 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_U1
-#define MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_U1
-
 #include "dmrg/models/continuum/models_u1.hpp"
 //#include "dmrg/models/continuum/super_models_u1.hpp"
+#include "dmrg/models/continuum/factory.h"
+
 
 template<class Matrix>
 struct cont_model_factory<Matrix, U1> {
@@ -46,5 +45,3 @@ struct cont_model_factory<Matrix, U1> {
         }
     }
 };
-
-#endif
