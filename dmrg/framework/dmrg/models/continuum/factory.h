@@ -43,6 +43,4 @@ struct cont_model_factory {
     }
 };
 
-#include "factory_lattice.hpp"
-
 #endif

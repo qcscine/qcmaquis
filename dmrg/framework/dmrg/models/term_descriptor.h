@@ -57,7 +57,7 @@ public:
     T coeff;
     bool is_fermionic;
     tag_type full_identity;
-    term_descriptor() : coeff(1.), is_fermionic(false) { }
+    term_descriptor() : base(), coeff(1.), is_fermionic(false) { }
     
     pos_type position(size_type i) const     { return boost::get<0>((*this)[i]); }
     tag_type operator_tag(size_type i) const { return boost::get<1>((*this)[i]); }
@@ -70,11 +70,12 @@ public:
     
     bool operator< (term_descriptor const & rhs) const
     {
+        if (this->size() == 0 && rhs.size() == 0) return false;
         if (this->size() == 0) return true;
         if (rhs.size()   == 0) return false;
-        
+
         if (this->position(0) == rhs.position(0))
-            return this->size() >= rhs.size();
+            return this->size() > rhs.size();
         return this->position(0) < rhs.position(0);
     }
     
