@@ -181,10 +181,10 @@ public:
             return boost::any( site_label(pos[0]) );
         else if (property == "label" && pos.size() == 2)
             return boost::any( bond_label(pos[0], pos[1]) );
-          else if (property == "type" && pos.size() == 1)
-              return boost::any( 0 );
-          else if (property == "type" && pos.size() == 2)
-              return boost::any( 0 );
+        else if (property == "type" && pos.size() == 1)
+            return boost::any( 0 );
+        else if (property == "type" && pos.size() == 2)
+            return boost::any( 0 );
         else if (property == "x" && pos.size() == 1)
             return boost::any( get_x(pos[0]) );
         else if (property == "dx" && pos.size() == 1)
@@ -317,10 +317,10 @@ public:
             return boost::any( site_label(pos[0]) );
         else if (property == "label" && pos.size() == 2)
             return boost::any( bond_label(pos[0], pos[1]) );
-        //            else if (property == "type" && pos.size() == 1)
-        //                return boost::any( 0 );
-        //            else if (property == "type" && pos.size() == 2)
-        //                return boost::any( 0 );
+        else if (property == "type" && pos.size() == 1)
+            return boost::any( 0 );
+        else if (property == "type" && pos.size() == 2)
+            return boost::any( 0 );
         else if (property == "x" && pos.size() == 1)
             return boost::any( get_x(pos[0]) );
         else if (property == "dx" && pos.size() == 1)

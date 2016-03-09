@@ -74,7 +74,8 @@ namespace parameters {
                 boost::char_separator<char> sep(",");
                 tokenizer tokens(raw, sep);
                 BOOST_FOREACH(std::string t, tokens) {
-                  ret.push_back(boost::lexical_cast<T, std::string>(t));
+                  get_<T> g;
+                  ret.push_back(g(t));
                 }
                 return ret;
             }

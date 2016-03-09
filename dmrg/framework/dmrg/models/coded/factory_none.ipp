@@ -27,6 +27,7 @@
 
 #include "dmrg/models/coded/models_none.hpp"
 #include "dmrg/models/coded/super_models_none.hpp"
+#include "dmrg/models/coded/factory.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TrivialGroup> {

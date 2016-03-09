@@ -37,6 +37,7 @@
 #include "dmrg/mp_tensors/identity_mps.h"
 
 #include "dmrg/models/model.h"
+#include "dmrg/models/measurements.h"
 #include "dmrg/models/meas_prepare.hpp"
 #include "dmrg/utils/BaseParameters.h"
 
