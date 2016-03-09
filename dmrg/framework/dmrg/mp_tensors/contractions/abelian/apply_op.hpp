@@ -31,46 +31,12 @@
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/contractions/abelian/detail.hpp"
 
 namespace contraction {
     namespace abelian {
 
     using ::contraction::ContractionGrid;
-
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup> const * setT_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                      std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
-                                                      block_matrix<Matrix, SymmGroup> & local,
-                                                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                      MPSTensor<Matrix, SymmGroup> const & mps,
-                                                      typename MPOTensor<Matrix, SymmGroup>::index_type b)
-    {
-        block_matrix<Matrix, SymmGroup> const * Tp = &local;
-        if (mpo.num_row_non_zeros(b) == 1)
-            gemm_trim_left(transpose(boundary[b]), mps.data(), local);
-        else
-            Tp = &mult_mps[b];
-
-        return Tp;
-    }
-
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup> const * setT_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                       std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
-                                                       block_matrix<Matrix, SymmGroup> & local,
-                                                       MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                       MPSTensor<Matrix, SymmGroup> const & mps,
-                                                       typename MPOTensor<Matrix, SymmGroup>::index_type b)
-    {
-        block_matrix<Matrix, SymmGroup> const * Tp = &local;
-        if (mpo.num_col_non_zeros(b) == 1)
-            gemm_trim_right(mps.data(), boundary[b], local);
-        else
-            Tp = &mult_mps[b];
-
-        return Tp;
-    }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_allocate(size_t b2,
@@ -92,16 +58,14 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
-            //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
-            block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *setT_left(left, left_mult_mps, local, mpo, mps, b1);
-                if(T.n_blocks() == 0) continue;
+            DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, mps, b1);
+            if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
@@ -150,8 +114,8 @@ namespace contraction {
 
             //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
             block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *setT_left(left, left_mult_mps, local, mpo, mps, b1);
-                if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & T = *detail::T_left(left, left_mult_mps, local, mpo, mps, b1);
+            if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
@@ -216,16 +180,14 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
-            block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *setT_right(right, right_mult_mps, local, mpo, mps, b2);
-                if(T.n_blocks() == 0) continue;
+            DualIndex<SymmGroup> T_basis = detail::T_basis_right(right, right_mult_mps, mpo, mps, b2);
+            if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
             for(size_t l = 0; l < left_i.size(); ++l){
@@ -271,7 +233,7 @@ namespace contraction {
 
             //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
             block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *setT_right(right, right_mult_mps, local, mpo, mps, b2);
+            block_matrix<Matrix, SymmGroup> const & T = *detail::T_right(right, right_mult_mps, local, mpo, mps, b2);
                 if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
