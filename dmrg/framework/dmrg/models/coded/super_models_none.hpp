@@ -32,6 +32,7 @@
 #include <sstream>
 
 #include "dmrg/models/model.h"
+#include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
 

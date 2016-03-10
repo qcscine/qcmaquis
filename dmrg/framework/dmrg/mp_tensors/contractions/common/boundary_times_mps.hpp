@@ -49,6 +49,7 @@ namespace contraction {
             int loop_max = left.aux_dim();
             mps.make_right_paired();
             omp_for(int b1, parallel::range(0,loop_max), {
+                if (mpo.num_row_non_zeros(b1) == 1) continue;
                 parallel::guard group(scheduler(b1), parallel::groups_granularity);
                 typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
             });
@@ -67,6 +68,7 @@ namespace contraction {
             int loop_max = right.aux_dim();
             mps.make_left_paired();
             omp_for(int b2, parallel::range(0,loop_max), {
+                if (mpo.num_col_non_zeros(b2) == 1) continue;
                 parallel::guard group(scheduler(b2), parallel::groups_granularity);
                 typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
             });

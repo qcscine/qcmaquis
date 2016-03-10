@@ -27,6 +27,7 @@
 
 #include "dmrg/models/coded/models_su2.hpp"
 #include "dmrg/models/chem/su2u1/model.h"
+#include "dmrg/models/coded/factory.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, SU2U1> {

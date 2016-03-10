@@ -76,5 +76,20 @@ struct compare_pair
     }
 };
 
+template <class Pair>
+struct compare_pair_inverse
+{
+    bool operator()(Pair const & i,
+                    Pair const & j) const
+    {
+        if (i.second < j.second)
+            return true;
+        else if (j.second < i.second)
+            return false;
+        else
+            return i.first < j.first;
+    }
+};
+
 
 #endif /* UTILS_HPP_ */

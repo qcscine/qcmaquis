@@ -33,6 +33,8 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
+#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
+
 namespace contraction {
 namespace SU2 {
 
@@ -42,7 +44,7 @@ namespace SU2 {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis,
+                     MPSTensor<Matrix, SymmGroup> const & mps,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
@@ -54,11 +56,21 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
+        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
+
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
+            block_matrix<Matrix, SymmGroup> local_T;
+            block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
+            if (mpo.num_row_non_zeros(b1) == 1)
+                ::SU2::gemm_trim_left(transpose(left[b1]), mps.data(), local_T);
+            else
+                Tp = &left_mult_mps[b1];
+
+            block_matrix<Matrix, SymmGroup> const & T = *Tp;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
@@ -162,7 +174,7 @@ namespace SU2 {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
-                DualIndex<SymmGroup> const & ket_basis,
+                MPSTensor<Matrix, SymmGroup> const & mps,
                 Index<SymmGroup> const & left_i,
                 Index<SymmGroup> const & out_right_i,
                 ProductBasis<SymmGroup> const & in_left_pb,
@@ -174,11 +186,22 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
+        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
+
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
+            block_matrix<Matrix, SymmGroup> local_T;
+            block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
+            if (mpo.num_col_non_zeros(b2) == 1)
+                ::SU2::gemm_trim_right(mps.data(), right[b2], local_T);
+            else
+                Tp = &right_mult_mps[b2];
+
+            block_matrix<Matrix, SymmGroup> const & T = *Tp;
+
+            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
@@ -196,6 +219,7 @@ namespace SU2 {
                 {
                     charge rc = it->rc;
                     size_t t_block = T.basis().position(lc, rc); // t_block != ketblock in general
+                    if (t_block == T.basis().size()) continue;
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
@@ -214,13 +238,9 @@ namespace SU2 {
                         if ( o == ret.n_blocks() )
                             o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
-                        int i = out_r_charge[1], ip = rc[1];
-                        int j = out_l_charge[1], jp = mc[1];
+                        int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
+                        int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-
-                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        //if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 
                         typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                         typename Matrix::value_type couplings[4];
@@ -237,14 +257,10 @@ namespace SU2 {
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
 
-                        //maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
-                        //        out_right_offset, in_left_offset,
-                        //        phys_s1, phys_s2, l_size, T.basis().right_size(t_block), coupling_coeff);
-
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                        size_t r_size = T.basis().right_size(t_block);
+                        size_t r_size = it->rs;
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for( block_iterator it = blocks.first; it != blocks.second; ++it)
                             {
@@ -269,7 +285,7 @@ namespace SU2 {
                 }
             } // ket block
         } // op_index
-        } // b1
+        } // b2
     }
 } // namespace SU2
 } // namespace contraction

@@ -140,6 +140,7 @@ overlap_measurements(BaseParameters const & parms, boost::optional<size_t> sweep
         std::string lhs = it->key();
         if (boost::regex_match(lhs, what, expression)) {
             if (sweep && !what[3].matched) continue;
+            if (!sweep && what[3].matched) continue;
             if (sweep && what[3].matched && boost::lexical_cast<long>(what.str(3)) != sweep.get()) continue;
             
             std::string name = what.str(1), bra_chkp = it->value();

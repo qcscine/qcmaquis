@@ -35,6 +35,7 @@
 #include <cmath>
 
 #include "dmrg/models/model.h"
+#include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/mp_tensors/dm_op_kron.h"
 

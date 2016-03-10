@@ -26,6 +26,7 @@
 
 #include "dmrg/models/continuum/models_2u1.hpp"
 //#include "dmrg/models/continuum/super_models_2u1.hpp"
+#include "dmrg/models/continuum/factory.h"
 
 template<class Matrix>
 struct cont_model_factory<Matrix, TwoU1> {
