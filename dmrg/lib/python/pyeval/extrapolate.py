@@ -58,20 +58,21 @@ rc('text', usetex=True)
 def plot(flist, sweepnr=None):
 
     extr = extrapolate_base.energy2y(flist, sweepnr)
-    xdata = extr.xdata()[1:]
-    ydata = extr.ydata()[1:]
+    xdata = extr.xdata()
+    ydata = extr.ydata()
 
     fit = extr.linfit()
     xf = np.linspace(1e-16,max(xdata),100)
     yf = fit(xf)
 
-    print "extrapolated to", fit(0) 
+    print "{:30s} {:13.9f}   {:12.1f}    {:5s}  {:3s}".format("extrapolation", fit(0), 0, "infty", "")
+    print "{:30s} {:14.9f}".format("extrapolation error", fit(0)-ydata[0])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
     dots = plt.plot(xdata, ydata, 'o', xf, yf, '-')
 
-    #plt.ticklabel_format(style='sci', axis='x', scilimits=(3,4), useOffset=False)
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(3,4), useOffset=False)
     xfmt = plt.ScalarFormatter(useOffset=False, useMathText=True)
     xfmt.set_scientific(True)
     ax.yaxis.set_major_formatter(xfmt)
