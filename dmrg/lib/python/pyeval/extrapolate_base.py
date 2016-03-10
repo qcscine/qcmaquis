@@ -37,53 +37,66 @@ import os
 import glob
 import pydmrg
 
+import warnings
+warnings.filterwarnings("ignore")
+
+def getData(flist, what = ['Energy'], sweepnr = None):
+
+    # [file][sweep][observable]
+    truncs = pydmrg.LoadDMRGSweeps(flist, ['TruncatedWeight'])
+    energs = pydmrg.LoadDMRGSweeps(flist, what)
+    props = truncs[0][0][0].props
+
+    if sweepnr is None: sweepnr = min([len(f) - 1 for f in truncs])
+
+    xdata = []
+    ydata = []
+    mdata = []
+    print "{:30s} {:15s} {:15s}   m     sweep".format("result file", "energy", "truncation error")
+    print "-----------------------------------------------------------------------------"
+    for tr,e in zip(truncs, energs):
+        props = tr[0][0].props
+        sweeps = []
+        bonds = []
+        try:
+            # check for reverse m data
+            sweep_bond_dims = props['sweep_bond_dimensions']
+            bond_dims = map(int, sweep_bond_dims.split(','))
+            for i,b in enumerate(bond_dims[1:]+[0]):
+                if bond_dims[i] > b and i < len(tr):
+                    sweeps.append(i)
+                    bonds.append(bond_dims[i])
+                
+        except KeyError:
+            if len(tr[sweepnr][0].y) != 2 * (props['L'] - 1):
+                print "\nWARNING: data in sweep", sweepnr, "incomplete\n"
+            sweeps.append(len(tr)-1)
+            bonds.append(int( e[sweepnr][0].props['max_bond_dimension'] + 0.5))
+
+        for s,b in zip(sweeps, bonds):
+            xdata.append(max(tr[s][0].y))
+            ydata.append(min( e[s][0].y))
+            mdata.append(b)
+            print "{:30s} {:13.9f}   {:.6e}    {:5d}  {:3d}".format(props['resultfile'], ydata[-1], xdata[-1], mdata[-1], s)
+
+    print ""
+
+    return (xdata, ydata, mdata)
+
 class extrapolator(object):
 
     def __init__(self, flist, what = ['Energy'], sweepnr = None):
         self.extflag = True
         self.flist = flist
 
-        print "files:", self.flist
-
-        truncs = pydmrg.LoadDMRGSweeps(self.flist, ['TruncatedWeight'])
-
-        if sweepnr is None:
-            sweepnr = min([len(f) - 1 for f in truncs])
-
-        print "extrapolating data at sweep", sweepnr
-
-        props = truncs[0][0][0].props
-
-        # TODO : find out why _xdata survives even if derived class is deleted
-        # load truncated weights
-        self._xdata = []
-        for d in truncs:
-            if len(d[sweepnr][0].y) != 2 * (props['L'] - 1):
-                print "\nWARNING: data in sweep", sweepnr, "incomplete\n"
-
-            self._xdata.append( max(d[sweepnr][0].y) )
-
-        # load energies and bond dimensions
-        self._ydata = []
-        self._m = []
-        energs = pydmrg.LoadDMRGSweeps(flist, what)
-        for f in energs:
-            # get min energy from last sweep
-            self._ydata.append(min(f[sweepnr][0].y))
-            self._m.append(int(f[sweepnr][0].props['max_bond_dimension'] + 0.5))
+        self._xdata, self._ydata, self._m = getData(flist, what, sweepnr)
 
         self._xdata.sort()
         self._ydata.sort()
         self._m.sort(reverse=True)
 
-        print "truncs", self._xdata
-        print "energies", self._ydata
-
     def m(self):
         return self._m
-
-    def ext(self, x=None):
-        return self.extrapolate_to_zero(self._xdata, self._ydata)
 
     def linfit(self, num_points=None):
         if num_points is None:
@@ -109,15 +122,6 @@ class extrapolator(object):
         fit_func = lambda x: pars[0].get()*(x**pars[1].get()) + pars[2].get()
         return fit_func
 
-    def extrapolate_to_zero(self, xdata, ydata):
-        x0 = xdata[0]
-        y0 = ydata[0]
-        dx = xdata[1] - x0
-        dy = ydata[1] - y0
-        b = y0 - dy/dx*x0
-        print "extrapol diff", abs(b-y0)
-        return b
-
     data = []
     _xdata, _ydata = [], []
 
@@ -129,9 +133,9 @@ class energy2y(extrapolator):
         return fdata[0].y[0]
 
     def ydata(self):
-        return [self.ext()] + self._ydata
+        return self._ydata
 
     def xdata(self):
-        return [0.0] + self._xdata
+        return self._xdata
 
 
