@@ -472,6 +472,7 @@ namespace measurements {
             pos_t p3_end   = lattice.size()-1;
             pos_t p1_end   = 0;
             pos_t p2_end   = 0;
+            pos_t p_max    = lattice.size();
 
             if(positions_first.size() == 4){
                 p4_start = positions_first[0];
@@ -512,142 +513,135 @@ namespace measurements {
                           bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
 
                           #ifdef MAQUIS_OPENMP
-                          #pragma omp parallel for collapse(2) schedule(dynamic,1)
+                          #pragma omp parallel for collapse(3) schedule(dynamic,1)
                           #endif
 
                           for (pos_t p5 = p1; p5 >= 0; --p5)
+                          for (pos_t p6 = p1; p6 >= 0; --p6)
+                          for (pos_t p7 = 0; p7 < p_max; ++p7)
                           {
-                              for (pos_t p6 = p1; p6 >= 0; --p6)
+                              // set restrictions on index p6
+                              if ((double_equal || ij_equal) && p6 > p5 ) continue;
+
+                              // set restrictions on index p7
+                              if(double_equal)
+                                  if(p7 > p5) continue;
+                              else
+                                  if(p7 > p1) continue;
+
+                              if(p5 == p6 && p5 == p7) continue;
+
+                              // set restrictions on index p8
+                              pos_t p8_end = 0;
+                              if (double_equal)
+                                  p8_end = p5+1;
+                              else if (kl_equal)
+                                  p8_end = p7+1;
+                              else
+                                  p8_end = p1+1;
+
+                              MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
+                              boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                              std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                              std::vector<std::vector<pos_t> > num_labels;
+
+                              for (pos_t p8 = 0; p8 < p8_end; ++p8)
                               {
-                                  // set restrictions on index p6
-                                  if ((double_equal || ij_equal) && p6 > p5 ) continue;
+                                  // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
+                                  if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) continue;
 
-                                  MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
-                                  boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
-                                  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                                  std::vector<std::vector<pos_t> > num_labels;
+                                  // case 1
+                                  if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                  if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                  if(double_equal && p8 > p7 && p7 > p6 && (p8 > p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                  if(double_equal && p8 < p7 && p7 > p6 && (p8 == p5 || p8 == p6 || p7 == p5 || p7 == p6)) continue;
+                                  if(double_equal && p8 < p7 && p7 > p6 && p8 <  p6 ) continue;
+                                  // case 2/3/4: 2x2 equal indices
+                                  if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) continue;
 
-                                  // set restrictions on index p7
-                                  pos_t p7_end = 0;
-                                  if (double_equal)
-                                      p7_end = p5+1;
-                                  else
-                                      p7_end = p1+1;
+                                  // case 2/4: 2 equal indices
+                                  if((ij_equal || kl_equal) && (p5 == p7 || p5 == p8 || p6 == p7|| p6 == p8)) continue;
 
-                                  for (pos_t p7 = 0; p7 < p7_end; ++p7)
+                                  // case 3
+                                  if(jk_equal){
+                                      // 2 equal indices
+                                      if(p5 == p7 || p6 == p7 || p6 == p8) continue;
+                                      if(p5 == p6 && p7 != p8 && p6 > p7) continue;
+                                      if(p5 == p8 && p7 > p6) continue;
+                                      // none equal
+                                      if(std::min(p5,p6) != std::min(p7,p8) && p7 != p8 && p7 > p6) continue;
+                                  }
+
+                                  // case 5
+                                  if(none_equal){
+                                      if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) continue;
+                                  }
+     
+                                  // defines position vector for spin-free 4-RDM element
+                                  pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
+                                  std::vector<pos_t> positions(pos_, pos_ + 8);
+
+                                  // check norm of lhs and rhs - skip if norm of rhs > lhs
+                                  if(measurements_details::compare_norm<pos_t>()(positions)) continue;
+
+                                  // Loop over operator terms that are measured synchronously and added together
+                                  // Used e.g. for the 16 spin combos of the 4-RDM
+                                  typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                                  bool measured = false;
+                                  for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
+     
+                                      tag_vec operators(8);
+                                      operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
+                                      operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
+                                      operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
+                                      operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
+                                      operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
+                                      operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
+                                      operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
+                                      operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
+     
+                                      // check if term is allowed by symmetry
+                                      term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
+                                      if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                           continue;
+                                      measured = true;
+     
+                                      MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                      typename MPS<Matrix, SymmGroup>::scalar_type local_value = expval(ket_mps_local, ket_mps_local, mpo);
+                                      //maquis::cout << "synop term " << synop+1 << "--> local value: " << local_value << std::endl;
+                                      //value += operator_terms[synop].second * expval(ket_mps_local, ket_mps_local, mpo);
+                                      value += operator_terms[synop].second * local_value;
+
+                                  }// spin combo loop
+                                  if(measured)
                                   {
-                                      // set restrictions on index p8
-                                      pos_t p8_end = 0;
-                                      if (double_equal)
-                                          p8_end = p5+1;
-                                      else if (kl_equal)
-                                          p8_end = p7+1;
-                                      else
-                                          p8_end = p1+1;
-
-                                      // seventh index must be different if p5 == p6
-                                      if(p5 == p6 && p7 == p5) continue;
+                                      // debug print
+                                      /* if (std::abs(value) > 0)
                                       {
-                                          for (pos_t p8 = 0; p8 < p8_end; ++p8)
-                                          {
-                                              // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
-                                              if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) continue;
-
-                                              // case 1
-                                              if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                                              if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                                              if(double_equal && p8 > p7 && p7 > p6 && (p8 > p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                                              if(double_equal && p8 < p7 && p7 > p6 && (p8 == p5 || p8 == p6 || p7 == p5 || p7 == p6)) continue;
-                                              if(double_equal && p8 < p7 && p7 > p6 && p8 <  p6 ) continue;
-                                              // case 2/3/4: 2x2 equal indices
-                                              if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) continue;
-
-                                              // case 2/4: 2 equal indices
-                                              if((ij_equal || kl_equal) && (p5 == p7 || p5 == p8 || p6 == p7|| p6 == p8)) continue;
-
-                                              // case 3
-                                              if(jk_equal){
-                                                  // 2 equal indices
-                                                  if(p5 == p7 || p6 == p7 || p6 == p8) continue;
-                                                  if(p5 == p6 && p7 != p8 && p6 > p7) continue;
-                                                  if(p5 == p8 && p7 > p6) continue;
-                                                  // none equal
-                                                  if(std::min(p5,p6) != std::min(p7,p8) && p7 != p8 && p7 > p6) continue;
-                                              }
-
-                                              // case 5
-                                              if(none_equal){
-                                                  if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) continue;
-                                              }
-     
-                                              // defines position vector for spin-free 4-RDM element
-                                              pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
-                                              std::vector<pos_t> positions(pos_, pos_ + 8);
-
-                                              // check norm of lhs and rhs - skip if norm of rhs > lhs
-                                              if(measurements_details::compare_norm<pos_t>()(positions)) continue;
-
-                                              // Loop over operator terms that are measured synchronously and added together
-                                              // Used e.g. for the 16 spin combos of the 4-RDM
-                                              typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                                              bool measured = false;
-                                              for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
-     
-                                                  tag_vec operators(8);
-                                                  operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
-                                                  operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
-                                                  operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
-                                                  operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
-                                                  operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
-                                                  operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-                                                  operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
-                                                  operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
-     
-                                                  // check if term is allowed by symmetry
-                                                  term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                                                  if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                                                       continue;
-                                                  measured = true;
-     
-                                                  MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                                  typename MPS<Matrix, SymmGroup>::scalar_type local_value = expval(ket_mps_local, ket_mps_local, mpo);
-                                                  //maquis::cout << "synop term " << synop+1 << "--> local value: " << local_value << std::endl;
-                                                  //value += operator_terms[synop].second * expval(ket_mps_local, ket_mps_local, mpo);
-                                                  value += operator_terms[synop].second * local_value;
-
-                                              }
-                                              if(measured)
-                                              {
-                                                  // debug print
-                                                  /* if (std::abs(value) > 0)
-                                                  {
-                                                      std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                                      maquis::cout << " " << value << std::endl;
-                                                  } */
-                                                  dct.push_back(value);
-                                                  num_labels.push_back(positions);
-                                              }
-                                          }
-                                      }
+                                          std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                          maquis::cout << " " << value << std::endl;
+                                      } */
+                                      dct.push_back(value);
+                                      num_labels.push_back(positions);
                                   }
-                                  std::vector<std::string> lbt = label_strings(lattice,  num_labels);
-     
-                                  // save results and labels
-                                  #ifdef MAQUIS_OPENMP
-                                  #pragma omp critical
-                                  #endif
-                                  {
-                                     this->vector_results.reserve(this->vector_results.size() + dct.size());
-                                          std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-      
-                                     this->labels.reserve(this->labels.size() + dct.size());
-                                          std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-                                  }
-                              } // p6 loop
-                          }
-                      }
-                 }
-             }
+                              } // p8 loop
+
+                              std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                              // save results and labels
+                              #ifdef MAQUIS_OPENMP
+                              #pragma omp critical
+                              #endif
+                              {
+                                  this->vector_results.reserve(this->vector_results.size() + dct.size());
+                                  std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                                  this->labels.reserve(this->labels.size() + dct.size());
+                                  std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                              }
+                          } // p5,p6,p7
+                      } // p1
+                 } // p2
+             } // p4+p3
          }
 
     private:
