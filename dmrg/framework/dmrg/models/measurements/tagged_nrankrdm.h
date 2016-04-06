@@ -607,15 +607,11 @@ namespace measurements {
                                               if(measured)
                                               {
                                                   // debug print
-                                                  if (std::abs(value) > 0)
+                                                  /* if (std::abs(value) > 0)
                                                   {
                                                       std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                                                       maquis::cout << " " << value << std::endl;
-                                                  }
-                                                  // defines position vector for contracted spin-free 4-RDM element
-                                                  //pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
-                                                  //pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
-                                                  //std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
+                                                  } */
                                                   dct.push_back(value);
                                                   num_labels.push_back(positions);
                                               }

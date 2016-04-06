@@ -4,8 +4,8 @@
 #*
 #* ALPS MPS DMRG Project
 #*
-#* Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
-#*               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+#* Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
+#*               2015-2015 by Stefan Knecht <stefan.knecht@phys.chem.ethz.ch>
 #*
 #* 
 #* This software is part of the ALPS Applications, published under the ALPS
@@ -37,33 +37,49 @@ def load_3rdm(inputfile):
     rdm.y[0] = rdm.y[0]
     return rdm
 
-def print_3rdm(rdm):
-    fmt = '% -016.10E'
-    #fmt = '%e'
+def print_3rdm(rdm,tag1):
+    fmt = '% -020.14E'
+
+    # fix correct naming with tag1
+    f=open('threeparticle.rdm.%s.%s' % (tag1,tag1),'w')
+    print 'start of 3-RDM for state %s' %(tag1)
 
     for lab, val in zip(rdm.x, rdm.y[0]):
-        i = lab[0]
-        j = lab[1]
-        k = lab[2]
-        l = lab[3]
-        m = lab[4]
-        n = lab[5]
+        i = lab[0]+1
+        j = lab[1]+1
+        k = lab[2]+1
+        l = lab[3]+1
+        m = lab[4]+1
+        n = lab[5]+1
 
         if abs(val) == 0: continue
+        if i == j and i == k: continue 
+        if l == m and l == n: continue
 
-        print i+1,j+1,k+1,l+1,m+1,n+1, fmt%val
+        # 6 permutations 
+        dump_element(f,-val,i,j,k,l,m,n)
+        dump_element(f,-val,i,k,j,l,n,m)
+        dump_element(f,-val,j,i,k,m,l,n)
+        dump_element(f,-val,j,k,i,m,n,l)
+        dump_element(f,-val,k,i,j,n,l,m)
+        dump_element(f,-val,k,j,i,n,m,l)
+        # transpose elements
+        dump_element(f,-val,l,m,n,i,j,k)
+        dump_element(f,-val,l,n,m,i,k,j)
+        dump_element(f,-val,m,l,n,j,i,k)
+        dump_element(f,-val,m,n,l,j,k,i)
+        dump_element(f,-val,n,l,m,k,i,j)
+        dump_element(f,-val,n,m,l,k,j,i)
 
-        # print duplicates
-        #if l!=k:
-        #    print j,i,l,k, fmt%val
+    f.close()
+    print 'end of 3-RDM for state %s' %(tag1)
 
-        #if not min(i,j) == min(l,k):
-        #    print k,l,i,j, fmt%val
-        #    if k!=l:
-        #        print l,k,j,i, fmt%val
+def dump_element(f,value,i,j,k,l,m,n):
+    
+    fmt  = '% -020.14E'
+    f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+' '+str(m)+' '+str(n)+' '+str(fmt%value)+'\n')
 
 if __name__ == '__main__':
-    inputfile = sys.argv[1]
 
-    rdm = load_3rdm(inputfile)
-    print_3rdm(rdm)
+    rdm = load_3rdm(sys.argv[1])
+    print_3rdm(rdm,sys.argv[2])
