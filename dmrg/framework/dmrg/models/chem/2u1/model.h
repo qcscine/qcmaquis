@@ -424,9 +424,6 @@ public:
 
             else if (boost::regex_match(lhs, what, expression_fourptdm)) {
 
-                // NOTE: we will not need a transition 4-RDM for DMRG-based PT2
-                // stknecht - may 2015
-
                 std::string bra_ckp("");
                 name = "fourptdm";
 
