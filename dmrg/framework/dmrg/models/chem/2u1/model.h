@@ -313,7 +313,14 @@ public:
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans3rdm]"){
                     name = "transition_threeptdm";
-                    bra_ckp = it->value();
+                    std::vector<std::string> value_split;
+
+                    value = it->value();
+                    boost::split( value_split, value, boost::is_any_of(";"));
+                    if(value_split.size() > 1)
+                    	bra_ckp = value_split[0];
+                    else
+                    	bra_ckp = it->value();
                 }
                 else
                     name = "threeptdm";
@@ -399,8 +406,9 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                value = it->value();
                 half_only = true;
-                // parse positions p4:p3:p1:p2@w,x,y,z,... and split into {w,x,y,z}
+                // parse positions p1:p2:p3@x,y,z,... and split into {x,y,z}
                 // the position vector reflects the loop ordering in the 3-RDM emasurement 
                 std::vector<pos_t> positions;
                 std::vector<std::string> value_split;
