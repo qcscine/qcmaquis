@@ -400,7 +400,24 @@ public:
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 half_only = true;
+                // parse positions p4:p3:p1:p2@w,x,y,z,... and split into {w,x,y,z}
+                // the position vector reflects the loop ordering in the 3-RDM emasurement 
                 std::vector<pos_t> positions;
+                std::vector<std::string> value_split;
+
+                boost::split( value_split, value, boost::is_any_of("@"));
+                if (value_split.size() > 1) {
+                    boost::char_separator<char> pos_sep(",");
+                    tokenizer pos_tokens(value_split[1], pos_sep);
+                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(positions),
+                                   static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
+                    /*
+                    maquis::cout << "my positions are ... ";
+                    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::    _1 + 1);
+                    maquis::cout << " " << std::endl;
+                    */
+
+                }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }

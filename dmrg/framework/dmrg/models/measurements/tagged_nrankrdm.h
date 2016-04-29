@@ -358,19 +358,33 @@ namespace measurements {
         void measure_3rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                           MPS<Matrix, SymmGroup> const & ket_mps)
         {
-            // Test if a separate bra state has been specified bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            // Test if a separate bra state has been specified -- if bra != ket, no transpose symmetry
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            // if bra != ket, no transpose symmetry
+            pos_t p1_start = 0;
+            pos_t p2_start = 0;
+            pos_t p3_start = 0;
+            pos_t p1_end   = lattice.size();
+            pos_t p2_end   = lattice.size();
+            pos_t p3_end   = lattice.size();
+
+            if(positions_first.size() == 3){
+                p1_start = positions_first[0];
+                p2_start = positions_first[1];
+                p3_start = positions_first[2];
+                p1_end   = positions_first[0]+1;
+                p2_end   = positions_first[1]+1;
+                p3_end   = positions_first[2]+1;
+            }
+
             #ifdef MAQUIS_OPENMP
-            // Intel Composer v15 patch 0 does not accept collapse(2) - FIXME! test v15 patch 5
-            //#pragma omp parallel for collapse(2) schedule (dynamic,1)
+            // Intel Composer v15 patch 0 does not accept collapse(3) - FIXME! test v15 patch 5
             #pragma omp parallel for collapse(3) schedule (dynamic,1)
             #endif
-            for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
-            for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
-            for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
+            for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
+            for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
+            for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
             {
                 if(p1 < p2 || p3 < std::min(p1, p2) || (p1 == p2 && p1 == p3)) continue;
 
@@ -378,12 +392,10 @@ namespace measurements {
 
                 for (pos_t p4 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p4 < lattice.size(); ++p4)
                 {
-    
                     for (pos_t p5 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p5 < lattice.size(); ++p5)
                     { 
                         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                         std::vector<std::vector<pos_t> > num_labels;
-    
                         for (pos_t p6 = std::min(p4, p5); p6 < lattice.size(); ++p6)
                         {
                             // sixth index must be different if p4 == p5 
