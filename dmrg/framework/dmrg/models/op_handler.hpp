@@ -28,6 +28,10 @@
 #ifndef MAQUIS_DMRG_MODELS_OP_HANDLER_HPP
 #define MAQUIS_DMRG_MODELS_OP_HANDLER_HPP
 
+// **************************************************************************
+// OPTable implementation
+// **************************************************************************
+
 template <class Matrix, class SymmGroup>
 TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
     : operator_table(new OPTable<Matrix, SymmGroup>(*rhs.operator_table))
@@ -64,8 +68,35 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
     
 }
 
+// **************************************************************************
+// TagHandler implementation
+// **************************************************************************
+
+// simple const query
 template <class Matrix, class SymmGroup>
-typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::register_op(const op_t & op_, tag_detail::operator_kind kind) {
+typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::size() const
+{
+    return operator_table->size();
+}
+
+template <class Matrix, class SymmGroup>
+boost::shared_ptr<OPTable<Matrix, SymmGroup> > TagHandler<Matrix, SymmGroup>::get_operator_table() const
+{
+    return operator_table;
+}
+
+template <class Matrix, class SymmGroup>
+bool TagHandler<Matrix, SymmGroup>::is_fermionic(typename OPTable<Matrix, SymmGroup>::tag_type query_tag) const
+{
+    assert(query_tag < sign_table.size());
+    return sign_table[query_tag];
+}
+
+// register new operators
+template <class Matrix, class SymmGroup>
+typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
+register_op(const op_t & op_, tag_detail::operator_kind kind)
+{
     sign_table.push_back(kind);
     tag_type ret = operator_table->register_op(op_);
     assert(sign_table.size() == operator_table->size());
@@ -73,6 +104,22 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::reg
     return ret;
 }
 
+template <class Matrix, class SymmGroup>
+std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
+          typename TagHandler<Matrix,SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::
+checked_register(typename OPTable<Matrix, SymmGroup>::op_t const& sample, tag_detail::operator_kind kind)
+{
+    std::pair<tag_type, value_type> ret = operator_table->checked_register(sample);
+    if (sign_table.size() < operator_table->size())
+        sign_table.push_back(kind);
+    
+    assert(sign_table.size() == operator_table->size());
+    assert(ret.first < operator_table->size());
+    
+    return ret;
+}
+
+// access operators
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::value_type & TagHandler<Matrix, SymmGroup>::get_op(tag_type i) { return (*operator_table)[i]; }
 
@@ -89,31 +136,12 @@ std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, 
     return ret;
 }
 
-/*
-template <class Matrix, class SymmGroup>
-std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::checked_register(op_t & sample) {
-
-    std::pair<bool, value_type> cmp_result;
-    typename std::vector<op_t>::iterator it_pt = this->begin();
-    for (; it_pt != this->end(); ++it_pt) { 
-        cmp_result = equal(*it_pt, sample);
-        if (cmp_result.first)
-            break;
-    }
-
-    if (it_pt == this->end()) {
-        return std::make_pair(this->register_op(sample), 1.0);
-    } else
-        return std::make_pair(it_pt - this->begin(), cmp_result.second);
-    
-}
-*/
-
+// compute products
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
-          typename TagHandler<Matrix,SymmGroup>::value_type>
-TagHandler<Matrix, SymmGroup>::get_product_tag(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
-                                               const typename OPTable<Matrix, SymmGroup>::tag_type t2)
+          typename TagHandler<Matrix,SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::
+get_product_tag(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
+                const typename OPTable<Matrix, SymmGroup>::tag_type t2)
 {
     assert( t1 < operator_table->size() && t2 < operator_table->size() );
     assert( operator_table->size() == sign_table.size());
@@ -152,8 +180,9 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename OPTable<Matrix, Sy
 
 template <class Matrix, class SymmGroup>
 std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::tag_type>, std::vector<typename TagHandler<Matrix,SymmGroup>::value_type> >
-TagHandler<Matrix, SymmGroup>::get_product_tags(std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops1,
-                                               std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops2)
+TagHandler<Matrix, SymmGroup>::
+get_product_tags(std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops1,
+                 std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops2)
 {
     assert(ops1.size() == ops2.size());
     std::pair<std::vector<tag_type>, std::vector<value_type> >ret;
@@ -169,7 +198,9 @@ TagHandler<Matrix, SymmGroup>::get_product_tags(std::vector<typename OPTable<Mat
 // * Diagnostics *************************************
 template <class Matrix, class SymmGroup>
 template <class Map>
-typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::duplicates_(Map const & sample) {
+typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
+duplicates_(Map const & sample)
+{
     typedef typename Map::const_iterator it_t;
 
     std::vector<tag_type> unique_ops;
@@ -198,14 +229,18 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::get
 
     return utags.size();
 }
-// ***************************************************
+
+
+// **************************************************************************
+// KronHandler implementation
+// **************************************************************************
 
 template <class Matrix, class SymmGroup>
-typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::get_kron_tag(
-            Index<SymmGroup> const & phys_i1,
-            Index<SymmGroup> const & phys_i2,
-            typename OPTable<Matrix, SymmGroup>::tag_type t1,
-            typename OPTable<Matrix, SymmGroup>::tag_type t2)
+typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::
+get_kron_tag(Index<SymmGroup> const & phys_i1,
+             Index<SymmGroup> const & phys_i2,
+             typename OPTable<Matrix, SymmGroup>::tag_type t1,
+             typename OPTable<Matrix, SymmGroup>::tag_type t2)
 {
     assert( t1 < base::get_operator_table()->size() && t2 < base::get_operator_table()->size() );
 
@@ -239,7 +274,8 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
 }
 
 template <class Matrix, class SymmGroup>
-typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::get_num_kron_products() const {
+typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::get_num_kron_products() const
+{
     return kronecker_table->size();
 }
 

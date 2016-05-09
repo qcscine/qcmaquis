@@ -70,84 +70,38 @@ protected:
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 
 public:
-    TagHandler() :
-        operator_table(new OPTable<Matrix, SymmGroup>())
-        { }
-
-    TagHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_) :
-        operator_table(tbl_)
-        { }
-
+    // constructors
+    TagHandler() : operator_table(new OPTable<Matrix, SymmGroup>()) { }
+    TagHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_) : operator_table(tbl_) { }
     TagHandler(TagHandler const & a);
     
+    // simple const query
+    tag_type size() const;
+    boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() const;
+    bool is_fermionic (tag_type query_tag) const;
+    
+    // register new operators
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
+    std::pair<tag_type, value_type> checked_register(op_t const& sample, tag_detail::operator_kind kind);
 
-    std::pair<tag_type, value_type> checked_register(op_t const& sample, tag_detail::operator_kind kind) {
-        std::pair<tag_type, value_type> ret = operator_table->checked_register(sample);
-        if (sign_table.size() < operator_table->size())
-            sign_table.push_back(kind);
-
-        assert(sign_table.size() == operator_table->size());
-        assert(ret.first < operator_table->size());
-
-        return ret;
-    }
-
-    tag_type size() { return operator_table->size(); }
-
-/*
-    std::pair<tag_type, value_type> checked_register(op_t & sample, tag_detail::operator_kind kind) {
-        std::pair<bool, value_type> cmp_result;
-        typename std::vector<op_t>::iterator it_pt = operator_table->begin();
-        for (; it_pt != operator_table->end(); ++it_pt) {
-            cmp_result = equal(*it_pt, sample);
-            if (cmp_result.first)
-                break;
-        }
-
-        std::pair<tag_type, value_type> ret;
-        if (it_pt == operator_table->end()) {
-            ret = std::make_pair(operator_table->register_op(sample), 1.0);
-            sign_table.push_back(kind);
-        } else
-            ret = std::make_pair(it_pt - operator_table->begin(), cmp_result.second);
-
-        assert(sign_table.size() == operator_table->size());
-        return ret;
-    }
-*/
-
+    // access operators
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i);
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const;
-
     std::vector<typename OPTable<Matrix, SymmGroup>::value_type> get_ops(std::vector<tag_type> const & i) const;
 
-    bool is_fermionic (tag_type query_tag) const {
-        if (query_tag >= sign_table.size()) maquis::cout << "query_tag " << query_tag << std::endl;
-
-        assert(query_tag < sign_table.size());
-
-        return sign_table[query_tag];
-    }
-
-    /* WARNING: not thread safe! */
+    // compute products (WARNING: not thread safe!)
     std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
     std::pair<std::vector<tag_type>, std::vector<value_type> > get_product_tags(const std::vector<tag_type> & t1, const std::vector<tag_type> & t2);
 
-    /* Diagnostics *************************************/
+    // Diagnostics
     tag_type prod_duplicates() const { return duplicates_(product_tags); }
-
     tag_type get_num_products() const;
     tag_type total_size() const { return operator_table->size(); }
-    /***************************************************/
-
-    boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() { return operator_table; }
 
 private:
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > operator_table;     
 
-    template <class Map>
-    tag_type duplicates_(Map const & sample);
+    template <class Map> tag_type duplicates_(Map const & sample);
 
     std::vector<tag_detail::operator_kind> sign_table;
     pair_map_t product_tags;
