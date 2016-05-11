@@ -140,12 +140,36 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     REGISTER(count_up_down,         tag_detail::bosonic)
 
     #undef REGISTER
-    /**********************************************************************/
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > create_up_times_fill = tag_handler->get_product_tags(create_up, fill);
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > create_down_times_fill = tag_handler->get_product_tags(create_down, fill);
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > destroy_up_times_fill = tag_handler->get_product_tags(destroy_up, fill);
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > destroy_down_times_fill = tag_handler->get_product_tags(destroy_down, fill);
-    /**********************************************************************/
+    //**********************************************************************
+
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cutf = tag_handler->get_product_tags(create_up, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cdtf = tag_handler->get_product_tags(create_down, fill);
+
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdu = tag_handler->get_product_tags(fill, destroy_up);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdd = tag_handler->get_product_tags(fill, destroy_down);
+    //**********************************************************************
+
+    #define PRINT(op) maquis::cout << #op << "\t"; std::copy(op.begin(), op.end(), std::ostream_iterator<tag_type>(std::cout, " ")); maquis::cout << std::endl;
+    PRINT(ident)
+    PRINT(fill)
+    PRINT(create_up)
+    PRINT(create_down)
+    PRINT(destroy_up)
+    PRINT(destroy_down)
+    PRINT(count_up)
+    PRINT(count_down)
+    PRINT(e2d)
+    PRINT(d2e)
+    PRINT(docc)
+    #undef PRINT
+
+    #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
+    HERMITIAN(create_up, destroy_up)
+    HERMITIAN(create_down, destroy_down)
+    HERMITIAN(cutf.first, ftdu.first)
+    HERMITIAN(cdtf.first, ftdd.first)
+    HERMITIAN(e2d, d2e)
+    #undef HERMITIAN
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
@@ -419,7 +443,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     // make sure all elements have been used
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
-    assert( it_0 == used_elements.end() );
+    //assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";

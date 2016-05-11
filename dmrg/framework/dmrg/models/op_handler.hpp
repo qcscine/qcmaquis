@@ -92,6 +92,14 @@ bool TagHandler<Matrix, SymmGroup>::is_fermionic(typename OPTable<Matrix, SymmGr
     return sign_table[query_tag];
 }
 
+template <class Matrix, class SymmGroup>
+typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
+herm_conj(typename OPTable<Matrix, SymmGroup>::tag_type query_tag) const
+{
+    assert(query_tag < hermitian.size());
+    return hermitian[query_tag];
+}
+
 // register new operators
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
@@ -99,7 +107,9 @@ register_op(const op_t & op_, tag_detail::operator_kind kind)
 {
     sign_table.push_back(kind);
     tag_type ret = operator_table->register_op(op_);
+    hermitian.push_back(ret);
     assert(sign_table.size() == operator_table->size());
+    assert(hermitian.size() == operator_table->size());
     assert(ret < operator_table->size());
     return ret;
 }
@@ -111,12 +121,28 @@ checked_register(typename OPTable<Matrix, SymmGroup>::op_t const& sample, tag_de
 {
     std::pair<tag_type, value_type> ret = operator_table->checked_register(sample);
     if (sign_table.size() < operator_table->size())
+    {
         sign_table.push_back(kind);
+        hermitian.push_back(ret.first);
+    }
     
     assert(sign_table.size() == operator_table->size());
+    assert(hermitian.size() == operator_table->size());
     assert(ret.first < operator_table->size());
     
     return ret;
+}
+
+template <class Matrix, class SymmGroup>
+void TagHandler<Matrix, SymmGroup>::hermitian_pair(typename OPTable<Matrix, SymmGroup>::tag_type pair_tag1,
+                                                   typename OPTable<Matrix, SymmGroup>::tag_type pair_tag2)
+{
+    assert(std::max(pair_tag1, pair_tag2) < hermitian.size());
+    assert(pair_tag1 != pair_tag2);
+    
+    if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1) return;
+    assert(hermitian[pair_tag1] == pair_tag1 && hermitian[pair_tag2] == pair_tag2);
+    std::swap(hermitian[pair_tag1], hermitian[pair_tag2]);
 }
 
 // access operators

@@ -79,10 +79,13 @@ public:
     tag_type size() const;
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() const;
     bool is_fermionic (tag_type query_tag) const;
+    tag_type herm_conj(tag_type query_tag) const;
     
     // register new operators
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
     std::pair<tag_type, value_type> checked_register(op_t const& sample, tag_detail::operator_kind kind);
+
+    void hermitian_pair(tag_type pair_tag1, tag_type pair_tag2);
 
     // access operators
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i);
@@ -105,6 +108,8 @@ private:
 
     std::vector<tag_detail::operator_kind> sign_table;
     pair_map_t product_tags;
+
+    std::vector<tag_type> hermitian;
 };
 
 template <class Matrix, class SymmGroup>
