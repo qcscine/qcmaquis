@@ -28,14 +28,17 @@
 #include "dmrg/mp_tensors/reshapes.h"
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
-                                        index_type rd,
-                                        prempo_t const & tags,
-                                        op_table_ptr tbl_)
+MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld
+                                       ,index_type rd
+                                       ,prempo_t const & tags
+                                       ,op_table_ptr tbl_
+                                       ,MPOTensor_detail::Hermitian h_
+                                       )
 : left_i(ld)
 , right_i(rd)
 , col_tags(ld, rd)
 , operator_table(tbl_)
+, herm_info(ld, rd)
 {
     using namespace boost::tuples;
     typedef boost::tuple<index_type, index_type, tag_type, value_type> prempo_descriptor;
@@ -53,7 +56,6 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
             tmp_tags.push_back( prempo_descriptor(row_i, col_i, get<2>(*it), get<3>(*it)) );
         }
 
-
         std::sort(tmp_tags.begin(), tmp_tags.end(), MPOTensor_detail::col_cmp<prempo_descriptor>());
 
         for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it) {
@@ -65,6 +67,10 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
         // Initialize a private operator table
         operator_table = op_table_ptr(new OPTable<Matrix, SymmGroup>());
     }
+
+    // if the optional Hermitian object h_ is valid, adopt it
+    if (h_.left_size() == left_i && h_.right_size() == right_i)
+        herm_info = h_;
 }
 
 /*

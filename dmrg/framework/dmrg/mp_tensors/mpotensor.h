@@ -40,7 +40,6 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
-
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {
@@ -70,7 +69,8 @@ public:
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
     
 public:
-    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr());
+    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr(),
+              MPOTensor_detail::Hermitian = MPOTensor_detail::Hermitian(1,1));
     
     index_type row_dim() const;
     index_type col_dim() const;
@@ -106,6 +106,8 @@ public:
     mutable std::vector<int> placement_r;
     mutable std::vector<int> exceptions_l;
     mutable std::vector<int> exceptions_r;
+
+    MPOTensor_detail::Hermitian herm_info;
 private:
     index_type left_i, right_i;
 
