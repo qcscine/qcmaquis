@@ -49,8 +49,15 @@ namespace contraction {
             int loop_max = left.aux_dim();
             mps.make_right_paired();
             omp_for(int b1, parallel::range(0,loop_max), {
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
+                if (mpo.herm_info.left_skip(b1))
+                {
+                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), ret[b1]);
+                }
+                else {
+                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
+                }
             });
             return ret;
         }
@@ -67,8 +74,15 @@ namespace contraction {
             int loop_max = right.aux_dim();
             mps.make_left_paired();
             omp_for(int b2, parallel::range(0,loop_max), {
-                parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
+                if (mpo.herm_info.right_skip(b2))
+                {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), ret[b2]);
+                }
+                else {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
+                }
             });
             return ret;
         }
