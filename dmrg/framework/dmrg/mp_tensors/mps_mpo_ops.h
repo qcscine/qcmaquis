@@ -126,10 +126,10 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
 
 
 template<class Matrix, class SymmGroup>
-double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
               bool verbose = false)
 {
-    return maquis::real(expval(mps, mps, mpo, verbose));
+    return expval(mps, mps, mpo, verbose);
 }
 
 template<class Matrix, class SymmGroup>

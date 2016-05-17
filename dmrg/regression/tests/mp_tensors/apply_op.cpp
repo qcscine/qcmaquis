@@ -259,7 +259,7 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
         mpom.add_term(term);
         MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
         
-        vals[p] = expval(mps, mpo);
+        vals[p] = maquis::real(expval(mps, mpo));
     }
     return vals;
 }
@@ -291,7 +291,7 @@ double measure_ops(MPS<matrix, SymmGroup> const& mps,
     mpom.add_term(term);
     MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
     
-    return expval(mps, mpo);
+    return maquis::real(expval(mps, mpo));
 }
 
 

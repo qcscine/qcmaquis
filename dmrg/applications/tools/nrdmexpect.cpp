@@ -113,7 +113,7 @@ int main(int argc, char ** argv)
         fillings.push_back(model.filling_matrix_tag(1));
 
         MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(pos, ops, identities, fillings, tag_handler, lattice);
-        double value = expval(mps, mpo);
+        double value = maquis::real(expval(mps, mpo));
         maquis::cout << "Expval is: " << value << std::endl; 
         
     } catch (std::exception& e) {

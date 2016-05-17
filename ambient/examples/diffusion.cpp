@@ -228,14 +228,14 @@ namespace detail {
 
 }
 
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::partial_init_value, partial_init_value)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::reduce, reduce)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::reduce_moment, reduce_moment)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::evolve, evolve)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_top, contract_border_top)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_bottom, contract_border_bottom)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_left, contract_border_left)
-AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::contract_border_right, contract_border_right)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::partial_init_value, partial_init_value)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::reduce, reduce)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::reduce_moment, reduce_moment)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::evolve, evolve)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::contract_border_top, contract_border_top)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::contract_border_bottom, contract_border_bottom)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::contract_border_left, contract_border_left)
+AMBIENT_STATIC_ASYNC_TEMPLATE(detail::contract_border_right, contract_border_right)
 
 template<typename T>
 void partial_init(ambient::block<T>& b, T value, double posi, double posj, double dr, double bound){

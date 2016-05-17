@@ -43,7 +43,7 @@ namespace ambient {
         }
     }
 
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::fill_value, fill_value)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::fill_value, fill_value)
 
     template <class T, class Allocator>
     class block {

@@ -82,6 +82,17 @@ public:
         term.push_back( boost::make_tuple(j, tag_right) );
         this->terms_.push_back(term);
     }
+    void add_nterm(std::vector<boost::tuple<size_t, op_t> > const& ops, value_type const& coeff=1.)
+    {
+        term_descriptor term;
+        term.coeff = coeff;
+        for (typename std::vector<boost::tuple<size_t, op_t> >::const_iterator it = ops.begin();
+             it != ops.end(); ++it) {
+            tag_type tag = tag_handler->register_op(boost::get<1>(*it), tag_detail::bosonic);
+            term.push_back( boost::make_tuple(boost::get<0>(*it), tag) );
+        }
+        this->terms_.push_back(term);
+    }
     
     
     /*** Functions needed my model_impl ***/
@@ -157,6 +168,10 @@ public:
     void add_bondterm(op_t const& op_left, size_t i, op_t const& op_right, size_t j, value_type const& coeff=1.)
     {
         return impl_->add_bondterm(op_left, i, op_right, j, coeff);
+    }
+    void add_nterm(std::vector<boost::tuple<size_t, op_t> > const& ops, value_type const& coeff=1.)
+    {
+        return impl_->add_nterm(ops, coeff);
     }
     
 private:

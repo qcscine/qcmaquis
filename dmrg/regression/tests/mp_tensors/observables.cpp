@@ -67,7 +67,7 @@ double measure_local_expval(MPS<matrix, SymmGroup> const & mps, operator_selecto
     mpom.add_term(term);
     MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
     
-    return expval(mps, mpo);
+    return maquis::real(expval(mps, mpo));
 }
 
 double measure_local_overlap(MPS<matrix, SymmGroup> const & mps,

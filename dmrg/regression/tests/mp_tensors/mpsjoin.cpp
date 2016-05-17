@@ -86,7 +86,7 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& bra, MPS<matrix,
         mpom.add_term(term);
         MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
         
-        meas[p] = expval(bra, ket, mpo);
+        meas[p] = maquis::real(expval(bra, ket, mpo));
     }
     return meas;
 }

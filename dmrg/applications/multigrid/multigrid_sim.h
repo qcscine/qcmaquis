@@ -36,10 +36,28 @@
 #include <boost/shared_ptr.hpp>
 
 #include "dmrg/sim/sim.h"
-#include "dmrg/models/continuum/factory.h"
+#include "dmrg/models/continuum/factory_lattice.hpp"
 
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/mp_tensors/multigrid.h"
+
+
+inline BaseParameters compute_initial_parms(BaseParameters parms)
+{
+    int initial_graining = 0;
+
+    std::string chkpfile = boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ "));
+    boost::filesystem::path p(chkpfile);
+    if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5")) {
+            storage::archive ar(chkpfile+"/props.h5");
+            if (ar.is_data("/status/graining") && ar.is_scalar("/status/graining"))
+                ar["/status/graining"] >> initial_graining;
+    }
+    
+    parms << parms.iteration_params("graining", initial_graining);
+    return parms;
+}
+
 
 template <class Matrix, class SymmGroup>
 class multigrid_sim : public sim<Matrix, SymmGroup> {
@@ -47,6 +65,7 @@ class multigrid_sim : public sim<Matrix, SymmGroup> {
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     typedef typename base::status_type status_type;
+    typedef typename base::measurements_type measurements_type;
 
     enum measure_t {sweep_measure, mg_measure};
     
@@ -56,22 +75,17 @@ class multigrid_sim : public sim<Matrix, SymmGroup> {
     using base::mpoc;
     using base::parms;
     using base::model;
-    using base::measurements;
+    using base::all_measurements;
     using base::stop_callback;
     using base::init_sweep;
     using base::init_site;
     using base::rfile;
     
 public:
-    multigrid_sim(DmrgParameters & parms_, ModelParameters & model_)
-    : base(parms_, model_)
+    multigrid_sim(DmrgParameters & parms_)
+    : base(compute_initial_parms(parms_))
     , initial_graining(0)
     {
-        if (parms["lattice_library"] != "continuum")
-            throw std::runtime_error("multigrid only possible for `continuum` lattice_library.");
-        if (parms["model_library"] != "continuum")
-            throw std::runtime_error("multigrid only possible for `continuum` model_library.");
-        
         if (this->restore)
         {
             storage::archive ar(this->chkpfile+"/props.h5");
@@ -79,15 +93,42 @@ public:
         }
     }
     
+    void model_init()
+    {
+        /// Model initialization
+        this->lat = Lattice(this->parms);
+        this->model = Model<Matrix, SymmGroup>(this->lat, this->parms);
+        this->mpo = make_mpo(this->lat, this->model);
+        this->all_measurements = this->model.measurements();
+        this->all_measurements << overlap_measurements<Matrix, SymmGroup>(this->parms);
+    }
+    
+    boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > empty_mps_initiatializer() const
+    {
+        int max_site_type = 0;
+        std::vector<int> site_types(this->lat.size(), 0);
+        for (int p = 0; p < this->lat.size(); ++p) {
+            site_types[p] = this->lat.template get_prop<int>("type", p);
+            max_site_type = std::max(site_types[p], max_site_type);
+        }
+        
+        std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
+        for (int type = 0; type < site_bases.size(); ++type) {
+            site_bases[type] = this->model.phys_dim(type);
+        }
+        
+        boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer(new empty_mps_init<Matrix, SymmGroup>(site_bases, site_types));
+        return initializer;
+    }
+    
     void run()
     {
         /// Set current status in parms
         parms << parms.iteration_params("graining", initial_graining);
-        model << model.iteration_params("graining", initial_graining);
         /// Build current model and load/build MPS
         this->model_init();
-        this->mps_init();
         
+
         for (int graining=initial_graining; graining < parms["ngrainings"]; ++graining)
         {
             /// usual optimization
@@ -103,21 +144,24 @@ public:
             if (graining < parms["ngrainings"]-1) {
                 maquis::cout << "*** Starting grainings ***" << std::endl;
                 
-                parms << parms.iteration_params("graining", graining+1);
-                model << model.iteration_params("graining", graining+1);
+                BaseParameters iteration_params = parms.iteration_params("graining", graining+1);
+                parms << iteration_params;
                 this->model_init();
-                
-                boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer = boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > (new empty_mps_init<Matrix, SymmGroup>());
-                MPS<Matrix, SymmGroup> new_mps = MPS<Matrix, SymmGroup>(lat->size(), 1, this->phys, this->initc, *initializer);
+                measurements_type always_measurements = this->iteration_measurements(init_sweep);
+
+                MPS<Matrix, SymmGroup> new_mps = MPS<Matrix, SymmGroup>(lat.size(), *empty_mps_initiatializer());
                 
                 int curL = mps.length();
-                BaseParameters oldmodel(model);
-                oldmodel << model.iteration_params("graining", graining);
+                BaseParameters oldparms(parms);
+                oldparms << parms.iteration_params("graining", graining);
                 
-                std::vector<MPO<Matrix, SymmGroup> > mpo_mix(curL+1, MPO<Matrix, SymmGroup>(0));
-                double r = lat->size() / curL;
-                for (int i=0; i<=curL; ++i)
-                    mpo_mix[i] = mixed_mpo(base::model, r*i, oldmodel, curL-i);
+                std::vector<MPO<Matrix, SymmGroup> > mpo_mix;
+                if (parms["model_library"] == "continuum") {
+                    mpo_mix.resize(curL+1, MPO<Matrix, SymmGroup>(0));
+                    double r = lat.size() / curL;
+                    for (int i=0; i<=curL; ++i)
+                        mpo_mix[i] = mixed_mpo(base::parms, r*i, oldparms, curL-i);
+                }
                 
                 results_collector graining_results;
                 if (curL < new_mps.length())
@@ -133,14 +177,14 @@ public:
                 /// write iteration results
                 {
                     storage::archive ar(rfile, "w");
-                    ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << parms;
-                    ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << model;
+                    ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << iteration_params;
                     ar[results_archive_path(0, graining, mg_measure) + "/results"] << graining_results;
                 }
                 
                 /// measure observables specified in 'always_measure'
-                if (!parms["ALWAYS_MEASURE"].empty())
-                    this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["ALWAYS_MEASURE"]));
+                if (always_measurements.size() > 0)
+                    this->measure(results_archive_path(0, graining, mg_measure) + "/results/", always_measurements);
+
                 
                 /// checkpoint new mps
                 this->checkpoint_simulation(mps, 0, -1, graining+1);
@@ -194,22 +238,23 @@ private:
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
         
+        /// Optimizer initialization
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite")
         {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, init_sweep, init_site) );
+                            (mps, mpo, parms, stop_callback, init_site) );
         }
-        
         else if(parms["optimization"] == "twosite")
         {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, init_sweep, init_site) );
+                            (mps, mpo, parms, stop_callback, init_site) );
         }
         else {
             throw std::runtime_error("Don't know this optimizer");
         }
         
+        measurements_type always_measurements = this->iteration_measurements(init_sweep);
         try {
             for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
                 // TODO: introduce some timings
@@ -223,14 +268,14 @@ private:
                     {
                         storage::archive ar(rfile, "w");
                         ar[results_archive_path(sweep, graining, sweep_measure) + "/parameters"] << parms;
-                        ar[results_archive_path(sweep, graining, sweep_measure) + "/parameters"] << model;
                         ar[results_archive_path(sweep, graining, sweep_measure) + "/results"] << optimizer->iteration_results();
                         // ar[results_archive_path(sweep, graining, sweep_measure) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
                     }
                     
-                    /// measure ALWAYS_MEASURE specified in 'always_measure'
-                    if (!parms["always_measure"].empty())
-                        this->measure(results_archive_path(sweep, graining, sweep_measure) + "/results/", measurements.sublist(parms["ALWAYS_MEASURE"]));
+                    /// measure observables specified in 'always_measure'
+                    if (always_measurements.size() > 0)
+                        this->measure(results_archive_path(sweep, graining, sweep_measure) + "/results/", always_measurements);
+
                 }
                 
                 /// write checkpoint
@@ -247,7 +292,6 @@ private:
             {
                 storage::archive ar(rfile, "w");
                 ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/parameters"] << parms;
-                ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/parameters"] << model;
                 ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/results"] << optimizer->iteration_results();
                 // ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
             }
@@ -263,14 +307,17 @@ private:
     {
         assert( parms1["LATTICE"] == parms2["LATTICE"] );
         
-        Lattice_ptr lat;
+        typedef boost::shared_ptr<lattice_impl> lattice_ptr;
+
+        lattice_ptr latptr;
         if (parms1["LATTICE"] == "continuous_chain"
             || parms1["LATTICE"] == std::string("continuous_left_chain"))
-            lat = Lattice_ptr(new MixedContChain(parms1, L1, parms2, L2));
+            latptr = lattice_ptr(new MixedContChain(parms1, L1, parms2, L2));
         else if (parms2["LATTICE"] == std::string("continuous_center_chain"))
-            lat = Lattice_ptr(new MixedContChain_c(parms1, L1, parms2, L2));
+            latptr = lattice_ptr(new MixedContChain_c(parms1, L1, parms2, L2));
         else
             throw std::runtime_error("Don't know this lattice!");
+        Lattice lat(latptr);
         
 #ifndef NDEBUG
         // debugging output, to be removed soon!
@@ -282,12 +329,8 @@ private:
 //        }
 #endif
          
-        typename model_traits<Matrix, SymmGroup>::model_ptr tmpmodel;
-        tmpmodel = cont_model_factory<Matrix, SymmGroup>::parse(*lat, parms1);
-        Hamiltonian<Matrix, SymmGroup> H = tmpmodel->H();
-        MPO<Matrix, SymmGroup> mpo = make_mpo(lat->size(), H);
-        
-        return mpo;
+        Model<Matrix, SymmGroup> tmpmodel = model_factory<Matrix, SymmGroup>(lat, parms1);;
+        return make_mpo(lat, tmpmodel);
     }
     
 private:
