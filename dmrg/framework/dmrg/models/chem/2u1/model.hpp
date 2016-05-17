@@ -140,28 +140,28 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     REGISTER(count_up_down,         tag_detail::bosonic)
 
     #undef REGISTER
-    //**********************************************************************
 
+    //**********************************************************************
     std::pair<std::vector<tag_type>, std::vector<value_type> > cutf = tag_handler->get_product_tags(create_up, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cdtf = tag_handler->get_product_tags(create_down, fill);
 
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdu = tag_handler->get_product_tags(fill, destroy_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdd = tag_handler->get_product_tags(fill, destroy_down);
+
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cund = tag_handler->get_product_tags(create_up, count_down);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > dund = tag_handler->get_product_tags(destroy_up, count_down);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cdnu = tag_handler->get_product_tags(create_down, count_up);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ddnu = tag_handler->get_product_tags(destroy_down, count_up);
+
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cundtf = tag_handler->get_product_tags(cund.first, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ftdund = tag_handler->get_product_tags(fill, dund.first);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > cdnutf = tag_handler->get_product_tags(cdnu.first, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ftddnu = tag_handler->get_product_tags(fill, ddnu.first);
     //**********************************************************************
 
-    #define PRINT(op) maquis::cout << #op << "\t"; std::copy(op.begin(), op.end(), std::ostream_iterator<tag_type>(std::cout, " ")); maquis::cout << std::endl;
-    PRINT(ident)
-    PRINT(fill)
-    PRINT(create_up)
-    PRINT(create_down)
-    PRINT(destroy_up)
-    PRINT(destroy_down)
-    PRINT(count_up)
-    PRINT(count_down)
-    PRINT(e2d)
-    PRINT(d2e)
-    PRINT(docc)
-    #undef PRINT
+    //#define PRINT(op) maquis::cout << #op << "\t"; std::copy(op.begin(), op.end(), std::ostream_iterator<tag_type>(std::cout, " ")); maquis::cout << std::endl;
+    //PRINT(ident)
+    //#undef PRINT
 
     #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
     HERMITIAN(create_up, destroy_up)
@@ -169,6 +169,10 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     HERMITIAN(cutf.first, ftdu.first)
     HERMITIAN(cdtf.first, ftdd.first)
     HERMITIAN(e2d, d2e)
+    HERMITIAN(cund.first, dund.first)
+    HERMITIAN(cdnu.first, ddnu.first)
+    HERMITIAN(cundtf.first, ftdund.first)
+    HERMITIAN(cdnutf.first, ftddnu.first)
     #undef HERMITIAN
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);

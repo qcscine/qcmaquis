@@ -179,7 +179,6 @@ namespace generate_mpo
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
 
-                maquis::cout << "\nBond " << p << std::endl << std::endl;
                 std::map<prempo_key_type, prempo_key_type> HermKeyPairs;                
 
                 index_map right;
@@ -216,7 +215,7 @@ namespace generate_mpo
 
                 std::vector<index_type> RightHerm(rcd.second);
                 {
-                    index_type z = 0;
+                    index_type z = 0, cnt = 0;
                     std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
                     for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
                     {
@@ -224,10 +223,14 @@ namespace generate_mpo
                         index_type julia = right[h_it->second];
                         //maquis::cout << romeo << " <-> " << julia << std::endl;
                         if (romeo < julia)
+                        {
+                            cnt++;
                             std::swap(RightHerm[romeo], RightHerm[julia]);
+                        }
                     }
                     //std::copy(RightHerm.begin(), RightHerm.end(), std::ostream_iterator<index_type>(std::cout, " "));
                     //maquis::cout << std::endl;
+                    maquis::cout << "\nBond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
 
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm);
@@ -474,8 +477,8 @@ namespace generate_mpo
             for (tag_type i = 0; i < k.pos_op.size(); ++i)
             {
                 // for now exclude cases where some ops are self adjoint
-                if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                    return k;
+                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                //    return k;
 
                 conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
             }
