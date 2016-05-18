@@ -157,6 +157,9 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdund = tag_handler->get_product_tags(fill, dund.first);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cdnutf = tag_handler->get_product_tags(cdnu.first, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftddnu = tag_handler->get_product_tags(fill, ddnu.first);
+
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(destroy_down, create_up);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up, create_down);
     //**********************************************************************
 
     //#define PRINT(op) maquis::cout << #op << "\t"; std::copy(op.begin(), op.end(), std::ostream_iterator<tag_type>(std::cout, " ")); maquis::cout << std::endl;
@@ -173,6 +176,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     HERMITIAN(cdnu.first, ddnu.first)
     HERMITIAN(cundtf.first, ftdund.first)
     HERMITIAN(cdnutf.first, ftddnu.first)
+    HERMITIAN(ddcu.first, ducd.first)
     #undef HERMITIAN
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
