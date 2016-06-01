@@ -61,7 +61,7 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
 
     charge sector = det[0];
     std::size_t b = block0.left_basis().position(sector);
-    if (b == block_0.left_basis().size())
+    if (b == block0.left_basis().size())
         return 0.0;
 
     Matrix coeff = block0[b];
