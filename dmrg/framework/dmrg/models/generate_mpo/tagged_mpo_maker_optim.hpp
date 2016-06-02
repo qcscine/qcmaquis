@@ -52,7 +52,7 @@ namespace generate_mpo
         template <typename pos_t, typename tag_type, typename index_type>
         struct prempo_key {
             typedef std::pair<pos_t, tag_type> pos_op_type;
-            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
+            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right, conjugate};
             
             kind_type kind;
             std::vector<pos_op_type> pos_op;
@@ -115,7 +115,9 @@ namespace generate_mpo
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
-        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
+        //typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
+        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
+                         compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
         
         enum merge_kind {attach, detach};
         
@@ -180,15 +182,33 @@ namespace generate_mpo
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
 
                 std::map<prempo_key_type, prempo_key_type> HermKeyPairs;                
+                prempo_map_type prempo_sorted;
+                for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
+                {
+                    prempo_key_type k1 = it->first.first;
+                    prempo_key_type k2 = it->first.second;
+                    prempo_key_type ck1 = conjugate_key(k1);
+                    prempo_key_type ck2 = conjugate_key(k2);
+
+                    if (! (k1 < ck1 || k1 == ck1))
+                        k1.kind = prempo_key_type::conjugate;
+                    if (! (k2 < ck2 || k2 == ck2))
+                    {
+                        k2.kind = prempo_key_type::conjugate;
+                        HermKeyPairs[ck2] = k2;
+                    }
+
+                    prempo_sorted.insert( std::make_pair(std::make_pair(k1,k2), it->second) );
+                }
 
                 index_map right;
                 index_type r = 2;
-                for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
+                for (typename prempo_map_type::const_iterator it = prempo_sorted.begin(); it != prempo_sorted.end(); ++it)
                 {
                     prempo_key_type const& k1 = it->first.first;
                     prempo_key_type const& k2 = it->first.second;
                     prempo_value_type const& val = it->second;
-                    
+
                     index_iterator ll = left.find(k1);
                     if (ll == left.end())
                         throw std::runtime_error("k1 not found!");
@@ -201,13 +221,6 @@ namespace generate_mpo
                     else if (rr == right.end())
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
                     
-                    prempo_key_type ck2 = conjugate_key(k2);
-                    if (!(k2 == ck2))
-                    {
-                        //maquis::cout << k2 << " conj " << conjugate_key(k2) << std::endl;
-                        HermKeyPairs[k2] = ck2;
-                    }
-
                     pre_tensor.push_back( tag_block(ll->second, rr->second, val.first, val.second) );
                 }
                 
