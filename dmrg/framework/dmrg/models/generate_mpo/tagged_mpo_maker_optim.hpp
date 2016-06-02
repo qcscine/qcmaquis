@@ -228,22 +228,16 @@ namespace generate_mpo
 
                 std::vector<index_type> RightHerm(rcd.second);
                 {
-                    index_type z = 0, cnt = 0;
+                    index_type z = 0;
                     std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
                     for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
                     {
                         index_type romeo = right[h_it->first];
                         index_type julia = right[h_it->second];
-                        //maquis::cout << romeo << " <-> " << julia << std::endl;
-                        if (romeo < julia)
-                        {
-                            cnt++;
-                            std::swap(RightHerm[romeo], RightHerm[julia]);
-                        }
+                        assert (romeo < julia);
+                        std::swap(RightHerm[romeo], RightHerm[julia]);
                     }
-                    //std::copy(RightHerm.begin(), RightHerm.end(), std::ostream_iterator<index_type>(std::cout, " "));
-                    //maquis::cout << std::endl;
-                    maquis::cout << "\nBond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
+                    maquis::cout << "\nBond " << p << ": " << HermKeyPairs.size() << "/" << rcd.second << std::endl;
                 }
 
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm);

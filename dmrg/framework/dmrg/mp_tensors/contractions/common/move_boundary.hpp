@@ -232,8 +232,8 @@ namespace contraction {
             Boundary<Matrix, SymmGroup> ret;
             ret.resize(loop_max);
 
-            omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                if (mpo.herm_info.right_skip(b2)) continue;
+            index_type eff_loop_max = mpo.herm_info.right_size();
+            omp_for(index_type b2, parallel::range<index_type>(0, eff_loop_max), {
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
                 block_matrix<Matrix, SymmGroup> tmp;
                 Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
@@ -288,8 +288,8 @@ namespace contraction {
             });
 
     #else
-            omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                if (mpo.herm_info.left_skip(b1)) continue;
+            index_type eff_loop_max = mpo.herm_info.left_size();
+            omp_for(index_type b1, parallel::range<index_type>(0, eff_loop_max), {
                 Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
                 block_matrix<Matrix, SymmGroup> tmp;
