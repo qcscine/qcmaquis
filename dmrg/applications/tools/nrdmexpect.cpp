@@ -164,7 +164,7 @@ int main(int argc, char ** argv)
 
         MPO<matrix, symm> mpo = rdm2(model, lattice);
 
-        double value = expval(mps, mpo);
+        double value = maquis::real(expval(mps, mpo));
         maquis::cout << "Expval is: " << value << std::endl; 
         
     } catch (std::exception& e) {

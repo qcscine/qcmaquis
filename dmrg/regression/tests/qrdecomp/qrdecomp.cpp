@@ -114,9 +114,9 @@ BOOST_AUTO_TEST_CASE( test )
             mpom.add_term(term);
             MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
             
-            double orig = expval(mps, mpo);
-            double meas_mps1 = expval(mps1, mpo);
-            double meas_mps2 = expval(mps2, mpo);
+            double orig = maquis::real(expval(mps, mpo));
+            double meas_mps1 = maquis::real(expval(mps1, mpo));
+            double meas_mps2 = maquis::real(expval(mps2, mpo));
             
             maquis::cout << "Density at site " << p << ": ";
             maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
@@ -149,9 +149,9 @@ BOOST_AUTO_TEST_CASE( test )
         }
         MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
         
-        double orig = expval(mps, mpo);
-        double meas_mps1 = expval(mps1, mpo);
-        double meas_mps2 = expval(mps2, mpo);
+        double orig = maquis::real(expval(mps, mpo));
+        double meas_mps1 = maquis::real(expval(mps1, mpo));
+        double meas_mps2 = maquis::real(expval(mps2, mpo));
         
         maquis::cout << "Bond energy: ";
         maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;

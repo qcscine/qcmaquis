@@ -83,7 +83,10 @@ namespace contraction {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm(contr_grid(0,0), right[b2], tmp);
+            if (mpo.herm_info.right_skip(b2))
+                gemm(contr_grid(0,0), transpose(right[mpo.herm_info.right_conj(b2)]), tmp);
+            else
+                gemm(contr_grid(0,0), right[b2], tmp);
             contr_grid(0,0).clear();
             parallel_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)

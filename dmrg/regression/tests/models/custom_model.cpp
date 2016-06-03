@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( custom_model_energy, ML, test_systems )
     default_mps_init<matrix, grp> initializer(parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(L,0));
     MPS<matrix, grp> mps(L, initializer);
     
-    double energy = expval(mps, mpo);
+    double energy = maquis::real(expval(mps, mpo));
     maquis::cout << "Random energy: " << energy << std::endl;
     
     BOOST_CHECK_CLOSE(energy, -5.445283602, 1e-7); // if the random state does not change, it should be the correct energy.

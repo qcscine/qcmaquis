@@ -40,7 +40,6 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
-
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {
@@ -73,6 +72,7 @@ public:
     
 public:
     MPOTensor(index_type = 1, index_type = 1, prempo_t = prempo_t(), op_table_ptr = op_table_ptr(),
+              MPOTensor_detail::Hermitian = MPOTensor_detail::Hermitian(1,1),
               spin_index const & lspins = spin_index(), spin_index const & rspins = spin_index());
     
     index_type row_dim() const;
@@ -114,6 +114,8 @@ public:
     mutable std::vector<int> placement_r;
     mutable std::vector<int> exceptions_l;
     mutable std::vector<int> exceptions_r;
+
+    MPOTensor_detail::Hermitian herm_info;
 private:
     index_type left_i, right_i;
     spin_index left_spins, right_spins;

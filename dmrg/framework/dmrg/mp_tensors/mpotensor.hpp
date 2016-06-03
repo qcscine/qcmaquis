@@ -28,18 +28,20 @@
 #include "dmrg/mp_tensors/reshapes.h"
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
-                                        index_type rd,
-                                        prempo_t tags,
-                                        op_table_ptr tbl_,
-                                        spin_index const & lspins,
-                                        spin_index const & rspins)
+MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld
+                                       ,index_type rd
+                                       ,prempo_t tags
+                                       ,op_table_ptr tbl_
+                                       ,MPOTensor_detail::Hermitian h_
+                                       ,spin_index const & lspins
+                                       ,spin_index const & rspins)
 : left_i(ld)
 , right_i(rd)
 , left_spins(lspins)
 , right_spins(rspins)
 , col_tags(ld, rd)
 , operator_table(tbl_)
+, herm_info(ld, rd)
 {
     using namespace boost::tuples;
     row_index.resize(ld);
@@ -70,6 +72,10 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
         // Initialize a private operator table
         operator_table = op_table_ptr(new OPTable<Matrix, SymmGroup>());
     }
+
+    // if the optional Hermitian object h_ is valid, adopt it
+    if (h_.left_size() == left_i && h_.right_size() == right_i)
+        herm_info = h_;
 }
 
 /*

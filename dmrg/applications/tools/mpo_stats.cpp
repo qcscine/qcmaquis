@@ -93,6 +93,14 @@ int main(int argc, char ** argv)
                 }
                 ofs << std::endl;
             }
+            
+            ofs << std::endl;
+            
+            MPOTensor<matrix, symm>::op_table_ptr op_table = mpo[p].get_operator_table();
+            for (unsigned tag=0; tag<op_table->size(); ++tag) {
+                ofs << "TAG " << tag << std::endl;
+                ofs << " * op :\n" << (*op_table)[tag] << std::endl;
+            }
         }
         
     } catch (std::exception& e) {

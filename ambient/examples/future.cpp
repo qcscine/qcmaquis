@@ -6,7 +6,7 @@ int main(){
     int a = 10;
     int b = 20;
 
-    ambient::bind_cpu([](ambient::future<double>& sum_, int a, int b){
+    ambient::async([](ambient::future<double>& sum_, int a, int b){
         sum_.set(a+b);
     }, sum, a, b);
 

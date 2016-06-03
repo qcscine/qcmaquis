@@ -71,8 +71,8 @@ namespace ambient {
         }
     }
 
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_value_atomic, init_value_atomic)
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_atomic,       copy_atomic)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::init_value_atomic, init_value_atomic)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::copy_atomic,       copy_atomic)
 
 
     template<class T, class Allocator>

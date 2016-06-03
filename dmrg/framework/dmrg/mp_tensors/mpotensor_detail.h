@@ -150,6 +150,64 @@ namespace MPOTensor_detail
                 return get<0>(i) < get<0>(j);
         }
     };
+
+    class Hermitian
+    {
+        typedef std::size_t index_type;
+
+        friend Hermitian operator * (Hermitian const &, Hermitian const &);
+
+    public:
+        Hermitian(index_type ld, index_type rd)
+        : eff_lsize(ld), eff_rsize(rd)
+        {
+            LeftHerm.resize(ld);
+            RightHerm.resize(rd);
+
+            index_type z=0;
+            std::generate(LeftHerm.begin(), LeftHerm.end(), boost::lambda::var(z)++);
+            z=0;
+            std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
+        }
+
+        Hermitian(std::vector<index_type> const & lh,
+                  std::vector<index_type> const & rh)
+        : LeftHerm(lh)
+        , RightHerm(rh)
+        {
+            index_type i = 0;
+            while (i < LeftHerm.size() && LeftHerm[i] >= i)
+                i++;
+            eff_lsize = i;
+
+            i = 0;
+            while (i < RightHerm.size() && RightHerm[i] >= i)
+                i++;
+            eff_rsize = i;
+        }
+
+        bool left_skip(index_type b1) const { return LeftHerm[b1] < b1; }
+        bool right_skip(index_type b2) const { return RightHerm[b2] < b2; }
+
+        index_type  left_conj(index_type b1) const { return  LeftHerm[b1]; }
+        index_type right_conj(index_type b2) const { return RightHerm[b2]; }
+
+        std::size_t left_size() const { return eff_lsize; }
+        std::size_t right_size() const { return eff_rsize; }
+
+    private:
+        std::vector<index_type> LeftHerm;
+        std::vector<index_type> RightHerm;
+
+        index_type eff_lsize;
+        index_type eff_rsize;
+    };
+
+    inline Hermitian operator * (Hermitian const & a, Hermitian const & b)
+    {
+        return Hermitian(a.LeftHerm, b.RightHerm);
+    } 
+
 }
 
 #endif

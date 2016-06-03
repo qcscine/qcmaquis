@@ -59,11 +59,11 @@ namespace ambient {
         }
     }
 
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::set_size,          set_size)
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::measure_size,      measure_size)
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::init_value_vector, init_value_vector)
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::copy_vector,       copy_vector)
-    AMBIENT_STATIC_BIND_CPU_TEMPLATE(detail::add,               add)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::set_size,          set_size)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::measure_size,      measure_size)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::init_value_vector, init_value_vector)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::copy_vector,       copy_vector)
+    AMBIENT_STATIC_ASYNC_TEMPLATE(detail::add,               add)
 }
 
 #endif

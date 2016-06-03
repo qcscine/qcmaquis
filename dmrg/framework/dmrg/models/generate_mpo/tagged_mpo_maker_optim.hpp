@@ -52,7 +52,7 @@ namespace generate_mpo
         template <typename pos_t, typename tag_type, typename index_type>
         struct prempo_key {
             typedef std::pair<pos_t, tag_type> pos_op_type;
-            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
+            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right, conjugate};
             
             kind_type kind;
             std::vector<pos_op_type> pos_op;
@@ -80,6 +80,17 @@ namespace generate_mpo
             }
         };
     }
+
+    template <typename pos_t, typename tag_type, typename index_type>
+    std::ostream& operator << (std::ostream& os, detail::prempo_key<pos_t, tag_type, index_type> key)
+    {
+        unsigned s = key.pos_op.size();
+        for (int i = 0; i < s; ++i)
+            os << key.pos_op[i].first << ":" << key.pos_op[i].second << ", ";
+        os << "o" << key.offset;
+
+        return os;
+    }
     
     template <typename T, typename U>
     std::pair<T,U> to_pair(boost::tuple<T,U> const& t)
@@ -105,7 +116,9 @@ namespace generate_mpo
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
-        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
+        //typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
+        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
+                         compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
         
         enum merge_kind {attach, detach};
         
@@ -197,18 +210,39 @@ namespace generate_mpo
 
             typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
             std::vector<spin_desc_t> left_spins(1);
+            std::vector<index_type> LeftHerm(1);
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
-                
+
+                std::map<prempo_key_type, prempo_key_type> HermKeyPairs;                
+                prempo_map_type prempo_sorted;
+                for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
+                {
+                    prempo_key_type k1 = it->first.first;
+                    prempo_key_type k2 = it->first.second;
+                    prempo_key_type ck1 = conjugate_key(k1);
+                    prempo_key_type ck2 = conjugate_key(k2);
+
+                    if (! (k1 < ck1 || k1 == ck1))
+                        k1.kind = prempo_key_type::conjugate;
+                    if (! (k2 < ck2 || k2 == ck2))
+                    {
+                        k2.kind = prempo_key_type::conjugate;
+                        HermKeyPairs[ck2] = k2;
+                    }
+
+                    prempo_sorted.insert( std::make_pair(std::make_pair(k1,k2), it->second) );
+                }
+
                 index_map right;
                 index_type r = 2;
-                for (typename prempo_map_type::const_iterator it = prempo[p].begin();
-                     it != prempo[p].end(); ++it) {
+                for (typename prempo_map_type::const_iterator it = prempo_sorted.begin(); it != prempo_sorted.end(); ++it)
+                {
                     prempo_key_type const& k1 = it->first.first;
                     prempo_key_type const& k2 = it->first.second;
                     prempo_value_type const& val = it->second;
-                    
+
                     index_iterator ll = left.find(k1);
                     if (ll == left.end())
                         throw std::runtime_error("k1 not found!");
@@ -236,16 +270,34 @@ namespace generate_mpo
                     right_spins[out_index] = out_spin;
                 }
 
+                std::vector<index_type> RightHerm(rcd.second);
+                {
+                    index_type z = 0;
+                    std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
+                    for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
+                    {
+                        index_type romeo = right[h_it->first];
+                        index_type julia = right[h_it->second];
+                        assert (romeo < julia);
+                        std::swap(RightHerm[romeo], RightHerm[julia]);
+                    }
+                    maquis::cout << "\nBond " << p << ": " << HermKeyPairs.size() << "/" << rcd.second << std::endl;
+                }
+
+                MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm);
+
                 if (p == 0)
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
                 else if (p == length - 1)
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
                 else
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
                 if (verbose)
                     maquis::cout << "MPO Bond: " << rcd.second << std::endl;
+
                 swap(left, right);
                 swap(left_spins, right_spins);
+                swap(LeftHerm, RightHerm);
             }
             
             mpo.setCoreEnergy(core_energy);
@@ -498,6 +550,20 @@ namespace generate_mpo
             finalized = true;
         }
         
+        prempo_key_type conjugate_key(prempo_key_type k)
+        {
+            prempo_key_type conj = k;
+            for (tag_type i = 0; i < k.pos_op.size(); ++i)
+            {
+                // for now exclude cases where some ops are self adjoint
+                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                //    return k;
+
+                conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
+            }
+
+            return conj;
+        }
 
     private:
         Lattice const& lat;

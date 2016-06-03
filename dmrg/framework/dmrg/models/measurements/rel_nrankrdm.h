@@ -145,7 +145,7 @@ namespace measurements {
 							//////////////////////////////////
 
 							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(ket_mps, mpo);
+                            typename MPS<Matrix, SymmGroup>::scalar_type dct = (this->cast_to_real) ? maquis::real(expval(ket_mps, mpo)) : expval(ket_mps, mpo);
 							
 							//if(dct != 0.0) {
 								//maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
