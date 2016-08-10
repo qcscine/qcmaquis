@@ -206,6 +206,49 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
 
     void operator()(MPS<Matrix, SymmGroup> mps_in, MPS<Matrix, SymmOut> & mps_out)
     {
+        BaseParameters parms;
+        parms.set("lattice_library", "coded");
+        parms.set("LATTICE", "orbitals");
+        parms.set("model_library", "coded");
+        parms.set("MODEL", "quantum_chemistry");
+        parms.set("L", mps_in.size());
+        int N = SymmGroup::particleNumber(mps_in[mps_in.size()-1].col_dim()[0].first);
+        parms.set("u1_total_charge1", N/2);
+        parms.set("u1_total_charge2", N/2);
+        parms.set("init_bond_dimension", 1000);
+
+        // determine the irreps per site
+        std::string site_types;
+        for (Lattice::pos_t p = 0; p < mps_in.size(); ++p)
+            for (std::size_t i = 0; i < mps_in[p].site_dim().size(); ++i)
+            {
+                if (SymmGroup::particleNumber(mps_in[p].site_dim()[i].first) % 2 != 0)
+                {
+                    site_types += boost::lexical_cast<std::string>(getPG<SymmGroup>()(mps_in[p].site_dim()[i].first)) + ",";
+                    break;
+                }
+                if (i == mps_in[p].site_dim().size())
+                    site_types += "0,";
+            }
+        parms.set("site_types", site_types);
+        //maquis::cout << site_types << std::endl;
+
+        Lattice lat(parms);
+        Model<Matrix, SymmOut> model(lat, parms);
+
+        typename SymmOut::charge initc;
+        initc[0] = N/2;
+        initc[1] = N/2;
+        initc = PGCharge<SymmOut>()(initc, getPG<SymmGroup>()(mps_in[mps_in.size()-1].col_dim()[0].first));
+
+        std::vector<Index<SymmOut> > site_bases;
+        for (int i = 0; i <= lat.maximum_vertex_type(); ++i)
+            site_bases.push_back(model.phys_dim(i));
+
+        default_mps_init<Matrix, SymmOut> mpsinit(parms, site_bases, initc, parms["site_types"]);
+        MPS<Matrix, SymmOut> mps_out2(mps_in.size(), mpsinit);
+        mps_out = mps_out2;
+
         // clean the input MPS, ensure consistent indices across bonds
         for (Lattice::pos_t p = 0; p < mps_out.length()-1; ++p)
         {
