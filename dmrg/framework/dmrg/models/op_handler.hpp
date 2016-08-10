@@ -33,14 +33,6 @@
 // **************************************************************************
 
 template <class Matrix, class SymmGroup>
-TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
-    : operator_table(new OPTable<Matrix, SymmGroup>(*rhs.operator_table))
-    , sign_table(rhs.sign_table)
-    , product_tags(rhs.product_tags)
-{
-}
-
-template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type
 OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)
 {
@@ -71,6 +63,15 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
 // **************************************************************************
 // TagHandler implementation
 // **************************************************************************
+
+// copy ctor
+template <class Matrix, class SymmGroup>
+TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
+    : operator_table(new OPTable<Matrix, SymmGroup>(*rhs.operator_table))
+    , sign_table(rhs.sign_table)
+    , product_tags(rhs.product_tags)
+    , hermitian(rhs.hermitian)
+{}
 
 // simple const query
 template <class Matrix, class SymmGroup>
