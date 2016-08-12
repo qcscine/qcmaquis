@@ -245,7 +245,7 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
         for (int i = 0; i <= lat.maximum_vertex_type(); ++i)
             site_bases.push_back(model.phys_dim(i));
 
-        default_mps_init<Matrix, SymmOut> mpsinit(parms, site_bases, initc, parms["site_types"]);
+        const_mps_init<Matrix, SymmOut> mpsinit(parms, site_bases, initc, parms["site_types"]);
         MPS<Matrix, SymmOut> mps_out2(mps_in.size(), mpsinit);
         mps_out = mps_out2;
 
