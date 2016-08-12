@@ -32,27 +32,6 @@
 #include "dmrg/models/chem/transform_symmetry.hpp"
 #include "dmrg/models/measurements.h"
 
-namespace transform_detail {
-
-    template <class SymmGroup, class = void>
-    struct insert_symmetry
-    {
-        void operator()(DmrgParameters parms, DmrgParameters & parms_out)
-        {
-            parms_out.set("symmetry", "2u1");
-        }
-    };
-
-    template <class SymmGroup>
-    struct insert_symmetry<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
-    {
-        void operator()(DmrgParameters parms, DmrgParameters & parms_out)
-        {
-            parms_out.set("symmetry", "2u1pg");
-            parms_out.set("irrep", parms["irrep"]);
-        }
-    };
-}
 
 template <class Matrix, class SymmGroup, class = void>
 struct measure_transform
@@ -84,8 +63,7 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
 
         Model<Matrix, SymmOut> model_tmp(lat, parms_tmp);
 
-        MPS<Matrix, SymmOut> mps_tmp;
-        transform_mps<Matrix, SymmGroup>()(mps, mps_tmp);
+        MPS<Matrix, SymmOut> mps_tmp = transform_mps<Matrix, SymmGroup>()(mps, Nup, Ndown);
 
         typename Model<Matrix, SymmOut>::measurements_type transformed_measurements = model_tmp.measurements();
         std::for_each(transformed_measurements.begin(), transformed_measurements.end(),
