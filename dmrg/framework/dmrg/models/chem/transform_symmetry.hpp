@@ -207,7 +207,7 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
 
     MPS<Matrix, SymmOut> operator()(MPS<Matrix, SymmGroup> mps_in, int Nup, int Ndown)
     {
-        BaseParameters parms; //= chem_detail::set_2u1_parameters(mps_in.size(), Nup, Ndown);
+        BaseParameters parms;
         parms.set("init_bond_dimension", 1000);
         parms.set("site_types", chem_detail::infer_site_types(mps_in));
 
