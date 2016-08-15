@@ -34,7 +34,7 @@ struct coded_model_factory<Matrix, TwoU1PG> {
     {
         typedef boost::shared_ptr<model_impl<Matrix, TwoU1PG> > impl_ptr;
         if (parms["MODEL"] == std::string("quantum_chemistry")) {
-            if (parms["LATTICE"] != std::string("orbitals"))
+            if (parms.is_set("LATTICE") && parms["LATTICE"] != std::string("orbitals"))
                 throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
 
             return impl_ptr( new qc_model<Matrix, TwoU1PG>(lattice, parms) );

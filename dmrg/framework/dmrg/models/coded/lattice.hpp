@@ -170,29 +170,27 @@ public:
             std::string line;
             std::getline(orb_file, line);
 
+            orb_file.close();
+
             std::vector<std::string> split_line;
             boost::split(split_line, line, boost::is_any_of("="));
-            std::vector<subcharge> symm_vec;
 
             // record the site_types in parameters
             model.set("site_types", split_line[1]);
-
-            std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
-            std::istringstream iss(split_line[1]);
-            subcharge number;
-            while( iss >> number )
-                symm_vec.push_back(number-1);
-            
-            assert( L == symm_vec.size() );
-            for (int p = 0; p < L; ++p)
+            irreps = parse_irreps(split_line[1]);
+        }
+        else if (model.is_set("site_types"))
+        {
+            std::vector<subcharge> symm_vec = model["site_types"];
+        
+            assert(L == symm_vec.size());
+            for (subcharge p = 0; p < L; ++p)
                 irreps[p] = symm_vec[order[p]];
-
-            orb_file.close();
-
-            maximum_vertex = *std::max_element(irreps.begin(), irreps.end());
         }
         else
-            throw std::runtime_error("\"integral_file\" in model input file is not set\n");
+            throw std::runtime_error("\"integral_file\" in model input file or site_types is not set\n");
+
+        maximum_vertex = *std::max_element(irreps.begin(), irreps.end());
     }
 
     std::vector<pos_t> forward(pos_t i) const
@@ -243,7 +241,24 @@ public:
     }
 
 private:
-    
+
+    std::vector<subcharge> parse_irreps(std::string input)
+    {
+        std::vector<subcharge> symm_vec, ret(L, 0);
+
+        std::replace(input.begin(), input.end(), ',', ' ');
+        std::istringstream iss(input);
+        subcharge number;
+        while( iss >> number )
+            symm_vec.push_back(number-1);
+        
+        assert(L == symm_vec.size());
+        for (subcharge p = 0; p < L; ++p)
+            ret[p] = symm_vec[order[p]];
+
+        return ret;
+    }
+
     std::string site_label (int i) const
     {
         return "( " + boost::lexical_cast<std::string>(i) + " )";

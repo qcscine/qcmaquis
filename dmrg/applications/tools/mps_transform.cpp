@@ -99,13 +99,8 @@ int main(int argc, char ** argv)
             parms.set("u1_total_charge1", Nup);
             parms.set("u1_total_charge2", Ndown);
 
-            // create model related objects
-            Lattice lat(parms);
-            Model<Matrix, mapgrp> model(lat, parms);
-
             // the output MPS
-            MPS<Matrix, mapgrp> mps_out(lat.size(), *(model.initializer(lat, parms)));
-            transform_mps<Matrix, grp>()(mps, mps_out);
+            MPS<Matrix, mapgrp> mps_out = transform_mps<Matrix, grp>()(mps, Nup, Ndown);
             
             std::string mps_out_file = mps_in_file;
             std::size_t pos = mps_out_file.find(".h5");

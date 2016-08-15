@@ -49,9 +49,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     C[0] = 1; C[1] = -1; // 1-1
     // D = 00
 
-    subcharge N = SymmGroup::particleNumber(this->total_quantum_numbers(parms));
-
-
     SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
     SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
     SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
@@ -275,6 +272,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 //    PRINT(e2d)
 //    PRINT(d2e)
 //#undef PRINT
+}
+
+template <class Matrix, class SymmGroup>
+void qc_su2<Matrix, SymmGroup>::create_terms()
+{
+    typedef typename SymmGroup::subcharge subcharge;
+    subcharge N = SymmGroup::particleNumber(this->total_quantum_numbers(parms));
 
     /*************************************************************/
     typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;

@@ -28,6 +28,10 @@
 #ifndef QC_CHEM_UTIL_H
 #define QC_CHEM_UTIL_H
 
+#include <string>
+
+#include "dmrg/utils/BaseParameters.h"
+
 namespace chem_detail {
 
     template <class SymmGroup>
@@ -170,6 +174,71 @@ namespace chem_detail {
         std::copy(source.begin(), source.end(), std::back_inserter(target));
     }
 
+    inline
+    BaseParameters set_2u1_parameters(int L, int Nup, int Ndown)
+    {
+        BaseParameters ret;
+
+        ret.set("lattice_library", "coded");
+        ret.set("LATTICE", "orbitals");
+        ret.set("model_library", "coded");
+        ret.set("MODEL", "quantum_chemistry");
+        ret.set("L", L);
+        ret.set("u1_total_charge1", Nup);
+        ret.set("u1_total_charge2", Ndown);
+
+        return ret;
+    }
+
+    template <class Matrix, class SymmGroup>
+    inline
+    std::string infer_site_types(MPS<Matrix, SymmGroup> const & mps)
+    {
+        // determine the irreps per site
+        std::string site_types;
+        for (Lattice::pos_t p = 0; p < mps.size(); ++p)
+            for (std::size_t i = 0; i < mps[p].site_dim().size(); ++i)
+            {
+                if (SymmGroup::particleNumber(mps[p].site_dim()[i].first) % 2 != 0)
+                {
+                    site_types += boost::lexical_cast<std::string>(getPG<SymmGroup>()(mps[p].site_dim()[i].first)) + ",";
+                    break;
+                }
+                if (i == mps[p].site_dim().size())
+                    site_types += "0,";
+            }
+
+        return site_types;
+    }
+
+    template <class SymmGroup>
+    inline
+    typename SymmGroup::charge make_2u1_initc(int Nup, int Ndown, int irrep)
+    {
+        typename SymmGroup::charge ret;
+        ret[0] = Nup;
+        ret[1] = Ndown;
+        ret = PGCharge<SymmGroup>()(ret, irrep);
+
+        return ret;
+    }
+
+    template <class Matrix, class SymmGroup>
+    inline
+    std::vector<Index<SymmGroup> > make_2u1_site_basis(int L, int Nup, int Ndown, std::string site_types)
+    {
+        BaseParameters parms = set_2u1_parameters(L, Nup, Ndown);
+        parms.set("site_types", site_types);
+
+        Lattice lat(parms);
+        Model<Matrix, SymmGroup> model(lat, parms);
+
+        std::vector<Index<SymmGroup> > site_bases;
+        for (int i = 0; i <= lat.maximum_vertex_type(); ++i)
+            site_bases.push_back(model.phys_dim(i));
+
+        return site_bases;
+    }
 }
 
 #endif

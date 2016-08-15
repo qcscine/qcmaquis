@@ -74,6 +74,8 @@ public:
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
+
+    void create_terms();
     
     // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const

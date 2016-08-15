@@ -32,67 +32,32 @@
 #include "dmrg/models/chem/transform_symmetry.hpp"
 #include "dmrg/models/measurements.h"
 
-namespace transform_detail {
-
-    template <class SymmGroup, class = void>
-    struct insert_symmetry
-    {
-        void operator()(DmrgParameters parms, DmrgParameters & parms_out)
-        {
-            parms_out.set("symmetry", "2u1");
-        }
-    };
-
-    template <class SymmGroup>
-    struct insert_symmetry<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
-    {
-        void operator()(DmrgParameters parms, DmrgParameters & parms_out)
-        {
-            parms_out.set("symmetry", "2u1pg");
-            parms_out.set("irrep", parms["irrep"]);
-        }
-    };
-}
 
 template <class Matrix, class SymmGroup, class = void>
 struct measure_transform
 {
-    void operator()(std::string rfile, std::string result_path, DmrgParameters parms, Lattice lat, MPS<Matrix, SymmGroup> const & mps)
+    void operator()(std::string rfile, std::string result_path, Lattice lat, MPS<Matrix, SymmGroup> const & mps)
     {}
 };
 
 template <class Matrix, class SymmGroup>
 struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
 {
-    void operator()(std::string rfile, std::string result_path, DmrgParameters parms, Lattice lat, MPS<Matrix, SymmGroup> const & mps)
+    void operator()(std::string rfile, std::string result_path, Lattice lat, MPS<Matrix, SymmGroup> const & mps)
     {
         typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
 
-        int N = parms["nelec"];
-        int TwoS = parms["spin"];
+        int N = SymmGroup::particleNumber(mps[mps.size()-1].col_dim()[0].first);
+        int TwoS = SymmGroup::spin(mps[mps.size()-1].col_dim()[0].first);
         int Nup = (N + TwoS) / 2;
         int Ndown = (N - TwoS) / 2;
 
-        DmrgParameters parms_tmp;
-        parms_tmp.set("model_library", "coded");
-        parms_tmp.set("LATTICE", "orbitals");
-        parms_tmp.set("MODEL", "quantum_chemistry");
-        parms_tmp.set("integral_file", parms["integral_file"]);
-        parms_tmp.set("integral_cutoff", 1000);
-
-        parms_tmp.set("u1_total_charge1", Nup);
-        parms_tmp.set("u1_total_charge2", Ndown);
-        parms_tmp.set("L", parms["L"]);
-        parms_tmp.set("init_state", "const");
-        parms_tmp.set("resultfile", parms["resultfile"]);
+        BaseParameters parms_tmp = chem_detail::set_2u1_parameters(mps.size(), Nup, Ndown);
         parms_tmp.set("MEASURE[ChemEntropy]", 1);
-
-        transform_detail::insert_symmetry<SymmGroup>()(parms, parms_tmp);
 
         Model<Matrix, SymmOut> model_tmp(lat, parms_tmp);
 
-        MPS<Matrix, SymmOut> mps_tmp(lat.size(), *(model_tmp.initializer(lat, parms_tmp)));
-        transform_mps<Matrix, SymmGroup>()(mps, mps_tmp);
+        MPS<Matrix, SymmOut> mps_tmp = transform_mps<Matrix, SymmGroup>()(mps, Nup, Ndown);
 
         typename Model<Matrix, SymmOut>::measurements_type transformed_measurements = model_tmp.measurements();
         std::for_each(transformed_measurements.begin(), transformed_measurements.end(),

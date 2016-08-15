@@ -81,6 +81,9 @@ public:
     
     virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
 
+    // optionally delay the assemly of the operator terms until the MPO is actually created
+    virtual void create_terms() {};
+
 protected:
     terms_type terms_;
 };
@@ -137,6 +140,8 @@ public:
     table_ptr operators_table() const { return impl_->operators_table(); }
     
     initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
+
+    void create_terms() { impl_->create_terms(); }
 
 private:
     impl_ptr impl_;
