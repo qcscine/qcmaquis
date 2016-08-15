@@ -209,21 +209,7 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
     {
         BaseParameters parms = chem_detail::set_2u1_parameters(mps_in.size(), Nup, Ndown);
         parms.set("init_bond_dimension", 1000);
-
-        // determine the irreps per site
-        std::string site_types;
-        for (Lattice::pos_t p = 0; p < mps_in.size(); ++p)
-            for (std::size_t i = 0; i < mps_in[p].site_dim().size(); ++i)
-            {
-                if (SymmGroup::particleNumber(mps_in[p].site_dim()[i].first) % 2 != 0)
-                {
-                    site_types += boost::lexical_cast<std::string>(getPG<SymmGroup>()(mps_in[p].site_dim()[i].first)) + ",";
-                    break;
-                }
-                if (i == mps_in[p].site_dim().size())
-                    site_types += "0,";
-            }
-        parms.set("site_types", site_types);
+        parms.set("site_types", chem_detail::infer_site_types(mps_in));
 
         Lattice lat(parms);
         Model<Matrix, SymmOut> model(lat, parms);

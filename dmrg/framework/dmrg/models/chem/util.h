@@ -28,6 +28,10 @@
 #ifndef QC_CHEM_UTIL_H
 #define QC_CHEM_UTIL_H
 
+#include <string>
+
+#include "dmrg/utils/BaseParameters.h"
+
 namespace chem_detail {
 
     template <class SymmGroup>
@@ -186,6 +190,26 @@ namespace chem_detail {
         return ret;
     }
 
+    template <class Matrix, class SymmGroup>
+    inline
+    std::string infer_site_types(MPS<Matrix, SymmGroup> const & mps)
+    {
+        // determine the irreps per site
+        std::string site_types;
+        for (Lattice::pos_t p = 0; p < mps.size(); ++p)
+            for (std::size_t i = 0; i < mps[p].site_dim().size(); ++i)
+            {
+                if (SymmGroup::particleNumber(mps[p].site_dim()[i].first) % 2 != 0)
+                {
+                    site_types += boost::lexical_cast<std::string>(getPG<SymmGroup>()(mps[p].site_dim()[i].first)) + ",";
+                    break;
+                }
+                if (i == mps[p].site_dim().size())
+                    site_types += "0,";
+            }
+
+        return site_types;
+    }
 }
 
 #endif
