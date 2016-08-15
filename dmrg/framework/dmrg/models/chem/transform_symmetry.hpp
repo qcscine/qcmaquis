@@ -207,23 +207,16 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
 
     MPS<Matrix, SymmOut> operator()(MPS<Matrix, SymmGroup> mps_in, int Nup, int Ndown)
     {
-        BaseParameters parms = chem_detail::set_2u1_parameters(mps_in.size(), Nup, Ndown);
+        BaseParameters parms; //= chem_detail::set_2u1_parameters(mps_in.size(), Nup, Ndown);
         parms.set("init_bond_dimension", 1000);
         parms.set("site_types", chem_detail::infer_site_types(mps_in));
 
-        Lattice lat(parms);
-        Model<Matrix, SymmOut> model(lat, parms);
+        Lattice::pos_t L = mps_in.size();
+        typename SymmOut::subcharge irrep = getPG<SymmGroup>()(mps_in[mps_in.size()-1].col_dim()[0].first);
 
-        typename SymmOut::charge initc;
-        initc[0] = Nup;
-        initc[1] = Ndown;
-        initc = PGCharge<SymmOut>()(initc, getPG<SymmGroup>()(mps_in[mps_in.size()-1].col_dim()[0].first));
-
-        std::vector<Index<SymmOut> > site_bases;
-        for (int i = 0; i <= lat.maximum_vertex_type(); ++i)
-            site_bases.push_back(model.phys_dim(i));
-
-        const_mps_init<Matrix, SymmOut> mpsinit(parms, site_bases, initc, parms["site_types"]);
+        const_mps_init<Matrix, SymmOut> mpsinit(parms,
+                                                chem_detail::make_2u1_site_basis<Matrix, SymmOut>(L, Nup, Ndown, parms["site_types"]),
+                                                chem_detail::make_2u1_initc<SymmOut>(Nup, Ndown, irrep), parms["site_types"]);
         MPS<Matrix, SymmOut> mps_out(mps_in.size(), mpsinit);
 
         // clean the input MPS, ensure consistent indices across bonds

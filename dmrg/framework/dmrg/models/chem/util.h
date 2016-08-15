@@ -210,6 +210,35 @@ namespace chem_detail {
 
         return site_types;
     }
+
+    template <class SymmGroup>
+    inline
+    typename SymmGroup::charge make_2u1_initc(int Nup, int Ndown, int irrep)
+    {
+        typename SymmGroup::charge ret;
+        ret[0] = Nup;
+        ret[1] = Ndown;
+        ret = PGCharge<SymmGroup>()(ret, irrep);
+
+        return ret;
+    }
+
+    template <class Matrix, class SymmGroup>
+    inline
+    std::vector<Index<SymmGroup> > make_2u1_site_basis(int L, int Nup, int Ndown, std::string site_types)
+    {
+        BaseParameters parms = set_2u1_parameters(L, Nup, Ndown);
+        parms.set("site_types", site_types);
+
+        Lattice lat(parms);
+        Model<Matrix, SymmGroup> model(lat, parms);
+
+        std::vector<Index<SymmGroup> > site_bases;
+        for (int i = 0; i <= lat.maximum_vertex_type(); ++i)
+            site_bases.push_back(model.phys_dim(i));
+
+        return site_bases;
+    }
 }
 
 #endif
