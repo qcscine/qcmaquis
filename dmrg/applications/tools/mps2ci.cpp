@@ -67,9 +67,6 @@ parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
     std::ifstream config_file;
     config_file.open(file.c_str());
 
-    typename SymmGroup::charge A(1), B(0), C(0), D(0);
-    B[0]=1; C[1]=1;
-
     std::vector<std::vector<typename SymmGroup::charge> > configs;
 
     for (std::string line; std::getline(config_file, line); ) {
