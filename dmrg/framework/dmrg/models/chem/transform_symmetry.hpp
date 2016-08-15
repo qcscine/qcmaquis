@@ -31,6 +31,7 @@
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/models/chem/util.h"
 
 namespace transform_detail
 {
@@ -206,14 +207,7 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
 
     MPS<Matrix, SymmOut> operator()(MPS<Matrix, SymmGroup> mps_in, int Nup, int Ndown)
     {
-        BaseParameters parms;
-        parms.set("lattice_library", "coded");
-        parms.set("LATTICE", "orbitals");
-        parms.set("model_library", "coded");
-        parms.set("MODEL", "quantum_chemistry");
-        parms.set("L", mps_in.size());
-        parms.set("u1_total_charge1", Nup);
-        parms.set("u1_total_charge2", Ndown);
+        BaseParameters parms = chem_detail::set_2u1_parameters(mps_in.size(), Nup, Ndown);
         parms.set("init_bond_dimension", 1000);
 
         // determine the irreps per site

@@ -170,6 +170,22 @@ namespace chem_detail {
         std::copy(source.begin(), source.end(), std::back_inserter(target));
     }
 
+    inline
+    BaseParameters set_2u1_parameters(int L, int Nup, int Ndown)
+    {
+        BaseParameters ret;
+
+        ret.set("lattice_library", "coded");
+        ret.set("LATTICE", "orbitals");
+        ret.set("model_library", "coded");
+        ret.set("MODEL", "quantum_chemistry");
+        ret.set("L", L);
+        ret.set("u1_total_charge1", Nup);
+        ret.set("u1_total_charge2", Ndown);
+
+        return ret;
+    }
+
 }
 
 #endif

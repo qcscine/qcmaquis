@@ -52,13 +52,7 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
         int Nup = (N + TwoS) / 2;
         int Ndown = (N - TwoS) / 2;
 
-        DmrgParameters parms_tmp;
-        parms_tmp.set("model_library", "coded");
-        parms_tmp.set("MODEL", "quantum_chemistry");
-
-        parms_tmp.set("u1_total_charge1", Nup);
-        parms_tmp.set("u1_total_charge2", Ndown);
-        parms_tmp.set("L", mps.size());
+        BaseParameters parms_tmp = chem_detail::set_2u1_parameters(mps.size(), Nup, Ndown);
         parms_tmp.set("MEASURE[ChemEntropy]", 1);
 
         Model<Matrix, SymmOut> model_tmp(lat, parms_tmp);
