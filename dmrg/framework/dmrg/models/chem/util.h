@@ -31,6 +31,8 @@
 #include <string>
 
 #include "dmrg/utils/BaseParameters.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/lattice.h"
 
 namespace chem_detail {
 
