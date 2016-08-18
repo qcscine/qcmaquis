@@ -50,98 +50,105 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
 
     mps.make_right_paired();
     block_matrix<MPSMatrix, SymmGroup> const & data = mps.data();
-    MPSTensor<MPSMatrix, SymmGroup> ret;
-    //ret.make_right_paired();
-
-    block_matrix<MPSMatrix, SymmGroup> & prod = ret.data();
 
     Index<SymmGroup> const & right_i = mps.col_dim();
-    Index<SymmGroup> new_left_i, new_right_i, new_phys_i;
     ProductBasis<SymmGroup> right_pb(mps.site_dim(), mps.col_dim(),
                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
 
-    //maquis::cout << "\ninput\n" << mps;
+    MPOTensor_detail::term_descriptor<MPOMatrix, SymmGroup, true> access = mpo.at(0,0);
+    typename operator_selector<MPOMatrix, SymmGroup>::type const & W = access.op();
 
-    // b2 -> columns, b1 -> rows of mpo
-    for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2)
+    maquis::cout << "\nW\n" << W;
+    charge W_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
+    charge out_delta = SymmGroup::fuse(in_delta, W_delta);
+
+    Index<SymmGroup> new_left_i, new_right_i, new_phys_i;
+    new_phys_i = W.right_basis();
+
+    for (size_t b = 0; b < data.n_blocks(); ++b)
     {
-        col_proxy col_b2 = mpo.column(b2);
-        for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
+        charge lc = data.basis().left_charge(b);
+        charge rc = data.basis().right_charge(b); 
+
+        for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
         {
-            index_type b1 = col_it.index();
+            charge phys_in = W.basis().left_charge(w_block);
+            charge phys_out = W.basis().right_charge(w_block);
 
-            MPOTensor_detail::term_descriptor<MPOMatrix, SymmGroup, true> access = mpo.at(b1,b2);
-            typename operator_selector<MPOMatrix, SymmGroup>::type const & W = access.op();
+            // add the operator deltas from previous sites to the left charge
+            charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
 
-            maquis::cout << "\nW\n" << W;
-            charge W_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge out_delta = SymmGroup::fuse(in_delta, W_delta);
-            new_phys_i = W.right_basis();
+            charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
+            if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
 
-            for (size_t b = 0; b < data.n_blocks(); ++b)
-            {
-                charge lc = data.basis().left_charge(b);
-                charge rc = data.basis().right_charge(b); 
+            //maquis::cout << "    in_r_charge : " << in_r_charge << "  phys: " << phys_in << " -> " << phys_out << std::endl;
 
-                //maquis::cout << "\n  lc, rc: " << lc << rc << std::endl;
+            charge out_r_charge = SymmGroup::fuse(out_l_charge, phys_out); // unpaired
+            //maquis::cout << "    out_r_charge : " << out_r_charge << std::endl;
 
-                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
-                {
-                    charge phys_in = W.basis().left_charge(w_block);
-                    charge phys_out = W.basis().right_charge(w_block);
+            if (!new_left_i.has(out_l_charge)) new_left_i.insert(std::make_pair(out_l_charge, data.basis().left_size(b)));
+            if (!new_right_i.has(out_r_charge)) new_right_i.insert(std::make_pair(out_r_charge, right_i.size_of_block(in_r_charge)));
+        }
+    }
 
-                    // add the operator deltas from previous sites to the left charge
-                    charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
+    ProductBasis<SymmGroup> out_right_pb(new_phys_i, new_right_i,
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                                 -boost::lambda::_1, boost::lambda::_2));
+    block_matrix<MPSMatrix, SymmGroup> prod;
 
-                    charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
-                    if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
+    for (size_t b = 0; b < data.n_blocks(); ++b)
+    {
+        charge lc = data.basis().left_charge(b);
+        charge rc = data.basis().right_charge(b); 
 
-                    //maquis::cout << "    in_r_charge : " << in_r_charge << "  phys: " << phys_in << " -> " << phys_out << std::endl;
+        for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+        {
+            charge phys_in = W.basis().left_charge(w_block);
+            charge phys_out = W.basis().right_charge(w_block);
 
-                    charge out_r_charge = SymmGroup::fuse(out_l_charge, phys_out); // unpaired
-                    //maquis::cout << "    out_r_charge : " << out_r_charge << std::endl;
+            charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
 
-                    if (!new_left_i.has(out_l_charge)) new_left_i.insert(std::make_pair(out_l_charge, data.basis().left_size(b)));
-                    if (!new_right_i.has(out_r_charge)) new_right_i.insert(std::make_pair(out_r_charge, right_i.size_of_block(in_r_charge)));
-                    //else new_right_i[new_right_i.position(in_r_charge)].second += right_i.size_of_block(in_r_charge);
+            charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
+            if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
 
-                    // source     -> data[b](·, in_right_offset + 1:rsize)  
-                    // destination -> prod[o](·, out_right_offset + 1:rsize)
-                    //size_t in_right_offset  = right_pb(phys_in,  in_r_charge); 
-                    //size_t out_right_offset = right_pb(phys_out, in_r_charge); 
-                    //size_t l_size = data.basis().left_size(b);
-                    //size_t r_size = right_i.size_of_block(in_r_charge);
+            charge out_r_charge = SymmGroup::fuse(out_l_charge, phys_out); // unpaired
 
-                    //MPSMatrix const & iblock = data[b];
+            // source     -> data[b](·, in_right_offset + 1:rsize)  
+            // destination -> prod[o](·, out_right_offset + 1:rsize)
+            size_t in_right_offset  = right_pb(phys_in,  in_r_charge); 
+            size_t out_right_offset = out_right_pb(phys_out, out_r_charge); 
+            size_t l_size = data.basis().left_size(b);
+            size_t r_size = right_i.size_of_block(in_r_charge);
 
-                    //size_t o = prod.find_block(lc, out_r_charge);
-                    //if (o == prod.n_blocks())
-                    //    o = prod.insert_block(MPSMatrix(num_rows(iblock), right_pb.size(-phys_out, in_r_charge)), lc, out_r_charge);
+            MPSMatrix const & iblock = data[b];
 
-                    //MPSMatrix & oblock = prod[o];
+            size_t o = prod.find_block(out_l_charge, out_l_charge); // out_l_charge = out_r_charge right-paired
+            if (o == prod.n_blocks())
+                o = prod.insert_block(MPSMatrix(l_size, out_right_pb.size(-phys_out, out_r_charge)), out_l_charge, out_l_charge);
 
-                    //value_type alfa = access.scale() * W[w_block](0,0);
-                    //for(size_t rr = 0; rr < r_size; ++rr)
-                    //    maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
-                    //                                        &iblock(0, in_right_offset + rr) + l_size,
-                    //                                        &oblock(0, out_right_offset + rr),
-                    //                                        alfa);
-                }
-            }
+            MPSMatrix & oblock = prod[o];
 
-            maquis::cout << "  in_delta " << in_delta << std::endl;
-            std::swap(in_delta, out_delta);
+            //value_type alfa = access.scale() * W[w_block](0,0);
+            //for(size_t rr = 0; rr < r_size; ++rr)
+            //    maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
+            //                                        &iblock(0, in_right_offset + rr) + l_size,
+            //                                        &oblock(0, out_right_offset + rr),
+            //                                        alfa);
+        }
+    } 
+    maquis::cout << "  prod " << prod << std::endl;
+    std::swap(in_delta, out_delta);
 
-        }  // b1 (rows)
-    } // b2 (columns)
     maquis::cout << "  new  left_i: " << new_left_i << std::endl;
     maquis::cout << "  new right_i: " << new_right_i << std::endl;
 
     //ret.left_i = new_left_i;
     //ret.right_i = new_right_i;
     //ret.phys_i = mps.site_dim();
+    MPSTensor<MPSMatrix, SymmGroup> ret;
     ret = MPSTensor<Matrix, SymmGroup>(new_phys_i, new_left_i, new_right_i);
+    ret.make_right_paired();
     maquis::cout << ret << std::endl;
     return ret;
 }
