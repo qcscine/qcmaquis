@@ -51,6 +51,7 @@ using std::endl;
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/models/chem/util.h"
 
 #include "ci_encode.hpp"
 #include "sampling.hpp"
@@ -125,14 +126,20 @@ int main(int argc, char ** argv)
     load(argv[1], mps);
 
     pos_t L = mps.length();
+    grp::subcharge Nup = mps[L-1].col_dim()[0].first[0];
+    grp::subcharge Ndown = mps[L-1].col_dim()[0].first[1];
+
+    BaseParameters parms;
+    parms.set("site_types", chem_detail::infer_site_types(mps));
     
     // extract physical basis for every site from MPS
-    std::vector<Index<grp> > phys_dims;
-    for (pos_t p = 0; p < L; ++p)
-        phys_dims.push_back(mps[p].site_dim());
+    std::vector<grp::subcharge> irreps = parms["site_types"];
+    std::vector<Index<grp> > per_site, phys_dims = chem_detail::make_2u1_site_basis<matrix, grp>(L, Nup, Ndown, parms["site_types"]);
+    for (pos_t q = 0; q < L; ++q)
+        per_site.push_back(phys_dims[irreps[q]]);
     
     // load the determinants
-    std::vector<std::vector<grp::charge> > determinants = parse_config<matrix, grp>(std::string(argv[2]), phys_dims);
+    std::vector<std::vector<grp::charge> > determinants = parse_config<matrix, grp>(std::string(argv[2]), per_site);
     // printout the determinants
     for (pos_t q = 0;q < determinants.size(); ++q){
        for (pos_t p = 0; p < L; ++p){
