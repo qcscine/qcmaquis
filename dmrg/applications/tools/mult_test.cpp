@@ -131,8 +131,8 @@ int main(int argc, char ** argv)
         for (int p = 0; p < lat.size(); ++p) {
             maquis::cout << "\n****************** site " << p << " ****************\n";
             pmps[p] =  mpo_times_mps(mpo[p], mps[p], delta);
-            //maquis::cout << pmps[p] << std::endl;
         }
+        save("pmps.h5", pmps); 
          
         
     } catch (std::exception& e) {
