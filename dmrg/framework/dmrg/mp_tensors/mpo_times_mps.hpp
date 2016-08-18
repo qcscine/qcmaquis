@@ -51,13 +51,12 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
     mps.make_right_paired();
     block_matrix<MPSMatrix, SymmGroup> const & data = mps.data();
     MPSTensor<MPSMatrix, SymmGroup> ret;
-    ret.make_right_paired();
-    ret.phys_i = mps.site_dim();
+    //ret.make_right_paired();
 
     block_matrix<MPSMatrix, SymmGroup> & prod = ret.data();
 
     Index<SymmGroup> const & right_i = mps.col_dim();
-    Index<SymmGroup> new_left_i, new_right_i;
+    Index<SymmGroup> new_left_i, new_right_i, new_phys_i;
     ProductBasis<SymmGroup> right_pb(mps.site_dim(), mps.col_dim(),
                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
@@ -78,6 +77,7 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
             maquis::cout << "\nW\n" << W;
             charge W_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge out_delta = SymmGroup::fuse(in_delta, W_delta);
+            new_phys_i = W.right_basis();
 
             for (size_t b = 0; b < data.n_blocks(); ++b)
             {
@@ -138,8 +138,11 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
     maquis::cout << "  new  left_i: " << new_left_i << std::endl;
     maquis::cout << "  new right_i: " << new_right_i << std::endl;
 
-    ret.left_i = new_left_i;
-    ret.right_i = new_right_i;
+    //ret.left_i = new_left_i;
+    //ret.right_i = new_right_i;
+    //ret.phys_i = mps.site_dim();
+    ret = MPSTensor<Matrix, SymmGroup>(new_phys_i, new_left_i, new_right_i);
+    maquis::cout << ret << std::endl;
     return ret;
 }
 
