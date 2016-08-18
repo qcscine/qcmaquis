@@ -127,10 +127,11 @@ int main(int argc, char ** argv)
         //}
 
         grp::charge delta = grp::IdentityCharge;
-        MPS<Matrix, grp> pmps;
+        MPS<Matrix, grp> pmps(lat.size());
         for (int p = 0; p < lat.size(); ++p) {
-            pmps.push_back( mpo_times_mps(mpo[p], mps[p], delta) );
-            maquis::cout << pmps[p] << std::endl;
+            maquis::cout << "\n****************** site " << p << " ****************\n";
+            pmps[p] =  mpo_times_mps(mpo[p], mps[p], delta);
+            //maquis::cout << pmps[p] << std::endl;
         }
          
         

@@ -62,7 +62,7 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
 
-    maquis::cout << "\ninput\n" << mps;
+    //maquis::cout << "\ninput\n" << mps;
 
     // b2 -> columns, b1 -> rows of mpo
     for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2)
@@ -84,7 +84,7 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
                 charge lc = data.basis().left_charge(b);
                 charge rc = data.basis().right_charge(b); 
 
-                maquis::cout << "\n  lc, rc: " << lc << rc << std::endl;
+                //maquis::cout << "\n  lc, rc: " << lc << rc << std::endl;
 
                 for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                 {
@@ -94,44 +94,42 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
                     charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
                     if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
 
-                    maquis::cout << "    in_r_charge : " << in_r_charge << "  phys: " << phys_in << " -> " << phys_out << std::endl;
+                    //maquis::cout << "    in_r_charge : " << in_r_charge << "  phys: " << phys_in << " -> " << phys_out << std::endl;
 
-                    charge out_r_charge = SymmGroup::fuse(in_r_charge, -phys_out); // paired
-                    maquis::cout << "   (out_r_charge): " << out_r_charge << std::endl;
-                    if (!right_i.has(SymmGroup::fuse(lc, phys_out)))
-                        continue;
+                    charge out_r_charge = SymmGroup::fuse(lc, phys_out); // unpaired
+                    //maquis::cout << "    out_r_charge : " << out_r_charge << std::endl;
 
-                    maquis::cout << "    out_r_charge : " << out_r_charge << std::endl;
                     if (!new_left_i.has(lc)) new_left_i.insert(std::make_pair(lc, data.basis().left_size(b)));
-                    if (!new_right_i.has(in_r_charge)) new_right_i.insert(std::make_pair(in_r_charge, right_i.size_of_block(in_r_charge)));
+                    if (!new_right_i.has(out_r_charge)) new_right_i.insert(std::make_pair(out_r_charge, right_i.size_of_block(in_r_charge)));
                     //else new_right_i[new_right_i.position(in_r_charge)].second += right_i.size_of_block(in_r_charge);
 
                     // source     -> data[b](·, in_right_offset + 1:rsize)  
                     // destination -> prod[o](·, out_right_offset + 1:rsize)
-                    size_t in_right_offset  = right_pb(phys_in,  in_r_charge); 
-                    size_t out_right_offset = right_pb(phys_out, in_r_charge); 
-                    size_t l_size = data.basis().left_size(b);
-                    size_t r_size = right_i.size_of_block(in_r_charge);
+                    //size_t in_right_offset  = right_pb(phys_in,  in_r_charge); 
+                    //size_t out_right_offset = right_pb(phys_out, in_r_charge); 
+                    //size_t l_size = data.basis().left_size(b);
+                    //size_t r_size = right_i.size_of_block(in_r_charge);
 
-                    MPSMatrix const & iblock = data[b];
+                    //MPSMatrix const & iblock = data[b];
 
-                    size_t o = prod.find_block(lc, out_r_charge);
-                    if (o == prod.n_blocks())
-                        o = prod.insert_block(MPSMatrix(num_rows(iblock), right_pb.size(-phys_out, in_r_charge)), lc, out_r_charge);
+                    //size_t o = prod.find_block(lc, out_r_charge);
+                    //if (o == prod.n_blocks())
+                    //    o = prod.insert_block(MPSMatrix(num_rows(iblock), right_pb.size(-phys_out, in_r_charge)), lc, out_r_charge);
 
-                    MPSMatrix & oblock = prod[o];
+                    //MPSMatrix & oblock = prod[o];
 
-                    value_type alfa = access.scale() * W[w_block](0,0);
-                    for(size_t rr = 0; rr < r_size; ++rr)
-                        maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
-                                                            &iblock(0, in_right_offset + rr) + l_size,
-                                                            &oblock(0, out_right_offset + rr),
-                                                            alfa);
+                    //value_type alfa = access.scale() * W[w_block](0,0);
+                    //for(size_t rr = 0; rr < r_size; ++rr)
+                    //    maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
+                    //                                        &iblock(0, in_right_offset + rr) + l_size,
+                    //                                        &oblock(0, out_right_offset + rr),
+                    //                                        alfa);
                 }
             }
-
-         // b1 (rows)
+        }  // b1 (rows)
     } // b2 (columns)
+    maquis::cout << "  new  left_i: " << new_left_i << std::endl;
+    maquis::cout << "  new right_i: " << new_right_i << std::endl;
 
     ret.left_i = new_left_i;
     ret.right_i = new_right_i;
