@@ -35,7 +35,7 @@
 template <class MPOMatrix, class MPSMatrix, class SymmGroup>
 MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> const & mpo,
                                               MPSTensor<MPSMatrix, SymmGroup> const & mps,
-                                              typename SymmGroup::charge in_delta)
+                                              typename SymmGroup::charge & in_delta)
 {
     using MPOTensor_detail::term_descriptor;
     using boost::tuples::get;
@@ -91,15 +91,18 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
                     charge phys_in = W.basis().left_charge(w_block);
                     charge phys_out = W.basis().right_charge(w_block);
 
+                    // add the operator deltas from previous sites to the left charge
+                    charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
+
                     charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
                     if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
 
                     //maquis::cout << "    in_r_charge : " << in_r_charge << "  phys: " << phys_in << " -> " << phys_out << std::endl;
 
-                    charge out_r_charge = SymmGroup::fuse(lc, phys_out); // unpaired
+                    charge out_r_charge = SymmGroup::fuse(out_l_charge, phys_out); // unpaired
                     //maquis::cout << "    out_r_charge : " << out_r_charge << std::endl;
 
-                    if (!new_left_i.has(lc)) new_left_i.insert(std::make_pair(lc, data.basis().left_size(b)));
+                    if (!new_left_i.has(out_l_charge)) new_left_i.insert(std::make_pair(out_l_charge, data.basis().left_size(b)));
                     if (!new_right_i.has(out_r_charge)) new_right_i.insert(std::make_pair(out_r_charge, right_i.size_of_block(in_r_charge)));
                     //else new_right_i[new_right_i.position(in_r_charge)].second += right_i.size_of_block(in_r_charge);
 
@@ -126,6 +129,10 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
                     //                                        alfa);
                 }
             }
+
+            maquis::cout << "  in_delta " << in_delta << std::endl;
+            std::swap(in_delta, out_delta);
+
         }  // b1 (rows)
     } // b2 (columns)
     maquis::cout << "  new  left_i: " << new_left_i << std::endl;
