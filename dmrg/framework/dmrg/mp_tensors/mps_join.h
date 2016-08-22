@@ -33,9 +33,11 @@ template <class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTensor<Matrix, SymmGroup> const & m2,
                                   boundary_flag_t boundary_f=no_boundary_f)
 {
-    assert(m1.site_dim() == m2.site_dim());
-
-    Index<SymmGroup> const& phys_i = m1.site_dim();
+    Index<SymmGroup> phys_i = m1.site_dim();
+    if (m1.site_dim() != m2.site_dim())
+        for (typename Index<SymmGroup>::const_iterator it = m2.site_dim().begin(); it != m2.site_dim().end(); ++it)
+            if (!phys_i.has(it->first))
+               phys_i.insert(*it);  
     
     m1.make_left_paired();
     m2.make_left_paired();
@@ -77,7 +79,8 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
     for (size_t t=0; t<2; ++t) // t=0 --> mps1, t=1 --> mps2
     {
         MPSTensor<Matrix, SymmGroup> const & m = (t==0) ? m1 : m2;
-        ProductBasis<SymmGroup> in_left(phys_i, m.row_dim());
+        Index<SymmGroup> const & phys_i_m = (t==0) ? m1.site_dim() : m2.site_dim();
+        ProductBasis<SymmGroup> in_left(phys_i_m, m.row_dim());
         
         for (size_t b = 0; b < m.data().n_blocks(); ++b) {
             typename SymmGroup::charge const& sl_charge = m.data().basis().left_charge(b); // phys + left
@@ -95,8 +98,8 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
             if (t == 1 && boundary_f != r_boundary_f)
                 out_r_offset += m1.col_dim().size_of_block(r_charge, true);
             
-            for (size_t s=0; s<phys_i.size(); ++s) {
-                typename SymmGroup::charge const& s_charge = phys_i[s].first;
+            for (size_t s=0; s<phys_i_m.size(); ++s) {
+                typename SymmGroup::charge const& s_charge = phys_i_m[s].first;
                 typename SymmGroup::charge l_charge = SymmGroup::fuse(sl_charge, -s_charge); // left
                 
                 if (!m.row_dim().has(l_charge))
