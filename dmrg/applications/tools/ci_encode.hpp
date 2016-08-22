@@ -69,10 +69,11 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
     mps[0].make_left_paired();
     for(unsigned p = 1; p < mps.length(); ++p)
     {
-        Index<SymmGroup> const & phys = mps[p-1].site_dim();
         mps[p].make_left_paired();
 
         charge site_charge = det[p];
+        if (! mps[p].site_dim().has(site_charge))
+            return 0.0;
         charge left_input = sector;
         sector = SymmGroup::fuse(sector, site_charge);
 
