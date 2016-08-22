@@ -39,6 +39,50 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 
+/*
+    Small function to read determinants from a input file
+*/
+template<class Matrix, class SymmGroup>
+std::vector<std::vector<typename SymmGroup::charge> >
+parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
+{
+    std::ifstream config_file;
+    config_file.open(file.c_str());
+
+    std::vector<std::vector<typename SymmGroup::charge> > configs;
+
+    for (std::string line; std::getline(config_file, line); ) {
+        std::vector<std::string> det_coeff;
+        boost::split(det_coeff, line, boost::is_any_of(" "));
+
+        std::string det = det_coeff[0];
+
+        if (det.size() != site_dims.size())
+            throw std::runtime_error("The determinant length doesn't match the mps length\n");
+
+        std::vector<typename SymmGroup::charge> tmp;
+        for (std::size_t i = 0; i < det.size(); ++i) {
+            int occ = boost::lexical_cast<int>(det[i]);
+            switch(occ) {
+                case 4:
+                    tmp.push_back(site_dims[i][0].first); // doubly occ
+                    break;
+                case 3:
+                    tmp.push_back(site_dims[i][1].first); // up
+                    break;
+                case 2:
+                    tmp.push_back(site_dims[i][2].first); // down 
+                    break;
+                case 1:
+                    tmp.push_back(site_dims[i][3].first); // empty
+                    break;
+            }
+        }
+        configs.push_back(tmp);
+    }
+    return configs;
+}
+
 
 template <class Matrix, class SymmGroup>
 typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & mps, std::vector<typename SymmGroup::charge> const & det)
