@@ -54,6 +54,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
+#include "dmrg/mp_tensors/mps_join.h"
 
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/chem/util.h"
@@ -96,6 +97,11 @@ int main(int argc, char ** argv)
                                             chem_detail::make_2u1_initc<grp>(Nup, Ndown, irrep), parms["site_types"]);
         MPS<Matrix, grp> mps(L, mpsinit);
         save("mps.h5", mps);
+
+        MPS<Matrix, grp> mps1(L, mpsinit);
+        save("mps1.h5", mps1);
+        MPS<Matrix, grp> mps2(L, mpsinit);
+        save("mps2.h5", mps2);
  
         Lattice lat(parms);
         Model<Matrix, grp> model(lat, parms);
@@ -116,16 +122,6 @@ int main(int argc, char ** argv)
         
         MPO<Matrix, grp> mpo = generate_mpo::make_1D_mpo(positions, operators, ident, fill, model.operators_table(), lat);  
 
-        //for (int p = 0; p < lat.size(); ++p) {
-        //    for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
-        //        for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-        //            if (mpo[p].has(b1, b2)) maquis::cout << mpo[p].tag_number(b1,b2) << " ";
-        //            else maquis::cout << ". ";
-        //        }
-        //        maquis::cout << std::endl;
-        //    }
-        //}
-
         grp::charge delta = grp::IdentityCharge;
         MPS<Matrix, grp> pmps(lat.size());
         for (int p = 0; p < lat.size(); ++p) {
@@ -133,6 +129,12 @@ int main(int argc, char ** argv)
             pmps[p] =  mpo_times_mps(mpo[p], mps[p], delta);
         }
         save("pmps.h5", pmps); 
+
+        MPS<Matrix, grp> amps = join(pmps, mps);
+        save("amps.h5", amps);
+        maquis::cout << mps[1] << std::endl;
+        maquis::cout << pmps[1] << std::endl;
+        maquis::cout << amps[1] << std::endl;
          
         
     } catch (std::exception& e) {
