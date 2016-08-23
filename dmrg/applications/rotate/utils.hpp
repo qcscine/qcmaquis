@@ -48,34 +48,8 @@ namespace debug
         maquis::cout << mps;
     }
 
-    //template <class Matrix, class InSymm, class OutSymm>
-    //MPS<Matrix, OutSymm>
-    //transform_mps_(MPS<Matrix, InSymm> const & mps_in, DmrgParameters parms)
-    //{
-    //    return mps_in;
-    //}
-
-    //template <>
-    //MPS<alps::numeric::matrix<double>, TwoU1PG>
-    //transform_mps_(MPS<alps::numeric::matrix<double>, SU2U1PG> const & mps_in, DmrgParameters parms)
-    //{
-    //    typedef SU2U1PG SymmGroup;
-    //    typedef alps::numeric::matrix<double> Matrix;
-
-    //    parms.set("u1_total_charge1", 1);
-    //    parms.set("u1_total_charge2", 1);
-
-    //    Lattice lat(parms);
-    //    Model<Matrix, TwoU1PG> model(lat, parms);
-
-    //    MPS<Matrix, TwoU1PG> mps(lat.size(), *(model.initializer(lat, parms)));
-    //    transform_mps<Matrix, SymmGroup>()(mps_in, mps);
-
-    //    return mps;
-    //}
-
     template <class Matrix>
-    void mps_print_ci_(MPS<Matrix, TwoU1PG> const & mps, DmrgParameters parms, std::string detfile)
+    void mps_print_ci_(MPS<Matrix, TwoU1PG> const & mps, std::string detfile)
     {
         typedef Lattice::pos_t pos_t;
         typedef typename TwoU1PG::charge charge;
@@ -104,29 +78,28 @@ namespace debug
     }
 
     template <class Matrix, class SymmGroup>
-    void mps_print_ci(MPS<Matrix, SymmGroup> const & mps_in, DmrgParameters parms, std::string detfile)
+    void mps_print_ci(MPS<Matrix, SymmGroup> const & mps_in, std::string detfile)
     {
     }
 
     template <>
-    void mps_print_ci(MPS<alps::numeric::matrix<double>, TwoU1PG> const & mps_in, DmrgParameters parms, std::string detfile)
+    void mps_print_ci(MPS<alps::numeric::matrix<double>, TwoU1PG> const & mps_in, std::string detfile)
     {
-        mps_print_ci_(mps_in, parms, detfile);
+        mps_print_ci_(mps_in, detfile);
     }
 
     template <>
-    void mps_print_ci(MPS<alps::numeric::matrix<double>, SU2U1PG> const & mps_in, DmrgParameters parms, std::string detfile)
+    void mps_print_ci(MPS<alps::numeric::matrix<double>, SU2U1PG> const & mps_in, std::string detfile)
     {
         typedef alps::numeric::matrix<double> Matrix;
 
         // the output MPS
-        //MPS<Matrix, TwoU1PG> mps = transform_mps_<Matrix, SU2U1PG, TwoU1PG>(mps_in, parms);
         size_t L = mps_in.size();
         size_t N = SU2U1PG::particleNumber(mps_in[L-1].col_dim()[0].first);
         size_t S = SU2U1PG::spin(mps_in[L-1].col_dim()[0].first);
         MPS<Matrix, TwoU1PG> mps = transform_mps<Matrix, SU2U1PG>()(mps_in, (N+S)/2, (N-S)/2);
 
-        mps_print_ci_(mps, parms, detfile);
+        mps_print_ci_(mps, detfile);
     }
 } // namespace debug
 

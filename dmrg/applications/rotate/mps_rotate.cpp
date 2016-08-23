@@ -115,28 +115,31 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
 
 // function to set a new MPO with elements defined by an input integral file
 template<class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> setupMPO(std::string file, Lattice const & lattice, DmrgParameters & parms)
+MPO<Matrix, SymmGroup> setupMPO(std::string file, size_t L, size_t Nup, size_t Ndown)
 {
     typedef int pos_t;
     maquis::cout << "reading integrals for MPO from file: " << file << std::endl;
+
+    BaseParameters parms = chem_detail::set_2u1_parameters(L, Nup, Ndown);
     parms.set("integral_file", file);
 
-    Model<Matrix,SymmGroup> model = Model<Matrix,SymmGroup>(lattice, parms);
-    MPO<Matrix, SymmGroup> tmpMPO = make_mpo(lattice, model);
-    for (pos_t j = 0; j < lattice.size(); ++j){
-        maquis::cout << "MPO for site " << j << std::endl;
-        for (int b1 = 0; b1 < tmpMPO[j].row_dim(); ++b1)
-        {
-            for (int b2 = 0; b2 < tmpMPO[j].col_dim(); ++b2)
-            {
-                 if (tmpMPO[j].has(b1, b2)){
-                     maquis::cout << tmpMPO[j].tag_number(b1,b2) << " ";
-                 }
-                 else maquis::cout << ". ";
-            }
-            maquis::cout << std::endl;
-        }
-    }
+    Lattice lat(parms);
+    Model<Matrix,SymmGroup> model = Model<Matrix,SymmGroup>(lat, parms);
+    MPO<Matrix, SymmGroup> tmpMPO;// = make_mpo(lattice, model);
+    //for (pos_t j = 0; j < lattice.size(); ++j){
+    //    maquis::cout << "MPO for site " << j << std::endl;
+    //    for (int b1 = 0; b1 < tmpMPO[j].row_dim(); ++b1)
+    //    {
+    //        for (int b2 = 0; b2 < tmpMPO[j].col_dim(); ++b2)
+    //        {
+    //             if (tmpMPO[j].has(b1, b2)){
+    //                 maquis::cout << tmpMPO[j].tag_number(b1,b2) << " ";
+    //             }
+    //             else maquis::cout << ". ";
+    //        }
+    //        maquis::cout << std::endl;
+    //    }
+    //}
     return tmpMPO;
 }
 
@@ -203,12 +206,15 @@ void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
 }
 
 template <class Matrix, class SymmGroup>
-void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::string fcidump_file, DmrgParameters & parms,
-                Lattice & lattice)
+void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::string fcidump_file)
 {
     typedef Lattice::pos_t pos_t;
     typedef typename Matrix::value_type value_type;
+
+    typename SymmGroup::subcharge Ndown, Nup;
     pos_t L = mps.length();
+    Nup = mps[L-1].col_dim()[0].first[0];
+    Ndown = mps[L-1].col_dim()[0].first[1];
 
     // step 1: scale MPS wrt rotations among inactive orbitals
     value_type alpha = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(0));
@@ -227,22 +233,21 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
                                                                     debug::mps_print(mps[j], "\nScaled MPS at site " + boost::lexical_cast<std::string>(j));
 
         // get MPO
-        MPO<Matrix, SymmGroup> myMPO = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), 
-                                                                   lattice, parms);
+        MPO<Matrix, SymmGroup> myMPO = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown);
         // |mps'> = H|mps> (first correction vector)
-        mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, myMPO, parms);
+        //mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, myMPO, parms);
         for (pos_t k = 0; k < L; ++k)
             mps_prime[k].replace_left_paired(mps_prime[k].data());
 
                                                                     debug::mps_print(mps_prime, "First correction MPS at site ");
-                                                                    debug::mps_print_ci(mps_prime, parms, "dets.txt");
+                                                                    debug::mps_print_ci(mps_prime, "dets.txt");
         for (pos_t k = 0; k < L; ++k)
             mps[k].data() += mps_prime[k].data();
         for (pos_t k = 0; k < L; ++k)
             mps[k].replace_left_paired(mps[k].data());
                                                                     debug::mps_print(mps, "Intermediate MPS at site ");
         // |mps''> = H|mps'> (second correction vector)
-        mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, myMPO, parms);
+        //mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, myMPO, parms);
         for (pos_t k = 0; k < L; ++k)
             mps_prime_prime[k].replace_left_paired(mps_prime_prime[k].data());
 
@@ -262,37 +267,30 @@ int main(int argc, char ** argv)
 {
     try {
         if (argc != 2) {
-            std::cout << "Usage: " << argv[0] << "dmrg-input" << std::endl;
+            std::cout << "Usage: " << argv[0] << "mps.h5" << std::endl;
             return 1;
         }
 
         typedef Lattice::pos_t pos_t;
 
-        DmrgOptions opt(argc, argv);
-        DmrgParameters parms = opt.parms;
+        //DmrgOptions opt(argc, argv);
+        //DmrgParameters parms = opt.parms;
 
-        // set non-Hermitian MPO (no complex conjugate elements for t_ij)
-        parms.set("HasCConjugate", false);
-
-        std::string rfile(parms.get<std::string>("resultfile"));
-        std::string mps_in_file(parms.get<std::string>("chkpfile"));
+        //std::string rfile(parms.get<std::string>("resultfile"));
+        //std::string mps_in_file(parms.get<std::string>("chkpfile"));
        
-        Lattice lattice(parms);
-
         MPS<matrix, grp> mps;
-        load(mps_in_file, mps);
+        load(argv[1], mps);
 
         mps.canonize(0);
-        debug::mps_print_ci(mps, parms, "dets.txt");
+        debug::mps_print_ci(mps, "dets.txt");
         //maquis::cout << "norm of MPS: " << norm(mps) << std::endl; 
         //debug::mps_print(mps, "Original MPS at site ");
-
-        pos_t L = mps.length();             assert(L = lattice.size());
 
         std::string scale_fac_file  = "tjj.tramps.orb";
         std::string fcidump_file    = "FCIDUMP.tramps.orb";
 
-        //rotate_mps(mps, scale_fac_file, fcidump_file, parms, lattice);
+        rotate_mps(mps, scale_fac_file, fcidump_file);
 
         //maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl; 
         //debug::mps_print(mps, " Rotated MPS at site ");
@@ -300,18 +298,18 @@ int main(int argc, char ** argv)
 
         //dump_MPS<matrix, grp>(mps, parms, mps_in_file, -1);
 
-        MPS<matrix, grp> rot_mps(L);
-        MPO<matrix, grp> my_mpo = setupMPO<matrix, grp>(fcidump_file + "." + boost::lexical_cast<std::string>(1), lattice, parms);
-        for (int j = 0; j < L; ++j)
-        {
-            grp::charge delta = grp::IdentityCharge;
-            MPSTensor<matrix, grp> direct_product = mpo_times_mps(my_mpo[j], mps[j], delta);
-            rot_mps[j] = direct_product;
-            //rot_mps[j].make_left_paired();
-            //rot_mps[j].make_right_paired();
-            debug::mps_print(rot_mps[j], "");
-        }
-        maquis::cout << "\nNorm: " << norm(rot_mps) << std::endl;
+        //MPS<matrix, grp> rot_mps(L);
+        //MPO<matrix, grp> my_mpo = setupMPO<matrix, grp>(fcidump_file + "." + boost::lexical_cast<std::string>(1));
+        //for (int j = 0; j < L; ++j)
+        //{
+        //    grp::charge delta = grp::IdentityCharge;
+        //    MPSTensor<matrix, grp> direct_product = mpo_times_mps(my_mpo[j], mps[j], delta);
+        //    rot_mps[j] = direct_product;
+        //    //rot_mps[j].make_left_paired();
+        //    //rot_mps[j].make_right_paired();
+        //    debug::mps_print(rot_mps[j], "");
+        //}
+        //maquis::cout << "\nNorm: " << norm(rot_mps) << std::endl;
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
