@@ -56,12 +56,20 @@ namespace debug
 
         // extract physical basis for every site from MPS
         pos_t L = mps.length();
-        std::vector<Index<TwoU1PG> > phys_dims;
-        for (pos_t p = 0; p < L; ++p)
-            phys_dims.push_back(mps[p].site_dim());
+        TwoU1PG::subcharge Nup = mps[L-1].col_dim()[0].first[0];
+        TwoU1PG::subcharge Ndown = mps[L-1].col_dim()[0].first[1];
+        std::string site_types = chem_detail::infer_site_types(mps);
+
+        // extract physical basis for every site from MPS
+        BaseParameters parms;
+        parms.set("site_types", site_types);
+        std::vector<TwoU1PG::subcharge> irreps = parms["site_types"];
+        std::vector<Index<TwoU1PG> > per_site, phys_dims = chem_detail::make_2u1_site_basis<Matrix, TwoU1PG>(L, Nup, Ndown, site_types);
+        for (pos_t q = 0; q < L; ++q)
+            per_site.push_back(phys_dims[irreps[q]]);
 
         // load the determinants
-        std::vector<std::vector<charge> > determinants = parse_config<Matrix, TwoU1PG>(detfile, phys_dims);
+        std::vector<std::vector<charge> > determinants = parse_config<Matrix, TwoU1PG>(detfile, per_site);
         // printout the determinants
         for (pos_t q = 0; q < determinants.size(); ++q){
            for (pos_t p = 0; p < L; ++p)
