@@ -105,7 +105,7 @@ namespace chem_detail {
         }
 
         // dump the integrals into the result file for reproducibility
-        if (parms["donotsave"] == 0)
+        if (parms.is_set("donotsave") && parms["donotsave"] == 0)
         {
             std::vector<double> m_;
             std::vector<Lattice::pos_t> i_;
