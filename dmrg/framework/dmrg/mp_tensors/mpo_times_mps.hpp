@@ -73,6 +73,7 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
 
             // add the operator deltas from previous sites to the left charge
             charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
+            if (! charge_detail::physical<SymmGroup>(out_l_charge)) continue;
 
             charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
             if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
@@ -83,6 +84,9 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
             if (!new_right_i.has(out_r_charge)) new_right_i.insert(std::make_pair(out_r_charge, right_i.size_of_block(in_r_charge)));
         }
     }
+
+    maquis::cout << "new_left_i: " << new_left_i << std::endl;
+    maquis::cout << "new_right_i: " << new_right_i << std::endl;
 
     ProductBasis<SymmGroup> out_right_pb(new_phys_i, new_right_i,
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -100,6 +104,7 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
             charge phys_out = W.basis().right_charge(w_block);
 
             charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
+            if (! charge_detail::physical<SymmGroup>(out_l_charge)) continue;
 
             charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
             if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
