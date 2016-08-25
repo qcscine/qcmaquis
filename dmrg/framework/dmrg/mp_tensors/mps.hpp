@@ -406,4 +406,32 @@ void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup
         }
 }
 
+template <class Matrix, class SymmGroup>
+void clean_mps(MPS<Matrix, SymmGroup> & mps)
+{
+    // ensure consistent indices across bonds by removing blocks without connection across bonds
+    for (size_t p = 0; p < mps.length()-1; ++p)
+    {
+        mps[p].make_left_paired();
+        mps[p+1].make_right_paired();
+        block_matrix<Matrix, SymmGroup> bm1 = mps[p].data(), bm2 = mps[p+1].data();
 
+        for (size_t b = 0; b < bm1.n_blocks(); ++b)
+        {
+            typename SymmGroup::charge c = bm1.basis().right_charge(b);
+            if (! bm2.basis().has(c, c))
+                bm1.remove_block(b--);
+        }
+        for (size_t b = 0; b < bm2.n_blocks(); ++b)
+        {
+            typename SymmGroup::charge c = bm2.basis().left_charge(b);
+            if (! bm1.basis().has(c, c))
+                bm2.remove_block(b--);
+        }
+
+        assert(bm1.right_basis() == bm2.left_basis());
+
+        mps[p].replace_left_paired(bm1);
+        mps[p+1].replace_right_paired(bm2);
+    }
+}
