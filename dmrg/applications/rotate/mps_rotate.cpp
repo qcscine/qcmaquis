@@ -37,6 +37,7 @@
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/mp_tensors/mps_join.h"
+#include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/mpo.h"
 
 #include "dmrg/models/model.h"
@@ -112,8 +113,7 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
     MPS<Matrix, SymmGroup> ret; 
     for (size_t i = 0; i < mpo_vec.size(); ++i)
     {
-        debug::mps_print(mps, "before round " + boost::lexical_cast<std::string>(i));
-
+        //debug::mps_print(mps, "before round " + boost::lexical_cast<std::string>(i));
         typename SymmGroup::charge delta = grp::IdentityCharge;
         MPS<Matrix, grp> product(mps.size());
         for (int p = 0; p < mps.size(); ++p)
@@ -121,15 +121,13 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
             //maquis::cout << mpo_vec[i][p].at(0,0).op() << std::endl;
             product[p] =  mpo_times_mps(mpo_vec[i][p], mps[p], delta);
         }
+        clean_mps(product);
 
-        //ret = (i==0) ? product : join(ret, product);
+        ret = (i==0) ? product : join(ret, product);
 
         //debug::mps_print(ret, "intra product ");
         //debug::mps_print_ci(ret, "dets.txt");
-        debug::mps_print(product, "intra product ");
-        debug::mps_print_ci(product, "dets.txt");
     }
-    exit(1);
     return ret;
 }
 
@@ -296,20 +294,23 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
             = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown, site_types);
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
-        debug::mps_print(mps_prime, "First correction MPS at site ");
+        //debug::mps_print(mps_prime, "First correction MPS at site ");
         debug::mps_print_ci(mps_prime, "dets.txt");
 
         mps = join(mps, mps_prime);
         //debug::mps_print(mps, "Intermediate MPS at site ");
+        debug::mps_print_ci(mps, "dets.txt");
 
         // |mps''> = H|mps'> (second correction vector)
         mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, MPO_vec);
         //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
+        debug::mps_print_ci(mps_prime_prime, "dets.txt");
 
         // set new MPS := mps + mps' + 1/2 mps''
         mps_prime_prime[0].multiply_by_scalar(0.5);
         mps = join(mps, mps_prime_prime);
         //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
+        debug::mps_print_ci(mps, "dets.txt");
     }
 }
 
@@ -338,8 +339,14 @@ int main(int argc, char ** argv)
 
         rotate_mps(mps, scale_fac_file, fcidump_file);
 
-        //maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl; 
-        debug::mps_print(mps, " Rotated MPS at site ");
+        matrix::value_type final_norm = norm(mps);
+        maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
+        // NOTE: this normalizes the final MPS 
+        mps = compression::l2r_compress(mps, 10000, 1e-7);
+        mps[0].multiply_by_scalar(sqrt(final_norm));
+
+        maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl; 
+        //debug::mps_print(mps, " Rotated MPS at site ");
         debug::mps_print_ci(mps, "dets.txt");
         maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
 
