@@ -206,7 +206,7 @@ namespace chem_detail {
                     site_types += boost::lexical_cast<std::string>(getPG<SymmGroup>()(mps[p].site_dim()[i].first)) + ",";
                     break;
                 }
-                if (i == mps[p].site_dim().size())
+                if (i == mps[p].site_dim().size() -1)
                     site_types += "0,";
             }
 
