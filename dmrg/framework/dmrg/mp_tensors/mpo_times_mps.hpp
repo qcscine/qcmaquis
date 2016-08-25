@@ -47,6 +47,8 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
     block_matrix<MPSMatrix, SymmGroup> const & data = mps.data();
 
     Index<SymmGroup> const & right_i = mps.col_dim();
+    //maquis::cout << "      mps.site_dim: " << mps.site_dim() << std::endl;
+    //maquis::cout << "      mps.col_dim : " << mps.col_dim() << std::endl;
     ProductBasis<SymmGroup> right_pb(mps.site_dim(), mps.col_dim(),
                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
@@ -54,12 +56,17 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
     term_descriptor<MPOMatrix, SymmGroup, true> access = mpo.at(0,0);
     typename operator_selector<MPOMatrix, SymmGroup>::type const & W = access.op();
 
-    //maquis::cout << "\nW\n" << W;
     charge W_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
     charge out_delta = SymmGroup::fuse(in_delta, W_delta);
 
     Index<SymmGroup> new_left_i, new_right_i, new_phys_i;
-    new_phys_i = W.right_basis();
+    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+    {
+        charge phys_in = W.basis().left_charge(w_block);
+        if (! mps.site_dim().has(phys_in) ) continue;
+        charge phys_out = W.basis().right_charge(w_block);
+        new_phys_i.insert(std::make_pair(phys_out, W.basis().right_size(w_block)));
+    }
 
     for (size_t b = 0; b < data.n_blocks(); ++b)
     {
@@ -85,8 +92,9 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
         }
     }
 
-    maquis::cout << "new_left_i: " << new_left_i << std::endl;
-    maquis::cout << "new_right_i: " << new_right_i << std::endl;
+    //maquis::cout << "      new_left_i: " << new_left_i << std::endl;
+    //maquis::cout << "      new_right_i: " << new_right_i << std::endl;
+    //maquis::cout << "      new_phys_i: " << new_phys_i << std::endl;
 
     ProductBasis<SymmGroup> out_right_pb(new_phys_i, new_right_i,
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -107,6 +115,7 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
             if (! charge_detail::physical<SymmGroup>(out_l_charge)) continue;
 
             charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
+            if (!mps.site_dim().has(phys_in)) continue; // do we have phys_in in block b ?
             if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
 
             charge out_r_charge = SymmGroup::fuse(out_l_charge, phys_out); // unpaired
