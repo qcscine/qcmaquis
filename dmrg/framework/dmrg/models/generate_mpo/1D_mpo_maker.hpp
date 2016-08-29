@@ -221,9 +221,10 @@ namespace generate_mpo
                 std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ident,
                 std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & fill,
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
-                Lattice const & lat)
+                Lattice const & lat, typename Matrix::value_type scale = 1)
     {
         term_descriptor<typename Matrix::value_type> term = arrange_operators(positions, operators, tag_handler);
+        term.coeff *= scale;
         return sign_and_fill(term, ident, fill, tag_handler, lat);
     }
 

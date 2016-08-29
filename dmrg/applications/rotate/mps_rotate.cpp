@@ -176,8 +176,8 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
         operators_down.push_back(model.get_operator_tag("create_down", lat.get_prop<sc_t>("type", i)));
         operators_down.push_back(model.get_operator_tag("destroy_down", lat.get_prop<sc_t>("type", j)));
 
-        ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat));
-        ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat));
+        ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat, matrix_elements[m]));
+        ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat, matrix_elements[m]));
 
         //MPO<Matrix, SymmGroup> const & mpo = *ret.rbegin();
         //for (pos_t j = 0; j < lat.size(); ++j){
@@ -341,9 +341,9 @@ int main(int argc, char ** argv)
 
         matrix::value_type final_norm = norm(mps);
         maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
-        // NOTE: this normalizes the final MPS 
-        mps = compression::l2r_compress(mps, 10000, 1e-7);
-        mps[0].multiply_by_scalar(sqrt(final_norm));
+        // NOTE: this normalizes the final MPS and may invert signs
+        //mps = compression::l2r_compress(mps, 10000, 1e-7);
+        //mps[0].multiply_by_scalar(sqrt(final_norm));
 
         maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl; 
         //debug::mps_print(mps, " Rotated MPS at site ");
