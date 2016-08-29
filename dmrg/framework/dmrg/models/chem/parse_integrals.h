@@ -33,7 +33,7 @@ namespace chem_detail {
     template <class T, class SymmGroup>
     inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
-    parse_integrals(BaseParameters & parms, Lattice const & lat)
+    parse_integrals(BaseParameters & parms, Lattice const & lat, bool do_align = true)
     {
         typedef Lattice::pos_t pos_t;
 
@@ -91,12 +91,22 @@ namespace chem_detail {
                 std::vector<int> tmp;
                 std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                IndexTuple aligned = align<SymmGroup>(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
-                                           reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
-                idx_(row, 0) = aligned[0];
-                idx_(row, 1) = aligned[1];
-                idx_(row, 2) = aligned[2];
-                idx_(row, 3) = aligned[3];
+                if (do_align)
+                {
+                    IndexTuple aligned = align<SymmGroup>(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
+                                               reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
+                    idx_(row, 0) = aligned[0];
+                    idx_(row, 1) = aligned[1];
+                    idx_(row, 2) = aligned[2];
+                    idx_(row, 3) = aligned[3];
+                }
+                else
+                {
+                    idx_(row, 0) = tmp[0];
+                    idx_(row, 1) = tmp[1];
+                    idx_(row, 2) = tmp[2];
+                    idx_(row, 3) = tmp[3];
+                }
             }
             else { it++; idx_.remove_rows(row--); }
 
@@ -136,7 +146,7 @@ namespace chem_detail {
     template <>
     inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<std::complex<double> > >
-    parse_integrals <std::complex<double>,U1DG> (BaseParameters & parms, Lattice const & lat)
+    parse_integrals <std::complex<double>,U1DG> (BaseParameters & parms, Lattice const & lat, bool do_align)
     {
         typedef Lattice::pos_t pos_t;
         typedef std::complex<double> T;
@@ -204,12 +214,22 @@ namespace chem_detail {
                 std::vector<int> tmp;
                 std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                IndexTuple aligned = align<SymmGroup>(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
-                                           reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
-                idx_(row, 0) = aligned[0];
-                idx_(row, 1) = aligned[1];
-                idx_(row, 2) = aligned[2];
-                idx_(row, 3) = aligned[3];
+                if (do_align)
+                {
+                    IndexTuple aligned = align<SymmGroup>(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
+                                               reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
+                    idx_(row, 0) = aligned[0];
+                    idx_(row, 1) = aligned[1];
+                    idx_(row, 2) = aligned[2];
+                    idx_(row, 3) = aligned[3];
+                }
+                else
+                {
+                    idx_(row, 0) = tmp[0];
+                    idx_(row, 1) = tmp[1];
+                    idx_(row, 2) = tmp[2];
+                    idx_(row, 3) = tmp[3];
+                }
             }
             else { idx_.remove_rows(row--); }
 

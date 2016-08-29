@@ -77,6 +77,18 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
+template<class Matrix, class SymmGroup>
+bool sensible(MPS<Matrix, SymmGroup> const & mps)
+{
+    for (size_t p = 0; p < mps.size()-1; ++p)
+        if (mps[p].col_dim() == mps[p+1].row_dim())
+            continue;
+        else
+            return false;
+
+    return true;
+}
+
 // function to write MPS to file
 template<class Matrix, class SymmGroup>
 void dump_MPS(MPS<Matrix, SymmGroup> & mps,
@@ -122,8 +134,10 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
             product[p] =  mpo_times_mps(mpo_vec[i][p], mps[p], delta);
         }
         clean_mps(product);
+        assert(sensible(product));
 
         ret = (i==0) ? product : join(ret, product);
+        assert(sensible(ret));
 
         //debug::mps_print(ret, "intra product ");
         //debug::mps_print_ci(ret, "dets.txt");
@@ -155,18 +169,22 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
         fill.push_back(model.filling_matrix_tag(i));
     }
 
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, model.operators_table());
-    std::vector<typename Matrix::value_type> & matrix_elements = term_assistant.getMatrixElements(); 
+    //chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, model.operators_table());
+    //std::vector<typename Matrix::value_type> & matrix_elements = term_assistant.getMatrixElements(); 
+    std::vector<typename Matrix::value_type> matrix_elements;
+    alps::numeric::matrix<pos_t> idx;
+    boost::tie(idx, matrix_elements) = chem_detail::parse_integrals<typename Matrix::value_type, SymmGroup>(parms, lat, false);
 
     std::vector<MPO<Matrix, SymmGroup> > ret;
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         std::vector<pos_t> positions;
         std::vector<tag_type> operators_up, operators_down;
 
-        int i = term_assistant.idx(m, 0);
-        int j = term_assistant.idx(m, 1);
-        int k = term_assistant.idx(m, 2);
-        int l = term_assistant.idx(m, 3);
+        int i = idx(m, 0);
+        int j = idx(m, 1);
+        int k = idx(m, 2);
+        int l = idx(m, 3);
+        maquis::cout << "ij " << i << "," << j << std::endl;
 
         assert( k==-1 && l==-1);
         positions.push_back(i);
@@ -294,7 +312,8 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
             = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown, site_types);
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
-        //debug::mps_print(mps_prime, "First correction MPS at site ");
+        if (j==2)
+        debug::mps_print(mps_prime, "First correction MPS at site ");
         debug::mps_print_ci(mps_prime, "dets.txt");
 
         mps = join(mps, mps_prime);
