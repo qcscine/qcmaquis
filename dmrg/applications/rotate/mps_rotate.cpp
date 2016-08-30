@@ -121,6 +121,7 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
 {   
     //mpo_times_mps_contractor_ss<Matrix, SymmGroup, storage::nop> sigma_vector_product(mps, mpo, parms);
     //sigma_vector_product.sweep();
+    assert(sensible(mps));
 
     MPS<Matrix, SymmGroup> ret; 
     for (size_t i = 0; i < mpo_vec.size(); ++i)
@@ -129,10 +130,8 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
         typename SymmGroup::charge delta = grp::IdentityCharge;
         MPS<Matrix, grp> product(mps.size());
         for (int p = 0; p < mps.size(); ++p)
-        {
-            //maquis::cout << mpo_vec[i][p].at(0,0).op() << std::endl;
             product[p] =  mpo_times_mps(mpo_vec[i][p], mps[p], delta);
-        }
+
         clean_mps(product);
         assert(sensible(product));
 
@@ -312,8 +311,6 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
             = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown, site_types);
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
-        if (j==2)
-        debug::mps_print(mps_prime, "First correction MPS at site ");
         debug::mps_print_ci(mps_prime, "dets.txt");
 
         mps = join(mps, mps_prime);
