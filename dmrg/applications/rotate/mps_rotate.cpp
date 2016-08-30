@@ -92,13 +92,14 @@ bool sensible(MPS<Matrix, SymmGroup> const & mps)
 // function to write MPS to file
 template<class Matrix, class SymmGroup>
 void dump_MPS(MPS<Matrix, SymmGroup> & mps,
-              DmrgParameters & parms,
+              //DmrgParameters & parms,
               std::string mps_in_file,
               int file_id)
 {
     //maquis::cout << "norm of MPS to be dumped: " << norm(mps) << std::endl; 
     std::string mps_out_file = mps_in_file;
     if(file_id >= 0){
+        /*
         std::size_t pos = mps_out_file.find(".h5");
         if (pos != mps_out_file.size())
             mps_out_file.erase(pos, 3);
@@ -110,6 +111,7 @@ void dump_MPS(MPS<Matrix, SymmGroup> & mps,
 
         storage::archive ar_out(mps_out_file + "/props.h5", "w");
         ar_out["/parameters"] << parms;
+        */
     }
     else save(mps_out_file, mps);
 }
@@ -385,6 +387,7 @@ int main(int argc, char ** argv)
         maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
 
         //dump_MPS<matrix, grp>(mps, parms, mps_in_file, -1);
+        dump_MPS<matrix, grp>(mps, argv[1], -1);
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
