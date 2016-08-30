@@ -136,7 +136,12 @@ MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPOTensor<MPOMatrix, SymmGroup> co
             MPSMatrix & oblock = prod[o];
 
             value_type alfa = access.scale() * W[w_block](0,0);
+            //maquis::cout << " access.scale()  ... " << alfa << std::endl;
+            //maquis::cout << " W[w_block](0,0) ... " << W[w_block](0,0) << "for block " << w_block << std::endl;
+            //maquis::cout << " alfa            ... " << access.scale() << std::endl;
             for(size_t rr = 0; rr < r_size; ++rr)
+
+
                 maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
                                                     &iblock(0, in_right_offset + rr) + l_size,
                                                     &oblock(0, out_right_offset + rr),
