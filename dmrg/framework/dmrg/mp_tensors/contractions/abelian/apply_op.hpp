@@ -31,17 +31,18 @@
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/contractions/abelian/functors.hpp"
 
 namespace contraction {
     namespace abelian {
 
     using ::contraction::ContractionGrid;
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_allocate(size_t b2,
                               ContractionGrid<Matrix, SymmGroup>& contr_grid,
-                              std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                              //std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                              BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const & right_i,
                               Index<SymmGroup> const & out_left_i)
@@ -89,7 +90,8 @@ namespace contraction {
     void lbtm_kernel_execute(size_t b2,
                              ContractionGrid<Matrix, SymmGroup>& contr_grid,
                              Boundary<OtherMatrix, SymmGroup> const & left,
-                             std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                             //std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                             BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & right_i,
@@ -150,10 +152,11 @@ namespace contraction {
         } // b1
     }
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel_allocate(size_t b1,
                               block_matrix<Matrix, SymmGroup> & ret,
-                              std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                              //std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                              MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const & left_i,
                               Index<SymmGroup> const & out_right_i)
@@ -196,7 +199,8 @@ namespace contraction {
     void rbtm_kernel_execute(size_t b1,
                              block_matrix<Matrix, SymmGroup> & ret,
                              Boundary<OtherMatrix, SymmGroup> const & right,
-                             std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                             //std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                             MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & left_i,
@@ -260,7 +264,8 @@ namespace contraction {
     void lbtm_kernel(size_t b2,
                      ContractionGrid<Matrix, SymmGroup>& contr_grid,
                      Boundary<OtherMatrix, SymmGroup> const & left,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                     //std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                     BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                      Index<SymmGroup> const & right_i,
@@ -276,7 +281,8 @@ namespace contraction {
     void rbtm_kernel(size_t b1,
                      block_matrix<Matrix, SymmGroup> & ret,
                      Boundary<OtherMatrix, SymmGroup> const & right,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                     //std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                     MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                      Index<SymmGroup> const & left_i,

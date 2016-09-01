@@ -38,50 +38,54 @@ namespace contraction {
     namespace common {
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        //static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        static BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm>
         boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
                            Boundary<OtherMatrix, SymmGroup> const & left,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
         {
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
+            //std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> ret(left, mpo);
             int loop_max = left.aux_dim();
             mps.make_right_paired();
-
-            int eff_loop_max = mpo.herm_info.left_size();
-            omp_for(int b1, parallel::range(0, eff_loop_max), {
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
-                if (mpo.herm_info.left_conj(b1) != b1)
+            omp_for(int b1, parallel::range(0,loop_max), {
+                if (mpo.herm_info.left_skip(b1))
                 {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_left()(left[b1], mps.data(), ret[mpo.herm_info.left_conj(b1)]);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), ret[b1]);
+                }
+                else {
+                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
                 }
             });
             return ret;
         }
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        //static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        static MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm>
         mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
         {
             parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
 
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
+            //std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
+            MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> ret(right, mpo);
             int loop_max = right.aux_dim();
             mps.make_left_paired();
-
-            int eff_loop_max = mpo.herm_info.right_size();
-            omp_for(int b2, parallel::range(0, eff_loop_max), {
-                parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
-                if (mpo.herm_info.right_conj(b2) != b2)
+            omp_for(int b2, parallel::range(0,loop_max), {
+                if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[b2]), ret[mpo.herm_info.right_conj(b2)]);
+                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), ret[b2]);
+                }
+                else {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
                 }
             });
             return ret;
