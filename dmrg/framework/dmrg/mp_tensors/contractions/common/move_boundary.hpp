@@ -106,7 +106,8 @@ namespace contraction {
             if (in_low == NULL)
                 in_low = &mps.row_dim();
 
-            std::vector<block_matrix<Matrix, SymmGroup> > t
+            //std::vector<block_matrix<Matrix, SymmGroup> > t
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
                 = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(mps, left, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
@@ -198,7 +199,8 @@ namespace contraction {
             typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            std::vector<block_matrix<Matrix, SymmGroup> > t
+            //std::vector<block_matrix<Matrix, SymmGroup> > t
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
                 = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, left, mpo);
 
             Index<SymmGroup> const & left_i = bra_tensor.row_dim();

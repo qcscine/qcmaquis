@@ -38,14 +38,16 @@ namespace contraction {
     namespace common {
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        //static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        static BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm>
         boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
                            Boundary<OtherMatrix, SymmGroup> const & left,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
         {
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
+            //std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> ret(left, mpo);
             int loop_max = left.aux_dim();
             mps.make_right_paired();
             omp_for(int b1, parallel::range(0,loop_max), {
