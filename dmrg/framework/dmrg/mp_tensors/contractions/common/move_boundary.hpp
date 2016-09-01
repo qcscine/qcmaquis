@@ -156,7 +156,8 @@ namespace contraction {
             if (in_low == NULL)
                 in_low = &mps.col_dim();
 
-            std::vector<block_matrix<Matrix, SymmGroup> > t
+            //std::vector<block_matrix<Matrix, SymmGroup> > t
+            MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
                 = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(mps, right, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
@@ -258,7 +259,8 @@ namespace contraction {
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            std::vector<block_matrix<Matrix, SymmGroup> > t
+            //std::vector<block_matrix<Matrix, SymmGroup> > t
+            MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
                 = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, right, mpo);
 
             Index<SymmGroup> left_i = ket_tensor.row_dim();

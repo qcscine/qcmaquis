@@ -80,5 +80,53 @@ void BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_ty
 
 }
 
+template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+class MPSBoundaryProduct 
+{
+public:
+    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
+    typedef typename Matrix::value_type value_type;
+    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+
+    MPSBoundaryProduct(Boundary<OtherMatrix, SymmGroup> const & right_,
+                       MPOTensor<Matrix, SymmGroup> const & mpo_) : right(right_), mpo(mpo_), data_(right_.aux_dim()) { }
+
+    std::size_t aux_dim() const { 
+        return data_.size(); 
+    }
+
+    void resize(size_t n){
+        if(n < data_.size()) 
+            return data_.resize(n);
+        data_.reserve(n);
+        for(int i = data_.size(); i < n; ++i)
+            data_.push_back(block_matrix<Matrix, SymmGroup>());
+    }
+    
+    void multiply (index_type b2, MPSTensor<Matrix, SymmGroup> const & mps);
+    
+    block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
+    block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+
+private:
+    std::vector<block_matrix<Matrix, SymmGroup> > data_;
+    Boundary<OtherMatrix, SymmGroup> const & right;
+    MPOTensor<Matrix, SymmGroup> const & mpo;
+};
+
+template <class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+void MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b2, MPSTensor<Matrix, SymmGroup> const & mps)
+{
+    if (mpo.herm_info.right_skip(b2))
+    {
+        parallel::guard group(scheduler(b2), parallel::groups_granularity);
+        typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), data_[b2]);
+    }
+    else {
+        parallel::guard group(scheduler(b2), parallel::groups_granularity);
+        typename Gemm::gemm_trim_right()(mps.data(), right[b2], data_[b2]);
+    }
+}
+
 
 #endif
