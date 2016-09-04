@@ -223,6 +223,7 @@ namespace measurements {
                             dct.push_back(0.0);
                             num_labels.push_back(positions);
                         }
+                    }
                 }
 
                 std::vector<std::string> lbt = label_strings(lattice,  num_labels);
@@ -419,6 +420,7 @@ namespace measurements {
         positions_type positions_first;
         tag_vec identities, fillings;
         std::vector<scaled_bond_term> operator_terms;
+        bool half_only;
 
         std::string bra_ckp;
     };
