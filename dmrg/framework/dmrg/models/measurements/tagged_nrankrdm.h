@@ -119,6 +119,7 @@ namespace measurements {
         , identities(identities_)
         , fillings(fillings_)
         , operator_terms(ops_)
+        , half_only(half_only_)
         , bra_ckp(ckp_)
         {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
@@ -200,6 +201,28 @@ namespace measurements {
                         dct.push_back(0.0);
                         num_labels.push_back(positions);
                     }
+		            if(bra_neq_ket){
+                        pos_t pos_[2] = {p2, p1};
+                        std::vector<pos_t> positions(pos_, pos_ + 2);
+
+                        tag_vec operators(2);
+                        operators[0] = operator_terms[0].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                        operators[1] = operator_terms[0].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
+
+                        // check if term is allowed by symmetry
+                        term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
+                        if(measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                        {
+                            MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                            typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+
+                            dct.push_back(value);
+                            num_labels.push_back(positions);
+                        }
+                        else {
+                            dct.push_back(0.0);
+                            num_labels.push_back(positions);
+                        }
                 }
 
                 std::vector<std::string> lbt = label_strings(lattice,  num_labels);
