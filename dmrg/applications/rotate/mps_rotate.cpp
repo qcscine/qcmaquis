@@ -328,25 +328,31 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
 
-        //maquis::cout << "- first correction MPS - "<<      std::endl;
+        maquis::cout << "- first correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps_prime, "dets.txt");
 
         mps = join(mps, mps_prime);
         //debug::mps_print(mps, "Intermediate MPS at site ");
+        maquis::cout << "- intermediate correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
 
+        //maquis::cout << "- enter for second correction - "<<      std::endl;
         // |mps''> = H|mps'> (second correction vector)
         mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, MPO_vec);
-        //maquis::cout << "- Second correction MPS - "<<      std::endl;
-        //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
+        maquis::cout << "- Second correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps_prime_prime, "dets.txt");
+        //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
 
         // set new MPS := mps + mps' + 1/2 mps''
         mps_prime_prime[0].multiply_by_scalar(0.5);
         mps = join(mps, mps_prime_prime);
-        //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
+        //
+        maquis::cout << "- MPS compression! - "<<      std::endl;
+        mps = compression::l2r_compress(mps, 10000, 1e-10);
+        //
         //maquis::cout << "-  Final (for the current site to be rotated) MPS - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
+        //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
     }
 }
 
@@ -366,7 +372,10 @@ int main(int argc, char ** argv)
         load(argv[1], mps);
 
         mps.canonize(0);
+
+        //maquis::cout << " Input MPS: " << std::endl; 
         //debug::mps_print_ci(mps, "dets.txt");
+
         //maquis::cout << "norm of MPS: " << norm(mps) << std::endl; 
         //debug::mps_print(mps, "Original MPS at site ");
 
