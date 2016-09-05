@@ -297,14 +297,14 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     Ndown = mps[L-1].col_dim()[0].first[1];
     std::string site_types = chem_detail::infer_site_types(mps);
 
-    //maquis::cout << "- input MPS - "<<      std::endl; 
+    //maquis::cout << "- input MPS - "<<      std::endl;
     //debug::mps_print_ci(mps, "dets.txt");
 
     // step 1: scale MPS wrt rotations among inactive orbitals
     value_type alpha = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(0));
     mps[0].multiply_by_scalar(alpha);
 
-    //maquis::cout << "- scaled MPS (inactive orbitals) - "<<      std::endl; 
+    //maquis::cout << "- scaled MPS (inactive orbitals) - "<<      std::endl;
     //debug::mps_print_ci(mps, "dets.txt");
 
     MPS<Matrix, SymmGroup> mps_intermediate, mps_prime, mps_prime_prime;
@@ -312,13 +312,13 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     // step 2: scale MPS wrt rotations among active orbitals
     for (pos_t j = 0; j < L; ++j)
     {
-        maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl; 
+        maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl;
 
         // scale the j-th MPS tensor wrt the occupation of the j-th orbital 
         value_type tjj = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(j+1));
         scale_MPSTensor<Matrix, SymmGroup>(mps[j], tjj);
 
-        //maquis::cout << "- scaled MPS (local sites) - "<<      std::endl; 
+        //maquis::cout << "- scaled MPS (local sites) - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
         //debug::mps_print(mps[j], "\nScaled MPS at site " + boost::lexical_cast<std::string>(j));
 
@@ -328,7 +328,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
 
-       // maquis::cout << "- first correction MPS - "<<      std::endl; 
+        //maquis::cout << "- first correction MPS - "<<      std::endl;
         //debug::mps_print_ci(mps_prime, "dets.txt");
 
         mps = join(mps, mps_prime);
@@ -337,6 +337,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
 
         // |mps''> = H|mps'> (second correction vector)
         mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, MPO_vec);
+        //maquis::cout << "- Second correction MPS - "<<      std::endl;
         //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
         //debug::mps_print_ci(mps_prime_prime, "dets.txt");
 
@@ -344,6 +345,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         mps_prime_prime[0].multiply_by_scalar(0.5);
         mps = join(mps, mps_prime_prime);
         //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
+        //maquis::cout << "-  Final (for the current site to be rotated) MPS - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
     }
 }
@@ -380,7 +382,7 @@ int main(int argc, char ** argv)
         //mps = compression::l2r_compress(mps, 10000, 1e-7);
         //mps[0].multiply_by_scalar(sqrt(final_norm));
 
-        //maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl; 
+        maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl;
         //debug::mps_print(mps, " Rotated MPS at site ");
         //debug::mps_print_ci(mps, "dets.txt");
 
