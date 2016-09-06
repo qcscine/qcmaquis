@@ -286,6 +286,20 @@ void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
 }
 
 template <class Matrix, class SymmGroup>
+void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text)
+{
+    maquis::cout << "- MPS compression - input MPS: "<< text << std::endl;
+
+    matrix::value_type final_norm        = norm(mps);
+    matrix::value_type compression_trace = 1.0;
+
+    mps = compression::l2r_compress(mps, 10000, 1e-10, compression_trace);
+    maquis::cout << "- compression trace          : "<< compression_trace << std::endl;
+    mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
+
+}
+
+template <class Matrix, class SymmGroup>
 void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::string fcidump_file)
 {
     typedef Lattice::pos_t pos_t;
@@ -331,14 +345,8 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         maquis::cout << "- first correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps_prime, "dets.txt");
 
-        maquis::cout << "- MPS prime compression! - "<<      std::endl;
-
-        matrix::value_type final_norm_prime        = norm(mps_prime);
-        matrix::value_type compression_trace_prime = 1.0;
-
-        mps_prime = compression::l2r_compress(mps_prime, 10000, 1e-10, compression_trace_prime);
-        maquis::cout << "- MPS prime compression trace -> "<< compression_trace_prime << std::endl;
-        mps_prime[0].multiply_by_scalar(compression_trace_prime*sqrt(final_norm_prime));
+        // compression of MPS' 
+        compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
 
         mps = join(mps, mps_prime);
         //debug::mps_print(mps, "Intermediate MPS at site ");
@@ -359,13 +367,9 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         maquis::cout << "-  Final (for the current site to be rotated) MPS with no compression   - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
 
-        maquis::cout << "- MPS compression! - "<<      std::endl;
-        matrix::value_type final_norm = norm(mps);
-        matrix::value_type compression_trace = 1.0;
-        mps = compression::l2r_compress(mps, 10000, 1e-10, compression_trace);
-        maquis::cout << "- MPS compression trace -> "<< compression_trace << std::endl;
-        mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
-        //
+        // compression of final MPS
+        compress_mps<Matrix, SymmGroup>(mps, "MPS final");
+
         maquis::cout << "-  Final (for the current site to be rotated) MPS with full compression - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
         //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
