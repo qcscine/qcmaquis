@@ -331,6 +331,15 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         maquis::cout << "- first correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps_prime, "dets.txt");
 
+        maquis::cout << "- MPS prime compression! - "<<      std::endl;
+
+        matrix::value_type final_norm_prime        = norm(mps_prime);
+        matrix::value_type compression_trace_prime = 1.0;
+
+        mps_prime = compression::l2r_compress(mps_prime, 10000, 1e-10, compression_trace_prime);
+        maquis::cout << "- MPS prime compression trace -> "<< compression_trace_prime << std::endl;
+        mps_prime[0].multiply_by_scalar(compression_trace_prime*sqrt(final_norm_prime));
+
         mps = join(mps, mps_prime);
         //debug::mps_print(mps, "Intermediate MPS at site ");
         maquis::cout << "- intermediate correction MPS obtained - "<<      std::endl;
