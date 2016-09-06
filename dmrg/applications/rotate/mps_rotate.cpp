@@ -347,10 +347,17 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         mps_prime_prime[0].multiply_by_scalar(0.5);
         mps = join(mps, mps_prime_prime);
         //
+        maquis::cout << "-  Final (for the current site to be rotated) MPS with no compression   - "<<      std::endl;
+        //debug::mps_print_ci(mps, "dets.txt");
+
         maquis::cout << "- MPS compression! - "<<      std::endl;
-        mps = compression::l2r_compress(mps, 10000, 1e-10);
+        matrix::value_type final_norm = norm(mps);
+        matrix::value_type compression_trace = 1.0;
+        mps = compression::l2r_compress(mps, 10000, 1e-10, compression_trace);
+        maquis::cout << "- MPS compression trace -> "<< compression_trace << std::endl;
+        mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
         //
-        //maquis::cout << "-  Final (for the current site to be rotated) MPS - "<<      std::endl;
+        maquis::cout << "-  Final (for the current site to be rotated) MPS with full compression - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
         //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
     }
