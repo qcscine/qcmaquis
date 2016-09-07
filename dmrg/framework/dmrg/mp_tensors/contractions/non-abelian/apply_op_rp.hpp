@@ -31,6 +31,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 
 namespace contraction {
 namespace SU2 {
@@ -39,7 +40,7 @@ namespace SU2 {
     void lbtm_kernel_rp(size_t b2,
                         ContractionGrid<Matrix, SymmGroup>& contr_grid,
                         Boundary<OtherMatrix, SymmGroup> const & left,
-                        std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                        BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & left_mult_mps,
                         MPOTensor<Matrix, SymmGroup> const & mpo,
                         MPSTensor<Matrix, SymmGroup> const & mps,
                         Index<SymmGroup> const & right_i,

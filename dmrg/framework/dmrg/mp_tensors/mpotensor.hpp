@@ -28,18 +28,20 @@
 #include "dmrg/mp_tensors/reshapes.h"
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
-                                        index_type rd,
-                                        prempo_t tags,
-                                        op_table_ptr tbl_,
-                                        spin_index const & lspins,
-                                        spin_index const & rspins)
+MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld
+                                       ,index_type rd
+                                       ,prempo_t tags
+                                       ,op_table_ptr tbl_
+                                       ,MPOTensor_detail::Hermitian h_
+                                       ,spin_index const & lspins
+                                       ,spin_index const & rspins)
 : left_i(ld)
 , right_i(rd)
 , left_spins(lspins)
 , right_spins(rspins)
 , col_tags(ld, rd)
 , operator_table(tbl_)
+, herm_info(ld, rd)
 {
     using namespace boost::tuples;
     row_index.resize(ld);
@@ -87,6 +89,10 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
     num_one_rows_ = std::count(row_non_zeros.begin(), row_non_zeros.end(), 1);
     num_one_cols_ = std::count(col_non_zeros.begin(), col_non_zeros.end(), 1);
     maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
+
+    // if the optional Hermitian object h_ is valid, adopt it
+    if (h_.left_size() == left_i && h_.right_size() == right_i)
+        herm_info = h_;
 }
 
 /*

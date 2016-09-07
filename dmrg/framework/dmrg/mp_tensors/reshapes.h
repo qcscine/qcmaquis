@@ -241,6 +241,9 @@ void reshape_left_to_right_new(Index<SymmGroup> const & physical_i,
     }
 }
 
+/// Input: m1, left-paired
+/// Output: m2, must already be allocated with correct charge blocks
+/// returns m2 left-paired dropping blocks that are not present in out_left_i
 template<class Matrix, class SymmGroup>
 void reshape_and_pad_left(Index<SymmGroup> physical_i,
                           Index<SymmGroup> in_left_i,

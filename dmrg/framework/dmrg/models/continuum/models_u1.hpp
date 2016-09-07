@@ -182,6 +182,16 @@ public:
                                                                        ops, true, false) );
         }
         
+        if (model["MEASURE[Density correlation]"]) {
+            std::string name = "Density correlation";
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(ntypes,tag_handler->get_op(count)), false) );
+            ops.push_back( std::make_pair(op_vec(ntypes,tag_handler->get_op(count)), false) );
+            meas.push_back( new measurements::correlations<Matrix, U1>(name, lat,
+                                                                       op_vec(ntypes,this->identity_matrix(0)),
+                                                                       op_vec(ntypes,this->filling_matrix(0)),
+                                                                       ops, true, false) );
+        }
         return meas;
     }
     

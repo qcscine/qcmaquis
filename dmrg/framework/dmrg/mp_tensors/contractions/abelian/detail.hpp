@@ -87,7 +87,7 @@ namespace detail {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     DualIndex<SymmGroup> T_basis_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                      std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                      common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                       MPOTensor<Matrix, SymmGroup> const & mpo,
                                       MPSTensor<Matrix, SymmGroup> const & mps,
                                       typename MPOTensor<Matrix, SymmGroup>::index_type b)
@@ -99,7 +99,7 @@ namespace detail {
     }
     template<class Matrix, class OtherMatrix, class SymmGroup>
     DualIndex<SymmGroup> T_basis_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                       std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                       common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                        MPOTensor<Matrix, SymmGroup> const & mpo,
                                        MPSTensor<Matrix, SymmGroup> const & mps,
                                        typename MPOTensor<Matrix, SymmGroup>::index_type b)
@@ -114,7 +114,7 @@ namespace detail {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     block_matrix<Matrix, SymmGroup> const * T_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                   std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                                   common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                                    block_matrix<Matrix, SymmGroup> & local,
                                                    MPOTensor<Matrix, SymmGroup> const & mpo,
                                                    MPSTensor<Matrix, SymmGroup> const & mps,
@@ -130,7 +130,7 @@ namespace detail {
     }
     template<class Matrix, class OtherMatrix, class SymmGroup>
     block_matrix<Matrix, SymmGroup> const * T_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                    std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                                    common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                                     block_matrix<Matrix, SymmGroup> & local,
                                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                                     MPSTensor<Matrix, SymmGroup> const & mps,

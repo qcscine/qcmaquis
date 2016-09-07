@@ -85,7 +85,7 @@ void measure_correlation_parallel(MPS<Matrix, SymmGroup> const & mps,
             mpom.add_term(term);
         
             MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-            double val = expval(mps, mpo);
+            double val = maquis::real(expval(mps, mpo));
             
             std::vector<std::size_t> lab;
             lab.push_bask(p1); lab.push_bask(p2);
