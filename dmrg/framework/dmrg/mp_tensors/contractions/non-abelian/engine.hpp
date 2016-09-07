@@ -30,7 +30,6 @@
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include "dmrg/mp_tensors/boundary_mps_product.h"
 
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op_rp.hpp"
@@ -42,6 +41,9 @@
 
 namespace contraction {
 
+    using ::contraction::common::BoundaryMPSProduct;
+    using ::contraction::common::MPSBoundaryProduct;
+
     template <class Matrix, class OtherMatrix, class SymmGroup>
     class Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
     {
@@ -50,7 +52,6 @@ namespace contraction {
             void operator()(size_t b2,
                             contraction::ContractionGrid<Matrix, SymmGroup>& contr_grid,
                             Boundary<OtherMatrix, SymmGroup> const & left,
-                            //std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                             BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & left_mult_mps,
                             MPOTensor<Matrix, SymmGroup> const & mpo,
                             DualIndex<SymmGroup> const & ket_basis,
@@ -68,7 +69,6 @@ namespace contraction {
             void operator()(size_t b1,
                             block_matrix<Matrix, SymmGroup> & ret,
                             Boundary<OtherMatrix, SymmGroup> const & right,
-                            //std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                             MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
                             MPOTensor<Matrix, SymmGroup> const & mpo,
                             DualIndex<SymmGroup> const & ket_basis,

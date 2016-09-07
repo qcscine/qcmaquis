@@ -107,8 +107,7 @@ namespace contraction {
                 in_low = &mps.row_dim();
 
             //std::vector<block_matrix<Matrix, SymmGroup> > t
-            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
-                = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(mps, left, mpo);
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, left, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                           out_left_i = physical_i * left_i;
@@ -156,9 +155,7 @@ namespace contraction {
             if (in_low == NULL)
                 in_low = &mps.col_dim();
 
-            //std::vector<block_matrix<Matrix, SymmGroup> > t
-            MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
-                = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(mps, right, mpo);
+            contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, right, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                              out_right_i = adjoin(physical_i) * right_i;
@@ -200,9 +197,7 @@ namespace contraction {
             typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            //std::vector<block_matrix<Matrix, SymmGroup> > t
-            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
-                = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, left, mpo);
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, left, mpo);
 
             Index<SymmGroup> const & left_i = bra_tensor.row_dim();
             Index<SymmGroup> right_i = ket_tensor.col_dim();
@@ -259,9 +254,7 @@ namespace contraction {
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            //std::vector<block_matrix<Matrix, SymmGroup> > t
-            MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t
-                = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, right, mpo);
+            contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo);
 
             Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                      right_i = bra_tensor.col_dim();
