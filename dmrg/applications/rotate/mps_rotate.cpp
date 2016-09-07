@@ -293,7 +293,7 @@ void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text)
     matrix::value_type final_norm        = norm(mps);
     matrix::value_type compression_trace = 1.0;
 
-    mps = compression::l2r_compress(mps, 10000, 1e-10, compression_trace);
+    mps = compression::l2r_compress(mps, 8000, 1e-8, compression_trace);
     maquis::cout << "- compression trace          : "<< compression_trace << std::endl;
     mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
 
@@ -321,7 +321,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     //maquis::cout << "- scaled MPS (inactive orbitals) - "<<      std::endl;
     //debug::mps_print_ci(mps, "dets.txt");
 
-    MPS<Matrix, SymmGroup> mps_intermediate, mps_prime, mps_prime_prime;
+    MPS<Matrix, SymmGroup> mps_prime, mps_prime_prime;
 
     // step 2: scale MPS wrt rotations among active orbitals
     for (pos_t j = 0; j < L; ++j)
@@ -345,13 +345,14 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         maquis::cout << "- first correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps_prime, "dets.txt");
 
-        // compression of MPS' 
-        compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
 
         mps = join(mps, mps_prime);
         //debug::mps_print(mps, "Intermediate MPS at site ");
         maquis::cout << "- intermediate correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
+
+        // compression of MPS' 
+        compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
 
         //maquis::cout << "- enter for second correction - "<<      std::endl;
         // |mps''> = H|mps'> (second correction vector)
@@ -359,6 +360,9 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         maquis::cout << "- Second correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps_prime_prime, "dets.txt");
         //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
+
+        // compression of MPS'' 
+        //compress_mps<Matrix, SymmGroup>(mps_prime_prime, "MPS prime prime");
 
         // set new MPS := mps + mps' + 1/2 mps''
         mps_prime_prime[0].multiply_by_scalar(0.5);
