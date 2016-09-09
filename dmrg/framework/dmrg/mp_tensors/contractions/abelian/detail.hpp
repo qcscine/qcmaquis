@@ -93,7 +93,10 @@ namespace detail {
                                       typename MPOTensor<Matrix, SymmGroup>::index_type b)
     {
         if (mpo.num_row_non_zeros(b) == 1)
-            return gemm_trim_left_basis(transpose(boundary[b]), mps.data());
+            if (mpo.herm_info.left_skip(b))
+                return gemm_trim_left_basis(boundary[mpo.herm_info.left_conj(b)], mps.data());
+            else
+                return gemm_trim_left_basis(transpose(boundary[b]), mps.data());
         else
             return mult_mps[b].basis();
     }
@@ -105,7 +108,10 @@ namespace detail {
                                        typename MPOTensor<Matrix, SymmGroup>::index_type b)
     {
         if (mpo.num_col_non_zeros(b) == 1)
-            return gemm_trim_right_basis(mps.data(), boundary[b]);
+            if (mpo.herm_info.right_skip(b))
+                return gemm_trim_right_basis(mps.data(), transpose(boundary[mpo.herm_info.right_conj(b)]));
+            else
+                return gemm_trim_right_basis(mps.data(), boundary[b]);
         else
             return mult_mps[b].basis();
     }
@@ -122,7 +128,10 @@ namespace detail {
     {
         block_matrix<Matrix, SymmGroup> const * Tp = &local;
         if (mpo.num_row_non_zeros(b) == 1)
-            gemm_trim_left(transpose(boundary[b]), mps.data(), local);
+            if (mpo.herm_info.left_skip(b))
+                gemm_trim_left(boundary[mpo.herm_info.left_conj(b)], mps.data(), local);
+            else
+                gemm_trim_left(transpose(boundary[b]), mps.data(), local);
         else
             Tp = &mult_mps[b];
 
@@ -138,7 +147,10 @@ namespace detail {
     {
         block_matrix<Matrix, SymmGroup> const * Tp = &local;
         if (mpo.num_col_non_zeros(b) == 1)
-            gemm_trim_right(mps.data(), boundary[b], local);
+            if (mpo.herm_info.right_skip(b))
+                gemm_trim_right(mps.data(), transpose(boundary[mpo.herm_info.right_conj(b)]), local);
+            else
+                gemm_trim_right(mps.data(), boundary[b], local);
         else
             Tp = &mult_mps[b];
 
