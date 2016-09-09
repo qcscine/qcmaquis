@@ -339,6 +339,10 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         // get MPO
         std::vector<MPO<Matrix, SymmGroup> > MPO_vec
             = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown, site_types);
+
+        // check for non-zero MPO vector
+        if(MPO_vec.size() == 0) continue;
+
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
 

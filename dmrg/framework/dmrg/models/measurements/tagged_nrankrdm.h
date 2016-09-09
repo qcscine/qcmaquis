@@ -302,6 +302,11 @@ namespace measurements {
                              dct.push_back(value);
                              num_labels.push_back(positions);
                         }
+                        else
+                        {
+                             dct.push_back(0.0);
+                             num_labels.push_back(positions);
+                        }
                     }
 
                     std::vector<std::string> lbt = label_strings(lattice,  num_labels);
