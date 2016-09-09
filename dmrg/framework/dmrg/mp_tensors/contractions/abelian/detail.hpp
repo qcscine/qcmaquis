@@ -116,46 +116,6 @@ namespace detail {
             return mult_mps[b].basis();
     }
 
-
-
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup> const * T_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                   common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
-                                                   block_matrix<Matrix, SymmGroup> & local,
-                                                   MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                   MPSTensor<Matrix, SymmGroup> const & mps,
-                                                   typename MPOTensor<Matrix, SymmGroup>::index_type b)
-    {
-        block_matrix<Matrix, SymmGroup> const * Tp = &local;
-        if (mpo.num_row_non_zeros(b) == 1)
-            if (mpo.herm_info.left_skip(b))
-                gemm_trim_left(boundary[mpo.herm_info.left_conj(b)], mps.data(), local);
-            else
-                gemm_trim_left(transpose(boundary[b]), mps.data(), local);
-        else
-            Tp = &mult_mps[b];
-
-        return Tp;
-    }
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup> const * T_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                    common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
-                                                    block_matrix<Matrix, SymmGroup> & local,
-                                                    MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                    MPSTensor<Matrix, SymmGroup> const & mps,
-                                                    typename MPOTensor<Matrix, SymmGroup>::index_type b)
-    {
-        block_matrix<Matrix, SymmGroup> const * Tp = &local;
-        if (mpo.num_col_non_zeros(b) == 1)
-            if (mpo.herm_info.right_skip(b))
-                gemm_trim_right(mps.data(), transpose(boundary[mpo.herm_info.right_conj(b)]), local);
-            else
-                gemm_trim_right(mps.data(), boundary[b], local);
-        else
-            Tp = &mult_mps[b];
-
-        return Tp;
-    }
 }
 } // namespace abelian
 } // namespace contraction

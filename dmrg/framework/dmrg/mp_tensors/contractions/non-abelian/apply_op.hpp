@@ -63,14 +63,8 @@ namespace SU2 {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
-            block_matrix<Matrix, SymmGroup> local_T;
-            block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
-            if (mpo.num_row_non_zeros(b1) == 1)
-                ::SU2::gemm_trim_left(transpose(left[b1]), mps.data(), local_T);
-            else
-                Tp = &left_mult_mps[b1];
-
-            block_matrix<Matrix, SymmGroup> const & T = *Tp;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps.at(b1, local);
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
@@ -193,16 +187,9 @@ namespace SU2 {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            block_matrix<Matrix, SymmGroup> local_T;
-            block_matrix<Matrix, SymmGroup> const * Tp = &local_T;
-            if (mpo.num_col_non_zeros(b2) == 1)
-                ::SU2::gemm_trim_right(mps.data(), right[b2], local_T);
-            else
-                Tp = &right_mult_mps[b2];
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2, local);
 
-            block_matrix<Matrix, SymmGroup> const & T = *Tp;
-
-            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)

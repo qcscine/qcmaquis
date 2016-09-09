@@ -117,7 +117,7 @@ namespace contraction {
 
             //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
             block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *detail::T_left(left, left_mult_mps, local, mpo, mps, b1);
+            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps.at(b1, local);
             if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -236,7 +236,7 @@ namespace contraction {
 
             //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
             block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *detail::T_right(right, right_mult_mps, local, mpo, mps, b2);
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2, local);
                 if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);

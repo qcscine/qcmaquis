@@ -54,7 +54,11 @@ namespace contraction {
             int loop_max = left.aux_dim();
             mps.make_right_paired();
             omp_for(int b1, parallel::range(0,loop_max), {
+
+                // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_row_non_zeros(b1) == 1) continue;
+
+                // exploit hermiticity if available
                 if (mpo.herm_info.left_skip(b1))
                 {   
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
@@ -83,6 +87,27 @@ namespace contraction {
 
         block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; } 
         block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+
+        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
+        { 
+            if (mpo.num_row_non_zeros(k) == 1)
+            {
+                if (mpo.herm_info.left_skip(k))
+                {
+                    //parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage);
+                }
+                else {
+                    //parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(transpose(left[k]), mps.data(), storage);
+                }
+ 
+                return storage;
+            } 
+
+            else
+                return data_[k];
+        }
 
     private:
         std::vector<block_matrix<Matrix, SymmGroup> > data_;
@@ -115,7 +140,11 @@ namespace contraction {
             int loop_max = right.aux_dim();
             mps.make_left_paired();
             omp_for(int b2, parallel::range(0,loop_max), {
+
+                // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_col_non_zeros(b2) == 1) continue;
+
+                // exploit hermiticity if available
                 if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
@@ -144,6 +173,26 @@ namespace contraction {
 
         block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
         block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+
+        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
+        {
+            if (mpo.num_col_non_zeros(k) == 1)
+            {
+                if (mpo.herm_info.right_skip(k))
+                {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
+                }
+                else {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
+                }
+
+                return storage;
+            }
+            else
+                return data_[k];
+        }
 
     private:
         std::vector<block_matrix<Matrix, SymmGroup> > data_;
