@@ -65,46 +65,4 @@ namespace SU2 {
 
 } // namespace SU2
 
-namespace contraction {
-namespace SU2 {
-
-    struct lbtm_functor
-    {
-        template<class Matrix, class OtherMatrix, class SymmGroup>
-        void operator()(size_t b2,
-                        contraction::ContractionGrid<Matrix, SymmGroup>& contr_grid,
-                        Boundary<OtherMatrix, SymmGroup> const & left,
-                        std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
-                        MPOTensor<Matrix, SymmGroup> const & mpo,
-                        DualIndex<SymmGroup> const & ket_basis,
-                        Index<SymmGroup> const & right_i,
-                        Index<SymmGroup> const & out_left_i,
-                        ProductBasis<SymmGroup> const & in_right_pb,
-                        ProductBasis<SymmGroup> const & out_left_pb)
-        {
-            SU2::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
-        }
-    };
-
-    struct rbtm_functor
-    {
-        template<class Matrix, class OtherMatrix, class SymmGroup>
-        void operator()(size_t b1,
-                        block_matrix<Matrix, SymmGroup> & ret,
-                        Boundary<OtherMatrix, SymmGroup> const & right,
-                        std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
-                        MPOTensor<Matrix, SymmGroup> const & mpo,
-                        DualIndex<SymmGroup> const & ket_basis, 
-                        Index<SymmGroup> const & left_i,
-                        Index<SymmGroup> const & out_right_i,
-                        ProductBasis<SymmGroup> const & in_left_pb,
-                        ProductBasis<SymmGroup> const & out_right_pb)
-        {
-            return SU2::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
-        }
-    };
-
-    } // namespace contraction
-} // namespace SU2
-
 #endif
