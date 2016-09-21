@@ -209,11 +209,13 @@ namespace generate_mpo
             typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
             std::vector<spin_desc_t> left_spins(1);
             std::vector<index_type> LeftHerm(1);
+            std::vector<int> LeftPhase(1,1);
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
 
                 std::map<prempo_key_type, prempo_key_type> HermKeyPairs;                
+                std::map<prempo_key_type, std::pair<int,int> > HermitianPhases;
 
                 index_map right;
                 index_type r = 2;
@@ -238,11 +240,13 @@ namespace generate_mpo
                     index_type rr_dim = (p == length-1) ? 0 : rr->second;
                     pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
 
-                    prempo_key_type ck2 = conjugate_key(k2);
+                    std::pair<int, int> phase;
+                    prempo_key_type ck2;
+                    boost::tie(ck2, phase) = conjugate_key(k2, p);
                     if (!(k2 == ck2))
                     {
-                        //maquis::cout << k2 << " conj " << conjugate_key(k2) << std::endl;
                         HermKeyPairs[k2] = ck2;
+                        HermitianPhases[k2] = phase;
                     }
                 }
                 
@@ -258,6 +262,7 @@ namespace generate_mpo
                 }
 
                 std::vector<index_type> RightHerm(rcd.second);
+                std::vector<int> RightPhase(rcd.second, 1);
                 {
                     index_type z = 0, cnt = 0;
                     std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
@@ -270,6 +275,9 @@ namespace generate_mpo
                         {
                             cnt++;
                             std::swap(RightHerm[romeo], RightHerm[julia]);
+                            RightPhase[romeo] = HermitianPhases[h_it->first].first;
+                            RightPhase[julia] = HermitianPhases[h_it->first].second;
+                            maquis::cout << h_it->first << " & " << h_it->second << " @ " << romeo << "<->" << julia << std::endl;
                         }
                     }
                     //std::copy(RightHerm.begin(), RightHerm.end(), std::ostream_iterator<index_type>(std::cout, " "));
@@ -277,7 +285,7 @@ namespace generate_mpo
                     maquis::cout << "\nBond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
 
-                MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm);
+                MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
 
                 if (p == 0)
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
@@ -291,6 +299,7 @@ namespace generate_mpo
                 swap(left, right);
                 swap(left_spins, right_spins);
                 swap(LeftHerm, RightHerm);
+                swap(LeftPhase, RightPhase);
             }
             
             mpo.setCoreEnergy(core_energy);
@@ -543,19 +552,53 @@ namespace generate_mpo
             finalized = true;
         }
         
-        prempo_key_type conjugate_key(prempo_key_type k)
+        std::pair<prempo_key_type, std::pair<int, int> > conjugate_key(prempo_key_type k, pos_t p)
         {
+            typename SymmGroup::subcharge (*np)(typename SymmGroup::charge) = &SymmGroup::particleNumber;
+
             prempo_key_type conj = k;
             for (tag_type i = 0; i < k.pos_op.size(); ++i)
             {
+                //if (k.pos_op.size() != 1)
+                //    return std::make_pair(k, std::make_pair(1,1));
+
                 // for now exclude cases where some ops are self adjoint
-                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                //    return k;
+                if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                    return std::make_pair(k, std::make_pair(1,1));
 
                 conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
             }
 
-            return conj;
+            std::pair<int, int> phase(1,1);
+
+            if ( k.pos_op.size() == 1)
+            {
+                // merge type operator ahead of current position p
+                if ( p < k.pos_op[0].first )
+                {
+                    SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
+                    typename SymmGroup::subcharge pdiff = np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0));
+                    if ( pdiff > 0) //  creator
+                        phase = std::make_pair(1, -1);
+                    else if ( pdiff < 0) // destructor
+                        phase = std::make_pair(-1, 1);
+                }
+            }
+
+            if ( k.pos_op.size() == 2)
+            {
+                SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
+                SiteOperator<Matrix, SymmGroup> const & op2 = tag_handler->get_op(k.pos_op[1].second);
+
+                // if k contains (c^dag c)_S=0 or (c c^dag)_S=0
+                if (op1.spin().get() == 1 && op2.spin().get() == 1 && op2.spin().action() == -1
+                    && np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0)) ==
+                    - (np(op2.basis().left_charge(0)) - np(op2.basis().right_charge(0)))
+                   )
+                    phase = std::make_pair(-1,-1);
+            }
+
+            return std::make_pair(conj, phase);
         }
 
     private:

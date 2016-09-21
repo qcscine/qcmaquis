@@ -32,6 +32,37 @@
 
 namespace SU2 {
 
+    template <class T, class SymmGroup>
+    T conjugate_correction(typename SymmGroup::charge lc, typename SymmGroup::charge rc, typename SymmGroup::subcharge tensor_spin)
+    {
+        assert( SymmGroup::spin(lc) >= 0);
+        assert( SymmGroup::spin(rc) >= 0);
+
+        typename SymmGroup::subcharge S = std::min(SymmGroup::spin(lc), SymmGroup::spin(rc));
+        typename SymmGroup::subcharge spin_diff = SymmGroup::spin(lc) - SymmGroup::spin(rc);
+
+        if (tensor_spin == 0)
+        {
+            return 1.;
+        }
+        else
+        {
+            T phase = (std::abs(spin_diff) % 2 == 0) ? -1 : 1;
+
+            if (spin_diff > 0)
+                return phase * sqrt( (S + 1. + std::abs(spin_diff)) / (S + 1.) );
+
+            else if (spin_diff < 0)
+                return -phase * sqrt( (S + 1.) / (S+ 1. + std::abs(spin_diff)));
+
+            else
+                return 1.;
+        }
+
+        //maquis::cout << "\n" << SymmGroup::spin(lc) << "   " << SymmGroup::spin(rc) << std::endl;
+        //throw std::runtime_error("Unable to conjugate this charge\n");
+    }
+
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
                         block_matrix<Matrix2, SymmGroup> const & B,

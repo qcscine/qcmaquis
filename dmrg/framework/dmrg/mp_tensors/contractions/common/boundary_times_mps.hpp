@@ -37,6 +37,33 @@
 namespace contraction {
     namespace common {
 
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+                                                                                       MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                       size_t k)
+    {
+        typedef typename Matrix::value_type value_type;
+
+        typename SymmGroup::subcharge S = mpo.left_spin(k).get();
+
+        for (size_t b = 0; b < bm.n_blocks(); ++b)
+        {
+            value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>(bm.basis().left_charge(b), bm.basis().right_charge(b), S);
+            scale *= mpo.herm_info.left_phase(k);
+            bm[b] *= scale;
+            //maquis::cout << scale;
+            //maquis::cout << " ";
+        }
+        //if (bm.n_blocks() > 0)
+        //    maquis::cout << "S: " << S << std::endl;
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+                                                                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                        size_t b)
+    { }
+
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     class BoundaryMPSProduct
     {
@@ -57,7 +84,24 @@ namespace contraction {
                 if (mpo.herm_info.left_skip(b1))
                 {   
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1]);
+
+                    //maquis::cout << b1 << "/" << loop_max << std::endl;
+                    //if (left[b1].n_blocks() > 0)
+                    //    maquis::cout << transpose(left[b1]) << std::endl;
+                    block_matrix<Matrix, SymmGroup> bm = left[mpo.herm_info.left_conj(b1)];
+                    recover_conjugate(bm, mpo, b1);
+                    //if (bm.n_blocks() > 0)
+                    //{
+                    //    maquis::cout << bm << std::endl;
+                    //    block_matrix<Matrix, SymmGroup> lcp = left[b1];
+                    //    recover_conjugate(lcp, mpo, mpo.herm_info.left_conj(b1));
+                    //    maquis::cout << lcp << std::endl;
+                    //    maquis::cout << transpose(left[mpo.herm_info.left_conj(b1)]) << std::endl;
+                    //}
+
+                    //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1]);
+                    //typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), data_[b1]);
+                    typename Gemm::gemm_trim_left()(bm, mps.data(), data_[b1]);
                 }
                 else {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
@@ -117,7 +161,8 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), data_[b2]);
+                    //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), data_[b2]);
+                    typename Gemm::gemm_trim_right()(mps.data(), right[b2], data_[b2]);
                 }
                 else {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
