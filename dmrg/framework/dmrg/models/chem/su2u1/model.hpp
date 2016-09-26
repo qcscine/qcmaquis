@@ -261,6 +261,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
     HERMITIAN(create_fill, destroy_fill)
     HERMITIAN(create, destroy)
+    HERMITIAN(e2d, d2e)
     #undef HERMITIAN
 
 //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
