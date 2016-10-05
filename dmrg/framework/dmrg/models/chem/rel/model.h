@@ -185,6 +185,8 @@ public:
         boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
+        boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
@@ -289,6 +291,34 @@ public:
                 bond_element meas_operators;
                 meas_operators.push_back( std::make_pair(create_ops, true) );
                 meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+
+                half_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, 
+                                                                                  synchronous_meas_operators,half_only,
+                                                                                  nearest_neighbors_only, positions, bra_ckp));
+            }
+
+            if (boost::regex_match(lhs, what, expression_threeptdm) ||
+                    boost::regex_match(lhs, what, expression_transition_threeptdm)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[trans3rdm]"){
+                    name = "transition_threeptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "threeptdm";
+
+                std::vector<bond_element> synchronous_meas_operators;
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
