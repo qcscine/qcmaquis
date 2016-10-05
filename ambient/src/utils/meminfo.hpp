@@ -39,7 +39,7 @@ namespace ambient {
             ambient::actor where(ambient::scope::begin()+i);
             real_type current, peak;
        
-            ambient::bind_cpu([](real_type& c, real_type& p){
+            ambient::async([](real_type& c, real_type& p){
                 double avail_size = (double)getRSSLimit();
                 c.set( (double)getCurrentRSS()*100 / avail_size );
                 p.set( (double)getPeakRSS()*100    / avail_size );

@@ -430,14 +430,14 @@ int main(int argc, char ** argv)
 
             double nn = norm(full_mps);
             maquis::cout << "Norm " << nn << std::endl;
-            double energy = expval(full_mps, mpo);
+            double energy = maquis::real(expval(full_mps, mpo));
             maquis::cout << "Energy final " << energy << std::endl;
             maquis::cout << "Energy/norm final " << energy/nn << std::endl;
             
             full_mps.canonize(0);
             nn = norm(full_mps);
             maquis::cout << "Norm " << nn << std::endl;
-            energy = expval(full_mps, mpo);
+            energy = maquis::real(expval(full_mps, mpo));
             maquis::cout << "Energy final " << energy << std::endl;
             maquis::cout << "Energy/norm final " << energy/nn << std::endl;
 

@@ -91,5 +91,4 @@ struct compare_pair_inverse
     }
 };
 
-
 #endif /* UTILS_HPP_ */

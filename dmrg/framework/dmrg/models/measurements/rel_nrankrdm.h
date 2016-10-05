@@ -212,8 +212,8 @@ namespace measurements {
 							MPO<Matrix, SymmGroup> mpo = rdm_elem.create_mpo();
 							//////////////////////////////////
 
-							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
+							//typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
+                            typename MPS<Matrix, SymmGroup>::scalar_type dct = (this->cast_to_real) ?  maquis::real(expval(bra_mps, ket_mps, mpo)) : expval(bra_mps, ket_mps, mpo);
 							
                                           //ecounter++;
                                            
@@ -293,8 +293,8 @@ namespace measurements {
 							MPO<Matrix, SymmGroup> mpo = rdm_elem.create_mpo();
 							//////////////////////////////////
 
-							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
+							//typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(bra_mps, ket_mps, mpo);
+                            typename MPS<Matrix, SymmGroup>::scalar_type dct = (this->cast_to_real) ?  maquis::real(expval(bra_mps, ket_mps, mpo)) : expval(bra_mps, ket_mps, mpo);
 							
                                           //ecounter++;
                                            

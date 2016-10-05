@@ -1,11 +1,11 @@
 #!/bin/bash
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_DMRG="configure"
 # end of target states #
 PREFIX=ambient
 COMPILER=gcc
-COMPILER_VERSION=4.8.2
+COMPILER_VERSION=4.8.3
 MPI_WRAPPER=openmpi
 MPI_WRAPPER_VERSION=""
 
@@ -20,11 +20,13 @@ export CXX=g++-mp-4.8
 export OMPI_CXX=$CXX
 
 
+COMMON_CMAKE_BUILD_TYPE="Debug"
 COMMON_AMBIENT_THREADING="openmp"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
+DMRG_BUILD_SYMMETRIES="U1;TwoU1"
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*

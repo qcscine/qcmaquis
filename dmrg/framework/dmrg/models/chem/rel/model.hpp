@@ -93,7 +93,11 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     #undef REGISTER
 
     /**********************************************************************/
+}
 
+template <class Matrix, class SymmGroup>
+void rel_qc_model<Matrix, SymmGroup>::create_terms()
+{
     chem_detail::RelChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 

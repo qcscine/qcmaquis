@@ -24,7 +24,5 @@
  *
  *****************************************************************************/
 
-#include "mg_dmrg.h"
-
-typedef @CMAKE_SYMM_GROUP@ grp;
-#include "mg_dmrg_symm/sim.h"
+#include "mg_dmrg_traits.ipp"
+template class simulation<@CMAKE_SYMM_GROUP@>;

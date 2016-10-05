@@ -60,25 +60,30 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
     block_matrix<Matrix, SymmGroup> const & block0 = mps[0].data();
 
     charge sector = det[0];
-    Matrix coeff = block0[block0.left_basis().position(sector)];
+    std::size_t b = block0.left_basis().position(sector);
+    if (b == block0.left_basis().size())
+        return 0.0;
+
+    Matrix coeff = block0[b];
 
     mps[0].make_left_paired();
-    for(unsigned p=1; p<mps.length(); ++p)
+    for(unsigned p = 1; p < mps.length(); ++p)
     {
-        Index<SymmGroup> const & phys = mps[p-1].site_dim();
         mps[p].make_left_paired();
 
         charge site_charge = det[p];
+        if (! mps[p].site_dim().has(site_charge))
+            return 0.0;
         charge left_input = sector;
         sector = SymmGroup::fuse(sector, site_charge);
 
         block_matrix<Matrix, SymmGroup> const & data = mps[p].data();
 
-        // Added by yingjin, in order to jump the exception (1/2) 
-        if(data.left_basis().size()<=data.left_basis().position(sector))
+        std::size_t b = data.left_basis().position(sector);
+        if(b == data.left_basis().size())
             return 0.0;
 
-        Matrix const & sector_matrix = data[data.left_basis().position(sector)];
+        Matrix const & sector_matrix = data[b];
 
         // determine voffset - row offset for site_charge in sector_matrix
         // if permformance is an issue, do not recalculate the ProductBasis on every call

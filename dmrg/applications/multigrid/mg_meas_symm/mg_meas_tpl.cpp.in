@@ -24,7 +24,5 @@
  *
  *****************************************************************************/
 
-#include "mg_meas.h"
-
-typedef @CMAKE_SYMM_GROUP@ grp;
-#include "mg_meas_symm/sim.h"
+#include "mg_meas_traits.ipp"
+template class simulation<@CMAKE_SYMM_GROUP@>;

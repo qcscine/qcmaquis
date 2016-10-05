@@ -726,8 +726,7 @@ namespace measurements {
         }
         
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                                 MPS<Matrix, SymmGroup> const & ket_mps,
-                                 std::vector<pos_t> const & order = std::vector<pos_t>())
+                                 MPS<Matrix, SymmGroup> const & ket_mps)
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
@@ -774,8 +773,9 @@ namespace measurements {
                     num_labels.push_back(positions);
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                            ? detail::resort_labels(num_labels, order, false) : num_labels );
+                // the lattice knows the ordering and provides the correct orbital label for each position
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
                 #pragma omp critical
@@ -791,8 +791,7 @@ namespace measurements {
         }
 
         void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps,
-                          std::vector<pos_t> const & order = std::vector<pos_t>())
+                          MPS<Matrix, SymmGroup> const & ket_mps)
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
@@ -840,8 +839,7 @@ namespace measurements {
 
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                            ? detail::resort_labels(num_labels, order, false) : num_labels );
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP

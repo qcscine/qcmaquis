@@ -146,9 +146,13 @@ namespace chem_detail {
                 
                     term_descriptor
                     term = TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(i,j,k,l)], i,k,l,j,
-                                                   op_i, op_k, op_l, op_j, tag_handler, lat);
+                                                      op_i, op_k, op_l, op_j, tag_handler, lat);
+                    term_descriptor
+                    term_twin = TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(twin)], twin[0],twin[2],twin[3],twin[1],
+                                                           op_i, op_k, op_l, op_j, tag_handler, lat);
 
-                    term.coeff += value_type(sign(twin)) * coefficients[align<S>(twin)];
+                    //term.coeff += value_type(sign(twin)) * coefficients[align<S>(twin)];
+                    term.coeff += term_twin.coeff;
 
                     tagterms.push_back(term);
                 }

@@ -34,7 +34,10 @@ import pyalps
 import numpy as np
 import scipy.linalg as sl
 
-from corrutils import assemble_halfcorr
+from copy import deepcopy
+
+from corrutils import assemble_halfcorr as assy_hc
+from corrutils import assemble_vector as assy_vec
 from corrutils import pretty_print
 
 def read_irreps(orbfile):
@@ -54,19 +57,19 @@ def diag_dm(matrix):
 class oneptdm:
     def __init__(self, inputfile):
         # load data from the HDF5 result file
-        self.nup = pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0]
-        self.ndown = pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0]
-        self.dmup = pyalps.loadEigenstateMeasurements([inputfile], what='dm_up')[0][0]
-        self.dmdown = pyalps.loadEigenstateMeasurements([inputfile], what='dm_down')[0][0]
+        self.nup    = assy_vec(pyalps.loadEigenstateMeasurements([inputfile], what='Nup')[0][0])
+        self.ndown  = assy_vec(pyalps.loadEigenstateMeasurements([inputfile], what='Ndown')[0][0])
+        self.dmup   = assy_hc(self.nup, pyalps.loadEigenstateMeasurements([inputfile], what='dm_up')[0][0])
+        self.dmdown = assy_hc(self.ndown, pyalps.loadEigenstateMeasurements([inputfile], what='dm_down')[0][0])
 
     def rdm(self):
-        return assemble_halfcorr(self.nup.y[0], self.dmup) + assemble_halfcorr(self.ndown.y[0], self.dmdown)
+        return self.rdm_a() + self.rdm_b()
 
     def rdm_a(self):
-        return assemble_halfcorr(self.nup.y[0], self.dmup)
+        return deepcopy(self.dmup)
 
     def rdm_b(self):
-        return assemble_halfcorr(self.ndown.y[0], self.dmdown)
+        return deepcopy(self.dmdown)
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]

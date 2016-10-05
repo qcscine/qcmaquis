@@ -139,7 +139,7 @@ namespace measurements {
                         boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
                     
                     if (!this->is_super_meas) {
-                        match->second += expval(mps, mit->second);
+                        match->second += (this->cast_to_real) ? maquis::real(expval(mps, mit->second)) : expval(mps, mit->second);
                     } else {
                         MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mit->second, this->phys_psi);
                         // static_cast needed for icpc 12.x

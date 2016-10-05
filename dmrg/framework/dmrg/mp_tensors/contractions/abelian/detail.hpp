@@ -87,63 +87,35 @@ namespace detail {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     DualIndex<SymmGroup> T_basis_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                      std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                      common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                       MPOTensor<Matrix, SymmGroup> const & mpo,
                                       MPSTensor<Matrix, SymmGroup> const & mps,
                                       typename MPOTensor<Matrix, SymmGroup>::index_type b)
     {
         if (mpo.num_row_non_zeros(b) == 1)
-            return gemm_trim_left_basis(transpose(boundary[b]), mps.data());
+            if (mpo.herm_info.left_skip(b))
+                return gemm_trim_left_basis(boundary[mpo.herm_info.left_conj(b)], mps.data());
+            else
+                return gemm_trim_left_basis(transpose(boundary[b]), mps.data());
         else
             return mult_mps[b].basis();
     }
     template<class Matrix, class OtherMatrix, class SymmGroup>
     DualIndex<SymmGroup> T_basis_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                       std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
+                                       common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                        MPOTensor<Matrix, SymmGroup> const & mpo,
                                        MPSTensor<Matrix, SymmGroup> const & mps,
                                        typename MPOTensor<Matrix, SymmGroup>::index_type b)
     {
         if (mpo.num_col_non_zeros(b) == 1)
-            return gemm_trim_right_basis(mps.data(), boundary[b]);
+            if (mpo.herm_info.right_skip(b))
+                return gemm_trim_right_basis(mps.data(), transpose(boundary[mpo.herm_info.right_conj(b)]));
+            else
+                return gemm_trim_right_basis(mps.data(), boundary[b]);
         else
             return mult_mps[b].basis();
     }
 
-
-
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup> const * T_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                   std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
-                                                   block_matrix<Matrix, SymmGroup> & local,
-                                                   MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                   MPSTensor<Matrix, SymmGroup> const & mps,
-                                                   typename MPOTensor<Matrix, SymmGroup>::index_type b)
-    {
-        block_matrix<Matrix, SymmGroup> const * Tp = &local;
-        if (mpo.num_row_non_zeros(b) == 1)
-            gemm_trim_left(transpose(boundary[b]), mps.data(), local);
-        else
-            Tp = &mult_mps[b];
-
-        return Tp;
-    }
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup> const * T_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
-                                                    std::vector<block_matrix<Matrix, SymmGroup> > const & mult_mps,
-                                                    block_matrix<Matrix, SymmGroup> & local,
-                                                    MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                    MPSTensor<Matrix, SymmGroup> const & mps,
-                                                    typename MPOTensor<Matrix, SymmGroup>::index_type b)
-    {
-        block_matrix<Matrix, SymmGroup> const * Tp = &local;
-        if (mpo.num_col_non_zeros(b) == 1)
-            gemm_trim_right(mps.data(), boundary[b], local);
-        else
-            Tp = &mult_mps[b];
-
-        return Tp;
-    }
 }
 } // namespace abelian
 } // namespace contraction

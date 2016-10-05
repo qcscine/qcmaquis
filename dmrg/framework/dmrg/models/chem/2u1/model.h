@@ -67,6 +67,8 @@ class qc_model : public model_impl<Matrix, SymmGroup>
 public:
     
     qc_model(Lattice const & lat_, BaseParameters & parms_);
+
+    void create_terms();
     
     void update(BaseParameters const& p)
     {

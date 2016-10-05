@@ -37,43 +37,175 @@
 namespace contraction {
     namespace common {
 
-        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
-        boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
-                           Boundary<OtherMatrix, SymmGroup> const & left,
-                           MPOTensor<Matrix, SymmGroup> const & mpo)
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    class BoundaryMPSProduct
+    {
+    public:
+        typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
+        typedef typename Matrix::value_type value_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+
+        BoundaryMPSProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
+                           Boundary<OtherMatrix, SymmGroup> const & left_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_) : mps(mps_), left(left_), mpo(mpo_), data_(left_.aux_dim())
         {
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
             int loop_max = left.aux_dim();
             mps.make_right_paired();
             omp_for(int b1, parallel::range(0,loop_max), {
+
+                // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_row_non_zeros(b1) == 1) continue;
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
+
+                // exploit hermiticity if available
+                if (mpo.herm_info.left_skip(b1))
+                {   
+                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1]);
+                }
+                else {
+                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), data_[b1]);
+                }
             });
-            return ret;
         }
 
-        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
-        mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
-                           Boundary<OtherMatrix, SymmGroup> const & right,
-                           MPOTensor<Matrix, SymmGroup> const & mpo)
+        std::size_t aux_dim() const {
+            return data_.size();
+        }
+
+        void resize(size_t n){
+            if(n < data_.size()) 
+                return data_.resize(n);
+            data_.reserve(n);
+            for(int i = data_.size(); i < n; ++i)
+                data_.push_back(block_matrix<Matrix, SymmGroup>());
+        }
+
+        void multiply (index_type b1);
+
+        block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; } 
+        block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+
+        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
+        { 
+            if (mpo.num_row_non_zeros(k) == 1)
+            {
+                if (mpo.herm_info.left_skip(k))
+                {
+                    //parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage);
+                }
+                else {
+                    //parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_left()(transpose(left[k]), mps.data(), storage);
+                }
+ 
+                return storage;
+            } 
+
+            else
+                return data_[k];
+        }
+
+    private:
+        std::vector<block_matrix<Matrix, SymmGroup> > data_;
+        
+        MPSTensor<Matrix, SymmGroup> const & mps;
+        Boundary<OtherMatrix, SymmGroup> const & left;
+        MPOTensor<Matrix, SymmGroup> const & mpo;
+    };
+
+
+    template <class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    void BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b1)
+    {
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    class MPSBoundaryProduct
+    {
+    public:
+        typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
+        typedef typename Matrix::value_type value_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+
+        MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
+                           Boundary<OtherMatrix, SymmGroup> const & right_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_) : mps(mps_), right(right_), mpo(mpo_), data_(right_.aux_dim())
         {
             parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
 
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
             int loop_max = right.aux_dim();
             mps.make_left_paired();
             omp_for(int b2, parallel::range(0,loop_max), {
+
+                // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_col_non_zeros(b2) == 1) continue;
-                parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
+
+                // exploit hermiticity if available
+                if (mpo.herm_info.right_skip(b2))
+                {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), data_[b2]);
+                }
+                else {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), right[b2], data_[b2]);
+                }
             });
-            return ret;
         }
+
+        std::size_t aux_dim() const {
+            return data_.size();
+        }
+
+        void resize(size_t n){
+            if(n < data_.size())
+                return data_.resize(n);
+            data_.reserve(n);
+            for(int i = data_.size(); i < n; ++i)
+                data_.push_back(block_matrix<Matrix, SymmGroup>());
+        }
+
+        void multiply (index_type b2);
+
+        block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
+        block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+
+        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
+        {
+            if (mpo.num_col_non_zeros(k) == 1)
+            {
+                if (mpo.herm_info.right_skip(k))
+                {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
+                }
+                else {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
+                }
+
+                return storage;
+            }
+            else
+                return data_[k];
+        }
+
+    private:
+        std::vector<block_matrix<Matrix, SymmGroup> > data_;
+
+        MPSTensor<Matrix, SymmGroup> const & mps;
+        Boundary<OtherMatrix, SymmGroup> const & right;
+        MPOTensor<Matrix, SymmGroup> const & mpo;
+    };
+
+    template <class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    void MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b2)
+    {
+    }
 
     } // namespace common
 } // namespace contraction

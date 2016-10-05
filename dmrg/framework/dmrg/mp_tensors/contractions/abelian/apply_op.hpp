@@ -31,18 +31,21 @@
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/contractions/abelian/functors.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/detail.hpp"
 
 namespace contraction {
     namespace abelian {
 
     using ::contraction::ContractionGrid;
+    using ::contraction::common::BoundaryMPSProduct;
+    using ::contraction::common::MPSBoundaryProduct;
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_allocate(size_t b2,
                               ContractionGrid<Matrix, SymmGroup>& contr_grid,
                               Boundary<OtherMatrix, SymmGroup> const & left,
-                              std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                              BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               MPSTensor<Matrix, SymmGroup> const & mps,
                               Index<SymmGroup> const & right_i,
@@ -94,7 +97,7 @@ namespace contraction {
     void lbtm_kernel_execute(size_t b2,
                              ContractionGrid<Matrix, SymmGroup>& contr_grid,
                              Boundary<OtherMatrix, SymmGroup> const & left,
-                             std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                             BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              MPSTensor<Matrix, SymmGroup> const & mps,
                              Index<SymmGroup> const & right_i,
@@ -114,7 +117,7 @@ namespace contraction {
 
             //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
             block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *detail::T_left(left, left_mult_mps, local, mpo, mps, b1);
+            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps.at(b1, local);
             if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -164,7 +167,7 @@ namespace contraction {
     void rbtm_kernel_allocate(size_t b1,
                               block_matrix<Matrix, SymmGroup> & ret,
                               Boundary<OtherMatrix, SymmGroup> const & right,
-                              std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                              MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               MPSTensor<Matrix, SymmGroup> const & mps,
                               Index<SymmGroup> const & left_i,
@@ -211,7 +214,7 @@ namespace contraction {
     void rbtm_kernel_execute(size_t b1,
                              block_matrix<Matrix, SymmGroup> & ret,
                              Boundary<OtherMatrix, SymmGroup> const & right,
-                             std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                             MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              MPSTensor<Matrix, SymmGroup> const & mps,
                              Index<SymmGroup> const & left_i,
@@ -233,7 +236,7 @@ namespace contraction {
 
             //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
             block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = *detail::T_right(right, right_mult_mps, local, mpo, mps, b2);
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2, local);
                 if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -280,7 +283,7 @@ namespace contraction {
     void lbtm_kernel(size_t b2,
                      ContractionGrid<Matrix, SymmGroup>& contr_grid,
                      Boundary<OtherMatrix, SymmGroup> const & left,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                     BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      MPSTensor<Matrix, SymmGroup> const & mps,
                      Index<SymmGroup> const & right_i,
@@ -296,7 +299,7 @@ namespace contraction {
     void rbtm_kernel(size_t b1,
                      block_matrix<Matrix, SymmGroup> & ret,
                      Boundary<OtherMatrix, SymmGroup> const & right,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                     MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      MPSTensor<Matrix, SymmGroup> const & mps,
                      Index<SymmGroup> const & left_i,

@@ -101,7 +101,7 @@ namespace ambient { namespace detail {
             if(middle > end) return;
 
             for(blocked_tuple_iterator bit(first,middle,end-middle); bit != first+(end-middle); ++bit)
-                ambient::bind_cpu([comp](block_type& block1, size_t first1, size_t second1, block_type& block2, size_t first2){
+                ambient::async([comp](block_type& block1, size_t first1, size_t second1, block_type& block2, size_t first2){
                                       compare_impl(block1.begin()+first1, block1.begin()+second1, block2.begin()+first2, comp);
                                   }, bit.template locate<0>(), bit.first[0], bit.second[0], bit.template locate<1>(), bit.first[1]);
         }
@@ -127,7 +127,7 @@ namespace ambient { namespace detail {
                 block_type& top = first.get_container().locate(position_top);
                 block_type& bottom = first.get_container().locate(position_bottom);
                 
-                ambient::bind_cpu([comp](block_type& block1, size_t first1, size_t second1, block_type& block2, size_t first2){
+                ambient::async([comp](block_type& block1, size_t first1, size_t second1, block_type& block2, size_t first2){
                                       compare_crossover_impl(block1.begin()+first1, block1.begin()+second1, block2.begin()+first2, comp);
                                   }, bottom, bottom_first, bottom_second, top, top_first);
 
@@ -139,7 +139,7 @@ namespace ambient { namespace detail {
             if(is_same_block(first,end)){ 
                 blocked_iterator bit(first,end);
                 size_t last_ = bit.first + (last-first);
-                ambient::bind_cpu([comp](block_type& b, size_t first, size_t last, size_t end){
+                ambient::async([comp](block_type& b, size_t first, size_t last, size_t end){
                     bitonic_sort_inblock<block_type_iterator,Compare>::merge(b.begin()+first, b.begin()+last, b.begin()+end, comp);
                 }, *bit, bit.first, last_, bit.second);
                 return; 
@@ -153,7 +153,7 @@ namespace ambient { namespace detail {
             if(is_same_block(first,end)){
                 blocked_iterator bit(first,end);
                 size_t last_ = bit.first + (last-first);
-                ambient::bind_cpu([comp](block_type& b, size_t first, size_t last, size_t end){
+                ambient::async([comp](block_type& b, size_t first, size_t last, size_t end){
                     bitonic_sort_inblock<block_type_iterator,Compare>::sort(b.begin()+first, b.begin()+last, b.begin()+end, comp);
                 }, *bit, bit.first, last_, bit.second);
                 return;
