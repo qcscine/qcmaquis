@@ -278,7 +278,7 @@ public:
               */
             // ... hence we are still using the old one until the problem is fixed (will need to consult Sebastian).
               
-            if (boost::regex_match(lhs, what, expression_twoptdm) ||
+            else if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
@@ -304,7 +304,7 @@ public:
                                                                                   nearest_neighbors_only, positions, bra_ckp));
             }
 
-            if (boost::regex_match(lhs, what, expression_threeptdm) ||
+            else if (boost::regex_match(lhs, what, expression_threeptdm) ||
                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
 
                 std::string bra_ckp("");
