@@ -44,11 +44,10 @@ class MaquisMeasurement:
         self.loc_n = pyalps.loadEigenstateMeasurements([inputfile], what='N')[0][0].y[0]
         self.norb = len(self.loc_n)
         DMRG_Parms = pyalps.getParameters([inputfile])
-        #orbital_order = map(int, DMRG_Parms[0]['orbital_order'].split(','))
+        orbital_order = map(int, DMRG_Parms[0]['orbital_order'].split(','))
         inv_order = []
         for i in range(self.norb):
-			#inv_order.append(orbital_order.index(i+1))
-			inv_order.append((i))
+			inv_order.append(orbital_order.index(i+1))
 
         self.orb_order = inv_order
         empty_diag = np.zeros(self.norb)
