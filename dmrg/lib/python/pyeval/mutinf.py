@@ -34,8 +34,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import lines
 from pylab import pi
-
-import entropy
 import input as DmrgInput
 
 def plot_mutinf(mat_I, vec_s1, order, title = None):
@@ -117,14 +115,21 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
     #plt.show()
 
 if __name__ == '__main__':
+
     inputfile = sys.argv[1]
+
+    props = DmrgInput.loadProperties(inputfile)
+
+    if props["symmetry"] == "u1dg":
+        import entropy_dbg as entropy
+    else:
+        import entropy
 
     guinea_pig = entropy.MaquisMeasurement(inputfile)
 
     print "s1 matrix"
     print guinea_pig.s1()
 
-    props = DmrgInput.loadProperties(inputfile)
     order = map(int, props["orbital_order"].split(','))
 
     plot_mutinf(guinea_pig.I(), guinea_pig.s1(), order) 
