@@ -559,12 +559,9 @@ namespace generate_mpo
             prempo_key_type conj = k;
             for (tag_type i = 0; i < k.pos_op.size(); ++i)
             {
-                //if (k.pos_op.size() != 1)
-                //    return std::make_pair(k, std::make_pair(1,1));
-
                 // for now exclude cases where some ops are self adjoint
-                if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                    return std::make_pair(k, std::make_pair(1,1));
+                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                //    return std::make_pair(k, std::make_pair(1,1));
 
                 conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
             }
@@ -594,6 +591,13 @@ namespace generate_mpo
                 if (op1.spin().get() == 1 && op2.spin().get() == 1 && op2.spin().action() == -1
                     && np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0)) ==
                     - (np(op2.basis().left_charge(0)) - np(op2.basis().right_charge(0)))
+                   )
+                    phase = std::make_pair(-1,-1);
+
+                // if k contains (c^dag c^dag)_S=1 or (c c)_S=1
+                if (op1.spin().get() == 1 && op2.spin().get() == 1 && op2.spin().action() == 1
+                    && np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0)) ==
+                      (np(op2.basis().left_charge(0)) - np(op2.basis().right_charge(0)))
                    )
                     phase = std::make_pair(-1,-1);
             }

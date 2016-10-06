@@ -48,6 +48,8 @@ namespace SU2 {
         else
         {
             T phase = (std::abs(spin_diff) % 2 == 0) ? -1 : 1;
+            //if (spin_diff == 2) phase = 1;
+            if (spin_diff == -2) phase = 1;
 
             if (spin_diff > 0)
                 return phase * sqrt( (S + 1. + std::abs(spin_diff)) / (S + 1.) );

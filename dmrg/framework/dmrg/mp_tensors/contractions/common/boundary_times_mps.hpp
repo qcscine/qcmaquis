@@ -54,8 +54,6 @@ namespace contraction {
             //maquis::cout << scale;
             //maquis::cout << " ";
         }
-        //if (bm.n_blocks() > 0)
-        //    maquis::cout << "S: " << S << std::endl;
     }
 
     template <class Matrix, class SymmGroup>
@@ -85,19 +83,19 @@ namespace contraction {
                 {   
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
 
-                    //maquis::cout << b1 << "/" << loop_max << std::endl;
-                    //if (left[b1].n_blocks() > 0)
-                    //    maquis::cout << transpose(left[b1]) << std::endl;
                     block_matrix<Matrix, SymmGroup> bm = left[mpo.herm_info.left_conj(b1)];
                     recover_conjugate(bm, mpo, b1);
-                    //if (bm.n_blocks() > 0)
-                    //{
-                    //    maquis::cout << bm << std::endl;
-                    //    block_matrix<Matrix, SymmGroup> lcp = left[b1];
-                    //    recover_conjugate(lcp, mpo, mpo.herm_info.left_conj(b1));
-                    //    maquis::cout << lcp << std::endl;
-                    //    maquis::cout << transpose(left[mpo.herm_info.left_conj(b1)]) << std::endl;
-                    //}
+                    bool print = left[b1].n_blocks() > 0 && mpo.left_spin(b1).get() == 2;
+                    if (false)
+                    {
+                        maquis::cout << b1 << "/" << loop_max << std::endl;
+                        maquis::cout << transpose(left[b1]) << std::endl;
+                        maquis::cout << bm << std::endl;
+                        //block_matrix<Matrix, SymmGroup> lcp = left[b1];
+                        //recover_conjugate(lcp, mpo, mpo.herm_info.left_conj(b1));
+                        //maquis::cout << lcp << std::endl;
+                        //maquis::cout << transpose(left[mpo.herm_info.left_conj(b1)]) << std::endl;
+                    }
 
                     //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1]);
                     //typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), data_[b1]);
