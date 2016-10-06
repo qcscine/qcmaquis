@@ -32,7 +32,7 @@
 #include "dmrg/models/measurements/local_at.h"
 #include "dmrg/models/measurements/correlations.h"
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
-#include "dmrg/models/measurements/rel_nrankrdm.h"
+//#include "dmrg/models/measurements/rel_nrankrdm.h"
 #include "dmrg/models/measurements/custom.h"
 #include "dmrg/models/measurements/overlap.h"
 #include "dmrg/models/measurements/entanglement.h"
