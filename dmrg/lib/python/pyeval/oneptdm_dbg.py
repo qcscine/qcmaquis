@@ -4,11 +4,31 @@ import sys
 import pyalps
 
 import numpy as np
-import scipy.linalg as sl
 
-from corrutils import assemble_halfcorr
 from corrutils import assemble_halfcorr_complex
-from corrutils import pretty_print
+
+def assemble_complex_dm(triang):
+    """From the upper triangle, construct a symmetric complex matrix
+       triang: upper triangle, sequential reversed rows, complex"""
+
+
+    L = int(triang.props["L"])
+
+    ret_real = np.zeros((L,L))
+    ret_cplx = np.zeros((L,L))
+
+    for lab, val in zip(triang.x, triang.y[0]):
+        #print val
+        i = lab[0]
+        j = lab[1]
+        ret_real[i,j] =  val.real
+        ret_cplx[i,j] =  val.imag
+        # dv(j,i) = dv(i,j)*
+        ret_real[j,i] =  val.real
+        ret_cplx[j,i] = -val.imag
+
+    return (ret_real,ret_cplx)
+
 
 def print_rdm1(inputfile,tag):
 
@@ -18,13 +38,18 @@ def print_rdm1(inputfile,tag):
     f=open('oneparticle.rdm.%s.%s' % (tag1,tag2),'w')
 
     # load data from the HDF5 result file
-    n  = pyalps.loadEigenstateMeasurements([inputfile], what='N')[0][0]
-    dm = pyalps.loadEigenstateMeasurements([inputfile], what='dm')[0][0]
+    dm = pyalps.loadEigenstateMeasurements([inputfile], what='oneptdm')[0][0]
 
-    # Create the full matrix from the diagonal (nup.y[0]) and upper triangle (dmup)
-    (dm_real, dm_imag) = assemble_halfcorr_complex(n.y[0], dm)
+    # old way
+    #n  = pyalps.loadEigenstateMeasurements([inputfile], what='N')[0][0]
+    #dm = pyalps.loadEigenstateMeasurements([inputfile], what='dm')[0][0]
 
-    spinors = len(dm_real)
+    # Create the full matrix from the upper triangle (dm)
+    (dm_real, dm_imag) = assemble_complex_dm(dm)
+    # old way
+    #(dm_real, dm_imag) = assemble_halfcorr_complex(n.y[0], dm)
+
+    spinors = int(dm.props["L"])
     for j in range(spinors):
         for i in range (spinors):
             dump_element(f,dm_real[i,j],dm_imag[i,j],i,j)
@@ -39,7 +64,4 @@ def dump_element(f,val_real,val_imag,i,j):
 
 if __name__ == '__main__':
 
-    inputfile = sys.argv[1]
-    tag       = sys.argv[2]
-
-    print_rdm1(inputfile,tag)
+    print_rdm1(sys.argv[1],sys.argv[2])

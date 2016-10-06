@@ -222,6 +222,32 @@ public:
             if (boost::regex_match(lhs, what, expression_oneptdm) ||
                     boost::regex_match(lhs, what, expression_transition_oneptdm)) {
 
+                typedef std::vector<tag_type> tag_vec;
+                typedef std::vector<tag_vec> bond_tag_element;
+                typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[trans1rdm]"){
+                    name = "transition_oneptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "oneptdm";
+
+	        	std::vector<scaled_bond_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create);
+                    meas_operators.push_back(destroy);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                half_only = true;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, 
+		                                                                            synchronous_meas_operators,half_only, 
+										                                            positions, bra_ckp));
+
+                /*
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){
                     name = "transition_oneptdm";
@@ -243,9 +269,10 @@ public:
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
+            */
             }
-            /* DEACTIVATED for NOW - there is a problem with elements where two ops are sitting on the same site...
-            if (boost::regex_match(lhs, what, expression_twoptdm) ||
+            // DEACTIVATED for NOW - there is a problem with elements where two ops are sitting on the same site...
+            else if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 typedef std::vector<tag_type> tag_vec;
@@ -260,7 +287,7 @@ public:
                 else
                     name = "twoptdm";
 
-		std::vector<scaled_bond_element> synchronous_meas_operators;
+		        std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create);
@@ -272,12 +299,12 @@ public:
                 half_only = true;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, 
-		                                                                    synchronous_meas_operators,half_only, 
-										    positions, bra_ckp));
+		                                                                            synchronous_meas_operators,half_only, 
+										                                            positions, bra_ckp));
             }
-              */
+            
             // ... hence we are still using the old one until the problem is fixed (will need to consult Sebastian).
-              
+            /*  
             else if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
@@ -303,6 +330,7 @@ public:
                                                                                   synchronous_meas_operators,half_only,
                                                                                   nearest_neighbors_only, positions, bra_ckp));
             }
+            */
 
             else if (boost::regex_match(lhs, what, expression_threeptdm) ||
                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
