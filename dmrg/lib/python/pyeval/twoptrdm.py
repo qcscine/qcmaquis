@@ -30,15 +30,20 @@
 import sys
 import pyalps
 
+import input as DmrgInput
 import numpy as np
 
-#import numpy as np
 def load_2rdm(inputfile):
     # load data from the HDF5 result file
     rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twoptdm')[0][0]
     rdm.y[0] = 0.5 * rdm.y[0]
     # uncomment for CASPT2 comparison
     # rdm.y[0] = rdm.y[0]
+    return rdm
+
+def load_2rdm_dbg(inputfile):
+    # load data from the HDF5 result file
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twoptdm')[0][0]
     return rdm
 
 def load_2rdm_matrix(rdm):
@@ -86,8 +91,48 @@ def print_2rdm(rdm):
             if k!=l:
                 print l+1,k+1,j+1,i+1, fmt%val
 
+def print_2rdm_dbg(rdm,tag):
+    #fmt = '% -016.10E'
+    #fmt = '%e'
+    tag1 = tag
+    tag2 = tag
+
+    f=open('twoparticle.rdm.%s.%s' % (tag1,tag2),'w')
+
+    for lab, val in zip(rdm.x, rdm.y[0]):
+        m = lab[0]
+        n = lab[1]
+        o = lab[2]
+        p = lab[3]
+
+        #print "raw data --> ", m,n,o,p, "\t", (val.real, val.imag)
+
+        if abs(val.real) == 0 and abs(val.imag) == 0: continue
+ 
+        dump_element(f, val,m,n,o,p)
+        dump_element(f, val,o,p,m,n)
+        dump_element(f,-val,m,p,o,n)
+        dump_element(f,-val,o,n,m,p)
+
+    f.close()
+
+def dump_element(f,value,i,j,k,l):
+    
+    print i,j,k,l, "\t", (value.real, value.imag)
+    fmt  = '% -020.14E'
+    f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  '+str(fmt%value.real)+'  '+str(fmt%value.imag)+'\n')
+
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    rdm = load_2rdm(inputfile)
-    print_2rdm(rdm)
+    props = DmrgInput.loadProperties(inputfile)
+
+    if props["symmetry"] == "u1dg":
+        tag = sys.argv[2]
+        rdm = load_2rdm_dbg(inputfile)
+        print_2rdm_dbg(rdm,tag)
+    else:
+        rdm = load_2rdm(inputfile)
+        print_2rdm(rdm)
+
+
