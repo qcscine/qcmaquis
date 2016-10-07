@@ -263,10 +263,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     HERMITIAN(create, destroy)
     HERMITIAN(e2d, d2e)
 
-    HERMITIAN(create_fill_count, destroy_fill_count)
+    HERMITIAN(create_fill_count, destroy_fill_count) // useless
     HERMITIAN(create_count, destroy_count)
 
-    HERMITIAN(create_fill_couple_down, destroy_fill_couple_down)
+    HERMITIAN(create_fill_couple_down, destroy_fill_couple_down) // useless
 
     HERMITIAN(create_couple_up, destroy_couple_up)
     #undef HERMITIAN

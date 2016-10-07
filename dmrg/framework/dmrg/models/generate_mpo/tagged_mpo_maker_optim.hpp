@@ -556,12 +556,15 @@ namespace generate_mpo
         {
             typename SymmGroup::subcharge (*np)(typename SymmGroup::charge) = &SymmGroup::particleNumber;
 
+            //if (k.pos_op.size() > 1)
+            //    return std::make_pair(k, std::make_pair(1,1));
+
             prempo_key_type conj = k;
             for (tag_type i = 0; i < k.pos_op.size(); ++i)
             {
                 // for now exclude cases where some ops are self adjoint
-                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                //    return std::make_pair(k, std::make_pair(1,1));
+                if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                    return std::make_pair(k, std::make_pair(1,1));
 
                 conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
             }
@@ -575,9 +578,15 @@ namespace generate_mpo
                 {
                     SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
                     typename SymmGroup::subcharge pdiff = np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0));
-                    if ( pdiff > 0) //  creator
+                    if ( pdiff == 1) //  creator
                         phase = std::make_pair(1, -1);
-                    else if ( pdiff < 0) // destructor
+                    else if ( pdiff == -1) // destructor
+                        phase = std::make_pair(-1, 1);
+                }
+                else
+                {
+                    SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
+                    if ( op1.spin().get() == 1) // creator or destructor
                         phase = std::make_pair(-1, 1);
                 }
             }
