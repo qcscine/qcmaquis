@@ -88,6 +88,12 @@ namespace contraction {
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         index_type loop_max = mpo.col_dim();
 
+        DualIndex<SymmGroup> ket_basis_transpose = ket_tensor.data().basis();
+        for (std::size_t i = 0; i < ket_basis_transpose.size(); ++i) {
+            std::swap(ket_basis_transpose[i].lc, ket_basis_transpose[i].rc);
+            std::swap(ket_basis_transpose[i].ls, ket_basis_transpose[i].rs);
+        }
+
 #ifdef USE_AMBIENT
         {
             block_matrix<Matrix, SymmGroup> empty;
@@ -116,7 +122,7 @@ namespace contraction {
             typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy cp = mpo.column(b2);
             index_type num_ops = std::distance(cp.begin(), cp.end());
             if (num_ops > 3) {
-                SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb, right[b2].basis());
+                SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb, right[b2].basis());
                 block_matrix<Matrix, SymmGroup> tmp2;
                 reshape_right_to_left_new(physical_i, left_i, right_i, contr_grid(0,0), tmp2);
 
@@ -129,7 +135,7 @@ namespace contraction {
             }
 
             else {
-                SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
                 ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp);
 
                 contr_grid(0,0).clear();

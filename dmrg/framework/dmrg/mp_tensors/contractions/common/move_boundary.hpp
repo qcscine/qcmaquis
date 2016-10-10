@@ -213,6 +213,13 @@ namespace contraction {
             bra_tensor.make_left_paired();
             block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
 
+            DualIndex<SymmGroup> ket_basis_transpose = ket_cpy.data().basis();
+            for (std::size_t i = 0; i < ket_basis_transpose.size(); ++i) {
+                std::swap(ket_basis_transpose[i].lc, ket_basis_transpose[i].rc);
+                std::swap(ket_basis_transpose[i].ls, ket_basis_transpose[i].rs);
+            }
+
+
     #ifdef USE_AMBIENT
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
@@ -234,7 +241,7 @@ namespace contraction {
                 //if (mpo.herm_info.right_skip(b2)) continue;
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
                 block_matrix<Matrix, SymmGroup> tmp;
-                Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
                 typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
             });
 
