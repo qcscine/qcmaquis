@@ -375,7 +375,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             // one-electron problems need special attention
             if (N == 1) {
 
-            // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+                // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
                     true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill, lat
                 ));
