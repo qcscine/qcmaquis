@@ -42,7 +42,7 @@ namespace SU2 {
                         Boundary<OtherMatrix, SymmGroup> const & left,
                         BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & left_mult_mps,
                         MPOTensor<Matrix, SymmGroup> const & mpo,
-                        MPSTensor<Matrix, SymmGroup> const & mps,
+                        DualIndex<SymmGroup> const & ket_basis,
                         Index<SymmGroup> const & right_i,
                         Index<SymmGroup> const & out_left_i,
                         ProductBasis<SymmGroup> const & in_right_pb,
@@ -54,8 +54,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
-
-        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
@@ -73,18 +71,13 @@ namespace SU2 {
 
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
+            for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block) {
 
-                charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
-                charge mc = left[b1].basis().left_charge(lblock);
+                charge lc = T.basis().left_charge(t_block);
+                charge rc = T.basis().right_charge(t_block);
 
-                if (!ket_basis.left_has(lc)) continue; // ket_basis needs to be left_paired
-
-                const_iterator it = ket_basis.left_lower_bound(mc);
-                for ( ; it != ket_basis.end() && it->lc == mc; ++it)
-                {
-                    charge rc = it->rc;
-                    size_t t_block = T.basis().position(lc, rc); // t_block != lblock in general
+                    const_iterator it = ket_basis.left_lower_bound(rc); //ket_basis comes transposed!
+                    charge mc = it->rc;
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
@@ -92,25 +85,26 @@ namespace SU2 {
                         charge phys_out = W.basis().right_charge(w_block);
 
                         charge out_r_charge = SymmGroup::fuse(rc, phys_in);
-                        if (!right_i.has(out_r_charge)) continue;
+                        size_t rb = right_i.position(out_r_charge);
+                        if (rb == right_i.size()) continue;
 
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
                         if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
                         // optimization: avoid creating blocks which will not be used
-                        const_iterator right_it = right_basis.left_lower_bound(out_r_charge);
-                        bool right_match = false;
-                        for ( ; right_it != right_basis.end() && right_it->lc == out_r_charge; ++right_it)
-                        {
-                            if (out_l_charge == right_it->rc)
-                                right_match = true;
-                        }
-                        if (!right_match) continue;
+                        //const_iterator right_it = right_basis.left_lower_bound(out_r_charge);
+                        //bool right_match = false;
+                        //for ( ; right_it != right_basis.end() && right_it->lc == out_r_charge; ++right_it)
+                        //{
+                        //    if (out_l_charge == right_it->rc)
+                        //        right_match = true;
+                        //}
+                        //if (!right_match) continue;
                         //////////////////////////////////////////
 
                         charge out_r_charge_rp = SymmGroup::fuse(out_r_charge, -phys_out);
 
-                        size_t r_size = right_i.size_of_block(out_r_charge);
+                        size_t r_size = right_i[rb].second;
 
                         size_t o = ret.find_block(lc, out_r_charge_rp);
                         if ( o == ret.n_blocks() ) {
@@ -195,7 +189,6 @@ namespace SU2 {
                         }
 
                     } // wblock
-                } // ket matches
             } // lblock
         } // op_index
         } // b1

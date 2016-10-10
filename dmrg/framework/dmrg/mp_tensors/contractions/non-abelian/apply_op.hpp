@@ -45,7 +45,7 @@ namespace SU2 {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     MPSTensor<Matrix, SymmGroup> const & mps,
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
@@ -56,8 +56,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
-
-        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
@@ -75,18 +73,13 @@ namespace SU2 {
 
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
+            for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block) {
 
-                charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
-                charge mc = left[b1].basis().left_charge(lblock);
+                charge lc = T.basis().left_charge(t_block);
+                charge rc = T.basis().right_charge(t_block);
 
-                if (!ket_basis.left_has(lc)) continue; // ket_basis needs to be left_paired
-
-                const_iterator it = ket_basis.left_lower_bound(mc);
-                for ( ; it != ket_basis.end() && it->lc == mc; ++it)
-                {
-                    charge rc = it->rc;
-                    size_t t_block = T.basis().position(lc, rc); // t_block != lblock in general
+                    const_iterator it = ket_basis.left_lower_bound(rc); //ket_basis comes transposed!
+                    charge mc = it->rc;
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
@@ -94,12 +87,13 @@ namespace SU2 {
                         charge phys_out = W.basis().right_charge(w_block);
 
                         charge out_r_charge = SymmGroup::fuse(rc, phys_in);
-                        if (!right_i.has(out_r_charge)) continue;
+                        size_t rb = right_i.position(out_r_charge);
+                        if (rb == right_i.size()) continue;
 
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
                         if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
-                        size_t r_size = right_i.size_of_block(out_r_charge);
+                        size_t r_size = right_i[rb].second;
 
                         size_t o = ret.find_block(out_l_charge, out_r_charge);
                         if ( o == ret.n_blocks() )
@@ -157,7 +151,6 @@ namespace SU2 {
                         }
 
                     } // wblock
-                } // ket matches
             } // lblock
         } // op_index
         } // b1
@@ -169,7 +162,7 @@ namespace SU2 {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
-                MPSTensor<Matrix, SymmGroup> const & mps,
+                DualIndex<SymmGroup> const & ket_basis,
                 Index<SymmGroup> const & left_i,
                 Index<SymmGroup> const & out_right_i,
                 ProductBasis<SymmGroup> const & in_left_pb,
@@ -180,8 +173,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
-
-        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -197,17 +188,13 @@ namespace SU2 {
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
+            for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block){
 
-                charge lc = ket_basis[ketblock].lc;
-                charge mc = ket_basis[ketblock].rc;
+                charge lc = T.basis().left_charge(t_block);
+                charge rc = T.basis().right_charge(t_block);
 
-                const_iterator it = right[b2].basis().left_lower_bound(mc);
-                for ( ; it != right[b2].basis().end() && it->lc == mc; ++it)
-                {
-                    charge rc = it->rc;
-                    size_t t_block = T.basis().position(lc, rc); // t_block != ketblock in general
-                    if (t_block == T.basis().size()) continue;
+                    const_iterator it = ket_basis.left_lower_bound(lc);
+                    charge mc = it->rc;
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
@@ -215,12 +202,13 @@ namespace SU2 {
                         charge phys_out = W.basis().right_charge(w_block);
 
                         charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
-                        if (!left_i.has(out_l_charge)) continue;
+                        size_t lb = left_i.position(out_l_charge);
+                        if (lb == left_i.size()) continue;
 
                         charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
                         if (!left_i.has(out_r_charge)) continue;
 
-                        size_t l_size = left_i.size_of_block(out_l_charge);
+                        size_t l_size = left_i[lb].second;
 
                         size_t o = ret.find_block(out_l_charge, out_r_charge);
                         if ( o == ret.n_blocks() )
@@ -248,7 +236,7 @@ namespace SU2 {
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                        size_t r_size = it->rs;
+                        size_t r_size = T.basis().right_size(t_block);
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for( block_iterator it = blocks.first; it != blocks.second; ++it)
                             {
@@ -270,7 +258,6 @@ namespace SU2 {
                         }
 
                     } // wblock
-                }
             } // ket block
         } // op_index
         } // b2
