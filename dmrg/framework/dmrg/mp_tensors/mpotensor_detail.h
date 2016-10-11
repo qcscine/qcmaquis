@@ -200,7 +200,7 @@ namespace MPOTensor_detail
 
     inline Hermitian operator * (Hermitian const & a, Hermitian const & b)
     {
-        return Hermitian(a.LeftHerm, b.RightHerm, a.LeftPhase, a.RightPhase);
+        return Hermitian(a.LeftHerm, b.RightHerm, a.LeftPhase, b.RightPhase);
     } 
 
 }
