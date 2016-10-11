@@ -48,7 +48,6 @@ namespace SU2 {
         else
         {
             T phase = (std::abs(spin_diff) % 2 == 0) ? -1 : 1;
-            //if (spin_diff == 2) phase = 1;
             if (spin_diff == -2) phase = 1;
 
             if (spin_diff > 0)
@@ -60,19 +59,20 @@ namespace SU2 {
             else
                 return 1.;
         }
-
-        //maquis::cout << "\n" << SymmGroup::spin(lc) << "   " << SymmGroup::spin(rc) << std::endl;
-        //throw std::runtime_error("Unable to conjugate this charge\n");
     }
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
                         block_matrix<Matrix2, SymmGroup> const & B,
-                        block_matrix<Matrix3, SymmGroup> & C)
+                        block_matrix<Matrix3, SymmGroup> & C,
+                        std::vector<typename Matrix1::value_type> conj_scales = std::vector<typename Matrix1::value_type>())
     {
         typedef typename SymmGroup::charge charge;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename Matrix3::value_type value_type;
+
+        if (conj_scales.size() != A.n_blocks())
+            conj_scales = std::vector<value_type>(A.n_blocks(), 1.);
 
         C.clear();
         assert(B.basis().is_sorted());
@@ -94,7 +94,8 @@ namespace SU2 {
                 if (c_block == C.n_blocks())
                     c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
 
-                boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
+                //boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
+                boost::numeric::bindings::blas::gemm(conj_scales[k], A[k], B[matched_block], value_type(1), C[c_block]);
             }
 
             //for ( ; it != B_end && it->lc == ar; ++it)

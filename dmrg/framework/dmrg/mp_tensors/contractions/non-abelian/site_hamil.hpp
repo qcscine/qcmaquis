@@ -119,15 +119,24 @@ namespace contraction {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             block_matrix<Matrix, SymmGroup> tmp;
 
+            block_matrix<Matrix, SymmGroup> local;
+            if (mpo.herm_info.right_skip(b2))
+            {
+                block_matrix<Matrix, SymmGroup> loc(transpose(right[mpo.herm_info.right_conj(b2)]));
+                ::contraction::common::recover_conjugate(loc, mpo, b2, false, true);
+                swap(local, loc);
+            }
+            block_matrix<Matrix, SymmGroup> const & right_tmp = mpo.herm_info.right_skip(b2) ? local : right[b2];
+
             typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy cp = mpo.column(b2);
             index_type num_ops = std::distance(cp.begin(), cp.end());
             if (num_ops > 3) {
-                SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb, right[b2].basis());
+                SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
                 block_matrix<Matrix, SymmGroup> tmp2;
                 reshape_right_to_left_new(physical_i, left_i, right_i, contr_grid(0,0), tmp2);
 
                 contr_grid(0,0).clear();
-                ::SU2::gemm_trim(tmp2, right[b2], tmp);
+                ::SU2::gemm_trim(tmp2, right_tmp, tmp);
 
                 for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
                     if (!out_left_i.has(tmp.basis().left_charge(k)))
@@ -136,7 +145,7 @@ namespace contraction {
 
             else {
                 SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
-                ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp);
+                ::SU2::gemm_trim(contr_grid(0,0), right_tmp, tmp);
 
                 contr_grid(0,0).clear();
             }

@@ -38,27 +38,54 @@ namespace contraction {
     namespace common {
 
     template <class Matrix, class SymmGroup>
-    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
-                                                                                       MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                                                       size_t k, bool left = true)
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
+    conjugate_phases(block_matrix<Matrix, SymmGroup> & bm,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     size_t k, bool left, bool forward)
     {
         typedef typename Matrix::value_type value_type;
         typename SymmGroup::subcharge S = (left) ? mpo.left_spin(k).get() : mpo.right_spin(k).get();
 
+        std::vector<value_type> ret(bm.n_blocks());
+
         for (size_t b = 0; b < bm.n_blocks(); ++b)
         {
             value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>(bm.basis().left_charge(b), bm.basis().right_charge(b), S);
-            scale *= (left) ? mpo.herm_info.left_phase(k) : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
-            bm[b] *= scale;
-            //maquis::cout << scale;
-            //maquis::cout << " ";
+            if (forward)
+                scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k)) : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
+            else
+                scale *= (left) ? mpo.herm_info.left_phase(k) : mpo.herm_info.right_phase(k);
+
+            ret[b] = scale;
         }
+        return ret;
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
+    conjugate_phases(block_matrix<Matrix, SymmGroup> & bm,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     size_t k, bool left, bool forward)
+    {
+        return std::vector<typename Matrix::value_type>(bm.n_blocks(), 1.);
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+                                                                                       MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                       size_t k, bool left, bool forward)
+    {
+        typedef typename Matrix::value_type value_type;
+        std::vector<value_type> scales = conjugate_phases(bm, mpo, k, left, forward);
+
+        for (size_t b = 0; b < bm.n_blocks(); ++b)
+            bm[b] *= scales[b];
     }
 
     template <class Matrix, class SymmGroup>
     typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
                                                                                         MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                                                        size_t b, bool left = true)
+                                                                                        size_t b, bool left, bool forward)
     { }
 
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
@@ -83,21 +110,10 @@ namespace contraction {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
 
                     block_matrix<Matrix, SymmGroup> bm = left[mpo.herm_info.left_conj(b1)];
-                    recover_conjugate(bm, mpo, b1);
-                    bool print = left[b1].n_blocks() > 0 && mpo.left_spin(b1).get() == 2;
-                    if (false)
-                    {
-                        maquis::cout << b1 << "/" << loop_max << std::endl;
-                        maquis::cout << transpose(left[b1]) << std::endl;
-                        maquis::cout << bm << std::endl;
-                        //block_matrix<Matrix, SymmGroup> lcp = left[b1];
-                        //recover_conjugate(lcp, mpo, mpo.herm_info.left_conj(b1));
-                        //maquis::cout << lcp << std::endl;
-                        //maquis::cout << transpose(left[mpo.herm_info.left_conj(b1)]) << std::endl;
-                    }
+                    //std::vector<value_type> scales = conjugate_phases(bm, mpo, b1, true, false);
+                    recover_conjugate(bm, mpo, b1, true, false);
 
-                    //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1]);
-                    //typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), data_[b1]);
+                    //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1], scales);
                     typename Gemm::gemm_trim_left()(bm, mps.data(), data_[b1]);
                 }
                 else {
@@ -158,17 +174,10 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), data_[b2]);
-                    {
-                        maquis::cout << b2 << "/" << loop_max << std::endl;
-                        block_matrix<Matrix, SymmGroup> bm = transpose(right[mpo.herm_info.right_conj(b2)]);
-                        recover_conjugate(bm, mpo, b2, false);
-                        maquis::cout << right[b2] << std::endl;
-                        maquis::cout << bm << std::endl;
-                        maquis::cout << "------\n";
-                        typename Gemm::gemm_trim_right()(mps.data(), bm, data_[b2]);
-                    }
-                    //typename Gemm::gemm_trim_right()(mps.data(), right[b2], data_[b2]);
+                    block_matrix<Matrix, SymmGroup> bm = transpose(right[mpo.herm_info.right_conj(b2)]);
+                    recover_conjugate(bm, mpo, b2, false, true);
+
+                    typename Gemm::gemm_trim_right()(mps.data(), bm, data_[b2]);
                 }
                 else {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);

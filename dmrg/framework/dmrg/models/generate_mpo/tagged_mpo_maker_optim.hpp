@@ -270,19 +270,15 @@ namespace generate_mpo
                     {
                         index_type romeo = right[h_it->first];
                         index_type julia = right[h_it->second];
-                        //maquis::cout << romeo << " <-> " << julia << std::endl;
                         if (romeo < julia)
                         {
                             cnt++;
                             std::swap(RightHerm[romeo], RightHerm[julia]);
                             RightPhase[romeo] = HermitianPhases[h_it->first].first;
                             RightPhase[julia] = HermitianPhases[h_it->first].second;
-                            maquis::cout << h_it->first << " & " << h_it->second << " @ " << romeo << "<->" << julia << std::endl;
                         }
                     }
-                    //std::copy(RightHerm.begin(), RightHerm.end(), std::ostream_iterator<index_type>(std::cout, " "));
-                    //maquis::cout << std::endl;
-                    maquis::cout << "\nBond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
+                    maquis::cout << "Bond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
 
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
