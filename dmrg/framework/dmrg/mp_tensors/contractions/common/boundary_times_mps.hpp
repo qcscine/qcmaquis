@@ -37,10 +37,10 @@
 namespace contraction {
     namespace common {
 
-    template <class Matrix, class SymmGroup>
+    template <class Matrix, class OtherMatrix, class SymmGroup>
     typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
-    conjugate_phases(block_matrix<Matrix, SymmGroup> & bm,
-                     MPOTensor<Matrix, SymmGroup> const & mpo,
+    conjugate_phases(block_matrix<Matrix, SymmGroup> const & bm,
+                     MPOTensor<OtherMatrix, SymmGroup> const & mpo,
                      size_t k, bool left, bool forward)
     {
         typedef typename Matrix::value_type value_type;
@@ -61,10 +61,10 @@ namespace contraction {
         return ret;
     }
 
-    template <class Matrix, class SymmGroup>
+    template <class Matrix, class OtherMatrix, class SymmGroup>
     typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
-    conjugate_phases(block_matrix<Matrix, SymmGroup> & bm,
-                     MPOTensor<Matrix, SymmGroup> const & mpo,
+    conjugate_phases(block_matrix<Matrix, SymmGroup> const & bm,
+                     MPOTensor<OtherMatrix, SymmGroup> const & mpo,
                      size_t k, bool left, bool forward)
     {
         return std::vector<typename Matrix::value_type>(bm.n_blocks(), 1.);
@@ -109,12 +109,8 @@ namespace contraction {
                 {   
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
 
-                    block_matrix<Matrix, SymmGroup> bm = left[mpo.herm_info.left_conj(b1)];
-                    //std::vector<value_type> scales = conjugate_phases(bm, mpo, b1, true, false);
-                    recover_conjugate(bm, mpo, b1, true, false);
-
-                    //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1], scales);
-                    typename Gemm::gemm_trim_left()(bm, mps.data(), data_[b1]);
+                    std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1], scales);
                 }
                 else {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
@@ -174,10 +170,10 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    block_matrix<Matrix, SymmGroup> bm = transpose(right[mpo.herm_info.right_conj(b2)]);
-                    recover_conjugate(bm, mpo, b2, false, true);
+                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(b2)]);
+                    std::vector<value_type> scales = conjugate_phases(trv, mpo, b2, false, true);
 
-                    typename Gemm::gemm_trim_right()(mps.data(), bm, data_[b2]);
+                    typename Gemm::gemm_trim_right()(mps.data(), trv, data_[b2], scales);
                 }
                 else {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
