@@ -364,8 +364,10 @@ namespace measurements {
 
             pos_t p1_start = 0;
             pos_t p2_start = 0;
+            pos_t p3_start = 0;
             pos_t p1_end   = lattice.size();
             pos_t p2_end   = lattice.size();
+            pos_t p3_end   = lattice.size();
 
             if(positions_first.size() == 2){
                 p1_start = positions_first[0];
@@ -373,21 +375,32 @@ namespace measurements {
                 p1_end   = positions_first[0]+1;
                 p2_end   = positions_first[1]+1;
             }
+            
+            // Leon: allow both 2-index and 3-index 3-RDM measurement splitting
+            // warning: if two indices are used, the order in the input file is p1,p2; but for three it's p2,p1,p3 !
+            
+            if(positions_first.size() == 3){
+                p1_start = positions_first[0];
+                p2_start = positions_first[1];
+                p3_start = positions_first[2];
+                p1_end   = positions_first[0]+1;
+                p2_end   = positions_first[1]+1;
+                p3_end   = positions_first[2]+1;
+            }
 
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for collapse(5) schedule (dynamic,1)
+            #endif
             for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
             for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
             {
-                if(p1 < p2 ) continue;
-
-                #ifdef MAQUIS_OPENMP
-                #pragma omp parallel for collapse(3) schedule (dynamic,1)
-                #endif
-                for (pos_t p3 = std::min(p1, p2); p3 < lattice.size(); ++p3)
+                for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
                 for (pos_t p4 = 0;                p4 < lattice.size(); ++p4)
                 for (pos_t p5 = 0;                p5 < lattice.size(); ++p5)
                 { 
                     // index restrictions
-                    if((p1 == p2 && p1 == p3)) continue;
+                    if(p1 < p2 ) continue;
+                    if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) continue;
                     if(!bra_neq_ket && p4 < std::min(p1, p2)) continue;
                     if(!bra_neq_ket && p5 < std::min(p1, p2)) continue;
 
