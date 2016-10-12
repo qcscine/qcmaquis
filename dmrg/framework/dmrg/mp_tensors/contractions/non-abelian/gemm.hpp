@@ -32,14 +32,83 @@
 
 namespace SU2 {
 
+    template <class T, class SymmGroup>
+    T conjugate_correction(typename SymmGroup::charge lc, typename SymmGroup::charge rc, typename SymmGroup::subcharge tensor_spin)
+    {
+        assert( SymmGroup::spin(lc) >= 0);
+        assert( SymmGroup::spin(rc) >= 0);
+
+        typename SymmGroup::subcharge S = std::min(SymmGroup::spin(lc), SymmGroup::spin(rc));
+        typename SymmGroup::subcharge spin_diff = SymmGroup::spin(lc) - SymmGroup::spin(rc);
+
+        if (tensor_spin == 0)
+        {
+            return 1.;
+        }
+        else
+        {
+            T phase = (std::abs(spin_diff) % 2 == 0) ? -1 : 1;
+            if (spin_diff == -2) phase = 1;
+
+            if (spin_diff > 0)
+                return phase * sqrt( (S + 1. + std::abs(spin_diff)) / (S + 1.) );
+
+            else if (spin_diff < 0)
+                return -phase * sqrt( (S + 1.) / (S+ 1. + std::abs(spin_diff)));
+
+            else
+                return 1.;
+        }
+    }
+
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-    void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
-                        block_matrix<Matrix2, SymmGroup> const & B,
-                        block_matrix<Matrix3, SymmGroup> & C)
+    void gemm(block_matrix<Matrix1, SymmGroup> const & A,
+              block_matrix<Matrix2, SymmGroup> const & B,
+              block_matrix<Matrix3, SymmGroup> & C,
+              std::vector<typename Matrix1::value_type> conj_scales = std::vector<typename Matrix1::value_type>())
     {
         typedef typename SymmGroup::charge charge;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename Matrix3::value_type value_type;
+
+        if (conj_scales.size() != B.n_blocks())
+            conj_scales = std::vector<value_type>(B.n_blocks(), 1.);
+
+        C.clear();
+        assert(B.basis().is_sorted());
+
+        const_iterator B_begin = B.basis().begin();
+        const_iterator B_end = B.basis().end();
+        for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+
+            charge ar = A.basis().right_charge(k);
+            const_iterator it = B.basis().left_lower_bound(ar);
+
+            for ( ; it != B_end && it->lc == ar; ++it)
+            {
+                std::size_t matched_block = std::distance(B_begin, it);
+
+                std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
+                if (c_block == C.n_blocks())
+                    c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
+
+                boost::numeric::bindings::blas::gemm(conj_scales[matched_block], A[k], B[matched_block], value_type(1), C[c_block]);
+            }
+        }
+    }
+
+    template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+    void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
+                        block_matrix<Matrix2, SymmGroup> const & B,
+                        block_matrix<Matrix3, SymmGroup> & C,
+                        std::vector<typename Matrix1::value_type> conj_scales = std::vector<typename Matrix1::value_type>())
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+        typedef typename Matrix3::value_type value_type;
+
+        if (conj_scales.size() != A.n_blocks())
+            conj_scales = std::vector<value_type>(A.n_blocks(), 1.);
 
         C.clear();
         assert(B.basis().is_sorted());
@@ -61,16 +130,8 @@ namespace SU2 {
                 if (c_block == C.n_blocks())
                     c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
 
-                boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
+                boost::numeric::bindings::blas::gemm(conj_scales[k], A[k], B[matched_block], value_type(1), C[c_block]);
             }
-
-            //for ( ; it != B_end && it->lc == ar; ++it)
-            //{
-            //    std::size_t matched_block = std::distance(B_begin, it);
-            //    Matrix3 tmp(num_rows(A[k]), it->rs);
-            //    gemm(A[k], B[matched_block], tmp);
-            //    C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
-            //}
         }
     }
 
@@ -112,7 +173,9 @@ namespace SU2 {
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm_trim(block_matrix<Matrix1, SymmGroup> const & A,
                    block_matrix<Matrix2, SymmGroup> const & B,
-                   block_matrix<Matrix3, SymmGroup> & C)
+                   block_matrix<Matrix3, SymmGroup> & C,
+                   std::vector<typename Matrix1::value_type> conj_scales,
+                   bool conjugate_a)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
@@ -138,17 +201,9 @@ namespace SU2 {
                 if (c_block == C.n_blocks())
                     c_block = C.insert_block(Matrix3(num_rows(A[k]),it->rs), A.basis().left_charge(k), it->rc);
 
-                boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
+                //boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
+                boost::numeric::bindings::blas::gemm(conj_scales[ (conjugate_a) ? k : matched_block], A[k], B[matched_block], value_type(1), C[c_block]);
             }
-
-            //for ( ; it != B_end && it->lc == ar; ++it)
-            //{
-            //    if (A.basis().left_charge(k) != it->rc) continue;
-            //    std::size_t matched_block = std::distance(B_begin, it);
-            //    Matrix3 tmp(num_rows(A[k]), it->rs);
-            //    gemm(A[k], B[matched_block], tmp);
-            //    C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
-            //}
         }
     }
 }

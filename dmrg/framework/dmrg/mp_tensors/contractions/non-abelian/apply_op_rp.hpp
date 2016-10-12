@@ -46,8 +46,7 @@ namespace SU2 {
                         Index<SymmGroup> const & right_i,
                         Index<SymmGroup> const & out_left_i,
                         ProductBasis<SymmGroup> const & in_right_pb,
-                        ProductBasis<SymmGroup> const & out_left_pb,
-                        DualIndex<SymmGroup> const & right_basis)
+                        ProductBasis<SymmGroup> const & out_left_pb)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
