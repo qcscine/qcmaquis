@@ -118,47 +118,34 @@ namespace contraction {
 #else
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            block_matrix<Matrix, SymmGroup> tmp;
-
-            //block_matrix<Matrix, SymmGroup> local;
-            //if (mpo.herm_info.right_skip(b2))
-            //{
-            //    block_matrix<Matrix, SymmGroup> loc(transpose(right[mpo.herm_info.right_conj(b2)]));
-            //    //::contraction::common::recover_conjugate(loc, mpo, b2, false, true);
-            //    swap(local, loc);
-            //}
-            //block_matrix<Matrix, SymmGroup> const & right_tmp = mpo.herm_info.right_skip(b2) ? local : right[b2];
-
-            std::vector<value_type> phases = ::contraction::common::conjugate_phases(transpose(right[mpo.herm_info.right_conj(b2)]), mpo, b2, false, true);
+            block_matrix<Matrix, SymmGroup> tmp, tmp2;
 
             typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy cp = mpo.column(b2);
             index_type num_ops = std::distance(cp.begin(), cp.end());
             if (num_ops > 3) {
                 SU2::lbtm_kernel_rp(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
-                block_matrix<Matrix, SymmGroup> tmp2;
                 reshape_right_to_left_new(physical_i, left_i, right_i, contr_grid(0,0), tmp2);
 
                 contr_grid(0,0).clear();
-                if (mpo.herm_info.right_skip(b2))
-                    ::SU2::gemm_trim(tmp2, transpose(right[mpo.herm_info.right_conj(b2)]), tmp, phases, false);
-                else
-                    ::SU2::gemm_trim(tmp2, right[b2], tmp, std::vector<value_type>(tmp2.n_blocks(), 1.), true);
-
-                for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                    if (!out_left_i.has(tmp.basis().left_charge(k)))
-                        tmp.remove_block(k--);
+                swap(contr_grid(0,0), tmp2);
             }
-
             else {
                 SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
-                //::SU2::gemm_trim(contr_grid(0,0), right_tmp, tmp);
-                if (mpo.herm_info.right_skip(b2))
-                    ::SU2::gemm_trim(contr_grid(0,0), transpose(right[mpo.herm_info.right_conj(b2)]), tmp, phases, false);
-                else
-                    ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp, std::vector<value_type>(contr_grid(0,0).n_blocks(), 1.), true);
-
-                contr_grid(0,0).clear();
             }
+
+            if (mpo.herm_info.right_skip(b2)) {
+                std::vector<value_type> phases = ::contraction::common::conjugate_phases(transpose(right[mpo.herm_info.right_conj(b2)]), mpo, b2, false, true);
+                ::SU2::gemm_trim(contr_grid(0,0), transpose(right[mpo.herm_info.right_conj(b2)]), tmp, phases, false);
+            }
+            else
+                ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp, std::vector<value_type>(contr_grid(0,0).n_blocks(), 1.), true);
+
+            contr_grid(0,0).clear();
+
+            if (num_ops > 3)
+            for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
+                if (!out_left_i.has(tmp.basis().left_charge(k)))
+                    tmp.remove_block(k--);
 
             parallel_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
@@ -177,6 +164,7 @@ namespace contraction {
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        typedef typename Matrix::value_type value_type;
 
         contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
 
@@ -200,7 +188,13 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> tmp, tmp2;
             SU2::rbtm_kernel(b1, tmp, right, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
-            ::SU2::gemm_trim(transpose(left[b1]), tmp, tmp2);
+            if (mpo.herm_info.left_skip(b1)) {
+                std::vector<value_type> phases = ::contraction::common::conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
+                ::SU2::gemm_trim(left[mpo.herm_info.left_conj(b1)], tmp, tmp2, phases, true);
+            }
+            else
+                ::SU2::gemm_trim(transpose(left[b1]), tmp, tmp2, std::vector<value_type>(tmp.n_blocks(), 1.), false);
+            
             tmp.clear();
 
             parallel_critical
