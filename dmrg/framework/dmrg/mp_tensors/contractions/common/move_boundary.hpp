@@ -296,7 +296,6 @@ namespace contraction {
     #else
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
                 if (mpo.herm_info.left_skip(b1)) continue;
-                // TODO revert to this
                 Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
                 block_matrix<Matrix, SymmGroup> tmp;
