@@ -112,9 +112,6 @@ namespace SU2 {
                     size_t out_left_offset = out_left_pb(phys_out, lc);
                     size_t l_size = T.basis().left_size(t_block);
 
-                    typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                    std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-
                     detail::lbtm<Matrix, SymmGroup>(T[t_block], ret[o], W, in_right_offset, out_left_offset, l_size, r_size, w_block, couplings);
                 } // wblock
             } // lblock
@@ -191,9 +188,6 @@ namespace SU2 {
                     size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
                     size_t out_right_offset = out_right_pb(phys_out, rc);
                     size_t r_size = T.basis().right_size(t_block);
-
-                    typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                    std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
                     detail::rbtm<Matrix, SymmGroup>(T[t_block], ret[o], W, in_left_offset, out_right_offset, l_size, r_size, w_block, couplings);
                 } // wblock
