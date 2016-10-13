@@ -74,68 +74,68 @@ namespace SU2 {
                 charge lc = T.basis().left_charge(t_block);
                 charge rc = T.basis().right_charge(t_block);
 
-                    const_iterator it = ket_basis.left_lower_bound(rc); //ket_basis comes transposed!
-                    charge mc = it->rc;
+                const_iterator it = ket_basis.left_lower_bound(rc); //ket_basis comes transposed!
+                charge mc = it->rc;
 
-                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
-                    {
-                        charge phys_in = W.basis().left_charge(w_block);
-                        charge phys_out = W.basis().right_charge(w_block);
+                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                {
+                    charge phys_in = W.basis().left_charge(w_block);
+                    charge phys_out = W.basis().right_charge(w_block);
 
-                        charge out_r_charge = SymmGroup::fuse(rc, phys_in);
-                        size_t rb = right_i.position(out_r_charge);
-                        if (rb == right_i.size()) continue;
+                    charge out_r_charge = SymmGroup::fuse(rc, phys_in);
+                    size_t rb = right_i.position(out_r_charge);
+                    if (rb == right_i.size()) continue;
 
-                        charge out_l_charge = SymmGroup::fuse(lc, phys_out);
-                        if (!::SU2::triangle(SymmGroup::spin(out_r_charge), ap, SymmGroup::spin(out_l_charge))) continue;
-                        if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
+                    charge out_l_charge = SymmGroup::fuse(lc, phys_out);
+                    if (!::SU2::triangle(SymmGroup::spin(out_r_charge), ap, SymmGroup::spin(out_l_charge))) continue;
+                    if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
-                        size_t r_size = right_i[rb].second;
+                    size_t r_size = right_i[rb].second;
 
-                        size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() )
-                            o = ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge),r_size), out_l_charge, out_r_charge);
+                    size_t o = ret.find_block(out_l_charge, out_r_charge);
+                    if ( o == ret.n_blocks() )
+                        o = ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge),r_size), out_l_charge, out_r_charge);
 
-                        int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_l_charge);
-                        int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
-                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
+                    int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_l_charge);
+                    int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
+                    int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type couplings[4];
-                        ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
+                    typename Matrix::value_type couplings[4];
+                    ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
-                        size_t phys_s1 = W.basis().left_size(w_block);
-                        size_t phys_s2 = W.basis().right_size(w_block);
-                        size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
-                        size_t out_left_offset = out_left_pb(phys_out, lc);
-                        Matrix const & wblock = W[w_block];
-                        Matrix const & iblock = T[t_block];
-                        Matrix & oblock = ret[o];
+                    size_t phys_s1 = W.basis().left_size(w_block);
+                    size_t phys_s2 = W.basis().right_size(w_block);
+                    size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
+                    size_t out_left_offset = out_left_pb(phys_out, lc);
+                    Matrix const & wblock = W[w_block];
+                    Matrix const & iblock = T[t_block];
+                    Matrix & oblock = ret[o];
 
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+                    typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                    std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                        size_t ldim = T.basis().left_size(t_block);
-                        for(size_t rr = 0; rr < r_size; ++rr) {
-                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                            {
-                                std::size_t ss1 = it->row;
-                                std::size_t ss2 = it->col;
-                                std::size_t rspin = it->row_spin;
-                                std::size_t cspin = it->col_spin;
-                                std::size_t casenr = 0;
-                                if (rspin == 2 && cspin == 2) casenr = 3;
-                                else if (rspin == 2) casenr = 1;
-                                else if (cspin == 2) casenr = 2;
+                    size_t ldim = T.basis().left_size(t_block);
+                    for(size_t rr = 0; rr < r_size; ++rr) {
+                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                        {
+                            std::size_t ss1 = it->row;
+                            std::size_t ss2 = it->col;
+                            std::size_t rspin = it->row_spin;
+                            std::size_t cspin = it->col_spin;
+                            std::size_t casenr = 0;
+                            if (rspin == 2 && cspin == 2) casenr = 3;
+                            else if (rspin == 2) casenr = 1;
+                            else if (cspin == 2) casenr = 2;
 
-                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                                maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
-                                                                    &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
-                                                                    &oblock(out_left_offset + ss2*ldim, rr),
-                                                                    alfa_t);
-                            }
+                            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+                            maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
+                                                                &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
+                                                                &oblock(out_left_offset + ss2*ldim, rr),
+                                                                alfa_t);
                         }
+                    }
 
-                    } // wblock
+                } // wblock
             } // lblock
         } // op_index
         } // b1
@@ -176,68 +176,68 @@ namespace SU2 {
                 charge lc = T.basis().left_charge(t_block);
                 charge rc = T.basis().right_charge(t_block);
 
-                    const_iterator it = ket_basis.left_lower_bound(lc);
-                    charge mc = it->rc;
+                const_iterator it = ket_basis.left_lower_bound(lc);
+                charge mc = it->rc;
 
-                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
-                    {
-                        charge phys_in = W.basis().left_charge(w_block);
-                        charge phys_out = W.basis().right_charge(w_block);
+                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                {
+                    charge phys_in = W.basis().left_charge(w_block);
+                    charge phys_out = W.basis().right_charge(w_block);
 
-                        charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
-                        size_t lb = left_i.position(out_l_charge);
-                        if (lb == left_i.size()) continue;
+                    charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
+                    size_t lb = left_i.position(out_l_charge);
+                    if (lb == left_i.size()) continue;
 
-                        charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
-                        if (!::SU2::triangle(SymmGroup::spin(out_l_charge), a, SymmGroup::spin(out_r_charge))) continue;
-                        if (!left_i.has(out_r_charge)) continue;
+                    charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
+                    if (!::SU2::triangle(SymmGroup::spin(out_l_charge), a, SymmGroup::spin(out_r_charge))) continue;
+                    if (!left_i.has(out_r_charge)) continue;
 
-                        size_t l_size = left_i[lb].second;
+                    size_t l_size = left_i[lb].second;
 
-                        size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() )
-                            o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
+                    size_t o = ret.find_block(out_l_charge, out_r_charge);
+                    if ( o == ret.n_blocks() )
+                        o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
-                        int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
-                        int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
-                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
+                    int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
+                    int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
+                    int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type couplings[4];
-                        ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
+                    typename Matrix::value_type couplings[4];
+                    ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
-                        size_t phys_s1 = W.basis().left_size(w_block);
-                        size_t phys_s2 = W.basis().right_size(w_block);
-                        size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
-                        size_t out_right_offset = out_right_pb(phys_out, rc);
-                        Matrix const & wblock = W[w_block];
-                        Matrix const & iblock = T[t_block];
-                        Matrix & oblock = ret[o];
+                    size_t phys_s1 = W.basis().left_size(w_block);
+                    size_t phys_s2 = W.basis().right_size(w_block);
+                    size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
+                    size_t out_right_offset = out_right_pb(phys_out, rc);
+                    Matrix const & wblock = W[w_block];
+                    Matrix const & iblock = T[t_block];
+                    Matrix & oblock = ret[o];
 
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+                    typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                    std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                        size_t r_size = T.basis().right_size(t_block);
-                        for(size_t rr = 0; rr < r_size; ++rr) {
-                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                            {
-                                std::size_t ss1 = it->row;
-                                std::size_t ss2 = it->col;
-                                std::size_t rspin = it->row_spin;
-                                std::size_t cspin = it->col_spin;
-                                std::size_t casenr = 0; 
-                                if (rspin == 2 && cspin == 2) casenr = 3;
-                                else if (rspin == 2) casenr = 1;
-                                else if (cspin == 2) casenr = 2;
+                    size_t r_size = T.basis().right_size(t_block);
+                    for(size_t rr = 0; rr < r_size; ++rr) {
+                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                        {
+                            std::size_t ss1 = it->row;
+                            std::size_t ss2 = it->col;
+                            std::size_t rspin = it->row_spin;
+                            std::size_t cspin = it->col_spin;
+                            std::size_t casenr = 0; 
+                            if (rspin == 2 && cspin == 2) casenr = 3;
+                            else if (rspin == 2) casenr = 1;
+                            else if (cspin == 2) casenr = 2;
 
-                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                                maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, rr),
-                                                                    &iblock(in_left_offset + ss1*l_size, rr) + l_size,
-                                                                    &oblock(0, out_right_offset + ss2*r_size + rr),
-                                                                    alfa_t);
-                            }
+                            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+                            maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, rr),
+                                                                &iblock(in_left_offset + ss1*l_size, rr) + l_size,
+                                                                &oblock(0, out_right_offset + ss2*r_size + rr),
+                                                                alfa_t);
                         }
+                    }
 
-                    } // wblock
+                } // wblock
             } // ket block
         } // op_index
         } // b2
