@@ -108,62 +108,14 @@ namespace SU2 {
                     typename Matrix::value_type couplings[4];
                     ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
-                    size_t phys_s1 = W.basis().left_size(w_block);
-                    size_t phys_s2 = W.basis().right_size(w_block);
                     size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
                     size_t out_right_offset = in_right_pb(phys_out, out_r_charge);
-                    Matrix const & wblock = W[w_block];
-                    Matrix const & iblock = T[t_block];
-                    Matrix & oblock = ret[o];
+                    size_t l_size = T.basis().left_size(t_block);
 
                     typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                     std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-                    size_t ldim = T.basis().left_size(t_block);
-
-                    const size_t chunk = 1024;
-                    const size_t blength = r_size*ldim;
-                    for(size_t rr = 0; rr < blength/chunk; ++rr) {
-                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                        {
-                            std::size_t ss1 = it->row;
-                            std::size_t ss2 = it->col;
-                            std::size_t rspin = it->row_spin;
-                            std::size_t cspin = it->col_spin;
-                            std::size_t casenr = 0;
-                            if (rspin == 2 && cspin == 2) casenr = 3;
-                            else if (rspin == 2) casenr = 1;
-                            else if (cspin == 2) casenr = 2;
-
-                            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-
-                            assert(rr + chunk <= r_size*ldim);
-                            maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size) + rr*chunk,
-                                                                &iblock(0, in_right_offset + ss1*r_size) + rr*chunk + chunk,
-                                                                &oblock(0, out_right_offset + ss2*r_size) + rr*chunk,
-                                                                alfa_t);
-                        }
-                    }
-
-                    for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                    {
-                        std::size_t ss1 = it->row;
-                        std::size_t ss2 = it->col;
-                        std::size_t rspin = it->row_spin;
-                        std::size_t cspin = it->col_spin;
-                        std::size_t casenr = 0;
-                        if (rspin == 2 && cspin == 2) casenr = 3;
-                        else if (rspin == 2) casenr = 1;
-                        else if (cspin == 2) casenr = 2;
-
-                        typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-
-                        std::size_t start = blength - blength%chunk;
-                        maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size) + start,
-                                                            &iblock(0, in_right_offset + ss1*r_size) + blength,
-                                                            &oblock(0, out_right_offset + ss2*r_size) + start,
-                                                            alfa_t);
-                    }
+                    detail::rbtm_blocked<Matrix, SymmGroup>(T[t_block], ret[o], W, in_right_offset, out_right_offset, l_size, r_size, w_block, couplings);
                 } // wblock
             } // lblock
         } // op_index
