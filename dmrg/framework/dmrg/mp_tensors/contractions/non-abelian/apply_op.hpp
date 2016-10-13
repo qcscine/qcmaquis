@@ -87,6 +87,7 @@ namespace SU2 {
                         if (rb == right_i.size()) continue;
 
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
+                        if (!::SU2::triangle(SymmGroup::spin(out_r_charge), ap, SymmGroup::spin(out_l_charge))) continue;
                         if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
                         size_t r_size = right_i[rb].second;
@@ -99,16 +100,8 @@ namespace SU2 {
                         int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        //if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-
-                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                         typename Matrix::value_type couplings[4];
-                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, two_sp, ip);
-                        couplings[2] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2,      ip);
-                        couplings[3] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
+                        ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
@@ -117,10 +110,6 @@ namespace SU2 {
                         Matrix const & wblock = W[w_block];
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
-
-                        //maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
-                        //        out_left_offset, in_right_offset,
-                        //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
 
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
@@ -200,6 +189,7 @@ namespace SU2 {
                         if (lb == left_i.size()) continue;
 
                         charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
+                        if (!::SU2::triangle(SymmGroup::spin(out_l_charge), a, SymmGroup::spin(out_r_charge))) continue;
                         if (!left_i.has(out_r_charge)) continue;
 
                         size_t l_size = left_i[lb].second;
@@ -212,12 +202,8 @@ namespace SU2 {
                         int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                         typename Matrix::value_type couplings[4];
-                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, two_sp, ip);
-                        couplings[2] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2,      ip);
-                        couplings[3] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
+                        ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);

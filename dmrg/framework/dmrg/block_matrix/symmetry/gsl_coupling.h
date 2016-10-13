@@ -35,16 +35,38 @@ extern "C" {
 
 namespace SU2 {
 
-    inline
-    double mod_coupling(int two_ja, int two_jb, int two_jc,
-                        int two_jd, int two_je, int two_jf,
-                        int two_jg, int two_jh, int two_ji)
+    inline double mod_coupling(int a, int b, int c,
+                        int d, int e, int f,
+                        int g, int h, int i)
     {
-        double ret = sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) ) *
-               gsl_sf_coupling_9j(two_ja, two_jb, two_jc,
-                                  two_jd, two_je, two_jf,
-                                  two_jg, two_jh, two_ji);
+        double ret = sqrt( (g+1.) * (h+1.) * (c+1.) * (f+1.) ) *
+               gsl_sf_coupling_9j(a, b, c,
+                                  d, e, f,
+                                  g, h, i);
         return ret;
+    }
+
+    inline bool triangle(int a, int b, int c)
+    {
+        return std::abs(a-b) <= c && c <= a+b;
+    }
+
+    template <class T>
+    inline void set_coupling(int a, int b, int c,
+                             int d, int e, int f,
+                             int g, int h, int i, T init, T couplings[])
+    {
+        T prefactor = sqrt((i+1.)*(a+1.)/((g+1.)*(c+1.))) * init;
+        if (triangle(a,b,c))
+        {
+            couplings[0] = prefactor * ::SU2::mod_coupling(a, b, c, d, e, f, g, h, i);
+            couplings[2] = prefactor * ::SU2::mod_coupling(a, b, c, d, e, f, g, 2, i);
+        }
+        if (triangle(a,2,c))
+        {
+            couplings[1] = prefactor * ::SU2::mod_coupling(a, 2, c, d, e, f, g, h, i);
+            couplings[3] = prefactor * ::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
+        }
     }
 }
 
