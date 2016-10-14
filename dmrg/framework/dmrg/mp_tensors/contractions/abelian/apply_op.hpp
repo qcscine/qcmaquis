@@ -31,18 +31,23 @@
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/contractions/abelian/functors.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/detail.hpp"
 
 namespace contraction {
     namespace abelian {
 
     using ::contraction::ContractionGrid;
+    using ::contraction::common::BoundaryMPSProduct;
+    using ::contraction::common::MPSBoundaryProduct;
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_allocate(size_t b2,
                               ContractionGrid<Matrix, SymmGroup>& contr_grid,
-                              std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                              Boundary<OtherMatrix, SymmGroup> const & left,
+                              BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
+                              DualIndex<SymmGroup> const & ket_basis,
                               Index<SymmGroup> const & right_i,
                               Index<SymmGroup> const & out_left_i)
     {
@@ -55,12 +60,15 @@ namespace contraction {
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+
+            DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, ket_basis, b1);
+            if (T_basis.size() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
@@ -89,7 +97,7 @@ namespace contraction {
     void lbtm_kernel_execute(size_t b2,
                              ContractionGrid<Matrix, SymmGroup>& contr_grid,
                              Boundary<OtherMatrix, SymmGroup> const & left,
-                             std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                             BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & right_i,
@@ -106,7 +114,12 @@ namespace contraction {
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+
+            //block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps.at(b1, local);
+            if(T.n_blocks() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
@@ -150,11 +163,13 @@ namespace contraction {
         } // b1
     }
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel_allocate(size_t b1,
                               block_matrix<Matrix, SymmGroup> & ret,
-                              std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                              Boundary<OtherMatrix, SymmGroup> const & right,
+                              MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
+                              DualIndex<SymmGroup> const & ket_basis,
                               Index<SymmGroup> const & left_i,
                               Index<SymmGroup> const & out_right_i)
     {
@@ -167,12 +182,15 @@ namespace contraction {
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+
+            DualIndex<SymmGroup> T_basis = detail::T_basis_right(right, right_mult_mps, mpo, ket_basis, b2);
+            if (T_basis.size() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
             for(size_t l = 0; l < left_i.size(); ++l){
@@ -196,7 +214,7 @@ namespace contraction {
     void rbtm_kernel_execute(size_t b1,
                              block_matrix<Matrix, SymmGroup> & ret,
                              Boundary<OtherMatrix, SymmGroup> const & right,
-                             std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                             MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & left_i,
@@ -215,7 +233,12 @@ namespace contraction {
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+
+            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> local;
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2, local);
+                if(T.n_blocks() == 0) continue;
+
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
@@ -260,15 +283,15 @@ namespace contraction {
     void lbtm_kernel(size_t b2,
                      ContractionGrid<Matrix, SymmGroup>& contr_grid,
                      Boundary<OtherMatrix, SymmGroup> const & left,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                     BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
-        lbtm_kernel_allocate(b2, contr_grid, left_mult_mps, mpo, right_i, out_left_i);
+        lbtm_kernel_allocate(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i);
         lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
     }
 
@@ -276,15 +299,15 @@ namespace contraction {
     void rbtm_kernel(size_t b1,
                      block_matrix<Matrix, SymmGroup> & ret,
                      Boundary<OtherMatrix, SymmGroup> const & right,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                     MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & left_i,
                      Index<SymmGroup> const & out_right_i,
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
-        rbtm_kernel_allocate(b1, ret, right_mult_mps, mpo, left_i, out_right_i);
+        rbtm_kernel_allocate(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i);
         rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
     

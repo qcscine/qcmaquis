@@ -52,7 +52,7 @@ namespace generate_mpo
         template <typename pos_t, typename tag_type, typename index_type>
         struct prempo_key {
             typedef std::pair<pos_t, tag_type> pos_op_type;
-            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right, conjugate};
+            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
             
             kind_type kind;
             std::vector<pos_op_type> pos_op;
@@ -76,6 +76,7 @@ namespace generate_mpo
             bool operator<(prempo_key const& lhs) const
             {
                 if (kind != lhs.kind) return kind < lhs.kind;
+                //if (pos_op.size() != lhs.pos_op.size()) return pos_op.size() < lhs.pos_op.size();
                 return (pos_op == lhs.pos_op) ? offset < lhs.offset : pos_op < lhs.pos_op;
             }
         };
@@ -98,6 +99,8 @@ namespace generate_mpo
         return std::make_pair( boost::get<0>(t), boost::get<1>(t) );
     }
 
+
+
     template<class Matrix, class SymmGroup>
     class TaggedMPOMaker
     {
@@ -116,7 +119,6 @@ namespace generate_mpo
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
-        //typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
         typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
                          compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
         
@@ -211,38 +213,23 @@ namespace generate_mpo
             typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
             std::vector<spin_desc_t> left_spins(1);
             std::vector<index_type> LeftHerm(1);
+            std::vector<int> LeftPhase(1,1);
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
 
+                //std::ofstream keyfile(std::string("key" + boost::lexical_cast<std::string>(p) +".dat").c_str());
                 std::map<prempo_key_type, prempo_key_type> HermKeyPairs;                
-                prempo_map_type prempo_sorted;
-                for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
-                {
-                    prempo_key_type k1 = it->first.first;
-                    prempo_key_type k2 = it->first.second;
-                    prempo_key_type ck1 = conjugate_key(k1);
-                    prempo_key_type ck2 = conjugate_key(k2);
-
-                    if (! (k1 < ck1 || k1 == ck1))
-                        k1.kind = prempo_key_type::conjugate;
-                    if (! (k2 < ck2 || k2 == ck2))
-                    {
-                        k2.kind = prempo_key_type::conjugate;
-                        HermKeyPairs[ck2] = k2;
-                    }
-
-                    prempo_sorted.insert( std::make_pair(std::make_pair(k1,k2), it->second) );
-                }
+                std::map<prempo_key_type, std::pair<int,int> > HermitianPhases;
 
                 index_map right;
                 index_type r = 2;
-                for (typename prempo_map_type::const_iterator it = prempo_sorted.begin(); it != prempo_sorted.end(); ++it)
+                for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
                 {
                     prempo_key_type const& k1 = it->first.first;
                     prempo_key_type const& k2 = it->first.second;
                     prempo_value_type const& val = it->second;
-
+                    
                     index_iterator ll = left.find(k1);
                     if (ll == left.end())
                         throw std::runtime_error("k1 not found!");
@@ -253,11 +240,25 @@ namespace generate_mpo
                     else if (k2 == trivial_right && rr == right.end())
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, 1) );
                     else if (rr == right.end())
+                    {
+                        //maquis::cout << k2 << std::endl;
+                        //keyfile << r << " " << k2 << std::endl;
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
+                    }
                     
                     index_type rr_dim = (p == length-1) ? 0 : rr->second;
                     pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
+
+                    std::pair<int, int> phase;
+                    prempo_key_type ck2;
+                    boost::tie(ck2, phase) = conjugate_key(k2, p);
+                    if (!(k2 == ck2))
+                    {
+                        HermKeyPairs[k2] = ck2;
+                        HermitianPhases[k2] = phase;
+                    }
                 }
+                //keyfile.close();
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
 
@@ -271,20 +272,26 @@ namespace generate_mpo
                 }
 
                 std::vector<index_type> RightHerm(rcd.second);
+                std::vector<int> RightPhase(rcd.second, 1);
                 {
-                    index_type z = 0;
+                    index_type z = 0, cnt = 0;
                     std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
                     for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
                     {
                         index_type romeo = right[h_it->first];
                         index_type julia = right[h_it->second];
-                        assert (romeo < julia);
-                        std::swap(RightHerm[romeo], RightHerm[julia]);
+                        if (romeo < julia)
+                        {
+                            cnt++;
+                            std::swap(RightHerm[romeo], RightHerm[julia]);
+                            RightPhase[romeo] = HermitianPhases[h_it->first].first;
+                            RightPhase[julia] = HermitianPhases[h_it->first].second;
+                        }
                     }
-                    maquis::cout << "\nBond " << p << ": " << HermKeyPairs.size() << "/" << rcd.second << std::endl;
+                    maquis::cout << "Bond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
 
-                MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm);
+                MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
 
                 if (p == 0)
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
@@ -298,6 +305,7 @@ namespace generate_mpo
                 swap(left, right);
                 swap(left_spins, right_spins);
                 swap(LeftHerm, RightHerm);
+                swap(LeftPhase, RightPhase);
             }
             
             mpo.setCoreEnergy(core_energy);
@@ -550,19 +558,66 @@ namespace generate_mpo
             finalized = true;
         }
         
-        prempo_key_type conjugate_key(prempo_key_type k)
+        std::pair<prempo_key_type, std::pair<int, int> > conjugate_key(prempo_key_type k, pos_t p)
         {
+            typename SymmGroup::subcharge (*np)(typename SymmGroup::charge) = &SymmGroup::particleNumber;
+
+            //if (k.pos_op.size() > 1)
+            //    return std::make_pair(k, std::make_pair(1,1));
+
             prempo_key_type conj = k;
             for (tag_type i = 0; i < k.pos_op.size(); ++i)
             {
                 // for now exclude cases where some ops are self adjoint
-                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                //    return k;
+                if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                    return std::make_pair(k, std::make_pair(1,1));
 
                 conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
             }
 
-            return conj;
+            std::pair<int, int> phase(1,1);
+
+            if ( k.pos_op.size() == 1)
+            {
+                // merge type operator ahead of current position p
+                if ( p < k.pos_op[0].first )
+                {
+                    SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
+                    typename SymmGroup::subcharge pdiff = np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0));
+                    if ( pdiff == 1) //  creator
+                        phase = std::make_pair(1, -1);
+                    else if ( pdiff == -1) // destructor
+                        phase = std::make_pair(-1, 1);
+                }
+                else
+                {
+                    SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
+                    if ( op1.spin().get() == 1) // creator or destructor
+                        phase = std::make_pair(-1, 1);
+                }
+            }
+
+            if ( k.pos_op.size() == 2)
+            {
+                SiteOperator<Matrix, SymmGroup> const & op1 = tag_handler->get_op(k.pos_op[0].second);
+                SiteOperator<Matrix, SymmGroup> const & op2 = tag_handler->get_op(k.pos_op[1].second);
+
+                // if k contains (c^dag c)_S=0 or (c c^dag)_S=0
+                if (op1.spin().get() == 1 && op2.spin().get() == 1 && op2.spin().action() == -1
+                    && np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0)) ==
+                    - (np(op2.basis().left_charge(0)) - np(op2.basis().right_charge(0)))
+                   )
+                    phase = std::make_pair(-1,-1);
+
+                // if k contains (c^dag c^dag)_S=1 or (c c)_S=1
+                if (op1.spin().get() == 1 && op2.spin().get() == 1 && op2.spin().action() == 1
+                    && np(op1.basis().left_charge(0)) - np(op1.basis().right_charge(0)) ==
+                      (np(op2.basis().left_charge(0)) - np(op2.basis().right_charge(0)))
+                   )
+                    phase = std::make_pair(-1,-1);
+            }
+
+            return std::make_pair(conj, phase);
         }
 
     private:

@@ -109,6 +109,10 @@ public:
     spin_desc_t right_spin(index_type right_index) const;
     spin_index const & row_spin_dim() const;
     spin_index const & col_spin_dim() const;
+    index_type num_row_non_zeros(index_type row_i) const;
+    index_type num_col_non_zeros(index_type col_i) const;
+    index_type num_one_rows() const;
+    index_type num_one_cols() const;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;
@@ -119,6 +123,8 @@ public:
 private:
     index_type left_i, right_i;
     spin_index left_spins, right_spins;
+    std::vector<index_type> row_non_zeros, col_non_zeros;
+    index_type num_one_rows_, num_one_cols_;
 
     CSCMatrix col_tags;
     RowIndex row_index;

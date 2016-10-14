@@ -41,9 +41,46 @@
 
 namespace contraction {
 
+    using ::contraction::common::BoundaryMPSProduct;
+    using ::contraction::common::MPSBoundaryProduct;
+
     template <class Matrix, class OtherMatrix, class SymmGroup>
     class Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
     {
+        struct lbtm_functor
+        {
+            void operator()(size_t b2,
+                            contraction::ContractionGrid<Matrix, SymmGroup>& contr_grid,
+                            Boundary<OtherMatrix, SymmGroup> const & left,
+                            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & left_mult_mps,
+                            MPOTensor<Matrix, SymmGroup> const & mpo,
+                            DualIndex<SymmGroup> const & ket_basis,
+                            Index<SymmGroup> const & right_i,
+                            Index<SymmGroup> const & out_left_i,
+                            ProductBasis<SymmGroup> const & in_right_pb,
+                            ProductBasis<SymmGroup> const & out_left_pb)
+            {
+                return SU2::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
+            }
+        };
+
+        struct rbtm_functor
+        {
+            void operator()(size_t b1,
+                            block_matrix<Matrix, SymmGroup> & ret,
+                            Boundary<OtherMatrix, SymmGroup> const & right,
+                            MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
+                            MPOTensor<Matrix, SymmGroup> const & mpo,
+                            DualIndex<SymmGroup> const & ket_basis,
+                            Index<SymmGroup> const & left_i,
+                            Index<SymmGroup> const & out_right_i,
+                            ProductBasis<SymmGroup> const & in_left_pb,
+                            ProductBasis<SymmGroup> const & out_right_pb)
+            {
+                return SU2::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
+            }
+        };
+
     public:
 
         static block_matrix<OtherMatrix, SymmGroup>
@@ -72,7 +109,7 @@ namespace contraction {
                                  MPOTensor<Matrix, SymmGroup> const & mpo,
                                  Index<SymmGroup> const * in_low = NULL)
         {
-            return common::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+            return common::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (mps, left, mpo, in_low);
         }
 
@@ -82,7 +119,7 @@ namespace contraction {
                                   MPOTensor<Matrix, SymmGroup> const & mpo,
                                   Index<SymmGroup> const * in_low = NULL)
         {
-            return common::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+            return common::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (mps, right, mpo, in_low);
         }
 
@@ -92,7 +129,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & left,
                               MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+            return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (bra_tensor, ket_tensor, left, mpo);
         }
 
@@ -102,7 +139,7 @@ namespace contraction {
                                Boundary<OtherMatrix, SymmGroup> const & right,
                                MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+            return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
         }
 
@@ -114,7 +151,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+            return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -133,7 +170,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+            return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 

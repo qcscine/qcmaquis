@@ -83,7 +83,7 @@ namespace MPOTensor_detail
     };
 
     template <class ConstIterator>
-    class IteratorWrapper
+    class IteratorWrapper : public std::iterator<std::forward_iterator_tag, typename std::iterator_traits<ConstIterator>::value_type>
     {
         typedef ConstIterator internal_iterator;
 
@@ -159,10 +159,11 @@ namespace MPOTensor_detail
 
     public:
         Hermitian(index_type ld, index_type rd)
-        : eff_lsize(ld), eff_rsize(rd)
         {
             LeftHerm.resize(ld);
             RightHerm.resize(rd);
+            LeftPhase = std::vector<int>(ld, 1);
+            RightPhase = std::vector<int>(rd, 1);
 
             index_type z=0;
             std::generate(LeftHerm.begin(), LeftHerm.end(), boost::lambda::var(z)++);
@@ -171,20 +172,11 @@ namespace MPOTensor_detail
         }
 
         Hermitian(std::vector<index_type> const & lh,
-                  std::vector<index_type> const & rh)
-        : LeftHerm(lh)
-        , RightHerm(rh)
-        {
-            index_type i = 0;
-            while (i < LeftHerm.size() && LeftHerm[i] >= i)
-                i++;
-            eff_lsize = i;
-
-            i = 0;
-            while (i < RightHerm.size() && RightHerm[i] >= i)
-                i++;
-            eff_rsize = i;
-        }
+                  std::vector<index_type> const & rh,
+                  std::vector<int> const & lp,
+                  std::vector<int> const & rp)
+        : LeftHerm(lh), RightHerm(rh), LeftPhase(lp), RightPhase(rp)
+        {}
 
         bool left_skip(index_type b1) const { return LeftHerm[b1] < b1; }
         bool right_skip(index_type b2) const { return RightHerm[b2] < b2; }
@@ -192,22 +184,41 @@ namespace MPOTensor_detail
         index_type  left_conj(index_type b1) const { return  LeftHerm[b1]; }
         index_type right_conj(index_type b2) const { return RightHerm[b2]; }
 
-        std::size_t left_size() const { return eff_lsize; }
-        std::size_t right_size() const { return eff_rsize; }
+        std::size_t left_size() const { return LeftHerm.size(); }
+        std::size_t right_size() const { return RightHerm.size(); }
+
+        int left_phase(std::size_t i) const { return LeftPhase[i]; }
+        int right_phase(std::size_t i) const { return RightPhase[i]; }
 
     private:
         std::vector<index_type> LeftHerm;
         std::vector<index_type> RightHerm;
 
-        index_type eff_lsize;
-        index_type eff_rsize;
+        std::vector<int> LeftPhase;
+        std::vector<int> RightPhase;
     };
 
     inline Hermitian operator * (Hermitian const & a, Hermitian const & b)
     {
-        return Hermitian(a.LeftHerm, b.RightHerm);
+        return Hermitian(a.LeftHerm, b.RightHerm, a.LeftPhase, b.RightPhase);
     } 
 
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                   typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    { 
+        return 0;
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                  typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    { 
+        if (left)
+        return mpo.left_spin(k).get();
+        else
+        return mpo.right_spin(k).get();
+    }
 }
 
 #endif
