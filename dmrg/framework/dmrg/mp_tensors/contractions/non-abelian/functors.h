@@ -40,9 +40,9 @@ namespace SU2 {
         void operator()(block_matrix<Matrix1, SymmGroup> const & A,
                         block_matrix<Matrix2, SymmGroup> const & B,
                         block_matrix<Matrix3, SymmGroup> & C,
-                        std::vector<typename Matrix1::value_type> scales = std::vector<typename Matrix1::value_type>())
+                        int spin = -1)
         {
-            SU2::gemm(A,B,C, scales);
+            SU2::gemm(A,B,C, spin);
         }
     };
 

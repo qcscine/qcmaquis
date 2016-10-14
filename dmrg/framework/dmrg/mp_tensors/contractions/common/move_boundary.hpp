@@ -242,7 +242,7 @@ namespace contraction {
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
                 block_matrix<Matrix, SymmGroup> tmp;
                 Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
-                typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+                typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2], MPOTensor_detail::get_spin(mpo, b2, false));
             });
 
             return ret;
@@ -299,7 +299,7 @@ namespace contraction {
                 Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
                 block_matrix<Matrix, SymmGroup> tmp;
-                typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
+                typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp, MPOTensor_detail::get_spin(mpo, b1, true));
                 //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
                 swap(ret[b1], tmp);
             });

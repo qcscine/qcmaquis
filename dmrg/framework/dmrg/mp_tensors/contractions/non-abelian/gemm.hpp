@@ -65,14 +65,11 @@ namespace SU2 {
     void gemm(block_matrix<Matrix1, SymmGroup> const & A,
               block_matrix<Matrix2, SymmGroup> const & B,
               block_matrix<Matrix3, SymmGroup> & C,
-              std::vector<typename Matrix1::value_type> conj_scales = std::vector<typename Matrix1::value_type>())
+              int spin)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename Matrix3::value_type value_type;
-
-        if (conj_scales.size() != B.n_blocks())
-            conj_scales = std::vector<value_type>(B.n_blocks(), 1.);
 
         C.clear();
         assert(B.basis().is_sorted());
@@ -87,12 +84,14 @@ namespace SU2 {
             for ( ; it != B_end && it->lc == ar; ++it)
             {
                 std::size_t matched_block = std::distance(B_begin, it);
+                if (!(spin == -1) && !::SU2::triangle(SymmGroup::spin(A.basis().left_charge(k)), spin, SymmGroup::spin(it->rc)))
+                    continue;
 
                 std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
                 if (c_block == C.n_blocks())
                     c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
 
-                boost::numeric::bindings::blas::gemm(conj_scales[matched_block], A[k], B[matched_block], value_type(1), C[c_block]);
+                boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
             }
         }
     }
