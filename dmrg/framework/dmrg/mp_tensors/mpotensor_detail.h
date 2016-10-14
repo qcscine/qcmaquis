@@ -203,6 +203,22 @@ namespace MPOTensor_detail
         return Hermitian(a.LeftHerm, b.RightHerm, a.LeftPhase, b.RightPhase);
     } 
 
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                   typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    { 
+        return 0;
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                  typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    { 
+        if (left)
+        return mpo.left_spin(k).get();
+        else
+        return mpo.right_spin(k).get();
+    }
 }
 
 #endif
