@@ -100,6 +100,42 @@ struct compression {
     MPS<Matrix, SymmGroup>
     static l2r_compress(MPS<Matrix, SymmGroup> mps,
                         std::size_t Mmax, double cutoff,
+                        double & ttrace, bool verbose = false)
+    {
+        std::size_t L = mps.length();
+        std::vector<double> ret;
+        
+        block_matrix<Matrix, SymmGroup> t;
+        
+        mps.canonize(1);
+        
+        if (verbose) maquis::cout << "Compressing @ ";
+        for (std::size_t p = 1; p < L; ++p)
+        {
+            if (verbose) {
+                maquis::cout << p << " ";
+                maquis::cout.flush();
+            }
+            
+            compress_two_sites(mps, Mmax, cutoff, p-1);
+            
+            t = mps[p].normalize_left(DefaultSolver());
+            
+            if (p+1 < L)
+                mps[p+1].multiply_from_left(t);
+            else{
+                maquis::cout << "Norm reduction: " << trace(t) << std::endl;
+                ttrace = trace(t);
+            }
+        }
+        
+        return mps;
+    }
+
+    template<class Matrix, class SymmGroup>
+    MPS<Matrix, SymmGroup>
+    static l2r_compress(MPS<Matrix, SymmGroup> mps,
+                        std::size_t Mmax, double cutoff,
                         bool verbose = false)
     {
         std::size_t L = mps.length();
@@ -123,7 +159,7 @@ struct compression {
             
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
-            else
+            else 
                 maquis::cout << "Norm reduction: " << trace(t) << std::endl;
         }
         

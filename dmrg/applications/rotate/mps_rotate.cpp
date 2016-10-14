@@ -92,13 +92,14 @@ bool sensible(MPS<Matrix, SymmGroup> const & mps)
 // function to write MPS to file
 template<class Matrix, class SymmGroup>
 void dump_MPS(MPS<Matrix, SymmGroup> & mps,
-              DmrgParameters & parms,
+              //DmrgParameters & parms,
               std::string mps_in_file,
               int file_id)
 {
-    maquis::cout << "norm of MPS to be dumped: " << norm(mps) << std::endl; 
+    //maquis::cout << "norm of MPS to be dumped: " << norm(mps) << std::endl; 
     std::string mps_out_file = mps_in_file;
     if(file_id >= 0){
+        /*
         std::size_t pos = mps_out_file.find(".h5");
         if (pos != mps_out_file.size())
             mps_out_file.erase(pos, 3);
@@ -110,6 +111,7 @@ void dump_MPS(MPS<Matrix, SymmGroup> & mps,
 
         storage::archive ar_out(mps_out_file + "/props.h5", "w");
         ar_out["/parameters"] << parms;
+        */
     }
     else save(mps_out_file, mps);
 }
@@ -119,8 +121,10 @@ template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & mps,
                                                 std::vector<MPO<Matrix, SymmGroup> > const & mpo_vec)
 {   
+
     //mpo_times_mps_contractor_ss<Matrix, SymmGroup, storage::nop> sigma_vector_product(mps, mpo, parms);
     //sigma_vector_product.sweep();
+
     assert(sensible(mps));
 
     MPS<Matrix, SymmGroup> ret; 
@@ -151,7 +155,7 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
     typedef Lattice::pos_t pos_t;
     typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
     typedef typename SymmGroup::subcharge sc_t;
-    maquis::cout << "reading integrals for MPO from file: " << file << std::endl;
+    //maquis::cout << "reading integrals for MPO from file: " << file << std::endl;
 
     BaseParameters parms = chem_detail::set_2u1_parameters(L, Nup, Ndown);
     parms.set("integral_file", file);
@@ -183,7 +187,8 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
         int j = idx(m, 1);
         int k = idx(m, 2);
         int l = idx(m, 3);
-        maquis::cout << "ij " << i << "," << j << std::endl;
+
+        //maquis::cout << "integral term ("<< i <<"|" <<j<<") = "<< matrix_elements[m] << std::endl;
 
         assert( k==-1 && l==-1);
         positions.push_back(i);
@@ -196,21 +201,23 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
         ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat, matrix_elements[m]));
         ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat, matrix_elements[m]));
 
-        //MPO<Matrix, SymmGroup> const & mpo = *ret.rbegin();
-        //for (pos_t j = 0; j < lat.size(); ++j){
-        //    maquis::cout << "MPOTensor for site " << j << std::endl;
-        //    for (int b1 = 0; b1 < mpo[j].row_dim(); ++b1)
-        //    {
-        //        for (int b2 = 0; b2 < mpo[j].col_dim(); ++b2)
-        //        {
-        //             if (mpo[j].has(b1, b2)){
-        //                 maquis::cout << mpo[j].tag_number(b1,b2) << " ";
-        //             }
-        //             else maquis::cout << ". ";
-        //        }
-        //        maquis::cout << std::endl;
-        //    }
-        //}
+        /*
+        MPO<Matrix, SymmGroup> const & mpo = *ret.rbegin();
+        for (pos_t j = 0; j < lat.size(); ++j){
+            maquis::cout << "MPOTensor for site " << j << std::endl;
+            for (int b1 = 0; b1 < mpo[j].row_dim(); ++b1)
+            {
+                for (int b2 = 0; b2 < mpo[j].col_dim(); ++b2)
+                {
+                     if (mpo[j].has(b1, b2)){
+                         maquis::cout << mpo[j].tag_number(b1,b2) << " ";
+                     }
+                     else maquis::cout << ". ";
+                }
+                maquis::cout << std::endl;
+            }
+        }
+        */
     }
 
     return ret;
@@ -239,7 +246,7 @@ void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
     typedef typename SymmGroup::charge charge;
 
     mps.make_left_paired();
-    //maquis::cout << mps << std::endl; 
+    maquis::cout << "scaling factor " << tjj << std::endl; 
 
     Index<SymmGroup> const & physical_i = mps.site_dim();
     Index<SymmGroup> const & left_i     = mps.row_dim();
@@ -279,6 +286,20 @@ void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
 }
 
 template <class Matrix, class SymmGroup>
+void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text)
+{
+    maquis::cout << "- MPS compression - input MPS: "<< text << std::endl;
+
+    matrix::value_type final_norm        = norm(mps);
+    matrix::value_type compression_trace = 1.0;
+
+    mps = compression::l2r_compress(mps, 8000, 1e-8, compression_trace);
+    maquis::cout << "- compression trace          : "<< compression_trace << std::endl;
+    mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
+
+}
+
+template <class Matrix, class SymmGroup>
 void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::string fcidump_file)
 {
     typedef Lattice::pos_t pos_t;
@@ -290,43 +311,76 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     Ndown = mps[L-1].col_dim()[0].first[1];
     std::string site_types = chem_detail::infer_site_types(mps);
 
+    //maquis::cout << "- input MPS - "<<      std::endl;
+    //debug::mps_print_ci(mps, "dets.txt");
+
     // step 1: scale MPS wrt rotations among inactive orbitals
     value_type alpha = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(0));
     mps[0].multiply_by_scalar(alpha);
 
-    MPS<Matrix, SymmGroup> mps_intermediate, mps_prime, mps_prime_prime;
+    //maquis::cout << "- scaled MPS (inactive orbitals) - "<<      std::endl;
+    //debug::mps_print_ci(mps, "dets.txt");
+
+    MPS<Matrix, SymmGroup> mps_prime, mps_prime_prime;
 
     // step 2: scale MPS wrt rotations among active orbitals
     for (pos_t j = 0; j < L; ++j)
     {
-        maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl; 
+        maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl;
 
         // scale the j-th MPS tensor wrt the occupation of the j-th orbital 
         value_type tjj = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(j+1));
         scale_MPSTensor<Matrix, SymmGroup>(mps[j], tjj);
+
+        //maquis::cout << "- scaled MPS (local sites) - "<<      std::endl;
+        //debug::mps_print_ci(mps, "dets.txt");
         //debug::mps_print(mps[j], "\nScaled MPS at site " + boost::lexical_cast<std::string>(j));
 
         // get MPO
         std::vector<MPO<Matrix, SymmGroup> > MPO_vec
             = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown, site_types);
+
+        // check for non-zero MPO vector
+        if(MPO_vec.size() == 0) continue;
+
         // |mps'> = H|mps> (first correction vector)
         mps_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps, MPO_vec);
-        debug::mps_print_ci(mps_prime, "dets.txt");
+
+        maquis::cout << "- first correction MPS obtained - "<<      std::endl;
+        //debug::mps_print_ci(mps_prime, "dets.txt");
+
 
         mps = join(mps, mps_prime);
         //debug::mps_print(mps, "Intermediate MPS at site ");
-        debug::mps_print_ci(mps, "dets.txt");
+        maquis::cout << "- intermediate correction MPS obtained - "<<      std::endl;
+        //debug::mps_print_ci(mps, "dets.txt");
 
+        // compression of MPS' 
+        compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
+
+        //maquis::cout << "- enter for second correction - "<<      std::endl;
         // |mps''> = H|mps'> (second correction vector)
         mps_prime_prime = MPS_sigma_vector_product<Matrix, SymmGroup>(mps_prime, MPO_vec);
+        maquis::cout << "- Second correction MPS obtained - "<<      std::endl;
+        //debug::mps_print_ci(mps_prime_prime, "dets.txt");
         //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
-        debug::mps_print_ci(mps_prime_prime, "dets.txt");
+
+        // compression of MPS'' 
+        //compress_mps<Matrix, SymmGroup>(mps_prime_prime, "MPS prime prime");
 
         // set new MPS := mps + mps' + 1/2 mps''
         mps_prime_prime[0].multiply_by_scalar(0.5);
         mps = join(mps, mps_prime_prime);
+        //
+        maquis::cout << "-  Final (for the current site to be rotated) MPS with no compression   - "<<      std::endl;
+        //debug::mps_print_ci(mps, "dets.txt");
+
+        // compression of final MPS
+        compress_mps<Matrix, SymmGroup>(mps, "MPS final");
+
+        maquis::cout << "-  Final (for the current site to be rotated) MPS with full compression - "<<      std::endl;
+        //debug::mps_print_ci(mps, "dets.txt");
         //debug::mps_print(mps, "Final (for the current site to be rotated) MPS at site ");
-        debug::mps_print_ci(mps, "dets.txt");
     }
 }
 
@@ -346,7 +400,10 @@ int main(int argc, char ** argv)
         load(argv[1], mps);
 
         mps.canonize(0);
-        debug::mps_print_ci(mps, "dets.txt");
+
+        //maquis::cout << " Input MPS: " << std::endl; 
+        //debug::mps_print_ci(mps, "dets.txt");
+
         //maquis::cout << "norm of MPS: " << norm(mps) << std::endl; 
         //debug::mps_print(mps, "Original MPS at site ");
 
@@ -356,17 +413,20 @@ int main(int argc, char ** argv)
         rotate_mps(mps, scale_fac_file, fcidump_file);
 
         matrix::value_type final_norm = norm(mps);
-        maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
+        //maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
+
         // NOTE: this normalizes the final MPS and may invert signs
         //mps = compression::l2r_compress(mps, 10000, 1e-7);
         //mps[0].multiply_by_scalar(sqrt(final_norm));
 
-        maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl; 
+        maquis::cout << " FINAL DATA" << std::endl << " ----------" << std::endl;
         //debug::mps_print(mps, " Rotated MPS at site ");
-        debug::mps_print_ci(mps, "dets.txt");
+        //debug::mps_print_ci(mps, "dets.txt");
+
         maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
 
         //dump_MPS<matrix, grp>(mps, parms, mps_in_file, -1);
+        dump_MPS<matrix, grp>(mps, argv[1], -1);
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

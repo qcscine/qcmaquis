@@ -28,6 +28,7 @@
 #include <mpi.h>
 #endif
 #include <iostream>
+#include <fstream>
 #include <sys/time.h>
 #include <sys/stat.h>
 
@@ -62,8 +63,11 @@ int main(int argc, char ** argv)
 {
     try {
         if (argc != 2) {
-            std::cout << "Usage: " << argv[0] << " <mps.h5>" << std::endl;
-            return 1;
+            if (argc != 3) {
+                std::cout << "Usage      :  " << argv[0] << " <mps.h5>" << std::endl;
+                std::cout << "or optional:  " << argv[0] << " <mps.h5>" << " <target Sz value>" << std::endl;
+                return 1;
+            }
         }
 
         std::string mps_in_file = argv[1];
@@ -91,8 +95,20 @@ int main(int argc, char ** argv)
         int N = parms["nelec"];
         int TwoS = parms["spin"];
 
+	    int target_sz = 0;
+	    if(argc == 3)
+            target_sz = atoi(argv[2]);
+
+        // open file to store names of transformed MPS for preprocessing
+	    std::ofstream myfile;
+	    myfile.open ("mpstransform.txt");
+
         for (int Sz = -TwoS; Sz <= TwoS; Sz += 2)
         {
+    	    // skip loop to next iteration until we hit the target Sz value 
+	        if((argc == 3) && (Sz != target_sz))
+	            continue;
+
             int Nup = (N + Sz) / 2;
             int Ndown = (N - Sz) / 2;
 
@@ -108,6 +124,11 @@ int main(int argc, char ** argv)
                 mps_out_file.erase(pos, 3);
             mps_out_file += "." + boost::lexical_cast<std::string>(TwoS) + "." + boost::lexical_cast<std::string>(Nup-Ndown) + ".h5";
 
+            myfile << mps_out_file << std::endl;
+	        myfile << Nup << std::endl;
+	        myfile << Ndown << std::endl;
+	        myfile << parms["irrep"] << std::endl;
+
             save(mps_out_file, mps_out);
 
             if (boost::filesystem::exists(mps_out_file + "/props.h5"))
@@ -117,6 +138,8 @@ int main(int argc, char ** argv)
             storage::archive ar_out(mps_out_file + "/props.h5", "w");
             ar_out["/parameters"] << parms;
         }
+
+        myfile.close();
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
