@@ -37,14 +37,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#ifdef USE_AMBIENT
-    #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::tiles<ambient::matrix<double> > Matrix;
-#else
-    #include "dmrg/block_matrix/detail/alps.hpp"
-    typedef alps::numeric::matrix<double> Matrix;
-#endif
-
+#include "dmrg/sim/matrix_types.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -92,22 +85,22 @@ int main(int argc, char ** argv)
         parms.set("init_bond_dimension", 1000);
         parms.set("site_types", "0,0,0,0");
 
-        default_mps_init<Matrix, grp> mpsinit(parms,
-                                            chem_detail::make_2u1_site_basis<Matrix, grp>(L, Nup, Ndown, parms["site_types"]),
+        default_mps_init<matrix, grp> mpsinit(parms,
+                                            chem_detail::make_2u1_site_basis<matrix, grp>(L, Nup, Ndown, parms["site_types"]),
                                             chem_detail::make_2u1_initc<grp>(Nup, Ndown, irrep), parms["site_types"]);
-        MPS<Matrix, grp> mps(L, mpsinit);
+        MPS<matrix, grp> mps(L, mpsinit);
         save("mps.h5", mps);
 
-        MPS<Matrix, grp> mps1(L, mpsinit);
+        MPS<matrix, grp> mps1(L, mpsinit);
         save("mps1.h5", mps1);
-        MPS<Matrix, grp> mps2(L, mpsinit);
+        MPS<matrix, grp> mps2(L, mpsinit);
         save("mps2.h5", mps2);
  
         Lattice lat(parms);
-        Model<Matrix, grp> model(lat, parms);
+        Model<matrix, grp> model(lat, parms);
 
         typedef Lattice::pos_t pos_t;
-        typedef OPTable<Matrix, grp>::tag_type tag_type;
+        typedef OPTable<matrix, grp>::tag_type tag_type;
 
         std::vector<pos_t> positions;
         std::vector<tag_type> operators;
@@ -120,17 +113,17 @@ int main(int argc, char ** argv)
         ident.push_back(model.identity_matrix_tag(0));
         fill.push_back(model.filling_matrix_tag(0));
         
-        MPO<Matrix, grp> mpo = generate_mpo::make_1D_mpo(positions, operators, ident, fill, model.operators_table(), lat);  
+        MPO<matrix, grp> mpo = generate_mpo::make_1D_mpo(positions, operators, ident, fill, model.operators_table(), lat);  
 
         grp::charge delta = grp::IdentityCharge;
-        MPS<Matrix, grp> pmps(lat.size());
+        MPS<matrix, grp> pmps(lat.size());
         for (int p = 0; p < lat.size(); ++p) {
             maquis::cout << "\n****************** site " << p << " ****************\n";
             pmps[p] =  mpo_times_mps(mpo[p], mps[p], delta);
         }
         save("pmps.h5", pmps); 
 
-        MPS<Matrix, grp> amps = join(pmps, mps);
+        MPS<matrix, grp> amps = join(pmps, mps);
         save("amps.h5", amps);
         maquis::cout << mps[1] << std::endl;
         maquis::cout << pmps[1] << std::endl;
