@@ -30,7 +30,8 @@
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 
-typedef alps::numeric::matrix<double> matrix;
+#include "dmrg/sim/matrix_types.h"
+
 typedef U1 symm;
 
 
