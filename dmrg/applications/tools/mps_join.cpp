@@ -37,14 +37,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#ifdef USE_AMBIENT
-#include "dmrg/block_matrix/detail/ambient.hpp"
-typedef ambient::tiles<ambient::matrix<double> > Matrix;
-#else
-#include "dmrg/block_matrix/detail/alps.hpp"
-typedef alps::numeric::matrix<double> Matrix;
-#endif
-
+#include "dmrg/sim/matrix_types.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -73,13 +66,13 @@ int main(int argc, char ** argv)
             std::cout << "Usage: " << argv[0] << " <in1.chkp> <in2.chkp> <out.chkp>" << std::endl;
             return 1;
         }
-        MPS<Matrix, grp> mps_in1;
+        MPS<matrix, grp> mps_in1;
         load(argv[1], mps_in1);
 
-        MPS<Matrix, grp> mps_in2;
+        MPS<matrix, grp> mps_in2;
         load(argv[2], mps_in2);
 
-        MPS<Matrix, grp> mps_out = join(mps_in1, mps_in2);
+        MPS<matrix, grp> mps_out = join(mps_in1, mps_in2);
         save(argv[3], mps_out);
         
     } catch (std::exception& e) {
