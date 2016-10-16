@@ -37,14 +37,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#ifdef USE_AMBIENT
-    #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::tiles<ambient::matrix<double> > Matrix;
-#else
-    #include "dmrg/block_matrix/detail/alps.hpp"
-    typedef alps::numeric::matrix<double> Matrix;
-#endif
-
+#include "dmrg/sim/matrix_types.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -74,7 +67,7 @@ int main(int argc, char ** argv)
             std::cout << "Usage: " << argv[0] << " <mps1.h5> <mps2.h5>" << std::endl;
             return 1;
         }
-        MPS<Matrix, grp> mps1, mps2;
+        MPS<matrix, grp> mps1, mps2;
         load(argv[1], mps1);
         load(argv[2], mps2);
         
@@ -86,16 +79,16 @@ int main(int argc, char ** argv)
         }
         
         if (false) {
-            operator_selector<Matrix, grp>::type ident;
+            operator_selector<matrix, grp>::type ident;
             for (int i=0; i<mps1.site_dim(0).size(); ++i)
-                ident.insert_block(Matrix::identity_matrix(mps1.site_dim(0)[i].second),
+                ident.insert_block(matrix::identity_matrix(mps1.site_dim(0)[i].second),
                                    mps1.site_dim(0)[i].first, mps1.site_dim(0)[i].first);
             
-            MPO<Matrix, grp> mpo;
+            MPO<matrix, grp> mpo;
             
-            MPOTensor<Matrix, grp> mpot;
+            MPOTensor<matrix, grp> mpot;
             mpot.set(0,0, ident);
-            mpo = MPO<Matrix, grp>(mps1.length());
+            mpo = MPO<matrix, grp>(mps1.length());
             for (int p=0; p<mps1.length(); ++p)
                 mpo[p] = mpot;
             

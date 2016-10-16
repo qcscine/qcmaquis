@@ -37,14 +37,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#ifdef USE_AMBIENT
-    #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::tiles<ambient::matrix<double> > matrix;
-#else
-    #include "dmrg/block_matrix/detail/alps.hpp"
-    typedef alps::numeric::matrix<double> matrix;
-#endif
-
+#include "dmrg/sim/matrix_types.h"
 #include "dmrg/block_matrix/block_matrix.h"
 
 #include "dmrg/block_matrix/indexing.h"
