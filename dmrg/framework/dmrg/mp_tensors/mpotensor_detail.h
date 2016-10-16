@@ -162,6 +162,8 @@ namespace MPOTensor_detail
         {
             LeftHerm.resize(ld);
             RightHerm.resize(rd);
+            LeftPhase = std::vector<int>(ld, 1);
+            RightPhase = std::vector<int>(rd, 1);
 
             index_type z=0;
             std::generate(LeftHerm.begin(), LeftHerm.end(), boost::lambda::var(z)++);
@@ -170,9 +172,10 @@ namespace MPOTensor_detail
         }
 
         Hermitian(std::vector<index_type> const & lh,
-                  std::vector<index_type> const & rh)
-        : LeftHerm(lh)
-        , RightHerm(rh)
+                  std::vector<index_type> const & rh,
+                  std::vector<int> const & lp,
+                  std::vector<int> const & rp)
+        : LeftHerm(lh), RightHerm(rh), LeftPhase(lp), RightPhase(rp)
         {}
 
         bool left_skip(index_type b1) const { return LeftHerm[b1] < b1; }
@@ -184,16 +187,38 @@ namespace MPOTensor_detail
         std::size_t left_size() const { return LeftHerm.size(); }
         std::size_t right_size() const { return RightHerm.size(); }
 
+        int left_phase(std::size_t i) const { return LeftPhase[i]; }
+        int right_phase(std::size_t i) const { return RightPhase[i]; }
+
     private:
         std::vector<index_type> LeftHerm;
         std::vector<index_type> RightHerm;
+
+        std::vector<int> LeftPhase;
+        std::vector<int> RightPhase;
     };
 
     inline Hermitian operator * (Hermitian const & a, Hermitian const & b)
     {
-        return Hermitian(a.LeftHerm, b.RightHerm);
+        return Hermitian(a.LeftHerm, b.RightHerm, a.LeftPhase, b.RightPhase);
     } 
 
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                   typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    { 
+        return 0;
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                  typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    { 
+        if (left)
+        return mpo.left_spin(k).get();
+        else
+        return mpo.right_spin(k).get();
+    }
 }
 
 #endif

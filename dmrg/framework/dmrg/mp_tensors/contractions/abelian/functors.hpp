@@ -40,7 +40,8 @@ namespace abelian {
             template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
             void operator()(block_matrix<Matrix1, SymmGroup> const & A,
                             block_matrix<Matrix2, SymmGroup> const & B,
-                            block_matrix<Matrix3, SymmGroup> & C)
+                            block_matrix<Matrix3, SymmGroup> & C,
+                            int spin = -1)
             {
                 gemm(A,B,C);
             }
@@ -51,7 +52,8 @@ namespace abelian {
             template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
             void operator()(block_matrix<Matrix1, SymmGroup> const & A,
                             block_matrix<Matrix2, SymmGroup> const & B,
-                            block_matrix<Matrix3, SymmGroup> & C)
+                            block_matrix<Matrix3, SymmGroup> & C,
+                            std::vector<typename Matrix1::value_type> scales = std::vector<typename Matrix1::value_type>())
             {
                 gemm_trim_left(A,B,C);
             }
@@ -62,7 +64,8 @@ namespace abelian {
             template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
             void operator()(block_matrix<Matrix1, SymmGroup> const & A,
                             block_matrix<Matrix2, SymmGroup> const & B,
-                            block_matrix<Matrix3, SymmGroup> & C)
+                            block_matrix<Matrix3, SymmGroup> & C,
+                            std::vector<typename Matrix1::value_type> scales = std::vector<typename Matrix1::value_type>())
             {
                 gemm_trim_right(A,B,C);
             }

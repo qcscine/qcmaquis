@@ -47,7 +47,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & left,
                               BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
-                              MPSTensor<Matrix, SymmGroup> const & mps,
+                              DualIndex<SymmGroup> const & ket_basis,
                               Index<SymmGroup> const & right_i,
                               Index<SymmGroup> const & out_left_i)
     {
@@ -61,7 +61,7 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
-            DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, mps, b1);
+            DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, ket_basis, b1);
             if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -99,7 +99,7 @@ namespace contraction {
                              Boundary<OtherMatrix, SymmGroup> const & left,
                              BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                             MPSTensor<Matrix, SymmGroup> const & mps,
+                             DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & right_i,
                              Index<SymmGroup> const & out_left_i,
                              ProductBasis<SymmGroup> const & in_right_pb,
@@ -169,7 +169,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & right,
                               MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
-                              MPSTensor<Matrix, SymmGroup> const & mps,
+                              DualIndex<SymmGroup> const & ket_basis,
                               Index<SymmGroup> const & left_i,
                               Index<SymmGroup> const & out_right_i)
     {
@@ -183,7 +183,7 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            DualIndex<SymmGroup> T_basis = detail::T_basis_right(right, right_mult_mps, mpo, mps, b2);
+            DualIndex<SymmGroup> T_basis = detail::T_basis_right(right, right_mult_mps, mpo, ket_basis, b2);
             if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -216,7 +216,7 @@ namespace contraction {
                              Boundary<OtherMatrix, SymmGroup> const & right,
                              MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                             MPSTensor<Matrix, SymmGroup> const & mps,
+                             DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & left_i,
                              Index<SymmGroup> const & out_right_i,
                              ProductBasis<SymmGroup> const & in_left_pb,
@@ -285,14 +285,14 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     MPSTensor<Matrix, SymmGroup> const & mps,
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
-        lbtm_kernel_allocate(b2, contr_grid, left, left_mult_mps, mpo, mps, right_i, out_left_i);
-        lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, mps, right_i, out_left_i, in_right_pb, out_left_pb);
+        lbtm_kernel_allocate(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i);
+        lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -301,14 +301,14 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & right,
                      MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     MPSTensor<Matrix, SymmGroup> const & mps,
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & left_i,
                      Index<SymmGroup> const & out_right_i,
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
-        rbtm_kernel_allocate(b1, ret, right, right_mult_mps, mpo, mps, left_i, out_right_i);
-        rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, mps, left_i, out_right_i, in_left_pb, out_right_pb);
+        rbtm_kernel_allocate(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i);
+        rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
     
     } // namespace abelian

@@ -37,6 +37,57 @@
 namespace contraction {
     namespace common {
 
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
+    conjugate_phases(block_matrix<Matrix, SymmGroup> const & bm,
+                     MPOTensor<OtherMatrix, SymmGroup> const & mpo,
+                     size_t k, bool left, bool forward)
+    {
+        typedef typename Matrix::value_type value_type;
+        typename SymmGroup::subcharge S = (left) ? mpo.left_spin(k).get() : mpo.right_spin(k).get();
+
+        std::vector<value_type> ret(bm.n_blocks());
+
+        for (size_t b = 0; b < bm.n_blocks(); ++b)
+        {
+            value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>(bm.basis().left_charge(b), bm.basis().right_charge(b), S);
+            if (forward)
+                scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k)) : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
+            else
+                scale *= (left) ? mpo.herm_info.left_phase(k) : mpo.herm_info.right_phase(k);
+
+            ret[b] = scale;
+        }
+        return ret;
+    }
+
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
+    conjugate_phases(block_matrix<Matrix, SymmGroup> const & bm,
+                     MPOTensor<OtherMatrix, SymmGroup> const & mpo,
+                     size_t k, bool left, bool forward)
+    {
+        return std::vector<typename Matrix::value_type>(bm.n_blocks(), 1.);
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+                                                                                       MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                       size_t k, bool left, bool forward)
+    {
+        typedef typename Matrix::value_type value_type;
+        std::vector<value_type> scales = conjugate_phases(bm, mpo, k, left, forward);
+
+        for (size_t b = 0; b < bm.n_blocks(); ++b)
+            bm[b] *= scales[b];
+    }
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+                                                                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                                        size_t b, bool left, bool forward)
+    { }
+
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     class BoundaryMPSProduct
     {
@@ -62,7 +113,9 @@ namespace contraction {
                 if (mpo.herm_info.left_skip(b1))
                 {   
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1]);
+
+                    std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1], scales);
                 }
                 else {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
@@ -95,7 +148,9 @@ namespace contraction {
                 if (mpo.herm_info.left_skip(k))
                 {
                     //parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage);
+                    //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage);
+                    std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(k)], mpo, k, true, false);
+                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage, scales);
                 }
                 else {
                     //parallel::guard group(scheduler(b1), parallel::groups_granularity);
@@ -148,7 +203,10 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(b2)]), data_[b2]);
+                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(b2)]);
+                    std::vector<value_type> scales = conjugate_phases(trv, mpo, b2, false, true);
+
+                    typename Gemm::gemm_trim_right()(mps.data(), trv, data_[b2], scales);
                 }
                 else {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
@@ -181,7 +239,10 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(k))
                 {
                     //parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
+                    //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
+                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
+                    std::vector<value_type> scales = conjugate_phases(trv, mpo, k, false, true);
+                    typename Gemm::gemm_trim_right()(mps.data(), trv, storage, scales);
                 }
                 else {
                     //parallel::guard group(scheduler(b2), parallel::groups_granularity);

@@ -34,22 +34,22 @@ namespace contraction {
 namespace abelian {
 namespace detail {
 
-    template<class Matrix1, class Matrix2, class SymmGroup>
+    template<class Matrix1, class SymmGroup>
     DualIndex<SymmGroup> gemm_trim_left_basis(block_matrix<Matrix1, SymmGroup> const & A,
-                                              block_matrix<Matrix2, SymmGroup> const & B)
+                                              DualIndex<SymmGroup> const & B_basis)
     {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
 
         DualIndex<SymmGroup> ret;
 
-        const_iterator B_begin = B.basis().begin();
-        const_iterator B_end = B.basis().end();
+        const_iterator B_begin = B_basis.begin();
+        const_iterator B_end = B_basis.end();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
-            if (!B.basis().left_has(A.basis().left_charge(k))) continue;
+            if (!B_basis.left_has(A.basis().left_charge(k))) continue;
 
             typename SymmGroup::charge ar = A.basis().right_charge(k);
-            const_iterator it = B.basis().left_lower_bound(ar);
+            const_iterator it = B_basis.left_lower_bound(ar);
 
             for ( ; it != B_end && it->lc == ar; ++it)
                 if (!ret.has(A.basis().left_charge(k), it->rc))
@@ -57,8 +57,8 @@ namespace detail {
         }
         return ret;
     }
-    template<class Matrix1, class Matrix2, class SymmGroup>
-    DualIndex<SymmGroup> gemm_trim_right_basis(block_matrix<Matrix1, SymmGroup> const & A,
+    template<class Matrix2, class SymmGroup>
+    DualIndex<SymmGroup> gemm_trim_right_basis(DualIndex<SymmGroup> const & A_basis,
                                                block_matrix<Matrix2, SymmGroup> const & B)
     {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
@@ -67,17 +67,20 @@ namespace detail {
 
         const_iterator B_begin = B.basis().begin();
         const_iterator B_end = B.basis().end();
-        Index<SymmGroup> A_right_basis = A.right_basis();
-        for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+        Index<SymmGroup> A_right_basis(A_basis.size());
+        for (size_t k = 0; k < A_basis.size(); ++k) 
+            A_right_basis[k] = std::make_pair(A_basis.right_charge(k), A_basis.right_size(k));
 
-            typename SymmGroup::charge ar = A.basis().right_charge(k);
+        for (std::size_t k = 0; k < A_basis.size(); ++k) {
+
+            typename SymmGroup::charge ar = A_basis.right_charge(k);
             const_iterator it = B.basis().left_lower_bound(ar);
 
             for ( ; it != B_end && it->lc == ar; ++it)
             {
                 if (!A_right_basis.has(it->rc)) continue; // trim
-                if (!ret.has(A.basis().left_charge(k), it->rc))
-                    ret.insert(typename DualIndex<SymmGroup>::value_type(A.basis().left_charge(k), it->rc, A.basis().left_size(k), it->rs));
+                if (!ret.has(A_basis.left_charge(k), it->rc))
+                    ret.insert(typename DualIndex<SymmGroup>::value_type(A_basis.left_charge(k), it->rc, A_basis.left_size(k), it->rs));
             }
         }
         return ret;
@@ -89,14 +92,14 @@ namespace detail {
     DualIndex<SymmGroup> T_basis_left(Boundary<OtherMatrix, SymmGroup> const & boundary,
                                       common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                       MPOTensor<Matrix, SymmGroup> const & mpo,
-                                      MPSTensor<Matrix, SymmGroup> const & mps,
+                                      DualIndex<SymmGroup> const & mps_basis,
                                       typename MPOTensor<Matrix, SymmGroup>::index_type b)
     {
         if (mpo.num_row_non_zeros(b) == 1)
             if (mpo.herm_info.left_skip(b))
-                return gemm_trim_left_basis(boundary[mpo.herm_info.left_conj(b)], mps.data());
+                return gemm_trim_left_basis(boundary[mpo.herm_info.left_conj(b)], mps_basis);
             else
-                return gemm_trim_left_basis(transpose(boundary[b]), mps.data());
+                return gemm_trim_left_basis(transpose(boundary[b]), mps_basis);
         else
             return mult_mps[b].basis();
     }
@@ -104,14 +107,14 @@ namespace detail {
     DualIndex<SymmGroup> T_basis_right(Boundary<OtherMatrix, SymmGroup> const & boundary,
                                        common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & mult_mps,
                                        MPOTensor<Matrix, SymmGroup> const & mpo,
-                                       MPSTensor<Matrix, SymmGroup> const & mps,
+                                       DualIndex<SymmGroup> const & mps_basis,
                                        typename MPOTensor<Matrix, SymmGroup>::index_type b)
     {
         if (mpo.num_col_non_zeros(b) == 1)
             if (mpo.herm_info.right_skip(b))
-                return gemm_trim_right_basis(mps.data(), transpose(boundary[mpo.herm_info.right_conj(b)]));
+                return gemm_trim_right_basis(mps_basis, transpose(boundary[mpo.herm_info.right_conj(b)]));
             else
-                return gemm_trim_right_basis(mps.data(), boundary[b]);
+                return gemm_trim_right_basis(mps_basis, boundary[b]);
         else
             return mult_mps[b].basis();
     }

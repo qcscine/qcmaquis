@@ -33,6 +33,7 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/micro_kernels.hpp"
 
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 
@@ -45,7 +46,7 @@ namespace SU2 {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     MPSTensor<Matrix, SymmGroup> const & mps,
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
@@ -56,8 +57,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
-
-        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
@@ -75,89 +74,46 @@ namespace SU2 {
 
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
+            for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block) {
 
-                charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
-                charge mc = left[b1].basis().left_charge(lblock);
+                charge lc = T.basis().left_charge(t_block);
+                charge rc = T.basis().right_charge(t_block);
 
-                if (!ket_basis.left_has(lc)) continue; // ket_basis needs to be left_paired
+                const_iterator it = ket_basis.left_lower_bound(rc); //ket_basis comes transposed!
+                charge mc = it->rc;
 
-                const_iterator it = ket_basis.left_lower_bound(mc);
-                for ( ; it != ket_basis.end() && it->lc == mc; ++it)
+                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                 {
-                    charge rc = it->rc;
-                    size_t t_block = T.basis().position(lc, rc); // t_block != lblock in general
+                    charge phys_in = W.basis().left_charge(w_block);
+                    charge phys_out = W.basis().right_charge(w_block);
 
-                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
-                    {
-                        charge phys_in = W.basis().left_charge(w_block);
-                        charge phys_out = W.basis().right_charge(w_block);
+                    charge out_r_charge = SymmGroup::fuse(rc, phys_in);
+                    size_t rb = right_i.position(out_r_charge);
+                    if (rb == right_i.size()) continue;
 
-                        charge out_r_charge = SymmGroup::fuse(rc, phys_in);
-                        if (!right_i.has(out_r_charge)) continue;
+                    charge out_l_charge = SymmGroup::fuse(lc, phys_out);
+                    if (!::SU2::triangle(SymmGroup::spin(out_r_charge), ap, SymmGroup::spin(out_l_charge))) continue;
+                    if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
-                        charge out_l_charge = SymmGroup::fuse(lc, phys_out);
-                        if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
+                    size_t r_size = right_i[rb].second;
 
-                        size_t r_size = right_i.size_of_block(out_r_charge);
+                    size_t o = ret.find_block(out_l_charge, out_r_charge);
+                    if ( o == ret.n_blocks() )
+                        o = ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge),r_size), out_l_charge, out_r_charge);
 
-                        size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() )
-                            o = ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge),r_size), out_l_charge, out_r_charge);
+                    int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_l_charge);
+                    int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
+                    int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_l_charge);
-                        int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
-                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
+                    typename Matrix::value_type couplings[4];
+                    ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
-                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        //if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+                    size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
+                    size_t out_left_offset = out_left_pb(phys_out, lc);
+                    size_t l_size = T.basis().left_size(t_block);
 
-                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                        typename Matrix::value_type couplings[4];
-                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, two_sp, ip);
-                        couplings[2] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2,      ip);
-                        couplings[3] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
-
-                        size_t phys_s1 = W.basis().left_size(w_block);
-                        size_t phys_s2 = W.basis().right_size(w_block);
-                        size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
-                        size_t out_left_offset = out_left_pb(phys_out, lc);
-                        Matrix const & wblock = W[w_block];
-                        Matrix const & iblock = T[t_block];
-                        Matrix & oblock = ret[o];
-
-                        //maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
-                        //        out_left_offset, in_right_offset,
-                        //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
-
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-
-                        size_t ldim = T.basis().left_size(t_block);
-                        for(size_t rr = 0; rr < r_size; ++rr) {
-                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                            {
-                                std::size_t ss1 = it->row;
-                                std::size_t ss2 = it->col;
-                                std::size_t rspin = it->row_spin;
-                                std::size_t cspin = it->col_spin;
-                                std::size_t casenr = 0;
-                                if (rspin == 2 && cspin == 2) casenr = 3;
-                                else if (rspin == 2) casenr = 1;
-                                else if (cspin == 2) casenr = 2;
-
-                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                                maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
-                                                                    &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
-                                                                    &oblock(out_left_offset + ss2*ldim, rr),
-                                                                    alfa_t);
-                            }
-                        }
-
-                    } // wblock
-                } // ket matches
+                    detail::lbtm<Matrix, SymmGroup>(T[t_block], ret[o], W, in_right_offset, out_left_offset, l_size, r_size, w_block, couplings);
+                } // wblock
             } // lblock
         } // op_index
         } // b1
@@ -169,7 +125,7 @@ namespace SU2 {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
-                MPSTensor<Matrix, SymmGroup> const & mps,
+                DualIndex<SymmGroup> const & ket_basis,
                 Index<SymmGroup> const & left_i,
                 Index<SymmGroup> const & out_right_i,
                 ProductBasis<SymmGroup> const & in_left_pb,
@@ -180,8 +136,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
-
-        DualIndex<SymmGroup> const & ket_basis = mps.data().basis();
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -197,80 +151,46 @@ namespace SU2 {
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
             int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-            for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
+            for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block){
 
-                charge lc = ket_basis[ketblock].lc;
-                charge mc = ket_basis[ketblock].rc;
+                charge lc = T.basis().left_charge(t_block);
+                charge rc = T.basis().right_charge(t_block);
 
-                const_iterator it = right[b2].basis().left_lower_bound(mc);
-                for ( ; it != right[b2].basis().end() && it->lc == mc; ++it)
+                const_iterator it = ket_basis.left_lower_bound(lc);
+                charge mc = it->rc;
+
+                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                 {
-                    charge rc = it->rc;
-                    size_t t_block = T.basis().position(lc, rc); // t_block != ketblock in general
-                    if (t_block == T.basis().size()) continue;
+                    charge phys_in = W.basis().left_charge(w_block);
+                    charge phys_out = W.basis().right_charge(w_block);
 
-                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
-                    {
-                        charge phys_in = W.basis().left_charge(w_block);
-                        charge phys_out = W.basis().right_charge(w_block);
+                    charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
+                    size_t lb = left_i.position(out_l_charge);
+                    if (lb == left_i.size()) continue;
 
-                        charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
-                        if (!left_i.has(out_l_charge)) continue;
+                    charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
+                    if (!::SU2::triangle(SymmGroup::spin(out_l_charge), a, SymmGroup::spin(out_r_charge))) continue;
+                    if (!left_i.has(out_r_charge)) continue;
 
-                        charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
-                        if (!left_i.has(out_r_charge)) continue;
+                    size_t l_size = left_i[lb].second;
 
-                        size_t l_size = left_i.size_of_block(out_l_charge);
+                    size_t o = ret.find_block(out_l_charge, out_r_charge);
+                    if ( o == ret.n_blocks() )
+                        o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
-                        size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() )
-                            o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
+                    int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
+                    int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
+                    int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
-                        int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
-                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
+                    typename Matrix::value_type couplings[4];
+                    ::SU2::set_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, access.scale(op_index), couplings);
 
-                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                        typename Matrix::value_type couplings[4];
-                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, two_sp, ip);
-                        couplings[2] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2,      ip);
-                        couplings[3] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
+                    size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
+                    size_t out_right_offset = out_right_pb(phys_out, rc);
+                    size_t r_size = T.basis().right_size(t_block);
 
-                        size_t phys_s1 = W.basis().left_size(w_block);
-                        size_t phys_s2 = W.basis().right_size(w_block);
-                        size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
-                        size_t out_right_offset = out_right_pb(phys_out, rc);
-                        Matrix const & wblock = W[w_block];
-                        Matrix const & iblock = T[t_block];
-                        Matrix & oblock = ret[o];
-
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-
-                        size_t r_size = it->rs;
-                        for(size_t rr = 0; rr < r_size; ++rr) {
-                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                            {
-                                std::size_t ss1 = it->row;
-                                std::size_t ss2 = it->col;
-                                std::size_t rspin = it->row_spin;
-                                std::size_t cspin = it->col_spin;
-                                std::size_t casenr = 0; 
-                                if (rspin == 2 && cspin == 2) casenr = 3;
-                                else if (rspin == 2) casenr = 1;
-                                else if (cspin == 2) casenr = 2;
-
-                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                                maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, rr),
-                                                                    &iblock(in_left_offset + ss1*l_size, rr) + l_size,
-                                                                    &oblock(0, out_right_offset + ss2*r_size + rr),
-                                                                    alfa_t);
-                            }
-                        }
-
-                    } // wblock
-                }
+                    detail::rbtm<Matrix, SymmGroup>(T[t_block], ret[o], W, in_left_offset, out_right_offset, l_size, r_size, w_block, couplings);
+                } // wblock
             } // ket block
         } // op_index
         } // b2

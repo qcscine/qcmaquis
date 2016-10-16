@@ -42,7 +42,6 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-        //std::vector<block_matrix<Matrix, SymmGroup> > t
         contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
@@ -68,7 +67,7 @@ namespace contraction {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
         parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-            abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor, right_i, out_left_i, in_right_pb, out_left_pb);
+            abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         });
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             contr_grid.multiply_column(b2, right[b2]);
@@ -81,7 +80,7 @@ namespace contraction {
 #else
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor, right_i, out_left_i, in_right_pb, out_left_pb);
+            abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
             if (mpo.herm_info.right_skip(b2))
                 gemm(contr_grid(0,0), transpose(right[mpo.herm_info.right_conj(b2)]), tmp);

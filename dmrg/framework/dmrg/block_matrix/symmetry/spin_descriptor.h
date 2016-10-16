@@ -37,6 +37,7 @@ public:
 
     void clear() { }
     int get() const { return 0; }
+    int action() const { return 0; }
 
     SpinDescriptor() {}
     SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) {}
