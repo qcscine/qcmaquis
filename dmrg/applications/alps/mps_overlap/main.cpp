@@ -31,8 +31,7 @@
 
 #include <complex>
 #include "dmrg/block_matrix/detail/alps.hpp"
-typedef alps::numeric::matrix<double> matrix;
-typedef alps::numeric::matrix<std::complex<double> > cmatrix;
+#include "dmrg/sim/matrix_types.h"
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"

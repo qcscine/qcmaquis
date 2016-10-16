@@ -42,8 +42,8 @@
 
 #include "dmrg/utils/DmrgParameters.h"
 
+#include "dmrg/sim/matrix_types.h"
 
-typedef alps::numeric::matrix<double> matrix;
 typedef U1 symm;
 
 
