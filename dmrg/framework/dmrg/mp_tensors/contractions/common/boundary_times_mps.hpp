@@ -189,6 +189,7 @@ namespace contraction {
         MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
                            Boundary<OtherMatrix, SymmGroup> const & right_,
                            MPOTensor<Matrix, SymmGroup> const & mpo_) : mps(mps_), right(right_), mpo(mpo_), data_(right_.aux_dim())
+                                                                      , pop_(right_.aux_dim(), 0)
         {
             parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
 
@@ -229,34 +230,52 @@ namespace contraction {
 
         void multiply (index_type b2);
 
-        block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
-        block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
+        block_matrix<Matrix, SymmGroup> & operator[](index_type k) { return data_[k]; }
+        block_matrix<Matrix, SymmGroup> const & operator[](index_type k) const { return data_[k]; }
 
-        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
+        //block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
+        block_matrix<Matrix, SymmGroup> const & at(index_type k) const
         {
             if (mpo.num_col_non_zeros(k) == 1)
             {
-                if (mpo.herm_info.right_skip(k))
+                if (!pop_[k])
                 {
-                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
-                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
-                    std::vector<value_type> scales = conjugate_phases(trv, mpo, k, false, true);
-                    typename Gemm::gemm_trim_right()(mps.data(), trv, storage, scales);
-                }
-                else {
-                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
+                    if (mpo.herm_info.right_skip(k))
+                    {
+                        //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                        //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
+                        block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
+                        std::vector<value_type> scales = conjugate_phases(trv, mpo, k, false, true);
+                        //typename Gemm::gemm_trim_right()(mps.data(), trv, storage, scales);
+                        typename Gemm::gemm_trim_right()(mps.data(), trv, data_[k], scales);
+                    }
+                    else {
+                        //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                        //typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
+                        typename Gemm::gemm_trim_right()(mps.data(), right[k], data_[k]);
+                    }
+                    pop_[k] = 1;
                 }
 
-                return storage;
+                return data_[k];
             }
             else
                 return data_[k];
         }
+        void free(index_type b1) const
+        {
+            for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2)
+                if (mpo.num_col_non_zeros(b2) == 1)
+                    if (mpo.has(b1,b2))
+                    {
+                        data_[b2].clear();
+                        break;
+                    }
+        }
 
     private:
-        std::vector<block_matrix<Matrix, SymmGroup> > data_;
+        mutable std::vector<block_matrix<Matrix, SymmGroup> > data_;
+        mutable std::vector<char> pop_;
 
         MPSTensor<Matrix, SymmGroup> const & mps;
         Boundary<OtherMatrix, SymmGroup> const & right;
