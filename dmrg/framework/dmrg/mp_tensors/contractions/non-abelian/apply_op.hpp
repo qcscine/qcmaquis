@@ -181,7 +181,6 @@ namespace SU2 {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            block_matrix<Matrix, SymmGroup> local;
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2);
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);

@@ -234,9 +234,7 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            //block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
-            block_matrix<Matrix, SymmGroup> local;
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2, local);
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2);
                 if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -277,6 +275,7 @@ namespace contraction {
                 }
             }
         }
+        right_mult_mps.free(b1);
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
