@@ -47,6 +47,7 @@ public:
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
+    static subcharge particleNumber(charge a) { return 0; }
 };
 
 namespace boost {
