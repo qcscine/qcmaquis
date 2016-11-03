@@ -116,7 +116,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( custom_model_energy, ML, test_systems )
     CustomModel<matrix,grp> model_builder(phys);
     ML::fill_terms_in_model(model_builder);
     
-    MPO<matrix, grp> mpo = make_mpo(lattice, model_builder.make_model());
+    Model<matrix, grp> model = model_builder.make_model();
+    MPO<matrix, grp> mpo = make_mpo(lattice, model);
     
     charge initc = ML::total_quantum_numbers();
     default_mps_init<matrix, grp> initializer(parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(L,0));
