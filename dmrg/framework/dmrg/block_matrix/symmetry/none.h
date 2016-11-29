@@ -43,7 +43,10 @@ public:
     typedef int subcharge; // Used if charge is site_dependent
 	static const charge IdentityCharge = Plus;
     static const bool finite = true;
-    
+
+    static subcharge particleNumber(charge a) {
+        throw std::runtime_error("particle number meaningless for trivial group\n"); 
+    }
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
