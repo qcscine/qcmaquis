@@ -255,7 +255,8 @@ namespace generate_mpo
                 std::vector<spin_desc_t> right_spins(rcd.second); 
                 for (typename std::vector<tag_block>::const_iterator it = pre_tensor.begin(); it != pre_tensor.end(); ++it)
                 {
-                    spin_desc_t out_spin = couple(left_spins[boost::tuples::get<0>(*it)], tag_handler->get_op(boost::tuples::get<2>(*it)).spin());
+                    spin_desc_t out_spin = couple(left_spins[boost::tuples::get<0>(*it)],
+                                                  tag_handler->get_op(boost::tuples::get<2>(*it)).spin());
                     index_type out_index = boost::tuples::get<1>(*it);
                     assert(right_spins[out_index].get() == 0 || right_spins[out_index].get() == out_spin.get());
                     right_spins[out_index] = out_spin;
@@ -266,7 +267,8 @@ namespace generate_mpo
                 {
                     index_type z = 0, cnt = 0;
                     std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
-                    for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
+                    for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator
+                                    h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
                     {
                         index_type romeo = right[h_it->first];
                         index_type julia = right[h_it->second];
@@ -284,11 +286,17 @@ namespace generate_mpo
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
 
                 if (p == 0)
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor,
+                                     tag_handler->get_operator_table(), h_, left_spins, right_spins)
+                                 );
                 else if (p == length - 1)
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor,
+                                     tag_handler->get_operator_table(), h_, left_spins, right_spins)
+                                 );
                 else
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table(), h_, left_spins, right_spins) );
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor,
+                                     tag_handler->get_operator_table(), h_, left_spins, right_spins)
+                                 );
                 if (verbose)
                     maquis::cout << "MPO Bond: " << rcd.second << std::endl;
 
