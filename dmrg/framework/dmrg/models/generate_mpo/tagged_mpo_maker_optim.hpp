@@ -248,6 +248,8 @@ namespace generate_mpo
                         HermKeyPairs[k2] = ck2;
                         HermitianPhases[k2] = phase;
                     }
+                    maquis::cout << rr_dim << "  " << k2 << "  " << ck2 << "  "
+                                 << HermitianPhases[k2].first << " " << HermitianPhases[k2].second << std::endl;
                 }
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
@@ -282,6 +284,8 @@ namespace generate_mpo
                     }
                     maquis::cout << "Bond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
+                std::copy(RightPhase.begin(), RightPhase.end(), std::ostream_iterator<int>(std::cout, " "));
+                maquis::cout << std::endl;
 
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
 
@@ -317,7 +321,7 @@ namespace generate_mpo
             
             /// Due to numerical instability: treat the core energy separately
             if (term.operator_tag(0) == identities[lat.get_prop<int>("type", term.position(0))])
-                core_energy += term.coeff;
+                core_energy += double(alps::numeric::real(term.coeff));
 
             else {
                 /// retrieve the actual operator from the tag table
@@ -567,8 +571,11 @@ namespace generate_mpo
             for (tag_type i = 0; i < k.pos_op.size(); ++i)
             {
                 // for now exclude cases where some ops are self adjoint
-                if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                    return std::make_pair(k, std::make_pair(1,1));
+                // there are no keys where only part of the operators are self adjoint
+                // either they all are or none, so the next two lines make no difference if
+                // all hermitian pairs have been listed
+                //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+                //    return std::make_pair(k, std::make_pair(1,1));
 
                 conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
             }
@@ -632,7 +639,7 @@ namespace generate_mpo
         
         pos_t leftmost_right, rightmost_left;
         bool finalized, verbose;
-        scale_type core_energy;
+        double core_energy;
     };
 
 }

@@ -45,7 +45,7 @@ public:
     static const bool finite = true;
 
     static subcharge particleNumber(charge a) {
-        throw std::runtime_error("particle number meaningless for trivial group\n"); 
+        return 0;
     }
     
 	static inline charge fuse(charge a, charge b) { return Plus; }

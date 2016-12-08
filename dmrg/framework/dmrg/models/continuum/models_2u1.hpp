@@ -251,32 +251,33 @@ private:
         value_type w  = parms["omega"];
         value_type shift = parms["shift"];
         
+        typedef typename maquis::traits::real_type<value_type>::type real_type;
         
         std::pair<tag_type, value_type> ptag;
         for (int p=0; p<lat.size(); ++p) {
             int hopto = p+1;
             std::vector<int> neighs = lat.forward(p);
 
-            double x = lat.get_prop<double>("x", p);
+            real_type x = lat.get_prop<real_type>("x", p);
             
             value_type exp_potential = V0*std::pow( std::cos(k*x), 2 );
             exp_potential += ( -V1*std::pow( std::cos(k*x),    2 )
-                               +V2*std::pow( std::cos(2.*k*x), 2 ) );
-            exp_potential += w*w/2. * std::pow(x - shift, 2 );
+                               +V2*std::pow( std::cos(real_type(2.)*k*x), 2 ) );
+            exp_potential += w*w/real_type(2.) * std::pow(x - shift, 2 );
             
             // MD: simplified version with uniform spacing
-            double dx1 = lat.get_prop<double>("dx", p, hopto);
-            double dx2 = -dx1;
-            double dx0 = lat.get_prop<double>("dx", p);
+            real_type dx1 = lat.get_prop<real_type>("dx", p, hopto);
+            real_type dx2 = -dx1;
+            real_type dx0 = lat.get_prop<real_type>("dx", p);
             
             // Psi''(x) = coeff1 * Psi(x+dx1) + coeff0 * Psi(x) + coeff2 * Psi(x+dx2)
-            double coeff1 = 2. / (dx1*dx1 - dx1*dx2);
-            double coeff2 = 2. / (dx2*dx2 - dx1*dx2);
-            double coeff0 = -(coeff1 + coeff2);
+            real_type coeff1 = real_type(2.) / (dx1*dx1 - dx1*dx2);
+            real_type coeff2 = real_type(2.) / (dx2*dx2 - dx1*dx2);
+            real_type coeff0 = -(coeff1 + coeff2);
             
             
             value_type U = c / dx0;
-            value_type mu = exp_potential - double(parms["mu"]);
+            value_type mu = exp_potential - real_type(parms["mu"]);
             mu += -coeff0 * parms["h"];
             
             value_type ti = coeff1 * parms["h"];

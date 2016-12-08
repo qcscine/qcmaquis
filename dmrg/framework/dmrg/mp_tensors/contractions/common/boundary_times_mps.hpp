@@ -50,12 +50,14 @@ namespace contraction {
 
         for (size_t b = 0; b < bm.n_blocks(); ++b)
         {
-            value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>(bm.basis().left_charge(b), bm.basis().right_charge(b), S);
+            value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>
+                                 (bm.basis().left_charge(b), bm.basis().right_charge(b), S);
             if (forward)
-                scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k)) : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
+                scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k)) 
+                                    : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
             else
-                scale *= (left) ? mpo.herm_info.left_phase(k) : mpo.herm_info.right_phase(k);
-
+                scale *= (left) ? mpo.herm_info.left_phase(k)
+                                    : mpo.herm_info.right_phase(k);
             ret[b] = scale;
         }
         return ret;

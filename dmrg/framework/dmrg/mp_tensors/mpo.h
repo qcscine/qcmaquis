@@ -72,13 +72,13 @@ public:
         }
     }
 
-    void setCoreEnergy(typename Matrix::value_type e) { core_energy = e; }
-    typename Matrix::value_type getCoreEnergy() const { return core_energy; }
+    void setCoreEnergy(double e) { core_energy = e; }
+    double getCoreEnergy() const { return core_energy; }
     
 private:
     std::vector<std::map<std::size_t, typename SymmGroup::charge> > bond_index_charges;
     std::vector<Index<SymmGroup> > bond_indices;
-    typename Matrix::value_type core_energy;
+    double core_energy;
     
     void calc_charges()
     {
@@ -421,11 +421,11 @@ public:
         throw std::runtime_error("MPO compression for SU2 not implemented\n");
     }
 
-    void setCoreEnergy(typename Matrix::value_type e) { core_energy = e; }
-    typename Matrix::value_type getCoreEnergy() const { return core_energy; }
+    void setCoreEnergy(double e) { core_energy = e; }
+    double getCoreEnergy() const { return core_energy; }
 
 private:
-    typename Matrix::value_type core_energy;
+    double core_energy;
 };
 
 #endif
