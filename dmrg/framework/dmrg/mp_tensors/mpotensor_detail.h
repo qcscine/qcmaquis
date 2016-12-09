@@ -53,6 +53,7 @@ namespace MPOTensor_detail
                         op_table_ptr op_tbl)
             : op_(op_tbl->operator[](term_descs[0].first)), scale_(term_descs[0].second) {}
 
+        std::size_t size() const { return 0; }
         typename const_type<op_t, Const>::type & op(std::size_t i=0) { return op_; }
         typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return scale_; }
 
@@ -77,6 +78,7 @@ namespace MPOTensor_detail
         std::size_t size() const { return term_descriptors.size(); }
         typename const_type<op_t, Const>::type & op(std::size_t i=0) { return (*operator_table)[term_descriptors[i].first]; }
         typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return term_descriptors[i].second; }
+
     private:
         typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descriptors;
         op_table_ptr operator_table;
