@@ -248,8 +248,8 @@ namespace generate_mpo
                         HermKeyPairs[k2] = ck2;
                         HermitianPhases[k2] = phase;
                     }
-                    maquis::cout << rr_dim << "  " << k2 << "  " << ck2 << "  "
-                                 << HermitianPhases[k2].first << " " << HermitianPhases[k2].second << std::endl;
+                    //maquis::cout << rr_dim << "  " << k2 << "  " << ck2 << "  "
+                    //             << HermitianPhases[k2].first << " " << HermitianPhases[k2].second << std::endl;
                 }
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
@@ -284,8 +284,6 @@ namespace generate_mpo
                     }
                     maquis::cout << "Bond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
-                std::copy(RightPhase.begin(), RightPhase.end(), std::ostream_iterator<int>(std::cout, " "));
-                maquis::cout << std::endl;
 
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
 
