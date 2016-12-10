@@ -274,8 +274,8 @@ std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup
         try {
         std::vector<int> const & sbr = m.spin_basis.at(std::make_pair(m.basis()[k].lc, m.basis()[k].rc)).first;
         std::vector<int> const & sbl = m.spin_basis.at(std::make_pair(m.basis()[k].lc, m.basis()[k].rc)).second;
-        std::copy(sbr.begin(), sbr.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << " | ";
-        std::copy(sbl.begin(), sbl.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << std::endl << std::endl;
+        std::copy(sbr.begin(), sbr.end(), std::ostream_iterator<int>(os, " ")); os << " | ";
+        std::copy(sbl.begin(), sbl.end(), std::ostream_iterator<int>(os, " ")); os << std::endl << std::endl;
         }
         catch(...) {}
     }
