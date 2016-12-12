@@ -279,13 +279,14 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
                          double & truncated_fraction, double & truncated_weight, double & smallest_ev)
 { // to be parallelized later (30.04.2012)
     typedef typename DiagMatrix::value_type value_type;
+    typedef typename maquis::traits::real_type<value_type>::type real_type;
 
     size_t length = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         length += num_rows(evals[k]);
     }
     
-    typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
+    typedef std::vector<real_type> real_vector_t;
     real_vector_t allevals(length);
     {
         parallel::guard::serial guard;
@@ -302,7 +303,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
     
-    double evalscut = cutoff * allevals[0];
+    real_type evalscut = cutoff * allevals[0];
     
     if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);

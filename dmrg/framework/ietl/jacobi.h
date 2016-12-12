@@ -226,7 +226,10 @@ namespace ietl
         
     private:
         void get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim);
+        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<float>& s, fortran_int_t dim);
         void get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim);
+        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<float> >& s, fortran_int_t dim);
+
         MATRIX const & matrix_;
         VS vecspace_;
         int n_;
@@ -510,6 +513,48 @@ namespace ietl
         delete [] iwork;
         delete [] ifail;
     }
+    
+    template <class MATRIX, class VS>
+    void jacobi_davidson<MATRIX, VS>::get_extremal_eigenvalue(magnitude_type& theta, std::vector<float>& s, fortran_int_t dim)
+    {
+        FortranMatrix<scalar_type> M_(dim,dim);
+        for (int i=0;i<dim;i++) for (int j=0;j<=i;j++)
+            M_(j,i) = M(j,i);
+        float abstol = atol_;
+        char jobz='V';     char range='I';   char uplo='U';
+        fortran_int_t n=dim;
+        fortran_int_t lda=dim;       
+        fortran_int_t il, iu;
+        if (desired_ == Largest)
+            il = iu = n;
+        else
+            il = iu = 1;
+
+        fortran_int_t m;
+        fortran_int_t ldz=n;
+        fortran_int_t lwork=8*n;
+        fortran_int_t info;
+
+        float vl, vu;
+
+        float *w = new float[n];
+        float *z = new float[n];
+        float *work = new float[lwork];
+        fortran_int_t *iwork = new fortran_int_t[5*n];
+        fortran_int_t *ifail = new fortran_int_t[n];
+
+        LAPACK_SSYEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
+        
+        theta = w[0];
+        for (int i=0;i<n;i++)
+            s[i] = z[i];
+        
+        delete [] w;
+        delete [] z;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
+    }
         
     template <class MATRIX, class VS>
     void jacobi_davidson<MATRIX, VS>::get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim)
@@ -540,6 +585,49 @@ namespace ietl
         double * rwork = new double[7*n];
 
         LAPACK_ZHEEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, rwork, iwork, ifail, &info);
+            
+        theta = w[0];
+        for (int i=0;i<n;i++)
+            s[i] = z[i];
+        
+        
+        delete [] w;
+        delete [] z;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
+        delete [] rwork;
+    }
+        
+    template <class MATRIX, class VS>
+    void jacobi_davidson<MATRIX, VS>::get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<float> >& s, fortran_int_t dim)
+    {
+        FortranMatrix<scalar_type> M_(dim,dim);
+        for (int i=0;i<dim;i++) for (int j=0;j<=i;j++)
+            M_(j,i) = M(j,i);
+        float abstol = atol_;
+        char jobz='V';     char range='I';   char uplo='U';
+        fortran_int_t n=dim;
+        fortran_int_t lda=dim;
+        fortran_int_t il, iu;
+        if (desired_ == Largest)
+            il = iu = n;
+        else
+            il = iu = 1;
+        fortran_int_t m;
+        fortran_int_t ldz=n;
+        fortran_int_t lwork=8*n;
+        fortran_int_t info; 
+        float vl, vu;
+
+        float * w = new float[n];
+        std::complex<float> * z = new std::complex<float>[n];
+        std::complex<float> * work = new std::complex<float>[lwork];
+        fortran_int_t *iwork = new fortran_int_t[5*n];
+        fortran_int_t *ifail = new fortran_int_t[n];
+        float * rwork = new float[7*n];
+
+        LAPACK_CHEEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, rwork, iwork, ifail, &info);
             
         theta = w[0];
         for (int i=0;i<n;i++)

@@ -40,6 +40,7 @@ template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
+    typedef typename Matrix::value_type value_type;
 
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     using base::mpo;
@@ -165,6 +166,7 @@ public:
                                                                     base::ortho_left_[n][site1], base::ortho_right_[n][site2+1]);
             }
 
+            //std::pair<typename maquis::traits::real_type<value_type>::type, MPSTensor<Matrix, SymmGroup> > res;
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
 
 

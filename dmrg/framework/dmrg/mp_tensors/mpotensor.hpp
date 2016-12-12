@@ -48,6 +48,7 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld
 
     if (tags.size() > 0 && operator_table.get() != NULL) {
 
+        // sort tags in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
 
         for (typename prempo_t::const_iterator it = tags.begin(); it != tags.end(); ++it) {
@@ -227,8 +228,9 @@ typename MPOTensor<Matrix, SymmGroup>::col_proxy MPOTensor<Matrix, SymmGroup>::c
 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::tag_type
-MPOTensor<Matrix, SymmGroup>::tag_number(index_type left_index, index_type right_index) const {
-    return col_tags(left_index, right_index)[0].first;
+MPOTensor<Matrix, SymmGroup>::tag_number(index_type left_index, index_type right_index, size_t index) const {
+    assert (index < col_tags(left_index, right_index).size());
+    return col_tags(left_index, right_index)[index].first;
 }
 
 
