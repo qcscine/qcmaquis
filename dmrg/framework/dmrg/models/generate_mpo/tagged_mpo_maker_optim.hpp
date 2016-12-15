@@ -116,7 +116,7 @@ namespace generate_mpo
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
-        typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
+        typedef std::multimap<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
         
         enum merge_kind {attach, detach};
         
@@ -243,14 +243,20 @@ namespace generate_mpo
                     std::pair<int, int> phase;
                     prempo_key_type ck2;
                     boost::tie(ck2, phase) = conjugate_key(k2, p);
-                    if (!(k2 == ck2))
-                    {
+                    if (!(k2 == ck2)){
                         HermKeyPairs[k2] = ck2;
                         HermitianPhases[k2] = phase;
                     }
-                    //maquis::cout << rr_dim << "  " << k2 << "  " << ck2 << "  "
-                    //             << HermitianPhases[k2].first << " " << HermitianPhases[k2].second << std::endl;
                 }
+
+                typedef std::map<index_type, prempo_key_type> key_map_t;
+                key_map_t key_map;
+                for (index_iterator it = right.begin(); it != right.end(); ++it)
+                    key_map[it->second] = it->first;
+                std::ofstream kos(("key" + boost::lexical_cast<std::string>(p) + ".dat").c_str());
+                for (typename key_map_t::const_iterator it = key_map.begin(); it != key_map.end(); ++it)
+                { kos << it->first << "| " << it->second << std::endl; }
+                kos.close();
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
 
@@ -499,11 +505,17 @@ namespace generate_mpo
                 tag_type use_ident = (custom_ident != -1) ? identities_full[lat.get_prop<int>("type",i)]
                                                           : identities[lat.get_prop<int>("type",i)];
                 tag_type op = (trivial_fill) ? use_ident : fillings[lat.get_prop<int>("type",i)];
-				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
-				if (!ret.second && ret.first->second.first != op)
-					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
-					                         + ". Needed "+boost::lexical_cast<std::string>(op)
-					                         + ", found "+boost::lexical_cast<std::string>(ret.first->second.first));
+				//std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
+				//if (!ret.second && ret.first->second.first != op)
+				if (prempo[i].count(make_pair(k,k)) == 0)
+				    typename prempo_map_type::iterator ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
+				else {
+                    if (prempo[i].find(make_pair(k,k))->second != prempo_value_type(op, 1.))
+				    throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
+					                    + ". Needed "+boost::lexical_cast<std::string>(op)
+					                    + ", found "+boost::lexical_cast<std::string>(prempo[i].find(make_pair(k,k))->second.first));
+					                  //+ ", found "+boost::lexical_cast<std::string>(ret->second.first));
+                }
 			}
 		}
 
@@ -512,9 +524,15 @@ namespace generate_mpo
 		{
 			/// merge_behavior == detach: a new branch will be created, in case op already exist, an offset is used
 			/// merge_behavior == attach: if operator tags match, keep the same branch
-            std::pair<typename prempo_map_type::iterator,bool> match = prempo[p].insert( make_pair(kk, val) );
+            //std::pair<typename prempo_map_type::iterator,bool> match = prempo[p].insert( make_pair(kk, val) );
+            bool key_exists = prempo[p].count(kk) == 1;
+            if (!key_exists) {
+                typename prempo_map_type::iterator match = prempo[p].insert( make_pair(kk, val) );
+                return kk.second;
+            }
             if (merge_behavior == detach) {
-                if (!match.second) {
+                //if (!match.second) {
+                if (key_exists) {
                     std::pair<prempo_key_type, prempo_key_type> kk_max = kk;
                     kk_max.second.offset = std::numeric_limits<index_type>::max();
 
@@ -526,10 +544,17 @@ namespace generate_mpo
             }
             else {
                 // still slow, but seems never to be used
-                while (!match.second && match.first->second != val) {
+                //while (!match.second && match.first->second != val) {
+                //    kk.second.offset += 1;
+                //    match = prempo[p].insert( make_pair(kk, val) );
+                //}
+                bool increase_offset = (prempo[p].count(kk) == 1) && (prempo[p].find(kk)->second != val);
+                while (increase_offset) {
                     kk.second.offset += 1;
-                    match = prempo[p].insert( make_pair(kk, val) );
+                    increase_offset = (prempo[p].count(kk) == 1) && (prempo[p].find(kk)->second != val);
                 }
+                if (prempo[p].count(kk) == 0)
+                    prempo[p].insert( make_pair(kk, val) );
             }
             return kk.second;
 		}
@@ -541,15 +566,18 @@ namespace generate_mpo
             for (typename std::map<pos_t, op_t>::const_iterator it = site_terms.begin();
                  it != site_terms.end(); ++it) {
                 tag_type site_tag = tag_handler->register_op(it->second, tag_detail::bosonic);
-				std::pair<typename prempo_map_type::iterator,bool> ret;
+				//std::pair<typename prempo_map_type::iterator,bool> ret;
+                //ret = prempo[it->first].insert( make_pair( kk, prempo_value_type(site_tag,1.) ) );
+				typename prempo_map_type::iterator ret;
                 ret = prempo[it->first].insert( make_pair( kk, prempo_value_type(site_tag,1.) ) );
-                if (!ret.second)
+                if (prempo[it->first].count(ret->first) != 1)
                     throw std::runtime_error("another site term already existing!");
             }
 
             // fill with ident from the begin
             for (size_t p = 0; p < rightmost_left; ++p)
-                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
+                prempo[p].insert(make_pair(make_pair(trivial_left,trivial_left),
+                                           prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.)));
 
             /// fill with ident until the end
             bool trivial_fill = true;
