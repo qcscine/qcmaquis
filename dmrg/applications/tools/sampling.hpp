@@ -217,17 +217,16 @@ struct Sampling
         std::vector<int>hole_alpha(nhole_alpha); 
         std::vector<int>hole_beta(nhole_beta); 
         
-// Get the number of excited electrons        
-        int nele_excited;
-        nele_excited=int(floor(nele_total*random_number())+1);
-        maquis::cout << " nele_excited " << nele_excited << " in " << norb << " orbitals" << std::endl;
-
 // determinant spawnning -- doing part
 
         det_queen=dets[0];
         int nMAX=0;
         do{
           nMAX++;
+          // Get the number of excited electrons        
+          int nele_excited;
+          nele_excited=int(floor(nele_total*random_number())+1);
+          maquis::cout << " nele_excited " << nele_excited << " in " << norb << " orbitals" << std::endl;
           for(int isample=0; isample < nsample; isample++ ){
             det_tmp=det_queen;
             int iele_excited=0;

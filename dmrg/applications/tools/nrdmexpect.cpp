@@ -65,6 +65,7 @@ MPO<matrix, symm> rdm2(Model<matrix, symm> const & model, Lattice const & lattic
 {
         typedef operator_selector<matrix, symm>::type op_t;
         typedef OPTable<matrix, symm>::tag_type tag_type;
+        typedef matrix::value_type value_type;
 
         boost::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
 
@@ -80,7 +81,7 @@ MPO<matrix, symm> rdm2(Model<matrix, symm> const & model, Lattice const & lattic
         tag_type ops_[4] = {op1, op2, op3, op4};
         std::vector<tag_type> ops(ops_, ops_ + 4);
 
-        term_descriptor<double> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
+        term_descriptor<value_type> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
         maquis::cout << term << std::endl;
         for (int i=0; i<term.size(); ++i)
             maquis::cout << tag_handler->get_op(term.operator_tag(i));
@@ -100,6 +101,7 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
 {
         typedef operator_selector<matrix, symm>::type op_t;
         typedef OPTable<matrix, symm>::tag_type tag_type;
+        typedef matrix::value_type value_type;
 
         boost::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
 
@@ -120,7 +122,7 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
         tag_type ops_[nterm] = {op1, op2};
         std::vector<tag_type> ops(ops_, ops_ + nterm);
 
-        term_descriptor<double> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
+        term_descriptor<value_type> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
         maquis::cout << term << std::endl;
         for (int i=0; i<term.size(); ++i)
             maquis::cout << tag_handler->get_op(term.operator_tag(i));
@@ -157,7 +159,7 @@ int main(int argc, char ** argv)
 
         MPO<matrix, symm> mpo = rdm2(model, lattice);
 
-        double value = maquis::real(expval(mps, mpo));
+        maquis::traits::real_type<matrix::value_type>::type value = maquis::real(expval(mps, mpo));
         maquis::cout << "Expval is: " << value << std::endl; 
         
     } catch (std::exception& e) {

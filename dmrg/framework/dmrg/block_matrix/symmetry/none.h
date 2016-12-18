@@ -43,11 +43,13 @@ public:
     typedef int subcharge; // Used if charge is site_dependent
 	static const charge IdentityCharge = Plus;
     static const bool finite = true;
-    
+
+    static subcharge particleNumber(charge a) {
+        return 0;
+    }
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
-    static subcharge particleNumber(charge a) { return 0; }
 };
 
 namespace boost {

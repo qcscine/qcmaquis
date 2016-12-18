@@ -78,6 +78,8 @@ namespace tag_detail {
           BlockMatrix const& sample)
     {
         typedef typename BlockMatrix::matrix_type Matrix;
+        typedef typename Matrix::value_type value_type;
+ 
         {
             parallel::guard::serial guard;
             storage::migrate(reference);
@@ -89,7 +91,7 @@ namespace tag_detail {
         if (sample.n_blocks() == 0)
             return std::make_pair(true, 1.0);
 
-        typename Matrix::value_type invscale1, invscale2;
+        value_type invscale1, invscale2;
      
         // determine scale of matrices
         const Matrix& m1 = reference[0];
@@ -97,7 +99,7 @@ namespace tag_detail {
            for(int j = 0; j < num_cols(m1); j++)
         {
             if (std::abs(m1(i,j)) > 1.e-50) {
-                invscale1 = 1./m1(i,j);
+                invscale1 = value_type(1.)/m1(i,j);
                 break;
             }
             if(i == (num_rows(m1)-1) && j == (num_cols(m1)-1)){ return std::make_pair(false, 0.); }
@@ -108,7 +110,7 @@ namespace tag_detail {
            for(int j = 0; j < num_cols(m2); j++)
         {
             if (std::abs(m2(i,j)) > 1.e-50) {
-                invscale2 = 1./m2(i,j);
+                invscale2 = value_type(1.)/m2(i,j);
                 break;
             }
             if(i == (num_rows(m2)-1) && j == (num_cols(m2)-1)){ return std::make_pair(false, 0.); }

@@ -245,6 +245,27 @@ namespace contraction {
                 typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2], MPOTensor_detail::get_spin(mpo, b2, false));
             });
 
+            /*
+            // hermiticity check
+            omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
+              if (mpo.herm_info.right_skip(b2))
+              {
+                block_matrix<Matrix, SymmGroup> conj0 = ret[mpo.herm_info.right_conj(b2)];
+                recover_conjugate(conj0, mpo, b2, false, false);
+
+                block_matrix<Matrix, SymmGroup> conj = transpose(conj0);
+                block_matrix<Matrix, SymmGroup> diff = conj-ret[b2];
+                if ( diff.norm() > 1e-6)
+                {
+                    maquis::cout << "diff: " << diff << std::endl;
+                    maquis::cout << "should:\n" << ret[b2];
+                    maquis::cout << "is:\n" << conj;
+                    exit(1);
+                }
+              }
+            });
+            */
+
             return ret;
     #endif
         }

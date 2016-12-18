@@ -97,7 +97,7 @@ public:
     row_proxy row(index_type row_i) const;
     col_proxy column(index_type col_i) const;
 
-    tag_type tag_number(index_type left_index, index_type right_index) const;
+    tag_type tag_number(index_type left_index, index_type right_index, size_t index = 0) const;
     op_table_ptr get_operator_table() const;
 
     void multiply_by_scalar(value_type);

@@ -163,6 +163,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     typedef typename SymmGroup::charge charge;
     typedef std::vector<Index<SymmGroup> > index_vec;
     typedef std::vector<typename SymmGroup::subcharge> site_vec;
+    typedef typename Matrix::value_type value_type;
+    typedef typename maquis::traits::real_type<value_type>::type real_type;
 
     deas_mps_init(DmrgParameters parms_,
                   EntanglementData<Matrix> em_,
@@ -178,7 +180,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , total_dets()
     {
         using entanglement_detail::comp;
-        using entanglement_detail::mpair;
+        //using entanglement_detail::mpair;
+        typedef std::pair<real_type, int> mpair;
 
         int L = parms["L"];
         cas_vector.resize(L);
