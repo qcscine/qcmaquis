@@ -51,10 +51,10 @@ namespace SU2 {
             if (spin_diff == -2) phase = 1;
 
             if (spin_diff > 0)
-                return phase * sqrt( (S + 1. + std::abs(spin_diff)) / (S + 1.) );
+                return phase * T(sqrt( (S + 1. + std::abs(spin_diff)) / (S + 1.) ));
 
             else if (spin_diff < 0)
-                return -phase * sqrt( (S + 1.) / (S+ 1. + std::abs(spin_diff)));
+                return -phase * T(sqrt( (S + 1.) / (S+ 1. + std::abs(spin_diff))));
 
             else
                 return 1.;

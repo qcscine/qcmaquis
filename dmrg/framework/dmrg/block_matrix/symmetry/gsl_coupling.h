@@ -56,16 +56,16 @@ namespace SU2 {
                              int d, int e, int f,
                              int g, int h, int i, T init, T couplings[])
     {
-        T prefactor = sqrt((i+1.)*(a+1.)/((g+1.)*(c+1.))) * init;
+        T prefactor = T(sqrt((i+1.)*(a+1.)/((g+1.)*(c+1.)))) * init;
         if (triangle(a,b,c))
         {
-            couplings[0] = prefactor * ::SU2::mod_coupling(a, b, c, d, e, f, g, h, i);
-            couplings[2] = prefactor * ::SU2::mod_coupling(a, b, c, d, e, f, g, 2, i);
+            couplings[0] = prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, h, i);
+            couplings[2] = prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, 2, i);
         }
         if (triangle(a,2,c))
         {
-            couplings[1] = prefactor * ::SU2::mod_coupling(a, 2, c, d, e, f, g, h, i);
-            couplings[3] = prefactor * ::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
+            couplings[1] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, h, i);
+            couplings[3] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
         }
     }
 }

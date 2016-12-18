@@ -8,6 +8,7 @@ namespace maquis { namespace traits {
     template<class T> struct scalar_type { typedef typename T::value_type type; };
     template<class T> struct real_type { typedef typename real_type<typename T::value_type>::type type; };
     template<>        struct real_type<double> { typedef double type; };
+    template<>        struct real_type<float> { typedef float type; };
     template<class T> struct real_type<std::complex<T> > { typedef T type; };
     template<class T> struct real_identity { static const T value; };
     template<class T> struct imag_identity { static const T value; };

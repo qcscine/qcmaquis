@@ -185,10 +185,10 @@ public:
 
                 // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                 this->terms_.push_back(TM::positional_two_term(
-                    true, identity, std::sqrt(2.) * ti, *hopto, p, create, create_fill, destroy, destroy_fill
+                    true, identity, value_type(std::sqrt(2.)) * ti, *hopto, p, create, create_fill, destroy, destroy_fill
                 ));
                 this->terms_.push_back(TM::positional_two_term(
-                    true, identity, std::sqrt(2.) * ti, p, *hopto, create, create_fill, destroy, destroy_fill
+                    true, identity, value_type(std::sqrt(2.)) * ti, p, *hopto, create, create_fill, destroy, destroy_fill
                 ));
             }
         }

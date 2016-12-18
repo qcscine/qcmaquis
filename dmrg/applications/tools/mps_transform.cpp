@@ -38,14 +38,7 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#ifdef USE_AMBIENT
-    #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > Matrix;
-#else
-    #include "dmrg/block_matrix/detail/alps.hpp"
-    typedef alps::numeric::matrix<double> Matrix;
-#endif
-
+#include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/chem/transform_symmetry.hpp"
 
@@ -78,7 +71,7 @@ int main(int argc, char ** argv)
             mps_in_file.erase(mps_in_file.size()-1, 1);
 
         // load source MPS
-        MPS<Matrix, grp> mps;
+        MPS<matrix, grp> mps;
         load(mps_in_file, mps);
 
         // fetch parameters and modify symmetry
@@ -116,7 +109,7 @@ int main(int argc, char ** argv)
             parms.set("u1_total_charge2", Ndown);
 
             // the output MPS
-            MPS<Matrix, mapgrp> mps_out = transform_mps<Matrix, grp>()(mps, Nup, Ndown);
+            MPS<matrix, mapgrp> mps_out = transform_mps<matrix, grp>()(mps, Nup, Ndown);
             
             std::string mps_out_file = mps_in_file;
             std::size_t pos = mps_out_file.find(".h5");
