@@ -556,6 +556,14 @@ namespace generate_mpo
                 if (prempo[p].count(kk) == 0)
                     prempo[p].insert( make_pair(kk, val) );
             }
+            //if (merge_behavior == detach) {
+            //    prempo[p].insert( make_pair(kk, val) );
+            //}
+            //else {
+            //    if (prempo[p].count(kk) == 0)
+            //        prempo[p].insert( make_pair(kk, val) );
+            //}
+            
             return kk.second;
 		}
 		

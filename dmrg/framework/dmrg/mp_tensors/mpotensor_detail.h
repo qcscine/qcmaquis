@@ -53,7 +53,7 @@ namespace MPOTensor_detail
                         op_table_ptr op_tbl)
             : op_(op_tbl->operator[](term_descs[0].first)), scale_(term_descs[0].second) {}
 
-        std::size_t size() const { return 0; }
+        std::size_t size() const { return 1; }
         typename const_type<op_t, Const>::type & op(std::size_t i=0) { return op_; }
         typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return scale_; }
 
