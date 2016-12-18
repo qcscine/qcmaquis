@@ -390,10 +390,10 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                    true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill, lat
+                    true, ident, value_type(std::sqrt(2.))*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill, lat
                 ));
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                    true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill, lat
+                    true, ident, value_type(std::sqrt(2.))*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill, lat
                 ));
             }
 
@@ -408,19 +408,19 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
                 for (pos_t kk = 0; kk < lat.size(); ++kk)
                 {   
                     if (kk == j || kk == i) continue;
-                    append(terms, SSUM::three_term(matrix_elements[m] * (1./(N-1)), i,kk,kk,j, op_collection, lat));
-                    append(terms, SSUM::three_term(matrix_elements[m] * (1./(N-1)), j,kk,kk,i, op_collection, lat));
+                    append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), i,kk,kk,j, op_collection, lat));
+                    append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), j,kk,kk,i, op_collection, lat));
                 }
 
                 std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
 
                 terms.clear();
 
-                append(terms, SSUM::V_term(matrix_elements[m] * (1./(N-1)), i,i,i,j, op_collection, lat));
-                append(terms, SSUM::V_term(matrix_elements[m] * (1./(N-1)), j,i,i,i, op_collection, lat));
+                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), i,i,i,j, op_collection, lat));
+                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), j,i,i,i, op_collection, lat));
 
-                append(terms, SSUM::V_term(matrix_elements[m] * (1./(N-1)), i,j,j,j, op_collection, lat));
-                append(terms, SSUM::V_term(matrix_elements[m] * (1./(N-1)), j,j,j,i, op_collection, lat));
+                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), i,j,j,j, op_collection, lat));
+                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), j,j,j,i, op_collection, lat));
                 std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
             }
 
@@ -481,8 +481,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec & vec = this->terms_;
 
             term_vec terms;
-            append(terms, SSUM::two_term(0.5*matrix_elements[m], i,i,j,j, op_collection, lat));
-            append(terms, SSUM::two_term(0.5*matrix_elements[m], j,j,i,i, op_collection, lat));
+            append(terms, SSUM::two_term(value_type(0.5)*matrix_elements[m], i,i,j,j, op_collection, lat));
+            append(terms, SSUM::two_term(value_type(0.5)*matrix_elements[m], j,j,i,i, op_collection, lat));
 
             append(terms, SSUM::two_term(matrix_elements[m], i,j,i,j, op_collection, lat));
 

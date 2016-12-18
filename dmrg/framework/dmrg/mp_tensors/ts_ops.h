@@ -65,19 +65,28 @@ namespace ts_ops_detail
 
         std::map<spin_t, typename OPTable<Matrix, SymmGroup>::op_t> ret;
 
-        for (typename std::set<Integer>::const_iterator it1 = summands.begin(); it1 != summands.end(); ++it1) {
+        for (typename std::set<Integer>::const_iterator it1 = summands.begin(); it1 != summands.end(); ++it1)
+        {
             Integer b2 = *it1;
             term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-            std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(), p1.op().spin().get(), p2.op().spin().get());
+            for (int ip1 = 0; ip1 < p1.size(); ++ip1)
+            for (int ip2 = 0; ip2 < p2.size(); ++ip2)
+            {
+            
+            std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(),
+                                                         p1.op(ip1).spin().get(), p2.op(ip2).spin().get());
             for (typename std::vector<spin_t>::const_iterator it2 = op_spins.begin(); it2 != op_spins.end(); ++it2)
             {
-                SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> prod_spin(*it2, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
+                SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>
+                    prod_spin(*it2, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
 
                 op_t product;
-                op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3), prod_spin);
+                op_kron(phys_i1, phys_i2, p1.op(ip1), p2.op(ip2), product, mpo1.left_spin(b1),
+                        mpo1.right_spin(b2), mpo2.right_spin(b3), prod_spin);
                 ::tag_detail::remove_empty_blocks(product);
-                ret[*it2] += product * p1.scale() * p2.scale();
+                ret[*it2] += product * p1.scale(ip1) * p2.scale(ip2);
+            }
             }
         }
 

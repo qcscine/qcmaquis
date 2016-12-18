@@ -100,10 +100,10 @@ namespace SU2 {
                         int j = SymmGroup::spin(lc), jp = SymmGroup::spin(in_charge);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                        typename Matrix::value_type couplings[2];
-                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
+                        value_type prefactor = value_type(sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.)))) * access.scale(op_index);
+                        value_type couplings[2];
+                        couplings[0] = prefactor * (value_type)::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        couplings[1] = prefactor * (value_type)::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
 
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);

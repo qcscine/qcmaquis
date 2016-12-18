@@ -234,7 +234,7 @@ public:
                 return two_term(matrix_element, i, k, l, j, ops, lat);
             case 1:
                 term_descriptor term;
-                term.coeff = 2.*matrix_element; // 2 spin combinations are non-zero 
+                term.coeff = value_type(2.)*matrix_element; // 2 spin combinations are non-zero 
                 term.push_back(boost::make_tuple(i, ops.docc.no_couple[lat.get_prop<typename S::subcharge>("type", i)]));
                 return std::vector<term_descriptor>(1, term);
         }
@@ -279,7 +279,7 @@ public:
         if (k_ > l_ && l_ > j_) // eg V_4132
         { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
 
-            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, value_type(-std::sqrt(3.))*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
             ret.push_back(TM::four_term(ops.ident.no_couple,      1,                matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
         else if (k_ > j_ && j_ > l_) // eg V_4231
@@ -288,13 +288,13 @@ public:
             value_type local_element = matrix_element;
             if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
 
-            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, std::sqrt(3.)*local_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, value_type(std::sqrt(3.))*local_element, i,k,l,j, ops.create, ops.destroy, lat));
             ret.push_back(TM::four_term(ops.ident.no_couple,      1,               local_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
         else if (j_ > k_ && k_ > l_) // eg V_4321
         { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
 
-            ret.push_back(TM::four_term(ops.ident.no_couple, 1, 2.*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple, 1, value_type(2.)*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
         else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
 
@@ -319,7 +319,7 @@ private:
     {
         std::vector<term_descriptor> ret;
         ret.push_back(TM::two_term(false, ops.ident.no_couple,
-                                   2.0 * matrix_element, i, j, ops.e2d.no_couple, ops.d2e.no_couple, lat));
+                                   value_type(2.0) * matrix_element, i, j, ops.e2d.no_couple, ops.d2e.no_couple, lat));
         return ret;
     }
 
@@ -332,11 +332,11 @@ private:
         // here we have spin0--j--spin1--i--spin0
         // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
         ret.push_back(TM::positional_two_term(
-            false, ops.ident_full.no_couple, std::sqrt(3.) * matrix_element, i, j,
+            false, ops.ident_full.no_couple, value_type(std::sqrt(3.)) * matrix_element, i, j,
             ops.flip.couple_down, ops.flip.couple_up, ops.flip.couple_down, ops.flip.couple_up, lat
         ));
 
-        ret.push_back(TM::two_term(false, ops.ident.no_couple, -0.5 * matrix_element, i, j, ops.count.no_couple, ops.count.no_couple, lat));
+        ret.push_back(TM::two_term(false, ops.ident.no_couple, value_type(-0.5) * matrix_element, i, j, ops.count.no_couple, ops.count.no_couple, lat));
 
         return ret;
     }
@@ -357,12 +357,12 @@ private:
 
         if (i==k) // one lonely destructor
             ret.push_back(TM::positional_two_term(
-                true, ops.ident.no_couple,  std::sqrt(2.)*matrix_element, s, p, ops.create_count.couple_down, ops.create_count.fill_couple_up,
+                true, ops.ident.no_couple,  value_type(std::sqrt(2.))*matrix_element, s, p, ops.create_count.couple_down, ops.create_count.fill_couple_up,
                 ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
             ));
         else     // one lonely constructor
             ret.push_back(TM::positional_two_term(
-                true, ops.ident.no_couple, -std::sqrt(2.)*matrix_element, s, p, ops.destroy_count.couple_down, ops.destroy_count.fill_couple_up,
+                true, ops.ident.no_couple, value_type(-std::sqrt(2.))*matrix_element, s, p, ops.destroy_count.couple_down, ops.destroy_count.fill_couple_up,
                 ops.create.couple_down, ops.create.fill_couple_up, lat
             ));
 
@@ -378,7 +378,7 @@ private:
         if (i==j) { same_idx = i; }
         if (k==l) { same_idx = k; k = i; l = j; }
 
-        ret.push_back(TM::three_term(ops.ident.no_couple, std::sqrt(2.)*matrix_element, same_idx, k, l,
+        ret.push_back(TM::three_term(ops.ident.no_couple, value_type(std::sqrt(2.))*matrix_element, same_idx, k, l,
                                      ops.count.no_couple, ops.count.fill_no_couple,
                                      ops.create.couple_down, ops.create.fill_couple_up,
                                      ops.destroy.couple_down, ops.destroy.fill_couple_up, lat));
@@ -396,7 +396,7 @@ private:
         if (i==k)
         {
             same_idx = i; pos1 = std::min(l, j); pos2 = std::max(l, j);
-            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2,
+            ret.push_back(TM::three_term(ops.ident.no_couple, value_type(-std::sqrt(2.))*matrix_element, same_idx, pos1, pos2,
                                          ops.e2d.no_couple, ops.e2d.no_couple,
                                          ops.destroy.couple_down, ops.destroy.fill_couple_up,
                                          ops.destroy.couple_down, ops.destroy.fill_couple_up, lat));
@@ -405,7 +405,7 @@ private:
         if (j==l)
         {
             same_idx = j; pos1 = std::min(i, k); pos2 = std::max(i, k);
-            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2,
+            ret.push_back(TM::three_term(ops.ident.no_couple, value_type(-std::sqrt(2.))*matrix_element, same_idx, pos1, pos2,
                                          ops.d2e.no_couple, ops.d2e.no_couple,
                                          ops.create.couple_down, ops.create.fill_couple_up,
                                          ops.create.couple_down, ops.create.fill_couple_up, lat));
@@ -423,33 +423,33 @@ private:
             if ( same_idx < std::min(pos1,pos2) )
             {
                 ret.push_back(TM::three_term(
-                    ops.ident_full.no_couple, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.couple_up, ops.flip.couple_up,
+                    ops.ident_full.no_couple, phase * value_type(std::sqrt(3.))*matrix_element, same_idx, pos1, pos2, ops.flip.couple_up, ops.flip.couple_up,
                     ops.create.couple_down, ops.create.fill_couple_down, ops.destroy.couple_down, ops.destroy.fill_couple_down, lat
                 ));
                 ret.push_back(TM::three_term(
-                    ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
+                    ops.ident.no_couple, value_type(-0.5*std::sqrt(2.))*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
                     ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }
             else if (same_idx > std::max(pos1,pos2))
             {
                 ret.push_back(TM::three_term(
-                    ops.ident_full.no_couple, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.couple_down, ops.flip.couple_down,
+                    ops.ident_full.no_couple, phase * value_type(std::sqrt(3.))*matrix_element, same_idx, pos1, pos2, ops.flip.couple_down, ops.flip.couple_down,
                     ops.create.couple_up, ops.create.fill_couple_up, ops.destroy.couple_up, ops.destroy.fill_couple_up, lat
                 ));
                 ret.push_back(TM::three_term(
-                    ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
+                    ops.ident.no_couple, value_type(-0.5*std::sqrt(2.))*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
                     ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }
             else
             {
                 ret.push_back(TM::three_term(
-                    ops.ident.no_couple,  phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.no_couple, ops.flip.no_couple,
+                    ops.ident.no_couple,  phase * value_type(std::sqrt(3.))*matrix_element, same_idx, pos1, pos2, ops.flip.no_couple, ops.flip.no_couple,
                     ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
                 ret.push_back(TM::three_term(
-                    ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.fill_no_couple, ops.count.fill_no_couple,
+                    ops.ident.no_couple, value_type(-0.5*std::sqrt(2.))*matrix_element, same_idx, pos1, pos2, ops.count.fill_no_couple, ops.count.fill_no_couple,
                     ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }

@@ -76,9 +76,6 @@ namespace entanglement_detail {
           return labels;
     }
 
-    //comparison function
-    typedef std::pair<double,int> mpair;
-
     template <class P>
     bool comp(const P l, const P r)
     {
@@ -322,6 +319,9 @@ namespace entanglement_detail {
 template <class Matrix> 
 class EntanglementData
 {
+    typedef typename Matrix::value_type value_type;
+    typedef typename maquis::traits::real_type<value_type>::type real_type;
+
 public:
     EntanglementData(std::string rfile)
     {
@@ -360,7 +360,7 @@ public:
                 assert (num_rows(rdm) == 16 && num_cols(rdm) == 16);
 
                 Matrix evecs(16,16);
-                std::vector<double> eval(16);
+                std::vector<real_type> eval(16);
                 alps::numeric::syev(rdm,evecs,eval);
                 for (int j=0; j<16; ++j)
                 { 
@@ -383,13 +383,13 @@ public:
         }
 
         // get CAS vector and sort HF occ vector
-        std::vector<entanglement_detail::mpair> casv_sort(L);
+        std::vector<std::pair<real_type, int> > casv_sort(L);
         std::vector<int> casv(L);
         for(int i = 0; i < L; i++){
             casv_sort[i].first = s1_(0,i);
             casv_sort[i].second = i;
         }
-        std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp<entanglement_detail::mpair>); 
+        std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp<std::pair<real_type, int> >); 
         for(int i = 0; i<L; i++){
             casv[i] = casv_sort[i].second;
         }
