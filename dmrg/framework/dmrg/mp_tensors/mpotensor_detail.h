@@ -41,29 +41,8 @@ namespace MPOTensor_detail
     template <class T>
     struct const_type<T, true> { typedef const T type; };
 
-    template <class Matrix, class SymmGroup, bool Const, typename = void>
-    class term_descriptor {
-        typedef typename Matrix::value_type value_type;
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
-    public:
-        term_descriptor() {}
-        term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
-                        op_table_ptr op_tbl)
-            : op_(op_tbl->operator[](term_descs[0].first)), scale_(term_descs[0].second) {}
-
-        std::size_t size() const { return 1; }
-        typename const_type<op_t, Const>::type & op(std::size_t i=0) { return op_; }
-        typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return scale_; }
-
-    private:
-        typename const_type<op_t, Const>::type & op_;
-        typename const_type<value_type, Const>::type & scale_;
-    };
-
     template <class Matrix, class SymmGroup, bool Const>
-    class term_descriptor<Matrix, SymmGroup, Const, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type >
+    class term_descriptor
     {
         typedef typename Matrix::value_type value_type;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
