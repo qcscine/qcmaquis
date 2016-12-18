@@ -65,7 +65,9 @@ namespace contraction {
             if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
+        for (size_t oi = 0; oi < access.size(); ++oi)
+        {
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(oi);  if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
@@ -75,7 +77,7 @@ namespace contraction {
 
             for(size_t r = 0; r < right_i.size(); ++r){
                 charge out_r_charge = right_i[r].first;
-                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
+                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);           if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
                     #ifdef USE_AMBIENT
@@ -86,7 +88,8 @@ namespace contraction {
                     ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge), r_size), out_l_charge, out_r_charge);
                     #endif
             }
-        }
+        } // oi
+        } // b1
         contr_grid.index_sizes(b2);
     }
 
@@ -121,7 +124,10 @@ namespace contraction {
             if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
+
+        for (size_t oi = 0; oi < access.size(); ++oi)
+        {
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(oi);  if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -134,7 +140,7 @@ namespace contraction {
 
             for (size_t r = 0; r < right_i.size(); ++r){
                 charge out_r_charge = right_i[r].first;
-                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
+                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);           if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
 
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
@@ -144,7 +150,7 @@ namespace contraction {
 
                     charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
                     charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
-                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if(t_block == T.basis().size()) continue;
+                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);          if(t_block == T.basis().size()) continue;
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
@@ -157,9 +163,10 @@ namespace contraction {
                     parallel::guard proc(scheduler(o));
                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                                         out_left_offset, in_right_offset,
-                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale());
+                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale(oi));
                 }
             } // right index block
+        } // oi
         } // b1
     }
 
@@ -187,7 +194,10 @@ namespace contraction {
             if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
+
+        for (size_t oi = 0; oi < access.size(); ++oi)
+        {
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(oi);  if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
@@ -195,7 +205,7 @@ namespace contraction {
 
             for(size_t l = 0; l < left_i.size(); ++l){
                 charge out_l_charge = left_i[l].first;
-                charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
+                charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);          if(!out_right_i.has(out_r_charge)) continue;
                 size_t l_size = left_i[l].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
                     #ifdef USE_AMBIENT
@@ -206,7 +216,8 @@ namespace contraction {
                     ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
                     #endif
             }
-        }
+        } // oi
+        } // b2
         ret.index_sizes();
     }
 
@@ -240,7 +251,10 @@ namespace contraction {
                 if(T.n_blocks() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();                            if(W.n_blocks() == 0) continue;
+
+        for (size_t oi = 0; oi < access.size(); ++oi)
+        {
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(oi);      if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -273,10 +287,11 @@ namespace contraction {
                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                                         out_right_offset, in_left_offset,
                                                         phys_s1, phys_s2,
-                                                        l_size, T.basis().right_size(t_block), access.scale());
+                                                        l_size, T.basis().right_size(t_block), access.scale(oi));
                 }
             }
-        }
+        } // oi
+        } // b2
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>

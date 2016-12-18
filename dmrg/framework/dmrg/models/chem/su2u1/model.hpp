@@ -573,7 +573,6 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
     } // matrix_elements for
 
     ta.commit_terms(this->terms_);
-    //std::random_shuffle(this->terms_.begin(), this->terms_.end());
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
 
