@@ -47,10 +47,12 @@ namespace MPOTensor_detail
         typedef typename Matrix::value_type value_type;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::internal_value_type internal_value_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
+
     public:
         term_descriptor() {}
-        term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
+        term_descriptor(typename const_type<internal_value_type, Const>::type & term_descs,
                         op_table_ptr op_tbl_)
             : operator_table(op_tbl_), term_descriptors(term_descs) {}
 
@@ -59,7 +61,7 @@ namespace MPOTensor_detail
         typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return term_descriptors[i].second; }
 
     private:
-        typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descriptors;
+        typename const_type<internal_value_type, Const>::type & term_descriptors;
         op_table_ptr operator_table;
     };
 

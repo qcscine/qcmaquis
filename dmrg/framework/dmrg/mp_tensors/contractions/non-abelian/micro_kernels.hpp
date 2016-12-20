@@ -57,7 +57,7 @@ namespace detail {
 
                 typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
                 maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
-                                                    &iblock(0, in_right_offset + ss1*r_size + rr) + l_size, // bugbug
+                                                    &iblock(0, in_right_offset + ss1*r_size + rr) + l_size,
                                                     &oblock(out_left_offset + ss2*l_size, rr),
                                                     alfa_t);
             }
