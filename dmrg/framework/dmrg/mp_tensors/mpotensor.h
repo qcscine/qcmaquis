@@ -51,8 +51,9 @@ public:
     typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
     typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
     typedef boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_table_ptr;
+    typedef std::pair<tag_type, value_type> pv_type;
 
-    typedef std::vector<std::pair<tag_type, value_type> > internal_value_type;
+    typedef std::vector<pv_type> internal_value_type;
 
 private:
     typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
