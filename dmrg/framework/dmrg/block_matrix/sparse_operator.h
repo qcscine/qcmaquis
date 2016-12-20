@@ -35,13 +35,15 @@ namespace sparse_detail {
     template <class T, class SymmGroup, typename = void>
     class Entry {
     public:
+        typedef unsigned index_type;
+
         Entry();
-        Entry(std::size_t r, std::size_t c, T coeff)
+        Entry(index_type r, index_type c, T coeff)
         : row(r), col(c), coefficient(coeff)
         {
         }
 
-        std::size_t row, col;
+        index_type row, col;
         T coefficient;
     };
 
@@ -49,14 +51,15 @@ namespace sparse_detail {
     class Entry<T, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type> {
     public:
         typedef typename SymmGroup::subcharge subcharge;
+        typedef unsigned index_type;
 
         Entry();
-        Entry(std::size_t r, std::size_t c, subcharge rspin, subcharge cspin, T coeff)
+        Entry(index_type r, index_type c, subcharge rspin, subcharge cspin, T coeff)
         : row(r), col(c), row_spin(rspin), col_spin(cspin), coefficient(coeff)
         {
         }
 
-        std::size_t row, col;
+        index_type row, col;
         subcharge row_spin, col_spin;
         T coefficient;
     };
