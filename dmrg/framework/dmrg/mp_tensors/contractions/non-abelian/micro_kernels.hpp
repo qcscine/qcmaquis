@@ -146,6 +146,7 @@ namespace detail {
             }
         }
     }
+
     template<class Matrix, class SymmGroup>
     void rbtm(Matrix const & iblock, typename Matrix::value_type* oblock, typename operator_selector<Matrix, SymmGroup>::type const & W,
                          std::size_t in_left_offset,
@@ -175,6 +176,76 @@ namespace detail {
                 typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
                 maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, in_right_offset + rr),
                                                     &iblock(in_left_offset + ss1*l_size, in_right_offset + rr) + l_size,
+                                                    oblock + (out_right_offset + ss2*r_size + rr) * l_size,
+                                                    alfa_t);
+
+                assert(&iblock(in_left_offset + ss1*l_size, in_right_offset + rr)
+                       == &iblock(0,0) + in_left_offset + ss1*l_size + num_rows(iblock) * (in_right_offset + rr));
+            }
+        }
+    }
+
+    template <typename T>
+    struct micro_task2
+    {
+        typedef unsigned short IS;
+
+        micro_task2(T const* s, IS a, IS b, IS c, IS d, IS e) : source(s), l_size(a), r_size_cache(b), r_size(c)
+                                                              , stripe(d), out_offset(e), size(0) {}
+
+        T const* source;
+        T scale[10];
+        IS l_size, r_size_cache, r_size, stripe, out_offset;
+        char ss1[10];
+        char ss2[10];
+        unsigned short size;
+    };
+
+    template <class Matrix, class SymmGroup>
+    void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block, typename Matrix::value_type couplings[],
+                    micro_task2<typename Matrix::value_type> & task)
+    {
+        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+        {
+            std::size_t index = it - blocks.first;
+            std::size_t ss1 = it->row;
+            std::size_t ss2 = it->col;
+            std::size_t rspin = it->row_spin;
+            std::size_t cspin = it->col_spin;
+            std::size_t casenr = 0; 
+            if (rspin == 2 && cspin == 2) casenr = 3;
+            else if (rspin == 2) casenr = 1;
+            else if (cspin == 2) casenr = 2;
+
+            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+            task.ss1[index] = ss1;
+            task.ss2[index] = ss2;
+            task.scale[index] = alfa_t;
+            task.size++;
+        }
+        if (task.size > 10)
+            throw std::runtime_error("too many nano ops: " + boost::lexical_cast<std::string>(task.size) + "\n");
+    }
+
+    template<typename T>
+    void task2_axpy(micro_task2<T> const & task, T * oblock)
+    {
+        std::size_t l_size = task.l_size; 
+        std::size_t r_size = task.r_size; 
+        std::size_t r_size_cache = task.r_size_cache;
+        std::size_t stripe = task.stripe;
+        std::size_t out_right_offset = task.out_offset;
+        
+        for(size_t rr = 0; rr < r_size_cache; ++rr) {
+            for (size_t i = 0; i < task.size; ++i)
+            {
+                T alfa_t = task.scale[i];
+                char ss1 = task.ss1[i];
+                char ss2 = task.ss2[i];
+                maquis::dmrg::detail::iterator_axpy(task.source + ss1*l_size + stripe * rr,
+                                                    task.source + ss1*l_size + stripe * rr + l_size,
                                                     oblock + (out_right_offset + ss2*r_size + rr) * l_size,
                                                     alfa_t);
             }
