@@ -126,7 +126,7 @@ namespace SU2 {
         typedef unsigned short IS;
 
         micro_task(I b_, char oi, char wb, IS a, IS b, IS c, IS d, IS e, IS f, IS g, T s[])
-        : b(b_), op_index(oi), w_block(wb), t_block(a), in_offset(b), in_offset_block(c), out_offset(d), l_size(e), r_block(f), r_size(g)
+        : b(b_), op_index(oi), w_block(wb), t_block(a), in_left_offset(b), in_right_offset(c), out_offset(d), l_size(e), r_size_cache(f), r_size(g)
         {
             scale[0] = s[0];
             scale[1] = s[1];
@@ -136,15 +136,30 @@ namespace SU2 {
 
         I b;
         IS t_block;
-        IS in_offset;
-        IS in_offset_block;
+        IS in_left_offset;
+        IS in_right_offset;
         IS out_offset;
         IS l_size;
-        IS r_block;
+        IS r_size_cache;
         IS r_size;
         char op_index;
         char w_block;
         T scale[4];
+    };
+
+    template <typename T>
+    struct micro_task2
+    {
+        typedef unsigned short IS;
+
+        micro_task2(T const* s, IS a, IS b, IS c, IS d, IS e) : source(s), l_size(a), r_size_cache(b), r_size(c), stripe(d), out_offset(e), size(0) {}
+        
+        T const* source;
+        T scale[10];
+        IS l_size, r_size_cache, r_size, stripe, out_offset;
+        char ss1[10];
+        char ss2[10];
+        unsigned short size;
     };
 
     template <typename T>
@@ -176,6 +191,7 @@ namespace SU2 {
         typedef typename Matrix::value_type value_type;
 
         std::map<value_type*, std::vector<micro_task<value_type> > > tasks;
+        std::map<value_type*, std::vector<micro_task2<value_type> > > tasks2;
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -217,6 +233,7 @@ namespace SU2 {
                             o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
                         std::vector<micro_task<value_type> > & otasks = tasks[&ret[o](0,0)];
+                        std::vector<micro_task2<value_type> > & otasks2 = tasks2[&ret[o](0,0)];
 
                         int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
                         int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
@@ -229,15 +246,81 @@ namespace SU2 {
                         size_t out_right_offset = out_right_pb(phys_out, rc);
                         size_t r_size = T.basis().right_size(t_block);
 
-                        unsigned short r_block = 16384 / (l_size * W.basis().right_size(w_block)); // 128 KB
-                        for (unsigned short slice = 0; slice < r_size/r_block; ++slice)
+                        unsigned short r_size_cache = 16384 / (l_size * W.basis().right_size(w_block)); // 128 KB
+                        for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
+                        {
+                            size_t right_offset_cache = slice * r_size_cache;
                             otasks.push_back(micro_task<value_type>(b2, op_index, w_block, t_block, in_left_offset,
-                                             slice * r_block, out_right_offset + slice * r_block, l_size, r_block, r_size, couplings));
+                                             right_offset_cache, out_right_offset + right_offset_cache, l_size, r_size_cache, r_size, couplings));
 
-                        unsigned short remain = r_size % r_block;
-                        unsigned short done = r_size - remain;
+                            ////////////////////////////////////////
+                            micro_task2<value_type> task(&T[t_block](in_left_offset, right_offset_cache), l_size, r_size_cache, r_size,
+                                                         num_rows(T[t_block]), out_right_offset + right_offset_cache);
+
+                            typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                            std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                            {
+                                std::size_t index = it - blocks.first;
+                                std::size_t ss1 = it->row;
+                                std::size_t ss2 = it->col;
+                                std::size_t rspin = it->row_spin;
+                                std::size_t cspin = it->col_spin;
+                                std::size_t casenr = 0;
+                                if (rspin == 2 && cspin == 2) casenr = 3;
+                                else if (rspin == 2) casenr = 1;
+                                else if (cspin == 2) casenr = 2;
+
+                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+                                task.ss1[index] = ss1;
+                                task.ss2[index] = ss2;
+                                task.scale[index] = alfa_t;
+                                task.size++;
+                            }
+                            if (task.size > 10)
+                                throw std::runtime_error("too many nano ops: " + boost::lexical_cast<std::string>(task.size) + "\n");
+                            otasks2.push_back(task);
+                            ////////////////////////////////////////
+                        }
+
+                        unsigned short r_size_remain = r_size % r_size_cache;
+                        unsigned short right_offset_remain = r_size - r_size_remain;
+                        if (r_size_remain == 0) continue;
+
                         otasks.push_back(micro_task<value_type>(b2, op_index, w_block, t_block, in_left_offset,
-                                         done, out_right_offset + done, l_size, remain, r_size, couplings));
+                                         right_offset_remain, out_right_offset + right_offset_remain, l_size, r_size_remain, r_size, couplings));
+
+                        ////////////////////////////////////////
+                        {
+                        micro_task2<value_type> task(&T[t_block](in_left_offset, right_offset_remain), l_size, r_size_remain, r_size,
+                                                     num_rows(T[t_block]), out_right_offset + right_offset_remain);
+
+                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+                        {
+                            std::size_t index = it - blocks.first;
+                            std::size_t ss1 = it->row;
+                            std::size_t ss2 = it->col;
+                            std::size_t rspin = it->row_spin;
+                            std::size_t cspin = it->col_spin;
+                            std::size_t casenr = 0;
+                            if (rspin == 2 && cspin == 2) casenr = 3;
+                            else if (rspin == 2) casenr = 1;
+                            else if (cspin == 2) casenr = 2;
+
+                            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+                            task.ss1[index] = ss1;
+                            task.ss2[index] = ss2;
+                            task.scale[index] = alfa_t;
+                            task.size++;
+                        }
+                        if (task.size > 10)
+                            throw std::runtime_error("too many nano ops2: " + boost::lexical_cast<std::string>(task.size) + "\n");
+                        otasks2.push_back(task);
+                        }
+                        ////////////////////////////////////////
+
                 } // wblock
                 } // ket block
             } // op_index
@@ -246,7 +329,9 @@ namespace SU2 {
         for (typename std::map<value_type*, std::vector<micro_task<value_type> > >::iterator it = tasks.begin(); it != tasks.end(); ++it)
         {
             std::vector<micro_task<value_type> > & otasks = it->second;
-            std::sort(otasks.begin(), otasks.end(), task_compare<value_type>()); 
+            //std::sort(otasks.begin(), otasks.end(), task_compare<value_type>()); 
+            std::vector<micro_task2<value_type> > & otasks2 = tasks2[it->first];
+            assert(otasks.size() == otasks2.size());
 
             for (typename std::vector<micro_task<value_type> >::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
             {
@@ -255,8 +340,18 @@ namespace SU2 {
                 block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(it2->b);
                 value_type * oblock = it->first;
 
-                detail::rbtm<Matrix, SymmGroup>(T[it2->t_block], oblock, W, it2->in_offset, it2->in_offset_block, it2->out_offset,
-                                                it2->l_size, it2->r_block, it2->r_size, it2->w_block, it2->scale);
+                detail::rbtm<Matrix, SymmGroup>(T[it2->t_block], oblock, W, it2->in_left_offset, it2->in_right_offset, it2->out_offset,
+                                                it2->l_size, it2->r_size_cache, it2->r_size, it2->w_block, it2->scale);
+
+                size_t index = it2-otasks.begin();
+                micro_task2<value_type> mt2 = otasks2[index];
+                
+                assert(mt2.out_offset == it2->out_offset);
+                assert(mt2.r_size_cache == it2->r_size_cache);
+                assert(mt2.l_size == it2->l_size);
+                assert(mt2.r_size == it2->r_size);
+                //assert(mt2.in_right_offset == it2->in_right_offset);
+                //maquis::cout << mt2.out_offset << "\t" << it2->out_offset << std::endl;
             }
         }
 

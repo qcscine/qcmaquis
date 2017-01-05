@@ -149,10 +149,10 @@ namespace detail {
     template<class Matrix, class SymmGroup>
     void rbtm(Matrix const & iblock, typename Matrix::value_type* oblock, typename operator_selector<Matrix, SymmGroup>::type const & W,
                          std::size_t in_left_offset,
-                         std::size_t in_block,
+                         std::size_t in_right_offset,
                          std::size_t out_right_offset,
                          std::size_t l_size,
-                         std::size_t r_block,
+                         std::size_t r_size_cache,
                          std::size_t r_size,
                          std::size_t w_block,
                          const typename Matrix::value_type couplings[])
@@ -160,7 +160,7 @@ namespace detail {
         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
-        for(size_t rr = 0; rr < r_block; ++rr) {
+        for(size_t rr = 0; rr < r_size_cache; ++rr) {
             for( block_iterator it = blocks.first; it != blocks.second; ++it)
             {
                 std::size_t ss1 = it->row;
@@ -173,8 +173,8 @@ namespace detail {
                 else if (cspin == 2) casenr = 2;
 
                 typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, rr+in_block),
-                                                    &iblock(in_left_offset + ss1*l_size, rr+in_block) + l_size,
+                maquis::dmrg::detail::iterator_axpy(&iblock(in_left_offset + ss1*l_size, in_right_offset + rr),
+                                                    &iblock(in_left_offset + ss1*l_size, in_right_offset + rr) + l_size,
                                                     oblock + (out_right_offset + ss2*r_size + rr) * l_size,
                                                     alfa_t);
             }
