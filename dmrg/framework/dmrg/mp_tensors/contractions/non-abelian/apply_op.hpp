@@ -171,6 +171,34 @@ namespace SU2 {
         }
     };
 
+    template <class Matrix, class SymmGroup>
+    void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block, typename Matrix::value_type couplings[],
+                    micro_task2<typename Matrix::value_type> & task)
+    {
+        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+        {
+            std::size_t index = it - blocks.first;
+            std::size_t ss1 = it->row;
+            std::size_t ss2 = it->col;
+            std::size_t rspin = it->row_spin;
+            std::size_t cspin = it->col_spin;
+            std::size_t casenr = 0;
+            if (rspin == 2 && cspin == 2) casenr = 3;
+            else if (rspin == 2) casenr = 1;
+            else if (cspin == 2) casenr = 2;
+
+            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
+            task.ss1[index] = ss1;
+            task.ss2[index] = ss2;
+            task.scale[index] = alfa_t;
+            task.size++;
+        }
+        if (task.size > 10)
+            throw std::runtime_error("too many nano ops: " + boost::lexical_cast<std::string>(task.size) + "\n");
+    }
+
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel(size_t b1,
                 block_matrix<Matrix, SymmGroup> & ret,
@@ -253,34 +281,11 @@ namespace SU2 {
                             otasks.push_back(micro_task<value_type>(b2, op_index, w_block, t_block, in_left_offset,
                                              right_offset_cache, out_right_offset + right_offset_cache, l_size, r_size_cache, r_size, couplings));
 
-                            ////////////////////////////////////////
                             micro_task2<value_type> task(&T[t_block](in_left_offset, right_offset_cache), l_size, r_size_cache, r_size,
                                                          num_rows(T[t_block]), out_right_offset + right_offset_cache);
 
-                            typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                            std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-                            for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                            {
-                                std::size_t index = it - blocks.first;
-                                std::size_t ss1 = it->row;
-                                std::size_t ss2 = it->col;
-                                std::size_t rspin = it->row_spin;
-                                std::size_t cspin = it->col_spin;
-                                std::size_t casenr = 0;
-                                if (rspin == 2 && cspin == 2) casenr = 3;
-                                else if (rspin == 2) casenr = 1;
-                                else if (cspin == 2) casenr = 2;
-
-                                typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                                task.ss1[index] = ss1;
-                                task.ss2[index] = ss2;
-                                task.scale[index] = alfa_t;
-                                task.size++;
-                            }
-                            if (task.size > 10)
-                                throw std::runtime_error("too many nano ops: " + boost::lexical_cast<std::string>(task.size) + "\n");
+                            op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
                             otasks2.push_back(task);
-                            ////////////////////////////////////////
                         }
 
                         unsigned short r_size_remain = r_size % r_size_cache;
@@ -290,36 +295,11 @@ namespace SU2 {
                         otasks.push_back(micro_task<value_type>(b2, op_index, w_block, t_block, in_left_offset,
                                          right_offset_remain, out_right_offset + right_offset_remain, l_size, r_size_remain, r_size, couplings));
 
-                        ////////////////////////////////////////
-                        {
                         micro_task2<value_type> task(&T[t_block](in_left_offset, right_offset_remain), l_size, r_size_remain, r_size,
                                                      num_rows(T[t_block]), out_right_offset + right_offset_remain);
 
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-                        for( block_iterator it = blocks.first; it != blocks.second; ++it)
-                        {
-                            std::size_t index = it - blocks.first;
-                            std::size_t ss1 = it->row;
-                            std::size_t ss2 = it->col;
-                            std::size_t rspin = it->row_spin;
-                            std::size_t cspin = it->col_spin;
-                            std::size_t casenr = 0;
-                            if (rspin == 2 && cspin == 2) casenr = 3;
-                            else if (rspin == 2) casenr = 1;
-                            else if (cspin == 2) casenr = 2;
-
-                            typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
-                            task.ss1[index] = ss1;
-                            task.ss2[index] = ss2;
-                            task.scale[index] = alfa_t;
-                            task.size++;
-                        }
-                        if (task.size > 10)
-                            throw std::runtime_error("too many nano ops2: " + boost::lexical_cast<std::string>(task.size) + "\n");
+                        op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
                         otasks2.push_back(task);
-                        }
-                        ////////////////////////////////////////
 
                 } // wblock
                 } // ket block
@@ -350,7 +330,6 @@ namespace SU2 {
                 assert(mt2.r_size_cache == it2->r_size_cache);
                 assert(mt2.l_size == it2->l_size);
                 assert(mt2.r_size == it2->r_size);
-                //assert(mt2.in_right_offset == it2->in_right_offset);
                 //maquis::cout << mt2.out_offset << "\t" << it2->out_offset << std::endl;
             }
         }
