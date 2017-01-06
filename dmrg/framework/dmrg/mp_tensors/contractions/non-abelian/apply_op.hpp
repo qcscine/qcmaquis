@@ -119,43 +119,6 @@ namespace SU2 {
         } // b1
     }
 
-    template <typename T>
-    struct micro_task
-    {
-        typedef unsigned I;
-        typedef unsigned short IS;
-
-        micro_task(I b_, char oi, char wb, IS a, IS b, IS c, IS d, IS e, IS f, IS g, T s[])
-        : b(b_), op_index(oi), w_block(wb), t_block(a), in_left_offset(b), in_right_offset(c), out_offset(d), l_size(e), r_size_cache(f), r_size(g)
-        {
-            scale[0] = s[0];
-            scale[1] = s[1];
-            scale[2] = s[2];
-            scale[3] = s[3];
-        }
-
-        I b;
-        IS t_block;
-        IS in_left_offset;
-        IS in_right_offset;
-        IS out_offset;
-        IS l_size;
-        IS r_size_cache;
-        IS r_size;
-        char op_index;
-        char w_block;
-        T scale[4];
-    };
-
-    template <typename T>
-    struct task_compare
-    {
-        bool operator ()(micro_task<T> const & t1, micro_task<T> const & t2)
-        {
-            return t1.out_offset < t2.out_offset;
-        }
-    };
-
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel(size_t b1,
                 block_matrix<Matrix, SymmGroup> & ret,
@@ -175,9 +138,8 @@ namespace SU2 {
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
 
-        typedef detail::micro_task2<value_type> micro_task2;
-        std::map<value_type*, std::vector<micro_task<value_type> > > tasks;
-        std::map<value_type*, std::vector<micro_task2> > tasks2;
+        typedef detail::micro_task<value_type> micro_task;
+        std::map<value_type*, std::vector<micro_task> > tasks;
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -218,8 +180,7 @@ namespace SU2 {
                         if ( o == ret.n_blocks() )
                             o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
-                        std::vector<micro_task<value_type> > & otasks = tasks[&ret[o](0,0)];
-                        std::vector<micro_task2 > & otasks2 = tasks2[&ret[o](0,0)];
+                        std::vector<micro_task> & otasks = tasks[&ret[o](0,0)];
 
                         int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
                         int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
@@ -236,61 +197,35 @@ namespace SU2 {
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
                         {
                             size_t right_offset_cache = slice * r_size_cache;
-                            otasks.push_back(micro_task<value_type>(b2, op_index, w_block, t_block, in_left_offset,
-                                             right_offset_cache, out_right_offset + right_offset_cache, l_size, r_size_cache, r_size, couplings));
-
-                            micro_task2 task(&T[t_block](in_left_offset, right_offset_cache), l_size, r_size_cache, r_size,
+                            micro_task task(&T[t_block](in_left_offset, right_offset_cache), l_size, r_size_cache, r_size,
                                                          num_rows(T[t_block]), out_right_offset + right_offset_cache);
 
                             detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
-                            otasks2.push_back(task);
+                            otasks.push_back(task);
                         }
 
                         unsigned short r_size_remain = r_size % r_size_cache;
                         unsigned short right_offset_remain = r_size - r_size_remain;
                         if (r_size_remain == 0) continue;
 
-                        otasks.push_back(micro_task<value_type>(b2, op_index, w_block, t_block, in_left_offset,
-                                         right_offset_remain, out_right_offset + right_offset_remain, l_size, r_size_remain, r_size, couplings));
-
-                        micro_task2 task(&T[t_block](in_left_offset, right_offset_remain), l_size, r_size_remain, r_size,
+                        micro_task task(&T[t_block](in_left_offset, right_offset_remain), l_size, r_size_remain, r_size,
                                                      num_rows(T[t_block]), out_right_offset + right_offset_remain);
 
                         detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
-                        otasks2.push_back(task);
+                        otasks.push_back(task);
 
                 } // wblock
                 } // ket block
             } // op_index
         } // b2
 
-        for (typename std::map<value_type*, std::vector<micro_task<value_type> > >::iterator it = tasks.begin(); it != tasks.end(); ++it)
+        for (typename std::map<value_type*, std::vector<micro_task> >::iterator it = tasks.begin(); it != tasks.end(); ++it)
         {
-            std::vector<micro_task<value_type> > & otasks = it->second;
-            //std::sort(otasks.begin(), otasks.end(), task_compare<value_type>()); 
-            std::vector<micro_task2> & otasks2 = tasks2[it->first];
-            assert(otasks.size() == otasks2.size());
+            std::vector<micro_task> & otasks = it->second;
+            std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
 
-            for (typename std::vector<micro_task<value_type> >::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
-            {
-                MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1, it2->b);
-                typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(it2->op_index); 
-                block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(it2->b);
-                value_type * oblock = it->first;
-
-                //detail::rbtm<Matrix, SymmGroup>(T[it2->t_block], oblock, W, it2->in_left_offset, it2->in_right_offset, it2->out_offset,
-                //                                it2->l_size, it2->r_size_cache, it2->r_size, it2->w_block, it2->scale);
-
-                size_t index = it2-otasks.begin();
-                micro_task2 mt2 = otasks2[index];
-                
-                assert(mt2.out_offset == it2->out_offset);
-                assert(mt2.r_size_cache == it2->r_size_cache);
-                assert(mt2.l_size == it2->l_size);
-                assert(mt2.r_size == it2->r_size);
-
-                detail::task2_axpy(mt2, oblock);
-            }
+            for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
+                detail::task_axpy(*it2, it->first);
         }
 
         right_mult_mps.free(b1);
