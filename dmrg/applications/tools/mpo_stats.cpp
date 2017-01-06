@@ -71,7 +71,7 @@ std::string operator * (std::string s, int m)
 }
 
 template <class Matrix, class SymmGroup>
-void write_mpo(MPO<Matrix, SymmGroup> const & mpo, std::string filename) 
+void write_mpo(MPO<Matrix, SymmGroup> const & mpo, std::string filename, bool save_space) 
 {        
     std::string space(" ");
 
@@ -81,7 +81,7 @@ void write_mpo(MPO<Matrix, SymmGroup> const & mpo, std::string filename)
         typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table = mpo[p].get_operator_table();
         unsigned maxtag = op_table->size();
         int padding = 2;
-        if (maxtag < 100) padding = 1;
+        if (maxtag < 100 || save_space) padding = 1;
 
         for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
             for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
@@ -96,7 +96,13 @@ void write_mpo(MPO<Matrix, SymmGroup> const & mpo, std::string filename)
                     else if (tag < 100)
                         ofs << space*(padding-1) << tag;
                     else
-                        ofs << tag;
+                        if (save_space)
+                            if (tag%100 < 10)
+                                ofs << space*padding << tag%100;
+                            else
+                                ofs << tag%100;
+                        else
+                            ofs << tag;
                 }
                 else ofs << space*padding << ".";
             }
@@ -120,18 +126,23 @@ int main(int argc, char ** argv)
         DmrgParameters parms = opt.parms;
         
         maquis::cout.precision(10);
+
+        bool save_space = true;
+        if (parms.defined("save_space") && !parms["save_space"])
+            save_space = false;
         
         /// Parsing model
         Lattice lattice = Lattice(parms);
         Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
         
         MPO<matrix, symm> mpo = make_mpo(lattice, model);
-        write_mpo(mpo, "mpo_stats.");
+        write_mpo(mpo, "mpo_stats.", save_space);
 
         MPS<matrix, symm> mps = MPS<matrix, symm>(lattice.size(), *(model.initializer(lattice, parms)));
         MPO<matrix, symm> ts_mpo;
         make_ts_cache_mpo(mpo, ts_mpo, mps);
-        write_mpo(ts_mpo, "ts_mpo_stats.");
+
+        write_mpo(ts_mpo, "ts_mpo_stats.", save_space);
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
