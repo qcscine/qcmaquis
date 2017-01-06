@@ -197,23 +197,20 @@ namespace SU2 {
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
                         {
                             size_t right_offset_cache = slice * r_size_cache;
-                            micro_task task(&T[t_block](in_left_offset, right_offset_cache), l_size, r_size_cache, r_size,
-                                                         num_rows(T[t_block]), out_right_offset + right_offset_cache);
-
-                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
-                            otasks.push_back(task);
+                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks,
+                                                                  &T[t_block](in_left_offset, right_offset_cache),
+                                                                  l_size, r_size_cache, r_size, num_rows(T[t_block]),
+                                                                  out_right_offset + right_offset_cache);
                         }
 
                         unsigned short r_size_remain = r_size % r_size_cache;
                         unsigned short right_offset_remain = r_size - r_size_remain;
                         if (r_size_remain == 0) continue;
 
-                        micro_task task(&T[t_block](in_left_offset, right_offset_remain), l_size, r_size_remain, r_size,
-                                                     num_rows(T[t_block]), out_right_offset + right_offset_remain);
-
-                        detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
-                        otasks.push_back(task);
-
+                        detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks,
+                                                              &T[t_block](in_left_offset, right_offset_remain),
+                                                              l_size, r_size_remain, r_size, num_rows(T[t_block]),
+                                                              out_right_offset + right_offset_remain);
                 } // wblock
                 } // ket block
             } // op_index
