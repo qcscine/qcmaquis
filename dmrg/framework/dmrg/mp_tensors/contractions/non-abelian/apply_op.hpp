@@ -119,17 +119,27 @@ namespace SU2 {
         } // b1
     }
 
+    template <class Matrix, class SymmGroup>
+    struct map_capsule
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename Matrix::value_type value_type;
+        typedef detail::micro_task<value_type> micro_task;
+        typedef std::map<std::pair<charge, charge>, std::vector<micro_task>, compare_pair<std::pair<charge, charge> > > map_t;
+
+        map_t tasks;        
+    };
+
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    void rbtm_kernel(size_t b1,
-                block_matrix<Matrix, SymmGroup> & ret,
-                Boundary<OtherMatrix, SymmGroup> const & right,
-                MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
-                MPOTensor<Matrix, SymmGroup> const & mpo,
-                DualIndex<SymmGroup> const & ket_basis,
-                Index<SymmGroup> const & left_i,
-                Index<SymmGroup> const & out_right_i,
-                ProductBasis<SymmGroup> const & in_left_pb,
-                ProductBasis<SymmGroup> const & out_right_pb)
+    void rbtm_tasks(size_t b1,
+                    MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    DualIndex<SymmGroup> const & ket_basis,
+                    Index<SymmGroup> const & left_i,
+                    Index<SymmGroup> const & out_right_i,
+                    ProductBasis<SymmGroup> const & in_left_pb,
+                    ProductBasis<SymmGroup> const & out_right_pb,
+                    map_capsule<Matrix, SymmGroup> & tasks_cap)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
@@ -138,8 +148,7 @@ namespace SU2 {
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
 
-        typedef detail::micro_task<value_type> micro_task;
-        std::map<value_type*, std::vector<micro_task> > tasks;
+        typedef typename map_capsule<Matrix, SymmGroup>::micro_task micro_task;
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -176,11 +185,8 @@ namespace SU2 {
                         if (!left_i.has(out_r_charge)) continue;
 
                         size_t l_size = left_i[lb].second; 
-                        size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() )
-                            o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
-                        std::vector<micro_task> & otasks = tasks[&ret[o](0,0)];
+                        std::vector<micro_task> & otasks = tasks_cap.tasks[std::make_pair(out_l_charge, out_r_charge)];
 
                         int i = SymmGroup::spin(out_r_charge), ip = SymmGroup::spin(rc);
                         int j = SymmGroup::spin(out_l_charge), jp = SymmGroup::spin(mc);
@@ -197,38 +203,111 @@ namespace SU2 {
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
                         {
                             size_t right_offset_cache = slice * r_size_cache;
-                            micro_task task(&T[t_block](in_left_offset, right_offset_cache), l_size, r_size_cache, r_size,
-                                                         num_rows(T[t_block]), out_right_offset + right_offset_cache);
-
-                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
-                            otasks.push_back(task);
+                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks,
+                                                                  &T[t_block](in_left_offset, right_offset_cache),
+                                                                  l_size, r_size_cache, r_size, num_rows(T[t_block]),
+                                                                  out_right_offset + right_offset_cache);
                         }
 
                         unsigned short r_size_remain = r_size % r_size_cache;
                         unsigned short right_offset_remain = r_size - r_size_remain;
                         if (r_size_remain == 0) continue;
 
-                        micro_task task(&T[t_block](in_left_offset, right_offset_remain), l_size, r_size_remain, r_size,
-                                                     num_rows(T[t_block]), out_right_offset + right_offset_remain);
-
-                        detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, task);
-                        otasks.push_back(task);
-
+                        detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks,
+                                                              &T[t_block](in_left_offset, right_offset_remain),
+                                                              l_size, r_size_remain, r_size, num_rows(T[t_block]),
+                                                              out_right_offset + right_offset_remain);
                 } // wblock
                 } // ket block
             } // op_index
         } // b2
+    }
 
-        for (typename std::map<value_type*, std::vector<micro_task> >::iterator it = tasks.begin(); it != tasks.end(); ++it)
+    template<class Matrix, class SymmGroup>
+    void rbtm_axpy(map_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & ret,
+                   Index<SymmGroup> const & out_right_i)
+    {
+        typedef typename Matrix::value_type value_type;
+        typedef typename map_capsule<Matrix, SymmGroup>::map_t map_t;
+        typedef typename map_capsule<Matrix, SymmGroup>::micro_task micro_task;
+
+        map_t & tasks = tasks_cap.tasks;
+        for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
         {
             std::vector<micro_task> & otasks = it->second;
             std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
 
+            assert(otasks.size() > 0);
+            Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
+
             for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
-                detail::task_axpy(*it2, it->first);
+                detail::task_axpy(*it2, &buf(0,0));
+
+            ret.insert_block(buf, it->first.first, it->first.second);
         }
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    void charge_gemm(Matrix const & A, OtherMatrix const & B, block_matrix<OtherMatrix, SymmGroup> & C,
+                     typename SymmGroup::charge rc, typename Matrix::value_type scale)
+    {
+        size_t c_block = C.find_block(rc, rc);
+        if (c_block == C.n_blocks())
+               c_block = C.insert_block(OtherMatrix(num_rows(A), num_cols(B)), rc, rc);
+
+        boost::numeric::bindings::blas::gemm(scale, A, B, typename Matrix::value_type(1), C[c_block]); 
+    }
+
+    template<class Matrix, class OtherMatrix, class TVMatrix, class SymmGroup>
+    void rbtm_axpy_gemm(size_t b1, map_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & prod,
+                        Index<SymmGroup> const & out_right_i, Boundary<OtherMatrix, SymmGroup> const & left,
+                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                        block_matrix<TVMatrix, SymmGroup> const & left_b1)
+    {
+        typedef typename Matrix::value_type value_type;
+        typedef typename map_capsule<Matrix, SymmGroup>::map_t map_t;
+        typedef typename map_capsule<Matrix, SymmGroup>::micro_task micro_task;
+        typedef typename SymmGroup::charge charge;
+
+        std::vector<value_type> phases = (mpo.herm_info.left_skip(b1)) ? ::contraction::common::conjugate_phases(left_b1, mpo, b1, true, false) :
+                                                                         std::vector<value_type>(left_b1.n_blocks(),1.);
+        map_t & tasks = tasks_cap.tasks;
+        for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
+        {
+            std::vector<micro_task> & otasks = it->second;
+            std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
+
+            assert(otasks.size() > 0);
+            Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
+
+            size_t k = left_b1.basis().position(it->first.second, it->first.first); if (k == left_b1.basis().size()) continue;
+
+            for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
+                detail::task_axpy(*it2, &buf(0,0));
+
+            charge_gemm(left_b1[k], buf, prod, it->first.second, phases[k]);
+        }
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    void rbtm_kernel(size_t b1,
+                     block_matrix<Matrix, SymmGroup> & ret,
+                     Boundary<OtherMatrix, SymmGroup> const & left,
+                     MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     DualIndex<SymmGroup> const & ket_basis,
+                     Index<SymmGroup> const & left_i,
+                     Index<SymmGroup> const & out_right_i,
+                     ProductBasis<SymmGroup> const & in_left_pb,
+                     ProductBasis<SymmGroup> const & out_right_pb)
+    {
+        map_capsule<Matrix, SymmGroup> tasks_cap;
+
+        rbtm_tasks(b1, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+        rbtm_axpy(tasks_cap, ret, out_right_i);
 
         right_mult_mps.free(b1);
+
     }
 } // namespace SU2
 } // namespace contraction

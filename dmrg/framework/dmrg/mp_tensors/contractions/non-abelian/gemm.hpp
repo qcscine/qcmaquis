@@ -191,29 +191,25 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename Matrix3::value_type value_type;
 
-        C.clear();
         assert(B.basis().is_sorted());
+        assert( (conjugate_a && A.n_blocks() == conj_scales.size()) || (!conjugate_a && B.n_blocks() == conj_scales.size()));
+        C.clear();
 
-        const_iterator B_begin = B.basis().begin();
-        const_iterator B_end = B.basis().end();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
+            charge al = A.basis().left_charge(k);
             charge ar = A.basis().right_charge(k);
-            const_iterator it = B.basis().left_lower_bound(ar);
 
-            for ( ; it != B_end && it->lc == ar; ++it)
-            {
-                if (A.basis().left_charge(k) != it->rc) continue;
+            std::size_t matched_block = B.basis().position(ar, al);
+            if (matched_block == B.n_blocks()) continue;
 
-                std::size_t matched_block = std::distance(B_begin, it);
+            std::size_t c_block = C.find_block(al, al);
+            if (c_block == C.n_blocks())
+                c_block = C.insert_block(Matrix3(num_rows(A[k]), num_cols(B[matched_block])), al, al);
 
-                std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
-                if (c_block == C.n_blocks())
-                    c_block = C.insert_block(Matrix3(num_rows(A[k]),it->rs), A.basis().left_charge(k), it->rc);
-
-                //boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
-                boost::numeric::bindings::blas::gemm(conj_scales[ (conjugate_a) ? k : matched_block], A[k], B[matched_block], value_type(1), C[c_block]);
-            }
+            //boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
+            boost::numeric::bindings::blas::gemm(conj_scales[ (conjugate_a) ? k : matched_block], A[k], B[matched_block],
+                                                 value_type(1), C[c_block]);
         }
     }
 }
