@@ -248,17 +248,14 @@ namespace SU2 {
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    void charge_gemm(block_matrix<Matrix, SymmGroup> const & A, OtherMatrix const & B, block_matrix<OtherMatrix, SymmGroup> & C,
-                     typename SymmGroup::charge mc, typename SymmGroup::charge rc, std::vector<typename Matrix::value_type> const & scale)
+    void charge_gemm(Matrix const & A, OtherMatrix const & B, block_matrix<OtherMatrix, SymmGroup> & C,
+                     typename SymmGroup::charge rc, typename Matrix::value_type scale)
     {
-        size_t k = A.basis().position(rc, mc);
-        if (k == A.basis().size() ) { return; }
-
         size_t c_block = C.find_block(rc, rc);
         if (c_block == C.n_blocks())
-               c_block = C.insert_block(OtherMatrix(A.basis().left_size(k), num_cols(B)), rc, rc);
+               c_block = C.insert_block(OtherMatrix(num_rows(A), num_cols(B)), rc, rc);
 
-        boost::numeric::bindings::blas::gemm(scale[k], A[k], B, typename Matrix::value_type(1), C[c_block]); 
+        boost::numeric::bindings::blas::gemm(scale, A, B, typename Matrix::value_type(1), C[c_block]); 
     }
 
     template<class Matrix, class OtherMatrix, class TVMatrix, class SymmGroup>
@@ -283,10 +280,12 @@ namespace SU2 {
             assert(otasks.size() > 0);
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
 
+            size_t k = left_b1.basis().position(it->first.second, it->first.first); if (k == left_b1.basis().size()) continue;
+
             for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
                 detail::task_axpy(*it2, &buf(0,0));
 
-            charge_gemm(left_b1, buf, prod, it->first.first, it->first.second, phases);
+            charge_gemm(left_b1[k], buf, prod, it->first.second, phases[k]);
         }
     }
 
