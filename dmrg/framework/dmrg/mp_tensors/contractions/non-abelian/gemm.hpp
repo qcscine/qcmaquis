@@ -191,8 +191,9 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename Matrix3::value_type value_type;
 
-        C.clear();
         assert(B.basis().is_sorted());
+        assert( (conjugate_a && A.n_blocks() == conj_scales.size()) || (!conjugate_a && B.n_blocks() == conj_scales.size()));
+        C.clear();
 
         const_iterator B_begin = B.basis().begin();
         const_iterator B_end = B.basis().end();
