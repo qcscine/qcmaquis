@@ -189,16 +189,24 @@ namespace contraction {
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
 
             block_matrix<Matrix, SymmGroup> tmp, tmp2;
-            SU2::rbtm_kernel(b1, tmp, right, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
-            if (mpo.herm_info.left_skip(b1)) {
-                std::vector<value_type> phases = ::contraction::common::conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
-                ::SU2::gemm_trim(left[mpo.herm_info.left_conj(b1)], tmp, tmp2, phases, true);
-            }
+            SU2::map_capsule<Matrix, SymmGroup> tasks_cap;
+            SU2::rbtm_tasks(b1, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+            if (mpo.herm_info.left_skip(b1))
+                SU2::rbtm_axpy_gemm(b1, tasks_cap, tmp2, out_right_i, left, mpo, left[mpo.herm_info.left_conj(b1)]);
             else
-                ::SU2::gemm_trim(transpose(left[b1]), tmp, tmp2, std::vector<value_type>(tmp.n_blocks(), 1.), false);
-            
-            tmp.clear();
+                SU2::rbtm_axpy_gemm(b1, tasks_cap, tmp2, out_right_i, left, mpo, transpose(left[b1]));
+            t.free(b1);
+
+            //SU2::rbtm_kernel(b1, tmp, left, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
+
+            //if (mpo.herm_info.left_skip(b1)) {
+            //    std::vector<value_type> phases = ::contraction::common::conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
+            //    ::SU2::gemm_trim(left[mpo.herm_info.left_conj(b1)], tmp, tmp2, phases, true);
+            //}
+            //else
+            //    ::SU2::gemm_trim(transpose(left[b1]), tmp, tmp2, std::vector<value_type>(tmp.n_blocks(), 1.), false);
+            //tmp.clear();
 
             parallel_critical
             for (std::size_t k = 0; k < tmp2.n_blocks(); ++k)
