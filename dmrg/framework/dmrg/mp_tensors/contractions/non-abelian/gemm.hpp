@@ -123,7 +123,7 @@ namespace SU2 {
         const_iterator B_end = B.basis().end();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
-            if (!B.basis().left_has(A.basis().left_charge(k))) continue;
+            assert(B.basis().left_has(A.basis().left_charge(k)));
 
             charge ar = A.basis().right_charge(k);
             const_iterator it = B.basis().left_lower_bound(ar);
@@ -159,7 +159,6 @@ namespace SU2 {
 
         const_iterator B_begin = B.basis().begin();
         const_iterator B_end = B.basis().end();
-        Index<SymmGroup> A_right_basis = A.right_basis();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
             charge ar = A.basis().right_charge(k);
@@ -169,7 +168,7 @@ namespace SU2 {
             for ( ; it != B_end && it->lc == ar; ++it)
             {
                 std::size_t matched_block = std::distance(B_begin, it);
-                if (!A_right_basis.has(it->rc)) continue;
+                assert(A.basis().left_has(it->rc));
 
                 std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
                 if (c_block == C.n_blocks())
