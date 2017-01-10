@@ -190,7 +190,7 @@ namespace contraction {
 
             block_matrix<Matrix, SymmGroup> tmp, tmp2;
 
-            SU2::map_capsule<Matrix, SymmGroup> tasks_cap;
+            SU2::task_capsule<Matrix, SymmGroup> tasks_cap;
             SU2::rbtm_tasks(b1, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
             if (mpo.herm_info.left_skip(b1))
                 SU2::rbtm_axpy_gemm(b1, tasks_cap, tmp2, out_right_i, left, mpo, left[mpo.herm_info.left_conj(b1)]);

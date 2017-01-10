@@ -120,7 +120,7 @@ namespace SU2 {
     }
 
     template <class Matrix, class SymmGroup>
-    struct map_capsule
+    struct task_capsule
     {
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
@@ -139,7 +139,7 @@ namespace SU2 {
                     Index<SymmGroup> const & out_right_i,
                     ProductBasis<SymmGroup> const & in_left_pb,
                     ProductBasis<SymmGroup> const & out_right_pb,
-                    map_capsule<Matrix, SymmGroup> & tasks_cap)
+                    task_capsule<Matrix, SymmGroup> & tasks_cap)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
@@ -148,7 +148,7 @@ namespace SU2 {
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
 
-        typedef typename map_capsule<Matrix, SymmGroup>::micro_task micro_task;
+        typedef typename task_capsule<Matrix, SymmGroup>::micro_task micro_task;
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -224,12 +224,12 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
-    void rbtm_axpy(map_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & ret,
+    void rbtm_axpy(task_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & ret,
                    Index<SymmGroup> const & out_right_i)
     {
         typedef typename Matrix::value_type value_type;
-        typedef typename map_capsule<Matrix, SymmGroup>::map_t map_t;
-        typedef typename map_capsule<Matrix, SymmGroup>::micro_task micro_task;
+        typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
+        typedef typename task_capsule<Matrix, SymmGroup>::micro_task micro_task;
 
         map_t & tasks = tasks_cap.tasks;
         for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
@@ -259,14 +259,14 @@ namespace SU2 {
     }
 
     template<class Matrix, class OtherMatrix, class TVMatrix, class SymmGroup>
-    void rbtm_axpy_gemm(size_t b1, map_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & prod,
+    void rbtm_axpy_gemm(size_t b1, task_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & prod,
                         Index<SymmGroup> const & out_right_i, Boundary<OtherMatrix, SymmGroup> const & left,
                         MPOTensor<Matrix, SymmGroup> const & mpo,
                         block_matrix<TVMatrix, SymmGroup> const & left_b1)
     {
         typedef typename Matrix::value_type value_type;
-        typedef typename map_capsule<Matrix, SymmGroup>::map_t map_t;
-        typedef typename map_capsule<Matrix, SymmGroup>::micro_task micro_task;
+        typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
+        typedef typename task_capsule<Matrix, SymmGroup>::micro_task micro_task;
         typedef typename SymmGroup::charge charge;
 
         std::vector<value_type> phases = (mpo.herm_info.left_skip(b1)) ? ::contraction::common::conjugate_phases(left_b1, mpo, b1, true, false) :
@@ -301,7 +301,7 @@ namespace SU2 {
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
-        map_capsule<Matrix, SymmGroup> tasks_cap;
+        task_capsule<Matrix, SymmGroup> tasks_cap;
 
         rbtm_tasks(b1, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
         rbtm_axpy(tasks_cap, ret, out_right_i);
