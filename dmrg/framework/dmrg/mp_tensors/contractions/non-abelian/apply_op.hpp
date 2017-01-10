@@ -237,7 +237,7 @@ namespace SU2 {
             std::vector<micro_task> & otasks = it->second;
             std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
 
-            assert(otasks.size() > 0);
+            if (otasks.size() == 0) continue;
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
 
             for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
@@ -277,7 +277,7 @@ namespace SU2 {
             std::vector<micro_task> & otasks = it->second;
             std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
 
-            assert(otasks.size() > 0);
+            if (otasks.size() == 0) continue;
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
 
             size_t k = left_b1.basis().position(it->first.second, it->first.first); if (k == left_b1.basis().size()) continue;
