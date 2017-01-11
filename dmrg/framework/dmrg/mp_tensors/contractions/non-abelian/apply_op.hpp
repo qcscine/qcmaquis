@@ -199,14 +199,15 @@ namespace SU2 {
                         size_t out_right_offset = out_right_pb(phys_out, rc);
                         size_t r_size = T.basis().right_size(t_block);
 
-                        micro_task tpl; tpl.l_size = l_size; tpl.stripe = num_rows(T[t_block]);
+                        micro_task tpl; tpl.l_size = l_size; tpl.stripe = num_rows(T[t_block]); tpl.b2 = b2; tpl.k = t_block;
 
                         unsigned short r_size_cache = 16384 / (l_size * W.basis().right_size(w_block)); // 128 KB
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
                         {
                             size_t right_offset_cache = slice * r_size_cache;
                             detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl, 
-                                                                  &T[t_block](in_left_offset, right_offset_cache),
+                                                                  //&T[t_block](in_left_offset, right_offset_cache),
+                                                                  in_left_offset + tpl.stripe * right_offset_cache,
                                                                   r_size_cache, r_size,
                                                                   out_right_offset + right_offset_cache);
                         }
@@ -216,7 +217,8 @@ namespace SU2 {
                         if (r_size_remain == 0) continue;
 
                         detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl,
-                                                              &T[t_block](in_left_offset, right_offset_remain),
+                                                              //&T[t_block](in_left_offset, right_offset_remain),
+                                                              in_left_offset + tpl.stripe * right_offset_remain,
                                                               r_size_remain, r_size,
                                                               out_right_offset + right_offset_remain);
                 } // wblock
@@ -225,9 +227,10 @@ namespace SU2 {
         } // b2
     }
 
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_axpy(task_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & ret,
-                   Index<SymmGroup> const & out_right_i)
+                   Index<SymmGroup> const & out_right_i,
+                   MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & t)
     {
         typedef typename Matrix::value_type value_type;
         typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
@@ -243,10 +246,31 @@ namespace SU2 {
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
 
             for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
-                detail::task_axpy(*it2, &buf(0,0));
+                detail::task_axpy(*it2, &buf(0,0), &t.at(it2->b2)[it2->k](0,0) + it2->in_offset);
 
             ret.insert_block(buf, it->first.first, it->first.second);
         }
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    void rbtm_kernel(size_t b1,
+                     block_matrix<Matrix, SymmGroup> & ret,
+                     Boundary<OtherMatrix, SymmGroup> const & left,
+                     MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     DualIndex<SymmGroup> const & ket_basis,
+                     Index<SymmGroup> const & left_i,
+                     Index<SymmGroup> const & out_right_i,
+                     ProductBasis<SymmGroup> const & in_left_pb,
+                     ProductBasis<SymmGroup> const & out_right_pb)
+    {
+        task_capsule<Matrix, SymmGroup> tasks_cap;
+
+        rbtm_tasks(b1, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+        rbtm_axpy(tasks_cap, ret, out_right_i, right_mult_mps);
+
+        right_mult_mps.free(b1);
+
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -264,7 +288,8 @@ namespace SU2 {
     void rbtm_axpy_gemm(size_t b1, task_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & prod,
                         Index<SymmGroup> const & out_right_i, Boundary<OtherMatrix, SymmGroup> const & left,
                         MPOTensor<Matrix, SymmGroup> const & mpo,
-                        block_matrix<TVMatrix, SymmGroup> const & left_b1)
+                        block_matrix<TVMatrix, SymmGroup> const & left_b1,
+                        MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & t)
     {
         typedef typename Matrix::value_type value_type;
         typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
@@ -285,31 +310,10 @@ namespace SU2 {
             size_t k = left_b1.basis().position(it->first.second, it->first.first); if (k == left_b1.basis().size()) continue;
 
             for (typename std::vector<micro_task>::const_iterator it2 = otasks.begin(); it2 != otasks.end(); ++it2)
-                detail::task_axpy(*it2, &buf(0,0));
+                detail::task_axpy(*it2, &buf(0,0), &t.at(it2->b2)[it2->k](0,0) + it2->in_offset);
 
             charge_gemm(left_b1[k], buf, prod, it->first.second, phases[k]);
         }
-    }
-
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    void rbtm_kernel(size_t b1,
-                     block_matrix<Matrix, SymmGroup> & ret,
-                     Boundary<OtherMatrix, SymmGroup> const & left,
-                     MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
-                     MPOTensor<Matrix, SymmGroup> const & mpo,
-                     DualIndex<SymmGroup> const & ket_basis,
-                     Index<SymmGroup> const & left_i,
-                     Index<SymmGroup> const & out_right_i,
-                     ProductBasis<SymmGroup> const & in_left_pb,
-                     ProductBasis<SymmGroup> const & out_right_pb)
-    {
-        task_capsule<Matrix, SymmGroup> tasks_cap;
-
-        rbtm_tasks(b1, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
-        rbtm_axpy(tasks_cap, ret, out_right_i);
-
-        right_mult_mps.free(b1);
-
     }
 } // namespace SU2
 } // namespace contraction

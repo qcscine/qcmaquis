@@ -152,9 +152,11 @@ namespace detail {
     {
         typedef unsigned short IS;
 
-        T const* source;
+        //T const* source;
         T scale;
+        IS b2, k;
         IS l_size, r_size, stripe, out_offset;
+        unsigned in_offset;
     };
 
     template <typename T>
@@ -171,7 +173,8 @@ namespace detail {
                     typename Matrix::value_type couplings[],
                     std::vector<micro_task<typename Matrix::value_type> > & tasks,
                     micro_task<typename Matrix::value_type> tpl,
-                    const typename Matrix::value_type * source,
+                    //const typename Matrix::value_type * source,
+                    size_t in_offset,
                     size_t r_size_cache, size_t r_size, size_t out_right_offset)
     {
         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
@@ -190,7 +193,8 @@ namespace detail {
             else if (rspin == 2) casenr = 1;
             else if (cspin == 2) casenr = 2;
 
-            task.source = source + ss1*tpl.l_size;
+            //task.source = source + ss1*tpl.l_size;
+            task.in_offset = in_offset + ss1*tpl.l_size;
             task.scale = it->coefficient * couplings[casenr];
             task.r_size = r_size_cache;
             task.out_offset = out_right_offset + ss2*r_size;
@@ -199,17 +203,19 @@ namespace detail {
     }
 
     template<typename T>
-    void task_axpy(micro_task<T> const & task, T * oblock)
+    void task_axpy(micro_task<T> const & task, T * oblock, T const * source)
     {
         std::size_t l_size = task.l_size; 
         std::size_t r_size = task.r_size; 
         std::size_t stripe = task.stripe;
         std::size_t out_right_offset = task.out_offset;
+
+        //if (source2 != task.source) throw std::runtime_error("source mismatch \n");
         
         for(size_t rr = 0; rr < r_size; ++rr) {
             T alfa_t = task.scale;
-            maquis::dmrg::detail::iterator_axpy(task.source + stripe * rr,
-                                                task.source + stripe * rr + l_size,
+            maquis::dmrg::detail::iterator_axpy(source + stripe * rr,
+                                                source + stripe * rr + l_size,
                                                 oblock + (out_right_offset + rr) * l_size,
                                                 alfa_t);
         }
