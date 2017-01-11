@@ -199,13 +199,15 @@ namespace SU2 {
                         size_t out_right_offset = out_right_pb(phys_out, rc);
                         size_t r_size = T.basis().right_size(t_block);
 
+                        micro_task tpl; tpl.l_size = l_size; tpl.stripe = num_rows(T[t_block]);
+
                         unsigned short r_size_cache = 16384 / (l_size * W.basis().right_size(w_block)); // 128 KB
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
                         {
                             size_t right_offset_cache = slice * r_size_cache;
-                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks,
+                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl, 
                                                                   &T[t_block](in_left_offset, right_offset_cache),
-                                                                  l_size, r_size_cache, r_size, num_rows(T[t_block]),
+                                                                  r_size_cache, r_size,
                                                                   out_right_offset + right_offset_cache);
                         }
 
@@ -213,9 +215,9 @@ namespace SU2 {
                         unsigned short right_offset_remain = r_size - r_size_remain;
                         if (r_size_remain == 0) continue;
 
-                        detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks,
+                        detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl,
                                                               &T[t_block](in_left_offset, right_offset_remain),
-                                                              l_size, r_size_remain, r_size, num_rows(T[t_block]),
+                                                              r_size_remain, r_size,
                                                               out_right_offset + right_offset_remain);
                 } // wblock
                 } // ket block

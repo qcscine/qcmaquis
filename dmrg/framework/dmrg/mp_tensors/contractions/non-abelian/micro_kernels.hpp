@@ -170,15 +170,16 @@ namespace detail {
     void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block,
                     typename Matrix::value_type couplings[],
                     std::vector<micro_task<typename Matrix::value_type> > & tasks,
+                    micro_task<typename Matrix::value_type> tpl,
                     const typename Matrix::value_type * source,
-                    size_t l_size, size_t r_size_cache, size_t r_size, size_t stripe, size_t out_right_offset)
+                    size_t r_size_cache, size_t r_size, size_t out_right_offset)
     {
         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
         for (block_iterator it = blocks.first; it != blocks.second; ++it)
         {
-            micro_task<typename Matrix::value_type> task;
+            micro_task<typename Matrix::value_type> task = tpl;
 
             std::size_t ss1 = it->row;
             std::size_t ss2 = it->col;
@@ -189,11 +190,9 @@ namespace detail {
             else if (rspin == 2) casenr = 1;
             else if (cspin == 2) casenr = 2;
 
-            task.source = source + ss1*l_size;
+            task.source = source + ss1*tpl.l_size;
             task.scale = it->coefficient * couplings[casenr];
-            task.l_size = l_size;
             task.r_size = r_size_cache;
-            task.stripe = stripe;
             task.out_offset = out_right_offset + ss2*r_size;
             tasks.push_back(task);
         }

@@ -170,6 +170,7 @@ namespace contraction {
         typedef typename Matrix::value_type value_type;
 
         contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
+        DualIndex<SymmGroup> kb1 = ket_tensor.data().basis();
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                  right_i = ket_tensor.col_dim();
@@ -214,6 +215,8 @@ namespace contraction {
         });
 
         reshape_right_to_left_new(physical_i, left_i, right_i, collector, ret.data());
+        DualIndex<SymmGroup> kb2 = ket_tensor.data().basis();
+        if (!(kb1 == kb2)) throw std::runtime_error("XX\n");
         return ret;
     }
 
