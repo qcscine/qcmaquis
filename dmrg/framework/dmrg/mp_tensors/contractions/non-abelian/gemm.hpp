@@ -142,6 +142,37 @@ namespace SU2 {
         }
     }
 
+    template<class Matrix1, class Matrix2, class SymmGroup>
+    DualIndex<SymmGroup> gemm_trim_right_pretend(block_matrix<Matrix1, SymmGroup> const & A,
+                                                 block_matrix<Matrix2, SymmGroup> const & B)
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+
+        assert(B.basis().is_sorted());
+        DualIndex<SymmGroup> ret;
+
+        const_iterator B_end = B.basis().end();
+        for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+
+            charge ar = A.basis().right_charge(k);
+            const_iterator it = B.basis().left_lower_bound(ar);
+
+            for ( ; it != B_end && it->lc == ar; ++it)
+            {
+                if (!A.basis().left_has(it->rc)) continue;
+
+                charge lc = A.basis().left_charge(k);
+                charge rc = it->rc;
+
+                if (!ret.has(lc, rc))
+                    ret.insert(typename DualIndex<SymmGroup>::value_type(lc, rc, num_rows(A[k]), it->rs));
+            }
+        }
+
+        return ret;
+    }
+
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
                          block_matrix<Matrix2, SymmGroup> const & B,
@@ -163,7 +194,6 @@ namespace SU2 {
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
             charge ar = A.basis().right_charge(k);
-
             const_iterator it = B.basis().left_lower_bound(ar);
 
             for ( ; it != B_end && it->lc == ar; ++it)

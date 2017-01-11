@@ -154,7 +154,7 @@ namespace SU2 {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps.at(b2);
+            DualIndex<SymmGroup> T = right_mult_mps.basis_at(b2);
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
@@ -163,10 +163,10 @@ namespace SU2 {
                 typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
                 int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
-                for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block){
+                for (size_t t_block = 0; t_block < T.size(); ++t_block){
 
-                    charge lc = T.basis().left_charge(t_block);
-                    charge rc = T.basis().right_charge(t_block);
+                    charge lc = T.left_charge(t_block);
+                    charge rc = T.right_charge(t_block);
 
                     const_iterator it = ket_basis.left_lower_bound(lc);
                     charge mc = it->rc;
@@ -197,9 +197,9 @@ namespace SU2 {
 
                         size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
                         size_t out_right_offset = out_right_pb(phys_out, rc);
-                        size_t r_size = T.basis().right_size(t_block);
+                        size_t r_size = T.right_size(t_block);
 
-                        micro_task tpl; tpl.l_size = l_size; tpl.stripe = num_rows(T[t_block]); tpl.b2 = b2; tpl.k = t_block;
+                        micro_task tpl; tpl.l_size = l_size; tpl.stripe = T.left_size(t_block); tpl.b2 = b2; tpl.k = t_block;
 
                         unsigned short r_size_cache = 16384 / (l_size * W.basis().right_size(w_block)); // 128 KB
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)

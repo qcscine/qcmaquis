@@ -235,6 +235,27 @@ namespace contraction {
         block_matrix<Matrix, SymmGroup> & operator[](index_type k) { return data_[k]; }
         block_matrix<Matrix, SymmGroup> const & operator[](index_type k) const { return data_[k]; }
 
+        DualIndex<SymmGroup> basis_at(index_type k) const
+        {
+            if (mpo.num_col_non_zeros(k) == 1)
+            {
+                if (mpo.herm_info.right_skip(k))
+                {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
+                    //return typename Gemm::gemm_trim_right()(mps.data(), trv);
+                    return SU2::gemm_trim_right_pretend(mps.data(), trv);
+                }
+                else {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    //return typename Gemm::gemm_trim_right_pretend()(mps.data(), right[k]);
+                    return SU2::gemm_trim_right_pretend(mps.data(), right[k]);
+                }
+            }
+            else
+                return data_[k].basis();
+        }
+
         //block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
         block_matrix<Matrix, SymmGroup> const & at(index_type k) const
         {
@@ -264,6 +285,7 @@ namespace contraction {
             else
                 return data_[k];
         }
+
         void free(index_type b1) const
         {
             for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2)
