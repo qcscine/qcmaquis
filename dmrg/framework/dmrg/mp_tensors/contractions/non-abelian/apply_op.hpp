@@ -132,7 +132,7 @@ namespace SU2 {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_tasks(size_t b1,
-                    MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
+                    ::contraction::common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & right_mult_mps,
                     MPOTensor<Matrix, SymmGroup> const & mpo,
                     DualIndex<SymmGroup> const & ket_basis,
                     Index<SymmGroup> const & left_i,
@@ -154,7 +154,7 @@ namespace SU2 {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            DualIndex<SymmGroup> T = right_mult_mps.basis_at(b2);
+            DualIndex<SymmGroup> const & T = right_mult_mps[b2];
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
@@ -255,7 +255,7 @@ namespace SU2 {
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel(size_t b1,
                      block_matrix<Matrix, SymmGroup> & ret,
-                     Boundary<OtherMatrix, SymmGroup> const & left,
+                     Boundary<OtherMatrix, SymmGroup> const & right,
                      MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      DualIndex<SymmGroup> const & ket_basis,
@@ -266,7 +266,7 @@ namespace SU2 {
     {
         task_capsule<Matrix, SymmGroup> tasks_cap;
 
-        rbtm_tasks(b1, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+        rbtm_tasks(b1, right_mult_mps.indices, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
         rbtm_axpy(tasks_cap, ret, out_right_i, right_mult_mps);
 
         right_mult_mps.free(b1);

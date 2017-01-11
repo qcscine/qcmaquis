@@ -169,8 +169,9 @@ namespace contraction {
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
         typedef typename Matrix::value_type value_type;
 
-        contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
-        DualIndex<SymmGroup> kb1 = ket_tensor.data().basis();
+        ket_tensor.make_left_paired();
+        MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
+        MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> ti(ket_tensor.data().basis(), right, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                  right_i = ket_tensor.col_dim();
@@ -192,7 +193,7 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> tmp, tmp2;
 
             SU2::task_capsule<Matrix, SymmGroup> tasks_cap;
-            SU2::rbtm_tasks(b1, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+            SU2::rbtm_tasks(b1, ti, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
             if (mpo.herm_info.left_skip(b1))
                 SU2::rbtm_axpy_gemm(b1, tasks_cap, tmp2, out_right_i, left, mpo, left[mpo.herm_info.left_conj(b1)], t);
             else
@@ -215,7 +216,9 @@ namespace contraction {
         });
 
         reshape_right_to_left_new(physical_i, left_i, right_i, collector, ret.data());
-        DualIndex<SymmGroup> kb2 = ket_tensor.data().basis();
+
+        DualIndex<SymmGroup> kb1 = ket_tensor.data().basis();
+        DualIndex<SymmGroup> kb2 = ret.data().basis();
         if (!(kb1 == kb2)) throw std::runtime_error("XX\n");
         return ret;
     }
