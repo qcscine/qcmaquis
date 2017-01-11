@@ -43,7 +43,8 @@ namespace contraction {
     site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo);
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & ti);
     // *************************************************************
 
 
@@ -53,12 +54,13 @@ namespace contraction {
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
-                MPOTensor<Matrix, SymmGroup> const & mpo)
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & ti)
     {
         if ( (mpo.row_dim() - mpo.num_one_rows()) < (mpo.col_dim() - mpo.num_one_cols()) )
             return site_hamil_lbtm(ket_tensor, left, right, mpo);
         else
-            return site_hamil_rbtm(ket_tensor, left, right, mpo);
+            return site_hamil_rbtm(ket_tensor, left, right, mpo, ti);
     }
 
     // *************************************************************
@@ -163,7 +165,8 @@ namespace contraction {
     site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo)
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & ti)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
@@ -171,7 +174,7 @@ namespace contraction {
 
         ket_tensor.make_left_paired();
         MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
-        MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> ti(ket_tensor.data().basis(), right, mpo);
+        //MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> ti(ket_tensor.data().basis(), right, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                  right_i = ket_tensor.col_dim();

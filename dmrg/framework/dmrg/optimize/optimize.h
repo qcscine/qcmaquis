@@ -50,20 +50,24 @@
 #include "dmrg/utils/checks.h"
 
 template<class Matrix, class SymmGroup>
-struct SiteProblem
+struct SiteProblem : private boost::noncopyable
 {
-    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+    SiteProblem(MPSTensor<Matrix, SymmGroup> const & initial,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
-    , mpo(mpo_) 
+    , mpo(mpo_), indices(initial.data().basis(), right_, mpo_)
     {
+
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
+    contraction::common::MPSBoundaryProductIndices<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> indices;
+    std::vector<contraction::SU2::task_capsule<Matrix, SymmGroup> > contraction_schedule;
     double ortho_shift;
 };
 

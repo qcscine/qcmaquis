@@ -109,7 +109,7 @@ namespace ietl
               MPSTensor<Matrix, SymmGroup> const & x,
               MPSTensor<Matrix, SymmGroup> & y)
     {  
-        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo);
+        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo, H.indices);
         x.make_left_paired();
     }
     

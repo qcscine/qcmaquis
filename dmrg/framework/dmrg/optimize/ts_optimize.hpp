@@ -116,23 +116,9 @@ public:
                 ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
 
-            //if (lr == +1) mps.canonize(site1);
-            //else          mps.canonize(site2);
-            
     	    maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
 
-            // MD: some changes needed to re-enable it.
-//            if (parms.template get<bool>("beta_mode")) {
-//                if (sweep == 0 && lr == 1) {
-//                    mpo = zero_after(mpo_orig, 0);
-//                    if (site == 0)
-//                        this->init_left_right(mpo, 0);
-//                } else if (sweep == 0 && lr == -1 && site == L-1) {
-//                    mpo = mpo_orig;
-//                }
-//            }
-        
             if (_site != L-1)
             { 
                 Storage::fetch(left_[site1]);
@@ -149,14 +135,15 @@ public:
                 }
             }
 
-
             boost::chrono::high_resolution_clock::time_point now, then;
             
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
-            SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
+            twin_mps.make_left_paired();
+            DualIndex<SymmGroup> vb1 = twin_mps.data().basis();
+            SiteProblem<Matrix, SymmGroup> sp(twin_mps, left_[site1], right_[site2+1], ts_cache_mpo[site1]);
             
             /// Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
@@ -168,7 +155,6 @@ public:
 
             //std::pair<typename maquis::traits::real_type<value_type>::type, MPSTensor<Matrix, SymmGroup> > res;
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-
 
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
@@ -188,6 +174,13 @@ public:
             	    END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
+                }
+
+                DualIndex<SymmGroup> vb2 = res.second.data().basis();
+                if (vb1 != vb2) 
+                {
+                    maquis::cout << vb1 << std::endl << vb2 << std::endl;
+                    exit(1);
                 }
 
         		tst << res.second;
