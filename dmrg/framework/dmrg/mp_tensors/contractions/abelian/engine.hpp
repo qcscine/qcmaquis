@@ -189,7 +189,7 @@ namespace contraction {
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
                     MPOTensor<Matrix, SymmGroup> const & mpo,
-                    common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & ti);
+                    std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks);
 
     };
 

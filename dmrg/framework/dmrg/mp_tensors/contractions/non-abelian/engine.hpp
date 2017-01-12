@@ -31,13 +31,13 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
+#include "dmrg/mp_tensors/contractions/common/common.h"
+
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op_rp.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/h_diag.hpp"
-
-#include "dmrg/mp_tensors/contractions/common/common.h"
 
 namespace contraction {
 
@@ -188,7 +188,7 @@ namespace contraction {
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
                     MPOTensor<Matrix, SymmGroup> const & mpo,
-                    common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & ti);
+                    std::vector<SU2::task_capsule<Matrix, SymmGroup> > const & tasks);
     };
 
 } // namespace contraction

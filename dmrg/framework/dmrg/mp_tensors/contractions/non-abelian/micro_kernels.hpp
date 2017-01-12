@@ -29,11 +29,14 @@
 #define CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/contractions/common/tasks.hpp"
 
 namespace contraction {
 namespace SU2 {
 namespace detail {
 
+    using ::contraction::common::detail::micro_task;
+    using ::contraction::common::task_compare;
 
     template<class Matrix, class SymmGroup>
     void lbtm(Matrix const & iblock, Matrix & oblock, typename operator_selector<Matrix, SymmGroup>::type const & W,
@@ -146,27 +149,6 @@ namespace detail {
             }
         }
     }
-
-    template <typename T>
-    struct micro_task
-    {
-        typedef unsigned short IS;
-
-        //T const* source;
-        T scale;
-        IS b2, k;
-        IS l_size, r_size, stripe, out_offset;
-        unsigned in_offset;
-    };
-
-    template <typename T>
-    struct task_compare
-    {
-        bool operator ()(micro_task<T> const & t1, micro_task<T> const & t2)
-        {   
-            return t1.out_offset < t2.out_offset;
-        }
-    };
 
     template <class Matrix, class SymmGroup>
     void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block,

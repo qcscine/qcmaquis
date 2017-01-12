@@ -58,16 +58,47 @@ struct SiteProblem : private boost::noncopyable
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
-    , mpo(mpo_), indices(initial.data().basis(), right_, mpo_)
+    , mpo(mpo_)
     {
+        typedef typename SymmGroup::charge charge;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        typedef typename Matrix::value_type value_type;
+        typedef typename contraction::common::task_capsule<Matrix, SymmGroup>::map_t map_t;
 
+        initial.make_left_paired();
+
+        contraction_schedule.resize(mpo.row_dim());
+        contraction::common::MPSBoundaryProductIndices<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> 
+            indices(initial.data().basis(), right, mpo);
+
+        Index<SymmGroup> const & physical_i = initial.site_dim(),
+                                 right_i = initial.col_dim();
+        Index<SymmGroup> left_i = initial.row_dim(),
+                         out_right_i = adjoin(physical_i) * right_i;
+
+        common_subset(out_right_i, left_i);
+        ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
+        ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                 -boost::lambda::_1, boost::lambda::_2));
+        index_type loop_max = mpo.row_dim();
+
+        omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
+            contraction::common::task_capsule<Matrix, SymmGroup> tasks_cap;
+            contraction::SU2::rbtm_tasks(b1, indices, mpo, initial.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+
+            map_t & tasks = tasks_cap.tasks;
+            for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
+                std::sort((it->second).begin(), (it->second).end(), contraction::common::task_compare<value_type>());
+
+            contraction_schedule[b1] = tasks_cap;
+        });
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
-    contraction::common::MPSBoundaryProductIndices<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> indices;
-    std::vector<contraction::SU2::task_capsule<Matrix, SymmGroup> > contraction_schedule;
+    std::vector<contraction::common::task_capsule<Matrix, SymmGroup> > contraction_schedule;
     double ortho_shift;
 };
 

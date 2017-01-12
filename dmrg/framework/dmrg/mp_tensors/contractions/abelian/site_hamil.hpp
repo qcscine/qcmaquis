@@ -38,7 +38,7 @@ namespace contraction {
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
-                common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & ti)
+                std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;

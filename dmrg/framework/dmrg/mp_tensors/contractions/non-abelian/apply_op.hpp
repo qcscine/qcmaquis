@@ -29,16 +29,16 @@
 #define CONTRACTIONS_SU2_APPLY_OP_HPP
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
-#include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/micro_kernels.hpp"
-
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 
 namespace contraction {
 namespace SU2 {
+
+    using ::contraction::common::task_capsule;
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
@@ -118,17 +118,6 @@ namespace SU2 {
         } // op_index
         } // b1
     }
-
-    template <class Matrix, class SymmGroup>
-    struct task_capsule
-    {
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
-        typedef detail::micro_task<value_type> micro_task;
-        typedef std::map<std::pair<charge, charge>, std::vector<micro_task>, compare_pair<std::pair<charge, charge> > > map_t;
-
-        map_t tasks;        
-    };
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_tasks(size_t b1,
@@ -285,8 +274,10 @@ namespace SU2 {
     }
 
     template<class Matrix, class OtherMatrix, class TVMatrix, class SymmGroup>
-    void rbtm_axpy_gemm(size_t b1, task_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & prod,
-                        Index<SymmGroup> const & out_right_i, Boundary<OtherMatrix, SymmGroup> const & left,
+    void rbtm_axpy_gemm(size_t b1, task_capsule<Matrix, SymmGroup> const & tasks_cap,
+                        block_matrix<Matrix, SymmGroup> & prod,
+                        Index<SymmGroup> const & out_right_i,
+                        Boundary<OtherMatrix, SymmGroup> const & left,
                         MPOTensor<Matrix, SymmGroup> const & mpo,
                         block_matrix<TVMatrix, SymmGroup> const & left_b1,
                         MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & t)
@@ -298,11 +289,10 @@ namespace SU2 {
 
         std::vector<value_type> phases = (mpo.herm_info.left_skip(b1)) ? ::contraction::common::conjugate_phases(left_b1, mpo, b1, true, false) :
                                                                          std::vector<value_type>(left_b1.n_blocks(),1.);
-        map_t & tasks = tasks_cap.tasks;
-        for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
+        map_t const & tasks = tasks_cap.tasks;
+        for (typename map_t::const_iterator it = tasks.begin(); it != tasks.end(); ++it)
         {
-            std::vector<micro_task> & otasks = it->second;
-            std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
+            std::vector<micro_task> const & otasks = it->second;
 
             if (otasks.size() == 0) continue;
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
