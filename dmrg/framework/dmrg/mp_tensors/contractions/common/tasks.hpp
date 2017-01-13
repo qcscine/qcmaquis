@@ -44,9 +44,8 @@ namespace common {
             typedef unsigned short IS;
 
             T scale;
-            IS b2, k;
-            IS l_size, r_size, stripe, out_offset;
             unsigned in_offset;
+            IS b2, k, l_size, r_size, stripe, out_offset;
         };
 
     } // namespace detail

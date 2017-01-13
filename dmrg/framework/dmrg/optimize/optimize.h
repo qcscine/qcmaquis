@@ -93,6 +93,15 @@ struct SiteProblem : private boost::noncopyable
 
             contraction_schedule[b1] = tasks_cap;
         });
+
+        size_t sz = 0;
+        for (int b1 = 0; b1 < loop_max; ++b1)
+        {
+            map_t & tasks = contraction_schedule[b1].tasks;
+            for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
+                sz += (it->second).size() * sizeof(contraction::common::detail::micro_task<value_type>);
+        }
+        maquis::cout << "Schedule size: " << sz / 1024 << std::endl;
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
