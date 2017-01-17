@@ -72,7 +72,7 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
     # generation of orbital images. If "-i" switch is passed to the script, the script will incorporate orbital pictures into the image. Pictures must be present in the current directory with names #.png where # is the number of each site. Such images can be conveniently generated with gabedit, vmd or any other orbital plotting program you desire.
 
     # Generation of pictures requires new python and matplotlib versions
-    #pics=False
+    pics=False
     if (len(sys.argv) > 2):
       if (sys.argv[2] == '-i'):
         pics=True
