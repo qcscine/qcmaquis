@@ -253,14 +253,14 @@ namespace generate_mpo
                     }
                 }
 
-                typedef std::map<index_type, prempo_key_type> key_map_t;
-                key_map_t key_map;
-                for (index_iterator it = right.begin(); it != right.end(); ++it)
-                    key_map[it->second] = it->first;
-                std::ofstream kos(("key" + boost::lexical_cast<std::string>(p) + ".dat").c_str());
-                for (typename key_map_t::const_iterator it = key_map.begin(); it != key_map.end(); ++it)
-                { kos << it->first << "| " << it->second << std::endl; }
-                kos.close();
+                //typedef std::map<index_type, prempo_key_type> key_map_t;
+                //key_map_t key_map;
+                //for (index_iterator it = right.begin(); it != right.end(); ++it)
+                //    key_map[it->second] = it->first;
+                //std::ofstream kos(("key" + boost::lexical_cast<std::string>(p) + ".dat").c_str());
+                //for (typename key_map_t::const_iterator it = key_map.begin(); it != key_map.end(); ++it)
+                //{ kos << it->first << "| " << it->second << std::endl; }
+                //kos.close();
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
 
@@ -276,24 +276,23 @@ namespace generate_mpo
 
                 std::vector<index_type> RightHerm(rcd.second);
                 std::vector<int> RightPhase(rcd.second, 1);
+                index_type z = 0, cnt = 0;
+                std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
+                for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator
+                                h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
                 {
-                    index_type z = 0, cnt = 0;
-                    std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
-                    for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator
-                                    h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
+                    index_type romeo = right[h_it->first];
+                    index_type julia = right[h_it->second];
+                    if (romeo < julia)
                     {
-                        index_type romeo = right[h_it->first];
-                        index_type julia = right[h_it->second];
-                        if (romeo < julia)
-                        {
-                            cnt++;
-                            std::swap(RightHerm[romeo], RightHerm[julia]);
-                            RightPhase[romeo] = HermitianPhases[h_it->first].first;
-                            RightPhase[julia] = HermitianPhases[h_it->first].second;
-                        }
+                        cnt++;
+                        std::swap(RightHerm[romeo], RightHerm[julia]);
+                        RightPhase[romeo] = HermitianPhases[h_it->first].first;
+                        RightPhase[julia] = HermitianPhases[h_it->first].second;
                     }
-                    maquis::cout << "Bond " << p << ": " << cnt << "/" << RightHerm.size() << std::endl;
                 }
+                if (verbose)
+                    maquis::cout << "MPO Bond " << p << ": " << rcd.second << "/" << cnt << std::endl;
 
                 MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
 
@@ -309,9 +308,6 @@ namespace generate_mpo
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor,
                                      tag_handler->get_operator_table(), h_, left_spins, right_spins)
                                  );
-                if (verbose)
-                    maquis::cout << "MPO Bond: " << rcd.second << std::endl;
-
                 swap(left, right);
                 swap(left_spins, right_spins);
                 swap(LeftHerm, RightHerm);
