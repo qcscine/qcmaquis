@@ -49,8 +49,27 @@
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, class SymmType>
 struct SiteProblem : private boost::noncopyable
+{
+    SiteProblem(MPSTensor<Matrix, SymmGroup> const & initial,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
+                MPOTensor<Matrix, SymmGroup> const & mpo_)
+    : left(left_)
+    , right(right_)
+    , mpo(mpo_)
+    {}
+    
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
+    MPOTensor<Matrix, SymmGroup> const & mpo;
+    std::vector<contraction::common::task_capsule<Matrix, SymmGroup> > contraction_schedule;
+    double ortho_shift;
+};
+
+template<class Matrix, class SymmGroup>
+struct SiteProblem<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type> : private boost::noncopyable
 {
     SiteProblem(MPSTensor<Matrix, SymmGroup> const & initial,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,

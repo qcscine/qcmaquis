@@ -61,7 +61,7 @@ namespace ietl
     }
 }
 
-template<class Matrix, class SymmGroup> struct SiteProblem;
+template<class Matrix, class SymmGroup, class SymmType = void> struct SiteProblem;
 
 template<class Matrix, class SymmGroup>
 class SingleSiteVS

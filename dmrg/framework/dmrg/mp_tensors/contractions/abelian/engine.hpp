@@ -191,6 +191,11 @@ namespace contraction {
                     MPOTensor<Matrix, SymmGroup> const & mpo,
                     std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks);
 
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
     };
 
 } // namespace contraction

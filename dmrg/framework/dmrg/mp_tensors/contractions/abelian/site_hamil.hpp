@@ -40,6 +40,17 @@ namespace contraction {
                 MPOTensor<Matrix, SymmGroup> const & mpo,
                 std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks)
     {
+        return site_hamil2(ket_tensor, left, right, mpo);
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup, class SymmType>
+    MPSTensor<Matrix, SymmGroup>
+    Engine<Matrix, OtherMatrix, SymmGroup, SymmType>::
+    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                Boundary<OtherMatrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
