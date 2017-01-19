@@ -61,7 +61,7 @@ namespace ietl
     }
 }
 
-template<class Matrix, class SymmGroup> struct SiteProblem;
+template<class Matrix, class SymmGroup, class SymmType = void> struct SiteProblem;
 
 template<class Matrix, class SymmGroup>
 class SingleSiteVS
@@ -109,7 +109,7 @@ namespace ietl
               MPSTensor<Matrix, SymmGroup> const & x,
               MPSTensor<Matrix, SymmGroup> & y)
     {  
-        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo);
+        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo, H.contraction_schedule);
         x.make_left_paired();
     }
     
