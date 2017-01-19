@@ -43,7 +43,8 @@ namespace contraction {
     site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo);
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks);
     // *************************************************************
 
 
@@ -53,12 +54,13 @@ namespace contraction {
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
-                MPOTensor<Matrix, SymmGroup> const & mpo)
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks)
     {
         if ( (mpo.row_dim() - mpo.num_one_rows()) < (mpo.col_dim() - mpo.num_one_cols()) )
             return site_hamil_lbtm(ket_tensor, left, right, mpo);
         else
-            return site_hamil_rbtm(ket_tensor, left, right, mpo);
+            return site_hamil_rbtm(ket_tensor, left, right, mpo, tasks);
     }
 
     // *************************************************************
@@ -163,13 +165,15 @@ namespace contraction {
     site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo)
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
         typedef typename Matrix::value_type value_type;
 
-        contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
+        ket_tensor.make_left_paired();
+        MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, right, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                  right_i = ket_tensor.col_dim();
@@ -177,10 +181,7 @@ namespace contraction {
                          out_right_i = adjoin(physical_i) * right_i;
 
         common_subset(out_right_i, left_i);
-        ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
-        ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                 -boost::lambda::_1, boost::lambda::_2));
+
         block_matrix<Matrix, SymmGroup> collector;
         MPSTensor<Matrix, SymmGroup> ret;
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
@@ -189,16 +190,12 @@ namespace contraction {
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
 
             block_matrix<Matrix, SymmGroup> tmp, tmp2;
-            SU2::rbtm_kernel(b1, tmp, right, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
-            if (mpo.herm_info.left_skip(b1)) {
-                std::vector<value_type> phases = ::contraction::common::conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
-                ::SU2::gemm_trim(left[mpo.herm_info.left_conj(b1)], tmp, tmp2, phases, true);
-            }
+            if (mpo.herm_info.left_skip(b1))
+                SU2::rbtm_axpy_gemm(b1, tasks[b1], tmp2, out_right_i, left, mpo, left[mpo.herm_info.left_conj(b1)], t);
             else
-                ::SU2::gemm_trim(transpose(left[b1]), tmp, tmp2, std::vector<value_type>(tmp.n_blocks(), 1.), false);
-            
-            tmp.clear();
+                SU2::rbtm_axpy_gemm(b1, tasks[b1], tmp2, out_right_i, left, mpo, transpose(left[b1]), t);
+            t.free(b1);
 
             parallel_critical
             for (std::size_t k = 0; k < tmp2.n_blocks(); ++k)
@@ -206,6 +203,10 @@ namespace contraction {
         });
 
         reshape_right_to_left_new(physical_i, left_i, right_i, collector, ret.data());
+
+        DualIndex<SymmGroup> kb1 = ket_tensor.data().basis();
+        DualIndex<SymmGroup> kb2 = ret.data().basis();
+        if (!(kb1 == kb2)) throw std::runtime_error("XX\n");
         return ret;
     }
 

@@ -37,12 +37,24 @@ namespace contraction {
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks)
+    {
+        return site_hamil2(ket_tensor, left, right, mpo);
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup, class SymmType>
+    MPSTensor<Matrix, SymmGroup>
+    Engine<Matrix, OtherMatrix, SymmGroup, SymmType>::
+    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-        contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo);
+        BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                & left_i = ket_tensor.row_dim();

@@ -31,5 +31,6 @@
 #include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
 #include "dmrg/mp_tensors/contractions/common/move_boundary.hpp"
 #include "dmrg/mp_tensors/contractions/common/prediction.hpp"
+#include "dmrg/mp_tensors/contractions/common/tasks.hpp"
 
 #endif

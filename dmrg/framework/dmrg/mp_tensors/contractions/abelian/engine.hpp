@@ -84,6 +84,8 @@ namespace contraction {
         };
 
     public:
+        typedef typename contraction::common::Schedule<Matrix, SymmGroup>::schedule_t schedule_t;
+
         // generic methods forward
 
         static block_matrix<OtherMatrix, SymmGroup>
@@ -144,6 +146,14 @@ namespace contraction {
                    (bra_tensor, ket_tensor, right, mpo);
         }
 
+        static schedule_t
+        right_contraction_schedule(MPSTensor<Matrix, SymmGroup> const & mps,
+                                   Boundary<OtherMatrix, SymmGroup> const & right,
+                                   MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return schedule_t();
+        }
+
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -188,8 +198,14 @@ namespace contraction {
         site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo);
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    std::vector<common::task_capsule<Matrix, SymmGroup> > const & tasks);
 
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
     };
 
 } // namespace contraction
