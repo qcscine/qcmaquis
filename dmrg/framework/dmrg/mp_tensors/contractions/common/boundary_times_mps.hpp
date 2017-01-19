@@ -138,8 +138,6 @@ namespace contraction {
                 data_.push_back(block_matrix<Matrix, SymmGroup>());
         }
 
-        void multiply (index_type b1);
-
         block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; } 
         block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
 
@@ -174,11 +172,40 @@ namespace contraction {
         MPOTensor<Matrix, SymmGroup> const & mpo;
     };
 
-
-    template <class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-    void BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b1)
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    class MPSBoundaryProductIndices : public std::vector<DualIndex<SymmGroup> >
     {
-    }
+        typedef std::vector<DualIndex<SymmGroup> > base;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+
+    public:
+
+        MPSBoundaryProductIndices() {}
+
+        MPSBoundaryProductIndices(DualIndex<SymmGroup> const & mps_basis,
+                                  Boundary<OtherMatrix, SymmGroup> const & right,
+                                  MPOTensor<Matrix, SymmGroup> const & mpo) : base(right.aux_dim())
+        {
+            parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
+
+            index_type loop_max = right.aux_dim();
+            omp_for(index_type b2, parallel::range(index_type(0),loop_max), {
+
+                // exploit hermiticity if available
+                if (mpo.herm_info.right_skip(b2))
+                {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+
+                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(b2)]);
+                    (*this)[b2] = SU2::gemm_trim_right_pretend(mps_basis, trv);
+                }
+                else {
+                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    (*this)[b2] = SU2::gemm_trim_right_pretend(mps_basis, right[b2]);
+                }
+            });
+        }
+    };
 
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     class MPSBoundaryProduct
@@ -195,9 +222,9 @@ namespace contraction {
         {
             parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
 
-            int loop_max = right.aux_dim();
+            index_type loop_max = right.aux_dim();
             mps.make_left_paired();
-            omp_for(int b2, parallel::range(0,loop_max), {
+            omp_for(index_type b2, parallel::range(index_type(0),loop_max), {
 
                 // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_col_non_zeros(b2) == 1) continue;
@@ -218,15 +245,15 @@ namespace contraction {
             });
         }
 
-        std::size_t aux_dim() const {
+        index_type aux_dim() const {
             return data_.size();
         }
 
-        void resize(size_t n){
+        void resize(index_type n){
             if(n < data_.size())
                 return data_.resize(n);
             data_.reserve(n);
-            for(int i = data_.size(); i < n; ++i)
+            for(index_type i = data_.size(); i < n; ++i)
                 data_.push_back(block_matrix<Matrix, SymmGroup>());
         }
 
@@ -264,6 +291,7 @@ namespace contraction {
             else
                 return data_[k];
         }
+
         void free(index_type b1) const
         {
             for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2)
@@ -274,6 +302,8 @@ namespace contraction {
                         break;
                     }
         }
+
+        MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> indices;
 
     private:
         mutable std::vector<block_matrix<Matrix, SymmGroup> > data_;

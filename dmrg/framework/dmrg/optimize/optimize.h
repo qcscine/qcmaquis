@@ -49,21 +49,25 @@
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 
+
 template<class Matrix, class SymmGroup>
-struct SiteProblem
+struct SiteProblem<Matrix, SymmGroup>
 {
-    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+    SiteProblem(MPSTensor<Matrix, SymmGroup> const & initial,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
-    , mpo(mpo_) 
-    {
-    }
+    , mpo(mpo_)
+    , contraction_schedule(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::
+                           right_contraction_schedule(initial, right, mpo))
+    { }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
+    typename contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::schedule_t contraction_schedule;
     double ortho_shift;
 };
 
