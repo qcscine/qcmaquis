@@ -195,7 +195,6 @@ namespace SU2 {
                         {
                             size_t right_offset_cache = slice * r_size_cache;
                             detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl, 
-                                                                  //&T[t_block](in_left_offset, right_offset_cache),
                                                                   in_left_offset + tpl.stripe * right_offset_cache,
                                                                   r_size_cache, r_size,
                                                                   out_right_offset + right_offset_cache);
@@ -206,7 +205,6 @@ namespace SU2 {
                         if (r_size_remain == 0) continue;
 
                         detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl,
-                                                              //&T[t_block](in_left_offset, right_offset_remain),
                                                               in_left_offset + tpl.stripe * right_offset_remain,
                                                               r_size_remain, r_size,
                                                               out_right_offset + right_offset_remain);

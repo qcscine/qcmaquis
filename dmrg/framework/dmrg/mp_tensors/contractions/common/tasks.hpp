@@ -70,6 +70,68 @@ namespace common {
         map_t tasks;
     };
 
+    template <class Matrix, class SymmGroup>
+    struct Schedule
+    {
+        typedef std::vector<contraction::common::task_capsule<Matrix, SymmGroup> > schedule_t;
+    }; 
+    
+    template<class Matrix, class SymmGroup, class TaskCalc>
+    typename Schedule<Matrix, SymmGroup>::schedule_t
+    create_contraction_schedule(MPSTensor<Matrix, SymmGroup> const & initial,
+                                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                TaskCalc task_calc)
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        typedef typename Matrix::value_type value_type;
+        typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
+
+        typename Schedule<Matrix, SymmGroup>::schedule_t contraction_schedule;
+
+        initial.make_left_paired();
+
+        contraction_schedule.resize(mpo.row_dim());
+        contraction::common::MPSBoundaryProductIndices<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>
+            indices(initial.data().basis(), right, mpo);
+
+        Index<SymmGroup> const & physical_i = initial.site_dim(),
+                                 right_i = initial.col_dim();
+        Index<SymmGroup> left_i = initial.row_dim(),
+                         out_right_i = adjoin(physical_i) * right_i;
+
+        common_subset(out_right_i, left_i);
+        ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
+        ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                 -boost::lambda::_1, boost::lambda::_2));
+        index_type loop_max = mpo.row_dim();
+
+        omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
+            task_capsule<Matrix, SymmGroup> tasks_cap;
+            task_calc(b1, indices, mpo, initial.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+
+            map_t & tasks = tasks_cap.tasks;
+            for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
+                std::sort((it->second).begin(), (it->second).end(), contraction::common::task_compare<value_type>());
+
+            contraction_schedule[b1] = tasks_cap;
+        });
+
+        size_t sz = 0;
+        for (int b1 = 0; b1 < loop_max; ++b1)
+        {
+            map_t & tasks = contraction_schedule[b1].tasks;
+            for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
+                sz += (it->second).size() * sizeof(contraction::common::detail::micro_task<value_type>);
+        }
+        maquis::cout << "Schedule size: " << sz / 1024 << std::endl;
+
+        return contraction_schedule;
+    }
+
+
 } // namespace common
 } // namespace contraction
 

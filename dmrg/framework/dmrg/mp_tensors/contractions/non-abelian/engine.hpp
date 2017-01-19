@@ -84,6 +84,8 @@ namespace contraction {
 
     public:
 
+        typedef typename contraction::common::Schedule<Matrix, SymmGroup>::schedule_t schedule_t;
+
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -142,6 +144,14 @@ namespace contraction {
         {
             return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
+        }
+
+        static schedule_t
+        right_contraction_schedule(MPSTensor<Matrix, SymmGroup> const & mps,
+                                   Boundary<OtherMatrix, SymmGroup> const & right,
+                                   MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return common::create_contraction_schedule(mps, right, mpo, SU2::rbtm_tasks<Matrix, OtherMatrix, SymmGroup>);
         }
 
         // Single-site prediction
