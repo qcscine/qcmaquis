@@ -426,7 +426,6 @@ namespace measurements {
             #endif
             for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
             for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
-            {
                 for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
                 for (pos_t p4 = 0;                p4 < lattice.size(); ++p4)
                 for (pos_t p5 = 0;                p5 < lattice.size(); ++p5)
@@ -498,7 +497,6 @@ namespace measurements {
                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                     }
                 }// p3,p4,p5
-            }// p1,p2
         }
 
 
