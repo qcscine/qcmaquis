@@ -108,8 +108,8 @@ int main(int argc, char ** argv)
 
         positions.push_back(1);
         positions.push_back(2);
-        operators.push_back(model.get_operator_tag("create_up", 0));
         operators.push_back(model.get_operator_tag("destroy_up", 0));
+        operators.push_back(model.get_operator_tag("create_up", 0));
         ident.push_back(model.identity_matrix_tag(0));
         fill.push_back(model.filling_matrix_tag(0));
         

@@ -39,6 +39,50 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 
+/*
+    Small function to read determinants from a input file
+*/
+template<class Matrix, class SymmGroup>
+std::vector<std::vector<typename SymmGroup::charge> >
+parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
+{
+    std::ifstream config_file;
+    config_file.open(file.c_str());
+
+    std::vector<std::vector<typename SymmGroup::charge> > configs;
+
+    for (std::string line; std::getline(config_file, line); ) {
+        std::vector<std::string> det_coeff;
+        boost::split(det_coeff, line, boost::is_any_of(" "));
+
+        std::string det = det_coeff[0];
+
+        if (det.size() != site_dims.size())
+            throw std::runtime_error("The determinant length doesn't match the mps length\n");
+
+        std::vector<typename SymmGroup::charge> tmp;
+        for (std::size_t i = 0; i < det.size(); ++i) {
+            int occ = boost::lexical_cast<int>(det[i]);
+            switch(occ) {
+                case 4:
+                    tmp.push_back(site_dims[i][0].first); // doubly occ
+                    break;
+                case 3:
+                    tmp.push_back(site_dims[i][1].first); // up
+                    break;
+                case 2:
+                    tmp.push_back(site_dims[i][2].first); // down 
+                    break;
+                case 1:
+                    tmp.push_back(site_dims[i][3].first); // empty
+                    break;
+            }
+        }
+        configs.push_back(tmp);
+    }
+    return configs;
+}
+
 
 template <class Matrix, class SymmGroup>
 typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & mps, std::vector<typename SymmGroup::charge> const & det)
@@ -57,6 +101,8 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
         throw std::runtime_error("Determinant has wrong number of up/down electrons: " + ss.str());
     }
 
+    mps[0].make_left_paired();
+
     block_matrix<Matrix, SymmGroup> const & block0 = mps[0].data();
 
     charge sector = det[0];
@@ -66,7 +112,6 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
 
     Matrix coeff = block0[b];
 
-    mps[0].make_left_paired();
     for(unsigned p = 1; p < mps.length(); ++p)
     {
         mps[p].make_left_paired();
@@ -90,25 +135,9 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
         ProductBasis<SymmGroup> left_pb(mps[p].site_dim(), mps[p].row_dim());
         std::size_t voffset = left_pb(site_charge, left_input);
 
-        // BUG BUG!
-        //unsigned voffset = 0;
-        //unsigned sci = 0;
-        //while (phys[sci].first > site_charge)
-        //{
-        //    charge offset_charge = SymmGroup::fuse(sector, -phys[sci].first);
-        //    voffset += mps[p-1].col_dim().size_of_block(offset_charge, true);
-        //    sci++;
-        //}
-
         // determine vlen and set hlen, the size of the matrix subblock
         unsigned vlen = mps[p-1].col_dim().size_of_block(SymmGroup::fuse(sector, -site_charge));
         unsigned hlen = data.right_basis().size_of_block(sector);
-
-        //maquis::cout << "site " << p << ", selected " << vlen << "x" << hlen << " block, offset " << voffset
-        //             << ", sector_matrix " << sector_matrix.num_rows() << "x" << sector_matrix.num_cols() << std::endl;
-        //maquis::cout << "  ---> sector_matrix " << std::endl; 
-        //maquis::cout << sector_matrix << std::endl;
-        //maquis::cout << "  --->  vlen " << vlen << " hlen " << hlen << std::endl;
 
         // extract the subblock
         Matrix site_block(vlen, hlen);
@@ -117,7 +146,18 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
                       sector_matrix.row(voffset+rowcnt).second, site_block.row(rowcnt).first);
 
         if (coeff.num_cols() != site_block.num_rows())
-            throw std::runtime_error("coeff.num_cols() != site_block.num_rows()\n");
+        {
+            maquis::cout << "\nsite charge: " << site_charge << std::endl;
+            maquis::cout << "current sector: " << sector << std::endl;
+            maquis::cout << "site " << p << ", selected " << vlen << "x" << hlen << " block, offset " << voffset
+                         << ", sector_matrix " << sector_matrix.num_rows() << "x" << sector_matrix.num_cols() << std::endl;
+            maquis::cout << "  ---> sector_matrix " << std::endl; 
+            maquis::cout << sector_matrix << std::endl;
+            maquis::cout << "  --->  vlen " << vlen << " hlen " << hlen << std::endl;
+
+            maquis::cout << "coeff" << std::endl << coeff;
+            throw std::runtime_error("coeff.num_cols() != vlen\n");
+        }
 
         // multiply subblock with previous subblock
         Matrix tmp(coeff.num_rows(), site_block.num_cols());

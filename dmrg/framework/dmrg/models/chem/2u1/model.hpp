@@ -58,7 +58,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
          count_up_op, count_down_op, count_up_down_op, docc_op, e2d_op, d2e_op,
-         d2u_op, u2d_op,
+         d2u_op,u2d_op,
          ident_op, fill_op;
 
     ident_op.insert_block(Matrix(1, 1, 1), A, A);

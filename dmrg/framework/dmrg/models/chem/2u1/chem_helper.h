@@ -29,6 +29,7 @@
 #define QC_CHEM_DETAIL_H
 
 #include "dmrg/models/chem/parse_integrals.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
 
 namespace chem_detail {
 
