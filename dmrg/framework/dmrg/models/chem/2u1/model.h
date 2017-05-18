@@ -5,22 +5,22 @@
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -50,11 +50,11 @@ template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
 {
     typedef model_impl<Matrix, SymmGroup> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
@@ -65,18 +65,18 @@ class qc_model : public model_impl<Matrix, SymmGroup>
     typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
 
 public:
-    
+
     qc_model(Lattice const & lat_, BaseParameters & parms_);
 
     void create_terms();
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
@@ -370,7 +370,7 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_threeptdm) || 
+            else if (boost::regex_match(lhs, what, expression_threeptdm) ||
                      boost::regex_match(lhs, what, expression_transition_threeptdm)) {
 
                 std::string bra_ckp("");
@@ -472,7 +472,7 @@ public:
                 value = it->value();
                 half_only = true;
                 // parse positions p1:p2:p3@x,y,z,... and split into {x,y,z}
-                // the position vector reflects the loop ordering in the 3-RDM emasurement 
+                // the position vector reflects the loop ordering in the 3-RDM emasurement
                 std::vector<pos_t> positions;
                 std::vector<std::string> value_split;
 
@@ -579,7 +579,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                
+
                 // synop 6
                 {
                     bond_tag_element meas_operators;
@@ -632,7 +632,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                  
+
                 // synop 10 - collapsing with synop 11 --> factor 2
                 {
                     bond_tag_element meas_operators;
@@ -646,7 +646,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                  
+
                 // synop 11
                 {
                     bond_tag_element meas_operators;
@@ -660,7 +660,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                   
+
                 // synop 12 - collapsing with synop 13 --> factor 2
                 {
                     bond_tag_element meas_operators;
@@ -674,7 +674,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                  
+
                 // synop 13
                 {
                     bond_tag_element meas_operators;
@@ -688,7 +688,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                  
+
                 // synop 14 - collapsing with synop 15 --> factor 2
                 {
                     bond_tag_element meas_operators;
@@ -702,7 +702,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                  
+
                 // synop 15
                 {
                     bond_tag_element meas_operators;
@@ -716,11 +716,11 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                  
+
                 value = it->value();
                 half_only = true;
                 // parse positions p4:p3:p1:p2@w,x,y,z,... and split into {w,x,y,z}
-                // the position vector reflects the loop ordering in the 4-RDM emasurement 
+                // the position vector reflects the loop ordering in the 4-RDM emasurement
                 std::vector<pos_t> positions;
                 std::vector<std::string> value_split;
 
@@ -737,110 +737,6 @@ public:
                     */
 
                 }
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
-            }
-            else if (boost::regex_match(lhs, what, expression_oneptdm_uu) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
-
-                std::string bra_ckp("");
-                if(lhs == "MEASURE[1tdm_aa]"){
-                    name = "transition_oneptdm_aa";
-                    bra_ckp = it->value();
-                    half_only = false;
-                }
-                else{
-                    name = "oneptdm_aa";
-                    half_only = true;
-                }
-
-                std::vector<scaled_bond_element> synchronous_meas_operators;
-                {
-                    bond_tag_element meas_operators;
-                    meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                }
-                nearest_neighbors_only = false;
-                std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
-            }
-            else if (boost::regex_match(lhs, what, expression_oneptdm_dd) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
-
-                std::string bra_ckp("");
-                if(lhs == "MEASURE[1tdm_bb]"){
-                    name = "transition_oneptdm_bb";
-                    bra_ckp = it->value();
-                    half_only = false;
-                }
-                else{
-                    name = "oneptdm_bb";
-                    half_only = true;
-                }
-
-                std::vector<scaled_bond_element> synchronous_meas_operators;
-                {
-                    bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                }
-                nearest_neighbors_only = false;
-                std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
-            }
-            else if (boost::regex_match(lhs, what, expression_oneptdm_ud) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
-
-                std::string bra_ckp("");
-                if(lhs == "MEASURE[1tdm_ab]"){
-                    name = "transition_oneptdm_ab";
-                    bra_ckp = it->value();
-                    half_only = false;
-                }
-                else{
-                    name = "oneptdm_ab";
-                    half_only = true;
-                }
-
-                std::vector<scaled_bond_element> synchronous_meas_operators;
-                {
-                    bond_tag_element meas_operators;
-                    meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                }
-                nearest_neighbors_only = false;
-                std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, positions, bra_ckp));
-            }
-            else if (boost::regex_match(lhs, what, expression_oneptdm_du) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_du)) {
-
-                std::string bra_ckp("");
-                if(lhs == "MEASURE[1tdm_ba]"){
-                    name = "transition_oneptdm_ba";
-                    bra_ckp = it->value();
-                    half_only = false;
-                }
-                else{
-                    name = "oneptdm_ba";
-                    half_only = true;
-                }
-
-                std::vector<scaled_bond_element> synchronous_meas_operators;
-                {
-                    bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                }
-                nearest_neighbors_only = false;
-                std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
@@ -957,7 +853,7 @@ public:
 
                 int f_ops = 0;
                 bond_tag_element meas_operators;
-                
+
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
                 boost::split( value_split, value, boost::is_any_of("@"));
@@ -1029,7 +925,7 @@ public:
                         ++f_ops;
                     }
                     else
-                        throw std::runtime_error("Unrecognized operator in correlation measurement: " 
+                        throw std::runtime_error("Unrecognized operator in correlation measurement: "
                                                     + boost::lexical_cast<std::string>(*it2) + "\n");
                 }
 
@@ -1044,7 +940,7 @@ public:
                     std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(positions),
                                    static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
-                
+
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,

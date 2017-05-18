@@ -95,7 +95,7 @@ int main(int argc, char ** argv)
         typedef Model<matrix, symm>::tag_type tag_type;
         typedef std::vector<op_t> op_vec;
         
-        std::vector<typename MPS<matrix, symm>::scalar_type> vector_results;
+        std::vector<MPS<matrix, symm>::scalar_type> vector_results;
         std::vector<std::string> labels;
 
         /// Parsing model
@@ -139,19 +139,19 @@ int main(int argc, char ** argv)
             vector_results.clear();
 
             if (i == 0){
-               measurement = "count_up_1TDM";
+               measurement = "count_aa_1TDM";
                op_name     = "count_up";
             }
             else if (i == 1){
-               measurement = "count_down_1TDM";
+               measurement = "count_bb_1TDM";
                op_name     = "count_down";
             }
             else if (i == 2){
-               measurement = "u2d_1TDM";
+               measurement = "a2b_1TDM";
                op_name     = "u2d";
             }
             else if (i == 3){
-               measurement = "d2u_1TDM";
+               measurement = "b2a_1TDM";
                op_name     = "d2u";
             }
             else
@@ -182,22 +182,22 @@ int main(int argc, char ** argv)
             /// end of TODO
 
             typedef std::map<std::string, MPO<matrix, symm> > mpo_map;
-            typedef std::map<std::string, typename matrix::value_type> result_type;
+            typedef std::map<std::string, matrix::value_type> result_type;
             result_type res;
 
-            for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
-                 typename result_type::iterator match = res.find(mit->first);
+            for (mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
+                 result_type::iterator match = res.find(mit->first);
                  if (match == res.end())
                      boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
 
-                     std::vector<typename MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
+                     std::vector<MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
                      match->second = dct[0];
             }
 
             /// copy results to base and save the data
             vector_results.reserve(vector_results.size() + res.size());
             labels.reserve(labels.size() + res.size());
-            for (typename result_type::const_iterator it = res.begin(); it != res.end(); ++it) {
+            for (result_type::const_iterator it = res.begin(); it != res.end(); ++it) {
 
                 /// debug print
                 std::cout << "indices:" << it->first << it->first << " --> value: " <<  it->second << std::endl;
