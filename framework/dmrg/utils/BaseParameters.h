@@ -1,0 +1,181 @@
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * 
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ * 
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
+
+#if !defined(BASEPARAMETERS_H) && !defined(DMRGPARAMETERS_H)
+#define BASEPARAMETERS_H
+
+#include "utils/io.hpp"
+
+#include <string>
+#include <fstream>
+#include <iostream>
+
+#include <boost/tokenizer.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
+
+#include <alps/parameter.h>
+
+#include "dmrg/utils/parameter_proxy.h"
+
+                
+namespace parameters {
+    class value {
+    public:
+        value () : val_(""), empty_(true) { }
+        
+        template <class T>
+        value (const T & val)
+        : val_(boost::lexical_cast<std::string>(val))
+        , empty_(false)
+        { }
+        
+        std::string get() const {return val_;}
+        bool empty() const {return empty_;}
+    private:
+        std::string val_;
+        bool empty_;
+        
+    };
+}
+                
+class BaseParameters : public alps::Parameters
+{
+public:
+    
+    BaseParameters ()
+    : alps::Parameters()
+    { }
+    
+    BaseParameters (std::istream& param_file)
+    : alps::Parameters()
+    {
+        try {
+            alps::Parameters temp(param_file);
+            *static_cast<alps::Parameters*>(this) = temp;
+        } catch (std::exception & e) {
+            maquis::cerr << "Exception thrown when parsing parameters:" << std::endl;
+            maquis::cerr << e.what() << std::endl;
+            exit(1);
+        }
+    }
+
+    BaseParameters(alps::Parameters const& p)
+    : alps::Parameters(p)
+    { }
+    
+    template <class Stream>
+    void print_description(Stream& os) const
+    {
+        typedef std::map<std::string, std::string>::const_iterator map_iterator;
+        
+        std::size_t column_length = 0;
+        for (map_iterator it = descriptions.begin(); it != descriptions.end(); ++it)
+            column_length = std::max(column_length, it->first.size());
+        column_length += 2;
+        
+        for (map_iterator it = descriptions.begin(); it != descriptions.end(); ++it) {
+            os << std::setw(column_length) << std::left << it->first << it->second << std::endl;
+            map_iterator matched = defaults.find(it->first);
+            if (matched != defaults.end())
+                os << std::setw(column_length) << "" << "(default: " << matched->second << ")" << std::endl;
+        }
+    }
+    
+    bool is_set (std::string const & key) const
+    {
+        return defined(key);
+    }
+
+    parameters::proxy operator[](std::string const& key)
+    {
+        if (!defined(key)) {
+            std::map<std::string, std::string>::const_iterator match = defaults.find(key);
+            if (match != defaults.end())
+                alps::Parameters::operator[](key) = match->second;
+            else
+                boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
+        }
+        return parameters::proxy(alps::Parameters::operator[](key));
+    }
+    
+    template<class T> T get(std::string const & key)
+    {
+        parameters::proxy const& p = (*this)[key];
+        return p.as<T>();
+    }
+    
+    template<class T> void set(std::string const & key, T const & value)
+    {
+        alps::Parameters::operator[](key) = boost::lexical_cast<std::string>(value);
+    }
+    
+    BaseParameters iteration_params(std::string const & var, std::size_t val)
+    {
+        BaseParameters p;
+        
+        boost::regex expression("^(.*)\\[" + var + "\\]$");
+        boost::smatch what;
+        for (alps::Parameters::const_iterator it=this->begin();it != this->end();++it) {
+            std::string key = it->key();
+            if (boost::regex_match(key, what, expression)) {
+                std::vector<std::string> v = (*this)[key]; // use std::strign instead of value type, because value type is some alps internal type that can anyway be constructed from string.
+                if (val < v.size())
+                    p.set(what.str(1), v[val]);
+                else
+                    p.set(what.str(1), *(v.rbegin()));
+            }
+        }
+        p.set(var, val);
+        return p;
+    }
+    
+    BaseParameters & operator<<(BaseParameters const& p)
+    {
+        for (alps::Parameters::const_iterator it=p.begin(); it!=p.end(); ++it)
+            alps::Parameters::operator[](it->key()) = it->value();
+        defaults.insert(p.defaults.begin(), p.defaults.end());
+
+        return *this;
+    }
+    
+protected:
+    void add_option(std::string const & name,
+                    std::string const & desc,
+                    parameters::value const & val = parameters::value())
+    {
+        if (!val.empty())
+            defaults[name] = val.get();
+        descriptions[name] = desc;        
+    }
+    
+    std::map<std::string, std::string> defaults;
+    std::map<std::string, std::string> descriptions;
+    
+};
+
+#endif
