@@ -68,7 +68,7 @@ namespace davidson_detail {
         void mult_diag(value_type theta, vector_type& x)
         {
             value_type shift ;
-            shift = 33000. ;
+            shift = 35000. ;
             block_matrix<Matrix, SymmGroup> & data = x.data();
             assert(shape_equal(data, Hdiag));
             for (size_t b = 0; b < data.n_blocks(); ++b)
@@ -76,7 +76,7 @@ namespace davidson_detail {
                 for (size_t i = 0; i < num_rows(data[b]); ++i)
                     for (size_t j = 0; j < num_cols(data[b]); ++j)
                         if (std::abs(theta - (shift - Hdiag[b](i,j)) ))
-                            data[b](i,j) /= (theta - (shift - Hdiag[b](i,j)) );
+                            data[b](i,j) /= ((shift - Hdiag[b](i,j)) - theta );
             }
         }
         block_matrix<Matrix, SymmGroup> Hdiag;

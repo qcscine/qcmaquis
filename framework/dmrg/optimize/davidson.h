@@ -48,16 +48,8 @@
 
 namespace ietl
 {
-    //
-    // CLASS DAVIDSON
-    // --------------
-    //
-    // Has private attributes:
-    // - MATRIX : the matrix to be diagonalized
-    // - VS : a vector space
-    // - atol: tolerance for the Davidson algorithm
-    // - DesiredEigenvalue : which eigenvalue to compute
-    //
+    //enum DesiredEigenvalue { Largest, Smallest };
+    
     template <class MATRIX, class VS>
     class davidson
     {
@@ -92,18 +84,6 @@ namespace ietl
     
     template <class MATRIX, class VS> 
     template <class GEN, class SOLVER, class PRECOND, class ITER>
-    //
-    // BRIEF DESCRIPTION OF THE DAVIDSON ALGORITHM
-    // The Davidson algorithm is used to compute eigenvectors or large matrices by expanding the
-    // eigenvector in a (relatively) small vector space. The idea:
-    // 1 - start from a guess psi_0
-    // 2 - compute the error (H-E)psi_0, where E is the expectation value of the Hamiltonian over
-    //     psi_0
-    // 3 - multiply the error by (diag(H)-E)^{-1} (just like a preconditioner)
-    // 4 - take psi_1 as the resulting vector, orthogonalize (here a refined Gram-Schmidt algorithm
-    //     is employed) wrt to psi_0
-    // 5 - restart from 2 and increase the subspace until convergence
-    //
     std::pair<typename davidson<MATRIX,VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type> 
     davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
                                                SOLVER& solver,
@@ -111,16 +91,12 @@ namespace ietl
                                                ITER& iter)
     {
         typedef alps::numeric::matrix<scalar_type> matrix_t;
-        // t is the trial vector, updated at each cycle
+
         vector_type t  = new_vector(vecspace_);
-        //ALB
-        vector_type tA = new_vector(vecspace_);
         vector_type u  = new_vector(vecspace_);
         vector_type uA = new_vector(vecspace_);
         vector_type r  = new_vector(vecspace_);
-        // V collects the vectors at the previous cycles, VA collects the
-        // results of the application of the Hamiltonian matrix to V
-        // TODO check if s is actually used
+
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V;
         std::vector<vector_type> VA;
@@ -128,88 +104,77 @@ namespace ietl
         unsigned int i,j;
         magnitude_type theta, tau;
         magnitude_type kappa = 0.25;
+        magnitude_type rel_tol;
         atol_ = iter.absolute_tolerance();
-        // -- Initialization --
+        // Start with t=v_o, starting guess
         ietl::generate(t,gen);
         ietl::project(t,vecspace_);
-        // -- Main iteration --
+        // Magnitude type
+        magnitude_type shift = 35000. ;
+        // Start iteration
         do
         {
             // Modified Gram-Schmidt Orthogonalization with Refinement
-            // NOTE: V contains the vectors determined in the previous cycles
-            magnitude_type scal ;
+            vector_type tA ;
             tau = ietl::two_norm(t);
-            ietl::mult( matrix_ , t , tA ) ;
+            ietl::mult(matrix_, t, tA);
+            tA *= -1 ;
+            tA += shift*t ;
             for (i = 0; i < VA.size(); i++) {
-                scal = ietl::dot(33000.*t - tA, 33000.*V[i] - VA[i]);
-                tA -= scal * (33000.*V[i] - VA[i]) ;
-                t  -= scal * V[i];
+                t  -= ietl::dot(VA[i], tA) * V[i]  ;
+                tA -= ietl::dot(VA[i], tA) * VA[i] ;
             }
-            // TODO ALB check later how to generalize this part
-            //if (ietl::two_norm(t) < kappa * tau)
-            //    for (i = 0; i < V.size(); i++)
-            //        t -= ietl::dot(V[i], t) * V[i];
-            // Project out orthogonal subspace
+            // ALB COMMENTED UP TO NOW Project out orthogonal subspace
             //ietl::project(t, vecspace_);
-            // Update of V and VA with the new vector
-            magnitude_type normalize ;
-            normalize = ietl::two_norm(33000.*t - tA) ;
-            V.push_back(t/normalize);
-            VA.resize(V.size());
-            // Put in VA the result of the multiplication of V times matrix_
-            // (only the last vector is updated)
-            ietl::mult(matrix_, V[V.size() - 1], VA[V.size() - 1]);
-            // Variable declaration
+            // v_m = t / |t|_2,  v_m^A = A v_m
+            V.push_back(t/ietl::two_norm(tA));
+            VA.push_back(tA/ietl::two_norm(tA));
+            // Loop to build the matrix representation
             std::size_t iter_dim = V.size();
             matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
-            std::vector<magnitude_type>     Mevals(iter_dim);
-            // Main cycle: compute the representation of M in the V space
+            std::vector<magnitude_type> Mevals(iter_dim);
             for (i = 0; i < iter_dim; ++i)
-                for (j = i; j < iter_dim; ++j) {
-                    M(i,j) = 33000.*ietl::dot(V[i],V[j]) - ietl::dot(V[i], VA[j]) ;
+                for (j = i; j < iter_dim; ++j)
+                {
+                    M(i,j) = ietl::dot(V[i], VA[j]);
                     M(j,i) = M(i,j);
                 }
-            // Diagonalize (NOTE: the matrix is destroyed in output)
-            // TODO check if stuff is sorted in output
+            // Diagonalization
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M;
-            // Bring back to the original space
+            // Does a backup of the data and "rotates" the basis vectors
             std::vector<vector_type> Vp = V, VAp = VA;
-            for (i = 0; i < iter_dim; ++i)
-            {
+            for (i = 0; i < iter_dim; ++i) {
                 V[i] *= Mevecs(i,i);
                 VA[i] *= Mevecs(i,i);
             }
             for (i = 0; i < iter_dim; ++i)
-            for (j = 0; j < iter_dim; ++j)
-                if(i != j)
-                {
-                    V[j] += Vp[i] * Mevecs(i,j);
-                    VA[j] += VAp[i] * Mevecs(i,j);
-                }
-            // Compute the error for the lowest-energy solution
-            // VA = H*psi and V*MEVals = E*psi
-            r = (33000.*V[0] - VA[0]) - V[0] * Mevals[0] ;
-            theta = Mevals[0] ;
+                for (j = 0; j < iter_dim; ++j)
+                    if(i != j) {
+                        V[j] += Vp[i] * Mevecs(i,j);
+                        VA[j] += VAp[i] * Mevecs(i,j);
+                    }
+            // Compute the error
+            magnitude_type energy ;
+            energy = ietl::dot(V[0],VA[0])/ietl::dot(V[0],V[0]);
+            r = VA[0] - V[0]*Mevals[0];
+            theta = Mevals[0];
             u = V[0];
             // if (|r|_2 < \epsilon) stop
             ++iter;
             if (iter.finished(ietl::two_norm(r), Mevals[0]))
                 break;
-            // Take the remainder and multiply it by (diag(H)-E) and uses it as
-            // a new vector. Iterate until convergence
-            mdiag.precondition(r, V[0], Mevals[0]);
+            mdiag.precondition(r, V[0], energy);
             std::swap(t,r);  
             t /= ietl::two_norm(t);
-            if (V.size() >= 20)
-            {
+            if (V.size() >= 20) {
                 V.resize(2);
                 VA.resize(2);
             }
         } while (true);
         
         // accept lambda=theta and x=u
-        return std::make_pair(33000.-1.0/theta, u);
+        return std::make_pair(shift - 1./theta, u);
     }
 }
 #endif
