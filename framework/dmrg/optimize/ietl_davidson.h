@@ -42,20 +42,17 @@ namespace davidson_detail {
         typedef typename Matrix::value_type value_type;
         typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type ;
     public:
+        // The construtor sets the Hdiag attribute.
         MultDiagonal(SiteProblem<Matrix, SymmGroup> const& H, vector_type const& x)
         {
+            // Here x is given only to set the dimensions, not modified
             Hdiag = contraction::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
-            //vector_type y ;
-            //scalar_type overlap ;
-            //y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo) ;
-            //overlap = y.scalar_overlap(x) ;
-            //std::cout << "Overlap" << overlap << std::endl ;
-            //maquis::cerr << "Exception thrown!" << std::endl ;
-            //exit(1) ;
         }
 
         void precondition(vector_type& r, vector_type& V, value_type theta)
         {
+            // V here is an MPSTensor, so a vector of matrices, each one for each
+            // local basis functions
             vector_type Vcpy = V;
             mult_diag(theta, Vcpy);
             value_type a = Vcpy.scalar_overlap(r);
@@ -67,11 +64,11 @@ namespace davidson_detail {
     private:
         // Preconditioner in Davidson diagonalization
         // Takes in input a (most likely) float number (theta) and
-        // preconditions a vector that is given in input (x)
+        // preconditions an MPSTensor that is given in input (x)
         void mult_diag(value_type theta, vector_type& x)
         {
             value_type shift ;
-            shift = 30000. ;
+            shift = 33000. ;
             block_matrix<Matrix, SymmGroup> & data = x.data();
             assert(shape_equal(data, Hdiag));
             for (size_t b = 0; b < data.n_blocks(); ++b)

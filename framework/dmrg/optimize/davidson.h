@@ -141,8 +141,8 @@ namespace ietl
             tau = ietl::two_norm(t);
             ietl::mult( matrix_ , t , tA ) ;
             for (i = 0; i < VA.size(); i++) {
-                scal = ietl::dot(30.*t - tA, 30.*V[i] - VA[i]);
-                tA -= scal * (30.*V[i] - VA[i]) ;
+                scal = ietl::dot(33000.*t - tA, 33000.*V[i] - VA[i]);
+                tA -= scal * (33000.*V[i] - VA[i]) ;
                 t  -= scal * V[i];
             }
             // TODO ALB check later how to generalize this part
@@ -153,7 +153,7 @@ namespace ietl
             //ietl::project(t, vecspace_);
             // Update of V and VA with the new vector
             magnitude_type normalize ;
-            normalize = ietl::two_norm(30.*t - tA) ;
+            normalize = ietl::two_norm(33000.*t - tA) ;
             V.push_back(t/normalize);
             VA.resize(V.size());
             // Put in VA the result of the multiplication of V times matrix_
@@ -166,7 +166,7 @@ namespace ietl
             // Main cycle: compute the representation of M in the V space
             for (i = 0; i < iter_dim; ++i)
                 for (j = i; j < iter_dim; ++j) {
-                    M(i,j) = 30.*ietl::dot(V[i],V[j]) - ietl::dot(V[i], VA[j]) ;
+                    M(i,j) = 33000.*ietl::dot(V[i],V[j]) - ietl::dot(V[i], VA[j]) ;
                     M(j,i) = M(i,j);
                 }
             // Diagonalize (NOTE: the matrix is destroyed in output)
@@ -189,7 +189,7 @@ namespace ietl
                 }
             // Compute the error for the lowest-energy solution
             // VA = H*psi and V*MEVals = E*psi
-            r = (30.*V[0] - VA[0]) - V[0] * Mevals[0] ;
+            r = (33000.*V[0] - VA[0]) - V[0] * Mevals[0] ;
             theta = Mevals[0] ;
             u = V[0];
             // if (|r|_2 < \epsilon) stop
@@ -209,7 +209,7 @@ namespace ietl
         } while (true);
         
         // accept lambda=theta and x=u
-        return std::make_pair(30.-1.0/theta, u);
+        return std::make_pair(33000.-1.0/theta, u);
     }
 }
 #endif
