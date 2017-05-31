@@ -153,6 +153,15 @@ public:
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
                     END_TIMING("JCD")
+                } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
+                    BEGIN_TIMING("DAVIDSON")
+                    // solve_ietl_davidson sta dentro ietd_davidson
+                    res = solve_ietl_davidson(sp, mps[site], parms, ortho_vecs);
+                    END_TIMING("DAVIDSON")
+                } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
+                    BEGIN_TIMING("MODIFIED_DAVIDSON")
+                    res = solve_ietl_davidson_modified(sp, mps[site], parms, parms["ietl_moddav_omega"], ortho_vecs);
+                    END_TIMING("MODIFIED_DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }

@@ -34,12 +34,6 @@
 #include "dmrg/mp_tensors/mpo_ops.h"
 
 #include <boost/tuple/tuple.hpp>
-/**************************************************************
- * Class of two-size optimized, inherited from optimizer_base *
- * @tparam Matrix                                             *
- * @tparam SymmGroup                                          *
- * @tparam Storage                                            *
- **************************************************************/
 
 template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
@@ -192,6 +186,10 @@ public:
                     // solve_ietl_davidson sta dentro ietd_davidson
                     res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("DAVIDSON")
+                } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
+                    BEGIN_TIMING("MODIFIED_DAVIDSON")
+                    res = solve_ietl_davidson_modified(sp, twin_mps, parms, parms["ietl_moddav_omega"], ortho_vecs);
+                    END_TIMING("MODIFIED_DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }

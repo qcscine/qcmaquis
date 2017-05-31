@@ -27,12 +27,7 @@
 #ifndef CONTRACTIONS_H
 #define CONTRACTIONS_H
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/contractions/detail/ambient.hpp"
-#else
-//#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
 #include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
-#endif
 
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
