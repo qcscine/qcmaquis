@@ -34,17 +34,20 @@
 #include "davidson.h"
 
 namespace davidson_detail {
-
     template<class Matrix, class SymmGroup> class MultDiagonal
     {
         typedef MPSTensor<Matrix, SymmGroup> vector_type;
         typedef typename Matrix::value_type value_type;
         typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type ;
     public:
-        // The construtor sets the Hdiag attribute.
+        // The construtor sets the Hdiag attribute. Overloaded depending on the
+        // presence of the shift
         MultDiagonal(SiteProblem<Matrix, SymmGroup> const& H, vector_type const& x)
-        {
-            // Here x is given only to set the dimensions, not modified
+        : have_omega(false) {
+            Hdiag = contraction::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
+        }
+        MultDiagonal(SiteProblem<Matrix, SymmGroup> const& H, vector_type const& x, double const& omega)
+                : have_omega(true) , omega_(omega){
             Hdiag = contraction::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
         }
 
@@ -66,19 +69,25 @@ namespace davidson_detail {
         // preconditions an MPSTensor that is given in input (x)
         void mult_diag(value_type theta, vector_type& x)
         {
-            value_type shift ;
-            shift = 11000. ;
+            value_type denom ;
             block_matrix<Matrix, SymmGroup> & data = x.data();
             assert(shape_equal(data, Hdiag));
             for (size_t b = 0; b < data.n_blocks(); ++b)
             {
                 for (size_t i = 0; i < num_rows(data[b]); ++i)
-                    for (size_t j = 0; j < num_cols(data[b]); ++j)
-                        if (std::abs(theta - (shift - Hdiag[b](i,j)) ))
-                            data[b](i,j) /= ((shift - Hdiag[b](i,j)) - theta );
+                    for (size_t j = 0; j < num_cols(data[b]); ++j) {
+                        if (have_omega)
+                            denom = (omega_ - Hdiag[b](i, j)) - theta;
+                        else
+                            denom = Hdiag[b](i, j) - theta;
+                        if (std::abs(denom))
+                            data[b](i, j) /= denom;
+                    }
             }
         }
         block_matrix<Matrix, SymmGroup> Hdiag;
+        bool have_omega ;
+        double omega_  ;
     };
 } // namespace davidson detail
 
@@ -146,7 +155,7 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     // Create the Davidson object
     ietl::davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson_modified(sp, vs, omega);
-    davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial);
+    davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial, omega);
     // Sets the iterator object
     double tol = params["ietl_jcd_tol"];
     ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
