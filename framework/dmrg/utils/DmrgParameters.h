@@ -54,23 +54,25 @@ private:
 
         add_option("truncation_initial", "Initial value for the truncation error", value(1e-16));
         add_option("truncation_final", "Final value for the truncation", value(1e-16));
-        
+        // Renormalized bond length
         add_option("init_bond_dimension", "", value(5));
         add_option("max_bond_dimension", "");
         add_option("sweep_bond_dimensions", "");
-
+        // Optimization algorithm
         add_option("optimization", "singlesite or twosite", value("twosite"));
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
         
         add_option("alpha_initial","", value(1e-2));
         add_option("alpha_main", "", value(1e-4));
         add_option("alpha_final", "", value(1e-8));
-        
+        // Options related to the eigensolver
         add_option("eigensolver", "", value("IETL_JCD"));
         add_option("ietl_jcd_tol", "", value(1e-8));
         add_option("ietl_jcd_gmres", "", value(0));
         add_option("ietl_jcd_maxiter", "", value(8));
+        add_option("ietl_davidson_maxiter", "", value(20));
         add_option("ietl_moddav_omega", "parameter omega for the modified Davidson algorithm (to compute interior eigenvalues", value(0.));
+        add_option("ietl_modjcd_omega", "parameter omega for the modified Jacobi-Davidson algorithm (to compute interior eigenvalues", value(0.));
         
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

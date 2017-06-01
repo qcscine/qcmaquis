@@ -55,11 +55,11 @@ namespace davidson_detail {
         {
             // V here is an MPSTensor, so a vector of matrices, each one for each
             // local basis functions
-            //vector_type Vcpy = V;
-            //mult_diag(theta, Vcpy);
-            //value_type a = Vcpy.scalar_overlap(r);
-            //value_type b = V.scalar_overlap(Vcpy);
-            //r -= a/b * V;
+            vector_type Vcpy = V;
+            mult_diag(theta, Vcpy);
+            value_type a = Vcpy.scalar_overlap(r);
+            value_type b = V.scalar_overlap(Vcpy);
+            r -= a/b * V;
             mult_diag(theta, r);
         }
 
@@ -118,8 +118,8 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial);
     // Sets the iterator object
     double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
-    contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_jcd_maxiter"]);
+    ietl::basic_iteration<double> iter(params["ietl_davidson_maxiter"], tol, tol);
+    //contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_davidson_maxiter"]);
     // Check orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
@@ -158,8 +158,8 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
     davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial, omega);
     // Sets the iterator object
     double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
-    contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_jcd_maxiter"]);
+    ietl::basic_iteration<double> iter(params["ietl_davidson_maxiter"], tol, tol);
+    contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_davidson_maxiter"]);
     // Check orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;

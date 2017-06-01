@@ -8,6 +8,7 @@
  *                            Prakash Dayal <prakash@comp-phys.org>,
  *                            Matthias Troyer <troyer@comp-phys.org>
  *                            Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
@@ -87,7 +88,11 @@ namespace ietl
         VS vecspace_;
         int n_;
     };
-    
+    //
+    // JCD_SOLVER_OPERATOR
+    // -------------------
+    // Class crehated indirectly by JCD_GMRES_SOLVER.
+    // Has two functions, the () and the sum
     template<class Matrix, class VS, class Vector>
     class jcd_solver_operator
     {
@@ -101,15 +106,13 @@ namespace ietl
             const vector_type& r,
             const Matrix & m)
         : u_(u), r_(r), theta_(theta), m_(m) { }
-        
         void operator()(vector_type const & x, vector_type & y) const;
-        
     private:
         vector_type const & u_, r_;
         magnitude_type const & theta_;
         Matrix const & m_;
     };
-    
+    // Multiplication of solvers
     template<class Matrix, class VS, class Vector>
     void mult(jcd_solver_operator<Matrix, VS, Vector> const & m,
         typename jcd_solver_operator<Matrix, VS, Vector>::vector_type const & x,
@@ -117,8 +120,82 @@ namespace ietl
     {
         m(x,y);
     }
-    
+    // Actual routine called when an object of JCD_SOLVER_OPERATOR is crehated
+    template<class Matrix, class VS, class Vector>
+    void jcd_solver_operator<Matrix, VS, Vector>::operator()(vector_type const & x, vector_type & y) const
+    {
+        // Calculate (1-uu*)(A-theta*1)(1-uu*), where u is the trial vector and
+        // A is the operator to be diagonalized
+        vector_type t, t2, t3;
+        // t2 = (1-uu*) x
+        scalar_type ust = dot(u_, x);
+        t2 = x - ust*u_;
+        // y = (A-theta*1) t2
+        mult(m_, t2, t3);
+        y = t3 - theta_*t2;
+        // t = (1-uu*) y
+        ust = dot(u_, y);
+        t = y - ust*u_;
+        y = t;
+    }
+    //
+    // JCD_MODIFIED_SOLVER_OPERATOR
+    // ----------------------------
+    // Class crehated indirectly by JCD_GMRES_MODIFIED_SOLVER.
+    // Has two functions, the () and the sum
+    template<class Matrix, class VS, class Vector>
+    class jcd_modified_solver_operator
+    {
+    public:
+        typedef typename vectorspace_traits<VS>::vector_type vector_type;
+        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
+        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+
+        jcd_modified_solver_operator(const vector_type& v,
+                                     const magnitude_type& theta,
+                                     const vector_type& r,
+                                     const Matrix & m,
+                                     const vector_type& z)
+                : z_(z), r_(r), v_(v), theta_(theta), m_(m) { }
+        void operator()(vector_type const & x, vector_type & y) const;
+    private:
+        vector_type const z_, r_, v_ ;
+        magnitude_type const & theta_;
+        Matrix const & m_;
+    };
+    // Multiplication of solvers
+    template<class Matrix, class VS, class Vector>
+    void mult(jcd_modified_solver_operator<Matrix, VS, Vector> const & m,
+              typename jcd_modified_solver_operator<Matrix, VS, Vector>::vector_type const & x,
+              typename jcd_modified_solver_operator<Matrix, VS, Vector>::vector_type & y)
+    {
+        m(x,y);
+    }
+    // Actual routine called when an object of JCD_SOLVER_OPERATOR is crehated
+    template<class Matrix, class VS, class Vector>
+    void jcd_modified_solver_operator<Matrix, VS, Vector>::operator()(vector_type const & x, vector_type & y) const
+    {
+        // Calculate (1-uu*)(A-theta*1)(1-uu*), where u is the trial vector and
+        // A is the operator to be diagonalized
+        vector_type t, t2, t3;
+        // t2 = (1-uu*) x
+        ietl::mult(m_, x, t);
+        scalar_type ust = dot(z_, t);
+        t2 = x - ust*v_;
+        // y = (A-theta*1) t2
+        mult(m_, t2, t3);
+        y = t3 - theta_*t2;
+        // t = (1-uu*) y
+        ust = dot(z_, y);
+        t = y - ust*z_ ;
+        y = t;
+    }
+    //
+    // JCD_GMRES_SOLVER
+    // ----------------
     // kept for backward compatibility
+    // NOTE : this is an "empty" class, when the object is called as jcd_gmres_solver(...),
+    //        the other class
     template<class Matrix, class VS>
     class jcd_gmres_solver
     {
@@ -126,7 +203,7 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::vector_type vector_type;
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        
+        // Constructor
         jcd_gmres_solver(Matrix const & matrix, VS const & vec,
             std::size_t max_iter = 5, bool verbose = false)
         : matrix_(matrix)
@@ -134,7 +211,7 @@ namespace ietl
         , n_(vec_dimension(vec))
         , max_iter_(max_iter)
         , verbose_(verbose) { }
-        
+        // Function called during calculate_eigenvalue
         void operator()(const vector_type& u,
                         const magnitude_type& theta,
                         const vector_type& r, vector_type& t,
@@ -142,9 +219,7 @@ namespace ietl
         {
             jcd_solver_operator<Matrix, VS, vector_type> op(u, theta, r, matrix_);
             ietl_gmres gmres(max_iter_, verbose_);
-            
             vector_type inh = -r;
-            
             // initial guess for better convergence
             scalar_type dru = ietl::dot(r,u);
             scalar_type duu = ietl::dot(u,u);
@@ -152,7 +227,51 @@ namespace ietl
             if (max_iter_ > 0)
                 t = gmres(op, inh, t, rel_tol);
         }
-        
+    private:
+        Matrix const & matrix_;
+        VS vecspace_;
+        std::size_t n_, max_iter_;
+        bool verbose_;
+    };
+    //
+    // JCD_GMRES_MODIFIED_SOLVER
+    // -------------------------
+    // kept for backward compatibility
+    // NOTE : this is an "empty" class, when the object is called as jcd_gmres_solver(...),
+    //        the other class
+    template<class Matrix, class VS>
+    class jcd_gmres_modified_solver
+    {
+    public:
+        typedef typename vectorspace_traits<VS>::vector_type vector_type;
+        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
+        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        // Constructor
+        jcd_gmres_modified_solver(Matrix const & matrix, VS const & vec,
+                                  std::size_t max_iter = 5, bool verbose = false)
+                : matrix_(matrix)
+                , vecspace_(vec)
+                , n_(vec_dimension(vec))
+                , max_iter_(max_iter)
+                , verbose_(verbose) { }
+        // Function called during calculate_eigenvalue
+        void operator()(const vector_type& v,
+                        const magnitude_type& theta,
+                        const vector_type& r, vector_type& t,
+                        const magnitude_type& rel_tol)
+        {
+            vector_type loc ;
+            ietl::mult(matrix_ , v , loc);
+            jcd_modified_solver_operator<Matrix, VS, vector_type> op(v, theta, r, matrix_, loc);
+            ietl_gmres gmres(max_iter_, verbose_);
+            vector_type inh = -r;
+            // initial guess for better convergence
+            scalar_type dru = ietl::dot(r,v);
+            scalar_type duu = ietl::dot(v,v);
+            t = -r + dru/duu*v;
+            if (max_iter_ > 0)
+                t = gmres(op, inh, v, rel_tol);
+        }
     private:
         Matrix const & matrix_;
         VS vecspace_;
@@ -206,36 +325,6 @@ namespace ietl
     };
     
     template <class MATRIX, class VS>
-    class jacobi_davidson
-    {
-    public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        
-        
-        jacobi_davidson(const MATRIX& matrix, 
-                        const VS& vec,
-                        DesiredEigenvalue desired = Largest);
-        ~jacobi_davidson();
-        
-        template <class GEN, class SOLVER, class ITER>
-        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, 
-                                                                    SOLVER& solver,
-                                                                    ITER& iter);
-        
-    private:
-        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim);
-        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim);
-        MATRIX const & matrix_;
-        VS vecspace_;
-        int n_;
-        FortranMatrix<scalar_type> M;
-        magnitude_type atol_;
-        DesiredEigenvalue desired_;
-    };
-    
-    template <class MATRIX, class VS>
     jcd_simple_solver<MATRIX, VS>::jcd_simple_solver(const MATRIX& matrix, const VS& vec) :
     matrix_(matrix),
     vecspace_(vec)
@@ -251,27 +340,6 @@ namespace ietl
         // std::cout << "Preconditioner, theta = " << theta << std::endl;
         // t = -1*r / (1-theta);
         t = -r + ietl::dot(r,u)/ietl::dot(u,u)*u;
-    }
-    
-    template<class Matrix, class VS, class Vector>
-    void jcd_solver_operator<Matrix, VS, Vector>::operator()(vector_type const & x, vector_type & y) const
-    {
-        // calculate (1-uu*)(A-theta*1)(1-uu*)
-        
-        vector_type t, t2, t3;
-        // t2 = (1-uu*) x
-        scalar_type ust = dot(u_, x);
-        t2 = x - ust*u_;
-        
-        // y = (A-theta*1) t2
-        mult(m_, t2, t3);
-        y = t3 - theta_*t2;
-        
-        // t = (1-uu*) y
-        ust = dot(u_, y);
-        t = y - ust*u_;
-        
-        y = t;
     }
     
     template <class MATRIX, class VS>
@@ -351,32 +419,86 @@ namespace ietl
         delete [] ipiv;
         delete [] work;
     }
-    
-    // C L A S S :   J A C O B I _ D A V I D S O N ////////////////////////////////////
-    
+    //
+    // Main class with Jacobi-Davidson
+    // -------------------------------
+    // Private attributes:
+    // 1) matrix
+    // 2) vector space
+    // 3) n_, dimension of the vector space
+    // 4) ???
+    // 5) tolerance criteria
+    // 6) which eigenvalue to compute
+    //
+    template <class MATRIX, class VS>
+    class jacobi_davidson
+    {
+    public:
+        typedef typename vectorspace_traits<VS>::vector_type vector_type;
+        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
+        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+
+
+        jacobi_davidson(const MATRIX& matrix,
+                        const VS& vec,
+                        DesiredEigenvalue desired = Largest);
+        jacobi_davidson(const MATRIX& matrix,
+                        const VS& vec,
+                        const double& omega,
+                        DesiredEigenvalue desired = Largest);
+        ~jacobi_davidson();
+
+        template <class GEN, class SOLVER, class ITER>
+        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
+                                                                    SOLVER& solver,
+                                                                    ITER& iter);
+
+    private:
+        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim);
+        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim);
+        MATRIX const & matrix_;
+        VS vecspace_;
+        int n_;
+        FortranMatrix<scalar_type> M;
+        magnitude_type atol_;
+        DesiredEigenvalue desired_;
+        double omega_;
+        bool has_omega_ ;
+    };
+    //
+    // Methods of the Jacobi-Davidson class
+    // ------------------------------------
+    //
+    // 1) constructor : just loads the vector space
+    // 2) calculation of the eigenvectors (highest or lowest)
+    // 3) get_extremal_eigenvalues : interfaces to FORTRAN routines to compute eigenvalues and eigenvectors
+    //
     template <class MATRIX, class VS>
     jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
     matrix_(matrix),
     vecspace_(vec),
     M(1,1),
-    desired_(desired)
+    desired_(desired),
+    has_omega_(false)
     {
-        //      n_ = vecspace_.vec_dimension();
         n_ = vec_dimension(vecspace_);
     }
-    
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::~jacobi_davidson()
+    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const double& omega, DesiredEigenvalue desired) :
+            matrix_(matrix),
+            vecspace_(vec),
+            M(1,1),
+            desired_(desired),
+            omega_(omega),
+            has_omega_(false)
     {
-        
+        n_ = vec_dimension(vecspace_);
     }
-    
-//    template<class Vector>
-//    Vector orthogonalize(Vector input, std::vector<Vector> const & against)
-//    {
-//        
-//    }
-    
+    template <class MATRIX, class VS>
+    jacobi_davidson<MATRIX, VS>::~jacobi_davidson() { }
+    //
+    // Method of the jacobi_davidson class to compute the eigenvalues
+    // --------------------------------------------------------------
     template <class MATRIX, class VS> 
     template <class GEN, class SOLVER, class ITER>
     std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type> 
@@ -384,91 +506,82 @@ namespace ietl
                                                       SOLVER& solver,
                                                       ITER& iter)
     {
+        // Variable declaration
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V(iter.max_iterations());
         std::vector<vector_type> VA(iter.max_iterations());
         M.resize(iter.max_iterations(), iter.max_iterations());
+        //
         magnitude_type theta, tau, rel_tol;
         magnitude_type kappa = 0.25;
+        magnitude_type shift = omega_ ;
         atol_ = iter.absolute_tolerance();
-        
-        // Start with t=v_o, starting guess
+        //
+        vector_type tA ;
+        //
         ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
         ietl::project(V[0],vecspace_);
-        
-        // Start iteration
+        //
+        // Main loop of the algorithm
+        // --------------------------
         do {
             vector_type& t = V[iter.iterations()];
-
-            // Modified Gram-Schmidt Orthogonalization with Refinement
+            // This part is basically the same as in the Jacobi method, and is based on the
+            // orthogonalization of the new guess vector wrt the old ones.
             tau = ietl::two_norm(t);
-            for(int i = 1; i <= iter.iterations(); i++)
-                t -= ietl::dot(V[i-1],t)*V[i-1];
-            if(ietl::two_norm(t) < kappa * tau)
-                for(int i = 1; i <= iter.iterations(); i++)
-                    t -= ietl::dot(V[i-1],t) * V[i-1];
-            
-            // Project out orthogonal subspace
-            ietl::project(t,vecspace_);
-            
-            // v_m = t / |t|_2,  v_m^A = A v_m
-            t /= ietl::two_norm(t);
-            ietl::mult(matrix_, t, VA[iter.iterations()]);
-            
-            // for i=1, ..., iter
-            //   M_{i,m} = v_i ^\star v_m ^A
+            // The normalization is different for JCD and modified JCD algorithm
+            if (has_omega_){
+                for (int i = 1; i <= iter.iterations(); i++) {
+                    t -= ietl::dot(VA[i-1], t) * V[i-1];
+                    tA -= ietl::dot(VA[i-1], t) * VA[i-1];
+                }
+                t /= ietl::two_norm(tA);
+                VA.push_back(tA/ietl::two_norm(tA));
+            }
+            else {
+                for (int i = 1; i <= iter.iterations(); i++)
+                    t -= ietl::dot(V[i-1], t) * V[i-1];
+                if (ietl::two_norm(t) < kappa * tau)
+                    for (int i = 1; i <= iter.iterations(); i++)
+                        t -= ietl::dot(V[i-1], t) * V[i-1];
+                t /= ietl::two_norm(t) ;
+                ietl::mult(matrix_, t, VA[iter.iterations()]);
+            }
+            // TODO ALB commented for the moment ietl::project(t,vecspace_)
+            // Update of the M matrix
             for(int i = 1; i <= iter.iterations()+1; i++)
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
-            
             // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);
-            
-            // u = V s
-            #ifdef USE_AMBIENT
-            std::vector<vector_type> u_parts; u_parts.reserve(iter.iterations()+1);
-            for(int j = 0; j <= iter.iterations(); ++j) u_parts.push_back(V[j] * s[j]);
-            vector_type u = ambient::reduce_sync(u_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
-            std::vector<vector_type>().swap(u_parts);
-            #else
+            // New guess vector is given in output as a function of the V basis, converted here
+            // to the original basis. The same for H*v
             vector_type u = V[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 u += V[j] * s[j];
-            #endif
-
-            // u^A = V^A s
-            // ietl::mult(matrix_,u,uA);
-            #ifdef USE_AMBIENT
-            std::vector<vector_type> uA_parts; uA_parts.reserve(iter.iterations()+1);
-            for(int j = 0; j <= iter.iterations(); ++j) uA_parts.push_back(VA[j] * s[j]);
-            vector_type uA = ambient::reduce_sync(uA_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
-            std::vector<vector_type>().swap(uA_parts);
-            #else
             vector_type uA = VA[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 uA += VA[j] * s[j];
-            #endif
-
-            ietl::project(uA,vecspace_);
-            
-            // r = u^A - \theta u
+            // TODO ALB commented for the moment ietl::project(uA,vecspace_);
+            // Compute the error vector
             vector_type& r = uA; r -= theta*u;
-            
-            // if (|r|_2 < \epsilon) stop
             ++iter;
-            // accept lambda=theta and x=u
             if(iter.finished(ietl::two_norm(r),theta)) return std::make_pair(theta, u);
-            
             // solve (approximately) a t orthogonal to u from
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
-            solver(u, theta, r, V[iter.iterations()], rel_tol);
-
+            if(has_omega_)
+                solver(V[0], theta, r, V[iter.iterations()] , rel_tol);
+            else
+                solver(u, theta, r, V[iter.iterations()], rel_tol);
+            //
             V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index;
             storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
         } while(true);
         
     }
-    
+    //
+    // The following two matrices are interfaces to the Lapack routines to compute eigenvalues and eigenvectors
+    // Overloaded to support both real and complex mumber.
     template <class MATRIX, class VS>
     void jacobi_davidson<MATRIX, VS>::get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim)
     {

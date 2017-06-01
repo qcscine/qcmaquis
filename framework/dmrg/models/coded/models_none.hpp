@@ -123,7 +123,6 @@ public:
                //else {
                // Off-diagonal contribution (for calculations not involving NM)
 		       value_type scale ;
-               std::cout << "Pippo" << std::endl ; 
 		       // Scaling factor for G matrix-related terms
  		       if (i < 0 && j < 0) {
 		           i = -i-2;
