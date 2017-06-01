@@ -55,11 +55,11 @@ namespace davidson_detail {
         {
             // V here is an MPSTensor, so a vector of matrices, each one for each
             // local basis functions
-            vector_type Vcpy = V;
-            mult_diag(theta, Vcpy);
-            value_type a = Vcpy.scalar_overlap(r);
-            value_type b = V.scalar_overlap(Vcpy);
-            r -= a/b * V;
+            //vector_type Vcpy = V;
+            //mult_diag(theta, Vcpy);
+            //value_type a = Vcpy.scalar_overlap(r);
+            //value_type b = V.scalar_overlap(Vcpy);
+            //r -= a/b * V;
             mult_diag(theta, r);
         }
 

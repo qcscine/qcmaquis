@@ -207,6 +207,7 @@ namespace ietl
         vector_type tA = new_vector(vecspace_);
         vector_type u  = new_vector(vecspace_);
         vector_type uA = new_vector(vecspace_);
+        vector_type uB = new_vector(vecspace_);
         vector_type r  = new_vector(vecspace_);
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V;
@@ -266,17 +267,17 @@ namespace ietl
                     }
             u = V[0]/ietl::two_norm(V[0]);
             ietl::mult(matrix_, u, uA);
-            r = ( uA - u/Mevals[0] );
+            uB = shift*u - uA;
+            r = ( uB - u/Mevals[0] );
             theta = 1./Mevals[0];
             // if (|r|_2 < \epsilon) stop
             ++iter;
+            std::cout << ietl::two_norm(r) << std::endl ;
             if (iter.finished(ietl::two_norm(r), 1./Mevals[0]))
                 break;
             mdiag.precondition(r, u, 1./Mevals[0]);
             std::swap(t,r);
             t /= ietl::two_norm(t);
-            //V  = Vp ;
-            //VA = VAp ;
             if (V.size() >= 20)
             {
                 V.resize(2);
