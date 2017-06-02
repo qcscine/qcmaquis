@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -55,7 +56,7 @@ solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     ietl::jcd_gmres_modified_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-          jcd_modified_gmres(sp, vs, params["ietl_jcd_gmres"]);
+          jcd_modified_gmres(sp, vs, omega, params["ietl_jcd_gmres"]);
     ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
           jd(sp, vs, omega, ietl::Smallest);
     double tol = params["ietl_jcd_tol"];
