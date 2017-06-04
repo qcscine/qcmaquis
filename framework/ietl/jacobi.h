@@ -458,11 +458,13 @@ namespace ietl
                 uA += VA[j] * s[j];
             // TODO ALB commented for the moment ietl::project(uA,vecspace_);
             // Compute the error vector
-            vector_type& r = uA;
-            r -= theta*u;
-            std::cout << theta << std::endl ;
+            vector_type &r = uA ;
+            if (has_omega_)
+                r -= u / theta;
+            else
+                r -= theta*u;
             ++iter;
-            if(iter.finished(ietl::two_norm(r),theta)) {
+            if(iter.finished(ietl::two_norm(r),1./theta)) {
                 if (has_omega_)
                     return std::make_pair(shift-1./theta,u);
                 else
