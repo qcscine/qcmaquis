@@ -212,6 +212,7 @@ namespace ietl
         vector_type r  = new_vector(vecspace_);
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V;
+        std::vector<vector_type> V2;
         std::vector<vector_type> VA;
         unsigned int i,j;
         magnitude_type theta, tau;
@@ -227,52 +228,52 @@ namespace ietl
         do {
             // Modified Gram-Schmidt Orthogonalization with Refinement
             tau = ietl::two_norm(t);
+            for (i = 0; i < V.size(); i++)
+                t -= ietl::dot(V[i], t) * V[i];
+            t /= ietl::two_norm(t);
+            V.push_back(t);
+            // Apply A
             ietl::mult(matrix_ , t , tB);
             tA = shift*t - tB ;
             for (i = 0; i < VA.size(); i++) {
-                t -= ietl::dot(VA[i], tA) * V[i];
+                t -= ietl::dot(VA[i], tA) * V2[i];
                 tA -= ietl::dot(VA[i], tA) * VA[i];
             }
-            //if (ietl::two_norm(t) < kappa * tau)
-            //    for (i = 0; i < V.size(); i++)
-            //        t -= ietl::dot(V[i], t) * V[i];
-            // Project out orthogonal subspace
             ietl::project(t, vecspace_);
             // v_m = t / |t|_2,  v_m^A = A v_m
-            V.push_back(t/ietl::two_norm(tA));
+            V2.push_back(t/ietl::two_norm(tA));
             VA.push_back(tA/ietl::two_norm(tA));
-            std::size_t iter_dim = V.size();
+            std::size_t iter_dim = V2.size();
             matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (i = 0; i < iter_dim; ++i)
                 for (j = i; j < iter_dim; ++j)
                 {
-                    M(i,j) = ietl::dot(V[i], VA[j]);
+                    M(i,j) = ietl::dot(V2[i], VA[j]);
                     M(j,i) = M(i,j);
                 }
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M;
-            u = VA[0]*Mevecs(0,0);
+            u = V2[0]*Mevecs(0,0);
             for (i = 1; i < iter_dim; ++i)
-                u += VA[i] * Mevecs(i,0);
-            ietl::mult(matrix_, u, uB);
-            uA = shift*u - uB;
-            magnitude_type energy = ietl::dot(u,uA);
-            r = ( uA - energy*u );
-            theta = energy ;
+                u += V2[i] * Mevecs(i,0);
+            uA = VA[0]*Mevecs(0,0);
+            for (i = 1; i < iter_dim; ++i)
+                uA += VA[i] * Mevecs(i,0);
+            r = ( uA - u/Mevals[0] ) / ietl::two_norm(u) ;
+            theta = 1./Mevals[0] ;
             std::cout << ietl::two_norm(r) << std::endl ;
             // if (|r|_2 < \epsilon) stop
             ++iter;
-            if (iter.finished(ietl::two_norm(r), energy))
+            if (iter.finished(ietl::two_norm(r), theta))
                 break;
-            mdiag.precondition(r, u, energy);
+            mdiag.precondition(r, uA, theta);
             std::swap(t,r);
-            t /= ietl::two_norm(t);
-            if (V.size() >= 20)
-            {
-                V.resize(2);
-                VA.resize(2);
-            }
+            //if (V.size() >= 20)
+            //{
+            //    V.resize(2);
+            //    VA.resize(2);
+            //}
         } while (true);
     // accept lambda=theta and x=u
     return std::make_pair(shift-theta, u);

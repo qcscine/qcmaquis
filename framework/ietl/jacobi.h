@@ -401,11 +401,7 @@ namespace ietl
             magnitude_type eigval ;
             bool converged ;
             vector_type r = compute_error(u, uA, theta);
-            std::cout << "eigen prima" << std::endl ;
-            std::cout << eigval << std::endl ;
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
-            std::cout << "eigen dopo" << std::endl ;
-            std::cout << eigval << std::endl ;
             if (converged)
                 return std::make_pair(eigval, eigvec);
             // solve (approximately) a t orthogonal to u from
