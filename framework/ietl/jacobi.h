@@ -267,51 +267,7 @@ namespace ietl
         double omega_;
         bool verbose_;
     };
-    
-    template<class Matrix, class VS>
-    class jcd_solver
-    {
-    public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        
-        template<class Solver>
-        jcd_solver(Matrix const & matrix,
-                   VS const & vec,
-                   Solver solv)
-        : matrix_(matrix)
-        , vecspace_(vec)
-        , solv_(solv)
-        , n_(vec_dimension(vec)) { }
-        
-        template<class Solver>
-        void replace_solver(Solver solv) { solv_ = solv; }
-        
-        void operator()(const vector_type& u,
-                        const magnitude_type& theta,
-                        const vector_type& r, vector_type& t,
-                        const magnitude_type& rel_tol)
-        {
-            jcd_solver_operator<Matrix, VS, vector_type> op(u, theta, r, matrix_);
-            
-            vector_type inh = -r;
-            
-            // initial guess for better convergence
-            scalar_type dru = ietl::dot(r,u);
-            scalar_type duu = ietl::dot(u,u);
-            t = -r + dru/duu*u;
-            if (max_iter_ > 0)
-                t = solv_(op, inh, t, rel_tol);
-        }
-        
-    private:
-        Matrix const & matrix_;
-        VS vecspace_;
-        boost::function<vector_type(jcd_solver_operator<Matrix, VS, vector_type> const &, vector_type const &, vector_type const &, double)> solv_;
-        std::size_t n_, max_iter_;
-        bool verbose_;
-    };
+
     //
     // Main class with Jacobi-Davidson
     // -------------------------------
@@ -329,6 +285,7 @@ namespace ietl
     public:
         typedef typename vectorspace_traits<VS>::vector_type vector_type;
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
+        typedef typename std::vector<vector_type> vector_space;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         // The constructor is overloaded depending if the omega parameter is set in input
         // or not.
@@ -346,6 +303,13 @@ namespace ietl
                                                                     ITER& iter);
 
     private:
+        // Multiply the vector by a matrix
+        vector_type apply_operator (const vector_type& x);
+        void update_vecspace(vector_space &V, vector_space &VA, const int i);
+        template <class ITER >
+        bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta , ITER& iter,
+                                     vector_type& eigvec, magnitude_type& eigval);
+        vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta);
         void get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim);
         void get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim);
         MATRIX const & matrix_;
@@ -355,7 +319,7 @@ namespace ietl
         magnitude_type atol_;
         DesiredEigenvalue desired_;
         double omega_;
-        bool has_omega_ ;
+        bool shift_and_invert_ ;
     };
     //
     // Methods of the Jacobi-Davidson class
@@ -372,7 +336,7 @@ namespace ietl
         M(1,1),
         desired_(desired),
         omega_(0.),
-        has_omega_(false)
+        shift_and_invert_(false)
     {
         n_ = vec_dimension(vecspace_);
     }
@@ -383,7 +347,7 @@ namespace ietl
             M(1,1),
             desired_(desired),
             omega_(omega),
-            has_omega_(true)
+            shift_and_invert_(true)
     {
         n_ = vec_dimension(vecspace_);
     }
@@ -394,7 +358,7 @@ namespace ietl
     // --------------------------------------------------------------
     template <class MATRIX, class VS> 
     template <class GEN, class SOLVER, class ITER>
-    std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type> 
+    std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type>
     jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
                                                       SOLVER& solver,
                                                       ITER& iter)
@@ -418,71 +382,130 @@ namespace ietl
         // Main loop of the algorithm
         // --------------------------
         do {
-            vector_type& t = V[iter.iterations()];
-            // This part is basically the same as in the Jacobi method, and is based on the
-            // orthogonalization of the new guess vector wrt the old ones.
-            tau = ietl::two_norm(t);
-            // The normalization is different for JCD and modified JCD algorithm
-            if (has_omega_){
-                ietl::mult(matrix_ , t , tB );
-                tA = t*shift - tB ;
-                for (int i = 1; i <= iter.iterations(); i++) {
-                    t -= ietl::dot(VA[i-1], tA) * V[i-1];
-                    tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
-                }
-                t /= ietl::two_norm(tA);
-                VA[iter.iterations()] = tA/ietl::two_norm(tA);
-            }
-            else {
-                for (int i = 1; i <= iter.iterations(); i++)
-                    t -= ietl::dot(V[i-1], t) * V[i-1];
-                if (ietl::two_norm(t) < kappa * tau)
-                    for (int i = 1; i <= iter.iterations(); i++)
-                        t -= ietl::dot(V[i-1], t) * V[i-1];
-                t /= ietl::two_norm(t) ;
-                ietl::mult(matrix_, t, VA[iter.iterations()]);
-            }
-            ietl::project(t,vecspace_) ;
-            // Update of the M matrix
+            update_vecspace(V , VA ,iter.iterations() ) ;
+            // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int i = 1; i <= iter.iterations()+1; i++)
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
-            // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);
-            // New guess vector is given in output as a function of the V basis, converted here
-            // to the original basis. The same for H*v
+            // Conversion to the original basis
             vector_type u = V[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 u += V[j] * s[j];
             vector_type uA = VA[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 uA += VA[j] * s[j];
-            // TODO ALB commented for the moment ietl::project(uA,vecspace_);
-            // Compute the error vector
-            vector_type &r = uA ;
-            if (has_omega_)
-                r -= u / theta;
-            else
-                r -= theta*u;
+            ietl::project(uA,vecspace_);
+            // Check convergence
             ++iter;
-            if(iter.finished(ietl::two_norm(r),1./theta)) {
-                if (has_omega_)
-                    return std::make_pair(shift-1./theta,u);
-                else
-                    return std::make_pair(theta, u);
-            }
+            vector_type    &eigvec = u ;
+            magnitude_type eigval ;
+            bool converged ;
+            vector_type r = compute_error(u, uA, theta);
+            std::cout << "eigen prima" << std::endl ;
+            std::cout << eigval << std::endl ;
+            converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
+            std::cout << "eigen dopo" << std::endl ;
+            std::cout << eigval << std::endl ;
+            if (converged)
+                return std::make_pair(eigval, eigvec);
             // solve (approximately) a t orthogonal to u from
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
             // Note that the matrix has not to be passed because it's already contained inside the
             // solver object
             solver(u, theta, r, V[iter.iterations()], rel_tol) ;
-            //
-            V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index;
+            V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index ;
             storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
         } while(true);
         
     }
-    //
+    // Compute the action of an operator
+    template <class Matrix, class VS>
+    jacobi_davidson<Matrix, VS>::vector_type
+    jacobi_davidson<Matrix, VS>::apply_operator(jacobi_davidson::vector_type const & x)
+    {
+        typedef typename jacobi_davidson::vector_type vector_type;
+        vector_type y, buf ;
+        bool check = this->shift_and_invert_ ;
+        if (check){
+            vector_type buf ;
+            ietl::mult(this->matrix_ , x , buf);
+            y = this->omega_*x - buf;
+        } else {
+            ietl::mult(this->matrix_ , x , y);
+        }
+        return y;
+    };
+    // Update the vector space in JCD iteration
+    template <class Matrix, class VS>
+    void jacobi_davidson<Matrix, VS>::update_vecspace(jacobi_davidson<Matrix, VS>::vector_space& V,
+                                                      jacobi_davidson<Matrix, VS>::vector_space& VA ,
+                                                      const int idx )
+    {
+        typedef typename jacobi_davidson::vector_type vector_type ;
+        bool check = this->shift_and_invert_ ;
+        //
+        vector_type& t = V[idx];
+        if (check){
+            vector_type tA = apply_operator(t);
+            for (int i = 1; i <= idx ; i++) {
+                t -= ietl::dot(VA[i-1], tA) * V[i-1];
+                tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
+            }
+            ietl::project(t,this->vecspace_) ;
+            ietl::project(tA,this->vecspace_) ;
+            t /= ietl::two_norm(tA);
+            VA[idx] = tA/ietl::two_norm(tA);
+        }
+        else {
+            for (int i = 1; i <= idx; i++)
+                t -= ietl::dot(V[i-1], t) * V[i-1];
+            ietl::project(t,this->vecspace_) ;
+            t /= ietl::two_norm(t) ;
+            VA[idx] = apply_operator(t) ;
+        }
+
+    };
+    // Compute the error vector
+    template <class Matrix, class VS>
+    jacobi_davidson<Matrix, VS>::vector_type jacobi_davidson<Matrix,VS>::compute_error(const jacobi_davidson::vector_type &u,
+                                                                                       const jacobi_davidson::vector_type &uA,
+                                                                                       jacobi_davidson::magnitude_type theta)
+    {
+        jacobi_davidson::vector_type r = uA ;
+        if (this->shift_and_invert_)
+            r -= u / theta;
+        else
+            r -= theta*u;
+        return r ;
+    }
+    // Check if the JD iteration is arrived at convergence
+    template <class Matrix, class VS>
+    template <class ITER>
+    bool jacobi_davidson<Matrix, VS>::check_convergence(const jacobi_davidson::vector_type &u,
+                                                        const jacobi_davidson::vector_type &r,
+                                                        const jacobi_davidson::magnitude_type theta,
+                                                        ITER& iter,
+                                                        jacobi_davidson::vector_type &eigvec,
+                                                        jacobi_davidson::magnitude_type &eigval)
+    {
+        // Compute the error vector
+        bool converged ;
+        if(iter.finished(ietl::two_norm(r),1./theta)) {
+            if (this->shift_and_invert_) {
+                eigvec = u;
+                eigval = this->omega_ - 1. / theta;
+            } else {
+                eigvec = u ;
+                eigval = theta ;
+            }
+            converged = true;
+            return converged;
+        } else {
+            converged = false ;
+            return converged ;
+        }
+    };
     // The following two matrices are interfaces to the Lapack routines to compute eigenvalues and eigenvectors
     // Overloaded to support both real and complex mumber.
     template <class MATRIX, class VS>
