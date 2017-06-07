@@ -402,8 +402,10 @@ namespace ietl
             bool converged ;
             vector_type r = compute_error(u, uA, theta);
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
-            if (converged)
+            if (converged){
                 return std::make_pair(eigval, eigvec);
+                break ;
+            }
             // solve (approximately) a t orthogonal to u from
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
@@ -413,14 +415,12 @@ namespace ietl
             V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index ;
             storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
         } while(true);
-        
     }
     // Compute the action of an operator
     template <class Matrix, class VS>
-    jacobi_davidson<Matrix, VS>::vector_type
-    jacobi_davidson<Matrix, VS>::apply_operator(jacobi_davidson::vector_type const & x)
+    typename jacobi_davidson<Matrix, VS>::vector_type jacobi_davidson<Matrix, VS>::apply_operator(jacobi_davidson<Matrix, VS>::vector_type const & x)
     {
-        typedef typename jacobi_davidson::vector_type vector_type;
+        typedef typename jacobi_davidson<Matrix,VS>::vector_type vector_type;
         vector_type y, buf ;
         bool check = this->shift_and_invert_ ;
         if (check){
@@ -438,7 +438,7 @@ namespace ietl
                                                       jacobi_davidson<Matrix, VS>::vector_space& VA ,
                                                       const int idx )
     {
-        typedef typename jacobi_davidson::vector_type vector_type ;
+        typedef typename jacobi_davidson<Matrix,VS>::vector_type vector_type ;
         bool check = this->shift_and_invert_ ;
         //
         vector_type& t = V[idx];
@@ -464,11 +464,11 @@ namespace ietl
     };
     // Compute the error vector
     template <class Matrix, class VS>
-    jacobi_davidson<Matrix, VS>::vector_type jacobi_davidson<Matrix,VS>::compute_error(const jacobi_davidson::vector_type &u,
-                                                                                       const jacobi_davidson::vector_type &uA,
-                                                                                       jacobi_davidson::magnitude_type theta)
+    typename jacobi_davidson<Matrix, VS>::vector_type jacobi_davidson<Matrix,VS>::compute_error(const jacobi_davidson<Matrix,VS>::vector_type &u,
+                                                                                       const jacobi_davidson<Matrix,VS>::vector_type &uA,
+                                                                                       jacobi_davidson<Matrix,VS>::magnitude_type theta)
     {
-        jacobi_davidson::vector_type r = uA ;
+        jacobi_davidson<Matrix,VS>::vector_type r = uA ;
         if (this->shift_and_invert_)
             r -= u / theta;
         else
@@ -478,12 +478,12 @@ namespace ietl
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS>
     template <class ITER>
-    bool jacobi_davidson<Matrix, VS>::check_convergence(const jacobi_davidson::vector_type &u,
-                                                        const jacobi_davidson::vector_type &r,
-                                                        const jacobi_davidson::magnitude_type theta,
+    bool jacobi_davidson<Matrix, VS>::check_convergence(const jacobi_davidson<Matrix,VS>::vector_type &u,
+                                                        const jacobi_davidson<Matrix,VS>::vector_type &r,
+                                                        const jacobi_davidson<Matrix,VS>::magnitude_type theta,
                                                         ITER& iter,
-                                                        jacobi_davidson::vector_type &eigvec,
-                                                        jacobi_davidson::magnitude_type &eigval)
+                                                        jacobi_davidson<Matrix,VS>::vector_type &eigvec,
+                                                        jacobi_davidson<Matrix,VS>::magnitude_type &eigval)
     {
         // Compute the error vector
         bool converged ;
