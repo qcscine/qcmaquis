@@ -42,6 +42,10 @@
 /**************************************
  * Main routine for vDMRG calculations
  **************************************/
+//
+// Initial routine, just do some preliminary operation
+// and then generates a simulation object
+//
 
 int main(int argc, char ** argv)
 {

@@ -1781,6 +1781,8 @@ public:
     {
         return phys;
     }
+    // Returns the tag associated to the identty matrix
+    // ALB to modify if the matrix is different for each site
     tag_type identity_matrix_tag(size_t type) const
     {
         return ident;
@@ -1852,7 +1854,6 @@ private:
     BaseParameters & model;
     Lattice lattice;
     Index<TrivialGroup> phys;
-
     table_ptr tag_handler;
     tag_type ident, create, destroy, count;
 };

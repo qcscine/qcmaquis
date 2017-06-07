@@ -49,6 +49,13 @@
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 
+//
+// Site problem structure
+// ----------------------
+//
+// This structure contains left and right boundary, together with the
+// MPO tensor of the site of interest
+
 template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
@@ -84,11 +91,19 @@ inline double log_interpolate(double y0, double y1, int N, int i)
 
 enum OptimizeDirection { Both, LeftOnly, RightOnly };
 
+//
+// Optimizer_base class
+// --------------------
+//
+// Class for a general optimization process
+//
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
     typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
 public:
+    // Construcor
+    // 1)
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
@@ -100,31 +115,24 @@ public:
     , stop_callback(stop_callback_)
     {
         std::size_t L = mps.length();
-        
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
-
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
-
         if (northo > 0 && !parms_.is_set("ortho_states"))
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
-
         ortho_mps.resize(northo);
         std::string files_ = parms_["ortho_states"].str();
         std::vector<std::string> files;
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-
             maquis::checks::symmetry_check(parms, files[n]);
             load(files[n], ortho_mps[n]);
             maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
-        
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }

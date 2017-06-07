@@ -38,12 +38,6 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
 
-/****************************************************
- * Definition of the main class, the DMRG simulation
- * @tparam Matrix
- * @tparam SymmGroup
- ****************************************************/
-
 
 template <class Matrix, class SymmGroup>
 class dmrg_sim : public sim<Matrix, SymmGroup> {
@@ -72,7 +66,7 @@ public:
     {
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
-        /// MPO creation
+        // MPO creation
         if (parms["MODEL"] == std::string("quantum_chemistry"))
             throw std::runtime_error("quantum chemistry simulations disabled");
         MPO<Matrix, SymmGroup> mpoc = mpo;

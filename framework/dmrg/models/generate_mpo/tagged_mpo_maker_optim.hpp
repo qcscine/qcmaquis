@@ -46,21 +46,16 @@
 
 namespace generate_mpo
 {
-    
     namespace detail {
-        
         template <typename pos_t, typename tag_type, typename index_type>
         struct prempo_key {
             typedef std::pair<pos_t, tag_type> pos_op_type;
             enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right, conjugate};
-            
             kind_type kind;
             std::vector<pos_op_type> pos_op;
             index_type offset;
-            
             prempo_key(kind_type k_=bulk, index_type o_=0) : kind(k_), offset(o_) { }
             prempo_key(std::vector<pos_op_type> const& po_, index_type o_=0) : kind(bulk), pos_op(po_), offset(o_) { }
-            
             bool operator==(prempo_key const& lhs) const
             {
                 if (kind != lhs.kind)
@@ -72,7 +67,6 @@ namespace generate_mpo
                 
                 return (pos_op == lhs.pos_op) && (offset == lhs.offset);
             }
-            
             bool operator<(prempo_key const& lhs) const
             {
                 if (kind != lhs.kind) return kind < lhs.kind;
@@ -88,7 +82,6 @@ namespace generate_mpo
         for (int i = 0; i < s; ++i)
             os << key.pos_op[i].first << ":" << key.pos_op[i].second << ", ";
         os << "o" << key.offset;
-
         return os;
     }
     
@@ -97,32 +90,40 @@ namespace generate_mpo
     {
         return std::make_pair( boost::get<0>(t), boost::get<1>(t) );
     }
-
+    //
+    // CLASS TAGGEDMPOMAKER
+    // --------------------
+    // Attributes:
+    // 1) lat             : the lattice of the model
+    // 2) identities      : vector with the tag associated to the identity operator for each
+    //                      site of the lattice
+    // 3) identities_full : same as identities, but with the "full" identities (??)
+    // 4) fillings        : vector with the tags associated to the filling operators
+    // 5) length          : size of the lattice
+    // 6) tag_handler     : TagHandler object associated to the Hamiltonian
+    // 7)
     template<class Matrix, class SymmGroup>
     class TaggedMPOMaker
     {
         typedef typename Matrix::value_type scale_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-
         typedef Lattice::pos_t pos_t;
         typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;
         typedef typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t pos_op_type;
         typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
-        
         typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
         typedef std::vector<tag_type> tag_vec;
-        
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
-        // TODO: consider moving to hashmap
-        //typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type> prempo_map_type;
         typedef std::map<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
                          compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
-        
         enum merge_kind {attach, detach};
         
     public:
+        //
+        // CONSTRUCTOR
+        // -----------
         TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model)
         : lat(lat_)
         , length(lat.size())
@@ -136,46 +137,24 @@ namespace generate_mpo
         , verbose(true)
         , core_energy(0.)
         {
+            // Loads the position of all the identity operators
             for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
             {
                 identities.push_back(model.identity_matrix_tag(p));
                 fillings.push_back(model.filling_matrix_tag(p));
+                // Catch the error in order to avoid
                 try { identities_full.push_back(model.get_operator_tag("ident_full", p)); }
                 catch (std::runtime_error const & e) {}
             }
-
+            // Add all the terms of the Hamiltonian that have been generated previously
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
 
-        TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & i_f_, tag_vec const & f_,
-                       boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th_, typename Model<Matrix, SymmGroup>::terms_type const& terms)
-        : lat(lat_)
-        , identities(i_)
-        , identities_full(i_f_)
-        , fillings(f_)
-        , length(lat.size())
-        , tag_handler(th_)
-        , prempo(length)
-        , trivial_left(prempo_key_type::trivial_left)
-        , trivial_right(prempo_key_type::trivial_right)
-        , leftmost_right(length)
-        , rightmost_left(0)
-        , finalized(false)
-        , verbose(false)
-        , core_energy(0.)
-        {
-            //for (size_t p = 0; p < length-1; ++p)
-            //    prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
-            
-            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
-        }
-        
         void add_term(term_descriptor term)
         {
             std::sort(term.begin(), term.end(), pos_tag_lt());
             index_type nops = term.size();
-            
             switch (nops) {
                 case 1:
                     add_1term(term);
@@ -567,16 +546,12 @@ namespace generate_mpo
 
     private:
         Lattice const& lat;
-
         tag_vec identities, identities_full, fillings;
-        
         pos_t length;
-        
         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         std::vector<prempo_map_type> prempo;
         prempo_key_type trivial_left, trivial_right;
         std::map<pos_t, op_t> site_terms;
-        
         pos_t leftmost_right, rightmost_left;
         bool finalized, verbose;
         scale_type core_energy;

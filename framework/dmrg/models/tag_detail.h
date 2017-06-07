@@ -34,7 +34,6 @@
 namespace tag_detail {
 
     typedef unsigned tag_type;
-
     enum operator_kind { bosonic, fermionic };
 
     template <class BlockMatrix>
@@ -71,7 +70,9 @@ namespace tag_detail {
     }
 
     inline bool num_check(std::complex<double> x) { return true; }
-
+    //
+    // Checks if two matrices are equal
+    // --------------------------------
     template <class BlockMatrix>
     std::pair<bool, typename BlockMatrix::matrix_type::value_type>
     equal(BlockMatrix const& reference,

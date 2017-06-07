@@ -41,20 +41,46 @@
 
 #include "dmrg/models/tag_detail.h"
 
+//
+// OPTABLE CLASS
+// -------------
+// Inherited from a class of vector of site operators.
+// Defines three types:
+// - op_t        : site_operators type
+// - tag_type    : integer
+// - mvalue_type : type of the element of the matrix
+//
+// Has two methods:
+// - register         : takes an operator and returns in output an integer. Basically
+//                      increments this index for each operator that is added
+// - checked_register : check if an operator has been registered and, if yes, returns
+//                      a double which is the proportionality constant
+//
+
 template <class Matrix, class SymmGroup>
 class OPTable : public std::vector<typename operator_selector<Matrix, SymmGroup>::type>
 {
 public:
     typedef tag_detail::tag_type tag_type;
     typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
-
 private:
     typedef typename Matrix::value_type mvalue_type;
-
 public:
     tag_type register_op(op_t const & op_);
     std::pair<tag_type, mvalue_type> checked_register(op_t const& sample);
 };
+
+//
+// TAGHANDLER CLASS
+// ----------------
+// Attributes:
+// - operator_table : pointer to an OpTable object that is dynamically allocated
+// - hermitian      : vector of "tag_type" object (integer), pointing to the hermitian
+//                    of each operator
+// - sign_table     : stores if each operator is fermionic or bosonic
+// - product_tab    : a map that associates to each couple of operator its product, and the
+//                    corresponding proportionality constant
+//
 
 template <class Matrix, class SymmGroup>
 class TagHandler
@@ -70,45 +96,37 @@ protected:
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 
 public:
-    // constructors
+    // Constructors
     TagHandler() : operator_table(new OPTable<Matrix, SymmGroup>()) { }
     TagHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_) : operator_table(tbl_) { }
     TagHandler(TagHandler const & a);
-    
-    // simple const query
+    // Simple queries on the properties of the object
     tag_type size() const;
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() const;
     bool is_fermionic (tag_type query_tag) const;
     tag_type herm_conj(tag_type query_tag) const;
-    
-    // register new operators
+    // Register a new operator in the OpTable object
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
     std::pair<tag_type, value_type> checked_register(op_t const& sample, tag_detail::operator_kind kind);
-
+    // Check if two operators are one the hermitian of the other
     void hermitian_pair(tag_type pair_tag1, tag_type pair_tag2);
-
-    // access operators
+    // Access operators (multiple operators can be accessed at the same time)
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i);
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const;
     std::vector<typename OPTable<Matrix, SymmGroup>::value_type> get_ops(std::vector<tag_type> const & i) const;
-
-    // compute products (WARNING: not thread safe!)
+    // Compute products (WARNING: not thread safe!).
+    // Also in this case, supports list of operators
     std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
     std::pair<std::vector<tag_type>, std::vector<value_type> > get_product_tags(const std::vector<tag_type> & t1, const std::vector<tag_type> & t2);
-
     // Diagnostics
     tag_type prod_duplicates() const { return duplicates_(product_tags); }
     tag_type get_num_products() const;
     tag_type total_size() const { return operator_table->size(); }
-
 private:
-    boost::shared_ptr<OPTable<Matrix, SymmGroup> > operator_table;     
-
+    boost::shared_ptr<OPTable<Matrix, SymmGroup> > operator_table;
     template <class Map> tag_type duplicates_(Map const & sample);
-
     std::vector<tag_detail::operator_kind> sign_table;
     pair_map_t product_tags;
-
     std::vector<tag_type> hermitian;
 };
 

@@ -42,43 +42,48 @@ namespace detail {
     
 }
 
+//
+// TERM_DESCRIPTOR CLASS
+// ---------------------
+// Class inherited from a vector of an integer and an unsigned integer
+// The first element is the position of the operator in the lattice, the
+// second term is the
 template <typename T>
 class term_descriptor : public std::vector<boost::tuple<int, unsigned int> > {
 public:
+    // Type definition
     typedef int pos_type;
     typedef unsigned int tag_type;
     typedef boost::tuple<pos_type, tag_type> value_type;
-    
     typedef std::vector<value_type> base;
     typedef base::size_type size_type;
     typedef typename base::iterator iterator;
     typedef typename base::const_iterator const_iterator;
-    
+    // Public attributes
     T coeff;
     bool is_fermionic;
     tag_type full_identity;
+    // Constructor (base is the mother class)
     term_descriptor() : base(), coeff(1.), is_fermionic(false) { }
-    
+    // Get the first and the second element of the vector for the i-th element
     pos_type position(size_type i) const     { return boost::get<0>((*this)[i]); }
     tag_type operator_tag(size_type i) const { return boost::get<1>((*this)[i]); }
-    
-    /// utilities
+    // Sort by position in the lattice
     void canonical_order() // TODO: check and fix for fermions
     {
         std::sort(begin(), end(), detail::pos_tag_lt());
     }
-    
+    // Compare two term_descriptor objects (compare only the first element)
     bool operator< (term_descriptor const & rhs) const
     {
         if (this->size() == 0 && rhs.size() == 0) return false;
         if (this->size() == 0) return true;
         if (rhs.size()   == 0) return false;
-
         if (this->position(0) == rhs.position(0))
             return this->size() > rhs.size();
         return this->position(0) < rhs.position(0);
     }
-    
+    //
     bool site_match (term_descriptor const & rhs) const
     {
         if (this->size() == rhs.size())
@@ -91,14 +96,11 @@ public:
             return (this->position(0) == rhs.position(0) || this->position(1) == rhs.position(0));
         else if (this->size() == 1 && rhs.size() == 2)
             return (this->position(0) == rhs.position(0) || this->position(0) == rhs.position(1));
-        else
-        {
-            throw std::runtime_error("site_match not implemented for this type of operator." );
-            return false;
+        else {
+            throw std::runtime_error("site_match not implemented for this type of operator.");
         }
-        
     }
-    
+    // Check if there is an overlap
     bool overlap (term_descriptor const & rhs) const
     {
         return !( (boost::get<0>(*this->rbegin()) < boost::get<0>(*rhs.begin())) || (boost::get<0>(*rhs.rbegin()) < boost::get<0>(*this->begin())) );

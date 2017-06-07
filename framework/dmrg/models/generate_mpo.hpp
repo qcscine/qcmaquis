@@ -38,7 +38,6 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
 {
     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
     MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
     return mpo;
 }
 

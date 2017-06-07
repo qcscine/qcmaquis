@@ -92,7 +92,7 @@ parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
                     tmp.push_back(site_dims[i][1].first); // up
                     break;
                 case 2:
-                    tmp.push_back(site_dims[i][2].first); // down 
+                    tmp.push_back(site_dims[i][2].first); // down
                     break;
                 case 1:
                     tmp.push_back(site_dims[i][3].first); // empty

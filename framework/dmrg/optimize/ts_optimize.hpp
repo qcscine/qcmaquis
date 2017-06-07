@@ -35,6 +35,10 @@
 
 #include <boost/tuple/tuple.hpp>
 
+//
+// TS_OPTIMIZE CLASS
+// -----------------
+// Inherited from the virtual optimizer_base class
 template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
@@ -70,10 +74,9 @@ public:
     // Function to perform a sweep
     void sweep(int sweep, OptimizeDirection d = Both)
     {
+        // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-
         iteration_results_.clear();
-        
         std::size_t L = mps.length();
         parallel::scheduler_balanced scheduler_mps(L);
         // Definition of the initial site
@@ -92,11 +95,11 @@ public:
         }
         
         for (; _site < 2*L-2; ++_site) {
-	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
-	    | |                        |
-       site 1                      |
-	      |         left to right  | right to left, lr = -1
-	      site 2                   |                               */
+	    /* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
+	        | |                        |
+           site 1                      |
+	          |         left to right  | right to left, lr = -1
+	          site 2                   |                               */
 
             int lr, site1, site2;
             if (_site < L-1) {
@@ -114,30 +117,13 @@ public:
                 ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                 ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
-
-            //if (lr == +1) mps.canonize(site1);
-            //else          mps.canonize(site2);
-            
     	    maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
-
-            // MD: some changes needed to re-enable it.
-//            if (parms.template get<bool>("beta_mode")) {
-//                if (sweep == 0 && lr == 1) {
-//                    mpo = zero_after(mpo_orig, 0);
-//                    if (site == 0)
-//                        this->init_left_right(mpo, 0);
-//                } else if (sweep == 0 && lr == -1 && site == L-1) {
-//                    mpo = mpo_orig;
-//                }
-//            }
-        
             if (_site != L-1)
             { 
                 Storage::fetch(left_[site1]);
                 Storage::fetch(right_[site2+1]);
             }
-
             if (lr == +1) {
                 if (site2+2 < right_.size()){
                     Storage::prefetch(right_[site2+2]);
@@ -147,10 +133,7 @@ public:
                     Storage::prefetch(left_[site1-1]);
                 }
             }
-
-
             boost::chrono::high_resolution_clock::time_point now, then;
-            
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();

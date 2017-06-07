@@ -130,9 +130,7 @@ sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
 
 
 template <class Matrix, class SymmGroup>
-sim<Matrix, SymmGroup>::~sim()
-{
-}
+sim<Matrix, SymmGroup>::~sim() { }
 
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)

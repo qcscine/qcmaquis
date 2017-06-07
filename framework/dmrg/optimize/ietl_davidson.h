@@ -53,14 +53,14 @@ namespace davidson_detail {
 
         void precondition(vector_type& r, vector_type& V, value_type theta)
         {
-            // V here is an MPSTensor, so a vector of matrices, each one for each
-            // local basis functions
-            //vector_type Vcpy = V;
-            //mult_diag(theta, Vcpy);
-            //value_type a = Vcpy.scalar_overlap(r);
-            //value_type b = V.scalar_overlap(Vcpy);
-            //r -= a/b * V;
-            mult_diag(theta, r);
+            // Project onto the space orthogonal to V
+            value_type  x1   = ietl::dot(V,r) ;
+            vector_type Vcpy = r - V*x1 ;
+            // Precondition
+            mult_diag(theta, Vcpy);
+            // Reproject again
+            value_type x2    = ietl::dot(V,Vcpy);
+            r = Vcpy - x2*V ;
         }
 
     private:
@@ -98,11 +98,11 @@ namespace davidson_detail {
 // Simple Davidson
 // ---------------
 template<class Matrix, class SymmGroup>
-std::pair< double , MPSTensor<Matrix,SymmGroup> >
+std::pair< double , class MPSTensor<Matrix,SymmGroup> >
 solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     MPSTensor<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
-                    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >()) {
+                    std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
     if (initial.num_elements() <= ortho_vecs.size())
@@ -137,12 +137,12 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
 // Modified Davidson
 // -----------------
 template<class Matrix, class SymmGroup>
-std::pair< double , MPSTensor<Matrix,SymmGroup> >
+std::pair< double , class MPSTensor<Matrix,SymmGroup> >
 solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
         MPSTensor<Matrix, SymmGroup> const & initial,
         BaseParameters & params,
         double omega,
-        std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >()) {
+        std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
     if (initial.num_elements() <= ortho_vecs.size())
