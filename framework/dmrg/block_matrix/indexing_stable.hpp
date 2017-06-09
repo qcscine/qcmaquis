@@ -97,31 +97,34 @@ namespace index_detail
 template<class SymmGroup>
 class basis_iterator_;
 
+//
+// INDEX CLASS
+// -----------
+// Template that use the SymmGroup parent class
+// The main attribute of Index is a vector of couples (charge, dimension), called data_type
+//
 template<class SymmGroup> class Index
 {
     typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > data_type;
-    
 public:
+    // Type definition
     typedef typename SymmGroup::charge charge;
     typedef typename data_type::value_type value_type;
-    
     typedef typename data_type::iterator iterator;
     typedef typename data_type::const_iterator const_iterator;
-    
     typedef typename data_type::reverse_iterator reverse_iterator;
     typedef typename data_type::const_reverse_iterator const_reverse_iterator;
-    
     typedef basis_iterator_<SymmGroup> basis_iterator;
-    
+    // Constructors.
+    // Either the simple constructor, or the
     Index() : sorted_(true) {}
     Index(std::size_t s_) : sorted_(true), data_(s_) {}
-    
+    // Returns the size of the block with symmetry c
     std::size_t size_of_block(charge c) const
     {
         assert( has(c) );
         return (*this)[position(c)].second;
     }
-
     std::size_t size_of_block(charge c, bool position_check) const
     {
         // I have to ignore the position_check argument because I can't dereference the end() iterator anyway
@@ -130,7 +133,7 @@ public:
             return 0;
         return (*this)[pos].second;
     }
-    
+    // If sorted, finding the position is easier
     std::size_t position(charge c) const
     {
         const_iterator match;
@@ -161,7 +164,7 @@ public:
             return std::find_if(data_.begin(), data_.end(),
                                 index_detail::is_first_equal<SymmGroup>(c)) != data_.end();
     }
-    
+    // The sorting is based on the SymmGroup comparison
     void sort()
     {
         std::sort(data_.begin(), data_.end(), index_detail::gt<SymmGroup>());
@@ -265,13 +268,13 @@ public:
     }
     
 private:
+    // Private attributes
     data_type data_;
     bool sorted_;
-    
+    // Private methods
     void push_back(value_type const & x){
         data_.push_back(x);
     }
-    
     std::size_t destination(charge c) const
     {
         return std::find_if(data_.begin(), data_.end(),

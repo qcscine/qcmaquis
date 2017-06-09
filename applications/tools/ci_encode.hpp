@@ -41,52 +41,56 @@
 #include "dmrg/mp_tensors/mps_initializers.h"
 
 //
-// Function to extract the CI coefficients for
-
+// Function to extract the CI coefficients from an MPS
+// ---------------------------------------------------
+//
+// Let p and q be two MPS expressed as
+//
+//         ---     ---  |\ /|^s_1       |\ /|^s_l
+// | p > = >       >    | v |           | v |      |s_i ... s_l>
+//         --- ... ---  |   |     ....  |   |
+//         s_1     s_l
+//
+//         ---     ---  |\  |^s_1       |\  |^s_l
+// | q > = >       >    | \ |           | \ |      |s_i ... s_l>
+//         --- ... ---  |  \|     ....  |  \|
+//         s_1     s_l
+//
+// In our case, |q> is a product state (so only one value of the string s_1 ... s_l is
+// allowed). The overlap is computed by successive contraction of M and N matrices,
+// for increasing value of s_i. The algorithm proceeds as follows:
+//
+// 1) takes the initial vectors. The direct product of those vectors gives a matrix. However,
+//    only one value of sigma is allowed in N, and this "block" is equal to the identity. So
+//    the final matrix has only one sigma-block non null, and this block is equal to the one of M
+// 2) we sweep to the next site. Also in this case the sum over sigma_2 selects only one term,
+//    which is the identity matrix. We then perform the product of the only two matrix that
+//    survive.
+//
+// NOTE : the code works only for TrivialGroup symmetry
+//
 
 template <class Matrix, class SymmGroup>
 typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & det)
 {
     typedef typename SymmGroup::charge charge ;
     charge identity = SymmGroup::IdentityCharge ;
-    // Simple checks
+    // Initialization
     if (mps.length() != det.size())
         throw std::runtime_error("extract_coefficient: length of mps != length of basis state\n");
     charge total  = identity ;
-    charge target = identity ;
-    if (total != target) {
-        std::stringstream ss;
-        std::copy(det.begin(), det.end(), std::ostream_iterator<int>(ss, " "));
-        ss << " (Has: " << total << ", should be: " << target << ")\n";
-        throw std::runtime_error("Determinant has wrong number of up/down electrons: " + ss.str());
-    }
-    block_matrix<Matrix, SymmGroup> const & block0 = mps[0].data();
     charge sector = identity ;
-    // The first matrix is
-    std::size_t b = block0.left_basis().position(sector) ;
-    Matrix coeff0 = block0[b] ;
-    std::cout << "Sector matrix" << std::endl ;
-    std::cout << coeff0 << std::endl ;
-    // Extract the block of the matrix that is interesting for us
-    std::size_t mrows = mps[0].row_dim().size_of_block(identity) ;
-    std::size_t mcols = mps[0].col_dim().size_of_block(identity) ;
-    Matrix coeff(mrows,mcols) ;
-    for (int i = 0 ; i < mrows ; i++)
-        std::copy(coeff0.row(mrows*det[0]+i).first,
-                  coeff0.row(mrows*det[0]+i).second,
-                  coeff.row(i).first);
-    mps[0].make_left_paired();
+    Matrix coeff = extract_sigma_block(mps, det[0], 0, sector);
     for(unsigned p = 1; p < mps.length(); ++p)
     {
         // Takes the point group of the input determinant on the p-th site,
         // the symmetry group of the input matrix and fuse it, looks for the
         // same block in the right matrix
         charge left_input = identity ;
-        Index<SymmGroup> const & phys = mps[p-1].site_dim();
-        // Left pairing
-        mrows = mps[p].row_dim().size_of_block(identity) ;
-        mps[p].make_left_paired();
         sector = SymmGroup::fuse(sector, identity);
+        // Left pairing
+        std::size_t mrows = mps[p].row_dim().size_of_block(identity) ;
+        mps[p].make_left_paired();
         // Extract the matrix associated to the p-th site.
         // NOTE: it's a tensor with 2 indexes, since it has been left_paired
         block_matrix<Matrix, SymmGroup> const & block_p = mps[p].data() ;
@@ -95,8 +99,6 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
         std::size_t b = block_p.left_basis().position(sector) ;
         // This is now a Nmax*m x m matrix (the tensor has been left paired)
         Matrix const & sector_matrix = block_p[b];
-        std::cout << "Sector matrix" << std::endl ;
-        std::cout << sector_matrix << std::endl ;
         // determine voffset - row offset for site_charge in sector_matrix
         // if permformance is an issue, do not recalculate the ProductBasis on every call
         ProductBasis<SymmGroup> left_pb(mps[p].site_dim(), mps[p].row_dim());
@@ -118,6 +120,36 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
         coeff = tmp;
     }
     return coeff(0,0);
+}
+
+//
+// Simple function to extract, from an MPS, the block associated to a specific
+// local physical basis function, site and charge of the symmetry point group
+//
+template<class Matrix, class SymmGroup>
+Matrix extract_sigma_block( const MPS<Matrix, SymmGroup> & mps,
+                            std::size_t sigma,
+                            std::size_t site,
+                            typename SymmGroup::charge charge)
+{
+    // Initialization
+    // NOTE: here the objects hierarchy is:
+    //    1) mps is a vector of MPSTensors
+    //    2) mps[0] is a MPSTensor
+    //    3) mps[0].data is the block_matrix associated to the MPSTensor
+    mps[site].make_left_paired() ;
+    block_matrix<Matrix, SymmGroup> const & block = mps[site].data() ;
+    std::size_t mrows = mps[site].row_dim().size_of_block(charge) ;
+    std::size_t mcols = mps[site].col_dim().size_of_block(charge) ;
+    std::size_t b = block.left_basis().position(charge) ;
+    Matrix coeff_full = block[b] ;
+    Matrix coeff_out(mrows,mcols);
+    // ALB TODO Put some checks here on the dimension of coeff_full
+    for (int i = 0 ; i < mrows ; i++)
+        std::copy(coeff_full.row(mrows*sigma+i).first,
+                  coeff_full.row(mrows*sigma+i).second,
+                  coeff_out.row(i).first);
+    return coeff_out;
 }
 
 template <class Matrix, class SymmGroup>
