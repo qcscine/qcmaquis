@@ -47,6 +47,9 @@
 namespace generate_mpo
 {
     namespace detail {
+        //
+        // PREMPO_KEY STRUCTURE
+        // --------------------
         template <typename pos_t, typename tag_type, typename index_type>
         struct prempo_key {
             typedef std::pair<pos_t, tag_type> pos_op_type;
@@ -54,6 +57,10 @@ namespace generate_mpo
             kind_type kind;
             std::vector<pos_op_type> pos_op;
             index_type offset;
+            // Constructors
+            // - first one, the kind type is given in input, together with the offset. The operators
+            //   are not set
+            // - second one, give explicitly a vector of operators and the offsett, the kind is set to bulk
             prempo_key(kind_type k_=bulk, index_type o_=0) : kind(k_), offset(o_) { }
             prempo_key(std::vector<pos_op_type> const& po_, index_type o_=0) : kind(bulk), pos_op(po_), offset(o_) { }
             bool operator==(prempo_key const& lhs) const
@@ -64,7 +71,6 @@ namespace generate_mpo
                     return true;
                 if (kind == trivial_right)
                     return true;
-                
                 return (pos_op == lhs.pos_op) && (offset == lhs.offset);
             }
             bool operator<(prempo_key const& lhs) const
@@ -94,14 +100,24 @@ namespace generate_mpo
     // CLASS TAGGEDMPOMAKER
     // --------------------
     // Attributes:
-    // 1) lat             : the lattice of the model
-    // 2) identities      : vector with the tag associated to the identity operator for each
-    //                      site of the lattice
-    // 3) identities_full : same as identities, but with the "full" identities (??)
-    // 4) fillings        : vector with the tags associated to the filling operators
-    // 5) length          : size of the lattice
-    // 6) tag_handler     : TagHandler object associated to the Hamiltonian
-    // 7)
+    // 1)  lat             : the lattice of the model
+    // 2)  identities      : vector with the tag associated to the identity operator for each
+    //                       site of the lattice
+    // 3)  identities_full : same as identities, but with the "full" identities (??)
+    // 4)  fillings        : vector with the tags associated to the filling operators
+    // 5)  length          : size of the lattice
+    // 6)  tag_handler     : TagHandler object associated to the Hamiltonian
+    // 7)  prempo          : check later
+    // 8)  trivial_left    :
+    // 9)  trivial_right   :
+    // 10) site_terms      : a map that takes in input the number of the lattice site and returns
+    //                       in output the operator on this site
+    // 11) leftmost_right  : position of the first "interesting" site
+    // 12) rightmost_left  : position of the last "interesting" site
+    // 13) finalized       : if the generation of the MPO has been finished
+    // 14) verbose         : controls the level of printing
+    // 15) core_energy     : float with the constant core energy
+    //
     template<class Matrix, class SymmGroup>
     class TaggedMPOMaker
     {
@@ -150,7 +166,10 @@ namespace generate_mpo
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
-
+        //
+        // ADD_TERM METHOD
+        // ---------------
+        // Add a single term to the MPO. Call a different routine depending on the number of elements to be added
         void add_term(term_descriptor term)
         {
             std::sort(term.begin(), term.end(), pos_tag_lt());
@@ -172,7 +191,7 @@ namespace generate_mpo
                     add_nterm(term); /// here filling has to be done manually
                     break;
             }
-            
+            // Update the leftmost_right and rightmost_left attributes
             leftmost_right = std::min(leftmost_right, boost::get<0>(*term.rbegin()));
             rightmost_left = std::max(rightmost_left, boost::get<0>(*term.begin()));
         }
@@ -284,49 +303,51 @@ namespace generate_mpo
         }
         
     private:
+        //
+        // ADD_1TERM
+        // ---------
+        // Add a term involving a single SQ operator. If it's the identity,
+        // update teh core energy
         void add_1term(term_descriptor const& term)
         {
             assert(term.size() == 1);
-            
-            /// Due to numerical instability: treat the core energy separately
+            // Due to numerical instability: treat the core energy separately
             if (term.operator_tag(0) == identities[lat.get_prop<int>("type", term.position(0))])
                 core_energy += term.coeff;
 
             else {
-                /// retrieve the actual operator from the tag table
+                // retrieve the actual operator from the tag table
                 op_t current_op = tag_handler->get_op(term.operator_tag(0));
                 current_op *= term.coeff;
                 site_terms[term.position(0)] += current_op;
             }
         }
-        
+        //
+        // ADD_2TERM
+        // ---------
+        // Add two terms involving two SQ operators
         void add_2term(term_descriptor const& term)
         {
             assert(term.size() == 2);
-            
-            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > mpo_spin;
             prempo_key_type k1 = trivial_left;
             {
                 int i = 0;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1]));
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
             }
-
             bool trivial_fill = !tag_handler->is_fermionic(term.operator_tag(1));
-            // todo: check with long-range n_i*n_j                                  if spin > 0.5, need to use the full identity
-            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill, (mpo_spin.get() > 1) ? term.full_identity : -1);
+            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill, -1);
             {
                 int i = 1;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2 = trivial_right;
                 insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
-
-            assert(mpo_spin.get() == 0); // H is a spin 0 operator
         }
-        
+        //
+        // ADD_3TERM
+        // ---------
+        // Add three terms involving two SQ operators
         void add_3term(term_descriptor const& term)
         {
             assert(term.size() == 3);
@@ -463,7 +484,9 @@ namespace generate_mpo
             }
             
         }
-
+        //
+        // INSERT_FILLING PRIVATE METHOD
+        // -----------------------------
 		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill, int custom_ident = -1)
 		{
 			for (; i < j; ++i) {
