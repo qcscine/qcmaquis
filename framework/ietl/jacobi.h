@@ -169,7 +169,7 @@ namespace ietl
         mult(m_, t2, t3);
         t3 *= -1. ;
         t3 += omega_*t2 ;
-        y = t3 - theta_*t2;
+        y = t3 - t2/theta_ ;
         // t = (1-uu*) y
         ust = dot(z_, y);
         t = y - ust*z_ ;
@@ -190,7 +190,7 @@ namespace ietl
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         // Constructor
         jcd_gmres_solver(Matrix const & matrix, VS const & vec,
-            std::size_t max_iter = 5, bool verbose = false)
+            std::size_t max_iter = 5, bool verbose = true)
         : matrix_(matrix)
         , vecspace_(vec)
         , n_(vec_dimension(vec))
@@ -204,11 +204,11 @@ namespace ietl
         {
             jcd_solver_operator<Matrix, VS, vector_type> op(u, theta, r, matrix_);
             ietl_gmres gmres(max_iter_, verbose_);
-            vector_type inh = -r;
+            vector_type inh = r;
             // initial guess for better convergence
             scalar_type dru = ietl::dot(r,u);
             scalar_type duu = ietl::dot(u,u);
-            t = -r + dru/duu*u;
+            t = r + dru/duu*u;
             if (max_iter_ > 0)
                 t = gmres(op, inh, t, rel_tol);
         }
@@ -233,7 +233,7 @@ namespace ietl
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         // Constructor
         jcd_gmres_modified_solver(Matrix const & matrix, VS const & vec, double omega,
-                                  std::size_t max_iter = 5, bool verbose = false)
+                                  std::size_t max_iter = 5, bool verbose = true)
                 : matrix_(matrix)
                 , vecspace_(vec)
                 , n_(vec_dimension(vec))
@@ -394,7 +394,7 @@ namespace ietl
             vector_type uA = VA[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 uA += VA[j] * s[j];
-            ietl::project(uA,vecspace_);
+            //ietl::project(uA,vecspace_);
             // Check convergence
             ++iter;
             vector_type    &eigvec = u ;
@@ -402,12 +402,8 @@ namespace ietl
             bool converged ;
             vector_type r = compute_error(u, uA, theta);
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
-            if (converged){
+            if (converged)
                 return std::make_pair(eigval, eigvec);
-                break ;
-            }
-            // solve (approximately) a t orthogonal to u from
-            //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
             // Note that the matrix has not to be passed because it's already contained inside the
             // solver object
@@ -440,7 +436,6 @@ namespace ietl
     {
         typedef typename jacobi_davidson<Matrix,VS>::vector_type vector_type ;
         bool check = this->shift_and_invert_ ;
-        //
         vector_type& t = V[idx];
         if (check){
             vector_type tA = apply_operator(t);
@@ -448,8 +443,8 @@ namespace ietl
                 t -= ietl::dot(VA[i-1], tA) * V[i-1];
                 tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
             }
-            ietl::project(t,this->vecspace_) ;
-            ietl::project(tA,this->vecspace_) ;
+            //ietl::project(t,this->vecspace_) ;
+            //ietl::project(tA,this->vecspace_) ;
             t /= ietl::two_norm(tA);
             VA[idx] = tA/ietl::two_norm(tA);
         }
