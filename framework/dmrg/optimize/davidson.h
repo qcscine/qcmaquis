@@ -78,7 +78,7 @@ namespace ietl
         magnitude_type kappa_ ;
         bool const shift_and_invert_ ;
         // Private methods
-        void update_vspace(vector_set V, vector_set VA, vector_type t, std::size_t dim);
+        void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim);
     };
     //
     // Constructors
@@ -98,9 +98,9 @@ namespace ietl
             shift_and_invert_(true),
             kappa_(0.25)
     {
-        for (int i = 0 ; i < matrix.ncols() ; i++) {
+        for (int i = 0 ; i < matrix.num_cols ; i++) {
             matrix_(i,i) = omega_ - matrix(i,i);
-            for (int j = i+1; j < matrix.ncols(); j++) {
+            for (int j = i+1; j < matrix.num_cols; j++) {
                 matrix_(i,j) = -matrix(i,j);
                 matrix_(j,i) = matrix_(i,j);
             }
@@ -111,8 +111,8 @@ namespace ietl
     // --------------------------
     // TODO better definition of the method depending if shift_and_invert_ is defined or not
     template <class MATRIX, class VS>
-    void davidson<MATRIX, VS>::update_vspace(davidson::vector_set V, davidson::vector_set VA,
-                                             davidson::vector_type t , std::size_t dim)
+    void davidson<MATRIX, VS>::update_vspace(davidson::vector_set &V, davidson::vector_set &VA,
+                                             davidson::vector_type &t , std::size_t dim)
     {
         magnitude_type tau = ietl::two_norm(t);
         for (int i = 0; i < dim; i++)
@@ -214,8 +214,7 @@ namespace ietl
         typedef typename std::vector<vector_type> vector_set ;
         davidson_modified(const MATRIX& matrix,
                           const VS& vec,
-                          double omega);
-        void update_vspace(vector_set V,  vector_set VA, vector_set V2, vector_type t , std::size_t dim);
+                          const double omega);
         template <class GEN, class PRECOND, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
                                                                     PRECOND& mdiag,
@@ -225,17 +224,28 @@ namespace ietl
         VS vecspace_;
         magnitude_type atol_;
         double omega_ ;
+        void update_vspace(vector_set& V,  vector_set& VA, vector_set& V2, vector_type& t , std::size_t dim);
+        vector_type apply_operator(const vector_type& x);
     };
     // Constructor
     template <class MATRIX, class VS>
     davidson_modified<MATRIX, VS>::davidson_modified(const MATRIX& matrix, const VS& vec, const double omega) :
-            matrix_(matrix),
             vecspace_(vec),
+            matrix_(matrix),
             omega_(omega)
-    {}
+    { }
     template <class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::update_vspace(davidson_modified::vector_set V,  davidson_modified::vector_set VA,
-                                                      davidson_modified::vector_set V2, davidson_modified::vector_type t ,
+    typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX, VS>::apply_operator(const davidson_modified::vector_type& x)
+    {
+        vector_type tmp ;
+        ietl::mult(matrix_, x, tmp);
+        tmp *= -1. ;
+        tmp += omega_*x ;
+        return tmp ;
+    };
+    template <class MATRIX, class VS>
+    void davidson_modified<MATRIX, VS>::update_vspace(davidson_modified::vector_set& V,  davidson_modified::vector_set& VA,
+                                                      davidson_modified::vector_set& V2, davidson_modified::vector_type& t ,
                                                       std::size_t dim)
     {
         magnitude_type tau = ietl::two_norm(t);
@@ -244,8 +254,8 @@ namespace ietl
             t -= ietl::dot(V[i], t) * V[i];
         t /= ietl::two_norm(t);
         V.push_back(t);
-        ietl::mult(matrix_ , t , tA);
-        for (int i = 0; i < VA.size(); i++) {
+        tA = apply_operator(t) ;
+        for (int i = 0; i < dim; i++) {
             t -= ietl::dot(VA[i], tA) * V2[i];
             tA -= ietl::dot(VA[i], tA) * VA[i];
         }
@@ -278,7 +288,7 @@ namespace ietl
         magnitude_type kappa = 0.25;
         magnitude_type rel_tol;
         atol_ = iter.absolute_tolerance();
-        std::size_t iter_dim;
+        std::size_t iter_dim = 0 ;
         // Start with t=v_o, starting guess
         ietl::generate(t,gen);
         ietl::project(t,vecspace_);
@@ -310,7 +320,6 @@ namespace ietl
             r2 = uA - energy*u ;
             theta = energy ;
             // if (|r|_2 < \epsilon) stop
-            std::cout << ietl::two_norm(r2) << std::endl ;
             ++iter;
             if (iter.finished(ietl::two_norm(r2), theta))
                 break;
