@@ -29,6 +29,7 @@
 
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/optimize/optimize.h"
+#include "dmrg/optimize/partial_overlap.h"
 
 
 template<class Matrix, class SymmGroup, class Storage>
@@ -53,94 +54,57 @@ public:
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     { }
-    
+    // Inline function to get the site index modulo 2
     inline int to_site(const int L, const int i) const
     {
         if (i < 0) return 0;
-        /// i, or (L-1) - (i - L)
         return (i < L) ? i : 2*L - 1 - i;
     }
-    
+    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap partial_overlap ;
+    //
+    // SWEEP ROUTINE
+    // -------------
     void sweep(int sweep, OptimizeDirection d = Both)
     {
+        // Some initialization
+        partial_overlap a(mps) ;
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-
         iteration_results_.clear();
-        
         std::size_t L = mps.length();
-        
         int _site = 0, site = 0;
         if (initial_site != -1) {
             _site = initial_site;
             site = to_site(L, _site);
         }
-        
-//        if (parms["beta_mode"] && sweep == 0 && resume_at < L) {
-//            int site = (resume_at == -1) ? 0 : resume_at;
-//            mpo = zero_after(mpo_orig, site+2);
-//            mps.canonize(site);
-//            this->init_left_right(mpo, site);
-//        }
-        
         Storage::prefetch(left_[site]);
         Storage::prefetch(right_[site+1]);
-        
+        // Main loop
         for (; _site < 2*L; ++_site) {
-            
+            // lr indicates the direction of the sweep
             int lr = (_site < L) ? +1 : -1;
             site = to_site(L, _site);
-
             if (lr == -1 && site == L-1) {
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
-        
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
-            
-//            mps[site].make_left_paired();
-            
-            // MD: some changes needed to re-enable it.
-//            if (parms.["beta_mode"]) {
-//                if (sweep == 0 && lr == 1) {
-//                    mpo = zero_after(mpo_orig, 0);
-//                    if (site == 0)
-//                        this->init_left_right(mpo, 0);
-//                } else if (sweep == 0 && lr == -1 && site == L-1) {
-//                    mpo = mpo_orig;
-//                    //this->init_left_right(mpo, site);
-//                }
-//            }
-            
             Storage::fetch(left_[site]);
             Storage::fetch(right_[site+1]);
-            
             if (lr == +1 && site+2 <= L) Storage::prefetch(right_[site+2]);
             if (lr == -1 && site > 0)    Storage::prefetch(left_[site-1]);
-            
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
-            
-            
-//            maquis::cout << "My size: " << std::endl;
-//            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << std::endl;
-            
-            //SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
-            
             boost::chrono::high_resolution_clock::time_point now, then;
-
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
             SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
-            
-            /// Compute orthogonal vectors
+            // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
-                ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site], base::ortho_mps[n][site],
-                                                                    base::ortho_left_[n][site], base::ortho_right_[n][site+1]);
+                ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site],
+                                                                   base::ortho_mps[n][site],
+                                                                   base::ortho_left_[n][site],
+                                                                   base::ortho_right_[n][site+1]);
             }
-
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -169,16 +133,13 @@ public:
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
- 
                 mps[site] = res.second;
             }
-            
 #ifndef NDEBUG
             // Caution: this is an O(L) operation, so it really should be done only in debug mode
             for (int n = 0; n < base::northo; ++n)
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
-            
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
