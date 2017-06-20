@@ -36,6 +36,26 @@
 #include <iostream>
 #include <set>
 
+//
+// BOUNDARY CLASS
+// --------------
+//
+// Attributes:
+// data_ : vector of block_matrices
+//
+// Constructors:
+// Two constructors are available, one by using a second Boundary object,
+// the other one giving the size and the basis
+//
+// Methods:
+// aux_dim --> gives the auxiliary dimension of the boundary
+// resize  --> change the size of the boundary (i.e. the auxiliary dimension)
+// traces  --> compute the traces of each matrix
+//
+// Operator:
+// [i]     ---> get the i-th block_matrix of the boundary
+//
+
 template<class Matrix, class SymmGroup>
 class Boundary : public storage::disk::serializable<Boundary<Matrix, SymmGroup> >
 {
@@ -48,7 +68,9 @@ public:
     void serialize(Archive &ar, const unsigned int version){
         ar & data_;
     }
-    
+    //
+    // Constructors
+    // ------------
     Boundary(Index<SymmGroup> const & ud = Index<SymmGroup>(),
              Index<SymmGroup> const & ld = Index<SymmGroup>(),
              std::size_t ad = 1)
@@ -62,7 +84,9 @@ public:
         for (std::size_t n=0; n<rhs.aux_dim(); ++n)
             data_.push_back(rhs[n]);
     }
-
+    //
+    // Methods
+    // -------
     std::size_t aux_dim() const { 
         return data_.size(); 
     }
@@ -111,26 +135,27 @@ private:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 };
 
+//
+// ADDITIONAL FUNCTIONS
+// --------------------
+//
+// Simplify: performs an SVD of each block_matrix of the boundary and returns the
+//           a "smaller" block_matrix
 
 template<class Matrix, class SymmGroup>
 Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
 {
     typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
-    
     for (std::size_t k = 0; k < b.aux_dim(); ++k)
     {
         block_matrix<Matrix, SymmGroup> U, V, t;
         block_matrix<dmt, SymmGroup> S;
-        
         if (b[k].basis().sum_of_left_sizes() == 0)
             continue;
-        
         svd_truncate(b[k], U, V, S, 1e-4, 1, false);
-        
         gemm(U, S, t);
         gemm(t, V, b[k]);
     }
-    
     return b;
 }
 

@@ -92,24 +92,24 @@ inline double log_interpolate(double y0, double y1, int N, int i)
 enum OptimizeDirection { Both, LeftOnly, RightOnly };
 
 //
-// Optimizer_base class
+// OPTIMIZER_BASE CLASS
 // --------------------
 //
-// Class for a general optimization process
+// Virtual class to be used to inherit classess whose scope is optimizing an MPS.
 //
+
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
     typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
 public:
-    // Construcor
-    // 1)
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
+    , mps2follow(parms_["follow_basis_state"].as< std::vector<int> >())
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
@@ -138,9 +138,7 @@ public:
     }
     
     virtual ~optimizer_base() {}
-    
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
-    
     results_collector const& iteration_results() const { return iteration_results_; }
 
 protected:
@@ -149,7 +147,6 @@ protected:
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
         Storage::pin(left_[site+1]);
-        
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
@@ -158,7 +155,6 @@ protected:
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
         Storage::pin(right_[site]);
-        
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
@@ -167,10 +163,9 @@ protected:
     {
         parallel::construct_placements(mpo);
         std::size_t L = mps.length();
-        
+        //
         left_.resize(mpo.length()+1);
         right_.resize(mpo.length()+1);
-        
         ortho_left_.resize(northo);
         ortho_right_.resize(northo);
         for (int n = 0; n < northo; ++n) {
@@ -180,7 +175,6 @@ protected:
             ortho_left_[n][0] = mps.left_boundary()[0];
             ortho_right_[n][L] = mps.right_boundary()[0];
         }
-        
         //Timer tlb("Init left boundaries"); tlb.begin();
         Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
@@ -237,18 +231,14 @@ protected:
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
         return Mmax;
     }
-    
-    
+    // Protected attributes
     results_collector iteration_results_;
-    
     MPS<Matrix, SymmGroup> & mps;
+    std::vector<int> const mps2follow ;
     MPO<Matrix, SymmGroup> const& mpo;
-    
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
-
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
-    
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;

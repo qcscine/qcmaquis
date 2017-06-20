@@ -75,13 +75,8 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         maquis::cout << "phys["<<type <<"]: " << site_bases[type] << std::endl;
 #endif
     }
-    
     if (parms["init_state"] == "default")
         return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    
-//    else if (params["init_state"] == "linear")
-//        return detail::call_linear_init<Matrix, SymmGroup>::call();
-    
     else if (parms["init_state"] == "const")
         return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     
@@ -105,11 +100,9 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     
     else if (parms["init_state"] == "coherent_dm")
         return initializer_ptr(new coherent_dm_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
-    
-    else {
+    else
         throw std::runtime_error("Don't know this initial state.");
-        return initializer_ptr();
-    }
+
 }
 
 #endif

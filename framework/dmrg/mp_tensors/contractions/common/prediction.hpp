@@ -46,18 +46,18 @@ namespace contraction {
         {
             mps.make_left_paired();
             block_matrix<Matrix, SymmGroup> dm;
+            // Here contracts also over the physical index, since it's left-paired
             typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
-            
+            // Builds the T matrix (see JCP 2016 S.Keller).
+            // NOTE: not used to evaluate expectation values, but only to add
+            //       the noise term
             Boundary<Matrix, SymmGroup> half_dm
                 = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, left, mpo);
-            
             mps.make_left_paired();
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
             {
                 block_matrix<Matrix, SymmGroup> tdm;
                 typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
-                
-                
                 tdm *= alpha;
                 for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
                     if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
@@ -66,10 +66,9 @@ namespace contraction {
                                                tdm.basis().right_charge(k));
                 }
             }
-
             mps.make_left_paired();
             assert( weak_equal(dm.left_basis(), mps.data().left_basis()) );
-            
+            // Actual diagonalization of the reduced density matrix
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
@@ -106,7 +105,7 @@ namespace contraction {
             mps.make_right_paired();
             block_matrix<Matrix, SymmGroup> dm;
             typename Gemm::gemm()(transpose(conjugate(mps.data())), mps.data(), dm);
-                
+
             Boundary<Matrix, SymmGroup> half_dm
                 = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, right, mpo);
             

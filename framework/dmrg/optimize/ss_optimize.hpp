@@ -31,21 +31,23 @@
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/optimize/partial_overlap.h"
 
+#include "dmrg/utils/DmrgParameters.h"
 
 template<class Matrix, class SymmGroup, class Storage>
 class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
-
+    // Inherits several data from the "mother" class
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
-    using base::mpo;
-    using base::mps;
-    using base::left_;
-    using base::right_;
-    using base::parms;
-    using base::iteration_results_;
-    using base::stop_callback;
-
+    using base::mpo ;
+    using base::mps ;
+    using base::left_ ;
+    using base::right_ ;
+    using base::parms ;
+    using base::iteration_results_ ;
+    using base::stop_callback ;
+    using base::mps2follow ;
+    // Constructor declaration
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
@@ -53,7 +55,7 @@ public:
                 int initial_site_ = 0)
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
-    { }
+    { };
     // Inline function to get the site index modulo 2
     inline int to_site(const int L, const int i) const
     {
@@ -67,7 +69,6 @@ public:
     void sweep(int sweep, OptimizeDirection d = Both)
     {
         // Some initialization
-        partial_overlap a(mps) ;
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
         iteration_results_.clear();
         std::size_t L = mps.length();
@@ -76,8 +77,10 @@ public:
             _site = initial_site;
             site = to_site(L, _site);
         }
-        Storage::prefetch(left_[site]);
-        Storage::prefetch(right_[site+1]);
+        // Initialization of the overlap object
+        partial_overlap poverlap(mps,mps2follow) ;
+        Storage::prefetch(left_[site]) ;
+        Storage::prefetch(right_[site+1]) ;
         // Main loop
         for (; _site < 2*L; ++_site) {
             // lr indicates the direction of the sweep
@@ -105,6 +108,9 @@ public:
                                                                    base::ortho_left_[n][site],
                                                                    base::ortho_right_[n][site+1]);
             }
+            //
+            // MAIN PART: performs the sweep
+            // -----------------------------
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -119,7 +125,6 @@ public:
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    // solve_ietl_davidson sta dentro ietd_davidson
                     res = solve_ietl_davidson(sp, mps[site], parms, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
@@ -135,20 +140,15 @@ public:
                 }
                 mps[site] = res.second;
             }
-#ifndef NDEBUG
-            // Caution: this is an O(L) operation, so it really should be done only in debug mode
-            for (int n = 0; n < base::northo; ++n)
-                maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
-#endif
-            {
-                int prec = maquis::cout.precision();
-                maquis::cout.precision(15);
-                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy()<< std::endl;
-                maquis::cout.precision(prec);
-            }
-            
+            //
+            // Collection of results
+            // ---------------------
+            int prec = maquis::cout.precision();
+            maquis::cout.precision(15);
+            maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy()<< std::endl;
+            maquis::cout.precision(prec);
             iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
-            
+            // Loads the alpha parameter
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
             if (sweep < ngs)
@@ -157,16 +157,15 @@ public:
                 alpha = parms.template get<double>("alpha_main");
             else
                 alpha = parms.template get<double>("alpha_final");
-            
+            // Update of the MPS
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
             truncation_results trunc;
-            
+            //
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
-                                               site, alpha, cutoff, Mmax);
+                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
                     if (site < L-1)
@@ -182,29 +181,25 @@ public:
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
-                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
-                                               site, alpha, cutoff, Mmax);
+                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)
                         mps[site-1].multiply_from_right(t);
                 }
-                
                 this->boundary_right_step(mpo, site); // creating right_[site]
                 if (site > 0) {
                     Storage::drop(left_[site]);
                     Storage::evict(right_[site+1]);
                 }
             }
-
+            poverlap.update(mps, site, lr);
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;
-            
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
-            
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);
         }

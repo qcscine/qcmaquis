@@ -456,11 +456,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  bool verbose = true)
 {
     assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef USE_AMBIENT
-    heev_merged(M, evecs, evals);
-    #else
     heev(M, evecs, evals);
-    #endif
     Index<SymmGroup> old_basis = evals.left_basis();
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
@@ -479,10 +475,6 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 //            --k; // everything gets shifted, to we have to look into the same k again
 // C - Tim : I reversed the loop because the new version was incompatible with the keeps array, and created a bug when keeps[k]=0.
         } else {
-            #ifdef USE_AMBIENT
-            ambient::numeric::split(evals(evals.basis().left_charge(k), evals.basis().right_charge(k)));
-            ambient::numeric::split(evecs(evecs.basis().left_charge(k), evecs.basis().right_charge(k)));
-            #endif
 
             if(keep >= num_rows(evals[k])) continue;
 

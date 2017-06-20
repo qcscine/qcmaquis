@@ -73,6 +73,7 @@ private:
         add_option("ietl_davidson_maxiter", "", value(20));
         add_option("ietl_moddav_omega", "parameter omega for the modified Davidson algorithm (to compute interior eigenvalues", value(0.));
         add_option("ietl_modjcd_omega", "parameter omega for the modified Jacobi-Davidson algorithm (to compute interior eigenvalues", value(0.));
+        add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

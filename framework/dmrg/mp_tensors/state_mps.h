@@ -31,17 +31,31 @@
 
 #include <boost/tuple/tuple.hpp>
 
+//
+// STATE_MPS FUNCTION
+// ------------------
+//
+// Function that takes in input:
+// 1) a vector of tuples (Charge,Dimension), giving the state
+// 2) a vector of indexes, giving the physical dimensions
+// 3) a vector of integers, giving the site_type
+// and returns in output the corresponding MPS
+//
+
 template <class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::charge, size_t> > const & state,
-                                 std::vector<Index<SymmGroup> > const& phys_dims, std::vector<int> const& site_type)
+                                 std::vector<Index<SymmGroup> > const& phys_dims,
+                                 std::vector<int> const& site_type,
+                                 int const& mdim = 1)
 {
+    // Types definition
     typedef typename SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t> local_state;
-    
     MPS<Matrix, SymmGroup> mps(state.size());
-    
     Index<SymmGroup> curr_i;
-    curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+    // Generate the index (IdentityCharge,mdim), where mdim is the number of renormalized
+    // block states (1 in the default case)
+    curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, mdim));
     size_t curr_b = 0;
     for (int i=0; i<state.size(); ++i)
     {

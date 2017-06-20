@@ -274,12 +274,9 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    
     boost::tie(new_mps, trunc) =
     contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
-    
-    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
-                                                    (*this)[l], new_mps);
+    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
