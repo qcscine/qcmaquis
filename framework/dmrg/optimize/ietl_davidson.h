@@ -31,6 +31,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 #include "ietl_lanczos_solver.h"
+#include "dmrg/optimize/partial_overlap.h"
 
 #include "davidson.h"
 
@@ -140,10 +141,12 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
 template<class Matrix, class SymmGroup>
 std::pair< double , class MPSTensor<Matrix,SymmGroup> >
 solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
-        MPSTensor<Matrix, SymmGroup> const & initial,
-        BaseParameters & params,
-        double omega,
-        std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
+                             MPSTensor<Matrix, SymmGroup> const & initial,
+                             BaseParameters & params,
+                             int site,
+                             partial_overlap<Matrix, SymmGroup> poverlap,
+                             double omega,
+                             std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
     if (initial.num_elements() <= ortho_vecs.size())
@@ -166,7 +169,7 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
     }
     // Compute eigenvalue
-    std::pair<double, Vector> r0 = davidson_modified.calculate_eigenvalue(initial, mdiag, iter);
+    std::pair<double, Vector> r0 = davidson_modified.calculate_eigenvalue(initial, mdiag, iter, site);
     // Check again orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;

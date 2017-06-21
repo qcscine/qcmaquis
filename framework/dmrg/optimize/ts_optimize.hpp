@@ -29,10 +29,9 @@
 #define TS_OPTIMIZE_H
 
 #include "dmrg/optimize/optimize.h"
-
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
-
+#include "dmrg/optimize/partial_overlap.h"
 #include <boost/tuple/tuple.hpp>
 
 //
@@ -43,8 +42,8 @@ template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
-
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+    typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -52,6 +51,7 @@ public:
     using base::parms;
     using base::iteration_results_;
     using base::stop_callback;
+    using base::mps2follow ;
     // Constructor
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -85,7 +85,7 @@ public:
             _site = initial_site;
             site = to_site(L, _site);
         }
-        
+        partial_overlap poverlap(mps, mps2follow) ;
         if (_site < L-1) {
             Storage::prefetch(left_[site]);
             Storage::prefetch(right_[site+2]);
@@ -139,8 +139,7 @@ public:
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
-            
-            /// Compute orthogonal vectors
+            // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 TwoSiteTensor<Matrix, SymmGroup> ts_ortho(base::ortho_mps[n][site1], base::ortho_mps[n][site2]);
@@ -149,8 +148,6 @@ public:
             }
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-
-
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -166,12 +163,11 @@ public:
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
             	    BEGIN_TIMING("DAVIDSON")
-                    // solve_ietl_davidson sta dentro ietd_davidson
                     res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
                     BEGIN_TIMING("MODIFIED_DAVIDSON")
-                    res = solve_ietl_davidson_modified(sp, twin_mps, parms, parms["ietl_moddav_omega"], ortho_vecs);
+                    res = solve_ietl_davidson_modified(sp, twin_mps, parms, site, poverlap, parms["ietl_moddav_omega"], ortho_vecs);
                     END_TIMING("MODIFIED_DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_JCD")) {
                     BEGIN_TIMING("MODIFIED_JCD")

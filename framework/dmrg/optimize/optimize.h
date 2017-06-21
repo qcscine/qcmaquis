@@ -113,7 +113,10 @@ public:
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
+    , follow_root_(false)
     {
+        if (mps2follow.size() != 0)
+            follow_root_ = true ;
         std::size_t L = mps.length();
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
@@ -234,7 +237,8 @@ protected:
     // Protected attributes
     results_collector iteration_results_;
     MPS<Matrix, SymmGroup> & mps;
-    std::vector<int> const mps2follow ;
+    std::vector<int> const mps2follow;
+    bool follow_root_ ;
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;

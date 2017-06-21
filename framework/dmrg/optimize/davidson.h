@@ -218,7 +218,8 @@ namespace ietl
         template <class GEN, class PRECOND, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
                                                                     PRECOND& mdiag,
-                                                                    ITER& iter);
+                                                                    ITER& iter,
+                                                                    const int& site);
     private:
         MATRIX const & matrix_;
         VS vecspace_;
@@ -265,10 +266,12 @@ namespace ietl
     // Method to actually diagonalize the matrix
     template <class MATRIX, class VS>
     template <class GEN, class PRECOND, class ITER>
-    std::pair<typename davidson_modified<MATRIX,VS>::magnitude_type, typename davidson_modified<MATRIX, VS>::vector_type>
+    std::pair<typename davidson_modified<MATRIX, VS>::magnitude_type,
+              typename davidson_modified<MATRIX, VS>::vector_type>
     davidson_modified<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
                                                         PRECOND& mdiag,
-                                                        ITER& iter)
+                                                        ITER& iter,
+                                                        const int& site)
     {
         // Type definition
         typedef alps::numeric::matrix<scalar_type> matrix_t;

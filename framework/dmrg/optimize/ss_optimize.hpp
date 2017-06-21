@@ -30,9 +30,12 @@
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/optimize/partial_overlap.h"
-
 #include "dmrg/utils/DmrgParameters.h"
 
+//
+// SS_OPTIMIZE CLASS
+// -----------------
+// Inherited from the virtual optimizer_base class
 template<class Matrix, class SymmGroup, class Storage>
 class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
@@ -129,7 +132,7 @@ public:
                     END_TIMING("DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
                     BEGIN_TIMING("MODIFIED_DAVIDSON")
-                    res = solve_ietl_davidson_modified(sp, mps[site], parms, parms["ietl_moddav_omega"], ortho_vecs);
+                    res = solve_ietl_davidson_modified(sp, mps[site], parms, site, poverlap, parms["ietl_moddav_omega"], ortho_vecs);
                     END_TIMING("MODIFIED_DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_JCD")) {
                     BEGIN_TIMING("MODIFIED_JCD")
@@ -194,6 +197,12 @@ public:
                 }
             }
             poverlap.update(mps, site, lr);
+            if (sweep != 0) {
+                double i = poverlap.overlap(site);
+                std::cout << "Overlap" << std::endl;
+                std::cout << i << std::endl;
+                std::cout << poverlap.get_basis(1) << std::endl ;
+            }
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;
