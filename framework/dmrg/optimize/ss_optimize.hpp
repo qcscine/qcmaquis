@@ -82,6 +82,7 @@ public:
         }
         // Initialization of the overlap object
         partial_overlap poverlap(mps,mps2follow) ;
+        poverlap.print() ;
         Storage::prefetch(left_[site]) ;
         Storage::prefetch(right_[site+1]) ;
         // Main loop
@@ -197,6 +198,7 @@ public:
                 }
             }
             poverlap.update(mps, site, lr);
+            poverlap.print() ;
             if (sweep != 0) {
                 double i = poverlap.overlap(site);
                 std::cout << "Overlap" << std::endl;

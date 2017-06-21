@@ -67,7 +67,7 @@ public:
     void print(void) ;
     void update(const MPSWave& MPS, const dim_type& l, const int& direction) ;
     value_type overlap(const dim_type& i);
-    value_type overlap(const MPSTensor& MPSTns , const dim_type& i) ;
+    //value_type overlap(const MPSTensor& MPSTns , const dim_type& i) ;
 private:
     // Private attributes
     vector_overlap data_left_ , data_right_ ;
@@ -78,7 +78,7 @@ private:
     static const charge identity = SymmGroup::IdentityCharge ;
     // Private function
     void multiply (const MPSWave& MPS, const basis_type& sigma, const dim_type& l,
-                   const Modality& mod, vector_overlap& lst) ;
+                   const Modality& mod, vector_overlap& lst, bool modality) ;
     void multiply_first (const MPSWave& MPS, const basis_type& sigma, const Modality& mod, vector_overlap& lst, bool modality) ;
     void extract(const bmatrix& bm, const basis_type& sigma, const std::size_t m1, const std::size_t m2, Matrix& output) ;
 };
@@ -106,8 +106,8 @@ partial_overlap<Matrix,SymmGroup>::partial_overlap(const partial_overlap<Matrix,
             multiply_first(MPS, basis_[0],   Left,  data_left_, true);
             multiply_first(MPS, basis_[L-1], Right, data_right_, true);
         } else {
-            multiply(MPS, basis_[i], i, Left, data_left_) ;
-            multiply(MPS, basis_[L-1-i], L-1-i, Right, data_right_) ;
+            multiply(MPS, basis_[i], i, Left, data_left_, true) ;
+            multiply(MPS, basis_[L-1-i], i, Right, data_right_, true) ;
         }
     }
 };
@@ -128,7 +128,7 @@ void partial_overlap<Matrix, SymmGroup>::update(const partial_overlap<Matrix, Sy
                                                 const int& direction)
 {
     // Get the index to update in the left and right overlaps
-    dim_type i1l, i2l ;
+    dim_type i1l, i2l;
     dim_type i1r, i2r;
     Modality mod ;
     if (direction == 1)
@@ -139,35 +139,37 @@ void partial_overlap<Matrix, SymmGroup>::update(const partial_overlap<Matrix, Sy
     if (mod == Left) {
         i1l = l;
         i2l = l + 1;
-        i1r = lattice_L_ - 1 - i2l - 1;
+        i1r = lattice_L_ - 1 - i2l ;
         i2r = lattice_L_ - 1 - i1l ;
     } else {
         i1l = l - 1 ;
         i2l = l ;
-        i1r = lattice_L_ - 1 - i2l - 1;
+        i1r = lattice_L_ - 1 - i2l ;
         i2r = lattice_L_ - 1 - i1l ;
     }
-    if (i1l == 0) {
-        multiply_first(MPS, basis_[i1l], Left, data_left_, false);
-    } else if (i1l > 0 && i1l < lattice_L_) {
-        multiply(MPS, basis_[i1l], i1l, Left, data_left_);
-    }
-    if (i2l == 0) {
+    if (i1l == 0)
+        multiply_first(MPS, basis_[0], Left, data_left_, false);
+    else if (i1l > 0 && i1l < lattice_L_)
+        multiply(MPS, basis_[i1l], i1l, Left, data_left_, false);
+    //
+    if (i2l == 0)
         multiply_first(MPS, basis_[i2l], Left, data_left_, false);
-    } else if (i2l > 0 && i2l < lattice_L_) {
-        multiply(MPS, basis_[i2l], i2l, Left, data_left_);
-    }
+    else if (i2l > 0 && i2l < lattice_L_)
+        multiply(MPS, basis_[i2l], i2l, Left, data_left_, false);
+    //
     if (i1r == 0) {
         multiply_first(MPS, basis_[i1r], Right, data_right_, false);
     } else if (i1r > 0 && i1r < lattice_L_) {
-        multiply(MPS, basis_[i1r], i1r, Right, data_right_);
+        multiply(MPS, basis_[i1r], i1r, Right, data_right_, false);
     }
+    //
     if (i2r == 0) {
         multiply_first(MPS, basis_[i2r], Right, data_right_, false);
     } else if (i2r > 0 && i2r < lattice_L_) {
-        multiply(MPS, basis_[i2r], i2r, Right, data_right_);
+        multiply(MPS, basis_[i2r], i2r, Right, data_right_, false);
     }
-
+    std::cout << "Finalized"  << std::endl ;
+    //
 };
 
 template<class Matrix, class SymmGroup>
@@ -196,43 +198,45 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
     return result ;
 };
 
-template<class Matrix, class SymmGroup>
-typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const partial_overlap<Matrix, SymmGroup>::MPSTensor& MPSTns,
-                                                                                                    const dim_type &i)
-{
-    // Check data consistency
-    assert (i < lattice_L_) ;
-    value_type result = 0 ;
-    // Extract the block of the TrivialGroup symmetry from the block matrix associated to the
-    // MPS tensor
-    MPSTns.make_left_paired() ;
-    block_matrix<Matrix, SymmGroup> bm = MPSTns.data() ;
-    Matrix *tmp ;
-    tmp = new Matrix(m1, m2) ;
-    extract(bm, sigma, m1, m2, *tmp) ;
-    // Starting site of the
-    if (i == 0) {
-        Matrix a = data_right_[lattice_L_-1] ;
-        assert (tmp.num_rows() == a.num_rows() && tmp.num_cols() == a.num_cols() ) ;
-        for (int k1 = 0; k1 < a.num_rows(); ++k1)
-            for (int k2 = 0; k2 < a.num_cols(); ++k2)
-                result += a(k1, k2)*tmp(k1, k2);
-    } else if (i == lattice_L_-1 ) {
-        Matrix a = data_left_[lattice_L_-2] ;
-        assert (m1 == a.num_cols() && m2 = 1) ;
-        for (int k1 = 0; k1 < a.num_cols() ; ++k1)
-            result += a(1,k1)*tmp(k1,1) ;
-    } else {
-        Matrix a = data_left_[i-1] ;
-        Matrix b = data_right_[lattice_L_-1-i] ;
-        tmp2 = new Matrix(a.num_rows(),m2) ;
-        gemm(transpose(*tmp), a, *tmp2) ;
-        for (int k1 = 0; k1 < (*tmp2).num_rows() ; ++k1)
-            for (int k2 = 0; k2 < (*tmp2).num_cols() ; ++k2)
-                result += (*tmp2)(k1,k2)*b(k1,k2) ;
-    }
-    return result ;
-};
+//template<class Matrix, class SymmGroup>
+//typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const partial_overlap<Matrix, SymmGroup>::MPSTensor& MPSTns,
+//                                                                                                    const dim_type &i)
+//{
+//    // Check data consistency
+//    assert (i < lattice_L_) ;
+//    value_type result = 0 ;
+//    // Extract the block of the TrivialGroup symmetry from the block matrix associated to the
+//    // MPS tensor
+//    MPSTns.make_left_paired() ;
+//    block_matrix<Matrix, SymmGroup> bm = MPSTns.data() ;
+//    std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
+//    std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
+//    Matrix *tmp ;
+//    tmp = new Matrix(m1, m2) ;
+//    extract(bm, sigma, m1, m2, *tmp) ;
+//    // Starting site of the
+//    if (i == 0) {
+//        Matrix a = data_right_[lattice_L_-1] ;
+//        assert (tmp.num_rows() == a.num_rows() && tmp.num_cols() == a.num_cols() ) ;
+//        for (int k1 = 0; k1 < a.num_rows(); ++k1)
+//            for (int k2 = 0; k2 < a.num_cols(); ++k2)
+//                result += a(k1, k2)*tmp(k1, k2);
+//    } else if (i == lattice_L_-1 ) {
+//        Matrix a = data_left_[lattice_L_-2] ;
+//        assert (m1 == a.num_cols() && m2 = 1) ;
+//        for (int k1 = 0; k1 < a.num_cols() ; ++k1)
+//            result += a(1,k1)*tmp(k1,1) ;
+//    } else {
+//        Matrix a = data_left_[i-1] ;
+//        Matrix b = data_right_[lattice_L_-1-i] ;
+//        tmp2 = new Matrix(a.num_rows(),m2) ;
+//        gemm(transpose(*tmp), a, *tmp2) ;
+//        for (int k1 = 0; k1 < (*tmp2).num_rows() ; ++k1)
+//            for (int k2 = 0; k2 < (*tmp2).num_cols() ; ++k2)
+//                result += (*tmp2)(k1,k2)*b(k1,k2) ;
+//    }
+//    return result ;
+//};
 
 // +---------------+
 //  PRIVATE METHODS
@@ -250,10 +254,13 @@ void partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matrix,S
                                                   const basis_type& sigma,
                                                   const dim_type& l ,
                                                   const partial_overlap<Matrix, SymmGroup>::Modality& mod,
-                                                  vector_overlap& lst_)
+                                                  vector_overlap& lst_,
+                                                  bool modality)
 {
     // Initialization
     MPSTensor MPSTns ;
+    Matrix *tmp , *result ;
+    // If we are in the right modality, takes the MPS site starting from the end
     if (mod == Left)
         MPSTns = MPS[l] ;
     else
@@ -262,14 +269,24 @@ void partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matrix,S
     block_matrix<Matrix, SymmGroup> bm = MPSTns.data() ;
     std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
     std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
-    Matrix *tmp , *result ;
+    std::size_t m1in = lst_[l-1].num_rows();
+    std::size_t m2in = lst_[l-1].num_cols();
+    std::cout << m1 << m2 << m1in << m2in << std::endl ;
     tmp = new Matrix(m1, m2) ;
     extract(bm, sigma, m1, m2, *tmp) ;
-    if (mod == Left)
-        gemm(transpose(lst_[l-1]), *tmp, *result);
+    if (mod == Left) {
+        result = new Matrix(m2, m2in);
+        gemm(transpose(*tmp), lst_[l-1], *result);
+    }  else {
+        result = new Matrix(m1in, m1);
+        gemm(lst_[l-1], transpose(*tmp), *result);
+    }
+    // Finalization
+    std::cout << "Finalize" << std::endl ;
+    if (modality)
+        lst_.push_back(result);
     else
-        gemm(*tmp, transpose(lst_[l-1]), *result);
-    lst_[l] = *result ;
+        lst_[l] = *result ;
 }
 
 template<class Matrix, class SymmGroup>
@@ -277,7 +294,7 @@ void partial_overlap<Matrix, SymmGroup>::multiply_first(const partial_overlap<Ma
                                                         const basis_type& sigma,
                                                         const partial_overlap<Matrix, SymmGroup>::Modality& mod,
                                                         vector_overlap& lst_,
-                                                        bool modality = false)
+                                                        bool modality)
 {
     MPSTensor MPSTns ;
     if (mod == Left)
@@ -305,9 +322,9 @@ void partial_overlap<Matrix, SymmGroup>::multiply_first(const partial_overlap<Ma
             (*output)(i,i) = (*tmp)(i,0) ;
     }
     if (modality)
-        lst_.push_back(tmp);
+        lst_.push_back(output);
     else
-        lst_[0] = *tmp ;
+        lst_[0] = *output ;
     return ;
 }
 
@@ -336,7 +353,11 @@ void partial_overlap<Matrix, SymmGroup>::print(void)
         m1 = data_left_[i] ;
         j  = m1.num_rows() ;
         k  = m1.num_cols() ;
-        std::cout << "Block number - " << i << " is " << j << "x" << k << std::endl ;
+        std::cout << " Block number left - " << i << " is " << j << "x" << k << std::endl ;
+        m1 = data_left_[lattice_L_-1-i] ;
+        j  = m1.num_rows() ;
+        k  = m1.num_cols() ;
+        std::cout << " Block number right - " << i << " is " << j << "x" << k << std::endl ;
     }
     std::cout << " ------------------------------------ " << std::endl ;
 };
