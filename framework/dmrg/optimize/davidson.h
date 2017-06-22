@@ -212,9 +212,11 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         typedef typename std::vector<vector_type> vector_set ;
+        typedef typename partial_overlap<OtherMatrix, SymmGroup>::partial_overlap partial_overlap ;
         davidson_modified(const MATRIX& matrix,
                           const VS& vec,
-                          const double omega);
+                          const double omega,
+                          const partial_overlap& poverlap);
         template <class GEN, class PRECOND, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
                                                                     PRECOND& mdiag,
@@ -227,13 +229,18 @@ namespace ietl
         double omega_ ;
         void update_vspace(vector_set& V,  vector_set& VA, vector_set& V2, vector_type& t , std::size_t dim);
         vector_type apply_operator(const vector_type& x);
+        partial_overlap poverlap_ ;
     };
     // Constructor
     template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
-    davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::davidson_modified(const MATRIX& matrix, const VS& vec, const double omega) :
+    davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::davidson_modified(const MATRIX& matrix,
+                                                                             const VS& vec,
+                                                                             const double omega,
+                                                                             const partial_overlap& poverlap) :
             vecspace_(vec),
             matrix_(matrix),
-            omega_(omega)
+            omega_(omega),
+            poverlap_(poverlap)
     { }
     template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
     typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::apply_operator(const davidson_modified::vector_type& x)
@@ -306,6 +313,7 @@ namespace ietl
             block_matrix<OtherMatrix, SymmGroup> bm = t.data() ;
             std::size_t m1 = t.row_dim().size_of_block(identity) ;
             std::size_t m2 = t.col_dim().size_of_block(identity) ;
+            std::cout << "Trial " << poverlap_.get_basis(0) << std::endl ;
             // TODO ALB END DEBUG
             update_vspace(V, VA, V2, t, iter_dim);
             iter_dim = V2.size();

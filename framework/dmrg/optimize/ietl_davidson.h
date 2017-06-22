@@ -158,7 +158,7 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     // Create the Davidson object
-    ietl::davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , SymmGroup , Matrix > davidson_modified(sp, vs, omega);
+    ietl::davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , SymmGroup , Matrix > davidson_modified(sp, vs, omega, poverlap);
     davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial, omega);
     // Sets the iterator object
     double tol = params["ietl_jcd_tol"];
