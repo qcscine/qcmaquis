@@ -204,7 +204,7 @@ namespace ietl
     //  Modified Davidson problem
     // +-------------------------+
     // Class declaration
-    template <class MATRIX, class VS>
+    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
     class davidson_modified
     {
     public:
@@ -229,14 +229,14 @@ namespace ietl
         vector_type apply_operator(const vector_type& x);
     };
     // Constructor
-    template <class MATRIX, class VS>
-    davidson_modified<MATRIX, VS>::davidson_modified(const MATRIX& matrix, const VS& vec, const double omega) :
+    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
+    davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::davidson_modified(const MATRIX& matrix, const VS& vec, const double omega) :
             vecspace_(vec),
             matrix_(matrix),
             omega_(omega)
     { }
-    template <class MATRIX, class VS>
-    typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX, VS>::apply_operator(const davidson_modified::vector_type& x)
+    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
+    typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::apply_operator(const davidson_modified::vector_type& x)
     {
         vector_type tmp ;
         ietl::mult(matrix_, x, tmp);
@@ -244,10 +244,10 @@ namespace ietl
         tmp += omega_*x ;
         return tmp ;
     };
-    template <class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::update_vspace(davidson_modified::vector_set& V,  davidson_modified::vector_set& VA,
-                                                      davidson_modified::vector_set& V2, davidson_modified::vector_type& t ,
-                                                      std::size_t dim)
+    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
+    void davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::update_vspace(davidson_modified::vector_set& V,  davidson_modified::vector_set& VA,
+                                                                              davidson_modified::vector_set& V2, davidson_modified::vector_type& t ,
+                                                                              std::size_t dim)
     {
         magnitude_type tau = ietl::two_norm(t);
         vector_type tA ;
@@ -264,16 +264,17 @@ namespace ietl
         VA.push_back(tA/ietl::two_norm(tA));
     }
     // Method to actually diagonalize the matrix
-    template <class MATRIX, class VS>
+    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
     template <class GEN, class PRECOND, class ITER>
-    std::pair<typename davidson_modified<MATRIX, VS>::magnitude_type,
-              typename davidson_modified<MATRIX, VS>::vector_type>
-    davidson_modified<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
-                                                        PRECOND& mdiag,
-                                                        ITER& iter,
-                                                        const int& site)
+    std::pair<typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::magnitude_type,
+              typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type>
+    davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::calculate_eigenvalue(const GEN& gen,
+                                                                   PRECOND& mdiag,
+                                                                   ITER& iter,
+                                                                   const int& site)
     {
         // Type definition
+
         typedef alps::numeric::matrix<scalar_type> matrix_t;
         vector_type t  = new_vector(vecspace_);
         vector_type tA = new_vector(vecspace_);
@@ -299,8 +300,16 @@ namespace ietl
         magnitude_type shift = omega_ ;
         // Start iteration
         do {
+            // TODO ALB START DEBUG
+            typedef typename SymmGroup::charge charge ;
+            charge identity = SymmGroup::IdentityCharge ;
+            block_matrix<OtherMatrix, SymmGroup> bm = t.data() ;
+            std::size_t m1 = t.row_dim().size_of_block(identity) ;
+            std::size_t m2 = t.col_dim().size_of_block(identity) ;
+            // TODO ALB END DEBUG
             update_vspace(V, VA, V2, t, iter_dim);
             iter_dim = V2.size();
+
             matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (i = 0; i < iter_dim; ++i)

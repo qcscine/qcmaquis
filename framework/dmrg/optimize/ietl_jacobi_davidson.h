@@ -32,18 +32,20 @@
 
 #include "ietl/jacobi.h"
 #include "ietl/jd.h"
+#include "dmrg/optimize/partial_overlap.h"
 
 //
 // Modified Jacobi-Davidson diagonalization
 // ----------------------------------------
 
 template<class Matrix, class SymmGroup>
-std::pair<double, MPSTensor<Matrix, SymmGroup> >
+std::pair<double, MPSTensor< Matrix, SymmGroup> >
 solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
                         MPSTensor<Matrix, SymmGroup> const & initial ,
                         BaseParameters & params ,
+                        partial_overlap<Matrix, SymmGroup> poverlap,
                         double omega ,
-                        std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >())
+                        std::vector< MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< MPSTensor<Matrix, SymmGroup> >())
 {
     // Standard initialization (as in the Davidson case)
     if (initial.num_elements() <= ortho_vecs.size())
@@ -78,11 +80,11 @@ solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
 // ----------------------------------------
 
 template<class Matrix, class SymmGroup>
-std::pair<double, MPSTensor<Matrix, SymmGroup> >
+std::pair<double, class MPSTensor<Matrix, SymmGroup> >
 solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                MPSTensor<Matrix, SymmGroup> const & initial,
                BaseParameters & params,
-               std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >())
+               std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >())
 {
     // Standard initialization (as in the Davidson case)
     if (initial.num_elements() <= ortho_vecs.size())
