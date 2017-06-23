@@ -215,13 +215,13 @@ namespace ietl
         typedef typename partial_overlap<OtherMatrix, SymmGroup>::partial_overlap partial_overlap ;
         davidson_modified(const MATRIX& matrix,
                           const VS& vec,
-                          const double omega,
-                          const partial_overlap& poverlap);
+                          const double& omega,
+                          const partial_overlap& poverlap,
+                          const int& site);
         template <class GEN, class PRECOND, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
                                                                     PRECOND& mdiag,
-                                                                    ITER& iter,
-                                                                    const int& site);
+                                                                    ITER& iter);
     private:
         MATRIX const & matrix_;
         VS vecspace_;
@@ -230,17 +230,20 @@ namespace ietl
         void update_vspace(vector_set& V,  vector_set& VA, vector_set& V2, vector_type& t , std::size_t dim);
         vector_type apply_operator(const vector_type& x);
         partial_overlap poverlap_ ;
+        int site_ ;
     };
     // Constructor
     template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
     davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::davidson_modified(const MATRIX& matrix,
                                                                              const VS& vec,
-                                                                             const double omega,
-                                                                             const partial_overlap& poverlap) :
+                                                                             const double& omega,
+                                                                             const partial_overlap& poverlap,
+                                                                             const int& site) :
             vecspace_(vec),
             matrix_(matrix),
             omega_(omega),
-            poverlap_(poverlap)
+            poverlap_(poverlap),
+            site_(site)
     { }
     template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
     typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::apply_operator(const davidson_modified::vector_type& x)
@@ -277,8 +280,7 @@ namespace ietl
               typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type>
     davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::calculate_eigenvalue(const GEN& gen,
                                                                    PRECOND& mdiag,
-                                                                   ITER& iter,
-                                                                   const int& site)
+                                                                   ITER& iter)
     {
         // Type definition
 
@@ -309,15 +311,14 @@ namespace ietl
         do {
             // TODO ALB START DEBUG
             typedef typename SymmGroup::charge charge ;
+            double scr ;
             charge identity = SymmGroup::IdentityCharge ;
             block_matrix<OtherMatrix, SymmGroup> bm = t.data() ;
             std::size_t m1 = t.row_dim().size_of_block(identity) ;
             std::size_t m2 = t.col_dim().size_of_block(identity) ;
-            std::cout << "Trial " << poverlap_.get_basis(0) << std::endl ;
             // TODO ALB END DEBUG
             update_vspace(V, VA, V2, t, iter_dim);
             iter_dim = V2.size();
-
             matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (i = 0; i < iter_dim; ++i)
@@ -328,14 +329,27 @@ namespace ietl
                 }
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M;
-            u = V2[0]*Mevecs(0,0);
+            //TODO ALB this part should be removed
+            if (iter_dim > 1) {
+                u = V2[0] * Mevecs(0,1);
+                for (i = 1; i < iter_dim; ++i)
+                    u += V2[i] * Mevecs(i,1);
+                u /= ietl::two_norm(u);
+                scr = poverlap_.overlap(u, site_);
+                std::cout << "Intermediate overlap - 2 " << scr << std::endl;
+            }
+            //TODO ALB this part should be removed
+            u = V2[0]*Mevecs(0,0) ;
             for (i = 1; i < iter_dim; ++i)
-                u += V2[i] * Mevecs(i,0);
+                u += V2[i] * Mevecs(i, 0);
             uA = VA[0]*Mevecs(0,0);
             for (i = 1; i < iter_dim; ++i)
                 uA += VA[i] * Mevecs(i,0);
             uA /= ietl::two_norm(u) ;
             u  /= ietl::two_norm(u) ;
+            scr = poverlap_.overlap(u, site_) ;
+            std::cout << "Intermediate overlap - 1 " << scr << std::endl ;
+            std::cout << "---------------------" << std::endl ;
             magnitude_type energy = ietl::dot(u,uA)  ;
             r2 = uA - energy*u ;
             theta = energy ;

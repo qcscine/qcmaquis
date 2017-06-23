@@ -43,6 +43,7 @@ std::pair<double, MPSTensor< Matrix, SymmGroup> >
 solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
                         MPSTensor<Matrix, SymmGroup> const & initial ,
                         BaseParameters & params ,
+                        int site,
                         partial_overlap<Matrix, SymmGroup> poverlap,
                         double omega ,
                         std::vector< MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< MPSTensor<Matrix, SymmGroup> >())
@@ -59,8 +60,8 @@ solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     ietl::jcd_gmres_modified_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
           jcd_modified_gmres(sp, vs, omega, params["ietl_jcd_gmres"]);
-    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-          jd(sp, vs, omega, ietl::Smallest);
+    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix, SymmGroup >
+          jd(sp, vs, omega, poverlap, site, params["maximum_overlap_nstates"]);
     double tol = params["ietl_jcd_tol"];
     ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
     maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
@@ -84,6 +85,8 @@ std::pair<double, class MPSTensor<Matrix, SymmGroup> >
 solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                MPSTensor<Matrix, SymmGroup> const & initial,
                BaseParameters & params,
+               int site,
+               partial_overlap<Matrix, SymmGroup> poverlap,
                std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >())
 {
     // Standard initialization (as in the Davidson case)
@@ -96,10 +99,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     // Definition of the method to solve the non-linear equation required in the Jacobi-Davidson algorithm
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    ietl::jcd_gmres_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-    jcd_gmres(sp, vs, params["ietl_jcd_gmres"]);
-    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-    jd(sp, vs, ietl::Smallest);
+    ietl::jcd_gmres_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > jcd_gmres(sp, vs, params["ietl_jcd_gmres"]);
+    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix , SymmGroup >
+            jd(sp, vs, poverlap, site, params["maximum_overlap_nstates"]);
     double tol = params["ietl_jcd_tol"];
     ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
     maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;

@@ -159,7 +159,7 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
                     // solve_ietl_jcd sta dentro ietl_jacobi_davidson
-                    res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, site, poverlap, ortho_vecs);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
             	    BEGIN_TIMING("DAVIDSON")
@@ -171,7 +171,7 @@ public:
                     END_TIMING("MODIFIED_DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_JCD")) {
                     BEGIN_TIMING("MODIFIED_JCD")
-                    res = solve_ietl_jcd_modified(sp, twin_mps, parms, poverlap, parms["ietl_modjcd_omega"], ortho_vecs);
+                    res = solve_ietl_jcd_modified(sp, twin_mps, parms, site, poverlap, parms["ietl_modjcd_omega"], ortho_vecs);
                     END_TIMING("MODIFIED_JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

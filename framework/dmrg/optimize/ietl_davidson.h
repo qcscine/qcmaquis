@@ -158,7 +158,7 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     // Create the Davidson object
-    ietl::davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , SymmGroup , Matrix > davidson_modified(sp, vs, omega, poverlap);
+    ietl::davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , SymmGroup , Matrix > davidson_modified(sp, vs, omega, poverlap, site);
     davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial, omega);
     // Sets the iterator object
     double tol = params["ietl_jcd_tol"];
@@ -169,7 +169,7 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
     }
     // Compute eigenvalue
-    std::pair<double, Vector> r0 = davidson_modified.calculate_eigenvalue(initial, mdiag, iter, site);
+    std::pair<double, Vector> r0 = davidson_modified.calculate_eigenvalue(initial, mdiag, iter);
     // Check again orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;

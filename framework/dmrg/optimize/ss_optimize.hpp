@@ -82,19 +82,11 @@ public:
         }
         // Initialization of the overlap object
         partial_overlap poverlap(mps,mps2follow) ;
-        poverlap.print() ;
         Storage::prefetch(left_[site]) ;
         Storage::prefetch(right_[site+1]) ;
         // Main loop
         for (; _site < 2*L; ++_site) {
             //
-            std::cout << mps2follow[0] << std::endl ;
-            std::cout << mps2follow[1] << std::endl ;
-            std::cout << mps2follow[2] << std::endl ;
-            std::cout << mps2follow[3] << std::endl ;
-            std::cout << mps2follow[4] << std::endl ;
-            std::cout << mps2follow[5] << std::endl ;
-            std::cout << mps2follow[6] << std::endl ;
             double i = poverlap.overlap(site);
             std::cout << "Overlap " << i << std::endl ;
             // lr indicates the direction of the sweep
@@ -135,7 +127,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
+                    res = solve_ietl_jcd(sp, mps[site], parms, site, poverlap, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
@@ -147,7 +139,7 @@ public:
                     END_TIMING("MODIFIED_DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_JCD")) {
                     BEGIN_TIMING("MODIFIED_JCD")
-                    res = solve_ietl_jcd_modified(sp, mps[site], parms, poverlap, parms["ietl_modjcd_omega"], ortho_vecs);
+                    res = solve_ietl_jcd_modified(sp, mps[site], parms, site, poverlap, parms["ietl_modjcd_omega"], ortho_vecs);
                     END_TIMING("MODIFIED_JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -208,7 +200,6 @@ public:
                 }
             }
             poverlap.update(mps, site, lr);
-            poverlap.print() ;
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;

@@ -46,9 +46,10 @@
 
 #include <boost/function.hpp>
 
+#include "dmrg/optimize/partial_overlap.h"
+
 namespace ietl
 {
-    enum DesiredEigenvalue { Largest, Smallest };
     //
     // JCD_SOLVER_OPERATOR
     // -------------------
@@ -279,7 +280,7 @@ namespace ietl
     // 5) tolerance criteria
     // 6) which eigenvalue to compute
     //
-    template <class MATRIX, class VS>
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     class jacobi_davidson
     {
     public:
@@ -287,15 +288,13 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename std::vector<vector_type> vector_space;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         // The constructor is overloaded depending if the omega parameter is set in input
         // or not.
-        jacobi_davidson(const MATRIX& matrix,
-                        const VS& vec,
-                        DesiredEigenvalue desired = Largest);
-        jacobi_davidson(const MATRIX& matrix,
-                        const VS& vec,
-                        const double& omega,
-                        DesiredEigenvalue desired = Largest);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const partial_overlap& poverlap, const int& site,
+                        const int& n_mo);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const double& omega, const partial_overlap& poverlap,
+                        const int& site, const int& n_mo);
         ~jacobi_davidson();
         template <class GEN, class SOLVER, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
@@ -307,19 +306,22 @@ namespace ietl
         vector_type apply_operator (const vector_type& x);
         void update_vecspace(vector_space &V, vector_space &VA, const int i);
         template <class ITER >
-        bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta , ITER& iter,
-                                     vector_type& eigvec, magnitude_type& eigval);
-        vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta);
-        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim);
-        void get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim);
+        bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
+                               ITER& iter, vector_type& eigvec, magnitude_type& eigval);
+        vector_type compute_error (const vector_type& u , const vector_type& uA,
+                                   magnitude_type theta) ;
+        void diagonalize_and_select(const vector_type& input, const vector_type& inputA,  const fortran_int_t& dim,  // Input
+                                    vector_type& output,      vector_type& outputA,       magnitude_type& theta) ;   // Output
+        void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs,
+                            fortran_int_t dim, fortran_int_t i1, fortran_int_t i2);
         MATRIX const & matrix_;
         VS vecspace_;
-        int n_;
         FortranMatrix<scalar_type> M;
         magnitude_type atol_;
-        DesiredEigenvalue desired_;
         double omega_;
         bool shift_and_invert_ ;
+        partial_overlap poverlap_ ;
+        int site_ , n_mo_ , n_ ;
     };
     //
     // Methods of the Jacobi-Davidson class
@@ -329,39 +331,53 @@ namespace ietl
     // 2) calculation of the eigenvectors (highest or lowest)
     // 3) get_extremal_eigenvalues : interfaces to FORTRAN routines to compute eigenvalues and eigenvectors
     //
-    template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::jacobi_davidson(const MATRIX& matrix,
+                                                                         const VS& vec,
+                                                                         const partial_overlap& poverlap,
+                                                                         const int& site,
+                                                                         const int& n_mo):
         matrix_(matrix),
         vecspace_(vec),
         M(1,1),
-        desired_(desired),
         omega_(0.),
+        poverlap_(poverlap),
+        site_(site),
+        n_mo_(n_mo),
         shift_and_invert_(false)
     {
         n_ = vec_dimension(vecspace_);
     }
-    template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const double& omega, DesiredEigenvalue desired) :
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::jacobi_davidson(const MATRIX& matrix,
+                                                                         const VS& vec,
+                                                                         const double& omega,
+                                                                         const partial_overlap& poverlap,
+                                                                         const int& site,
+                                                                         const int& n_mo) :
             matrix_(matrix),
             vecspace_(vec),
             M(1,1),
-            desired_(desired),
             omega_(omega),
+            poverlap_(poverlap),
+            site_(site),
+            n_mo_(n_mo),
             shift_and_invert_(true)
     {
         n_ = vec_dimension(vecspace_);
     }
-    template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::~jacobi_davidson() { }
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::~jacobi_davidson() { }
     //
     // Method of the jacobi_davidson class to compute the eigenvalues
     // --------------------------------------------------------------
-    template <class MATRIX, class VS> 
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     template <class GEN, class SOLVER, class ITER>
-    std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type>
-    jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
-                                                      SOLVER& solver,
-                                                      ITER& iter)
+    std::pair<typename jacobi_davidson<MATRIX,VS,OtherMatrix,SymmGroup>::magnitude_type,
+              typename jacobi_davidson<MATRIX,VS,OtherMatrix,SymmGroup>::vector_type>
+    jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::calculate_eigenvalue(const GEN& gen,
+                                                                              SOLVER& solver,
+                                                                              ITER& iter)
     {
         // Variable declaration
         std::vector<scalar_type> s(iter.max_iterations());
@@ -374,7 +390,10 @@ namespace ietl
         magnitude_type shift = omega_ ;
         atol_ = iter.absolute_tolerance();
         //
-        vector_type tA, tB ;
+        bool converged ;
+        //
+        vector_type u, uA, eigvec;
+        magnitude_type eigval ;
         //
         ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
         ietl::project(V[0],vecspace_);
@@ -386,37 +405,25 @@ namespace ietl
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int i = 1; i <= iter.iterations()+1; i++)
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
-            get_extremal_eigenvalue(theta,s,iter.iterations()+1);
-            // Conversion to the original basis
-            vector_type u = V[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
-                u += V[j] * s[j];
-            vector_type uA = VA[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
-                uA += VA[j] * s[j];
-            //ietl::project(uA,vecspace_);
+            diagonalize_and_select(V[0], VA[0], iter.iterations()+1, u, uA, theta ) ;
             // Check convergence
             ++iter;
-            vector_type    &eigvec = u ;
-            magnitude_type eigval ;
-            bool converged ;
             vector_type r = compute_error(u, uA, theta);
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
             if (converged)
-                return std::make_pair(eigval, eigvec);
+                return std::make_pair(eigval, eigvec/ietl::two_norm(eigvec));
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
-            // Note that the matrix has not to be passed because it's already contained inside the
-            // solver object
             solver(u, theta, r, V[iter.iterations()], rel_tol) ;
             V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index ;
             storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
         } while(true);
     }
+    //
     // Compute the action of an operator
-    template <class Matrix, class VS>
-    typename jacobi_davidson<Matrix, VS>::vector_type jacobi_davidson<Matrix, VS>::apply_operator(jacobi_davidson<Matrix, VS>::vector_type const & x)
+    template <class Matrix, class VS, class OtherMatrix, class SymmGroup>
+    typename jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::vector_type
+    jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::apply_operator(jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::vector_type const & x)
     {
-        typedef typename jacobi_davidson<Matrix,VS>::vector_type vector_type;
         vector_type y, buf ;
         bool check = this->shift_and_invert_ ;
         if (check){
@@ -429,12 +436,11 @@ namespace ietl
         return y;
     };
     // Update the vector space in JCD iteration
-    template <class Matrix, class VS>
-    void jacobi_davidson<Matrix, VS>::update_vecspace(jacobi_davidson<Matrix, VS>::vector_space& V,
-                                                      jacobi_davidson<Matrix, VS>::vector_space& VA ,
-                                                      const int idx )
+    template <class Matrix, class VS, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::update_vecspace(jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::vector_space& V,
+                                                                              jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::vector_space& VA ,
+                                                                              const int idx )
     {
-        typedef typename jacobi_davidson<Matrix,VS>::vector_type vector_type ;
         bool check = this->shift_and_invert_ ;
         vector_type& t = V[idx];
         if (check){
@@ -443,8 +449,8 @@ namespace ietl
                 t -= ietl::dot(VA[i-1], tA) * V[i-1];
                 tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
             }
-            //ietl::project(t,this->vecspace_) ;
-            //ietl::project(tA,this->vecspace_) ;
+            ietl::project(t,this->vecspace_) ;
+            ietl::project(tA,this->vecspace_) ;
             t /= ietl::two_norm(tA);
             VA[idx] = tA/ietl::two_norm(tA);
         }
@@ -458,12 +464,13 @@ namespace ietl
 
     };
     // Compute the error vector
-    template <class Matrix, class VS>
-    typename jacobi_davidson<Matrix, VS>::vector_type jacobi_davidson<Matrix,VS>::compute_error(const jacobi_davidson<Matrix,VS>::vector_type &u,
-                                                                                       const jacobi_davidson<Matrix,VS>::vector_type &uA,
-                                                                                       jacobi_davidson<Matrix,VS>::magnitude_type theta)
+    template <class Matrix, class VS, class OtherMatrix, class SymmGroup>
+    typename jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::vector_type
+    jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::compute_error(const jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::vector_type &u,
+                                                                    const jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::vector_type &uA,
+                                                                    jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::magnitude_type theta)
     {
-        jacobi_davidson<Matrix,VS>::vector_type r = uA ;
+        vector_type r = uA ;
         if (this->shift_and_invert_)
             r -= u / theta;
         else
@@ -471,14 +478,14 @@ namespace ietl
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
-    template <class Matrix, class VS>
+    template <class Matrix, class VS, class OtherMatrix, class SymmGroup>
     template <class ITER>
-    bool jacobi_davidson<Matrix, VS>::check_convergence(const jacobi_davidson<Matrix,VS>::vector_type &u,
-                                                        const jacobi_davidson<Matrix,VS>::vector_type &r,
-                                                        const jacobi_davidson<Matrix,VS>::magnitude_type theta,
-                                                        ITER& iter,
-                                                        jacobi_davidson<Matrix,VS>::vector_type &eigvec,
-                                                        jacobi_davidson<Matrix,VS>::magnitude_type &eigval)
+    bool jacobi_davidson<Matrix, VS, OtherMatrix, SymmGroup>::check_convergence(const jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::vector_type &u,
+                                                                                const jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::vector_type &r,
+                                                                                const jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::magnitude_type theta,
+                                                                                ITER& iter,
+                                                                                jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::vector_type &eigvec,
+                                                                                jacobi_davidson<Matrix,VS,OtherMatrix,SymmGroup>::magnitude_type &eigval)
     {
         // Compute the error vector
         bool converged ;
@@ -497,81 +504,115 @@ namespace ietl
             return converged ;
         }
     };
-    // The following two matrices are interfaces to the Lapack routines to compute eigenvalues and eigenvectors
-    // Overloaded to support both real and complex mumber.
-    template <class MATRIX, class VS>
-    void jacobi_davidson<MATRIX, VS>::get_extremal_eigenvalue(magnitude_type& theta, std::vector<double>& s, fortran_int_t dim)
+    //
+    // Driver for diagonalization routine, include (if requested) also the selection of the "optimal" overlap
+    // based on the MO criterion
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::diagonalize_and_select(const vector_type& MPSTns_input,
+                                                                                     const vector_type& MPSTns_input_A,
+                                                                                     const fortran_int_t& dim,
+                                                                                     vector_type& MPSTns_output,
+                                                                                     vector_type& MPSTns_output_A,
+                                                                                     magnitude_type &theta)
     {
-        FortranMatrix<scalar_type> M_(dim,dim);
-        for (int i=0;i<dim;i++) for (int j=0;j<=i;j++)
-            M_(j,i) = M(j,i);
+        // Initialization
+        typedef typename std::vector<double> vector_scalars ;
+        typedef typename jacobi_davidson::vector_type MPSTns_type ;
+        double thresh = 0.90 ;
+        vector_scalars eigvals , overlaps ;
+        std::vector< vector_scalars > eigvecs ;
+        MPSTns_type u_local , uA_local ;
+        int imin , imax ;
+        int n_eigen = ((n_mo_ > dim) ? dim : n_mo_) ;
+        // Definition of the dimensions and dynamic memory allocation
+        assert (n_eigen > 0) ;
+        overlaps.resize(n_eigen) ;
+        eigvals.resize(n_eigen) ;
+        eigvecs.resize(n_eigen) ;
+        for (int i = 0 ; i < n_eigen ; ++i)
+            eigvecs[i].resize(dim) ;
+        if (n_eigen == 1) {
+            imin = imax = 1;
+        } else {
+            imin = 1 ;
+            imax = n_eigen ;
+        }
+        // Diagonalization
+        get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
+        // Finalization
+        for (int i = 0 ; i < n_eigen ; ++i){
+            // Conversion to the original basis
+            u_local = eigvecs[i][0]*MPSTns_input ;
+            for(int j = 0; j <= dim; ++j)
+                u_local += eigvecs[i][0]*MPSTns_input;
+            u_local /= ietl::two_norm(u_local);
+            double scr = poverlap_.overlap(u_local, site_) ;
+            overlaps[i] = abs(scr) ;
+        }
+        int idx = 0 ;
+        for (int i = 1 ; i < n_eigen ; ++i)
+            if (overlaps[i] > overlaps[idx])
+                idx = i ;
+        if (overlaps[idx] < thresh)
+            throw std::runtime_error("Satisfactory overlap not found");
+        // Finalization
+        MPSTns_output   = eigvecs[idx][0]*MPSTns_input ;
+        MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A ;
+        for(int j = 0; j <= dim; ++j) {
+            MPSTns_output   += eigvecs[idx][j]*MPSTns_input ;
+            MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A ;
+        }
+        theta = eigvals[idx] ;
+        // Print summary
+        std::cout << " +---------------------------+" << std::endl ;
+        std::cout << "  Maximum Overlap Calculation " << std::endl ;
+        std::cout << " +---------------------------+" << std::endl ;
+        std::cout << " Selected index - " << idx << std::endl ;
+        std::cout << " Overlap value  - " << overlaps[idx] << std::endl ;
+    };
+    //
+    // Interface to LAPACK diagonalization routine
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::get_eigenvalue(std::vector<double>& eigval,
+                                                                             std::vector<class std::vector<double> >& eigvec,
+                                                                             fortran_int_t dim,
+                                                                             fortran_int_t id_min,
+                                                                             fortran_int_t id_max)
+    {
+        // Definition of all the quantities needed by the LAPACK routine
         double abstol = atol_;
-        char jobz='V';     char range='I';   char uplo='U';
-        fortran_int_t n=dim;
-        fortran_int_t lda=dim;       
-        fortran_int_t il, iu;
-        if (desired_ == Largest)
-            il = iu = n;
-        else
-            il = iu = 1;
-        fortran_int_t m;
-        fortran_int_t ldz=n;
-        fortran_int_t lwork=8*n;
+        char jobz='V';
+        char range='I';
+        char uplo='U';
+        fortran_int_t n     = dim ;
+        fortran_int_t lda   = dim ;
+        fortran_int_t ldz   = n   ;
+        fortran_int_t lwork = 8*n ;
         fortran_int_t info;
+        fortran_int_t neig  = id_max-id_min+1 ;
         double vl, vu;
-        double *w = new double[n];
-        double *z = new double[n];
+        double *w = new double[neig];
+        double *z = new double[neig*n];
         double *work = new double[lwork];
         fortran_int_t *iwork = new fortran_int_t[5*n];
         fortran_int_t *ifail = new fortran_int_t[n];
-        LAPACK_DSYEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
-        theta = w[0];
-        for (int i=0;i<n;i++)
-            s[i] = z[i];
-        delete [] w;
-        delete [] z;
-        delete [] work;
-        delete [] iwork;
-        delete [] ifail;
-    }
-        
-    template <class MATRIX, class VS>
-    void jacobi_davidson<MATRIX, VS>::get_extremal_eigenvalue(magnitude_type& theta, std::vector<std::complex<double> >& s, fortran_int_t dim)
-    {
+        // Convert the matrix from general MATRIX class to a FortranMatrix object
         FortranMatrix<scalar_type> M_(dim,dim);
-        for (int i=0;i<dim;i++) for (int j=0;j<=i;j++)
-            M_(j,i) = M(j,i);
-        double abstol = atol_;
-        char jobz='V';     char range='I';   char uplo='U';
-        fortran_int_t n=dim;
-        fortran_int_t lda=dim;
-        fortran_int_t il, iu;
-        if (desired_ == Largest)
-            il = iu = n;
-        else
-            il = iu = 1;
-        fortran_int_t m;
-        fortran_int_t ldz=n;
-        fortran_int_t lwork=8*n;
-        fortran_int_t info; 
-        double vl, vu;
-        double * w = new double[n];
-        std::complex<double> * z = new std::complex<double>[n];
-        std::complex<double> * work = new std::complex<double>[lwork];
-        fortran_int_t *iwork = new fortran_int_t[5*n];
-        fortran_int_t *ifail = new fortran_int_t[n];
-        double * rwork = new double[7*n];
-        LAPACK_ZHEEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, rwork, iwork, ifail, &info);
-        theta = w[0];
-        for (int i=0;i<n;i++)
-            s[i] = z[i];
-        delete [] w;
-        delete [] z;
-        delete [] work;
-        delete [] iwork;
-        delete [] ifail;
-        delete [] rwork;
-    }
+        for (int i=0 ; i<dim ; i++)
+            for (int j=0 ; j<=i ; j++)
+                M_(j,i) = M(j,i);
+        LAPACK_DSYEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &id_min, &id_max, &abstol, &neig, w, z, &ldz, work, &lwork, iwork, ifail, &info);
+        for (int j = 0 ; j < neig ; j++) {
+            eigval[j] = w[j];
+            for (int i = 0; i < n; i++)
+                eigvec[i][j] = z[j+neig*i];
+        }
+        // Free space
+        delete [] w     ;
+        delete [] z     ;
+        delete [] work  ;
+        delete [] iwork ;
+        delete [] ifail ;
+    };
 }
-
 #endif
