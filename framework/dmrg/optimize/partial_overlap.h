@@ -230,6 +230,7 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
             for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2)
                 result += (*tmp2)(k1, k2) * data_right_[indx](k1, k2);
     }
+    std::cout << "Risultato " << result << std::endl ;
     return result ;
 };
 

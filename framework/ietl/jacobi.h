@@ -310,8 +310,8 @@ namespace ietl
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
         vector_type compute_error (const vector_type& u , const vector_type& uA,
                                    magnitude_type theta) ;
-        void diagonalize_and_select(const vector_type& input, const vector_type& inputA,  const fortran_int_t& dim,  // Input
-                                    vector_type& output,      vector_type& outputA,       magnitude_type& theta) ;   // Output
+        void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,  // Input
+                                    vector_type& output,       vector_type& outputA,        magnitude_type& theta) ;   // Output
         void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs,
                             fortran_int_t dim, fortran_int_t i1, fortran_int_t i2);
         MATRIX const & matrix_;
@@ -405,7 +405,7 @@ namespace ietl
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int i = 1; i <= iter.iterations()+1; i++)
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
-            diagonalize_and_select(V[0], VA[0], iter.iterations()+1, u, uA, theta ) ;
+            diagonalize_and_select(V, VA, iter.iterations()+1, u, uA, theta ) ;
             // Check convergence
             ++iter;
             vector_type r = compute_error(u, uA, theta);
@@ -508,8 +508,8 @@ namespace ietl
     // Driver for diagonalization routine, include (if requested) also the selection of the "optimal" overlap
     // based on the MO criterion
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
-    void jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::diagonalize_and_select(const vector_type& MPSTns_input,
-                                                                                     const vector_type& MPSTns_input_A,
+    void jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::diagonalize_and_select(const vector_space& MPSTns_input,
+                                                                                     const vector_space& MPSTns_input_A,
                                                                                      const fortran_int_t& dim,
                                                                                      vector_type& MPSTns_output,
                                                                                      vector_type& MPSTns_output_A,
@@ -518,7 +518,7 @@ namespace ietl
         // Initialization
         typedef typename std::vector<double> vector_scalars ;
         typedef typename jacobi_davidson::vector_type MPSTns_type ;
-        double thresh = 0.90 ;
+        double thresh = 0.60 ;
         vector_scalars eigvals , overlaps ;
         std::vector< vector_scalars > eigvecs ;
         MPSTns_type u_local , uA_local ;
@@ -542,25 +542,25 @@ namespace ietl
         // Finalization
         for (int i = 0 ; i < n_eigen ; ++i){
             // Conversion to the original basis
-            u_local = eigvecs[i][0]*MPSTns_input ;
-            for(int j = 0; j <= dim; ++j)
-                u_local += eigvecs[i][0]*MPSTns_input;
+            u_local = eigvecs[i][0]*MPSTns_input[0] ;
+            for(int j = 1; j < dim; ++j)
+                u_local += eigvecs[i][j]*MPSTns_input[j];
             u_local /= ietl::two_norm(u_local);
             double scr = poverlap_.overlap(u_local, site_) ;
-            overlaps[i] = abs(scr) ;
+            overlaps[i] = fabs(scr) ;
         }
         int idx = 0 ;
         for (int i = 1 ; i < n_eigen ; ++i)
             if (overlaps[i] > overlaps[idx])
                 idx = i ;
-        if (overlaps[idx] < thresh)
-            throw std::runtime_error("Satisfactory overlap not found");
+        //if (overlaps[idx] < thresh)
+        //    throw std::runtime_error("Satisfactory overlap not found");
         // Finalization
-        MPSTns_output   = eigvecs[idx][0]*MPSTns_input ;
-        MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A ;
-        for(int j = 0; j <= dim; ++j) {
-            MPSTns_output   += eigvecs[idx][j]*MPSTns_input ;
-            MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A ;
+        MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
+        MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A[0] ;
+        for(int j = 0; j < dim; ++j) {
+            MPSTns_output   += eigvecs[idx][j]*MPSTns_input[j] ;
+            MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
         }
         theta = eigvals[idx] ;
         // Print summary
@@ -605,8 +605,9 @@ namespace ietl
         for (int j = 0 ; j < neig ; j++) {
             eigval[j] = w[j];
             for (int i = 0; i < n; i++)
-                eigvec[i][j] = z[j+neig*i];
+                eigvec[j][i] = z[j+neig*i];
         }
+        std::cout << "Ho chiamato la LAPACK" << std::endl ;
         // Free space
         delete [] w     ;
         delete [] z     ;
