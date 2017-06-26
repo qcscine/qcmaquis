@@ -395,7 +395,8 @@ namespace ietl
         vector_type u, uA, eigvec;
         magnitude_type eigval ;
         //
-        ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
+        ietl::generate(V[0],gen);
+        const_cast<GEN&>(gen).clear();
         ietl::project(V[0],vecspace_);
         //
         // Main loop of the algorithm
@@ -404,7 +405,7 @@ namespace ietl
             update_vecspace(V , VA ,iter.iterations() ) ;
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int i = 1; i <= iter.iterations()+1; i++)
-                M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
+                M(i-1, iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
             diagonalize_and_select(V, VA, iter.iterations()+1, u, uA, theta ) ;
             // Check convergence
             ++iter;
@@ -449,8 +450,8 @@ namespace ietl
                 t -= ietl::dot(VA[i-1], tA) * V[i-1];
                 tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
             }
-            ietl::project(t,this->vecspace_) ;
-            ietl::project(tA,this->vecspace_) ;
+            //ietl::project(t,this->vecspace_) ;
+            //ietl::project(tA,this->vecspace_) ;
             t /= ietl::two_norm(tA);
             VA[idx] = tA/ietl::two_norm(tA);
         }
@@ -518,12 +519,12 @@ namespace ietl
         // Initialization
         typedef typename std::vector<double> vector_scalars ;
         typedef typename jacobi_davidson::vector_type MPSTns_type ;
-        double thresh = 0.60 ;
+        double thresh = 0.50 ;
         vector_scalars eigvals , overlaps ;
         std::vector< vector_scalars > eigvecs ;
         MPSTns_type u_local , uA_local ;
         int imin , imax ;
-        int n_eigen = ((n_mo_ > dim) ? dim : n_mo_) ;
+        int  n_eigen  = ((n_mo_ > dim) ? dim : n_mo_) ;
         // Definition of the dimensions and dynamic memory allocation
         assert (n_eigen > 0) ;
         overlaps.resize(n_eigen) ;
@@ -542,10 +543,9 @@ namespace ietl
         // Finalization
         for (int i = 0 ; i < n_eigen ; ++i){
             // Conversion to the original basis
-            u_local = eigvecs[i][0]*MPSTns_input[0] ;
+            u_local = eigvecs[i][0]*MPSTns_input_A[0] ;
             for(int j = 1; j < dim; ++j)
-                u_local += eigvecs[i][j]*MPSTns_input[j];
-            u_local /= ietl::two_norm(u_local);
+                u_local += eigvecs[i][j] * MPSTns_input_A[j];
             double scr = poverlap_.overlap(u_local, site_) ;
             overlaps[i] = fabs(scr) ;
         }
@@ -553,12 +553,12 @@ namespace ietl
         for (int i = 1 ; i < n_eigen ; ++i)
             if (overlaps[i] > overlaps[idx])
                 idx = i ;
-        //if (overlaps[idx] < thresh)
+        //if ( overlaps[idx] < thresh )
         //    throw std::runtime_error("Satisfactory overlap not found");
         // Finalization
         MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
         MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A[0] ;
-        for(int j = 0; j < dim; ++j) {
+        for (int j = 1; j < dim; ++j) {
             MPSTns_output   += eigvecs[idx][j]*MPSTns_input[j] ;
             MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
         }
@@ -605,9 +605,8 @@ namespace ietl
         for (int j = 0 ; j < neig ; j++) {
             eigval[j] = w[j];
             for (int i = 0; i < n; i++)
-                eigvec[j][i] = z[j+neig*i];
+                eigvec[j][i] = z[i + n*j];
         }
-        std::cout << "Ho chiamato la LAPACK" << std::endl ;
         // Free space
         delete [] w     ;
         delete [] z     ;

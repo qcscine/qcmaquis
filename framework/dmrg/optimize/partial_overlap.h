@@ -202,16 +202,6 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
     value_type result = 0 ;
     dim_type indx = lattice_L_-2-i ;
     Matrix *tmp , *tmp2 ;
-    // Extract the block of the TrivialGroup symmetry from the block matrix associated to the
-    // MPS tensor
-    //MPSTns.make_left_paired() ;
-    //bmatrix bm = MPSTns.data() ;
-    //std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
-    //std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
-    //std::size_t m1out = data_right_[lattice_L_-2].num_rows() ;
-    //std::size_t m2out = data_right_[lattice_L_-2].num_cols() ;
-    //tmp = new Matrix(m1, m2) ;
-    //extract(bm, basis_[i], m1, m2, *tmp) ;
     if ( i == lattice_L_-1 ) {
         //assert (m2 == 1);
         tmp2 = this->multiply(MPSTns, data_left_[i-1], basis_[i], Left, true) ;
@@ -230,7 +220,6 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
             for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2)
                 result += (*tmp2)(k1, k2) * data_right_[indx](k1, k2);
     }
-    std::cout << "Risultato " << result << std::endl ;
     return result ;
 };
 
@@ -252,6 +241,8 @@ void partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matrix,S
         MPSTns = MPS[lattice_L_-1 - l] ;
     MPSTns.make_left_paired() ;
     output = this->multiply(MPSTns, data_[l-1], sigma, mod, modality) ;
+    if (mod == Right)
+        std::cout << "Output " << *output << std::endl ;
     // Finalization
     if (modality)
         data_.push_back(output);
