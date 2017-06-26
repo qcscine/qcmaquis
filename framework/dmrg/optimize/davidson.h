@@ -142,7 +142,7 @@ namespace ietl
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V;
         std::vector<vector_type> VA;
-        std::size_t iter_dim ;
+        std::size_t iter_dim = 0 ;
         unsigned int i,j;
         magnitude_type theta, tau;
         magnitude_type rel_tol;
@@ -159,8 +159,7 @@ namespace ietl
             matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (i = 0; i < iter_dim; ++i)
-                for (j = i; j < iter_dim; ++j)
-                {
+                for (j = i; j < iter_dim; ++j)  {
                     M(i,j) = ietl::dot(V[i], VA[j]);
                     M(j,i) = M(i,j);
                 }
@@ -182,7 +181,6 @@ namespace ietl
             r = VA[0] - V[0] * Mevals[0];
             theta = Mevals[0];
             u = V[0];
-            std::cout << ietl::two_norm(r) << std::endl ;
             // if (|r|_2 < \epsilon) stop
             ++iter;
             if (iter.finished(ietl::two_norm(r), Mevals[0]))
@@ -190,11 +188,11 @@ namespace ietl
             mdiag.precondition(r, V[0], Mevals[0]);
             std::swap(t,r);
             t /= ietl::two_norm(t);
-            if (V.size() >= 20)
-            {
-                V.resize(2);
-                VA.resize(2);
-            }
+            //if (V.size() >= 20)
+            //{
+            //    V.resize(2);
+            //    VA.resize(2);
+            //}
         } while (true);
         // accept lambda=theta and x=u
         return std::make_pair(theta, u);
@@ -283,7 +281,6 @@ namespace ietl
                                                                    ITER& iter)
     {
         // Type definition
-
         typedef alps::numeric::matrix<scalar_type> matrix_t;
         vector_type t  = new_vector(vecspace_);
         vector_type tA = new_vector(vecspace_);
@@ -309,14 +306,6 @@ namespace ietl
         magnitude_type shift = omega_ ;
         // Start iteration
         do {
-            // TODO ALB START DEBUG
-            typedef typename SymmGroup::charge charge ;
-            double scr ;
-            charge identity = SymmGroup::IdentityCharge ;
-            block_matrix<OtherMatrix, SymmGroup> bm = t.data() ;
-            std::size_t m1 = t.row_dim().size_of_block(identity) ;
-            std::size_t m2 = t.col_dim().size_of_block(identity) ;
-            // TODO ALB END DEBUG
             update_vspace(V, VA, V2, t, iter_dim);
             iter_dim = V2.size();
             matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
@@ -328,17 +317,7 @@ namespace ietl
                     M(j,i) = M(i,j);
                 }
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
-            Mevecs = M;
-            //TODO ALB this part should be removed
-            if (iter_dim > 1) {
-                u = V2[0] * Mevecs(0,1);
-                for (i = 1; i < iter_dim; ++i)
-                    u += V2[i] * Mevecs(i,1);
-                u /= ietl::two_norm(u);
-                scr = poverlap_.overlap(u, site_);
-                std::cout << "Intermediate overlap - 2 " << scr << std::endl;
-            }
-            //TODO ALB this part should be removed
+            Mevecs = M ;
             u = V2[0]*Mevecs(0,0) ;
             for (i = 1; i < iter_dim; ++i)
                 u += V2[i] * Mevecs(i, 0);
@@ -347,9 +326,6 @@ namespace ietl
                 uA += VA[i] * Mevecs(i,0);
             uA /= ietl::two_norm(u) ;
             u  /= ietl::two_norm(u) ;
-            scr = poverlap_.overlap(u, site_) ;
-            std::cout << "Intermediate overlap - 1 " << scr << std::endl ;
-            std::cout << "---------------------" << std::endl ;
             magnitude_type energy = ietl::dot(u,uA)  ;
             r2 = uA - energy*u ;
             theta = energy ;

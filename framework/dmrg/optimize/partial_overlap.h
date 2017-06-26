@@ -61,6 +61,7 @@ public:
     typedef typename SymmGroup::charge charge ;
     typedef typename Matrix::value_type value_type ;
     // Constructors
+    partial_overlap(void) ;
     partial_overlap(const MPSWave& MPS , const basis_vector& basis);
     // Methods
     basis_type get_basis(const dim_type& site) ;
@@ -87,6 +88,10 @@ private:
 // +------------+
 //  CONSTRUCTORS
 // +------------+
+
+template<class Matrix, class SymmGroup>
+partial_overlap<Matrix,SymmGroup>::partial_overlap(void) :
+    lattice_L_(0) {} ;
 
 template<class Matrix, class SymmGroup>
 partial_overlap<Matrix,SymmGroup>::partial_overlap(const partial_overlap<Matrix,SymmGroup>::MPSWave& MPS ,
@@ -217,8 +222,9 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
         assert((*tmp2).num_rows() == data_right_[indx].num_rows() &&
                (*tmp2).num_cols() == data_right_[indx].num_cols());
         for (int k1 = 0; k1 < (*tmp2).num_rows(); ++k1)
-            for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2)
-                result += (*tmp2)(k1, k2) * data_right_[indx](k1, k2);
+            for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2) {
+                result += (*tmp2)(k1, k2)*data_right_[indx](k1, k2);
+        }
     }
     return result ;
 };
@@ -233,16 +239,17 @@ void partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matrix,S
     // Initialization
     MPSTensor MPSTns ;
     Matrix *output ;
-    basis_type sigma = basis_[l] ;
+    basis_type sigma ;
     //
-    if (mod == Left)
+    if (mod == Left) {
         MPSTns = MPS[l] ;
-    else
+        sigma = basis_[l] ;
+    } else {
         MPSTns = MPS[lattice_L_-1 - l] ;
-    MPSTns.make_left_paired() ;
+        sigma = basis_[lattice_L_-1 -l ] ;
+    }
+    MPSTns.make_left_paired();
     output = this->multiply(MPSTns, data_[l-1], sigma, mod, modality) ;
-    if (mod == Right)
-        std::cout << "Output " << *output << std::endl ;
     // Finalization
     if (modality)
         data_.push_back(output);

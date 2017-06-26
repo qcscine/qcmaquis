@@ -291,10 +291,10 @@ namespace ietl
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         // The constructor is overloaded depending if the omega parameter is set in input
         // or not.
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, const partial_overlap& poverlap, const int& site,
-                        const int& n_mo);
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, const double& omega, const partial_overlap& poverlap,
-                        const int& site, const int& n_mo);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec);                                        // Standard Davidson constructor
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const double& omega);                   // Modfied Davidson constructor
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const double& omega,                    // Maximum Overlap Modified Davidson
+                        const int& site, const int& n_mo, const partial_overlap& poverlap);          // constructor
         ~jacobi_davidson();
         template <class GEN, class SOLVER, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
@@ -319,7 +319,7 @@ namespace ietl
         FortranMatrix<scalar_type> M;
         magnitude_type atol_;
         double omega_;
-        bool shift_and_invert_ ;
+        bool shift_and_invert_, do_maximum_overlap_ ;
         partial_overlap poverlap_ ;
         int site_ , n_mo_ , n_ ;
     };
@@ -331,30 +331,47 @@ namespace ietl
     // 2) calculation of the eigenvectors (highest or lowest)
     // 3) get_extremal_eigenvalues : interfaces to FORTRAN routines to compute eigenvalues and eigenvectors
     //
+    // Standard Davidson
     template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::jacobi_davidson(const MATRIX& matrix,
-                                                                         const VS& vec,
-                                                                         const partial_overlap& poverlap,
-                                                                         const int& site,
-                                                                         const int& n_mo):
+                                                                         const VS& vec):
         matrix_(matrix),
         vecspace_(vec),
         M(1,1),
         omega_(0.),
-        poverlap_(poverlap),
-        site_(site),
-        n_mo_(n_mo),
-        shift_and_invert_(false)
+        poverlap_(),
+        site_(1),
+        n_mo_(1),
+        shift_and_invert_(false),
+        do_maximum_overlap_(false)
     {
         n_ = vec_dimension(vecspace_);
     }
+    // Modified Davidson
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::jacobi_davidson(const MATRIX& matrix,
+                                                                         const VS& vec,
+                                                                         const double& omega) :
+            matrix_(matrix),
+            vecspace_(vec),
+            M(1,1),
+            omega_(omega),
+            poverlap_(),
+            site_(1),
+            n_mo_(1),
+            shift_and_invert_(true),
+            do_maximum_overlap_(false)
+    {
+        n_ = vec_dimension(vecspace_);
+    }
+    // Maximum-Overlap Modified Davidson
     template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     jacobi_davidson<MATRIX, VS, OtherMatrix, SymmGroup>::jacobi_davidson(const MATRIX& matrix,
                                                                          const VS& vec,
                                                                          const double& omega,
-                                                                         const partial_overlap& poverlap,
                                                                          const int& site,
-                                                                         const int& n_mo) :
+                                                                         const int& n_mo,
+                                                                         const partial_overlap& poverlap) :
             matrix_(matrix),
             vecspace_(vec),
             M(1,1),
@@ -362,7 +379,8 @@ namespace ietl
             poverlap_(poverlap),
             site_(site),
             n_mo_(n_mo),
-            shift_and_invert_(true)
+            shift_and_invert_(true),
+            do_maximum_overlap_(true)
     {
         n_ = vec_dimension(vecspace_);
     }
@@ -540,21 +558,20 @@ namespace ietl
         }
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
-        // Finalization
-        for (int i = 0 ; i < n_eigen ; ++i){
-            // Conversion to the original basis
-            u_local = eigvecs[i][0]*MPSTns_input_A[0] ;
-            for(int j = 1; j < dim; ++j)
-                u_local += eigvecs[i][j] * MPSTns_input_A[j];
-            double scr = poverlap_.overlap(u_local, site_) ;
-            overlaps[i] = fabs(scr) ;
+        int idx = 0;
+        if (do_maximum_overlap_) {
+            for (int i = 0; i < n_eigen; ++i) {
+                // Conversion to the original basis
+                u_local = eigvecs[i][0] * MPSTns_input_A[0];
+                for (int j = 1; j < dim; ++j)
+                    u_local += eigvecs[i][j] * MPSTns_input_A[j];
+                double scr = poverlap_.overlap(u_local, site_);
+                overlaps[i] = fabs(scr);
+            }
+            for (int i = 1; i < n_eigen; ++i)
+                if (overlaps[i] > overlaps[idx])
+                    idx = i;
         }
-        int idx = 0 ;
-        for (int i = 1 ; i < n_eigen ; ++i)
-            if (overlaps[i] > overlaps[idx])
-                idx = i ;
-        //if ( overlaps[idx] < thresh )
-        //    throw std::runtime_error("Satisfactory overlap not found");
         // Finalization
         MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
         MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A[0] ;
@@ -564,11 +581,13 @@ namespace ietl
         }
         theta = eigvals[idx] ;
         // Print summary
-        std::cout << " +---------------------------+" << std::endl ;
-        std::cout << "  Maximum Overlap Calculation " << std::endl ;
-        std::cout << " +---------------------------+" << std::endl ;
-        std::cout << " Selected index - " << idx << std::endl ;
-        std::cout << " Overlap value  - " << overlaps[idx] << std::endl ;
+        if (do_maximum_overlap_) {
+            std::cout << " +---------------------------+ " << std::endl;
+            std::cout << "  Maximum Overlap Calculation  " << std::endl;
+            std::cout << " +---------------------------+ " << std::endl;
+            std::cout << " Selected index - " << idx << std::endl;
+            std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
+        }
     };
     //
     // Interface to LAPACK diagonalization routine
