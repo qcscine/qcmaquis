@@ -45,270 +45,95 @@
 
 #include <boost/function.hpp>
 
+// +--------------+
+//  DAVIDSON CLASS
+// +--------------+
+// This is a general class for Davidson-type eigensolver.
+// The templates arguments are MATRIX and VS, that are usually:
+// MATRIX    : a SiteProblem object (see optimize.h for additional details)
+// VS        : a VectorSpace object, including a MPSTensor and several other vectors
+//             (for excited states orthogonalization)
+//
+// Includes the following attributes, that are common to all the Davidson eigensolvers;
+// matrix_   : the matrix representation of the operator for the site where the optimization is
+//             carried out
+// vecspace_ : the vector space where the optimization is carried out
+// atol_     : tolerance for assessing convergence of the optimization
+// Other attributes, that are specific of other type of eigensolvers (such as a shift omega or a
+// state to target) are defined in the inherited classes.
+//
+// The methods are the following:
+// contructor           : standard constructor
+// calculate_eigenvalue : method to compute eigenvalue, uses virtual functions
+// update_vspace        : virtual protected function, defined when virtual class is inherited
+// apply_operator       : virtual protected function, defined when virtual class is inherited
+// precondition         : virtual protected function, for the guess iteration of each Davidson step
+
 namespace ietl
 {
-    // +----------------+
-    //  Davidson problem
-    // +----------------+
-    // Class declaration
     template <class MATRIX, class VS>
     class davidson
     {
     public:
-        // Interfaces to methods
+        // Types definition
         typedef typename vectorspace_traits<VS>::vector_type vector_type ;
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type ;
+        typedef typename vector_type::bm_type bm_type ;
         typedef typename std::vector<vector_type> vector_set ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        davidson(const MATRIX& matrix,
-                 const VS& vec);
-        davidson(const MATRIX& matrix,
-                 const VS& vec,
-                 const magnitude_type omega);
-        template <class GEN, class PRECOND, class ITER>
+        typedef typename alps::numeric::matrix<scalar_type> matrix_numeric ;
+        typedef typename std::size_t size_t ;
+        // Constructor and destructor
+        davidson(const MATRIX& matrix, const VS& vec);
+        virtual ~davidson() {};
+        // Public method to compute eigenvalue
+        template <class GEN, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
-                                                                    PRECOND& mdiag,
                                                                     ITER& iter);
-    private:
-        // Private attributes
+    protected:
+        // Methods
+        virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
+        virtual vector_type apply_operator(const vector_type& x) {} ;
+        virtual magnitude_type return_final(const magnitude_type& eigval) {} ;
+        virtual void precondition(vector_type& r, const vector_type& V, const magnitude_type theta ) {} ;
+        // Attributes
         MATRIX const & matrix_;
         VS vecspace_;
-        magnitude_type atol_;
-        magnitude_type const omega_ ;
-        magnitude_type kappa_ ;
-        bool const shift_and_invert_ ;
-        // Private methods
-        void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim);
+        magnitude_type atol_ ;
+        bm_type Hdiag_ ;
     };
-    //
-    // Constructors
-    // ------------
-    // NOTE : overloaded to support the shift-and-invert case
+    // -- Constructor --
     template <class MATRIX, class VS>
     davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec) :
             matrix_(matrix),
-            vecspace_(vec),
-            omega_(0.),
-            shift_and_invert_(false),
-            kappa_(0.25) {} ;
-    template <class MATRIX, class VS>
-    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const magnitude_type omega ) :
-            vecspace_(vec),
-            omega_(omega),
-            shift_and_invert_(true),
-            kappa_(0.25)
+            vecspace_(vec)
     {
-        for (int i = 0 ; i < matrix.num_cols ; i++) {
-            matrix_(i,i) = omega_ - matrix(i,i);
-            for (int j = i+1; j < matrix.num_cols; j++) {
-                matrix_(i,j) = -matrix(i,j);
-                matrix_(j,i) = matrix_(i,j);
-            }
-        }
-    };
-    //
-    // Update of the vector space
-    // --------------------------
-    // TODO better definition of the method depending if shift_and_invert_ is defined or not
+        vector_type tmp = new_vector(vecspace_) ;
+        Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp);
+    } ;
+    // -- Method used to compute eigenpairs --
     template <class MATRIX, class VS>
-    void davidson<MATRIX, VS>::update_vspace(davidson::vector_set &V, davidson::vector_set &VA,
-                                             davidson::vector_type &t , std::size_t dim)
-    {
-        magnitude_type tau = ietl::two_norm(t);
-        for (int i = 0; i < dim; i++)
-            t -= ietl::dot(V[i], t) * V[i];
-        if (ietl::two_norm(t) < this->kappa_ * tau)
-            for (int i = 0; i < dim; i++)
-                t -= ietl::dot(V[i], t) * V[i];
-        V.push_back(t / ietl::two_norm(t));
-        VA.resize(V.size());
-        ietl::mult(matrix_, V[V.size() - 1], VA[V.size() - 1]);
-    }
-    //
-    // Method used to compute eigenpairs
-    // ---------------------------------
-    template <class MATRIX, class VS>
-    template <class GEN, class PRECOND, class ITER>
-    std::pair<typename davidson<MATRIX,VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type>
-    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
-                                               PRECOND& mdiag,
-                                               ITER& iter)
-    {
+    template <class GEN, class ITER>
+    std::pair<typename davidson<MATRIX, VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type>
+    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, ITER& iter) {
         // Initialization
-        typedef alps::numeric::matrix<scalar_type> matrix_t;
         vector_type t  = new_vector(vecspace_);
-        vector_type u  = new_vector(vecspace_);
-        vector_type r  = new_vector(vecspace_);
-        std::vector<scalar_type> s(iter.max_iterations());
-        std::vector<vector_type> V;
-        std::vector<vector_type> VA;
-        std::size_t iter_dim = 0 ;
-        unsigned int i,j;
-        magnitude_type theta, tau;
-        magnitude_type rel_tol;
-        atol_ = iter.absolute_tolerance();
-        // Start with t=v_o, starting guess
-        ietl::generate(t,gen);
-        ietl::project(t,vecspace_);
-        // Start iteration
-        do
-        {
-            // Modified Gram-Schmidt Orthogonalization with Refinement
-            update_vspace(V, VA, t, iter_dim);
-            iter_dim = V.size() ;
-            matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
-            std::vector<magnitude_type> Mevals(iter_dim);
-            for (i = 0; i < iter_dim; ++i)
-                for (j = i; j < iter_dim; ++j)  {
-                    M(i,j) = ietl::dot(V[i], VA[j]);
-                    M(j,i) = M(i,j);
-                }
-            boost::numeric::bindings::lapack::heevd('V', M, Mevals);
-            Mevecs = M;
-            std::vector<vector_type> Vp = V, VAp = VA;
-            for (i = 0; i < iter_dim; ++i)
-            {
-                V[i] *= Mevecs(i,i);
-                VA[i] *= Mevecs(i,i);
-            }
-            for (i = 0; i < iter_dim; ++i)
-                for (j = 0; j < iter_dim; ++j)
-                    if(i != j)
-                    {
-                        V[j] += Vp[i] * Mevecs(i,j);
-                        VA[j] += VAp[i] * Mevecs(i,j);
-                    }
-            r = VA[0] - V[0] * Mevals[0];
-            theta = Mevals[0];
-            u = V[0];
-            // if (|r|_2 < \epsilon) stop
-            ++iter;
-            if (iter.finished(ietl::two_norm(r), Mevals[0]))
-                break;
-            mdiag.precondition(r, V[0], Mevals[0]);
-            std::swap(t,r);
-            t /= ietl::two_norm(t);
-            //if (V.size() >= 20)
-            //{
-            //    V.resize(2);
-            //    VA.resize(2);
-            //}
-        } while (true);
-        // accept lambda=theta and x=u
-        return std::make_pair(theta, u);
-    }
-    //
-    // +-------------------------+
-    //  Modified Davidson problem
-    // +-------------------------+
-    // Class declaration
-    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
-    class davidson_modified
-    {
-    public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        typedef typename std::vector<vector_type> vector_set ;
-        typedef typename partial_overlap<OtherMatrix, SymmGroup>::partial_overlap partial_overlap ;
-        davidson_modified(const MATRIX& matrix,
-                          const VS& vec,
-                          const double& omega,
-                          const partial_overlap& poverlap,
-                          const int& site);
-        template <class GEN, class PRECOND, class ITER>
-        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
-                                                                    PRECOND& mdiag,
-                                                                    ITER& iter);
-    private:
-        MATRIX const & matrix_;
-        VS vecspace_;
-        magnitude_type atol_;
-        double omega_ ;
-        void update_vspace(vector_set& V,  vector_set& VA, vector_set& V2, vector_type& t , std::size_t dim);
-        vector_type apply_operator(const vector_type& x);
-        partial_overlap poverlap_ ;
-        int site_ ;
-    };
-    // Constructor
-    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
-    davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::davidson_modified(const MATRIX& matrix,
-                                                                             const VS& vec,
-                                                                             const double& omega,
-                                                                             const partial_overlap& poverlap,
-                                                                             const int& site) :
-            vecspace_(vec),
-            matrix_(matrix),
-            omega_(omega),
-            poverlap_(poverlap),
-            site_(site)
-    { }
-    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
-    typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::apply_operator(const davidson_modified::vector_type& x)
-    {
-        vector_type tmp ;
-        ietl::mult(matrix_, x, tmp);
-        tmp *= -1. ;
-        tmp += omega_*x ;
-        return tmp ;
-    };
-    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
-    void davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::update_vspace(davidson_modified::vector_set& V,  davidson_modified::vector_set& VA,
-                                                                              davidson_modified::vector_set& V2, davidson_modified::vector_type& t ,
-                                                                              std::size_t dim)
-    {
-        magnitude_type tau = ietl::two_norm(t);
-        vector_type tA ;
-        for (int i = 0; i < dim; i++)
-            t -= ietl::dot(V[i], t) * V[i];
-        t /= ietl::two_norm(t);
-        V.push_back(t);
-        tA = apply_operator(t) ;
-        for (int i = 0; i < dim; i++) {
-            t -= ietl::dot(VA[i], tA) * V2[i];
-            tA -= ietl::dot(VA[i], tA) * VA[i];
-        }
-        V2.push_back(t/ietl::two_norm(tA));
-        VA.push_back(tA/ietl::two_norm(tA));
-    }
-    // Method to actually diagonalize the matrix
-    template <class MATRIX, class VS, class SymmGroup, class OtherMatrix>
-    template <class GEN, class PRECOND, class ITER>
-    std::pair<typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::magnitude_type,
-              typename davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::vector_type>
-    davidson_modified<MATRIX, VS, SymmGroup, OtherMatrix>::calculate_eigenvalue(const GEN& gen,
-                                                                   PRECOND& mdiag,
-                                                                   ITER& iter)
-    {
-        // Type definition
-        typedef alps::numeric::matrix<scalar_type> matrix_t;
-        vector_type t  = new_vector(vecspace_);
-        vector_type tA = new_vector(vecspace_);
-        vector_type tB = new_vector(vecspace_);
         vector_type u  = new_vector(vecspace_);
         vector_type uA = new_vector(vecspace_);
-        vector_type uB = new_vector(vecspace_);
-        vector_type r, r2  = new_vector(vecspace_);
-        std::vector<scalar_type> s(iter.max_iterations());
-        std::vector<vector_type> V;
+        vector_type r  = new_vector(vecspace_);
         std::vector<vector_type> V2;
         std::vector<vector_type> VA;
-        unsigned int i,j;
-        magnitude_type theta, tau;
-        magnitude_type kappa = 0.25;
-        magnitude_type rel_tol;
+        magnitude_type theta ;
         atol_ = iter.absolute_tolerance();
         std::size_t iter_dim = 0 ;
-        // Start with t=v_o, starting guess
+        // Generate guess
         ietl::generate(t,gen);
         ietl::project(t,vecspace_);
-        // Magnitude type
-        magnitude_type shift = omega_ ;
-        // Start iteration
+        // While loop
         do {
-            update_vspace(V, VA, V2, t, iter_dim);
+            update_vspace(V2, VA, t, iter_dim);
             iter_dim = V2.size();
-            matrix_t M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
+            matrix_numeric M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (i = 0; i < iter_dim; ++i)
                 for (j = i; j < iter_dim; ++j)
@@ -316,6 +141,7 @@ namespace ietl
                     M(i,j) = ietl::dot(V2[i], VA[j]);
                     M(j,i) = M(i,j);
                 }
+            // TODO ALB Use here the same diagonalization algorithm as for JD
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
             u = V2[0]*Mevecs(0,0) ;
@@ -327,23 +153,18 @@ namespace ietl
             uA /= ietl::two_norm(u) ;
             u  /= ietl::two_norm(u) ;
             magnitude_type energy = ietl::dot(u,uA)  ;
-            r2 = uA - energy*u ;
+            r = uA - energy*u ;
             theta = energy ;
             // if (|r|_2 < \epsilon) stop
             ++iter;
-            if (iter.finished(ietl::two_norm(r2), theta))
+            if (iter.finished(ietl::two_norm(r), theta))
                 break;
-            mdiag.precondition(r2, u, theta);
-            std::swap(t,r2);
-            //if (V.size() >= 20)
-            //{
-            //    V.resize(2);
-            //    V2.resize(2);
-            //    VA.resize(2);
-            //}
+            precondition(r, u, theta);
+            std::swap(t,r);
+            // TODO ALB Maybe put here restarting algorithm
         } while (true);
-    // accept lambda=theta and x=u
-    return std::make_pair(shift-theta, u);
+        // accept lambda=theta and x=u
+        return std::make_pair(return_final(theta), u);
     }
 }
 #endif

@@ -60,8 +60,8 @@ solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
           jcd_modified_gmres(sp, vs, omega, params["ietl_jcd_gmres"]);
     ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix, SymmGroup >
           jd(sp, vs, omega);
-    double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
+    double tol = params["ietl_diag_tol"];
+    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
     maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
@@ -97,8 +97,8 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     ietl::jcd_gmres_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > jcd_gmres(sp, vs, params["ietl_jcd_gmres"]);
     ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix , SymmGroup > jd(sp, vs);
-    double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
+    double tol = params["ietl_diag_tol"];
+    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
     maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;

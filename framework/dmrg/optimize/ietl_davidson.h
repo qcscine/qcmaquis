@@ -33,120 +33,24 @@
 #include "ietl_lanczos_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
 
-#include "davidson.h"
+#include "davidson_standard.h"
+#include "davidson_modified.h"
 
-namespace davidson_detail {
-    template<class Matrix, class SymmGroup> class MultDiagonal
-    {
-        typedef MPSTensor<Matrix, SymmGroup> vector_type;
-        typedef typename Matrix::value_type value_type;
-        typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type ;
-    public:
-        // The construtor sets the Hdiag attribute. Overloaded depending on the
-        // presence of the shift
-        MultDiagonal(SiteProblem<Matrix, SymmGroup> const& H, vector_type const& x)
-        : have_omega(false) {
-            Hdiag = contraction::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
-        }
-        MultDiagonal(SiteProblem<Matrix, SymmGroup> const& H, vector_type const& x, double const& omega)
-                : have_omega(true) , omega_(omega){
-            Hdiag = contraction::diagonal_hamiltonian(H.left, H.right, H.mpo, x);
-        }
-
-        void precondition(vector_type& r, vector_type& V, value_type theta)
-        {
-            // Project onto the space orthogonal to V
-            value_type  x1   = ietl::dot(V,r) ;
-            vector_type Vcpy = r - V*x1 ;
-            // Precondition
-            mult_diag(theta, Vcpy);
-            // Reproject again
-            value_type x2    = ietl::dot(V,Vcpy);
-            r = Vcpy - x2*V ;
-        }
-
-    private:
-        // Preconditioner in Davidson diagonalization
-        // Takes in input a (most likely) float number (theta) and
-        // preconditions an MPSTensor that is given in input (x)
-        void mult_diag(value_type theta, vector_type& x)
-        {
-            value_type denom ;
-            block_matrix<Matrix, SymmGroup> & data = x.data();
-            assert(shape_equal(data, Hdiag));
-            for (size_t b = 0; b < data.n_blocks(); ++b)
-            {
-                for (size_t i = 0; i < num_rows(data[b]); ++i)
-                    for (size_t j = 0; j < num_cols(data[b]); ++j) {
-                        if (have_omega)
-                            denom = (omega_ - Hdiag[b](i, j)) - theta;
-                        else
-                            denom = Hdiag[b](i, j) - theta;
-                        if (std::abs(denom))
-                            data[b](i, j) /= denom;
-                    }
-            }
-        }
-        block_matrix<Matrix, SymmGroup> Hdiag;
-        bool have_omega ;
-        double omega_  ;
-    };
-} // namespace davidson detail
-
-// +--------------------+
-//  SOLVE_IETL_DAVIDSON
-// +--------------------+
-//
-// Simple Davidson
-// ---------------
 template<class Matrix, class SymmGroup>
 std::pair< double , class MPSTensor<Matrix,SymmGroup> >
 solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     MPSTensor<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
-                    std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
-    // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
-    // and performs the GS orthogonalization
-    if (initial.num_elements() <= ortho_vecs.size())
-        ortho_vecs.resize(initial.num_elements()-1);
-    for (int n = 1; n < ortho_vecs.size(); ++n)
-        for (int n0 = 0; n0 < n; ++n0)
-            ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
+                    int site,
+                    partial_overlap<Matrix, SymmGroup> poverlap,
+                    std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
     // Initialization
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    // Create the Davidson object
-    ietl::davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs);
-    davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial);
-    // Sets the iterator object
-    double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_davidson_maxiter"], tol, tol);
-    //contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_davidson_maxiter"]);
-    // Check orthogonality
-    for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
-    }
-    // Compute eigenvalue
-    std::pair<double, Vector> r0 = davidson.calculate_eigenvalue(initial, mdiag, iter);
-    // Check again orthogonality
-    for (int n = 0; n < ortho_vecs.size(); ++n)
-        maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
-    maquis::cout << "Davidson used " << iter.iterations() << " iterations." << std::endl;
-    // Returns in output a vector and the corresponding eigenvector (the energy)
-    return r0;
-}
-//
-// Modified Davidson
-// -----------------
-template<class Matrix, class SymmGroup>
-std::pair< double , class MPSTensor<Matrix,SymmGroup> >
-solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
-                             MPSTensor<Matrix, SymmGroup> const & initial,
-                             BaseParameters & params,
-                             int site,
-                             partial_overlap<Matrix, SymmGroup> poverlap,
-                             double omega,
-                             std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >()) {
+    double tol = params["ietl_diag_tol"];
+    double omega = params["ietl_si_omega"] ;
+    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
+    std::pair<double, Vector> r0 ;
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
     if (initial.num_elements() <= ortho_vecs.size())
@@ -154,26 +58,23 @@ solve_ietl_davidson_modified(SiteProblem<Matrix, SymmGroup> & sp,
     for (int n = 1; n < ortho_vecs.size(); ++n)
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
-    // Initialization
-    typedef MPSTensor<Matrix, SymmGroup> Vector ;
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    // Create the Davidson object
-    ietl::davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , SymmGroup , Matrix > davidson_modified(sp, vs, omega, poverlap, site);
-    davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial, omega);
-    // Sets the iterator object
-    double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_davidson_maxiter"], tol, tol);
-    contraction::ContractionGrid<Matrix, SymmGroup>::iterate_reduction_layout(0, params["ietl_davidson_maxiter"]);
     // Check orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
     }
-    // Compute eigenvalue
-    std::pair<double, Vector> r0 = davidson_modified.calculate_eigenvalue(initial, mdiag, iter);
-    // Check again orthogonality
+    // -- Calculation of eigenvalues
+    // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
+    if (fabs(omega) > 1.0E-15) {
+        ietl::davidson_modified < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs, omega);
+        r0 = davidson.calculate_eigenvalue(initial, iter);
+    } else {
+        ietl::davidson_standard < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs);
+        r0 = davidson.calculate_eigenvalue(initial, iter);
+    }
+    // Check again orthogonalit
     for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
-    maquis::cout << "Modified Davidson used " << iter.iterations() << " iterations." << std::endl;
+    maquis::cout << "Davidson used " << iter.iterations() << " iterations." << std::endl;
     // Returns in output a vector and the corresponding eigenvector (the energy)
     return r0;
 }

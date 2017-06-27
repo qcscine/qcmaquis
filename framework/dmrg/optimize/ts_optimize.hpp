@@ -146,7 +146,6 @@ public:
                 ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps, ts_ortho.make_mps(),
                                                                     base::ortho_left_[n][site1], base::ortho_right_[n][site2+1]);
             }
-
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
@@ -162,31 +161,24 @@ public:
                     res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
-            	    BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
-            	    END_TIMING("DAVIDSON")
-                } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
-                    BEGIN_TIMING("MODIFIED_DAVIDSON")
-                    res = solve_ietl_davidson_modified(sp, twin_mps, parms, site, poverlap, parms["ietl_moddav_omega"], ortho_vecs);
-                    END_TIMING("MODIFIED_DAVIDSON")
+                    BEGIN_TIMING("DAVIDSON")
+                    res = solve_ietl_davidson(sp, twin_mps, parms, site, poverlap, ortho_vecs);
+                    END_TIMING("DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_JCD")) {
                     BEGIN_TIMING("MODIFIED_JCD")
-                    res = solve_ietl_jcd_modified(sp, twin_mps, parms, parms["ietl_modjcd_omega"], ortho_vecs);
+                    res = solve_ietl_jcd_modified(sp, twin_mps, parms, parms["ietl_si_omega"], ortho_vecs);
                     END_TIMING("MODIFIED_JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_MO_MODIFIED_JCD")) {
                     BEGIN_TIMING("MAXIMUMOVERLAP_MODIFIED_JCD")
-                    res = solve_ietl_jcd_mo_modified(sp, twin_mps, parms, site, poverlap, parms["ietl_modjcd_omega"], ortho_vecs);
+                    res = solve_ietl_jcd_mo_modified(sp, twin_mps, parms, site, poverlap, parms["ietl_si_omega"], ortho_vecs);
                     END_TIMING("MAXIMUMOVERLAP_MODIFIED_JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
-
         		tst << res.second;
                 res.second.clear();
             }
             twin_mps.clear();
-
-
 #ifndef NDEBUG
             // Caution: this is an O(L) operation, so it really should be done only in debug mode
             for (int n = 0; n < base::northo; ++n)

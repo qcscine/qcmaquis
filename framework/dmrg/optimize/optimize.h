@@ -66,7 +66,6 @@ struct SiteProblem
     , right(right_)
     , mpo(mpo_) 
     { }
-    
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;

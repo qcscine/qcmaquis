@@ -131,19 +131,15 @@ public:
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, mps[site], parms, ortho_vecs);
+                    res = solve_ietl_davidson(sp, mps[site], parms, site, poverlap, ortho_vecs);
                     END_TIMING("DAVIDSON")
-                } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_DAVIDSON")) {
-                    BEGIN_TIMING("MODIFIED_DAVIDSON")
-                    res = solve_ietl_davidson_modified(sp, mps[site], parms, site, poverlap, parms["ietl_moddav_omega"], ortho_vecs);
-                    END_TIMING("MODIFIED_DAVIDSON")
                 } else if (parms["eigensolver"] == std::string("IETL_MODIFIED_JCD")) {
                     BEGIN_TIMING("MODIFIED_JCD")
-                    res = solve_ietl_jcd_modified(sp, mps[site], parms, parms["ietl_modjcd_omega"], ortho_vecs);
+                    res = solve_ietl_jcd_modified(sp, mps[site], parms, parms["ietl_si_omega"], ortho_vecs);
                     END_TIMING("MODIFIED_JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_MO_MODIFIED_JCD")) {
                     BEGIN_TIMING("MAXIMUMOVERLAP_MODIFIED_JCD")
-                    res = solve_ietl_jcd_mo_modified(sp, mps[site], parms, site, poverlap, parms["ietl_modjcd_omega"], ortho_vecs);
+                    res = solve_ietl_jcd_mo_modified(sp, mps[site], parms, site, poverlap, parms["ietl_si_omega"], ortho_vecs);
                     END_TIMING("MAXIMUMOVERLAP_MODIFIED_JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

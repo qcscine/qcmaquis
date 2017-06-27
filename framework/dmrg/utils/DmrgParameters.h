@@ -71,8 +71,7 @@ private:
         add_option("ietl_jcd_gmres", "", value(0));
         add_option("ietl_jcd_maxiter", "", value(8));
         add_option("ietl_davidson_maxiter", "", value(20));
-        add_option("ietl_moddav_omega", "parameter omega for the modified Davidson algorithm (to compute interior eigenvalues", value(0.));
-        add_option("ietl_modjcd_omega", "parameter omega for the modified Jacobi-Davidson algorithm (to compute interior eigenvalues", value(0.));
+        add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.));
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         
