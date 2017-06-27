@@ -30,49 +30,9 @@
 
 #include "ietl_lanczos_solver.h"
 
-#include "ietl/jacobi.h"
 #include "ietl/jd.h"
+#include "dmrg/optimize/jacobi_standard.h"
 #include "dmrg/optimize/partial_overlap.h"
-
-//
-// Modified Jacobi-Davidson diagonalization
-// ----------------------------------------
-
-template<class Matrix, class SymmGroup>
-std::pair<double, MPSTensor< Matrix, SymmGroup> >
-solve_ietl_jcd_modified(SiteProblem<Matrix, SymmGroup> & sp,
-                        MPSTensor<Matrix, SymmGroup> const & initial ,
-                        BaseParameters & params ,
-                        double omega ,
-                        std::vector< MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< MPSTensor<Matrix, SymmGroup> >())
-{
-    // Standard initialization (as in the Davidson case)
-    if (initial.num_elements() <= ortho_vecs.size())
-        ortho_vecs.resize(initial.num_elements()-1);
-    // Gram-Schmidt the ortho_vecs
-    for (int n = 1; n < ortho_vecs.size(); ++n)
-        for (int n0 = 0; n0 < n; ++n0)
-            ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
-    // Definition of the method to solve the non-linear equation required in the Jacobi-Davidson algorithm
-    typedef MPSTensor<Matrix, SymmGroup> Vector;
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    ietl::jcd_gmres_modified_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-          jcd_modified_gmres(sp, vs, omega, params["ietl_jcd_gmres"]);
-    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix, SymmGroup >
-          jd(sp, vs, omega);
-    double tol = params["ietl_diag_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
-    maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
-    for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
-    }
-    std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_modified_gmres, iter);
-    for (int n = 0; n < ortho_vecs.size(); ++n)
-        maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
-    maquis::cout << "MODIFIED JCD used " << iter.iterations() << " iterations." << std::endl;
-    return r0;
-}
 
 //
 // Standard Jacobi-Davidson diagonalization
@@ -95,63 +55,20 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     // Definition of the method to solve the non-linear equation required in the Jacobi-Davidson algorithm
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    ietl::jcd_gmres_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > jcd_gmres(sp, vs, params["ietl_jcd_gmres"]);
-    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix , SymmGroup > jd(sp, vs);
     double tol = params["ietl_diag_tol"];
     ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
+    ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , ietl::basic_iteration<double> > jd(sp, vs);
     maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
     }
-    std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_gmres, iter);
+    std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, iter);
     for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
     maquis::cout << "JCD used " << iter.iterations() << " iterations." << std::endl;
     return r0;
 }
 
-
-//
-// Modified Maximum-Overlap Jacobi-Davidson diagonalization
-// --------------------------------------------------------
-
-template<class Matrix, class SymmGroup>
-std::pair<double, MPSTensor< Matrix, SymmGroup> >
-solve_ietl_jcd_mo_modified(SiteProblem<Matrix, SymmGroup> & sp,
-                           MPSTensor<Matrix, SymmGroup> const & initial ,
-                           BaseParameters & params ,
-                           int site,
-                           partial_overlap<Matrix, SymmGroup> poverlap,
-                           double omega ,
-                           std::vector< MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< MPSTensor<Matrix, SymmGroup> >())
-{
-    // Standard initialization (as in the Davidson case)
-    if (initial.num_elements() <= ortho_vecs.size())
-        ortho_vecs.resize(initial.num_elements()-1);
-    // Gram-Schmidt the ortho_vecs
-    for (int n = 1; n < ortho_vecs.size(); ++n)
-        for (int n0 = 0; n0 < n; ++n0)
-            ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
-    // Definition of the method to solve the non-linear equation required in the Jacobi-Davidson algorithm
-    typedef MPSTensor<Matrix, SymmGroup> Vector;
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    ietl::jcd_gmres_modified_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-            jcd_modified_gmres(sp, vs, omega, params["ietl_jcd_gmres"]);
-    ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> , Matrix, SymmGroup >
-            jd(sp, vs, omega, site, params["maximum_overlap_nstates"], poverlap);
-    double tol = params["ietl_jcd_tol"];
-    ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
-    maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
-    for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
-    }
-    std::pair<double, Vector> r0 = jd.calculate_eigenvalue(initial, jcd_modified_gmres, iter);
-    for (int n = 0; n < ortho_vecs.size(); ++n)
-        maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
-    maquis::cout << "MODIFIED JCD used " << iter.iterations() << " iterations." << std::endl;
-    return r0;
-}
 
 #endif

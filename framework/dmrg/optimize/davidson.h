@@ -135,8 +135,8 @@ namespace ietl
             iter_dim = V2.size();
             matrix_numeric M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
-            for (i = 0; i < iter_dim; ++i)
-                for (j = i; j < iter_dim; ++j)
+            for (int i = 0; i < iter_dim; ++i)
+                for (int j = i; j < iter_dim; ++j)
                 {
                     M(i,j) = ietl::dot(V2[i], VA[j]);
                     M(j,i) = M(i,j);
@@ -145,10 +145,10 @@ namespace ietl
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
             u = V2[0]*Mevecs(0,0) ;
-            for (i = 1; i < iter_dim; ++i)
+            for (int i = 1; i < iter_dim; ++i)
                 u += V2[i] * Mevecs(i, 0);
             uA = VA[0]*Mevecs(0,0);
-            for (i = 1; i < iter_dim; ++i)
+            for (int i = 1; i < iter_dim; ++i)
                 uA += VA[i] * Mevecs(i,0);
             uA /= ietl::two_norm(u) ;
             u  /= ietl::two_norm(u) ;
