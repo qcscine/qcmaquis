@@ -4,11 +4,7 @@
  *
  * ALPS Libraries
  *
- * Copyright (C) 2001-2011 by Rene Villiger <rvilliger@smile.ch>,
- *                            Prakash Dayal <prakash@comp-phys.org>,
- *                            Matthias Troyer <troyer@comp-phys.org>
- *                            Bela Bauer <bauerb@phys.ethz.ch>
- *               2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ * Copyright (C) 2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
@@ -29,10 +25,8 @@
  *
  *****************************************************************************/
 
-/* $Id: jacobi.h,v 1.6 2003/09/05 08:12:38 troyer Exp $ */
-
-#ifndef IETL_JACOBI_H
-#define IETL_JACOBI_H
+#ifndef IETL_JACOBI_MODIFIED_H
+#define IETL_JACOBI_MODIFIED_H
 
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>

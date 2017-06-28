@@ -64,6 +64,7 @@ public:
     partial_overlap(void) ;
     partial_overlap(const MPSWave& MPS , const basis_vector& basis);
     // Methods
+    bool is_defined(void) ;
     basis_type get_basis(const dim_type& site) ;
     void print(void) ;
     void update(const MPSWave& MPS, const dim_type& l, const int& direction) ;
@@ -74,6 +75,7 @@ private:
     vector_overlap data_left_ , data_right_ ;
     dim_type lattice_L_ ;
     basis_vector basis_ ;
+    bool is_defined_ ;
     // Local variables
     enum Modality { Left , Right };
     static const charge identity = SymmGroup::IdentityCharge ;
@@ -91,29 +93,31 @@ private:
 
 template<class Matrix, class SymmGroup>
 partial_overlap<Matrix,SymmGroup>::partial_overlap(void) :
-    lattice_L_(0) {} ;
+    lattice_L_(0) , is_defined_(false) { } ;
 
 template<class Matrix, class SymmGroup>
 partial_overlap<Matrix,SymmGroup>::partial_overlap(const partial_overlap<Matrix,SymmGroup>::MPSWave& MPS ,
                                                    const partial_overlap<Matrix,SymmGroup>::basis_vector& basis)
 {
     dim_type L = MPS.size() ;
-    if (basis.size() == 0)
-        for (int i = 0 ; i < L ; ++i)
-            basis_.push_back(0) ;
-    else
-        for (int i = 0 ; i < L ; ++i)
-            basis_.push_back(basis[i]) ;
-    lattice_L_ = L ;
-    MPSTensor MPSTns ;
-    //
-    for (dim_type i = 0; i < L; ++i) {
-        if (i == 0) {
-            multiply_first(MPS, Left, true, data_left_);
-            multiply_first(MPS, Right, true, data_right_);
-        } else {
-            multiply(MPS, i, Left, true, data_left_) ;
-            multiply(MPS, i, Right, true, data_right_) ;
+    if (basis.size() == 0) {
+        is_defined_ = false ;
+        return ;
+    } else {
+        is_defined_ = true ;
+        for (int i = 0; i < L; ++i)
+            basis_.push_back(basis[i]);
+        lattice_L_ = L;
+        MPSTensor MPSTns;
+        //
+        for (dim_type i = 0; i < L; ++i) {
+            if (i == 0) {
+                multiply_first(MPS, Left, true, data_left_);
+                multiply_first(MPS, Right, true, data_right_);
+            } else {
+                multiply(MPS, i, Left, true, data_left_);
+                multiply(MPS, i, Right, true, data_right_);
+            }
         }
     }
 };
@@ -121,6 +125,12 @@ partial_overlap<Matrix,SymmGroup>::partial_overlap(const partial_overlap<Matrix,
 // +-------+
 //  METHODS
 // +-------+
+
+template<class Matrix, class SymmGroup>
+bool partial_overlap<Matrix, SymmGroup>::is_defined(void)
+{
+    return is_defined_ ;
+}
 
 template<class Matrix, class SymmGroup>
 typename partial_overlap<Matrix, SymmGroup>::basis_type partial_overlap<Matrix, SymmGroup>::get_basis(const dim_type &site)

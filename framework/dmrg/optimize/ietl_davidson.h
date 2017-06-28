@@ -30,8 +30,8 @@
 #define IETL_DAVIDSON_SOLVER_H
 
 #include "dmrg/utils/BaseParameters.h"
-#include "ietl_lanczos_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
+#include "ietl_lanczos_solver.h"
 
 #include "davidson_standard.h"
 #include "davidson_modified.h"
@@ -65,17 +65,16 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     // -- Calculation of eigenvalues
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
     if (fabs(omega) > 1.0E-15) {
-        ietl::davidson_modified < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs, omega);
+        ietl::davidson_modified < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs, site, omega);
         r0 = davidson.calculate_eigenvalue(initial, iter);
     } else {
-        ietl::davidson_standard < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs);
+        ietl::davidson_standard < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs, site);
         r0 = davidson.calculate_eigenvalue(initial, iter);
     }
-    // Check again orthogonalit
+    // Check again orthogonality in output
     for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
     maquis::cout << "Davidson used " << iter.iterations() << " iterations." << std::endl;
-    // Returns in output a vector and the corresponding eigenvector (the energy)
     return r0;
 }
 

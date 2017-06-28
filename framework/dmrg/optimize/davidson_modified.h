@@ -54,8 +54,8 @@ namespace ietl {
         using base::atol_ ;
         using base::Hdiag_ ;
         // New constructors
-        davidson_modified(const MATRIX &matrix, const VS &vec, const magnitude_type& omega)
-                : base::davidson(matrix, vec) , omega_(omega) {};
+        davidson_modified(const MATRIX &matrix, const VS &vec, const int& site, const magnitude_type& omega)
+                : base::davidson(matrix, vec, site) , omega_(omega) {};
         ~davidson_modified() {};
     private:
         // Private methods
@@ -105,7 +105,7 @@ namespace ietl {
         for (size_t b = 0; b < data.n_blocks(); ++b) {
             for (size_t i = 0; i < num_rows(data[b]); ++i) {
                 for (size_t j = 0; j < num_cols(data[b]); ++j) {
-                    denom = (omega_ - Hdiag[b](i, j)) - theta;
+                    denom = (omega_ - Hdiag_[b](i, j)) - theta;
                     if (std::abs(denom))
                         data[b](i, j) /= denom;
                 }

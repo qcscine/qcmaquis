@@ -81,7 +81,7 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename std::vector<vector_type> vector_space;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        jacobi_davidson(const MATRIX& matrix, const VS& vec);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -102,6 +102,7 @@ namespace ietl
         // Protected attributes
         MATRIX const & matrix_ ;
         VS vecspace_ ;
+        int site_ ;
         FortranMatrix<scalar_type> M ;
         magnitude_type atol_ ;
         std::size_t max_iter_ ;
@@ -109,12 +110,12 @@ namespace ietl
 
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
-    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix,
-                                                                         const VS& vec) :
+    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site) :
         matrix_(matrix),
         vecspace_(vec),
+        site_(site),
         M(1,1),
-        max_iter_(5)
+        max_iter_(0)
     { } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
@@ -144,7 +145,7 @@ namespace ietl
             update_vecspace(V , VA ,iter.iterations() ) ;
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int i = 1; i <= iter.iterations()+1; i++)
-                M(i-1, iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
+                M(i-1, iter.iterations()) = ietl::dot(V[i - 1], VA[iter.iterations()]);
             diagonalize_and_select(V, VA, iter.iterations()+1, u, uA, theta ) ;
             // Check convergence
             ++iter;
@@ -166,9 +167,9 @@ namespace ietl
     {
         // Definition of all the quantities needed by the LAPACK routine
         double abstol = atol_;
-        char jobz='V';
-        char range='I';
-        char uplo='U';
+        char jobz  = 'V';
+        char range = 'I';
+        char uplo  = 'U';
         fortran_int_t n     = dim ;
         fortran_int_t lda   = dim ;
         fortran_int_t ldz   = n   ;
@@ -185,7 +186,7 @@ namespace ietl
         FortranMatrix<scalar_type> M_(dim,dim);
         for (int i=0 ; i<dim ; i++)
             for (int j=0 ; j<=i ; j++)
-                M_(j,i) = M(j,i);
+                M_(j, i) = M(j, i);
         LAPACK_DSYEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &id_min, &id_max, &abstol, &neig, w, z, &ldz, work, &lwork, iwork, ifail, &info);
         for (int j = 0 ; j < neig ; j++) {
             eigval[j] = w[j];

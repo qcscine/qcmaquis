@@ -58,8 +58,10 @@ namespace ietl
         using base::atol_ ;
         using base::max_iter_ ;
         using base::get_eigenvalue ;
+        using base::site_ ;
         //
-        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec) : base::jacobi_davidson(matrix, vec) {} ;
+        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& site)
+                : base::jacobi_davidson(matrix, vec, site) {} ;
         ~jacobi_davidson_standard() {} ;
     private:
         // Multiply the vector by a matrix
@@ -86,7 +88,7 @@ namespace ietl
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx )
     {
-        vector_type t = V[idx] ;
+        vector_type& t = V[idx] ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         ietl::project(t,this->vecspace_) ;
@@ -131,13 +133,13 @@ namespace ietl
     {
         // Initialization
         typedef typename std::vector<double> vector_scalars ;
-        vector_scalars eigvals , overlaps ;
+        vector_scalars eigvals ;
         std::vector< vector_scalars > eigvecs ;
-        vector_type u_local , uA_local ;
         int imin , imax ;
         // Definition of the dimensions and dynamic memory allocation
-        eigvals.resize(1) ;
-        eigvecs.resize(dim) ;
+        eigvals.resize(dim) ;
+        eigvecs.resize(1) ;
+        eigvecs[0].resize(dim) ;
         imin = imax = 1;
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
@@ -166,6 +168,95 @@ namespace ietl
         if (max_iter_ > 0)
             t = gmres(op, inh, t, rel_tol);
     }
+    //
+    // JACOBI-DAVIDSON EIGENSOLVER WITH OVERLAP TRACKING
+    // -------------------------------------------------
+    template <class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    class jacobi_davidson_standard_mo : public jacobi_davidson_standard<MATRIX, VS, ITER>
+    {
+    public:
+        typedef jacobi_davidson_standard<MATRIX, VS, ITER> base;
+        typedef typename base::vector_type  vector_type;
+        typedef typename base::scalar_type  scalar_type;
+        typedef typename base::vector_space vector_space;
+        typedef typename base::magnitude_type magnitude_type;
+        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
+        using base::matrix_ ;
+        using base::vecspace_ ;
+        using base::get_eigenvalue ;
+        using base::site_ ;
+        //
+         jacobi_davidson_standard_mo(const MATRIX& matrix, const VS& vec, const int& site, const partial_overlap& pov,
+                           const std::size_t n)
+                : base::jacobi_davidson_standard(matrix, vec, site) , pov_(pov) , n_maxov_(n) {} ;
+        ~jacobi_davidson_standard_mo() {} ;
+    private:
+        void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                                    vector_type& output, vector_type& outputA, magnitude_type& theta) ;
+        // Private attributes
+        partial_overlap pov_  ;
+        std::size_t n_maxov_  ;
+    };
+    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_and_select
+                    (const vector_space& MPSTns_input,
+                     const vector_space& MPSTns_input_A,
+                     const fortran_int_t& dim,
+                     vector_type& MPSTns_output,
+                     vector_type& MPSTns_output_A,
+                     magnitude_type &theta)
+    {
+        // Initialization
+        typedef typename std::vector<double> vector_scalars ;
+        double thresh = 0.50 ;
+        vector_scalars eigvals , overlaps ;
+        std::vector< vector_scalars > eigvecs ;
+        vector_type u_local , uA_local ;
+        int imin , imax ;
+        int n_eigen  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
+        // Definition of the dimensions and dynamic memory allocation
+        assert (n_eigen > 0) ;
+        overlaps.resize(n_eigen) ;
+        eigvals.resize(n_eigen) ;
+        eigvecs.resize(n_eigen) ;
+        for (int i = 0 ; i < n_eigen ; ++i)
+            eigvecs[i].resize(dim) ;
+        if (n_eigen == 1) {
+            imin = imax = 1;
+        } else {
+            imin = 1 ;
+            imax = n_eigen ;
+        }
+        // Diagonalization
+        get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
+        int idx = 0;
+        for (int i = 0; i < n_eigen; ++i) {
+            // Conversion to the original basis
+            u_local = eigvecs[i][0] * MPSTns_input_A[0];
+            for (int j = 1; j < dim; ++j)
+                u_local += eigvecs[i][j] * MPSTns_input_A[j];
+            double scr = pov_.overlap(u_local, site_);
+            overlaps[i] = fabs(scr);
+        }
+        for (int i = 1; i < n_eigen; ++i)
+            if (overlaps[i] > overlaps[idx])
+                idx = i;
+        // Finalization
+        MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
+        MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A[0] ;
+        for (int j = 1; j < dim; ++j) {
+            MPSTns_output   += eigvecs[idx][j]*MPSTns_input[j] ;
+            MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
+        }
+        theta = eigvals[idx] ;
+        // Print summary
+        std::cout << " +---------------------------+ " << std::endl;
+        std::cout << "  Maximum Overlap Calculation  " << std::endl;
+        std::cout << " +---------------------------+ " << std::endl;
+        std::cout << " Selected index - " << idx << std::endl;
+        std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
+
+    };
 }
 
 #endif

@@ -84,7 +84,7 @@ namespace ietl
         typedef typename alps::numeric::matrix<scalar_type> matrix_numeric ;
         typedef typename std::size_t size_t ;
         // Constructor and destructor
-        davidson(const MATRIX& matrix, const VS& vec);
+        davidson(const MATRIX& matrix, const VS& vec, const int& site);
         virtual ~davidson() {};
         // Public method to compute eigenvalue
         template <class GEN, class ITER>
@@ -101,12 +101,14 @@ namespace ietl
         VS vecspace_;
         magnitude_type atol_ ;
         bm_type Hdiag_ ;
+        int site_ ;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
-    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec) :
+    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& site) :
             matrix_(matrix),
-            vecspace_(vec)
+            vecspace_(vec),
+            site_(site)
     {
         vector_type tmp = new_vector(vecspace_) ;
         Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp);

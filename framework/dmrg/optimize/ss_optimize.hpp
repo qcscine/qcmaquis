@@ -87,8 +87,11 @@ public:
         // Main loop
         for (; _site < 2*L; ++_site) {
             //
-            double i = poverlap.overlap(site);
-            std::cout << "Overlap " << i << std::endl ;
+            double i ;
+            if (poverlap.is_defined()) {
+                i = poverlap.overlap(site);
+                std::cout << "Overlap " << i << std::endl;
+            }
             // lr indicates the direction of the sweep
             int lr = (_site < L) ? +1 : -1;
             site = to_site(L, _site);
@@ -127,7 +130,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
+                    res = solve_ietl_jcd(sp, mps[site], parms, site, poverlap, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
@@ -191,7 +194,8 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
-            poverlap.update(mps, site, lr);
+            if (poverlap.is_defined())
+                poverlap.update(mps, site, lr);
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;

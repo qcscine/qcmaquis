@@ -54,7 +54,7 @@ namespace ietl {
         using base::atol_;
         using base::Hdiag_;
         // New constructors
-        davidson_standard(const MATRIX &matrix, const VS &vec) : base::davidson(matrix, vec) {};
+        davidson_standard(const MATRIX &matrix, const VS &vec, const int& site) : base::davidson(matrix, vec, site) {};
         ~davidson_standard() {};
     private:
         // Private methods
@@ -73,10 +73,10 @@ namespace ietl {
         V.push_back(t / ietl::two_norm(t));
         VA.resize(V.size());
         ietl::mult(matrix_, V[V.size() - 1], VA[V.size() - 1]);
-    }
+    };
     // Definition of the virtual function apply_operator
     template<class MATRIX, class VS>
-    davidson_standard<MATRIX, VS>::vector_type davidson_standard<MATRIX, VS>::apply_operator(const vector_type &x) {
+    typename davidson_standard<MATRIX, VS>::vector_type davidson_standard<MATRIX, VS>::apply_operator(const vector_type &x) {
         vector_type tmp;
         ietl::mult(matrix_, x, tmp);
         return tmp;
@@ -91,7 +91,7 @@ namespace ietl {
         for (size_t b = 0; b < data.n_blocks(); ++b) {
             for (size_t i = 0; i < num_rows(data[b]); ++i) {
                 for (size_t j = 0; j < num_cols(data[b]); ++j) {
-                    denom = Hdiag[b](i, j) - theta;
+                    denom = Hdiag_[b](i, j) - theta;
                     if (std::abs(denom))
                         data[b](i, j) /= denom;
                 }

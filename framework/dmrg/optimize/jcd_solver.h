@@ -40,6 +40,8 @@
 
 #include "ietl_lanczos_solver.h"
 
+#ifndef IETL_JCD_SOLVER
+#define IETL_JCD_SOLVER
 
 namespace ietl {
 // +-------------------+
@@ -68,7 +70,6 @@ namespace ietl {
                 : u_(u), r_(r), m_(m), theta_(theta) {} ;
         virtual ~jcd_solver_operator() {};
     protected:
-        // Protected attributes
         vector_type u_, r_;
         Matrix m_;
         magnitude_type theta_;
@@ -89,7 +90,7 @@ namespace ietl {
         using base::theta_ ;
         // -- Constructor --
         jcd_solver_operator_standard(const vector_type &u, const vector_type &r, const Matrix &m,
-                                     const magnitude_type &theta) : base::jcd_solver_operator(u, r, m, theta) {};
+                                     const magnitude_type &theta) : base::jcd_solver_operator(u, r, m, theta) { };
         ~jcd_solver_operator_standard() {};
         void operator()(vector_type const &x, vector_type &y) const;
     };
@@ -102,12 +103,12 @@ namespace ietl {
         scalar_type ust = dot(u_, x);
         t2 = x - ust * u_;
         // y = (A-theta*1) t2
-        mult(m_, t2, t3);
-        y = t3 - theta_ * t2;
+        //ietl::mult(m_, t2, t3);
+         y = t2 - theta_ * t2;
         // t = (1-uu*) y
         ust = dot(u_, y);
         t = y - ust * u_;
-        y = t;
+        y = t ;
     }
     // +-------------------------------+
     //  MODIFIED SOLVER OPERATOR OBJECT
@@ -125,12 +126,14 @@ namespace ietl {
         using base::theta_;
         // -- Constructor --
         jcd_solver_operator_modified(const vector_type &u, const vector_type &r, const Matrix &m,
-                                     const magnitude_type &theta, const magnitude_type &omega)
-                                     : base::jcd_solver_operator(u, r, m, theta), omega_(omega) {};
+                                     const magnitude_type &theta, const magnitude_type &omega,
+                                     const vector_type &z)
+                                     : base::jcd_solver_operator(u, r, m, theta), omega_(omega), z_(z) {};
         ~jcd_solver_operator_modified() {};
         void operator()(vector_type const &x, vector_type &y) const;
     private:
         magnitude_type omega_;
+        vector_type z_ ;
     };
     //
     template<class Matrix, class VS, class Vector>
@@ -141,7 +144,7 @@ namespace ietl {
         t *= -1.;
         t += omega_ * x;
         scalar_type ust = dot(z_, t);
-        t2 = x - ust * v_;
+        t2 = x - ust * u_;
         // y = (A-theta*1) t2
         mult(m_, t2, t3);
         t3 *= -1.;
@@ -169,3 +172,5 @@ namespace ietl {
         m(x,y);
     }
 }
+
+#endif
