@@ -75,6 +75,7 @@ namespace ietl
                                     vector_type& output, vector_type& outputA, magnitude_type& theta) ;
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                     const magnitude_type& rel_tol) ;
+        magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& idx);
     protected:
         // Private attributes
         magnitude_type omega_ ;
@@ -106,8 +107,8 @@ namespace ietl
     // Compute the error vector
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type jacobi_davidson_modified<Matrix,VS,ITER>::compute_error(const vector_type &u,
-                                                                                                                            const vector_type &uA,
-                                                                                                                            magnitude_type theta)
+                                                                                                                             const vector_type &uA,
+                                                                                                                             magnitude_type theta)
     {
         vector_type r = uA ;
         r -= u / theta;
@@ -177,6 +178,14 @@ namespace ietl
         if (max_iter_ > 0)
             t = gmres(op, inh, t, rel_tol);
     }
+    template<class MATRIX, class VS, class ITER>
+    typename jacobi_davidson_modified<MATRIX, VS, ITER>::magnitude_type jacobi_davidson_modified<MATRIX, VS, ITER>::compute_property
+            (const vector_space& V, const vector_space& VA, const int& idx)
+    {
+        magnitude_type res ;
+        res = ietl::dot(V[idx],VA[idx]) ;
+        return res ;
+    }
     //
     // MODIFIED JACOBI-DAVIDSON EIGENSOLVER WITH OVERLAP TRACKING
     // ---------------------------------------------------------
@@ -203,6 +212,7 @@ namespace ietl
     private:
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                     vector_type& output, vector_type& outputA, magnitude_type& theta) ;
+        magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& idx);
         // Private attributes
         partial_overlap pov_  ;
         std::size_t n_maxov_  ;
@@ -265,7 +275,17 @@ namespace ietl
         std::cout << " +---------------------------+ " << std::endl;
         std::cout << " Selected index - " << idx << std::endl;
         std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
-
     };
+    // Overrides the definition of compute_property function
+    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    typename jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::magnitude_type
+             jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::compute_property
+                     (const vector_space& V, const vector_space& VA, const int& idx)
+    {
+        magnitude_type res ;
+        res = pov_.overlap(V[idx], site_) ;
+        // The sign is "artificially" switched because the check is performed with "<"
+        return -res ;
+    }
 }
 #endif

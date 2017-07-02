@@ -89,13 +89,16 @@ namespace ietl
         // Public method to compute eigenvalue
         template <class GEN, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
-                                                                    ITER& iter);
+                                                                    ITER& iter,
+                                                                    const int& n_restart);
     protected:
-        // Methods
+        // Virtual Methods, defined in the derived classes
         virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
         virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual magnitude_type return_final(const magnitude_type& eigval) {} ;
         virtual void precondition(vector_type& r, const vector_type& V, const magnitude_type theta ) {} ;
+        virtual vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
+                                               size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
         // Attributes
         MATRIX const & matrix_;
         VS vecspace_;
@@ -117,14 +120,13 @@ namespace ietl
     template <class MATRIX, class VS>
     template <class GEN, class ITER>
     std::pair<typename davidson<MATRIX, VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type>
-    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, ITER& iter) {
+    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, ITER& iter, const int& n_restart) {
         // Initialization
         vector_type t  = new_vector(vecspace_);
         vector_type u  = new_vector(vecspace_);
         vector_type uA = new_vector(vecspace_);
         vector_type r  = new_vector(vecspace_);
-        std::vector<vector_type> V2;
-        std::vector<vector_type> VA;
+        vector_set V2, VA ;
         magnitude_type theta ;
         atol_ = iter.absolute_tolerance();
         std::size_t iter_dim = 0 ;
@@ -162,8 +164,8 @@ namespace ietl
             if (iter.finished(ietl::two_norm(r), theta))
                 break;
             precondition(r, u, theta);
-            std::swap(t,r);
-            // TODO ALB Maybe put here restarting algorithm
+            // Restarting algorithm
+            t = finalize_iteration(u, r, n_restart, iter_dim, V2, VA);
         } while (true);
         // accept lambda=theta and x=u
         return std::make_pair(return_final(theta), u);

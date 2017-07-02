@@ -29,7 +29,6 @@
 #define IETL_JD_SOLVER_H
 
 #include "ietl_lanczos_solver.h"
-
 #include "ietl/jd.h"
 #include "dmrg/optimize/jacobi_standard.h"
 #include "dmrg/optimize/jacobi_modified.h"
@@ -50,9 +49,10 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
 {
     // -- Initialization --
     typedef MPSTensor<Matrix, SymmGroup> Vector;
-    double tol = params["ietl_diag_tol"];
+    double tol   = params["ietl_diag_tol"] ;
     double omega = params["ietl_si_omega"] ;
     int n_tofollow = params["maximum_overlap_nstates"] ;
+    int n_restart  = params["ietl_diag_restart"] ;
     if (n_tofollow == 0 & poverlap.is_defined())
         n_tofollow = 1 ;
     std::pair<double, Vector> r0 ;

@@ -63,6 +63,8 @@ namespace ietl {
         void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
         vector_type apply_operator(const vector_type &x);
         magnitude_type return_final(const magnitude_type &x) { return omega_-x; };
+        vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
+                                       size_t& iter_dim, vector_set& V2, vector_set& VA);
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
@@ -114,6 +116,23 @@ namespace ietl {
         x2 = ietl::dot(V, Vcpy);
         r = Vcpy - x2 * V;
     } ;
+    // Virtual function finalize_iteration
+    template<class MATRIX, class VS>
+    typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX, VS>::finalize_iteration
+            (const vector_type &u, const vector_type &r, const size_t &n_restart,
+             size_t &iter_dim, vector_set &V2, vector_set &VA)
+    {
+        vector_type result ;
+        if (iter_dim == n_restart){
+            iter_dim = 0 ;
+            V2.resize(0) ;
+            VA.resize(0) ;
+            result =  u ;
+        } else {
+            result = r ;
+        }
+        return result  ;
+    }
 }
 
 #endif

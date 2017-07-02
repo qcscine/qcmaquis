@@ -68,18 +68,6 @@ namespace storage {
         typedef alps::numeric::matrix<T, std::vector<T> > type;
     };
 }
-#ifdef USE_AMBIENT
-namespace ambient { inline namespace numeric {
-    template <typename Matrix, int IB> class tiles;
-    template <typename T, class Allocator> class matrix;
-} }
-namespace storage {
-    template<typename T> 
-    struct constrained<ambient::tiles<ambient::matrix<T> > > {
-        typedef ambient::tiles<ambient::matrix<T> > type;
-    };
-}
-#endif
 
 namespace storage {
 
@@ -108,23 +96,10 @@ namespace storage {
                 assert( o[b].reasonable() );
                 for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
                     Matrix& m = o[b][k];
-#ifdef USE_AMBIENT
-                    for(int j = 0; j < m.nt; ++j)
-                    for(int i = 0; i < m.mt; ++i){
-                        if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::ext::naked(m.tile(i,j)).state != ambient::locality::local) continue;
-                        char* data = (char*)ambient::ext::naked(m.tile(i,j));
-                        ofs.write(data, m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
-                                  sizeof(typename Matrix::value_type)/sizeof(char));
-                        std::free(data);
-                        ambient::ext::naked(m.tile(i,j)).data = NULL;
-                    }
-#else
                     for (std::size_t c = 0; c < num_cols(m); ++c)
                         ofs.write((char*)(&m(0, c)), num_rows(m)*
                                  sizeof(typename Matrix::value_type)/sizeof(char));
                     m = Matrix();
-#endif
                 }
             }
             ofs.close();
@@ -144,23 +119,11 @@ namespace storage {
             size_t loop_max = o.aux_dim();
             for(size_t b = 0; b < loop_max; ++b){
                 for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
-#ifdef USE_AMBIENT
-                    Matrix& m = o[b][k];
-                    for(int j = 0; j < m.nt; ++j)
-                    for(int i = 0; i < m.mt; ++i){
-                        if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::ext::naked(m.tile(i,j)).state != ambient::locality::local) continue;
-                        ambient::ext::naked(m.tile(i,j)).data = std::malloc(ambient::ext::naked(m.tile(i,j)).spec.extent);
-                        ifs.read((char*)ambient::ext::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
-                                 sizeof(typename Matrix::value_type)/sizeof(char));
-                    }
-#else
                     o[b][k] = Matrix(o[b].left_basis()[k].second,
                                      o[b].right_basis()[k].second);
                     Matrix& m = o[b][k];
                     ifs.read((char*)(&m(0,0)), num_cols(m)*num_rows(m)*
                              sizeof(typename Matrix::value_type)/sizeof(char));
-#endif
                 }
             }
             ifs.close();
@@ -178,18 +141,7 @@ namespace storage {
             Boundary<Matrix, SymmGroup>& o = *ptr;
             for (std::size_t b = 0; b < o.aux_dim(); ++b)
             for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
-#ifdef USE_AMBIENT
-                    Matrix& m = o[b][k];
-                    for(int j = 0; j < m.nt; ++j)
-                    for(int i = 0; i < m.mt; ++i){
-                        if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::ext::naked(m.tile(i,j)).state != ambient::locality::local) continue;
-                        char* data = (char*)ambient::ext::naked(m.tile(i,j)); std::free(data);
-                        ambient::ext::naked(m.tile(i,j)).data = NULL;
-                    }
-#else
                     o[b][k] = Matrix();
-#endif
             }
         }
     private:
@@ -314,28 +266,6 @@ namespace storage {
         size_t sid;
     };
 
-#ifdef USE_AMBIENT
-    template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
-    static void migrate(const block_matrix<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
-        block_matrix<Matrix, SymmGroup>& t = const_cast<block_matrix<Matrix, SymmGroup>&>(tc);
-        for(int i = 0; i < t.n_blocks(); ++i){
-            parallel::guard proc(scheduler(i));
-            ambient::migrate(t[i]);
-        }
-    }
-    template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
-    static void migrate(const SiteOperator<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
-        SiteOperator<Matrix, SymmGroup>& t = const_cast<SiteOperator<Matrix, SymmGroup>&>(tc);
-        for(int i = 0; i < t.n_blocks(); ++i){
-            parallel::guard proc(scheduler(i));
-            ambient::migrate(t[i]);
-        }
-    }
-    template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
-    static void migrate(const MPSTensor<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
-        migrate(tc.data(), scheduler); 
-    }
-#else
     template<typename T, class Scheduler>
     static void migrate(T& t, const Scheduler& scheduler){ }
 
@@ -344,7 +274,6 @@ namespace storage {
     {
         migrate(t, parallel::scheduler_nop());
     }
-#endif
 
     inline static void setup(BaseParameters& parms){
         if(!parms["storagedir"].empty()){

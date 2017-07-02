@@ -67,14 +67,14 @@ private:
         add_option("alpha_final", "", value(1e-8));
         // Options related to the eigensolver
         add_option("eigensolver", "", value("IETL_JCD"));
-        add_option("ietl_jcd_tol", "", value(1e-8));
-        add_option("ietl_jcd_gmres", "", value(0));
-        add_option("ietl_jcd_maxiter", "", value(8));
-        add_option("ietl_davidson_maxiter", "", value(20));
+        add_option("ietl_diag_tol", "", value(1e-8));
+        add_option("ietl_diag_maxiter", "", value(20));
+        add_option("ietl_diag_restart", "Number of iterations before restarting", value(10));
         add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.));
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
-        
+        add_option("ietl_jcd_gmres", "", value(0));
+
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);
         add_option("ngrowsweeps", "", 0);

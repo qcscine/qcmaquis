@@ -35,16 +35,12 @@
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
-
 #include <ietl/cg.h>
 #include <ietl/gmres.h>
 
-#include <complex>
 #include <vector>
 
 #include <boost/function.hpp>
-
-#include "dmrg/optimize/partial_overlap.h"
 
 namespace ietl
 {
@@ -81,6 +77,7 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename std::vector<vector_type> vector_space;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        typedef typename std::vector<magnitude_type> property_vector;
         jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site);
         virtual ~jacobi_davidson() {};
         template <class GEN>
@@ -89,6 +86,7 @@ namespace ietl
         // Private method, interface to the LAPACK diagonalization routine
         void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, fortran_int_t dim,
                             fortran_int_t i1, fortran_int_t i2) ;
+        void reorder_vecspace(vector_space &V, vector_space &VA, property_vector &property_reorder, const int idx);
         // Virtual protected methods, to be inherited by derived classes
         virtual bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                        ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
@@ -99,6 +97,7 @@ namespace ietl
                                             vector_type& output, vector_type& outputA, magnitude_type& theta) {} ;
         virtual void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                             const magnitude_type& rel_tol ) {} ;
+        virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
         // Protected attributes
         MATRIX const & matrix_ ;
         VS vecspace_ ;
@@ -130,8 +129,9 @@ namespace ietl
         atol_ = iter.absolute_tolerance();
         bool converged ;
         // Vectors
-        std::vector<vector_type> V(iter.max_iterations());
-        std::vector<vector_type> VA(iter.max_iterations());
+        vector_space V(iter.max_iterations())  ;
+        vector_space VA(iter.max_iterations()) ;
+        property_vector property_reorder(iter.max_iterations()) ;
         vector_type u, uA, eigvec;
         // Initialization
         ietl::generate(V[0],gen);
@@ -142,10 +142,12 @@ namespace ietl
         // Main loop of the algorithm
         // --------------------------
         do {
-            update_vecspace(V , VA ,iter.iterations() ) ;
+            update_vecspace(V, VA ,iter.iterations() ) ;
+            reorder_vecspace(V, VA, property_reorder, iter.iterations() );
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
-            for(int i = 1; i <= iter.iterations()+1; i++)
-                M(i-1, iter.iterations()) = ietl::dot(V[i - 1], VA[iter.iterations()]);
+            for(int j = 0 ; j < iter.iterations()+1; j++)
+                for(int i = 0 ; i < j+1; i++)
+                  M(i,j) = ietl::dot(V[i], VA[j]);
             diagonalize_and_select(V, VA, iter.iterations()+1, u, uA, theta ) ;
             // Check convergence
             ++iter;
@@ -155,12 +157,41 @@ namespace ietl
                 return std::make_pair(eigval, eigvec/ietl::two_norm(eigvec));
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
             solver(u, theta, r, V[iter.iterations()], rel_tol) ;
-            V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index ;
-            storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
         } while(true);
     }
-    //
-    // -- Interface to the LAPACK diagonalization routine
+    // -- Reordering routine --
+    template <class MATRIX, class VS, class ITER>
+    void jacobi_davidson<MATRIX, VS, ITER>::reorder_vecspace(vector_space &V, vector_space &VA,
+                                                             property_vector &property_reorder, const int idx)
+    {
+        size_t i = 0 ;
+        magnitude_type prop ;
+        vector_type V_tmp  = V[idx]  ;
+        vector_type VA_tmp = VA[idx] ;
+        prop = compute_property(V, VA, idx) ;
+        do {
+            if (prop < property_reorder[i]) {
+                for (int j = idx; j > i ; j--){
+                    V[j]  = V[j-1]  ;
+                    VA[j] = VA[j-1] ;
+                }
+                V[i]  = V_tmp ;
+                VA[i] = VA_tmp ;
+                //V.insert(V.begin() + i, V_tmp);
+                //VA.insert(VA.begin() + i, VA_tmp);
+                property_reorder.insert(property_reorder.begin() + i, prop) ;
+                //V.resize(idx+1);
+                //VA.resize(idx+1);
+                break ;
+            } ;
+            if ( i == idx ) {
+                property_reorder.insert(property_reorder.begin()+idx, prop) ;
+                break ;
+            } ;
+            i += 1 ;
+        } while(true) ;
+    }
+    // -- Interface to the LAPACK diagonalization routine --
     template <class MATRIX, class VS, class ITER>
     void jacobi_davidson<MATRIX, VS, ITER>::get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvec,
                                                            fortran_int_t dim, fortran_int_t id_min, fortran_int_t id_max)
