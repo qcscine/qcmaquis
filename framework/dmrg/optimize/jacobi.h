@@ -73,12 +73,15 @@ namespace ietl
     class jacobi_davidson
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename std::vector<vector_type> vector_space;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         typedef typename std::vector<magnitude_type> property_vector;
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site);
+        typedef typename std::size_t size_t ;
+        typedef typename vectorspace_traits<VS>::vector_type vector_type;
+        typedef typename std::vector<vector_type> vector_space;
+        typedef typename std::vector<double> vector_double ;
+        typedef typename std::vector<vector_double> matrix_double ;
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site, const size_t& n_min, const size_t& n_max);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -86,35 +89,40 @@ namespace ietl
         // Private method, interface to the LAPACK diagonalization routine
         void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, fortran_int_t dim,
                             fortran_int_t i1, fortran_int_t i2) ;
-        void reorder_vecspace(vector_space &V, vector_space &VA, property_vector &property_reorder, const int idx);
         // Virtual protected methods, to be inherited by derived classes
         virtual bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                        ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
         virtual vector_type apply_operator (const vector_type& x) {} ;
-        virtual void update_vecspace(vector_space &V, vector_space &VA, const int i) {};
+        virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, property_vector& props) {};
         virtual vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) {} ;
         virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                            vector_type& output, vector_type& outputA, magnitude_type& theta) {} ;
+                                            vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                            matrix_double& eigvecs, vector_double& eigvals) {} ;
         virtual void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                             const magnitude_type& rel_tol ) {} ;
         virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
+        virtual void restart_jd(vector_space &V, vector_space &VA, const property_vector& props,
+                                const matrix_double& eigvec, const vector_double& eigval) {};
         // Protected attributes
         MATRIX const & matrix_ ;
         VS vecspace_ ;
         int site_ ;
         FortranMatrix<scalar_type> M ;
         magnitude_type atol_ ;
-        std::size_t max_iter_ ;
+        size_t max_iter_ , n_restart_min_ , n_restart_max_ ;
     };
 
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
-    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site) :
+    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix,  const VS& vec, const int& site,
+                                                       const size_t& n_min=1, const size_t& n_max=20) :
         matrix_(matrix),
         vecspace_(vec),
         site_(site),
         M(1,1),
-        max_iter_(0)
+        max_iter_(0),
+        n_restart_min_(n_min),
+        n_restart_max_(n_max)
     { } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
@@ -128,11 +136,15 @@ namespace ietl
         magnitude_type eigval, rel_tol, theta;
         atol_ = iter.absolute_tolerance();
         bool converged ;
+        int n_iter = 0 ;
         // Vectors
+        property_vector props(iter.max_iterations()) ;
         vector_space V(iter.max_iterations())  ;
         vector_space VA(iter.max_iterations()) ;
-        property_vector property_reorder(iter.max_iterations()) ;
-        vector_type u, uA, eigvec;
+        vector_type u, uA;
+        vector_double eigvals ;
+        matrix_double eigvecs ;
+        vector_type  eigvec ;
         // Initialization
         ietl::generate(V[0],gen);
         const_cast<GEN&>(gen).clear();
@@ -142,54 +154,27 @@ namespace ietl
         // Main loop of the algorithm
         // --------------------------
         do {
-            update_vecspace(V, VA ,iter.iterations() ) ;
-            reorder_vecspace(V, VA, property_reorder, iter.iterations() );
+            update_vecspace(V, VA , n_iter , props ) ;
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
-            for(int j = 0 ; j < iter.iterations()+1; j++)
+            for(int j = 0 ; j < n_iter+1; j++)
                 for(int i = 0 ; i < j+1; i++)
                   M(i,j) = ietl::dot(V[i], VA[j]);
-            diagonalize_and_select(V, VA, iter.iterations()+1, u, uA, theta ) ;
+            diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals) ;
             // Check convergence
-            ++iter;
+            ++iter ;
+            n_iter += 1 ;
             vector_type r = compute_error(u, uA, theta);
+            std::cout << theta << std::endl ;
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
             if (converged)
                 return std::make_pair(eigval, eigvec/ietl::two_norm(eigvec));
-            rel_tol = 1. / pow(2.,double(iter.iterations()+1));
+            rel_tol = 1. / pow(2.,double(n_iter+1));
             solver(u, theta, r, V[iter.iterations()], rel_tol) ;
+            if (n_iter == n_restart_max_) {
+                restart_jd(V, VA, props, eigvecs, eigvals);
+                n_iter = n_restart_min_  ;
+            }
         } while(true);
-    }
-    // -- Reordering routine --
-    template <class MATRIX, class VS, class ITER>
-    void jacobi_davidson<MATRIX, VS, ITER>::reorder_vecspace(vector_space &V, vector_space &VA,
-                                                             property_vector &property_reorder, const int idx)
-    {
-        size_t i = 0 ;
-        magnitude_type prop ;
-        vector_type V_tmp  = V[idx]  ;
-        vector_type VA_tmp = VA[idx] ;
-        prop = compute_property(V, VA, idx) ;
-        do {
-            if (prop < property_reorder[i]) {
-                for (int j = idx; j > i ; j--){
-                    V[j]  = V[j-1]  ;
-                    VA[j] = VA[j-1] ;
-                }
-                V[i]  = V_tmp ;
-                VA[i] = VA_tmp ;
-                //V.insert(V.begin() + i, V_tmp);
-                //VA.insert(VA.begin() + i, VA_tmp);
-                property_reorder.insert(property_reorder.begin() + i, prop) ;
-                //V.resize(idx+1);
-                //VA.resize(idx+1);
-                break ;
-            } ;
-            if ( i == idx ) {
-                property_reorder.insert(property_reorder.begin()+idx, prop) ;
-                break ;
-            } ;
-            i += 1 ;
-        } while(true) ;
     }
     // -- Interface to the LAPACK diagonalization routine --
     template <class MATRIX, class VS, class ITER>

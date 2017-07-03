@@ -51,34 +51,42 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
-        typedef typename base::vector_type  vector_type;
-        typedef typename base::scalar_type  scalar_type;
-        typedef typename base::vector_space vector_space;
-        typedef typename base::magnitude_type magnitude_type;
-        using base::matrix_ ;
-        using base::vecspace_ ;
-        using base::M ;
-        using base::max_iter_ ;
+        typedef typename base::magnitude_type  magnitude_type;
+        typedef typename base::matrix_double   matrix_double ;
+        typedef typename base::property_vector property_vector;
+        typedef typename base::scalar_type     scalar_type;
+        typedef typename base::size_t          size_t ;
+        typedef typename base::vector_double   vector_double;
+        typedef typename base::vector_space    vector_space;
+        typedef typename base::vector_type     vector_type;
         using base::get_eigenvalue ;
+        using base::M ;
+        using base::matrix_ ;
+        using base::max_iter_ ;
+        using base::n_restart_max_ ;
+        using base::n_restart_min_ ;
+        using base::vecspace_ ;
         //
-        jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega)
-                : base::jacobi_davidson(matrix, vec, site) , omega_(omega) {} ;
+        jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
+                                 const size_t& nmin=1, const size_t& nmax=20)
+                : base::jacobi_davidson(matrix, vec, site, nmin, nmax) , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
         // Multiply the vector by a matrix
-        vector_type apply_operator (const vector_type& x);
-        void update_vecspace(vector_space &V, vector_space &VA, const int i);
         bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
         vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) ;
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                    vector_type& output, vector_type& outputA, magnitude_type& theta) ;
+                                    vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                    matrix_double& eigvecs, vector_double& eigvals) ;
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                     const magnitude_type& rel_tol) ;
-        magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& idx);
+        void restart_jd(vector_space& V, vector_space& VA, const property_vector& props, const matrix_double& eigvecs,
+                        const vector_double& eigvals ) ;
     protected:
-        // Private attributes
+        vector_type apply_operator (const vector_type& x);
         magnitude_type omega_ ;
+        void update_vecspace(vector_space &V, vector_space &VA, const int i, property_vector& props);
     };
     // Compute the action of an operator
     template <class Matrix, class VS, class ITER>
@@ -91,7 +99,7 @@ namespace ietl
     };
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx )
+    void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, property_vector& props )
     {
         vector_type& t  = V[idx] ;
         vector_type  tA = apply_operator(t);
@@ -99,10 +107,11 @@ namespace ietl
             t -= ietl::dot(VA[i-1], tA) * V[i-1];
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
         }
-        //ietl::project(t,this->vecspace_) ;
-        //ietl::project(tA,this->vecspace_) ;
-        t /= ietl::two_norm(tA);
-        VA[idx] = tA/ietl::two_norm(tA);
+        ietl::project(t,this->vecspace_) ;
+        ietl::project(tA,this->vecspace_) ;
+        t /= ietl::two_norm(tA) ;
+        VA[idx]    = tA/ietl::two_norm(tA) ;
+        props[idx] = ietl::dot(V[idx],VA[idx]) ;
     };
     // Compute the error vector
     template <class Matrix, class VS, class ITER>
@@ -138,18 +147,25 @@ namespace ietl
                                                                             const fortran_int_t& dim,
                                                                             vector_type& MPSTns_output,
                                                                             vector_type& MPSTns_output_A,
-                                                                            magnitude_type &theta)
+                                                                            magnitude_type &theta,
+                                                                            matrix_double& eigvecs,
+                                                                            vector_double& eigvals)
     {
         // Initialization
-        typedef typename std::vector<double> vector_scalars ;
-        vector_scalars eigvals ;
-        std::vector< vector_scalars > eigvecs ;
-        int imin , imax ;
+        int imin , imax , nevec ;
         // Definition of the dimensions and dynamic memory allocation
+        if (dim != n_restart_max_) {
+            imin  = imax = 1;
+            nevec = 1 ;
+        } else {
+            imin  = 1;
+            imax  = dim ;
+            nevec = imax - imin + 1 ;
+        }
         eigvals.resize(dim) ;
-        eigvecs.resize(1) ;
-        eigvecs[0].resize(dim) ;
-        imin = imax = 1;
+        eigvecs.resize(nevec) ;
+        for (int i = 0 ; i < nevec ; i++)
+            eigvecs[i].resize(dim) ;
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
         int idx = 0;
@@ -179,12 +195,34 @@ namespace ietl
             t = gmres(op, inh, t, rel_tol);
     }
     template<class MATRIX, class VS, class ITER>
-    typename jacobi_davidson_modified<MATRIX, VS, ITER>::magnitude_type jacobi_davidson_modified<MATRIX, VS, ITER>::compute_property
-            (const vector_space& V, const vector_space& VA, const int& idx)
+    void jacobi_davidson_modified<MATRIX, VS, ITER>::restart_jd(vector_space &V, vector_space &VA, const property_vector& props,
+                                                                const matrix_double &eigvecs, const vector_double &eigvals)
     {
-        magnitude_type res ;
-        res = ietl::dot(V[idx],VA[idx]) ;
-        return res ;
+        // Variable declaration
+        typedef std::pair<int, float> couple_val ;
+        std::vector<couple_val> vector_values ;
+        vector_type V_tmp, VA_tmp ;
+        size_t idx ;
+        // Build the vector
+        for (int i = 0, i < n_restart_max_ ; i++)
+            vector_values.push_back(std::make_pair(i,eigvals[i]));
+        std::sort(vector_values.begin(),vector_values.end(),[](couple_val a, couple_val b)
+        {
+            return b.second < b.first ;
+        });
+        // Finalization
+        for (int i = 0; i < n_restart_min_-1; i++) {
+            idx = vector_values[i].second() ;
+            V_tmp  = eigvecs[idx][0] * MPSTns_input[0];
+            VA_tmp = eigvecs[idx][0] * MPSTns_input_A[0];
+            for (int j = 1; j < n_restart_max_; ++j) {
+                V_tmp  += eigvecs[idx][j] * MPSTns_input[j];
+                VA_tmp += eigvecs[idx][j] * MPSTns_input_A[j];
+            }
+            V[i]  = V_tmp ;
+            VA[i] = VA_tmp ;
+        }
+        V[n_restart_min_] = V[n_restart_max_] ;
     }
     //
     // MODIFIED JACOBI-DAVIDSON EIGENSOLVER WITH OVERLAP TRACKING
@@ -194,29 +232,89 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson_modified<MATRIX, VS, ITER> base;
-        typedef typename base::vector_type  vector_type;
-        typedef typename base::scalar_type  scalar_type;
-        typedef typename base::vector_space vector_space;
-        typedef typename base::magnitude_type magnitude_type;
+        typedef typename base::magnitude_type  magnitude_type;
+        typedef typename base::matrix_double   matrix_double;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
-        using base::matrix_ ;
-        using base::vecspace_ ;
+        typedef typename base::property_vector property_vector;
+        typedef typename base::scalar_type     scalar_type;
+        typedef typename base::size_t          size_t ;
+        typedef typename base::vector_double   vector_double;
+        typedef typename base::vector_space    vector_space;
+        typedef typename base::vector_type     vector_type;
+        using base::apply_operator ;
         using base::get_eigenvalue ;
-        using base::site_ ;
+        using base::matrix_ ;
         using base::omega_ ;
+        using base::site_ ;
+        using base::vecspace_ ;
         //
         jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
-                                    const partial_overlap& pov, const std::size_t n)
-                : base::jacobi_davidson_modified(matrix, vec, site, omega) , pov_(pov) , n_maxov_(n) {} ;
+                                    const partial_overlap& pov, const size_t n, const size_t& nmin=1, const size_t& nmax=20)
+                : base::jacobi_davidson_modified(matrix, vec, site, omega, nmin, nmax) , pov_(pov) , n_maxov_(n) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                    vector_type& output, vector_type& outputA, magnitude_type& theta) ;
-        magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& idx);
+                                    vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                    matrix_double& eigvecs, vector_double& eigvals) ;
+        void update_vecspace(vector_space& V, vector_space& VA, const int idx, property_vector& props) ;
+        void restart_jd(vector_space& V, vector_space& VA, const property_vector& props, const matrix_double& eigvecs,
+                        const vector_double& eigvals ) ;
         // Private attributes
         partial_overlap pov_  ;
-        std::size_t n_maxov_  ;
+        size_t n_maxov_  ;
     };
+    // Update the vector space in JCD iteration
+    template <class Matrix, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson_modified_mo<Matrix, VS, ITER, OtherMatrix, SymmGroup>::update_vecspace
+            (vector_space& V, vector_space& VA, const int idx, property_vector& props)
+    {
+        vector_type& t  = V[idx] ;
+        vector_type  tA = apply_operator(t);
+        for (int i = 1; i <= idx ; i++) {
+            t -= ietl::dot(VA[i-1], tA) * V[i-1];
+            tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
+        }
+        ietl::project(t,this->vecspace_) ;
+        ietl::project(tA,this->vecspace_) ;
+        t /= ietl::two_norm(tA) ;
+        VA[idx]    = tA/ietl::two_norm(tA) ;
+        double scr = pov_.overlap(t/ietl::two_norm(t), site_);
+        props[idx] = scr ;
+        std::cout << "Prop: " << props[idx] << std::endl ;
+    };
+    //
+    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::restart_jd
+            (vector_space &V, vector_space &VA, const property_vector& props,
+             const matrix_double& eigvecs, const vector_double& eigvals)
+    {
+        // Variable declaration
+        typedef std::pair<int, float> couple_val ;
+        std::vector<couple_val> vector_values ;
+        vector_type V_tmp, VA_tmp ;
+        size_t idx ;
+        // Build the vector
+        for (int i = 0, i < n_restart_max_ ; i++)
+            vector_values.push_back(std::make_pair(i,eigvals[i]));
+        std::sort(vector_values.begin(),vector_values.end(),[](couple_val a, couple_val b)
+        {
+            return b.second > b.first ;
+        });
+        // Finalization
+        for (int i = 0; i < n_restart_min_-1; i++) {
+            idx = vector_values[i].second() ;
+            V_tmp  = eigvecs[idx][0] * MPSTns_input[0];
+            VA_tmp = eigvecs[idx][0] * MPSTns_input_A[0];
+            for (int j = 1; j < n_restart_max_; ++j) {
+                V_tmp  += eigvecs[idx][j] * MPSTns_input[j];
+                VA_tmp += eigvecs[idx][j] * MPSTns_input_A[j];
+            }
+            V[i]  = V_tmp ;
+            VA[i] = VA_tmp ;
+        }
+        V[n_restart_min_] = V[n_restart_max_] ;
+    }
+    //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_and_select
             (const vector_space& MPSTns_input,
@@ -224,13 +322,13 @@ namespace ietl
              const fortran_int_t& dim,
              vector_type& MPSTns_output,
              vector_type& MPSTns_output_A,
-             magnitude_type &theta)
+             magnitude_type &theta,
+             matrix_double& eigvecs,
+             vector_double& eigvals)
     {
         // Initialization
-        typedef typename std::vector<double> vector_scalars ;
         double thresh = 0.50 ;
-        vector_scalars eigvals , overlaps ;
-        std::vector< vector_scalars > eigvecs ;
+        vector_double overlaps ;
         vector_type u_local , uA_local ;
         int imin , imax ;
         int  n_eigen  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
@@ -270,22 +368,11 @@ namespace ietl
         }
         theta = eigvals[idx] ;
         // Print summary
-        std::cout << " +---------------------------+ " << std::endl;
-        std::cout << "  Maximum Overlap Calculation  " << std::endl;
-        std::cout << " +---------------------------+ " << std::endl;
-        std::cout << " Selected index - " << idx << std::endl;
-        std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
+        //std::cout << " +---------------------------+ " << std::endl;
+        //std::cout << "  Maximum Overlap Calculation  " << std::endl;
+        //std::cout << " +---------------------------+ " << std::endl;
+        //std::cout << " Selected index - " << idx << std::endl;
+        //std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
     };
-    // Overrides the definition of compute_property function
-    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
-    typename jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::magnitude_type
-             jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::compute_property
-                     (const vector_space& V, const vector_space& VA, const int& idx)
-    {
-        magnitude_type res ;
-        res = pov_.overlap(V[idx], site_) ;
-        // The sign is "artificially" switched because the check is performed with "<"
-        return -res ;
-    }
 }
 #endif
