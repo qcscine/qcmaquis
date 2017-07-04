@@ -81,6 +81,7 @@ namespace ietl
         typedef typename std::vector<vector_type> vector_space;
         typedef typename std::vector<double> vector_double ;
         typedef typename std::vector<vector_double> matrix_double ;
+        typedef typename std::pair<int, float> couple_val ;
         jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site, const size_t& n_min, const size_t& n_max);
         virtual ~jacobi_davidson() {};
         template <class GEN>
@@ -101,8 +102,19 @@ namespace ietl
         virtual void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                             const magnitude_type& rel_tol ) {} ;
         virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
-        virtual void restart_jd(vector_space &V, vector_space &VA, const property_vector& props,
-                                const matrix_double& eigvec, const vector_double& eigval) {};
+        virtual void restart_jd(vector_space &V, vector_space &VA, property_vector& props, const matrix_double& eigvec,
+                                const vector_double& eigval) {};
+        // Structure used for restart
+        struct lt_couple {
+            inline bool operator() (const couple_val& a , const couple_val& b) {
+                return (a.second < b.second) ;
+            }
+        };
+        struct gt_couple {
+            inline bool operator() (const couple_val& a , const couple_val& b) {
+                return (a.second > b.second) ;
+            }
+        };
         // Protected attributes
         MATRIX const & matrix_ ;
         VS vecspace_ ;
@@ -164,15 +176,14 @@ namespace ietl
             ++iter ;
             n_iter += 1 ;
             vector_type r = compute_error(u, uA, theta);
-            std::cout << theta << std::endl ;
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
             if (converged)
                 return std::make_pair(eigval, eigvec/ietl::two_norm(eigvec));
             rel_tol = 1. / pow(2.,double(n_iter+1));
-            solver(u, theta, r, V[iter.iterations()], rel_tol) ;
+            solver(u, theta, r, V[n_iter], rel_tol) ;
             if (n_iter == n_restart_max_) {
                 restart_jd(V, VA, props, eigvecs, eigvals);
-                n_iter = n_restart_min_  ;
+                n_iter = n_restart_min_-1  ;
             }
         } while(true);
     }

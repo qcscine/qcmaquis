@@ -48,6 +48,7 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
+        typedef typename base::couple_val      couple_val;
         typedef typename base::magnitude_type  magnitude_type;
         typedef typename base::matrix_double   matrix_double;
         typedef typename base::property_vector property_vector;
@@ -66,6 +67,8 @@ namespace ietl
         using base::site_ ;
         using base::vecspace_ ;
         //
+        using base::lt_couple ;
+        //
         jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax)
                 : base::jacobi_davidson(matrix, vec, site, nmin, nmax) {} ;
         ~jacobi_davidson_standard() {} ;
@@ -81,8 +84,7 @@ namespace ietl
                                     matrix_double& eigvecs, vector_double& eigvals) ;
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                     const magnitude_type& rel_tol) ;
-        void restart_jd(vector_space& V, vector_space& VA, const property_vector& props, const matrix_double& eigvecs,
-                        const vector_double& eigvals ) ;
+        void restart_jd(vector_space& V, vector_space& VA, property_vector& props, const matrix_double& eigvecs, const vector_double& eigvals ) ;
     };
     //
     // Compute the action of an operator
@@ -186,38 +188,31 @@ namespace ietl
             t = gmres(op, inh, t, rel_tol);
     } ;
     template<class MATRIX, class VS, class ITER>
-    void jacobi_davidson_standard<MATRIX, VS, ITER>::restart_jd(vector_space &V, vector_space &VA, const property_vector& props,
+    void jacobi_davidson_standard<MATRIX, VS, ITER>::restart_jd(vector_space &V, vector_space &VA, property_vector& props,
                                                                 const matrix_double &eigvecs, const vector_double &eigvals)
     {
         // Variable declaration
-        typedef std::pair<int, float> couple_val ;
         std::vector<couple_val> vector_values ;
-        vector_type V_tmp, VA_tmp ;
+        vector_space V_tmp(n_restart_min_), VA_tmp(n_restart_min_) ;
         size_t idx ;
         // Build the vector
         for (int i = 0; i < n_restart_max_ ; i++)
             vector_values.push_back(std::make_pair(i,eigvals[i]));
-        std::sort(vector_values.begin(),vector_values.end(),[](couple_val a, couple_val b)
-        {
-            return b.second < b.first ;
-        });
+        std::sort(vector_values.begin(),vector_values.end(),lt_couple());
         // Finalization
-        std::cout << "Pippo" << std::endl ;
-        std::cout << n_restart_min_ << std::endl ;
-        std::cout << n_restart_max_ << std::endl ;
         for (int i = 0; i < n_restart_min_; i++) {
-            idx = vector_values[i].second ;
-            std::cout << idx << std::endl ;
-            V_tmp  = eigvecs[idx][0] * V[0];
-            VA_tmp = eigvecs[idx][0] * VA[0];
+            idx = vector_values[i].first ;
+            V_tmp[i]  = eigvecs[idx][0] * V[0];
+            VA_tmp[i] = eigvecs[idx][0] * VA[0];
             for (int j = 1; j < n_restart_max_; ++j) {
-                V_tmp  += eigvecs[idx][j] * V[j];
-                VA_tmp += eigvecs[idx][j] * VA[j];
+                V_tmp[i]  += eigvecs[idx][j] * V[j];
+                VA_tmp[i] += eigvecs[idx][j] * VA[j];
             }
-            V[i]  = V_tmp ;
-            VA[i] = VA_tmp ;
         }
-        V[n_restart_min_] = V[n_restart_max_+1] ;
+        for (int i = 0; i < n_restart_min_ ; i++){
+            V[i]  = V_tmp[i] ;
+            VA[i] = VA_tmp[i];
+        }
     }
     //
     // JACOBI-DAVIDSON EIGENSOLVER WITH OVERLAP TRACKING
@@ -227,8 +222,9 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson_standard<MATRIX, VS, ITER> base;
-        typedef typename base::magnitude_type magnitude_type;
-        typedef typename base::matrix_double  matrix_double;
+        typedef typename base::couple_val      couple_val ;
+        typedef typename base::magnitude_type  magnitude_type;
+        typedef typename base::matrix_double   matrix_double;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         typedef typename base::property_vector property_vector ;
         typedef typename base::scalar_type     scalar_type ;
@@ -240,9 +236,11 @@ namespace ietl
         using base::get_eigenvalue ;
         using base::matrix_ ;
         using base::n_restart_max_ ;
-        using base::n_restart_mint _ ;
+        using base::n_restart_min_ ;
         using base::site_ ;
         using base::vecspace_ ;
+        //
+        using base::gt_couple ;
         //
          jacobi_davidson_standard_mo(const MATRIX& matrix, const VS& vec, const int& site, const partial_overlap& pov,
                                      const size_t n, const size_t& nmin=1, const size_t& nmax=20)
@@ -253,7 +251,7 @@ namespace ietl
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                     vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
-        void restart_jd(vector_space& V, vector_space& VA, const property_vector& props, const matrix_double& eigvecs,
+        void restart_jd(vector_space& V, vector_space& VA, property_vector& props, const matrix_double& eigvecs,
                         const vector_double& eigvals ) ;
         // Private attributes
         partial_overlap pov_  ;
@@ -287,81 +285,90 @@ namespace ietl
         double thresh = 0.50 ;
         vector_double overlaps ;
         vector_type u_local , uA_local ;
-        int imin , imax ;
-        int n_eigen  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
+        int imin , imax , nevec;
         // Definition of the dimensions and dynamic memory allocation
-        assert (n_eigen > 0) ;
-        overlaps.resize(n_eigen) ;
-        eigvals.resize(n_eigen) ;
-        eigvecs.resize(n_eigen) ;
-        for (int i = 0 ; i < n_eigen ; ++i)
-            eigvecs[i].resize(dim) ;
-        if (n_eigen == 1) {
-            imin = imax = 1;
-        } else {
-            imin = 1 ;
-            imax = n_eigen ;
-        }
+        //eigvals.resize(n_eigen) ;
+        //eigvecs.resize(n_eigen) ;
+        //for (int i = 0 ; i < n_eigen ; ++i)
+        //    eigvecs[i].resize(dim) ;
+        //if (n_eigen == 1) {
+        //    imin = imax = 1;
+        //} else {
+        imin  = 1 ;
+        imax  = dim ;
+        nevec = imax - imin + 1 ;
+        //}
+        eigvals.resize(nevec) ;
+        overlaps.resize(nevec) ;
+        eigvecs.resize(nevec) ;
+        for (int i = 0 ; i < nevec ; ++i)
+            eigvecs[i].resize(nevec) ;
         // Diagonalization
-        get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
+        get_eigenvalue(eigvals, eigvecs, nevec , imin, imax) ;
         int idx = 0;
-        for (int i = 0; i < n_eigen; ++i) {
+        for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis
             u_local = eigvecs[i][0] * MPSTns_input_A[0];
-            for (int j = 1; j < dim; ++j)
+            for (int j = 1; j < nevec; ++j)
                 u_local += eigvecs[i][j] * MPSTns_input_A[j];
             double scr = pov_.overlap(u_local, site_);
             overlaps[i] = fabs(scr);
         }
-        for (int i = 1; i < n_eigen; ++i)
+        for (int i = 1; i < nevec; ++i)
             if (overlaps[i] > overlaps[idx])
                 idx = i;
         // Finalization
         MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
         MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A[0] ;
-        for (int j = 1; j < dim; ++j) {
+        for (int j = 1; j < nevec; ++j) {
             MPSTns_output   += eigvecs[idx][j]*MPSTns_input[j] ;
             MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
         }
         theta = eigvals[idx] ;
         // Print summary
-        std::cout << " +---------------------------+ " << std::endl;
-        std::cout << "  Maximum Overlap Calculation  " << std::endl;
-        std::cout << " +---------------------------+ " << std::endl;
-        std::cout << " Selected index - " << idx << std::endl;
-        std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
+        //std::cout << " +---------------------------+ " << std::endl;
+        //std::cout << "  Maximum Overlap Calculation  " << std::endl;
+        //std::cout << " +---------------------------+ " << std::endl;
+        //std::cout << " Selected index - " << idx << std::endl;
+        //std::cout << " Overlap value  - " << overlaps[idx] << std::endl;
     };
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::restart_jd
-            (vector_space &V, vector_space &VA, const property_vector& props,
-             const matrix_double &eigvecs, const vector_double &eigvals)
+            (vector_space &V, vector_space &VA, property_vector& props, const matrix_double &eigvecs,
+             const vector_double &eigvals)
     {
         // Variable declaration
-        typedef std::pair<int, float> couple_val ;
         std::vector<couple_val> vector_values ;
-        vector_type V_tmp, VA_tmp ;
+        property_vector p_tmp(n_restart_max_) ;
+        vector_space V_tmp(n_restart_min_), VA_tmp(n_restart_min_) ;
+        vector_type tmp_V ;
         size_t idx ;
+        // Rotates the properties
+        for (int i = 0; i < n_restart_max_ ; i++) {
+            tmp_V = eigvecs[i][0] * V[0];
+            for (int j = 1 ; j < n_restart_max_ ; j++)
+                tmp_V  += eigvecs[i][j] * V[j];
+            p_tmp[i] = pov_.overlap(tmp_V/ietl::two_norm(tmp_V), site_) ;
+        }
         // Build the vector
         for (int i = 0; i < n_restart_max_ ; i++)
-            vector_values.push_back(std::make_pair(i,eigvals[i]));
-        std::sort(vector_values.begin(),vector_values.end(),[](couple_val a, couple_val b)
-        {
-            return b.second > b.first ;
-        });
+            vector_values.push_back(std::make_pair(i,fabs(p_tmp[i])));
+        std::sort(vector_values.begin(),vector_values.end(),gt_couple());
         // Finalization
-        for (int i = 0; i < n_restart_min_-1; i++) {
-            idx = vector_values[i].second() ;
-            V_tmp  = eigvecs[idx][0] * MPSTns_input[0];
-            VA_tmp = eigvecs[idx][0] * MPSTns_input_A[0];
+        for (int i = 0; i < n_restart_min_; i++) {
+            idx = vector_values[i].first ;
+            V_tmp[i]  = eigvecs[idx][0] * V[0];
+            VA_tmp[i] = eigvecs[idx][0] * VA[0];
             for (int j = 1; j < n_restart_max_; ++j) {
-                V_tmp  += eigvecs[idx][j] * MPSTns_input[j];
-                VA_tmp += eigvecs[idx][j] * MPSTns_input_A[j];
+                V_tmp[i]  += eigvecs[idx][j] * V[j];
+                VA_tmp[i] += eigvecs[idx][j] * VA[j];
             }
-            V[i]  = V_tmp ;
-            VA[i] = VA_tmp ;
         }
-        V[n_restart_min_] = V[n_restart_max_] ;
+        for (int i = 0; i < n_restart_min_ ; i++){
+            V[i]  = V_tmp[i] ;
+            VA[i] = VA_tmp[i];
+        }
     }
 }
 
