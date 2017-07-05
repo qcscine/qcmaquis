@@ -387,10 +387,6 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
-    if(verbose){
-        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
-    }
-    
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
     return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
@@ -439,7 +435,6 @@ truncation_results alt_svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     S = sqrt(D);
     S /= trace(S);
     V.adjoint_inplace();
-    
     maquis::cout << "U:\n" << U.left_basis() << "\n" << U.right_basis() << std::endl;
     maquis::cout << "S:\n" << S.left_basis() << "\n" << S.right_basis() << std::endl;
     maquis::cout << "V:\n" << V.left_basis() << "\n" << V.right_basis() << std::endl;
@@ -460,13 +455,10 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     Index<SymmGroup> old_basis = evals.left_basis();
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
-
     estimate_truncation(evals, Mmax, cutoff, keeps, truncated_fraction, truncated_weight, smallest_ev);
-
     for ( int k = evals.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
         size_t keep = keeps[k];
-        
         if (keep == 0) {
             evals.remove_block(evals.basis().left_charge(k),
                                evals.basis().right_charge(k));
@@ -488,12 +480,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         }
     }
     delete[] keeps;
-
     std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
-    if(verbose){
-        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
-    }
-    
     // MD: for eigenvalues we care about summing the discraded
     return truncation_results(bond_dimension, truncated_fraction, truncated_fraction, smallest_ev);
 }

@@ -32,6 +32,8 @@
 #include "ietl/jd.h"
 #include "dmrg/optimize/jacobi_standard.h"
 #include "dmrg/optimize/jacobi_modified.h"
+#include "dmrg/optimize/jacobi_standard_mo.h"
+#include "dmrg/optimize/jacobi_modified_mo.h"
 #include "dmrg/optimize/partial_overlap.h"
 
 //
@@ -49,14 +51,15 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
 {
     // -- Initialization --
     typedef MPSTensor<Matrix, SymmGroup> Vector;
-    double tol   = params["ietl_diag_tol"] ;
+    double rtol  = params["ietl_diag_rtol"] ;
+    double atol  = params["ietl_diag_atol"] ;
     double omega = params["ietl_si_omega"] ;
     int n_tofollow = params["maximum_overlap_nstates"] ;
     int n_restart  = params["ietl_diag_restart"] ;
     if (n_tofollow == 0 & poverlap.is_defined())
         n_tofollow = 1 ;
     std::pair<double, Vector> r0 ;
-    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
+    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], rtol, atol);
     // -- Orthogonalization --
     if (initial.num_elements() <= ortho_vecs.size())
         ortho_vecs.resize(initial.num_elements()-1);
@@ -64,7 +67,6 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
     // --  JD ALGORITHM --
-    maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
     for (int n = 0; n < ortho_vecs.size(); ++n) {
         maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
@@ -93,7 +95,9 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     }
     for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
-    maquis::cout << "JCD used " << iter.iterations() << " iterations." << std::endl;
+    std::cout << "\n Summary of the results " << std::endl ;
+    std::cout <<   " ---------------------- " << std::endl ;
+    maquis::cout << " Number of iterations - " << iter.iterations() << std::endl;
     return r0;
 }
 

@@ -67,7 +67,8 @@ private:
         add_option("alpha_final", "", value(1e-8));
         // Options related to the eigensolver
         add_option("eigensolver", "", value("IETL_JCD"));
-        add_option("ietl_diag_tol", "", value(1e-8));
+        add_option("ietl_diag_atol", "", value(1e-4));
+        add_option("ietl_diag_rtol", "", value(1e-8));
         add_option("ietl_diag_maxiter", "", value(20));
         add_option("ietl_diag_restart_nmin", "", value(1));
         add_option("ietl_diag_restart_nmax", "", value(20));
@@ -76,15 +77,15 @@ private:
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         add_option("ietl_jcd_gmres", "", value(0));
-
+        // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);
         add_option("ngrowsweeps", "", 0);
-        
+        // In-out files
         add_option("resultfile", "");
         add_option("chkpfile", "");
         add_option("initfile", "", value(""));
-        
+
         add_option("donotsave", "", value(0));
         add_option("run_seconds", "", value(0));
         add_option("storagedir", "", value(""));

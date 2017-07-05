@@ -42,6 +42,8 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
     // Inherits several data from the "mother" class
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap partial_overlap ;
+    //
     using base::mpo ;
     using base::mps ;
     using base::left_ ;
@@ -65,7 +67,6 @@ public:
         if (i < 0) return 0;
         return (i < L) ? i : 2*L - 1 - i;
     }
-    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap partial_overlap ;
     //
     // SWEEP ROUTINE
     // -------------
@@ -87,19 +88,19 @@ public:
         // Main loop
         for (; _site < 2*L; ++_site) {
             //
-            double i ;
-            if (poverlap.is_defined()) {
-                i = poverlap.overlap(site);
-                std::cout << "Overlap " << i << std::endl;
-            }
+            //double i ;
+            //if (poverlap.is_defined()) {
+            //    i = poverlap.overlap(site);
+            //    std::cout << "Overlap " << i << std::endl;
+            //}
             // lr indicates the direction of the sweep
             int lr = (_site < L) ? +1 : -1;
             site = to_site(L, _site);
+            print_header(sweep, site, lr) ;
             if (lr == -1 && site == L-1) {
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
-            maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
             Storage::fetch(left_[site]);
             Storage::fetch(right_[site+1]);
             if (lr == +1 && site+2 <= L) Storage::prefetch(right_[site+2]);
@@ -146,7 +147,7 @@ public:
             // ---------------------
             int prec = maquis::cout.precision();
             maquis::cout.precision(15);
-            maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy()<< std::endl;
+            maquis::cout << " Converged energy " << res.first + mpo.getCoreEnergy() << std::endl;
             maquis::cout.precision(prec);
             iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
             // Loads the alpha parameter
@@ -165,7 +166,7 @@ public:
             //
             if (lr == +1) {
                 if (site < L-1) {
-                    maquis::cout << "Growing, alpha = " << alpha << std::endl;
+                    maquis::cout << " Alpha = " << alpha << std::endl;
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
@@ -180,7 +181,7 @@ public:
                 }
             } else if (lr == -1) {
                 if (site > 0) {
-                    maquis::cout << "Growing, alpha = " << alpha << std::endl;
+                    maquis::cout << " Alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
                 } else {
@@ -201,13 +202,23 @@ public:
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
-            maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
+            maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);
         }
         initial_site = -1;
     }
-    
+    //
+    void print_header(int& sweep, int& site, int& lr){
+        char buffer[40] ;
+        if (lr == 1)
+            int n = sprintf(buffer, "  Sweeep number %3d - site number %3d", 2*sweep+1, site);
+        else
+            int n = sprintf(buffer, "  Sweeep number %3d - site number %3d", 2*sweep+2, site);
+        std::cout << " +-----------------------------------+" << std::endl ;
+        std::cout << buffer << std::endl ;
+        std::cout << " +-----------------------------------+" << std::endl ;
+    }
 private:
     int initial_site;
 };

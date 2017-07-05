@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -76,7 +77,7 @@ struct SiteProblem
 now = boost::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
 then = boost::chrono::high_resolution_clock::now(); \
-maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
+maquis::cout << " Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
 
 inline double log_interpolate(double y0, double y1, int N, int i)
 {

@@ -58,7 +58,6 @@ namespace ietl
     // matrix_   : the matrix representation of the operator for the site where the optimization is
     //             carried out
     // vecspace_ : the vector space where the optimization is carried out
-    // atol_     : tolerance for assessing convergence of the optimization
     // Other attributes, that are specific of other type of eigensolvers (such as a shift omega or a
     // state to target) are defined in the inherited classes.
     //
@@ -75,35 +74,39 @@ namespace ietl
     public:
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        typedef typename std::vector<magnitude_type> property_vector;
         typedef typename std::size_t size_t ;
         typedef typename vectorspace_traits<VS>::vector_type vector_type;
         typedef typename std::vector<vector_type> vector_space;
         typedef typename std::vector<double> vector_double ;
         typedef typename std::vector<vector_double> matrix_double ;
-        typedef typename std::pair<int, float> couple_val ;
+        typedef typename std::pair<int, float>   couple_val ;
+        typedef typename std::vector<couple_val> couple_vec ;
         jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site, const size_t& n_min, const size_t& n_max);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
     protected:
-        // Private method, interface to the LAPACK diagonalization routine
+        //
         void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, fortran_int_t dim,
                             fortran_int_t i1, fortran_int_t i2) ;
         // Virtual protected methods, to be inherited by derived classes
         virtual bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                        ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
+        virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
+        virtual vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
+                                                const matrix_double& eigvecs, const vector_double& eigvals) {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
-        virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, property_vector& props) {};
         virtual vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) {} ;
         virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                             vector_type& output, vector_type& outputA, magnitude_type& theta,
                                             matrix_double& eigvecs, vector_double& eigvals) {} ;
+        virtual void print_endline(void) {} ;
+        virtual void print_header_table(void) {} ;
+        virtual void print_newline_table(const size_t& i , const double& er, const magnitude_type& ener, const double& ov) {} ;
         virtual void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                             const magnitude_type& rel_tol ) {} ;
-        virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
-        virtual void restart_jd(vector_space &V, vector_space &VA, property_vector& props, const matrix_double& eigvec,
-                                const vector_double& eigval) {};
+        virtual void sort_prop(couple_vec& vector_values) {} ;
+        virtual void update_vecspace(vector_space &V, vector_space &VA, const int i) {};
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -119,9 +122,12 @@ namespace ietl
         MATRIX const & matrix_ ;
         VS vecspace_ ;
         int site_ ;
+        double overlap_ ;
         FortranMatrix<scalar_type> M ;
-        magnitude_type atol_ ;
         size_t max_iter_ , n_restart_min_ , n_restart_max_ ;
+    private:
+        // Private method, interface to the LAPACK diagonalization routine
+        void restart_jd(vector_space &V, vector_space &VA, const matrix_double& eigvec, const vector_double& eigval);
     };
 
     // -- Constructor --
@@ -134,7 +140,8 @@ namespace ietl
         M(1,1),
         max_iter_(0),
         n_restart_min_(n_min),
-        n_restart_max_(n_max)
+        n_restart_max_(n_max),
+        overlap_(0.)
     { } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
@@ -146,13 +153,12 @@ namespace ietl
         // Variable declaration
         // Scalars
         magnitude_type eigval, rel_tol, theta;
-        atol_ = iter.absolute_tolerance();
         bool converged ;
         int n_iter = 0 ;
         // Vectors
-        property_vector props(iter.max_iterations()) ;
-        vector_space V(iter.max_iterations())  ;
-        vector_space VA(iter.max_iterations()) ;
+        vector_double props(iter.max_iterations()) ;
+        vector_space  V(iter.max_iterations())  ;
+        vector_space  VA(iter.max_iterations()) ;
         vector_type u, uA;
         vector_double eigvals ;
         matrix_double eigvecs ;
@@ -162,11 +168,12 @@ namespace ietl
         const_cast<GEN&>(gen).clear();
         ietl::project(V[0],vecspace_);
         M.resize(iter.max_iterations(), iter.max_iterations());
+        print_header_table() ;
         //
         // Main loop of the algorithm
         // --------------------------
         do {
-            update_vecspace(V, VA , n_iter , props ) ;
+            update_vecspace(V, VA , n_iter) ;
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int j = 0 ; j < n_iter+1; j++)
                 for(int i = 0 ; i < j+1; i++)
@@ -177,15 +184,52 @@ namespace ietl
             n_iter += 1 ;
             vector_type r = compute_error(u, uA, theta);
             converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
-            if (converged)
-                return std::make_pair(eigval, eigvec/ietl::two_norm(eigvec));
+            print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_) ;
+            if (converged) {
+                print_endline();
+                return std::make_pair(eigval, eigvec / ietl::two_norm(eigvec));
+            }
             rel_tol = 1. / pow(2.,double(n_iter+1));
             solver(u, theta, r, V[n_iter], rel_tol) ;
             if (n_iter == n_restart_max_) {
-                restart_jd(V, VA, props, eigvecs, eigvals);
+                restart_jd(V, VA, eigvecs, eigvals);
+                print_endline() ;
                 n_iter = n_restart_min_-1  ;
             }
         } while(true);
+    }
+    // Restarting routine
+    template <class MATRIX, class VS, class ITER>
+    void jacobi_davidson<MATRIX, VS, ITER>::restart_jd (vector_space &V, vector_space &VA,
+                                                        const matrix_double& eigvecs,
+                                                        const vector_double& eigvals)
+    {
+        // Variable declaration
+        std::vector<couple_val> vector_values ;
+        vector_double p_tmp(n_restart_max_) ;
+        vector_space V_tmp(n_restart_min_), VA_tmp(n_restart_min_) ;
+        vector_type tmp_V ;
+        size_t idx ;
+        // Rotates the properties
+        p_tmp = generate_property(V, VA, n_restart_max_, eigvecs, eigvals) ;
+        // Build the vector
+        for (int i = 0; i < n_restart_max_ ; i++)
+            vector_values.push_back(std::make_pair(i,fabs(p_tmp[i])));
+        sort_prop(vector_values) ;
+        // Finalization
+        for (int i = 0; i < n_restart_min_; i++) {
+            idx = vector_values[i].first ;
+            V_tmp[i]  = eigvecs[idx][0] * V[0];
+            VA_tmp[i] = eigvecs[idx][0] * VA[0];
+            for (int j = 1; j < n_restart_max_; ++j) {
+                V_tmp[i]  += eigvecs[idx][j] * V[j];
+                VA_tmp[i] += eigvecs[idx][j] * VA[j];
+            }
+        }
+        for (int i = 0; i < n_restart_min_ ; i++){
+            V[i]  = V_tmp[i] ;
+            VA[i] = VA_tmp[i];
+        }
     }
     // -- Interface to the LAPACK diagonalization routine --
     template <class MATRIX, class VS, class ITER>
@@ -193,7 +237,7 @@ namespace ietl
                                                            fortran_int_t dim, fortran_int_t id_min, fortran_int_t id_max)
     {
         // Definition of all the quantities needed by the LAPACK routine
-        double abstol = atol_;
+        double abstol = 1.0E-7;
         char jobz  = 'V';
         char range = 'I';
         char uplo  = 'U';

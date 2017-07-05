@@ -48,9 +48,10 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     int n_restart = params["ietl_diag_restart"] ;
-    double tol    = params["ietl_diag_tol"];
+    double atol   = params["ietl_diag_atol"];
+    double rtol   = params["ietl_diag_rtol"];
     double omega  = params["ietl_si_omega"] ;
-    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], tol, tol);
+    ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], rtol, atol);
     std::pair<double, Vector> r0 ;
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
