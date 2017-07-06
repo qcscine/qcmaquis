@@ -53,6 +53,7 @@ namespace ietl
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
         typedef typename base::couple_vec      couple_vec ;
+        typedef typename base::lt_couple       lt_couple ;
         typedef typename base::magnitude_type  magnitude_type;
         typedef typename base::matrix_double   matrix_double ;
         typedef typename base::scalar_type     scalar_type;
@@ -67,8 +68,6 @@ namespace ietl
         using base::n_restart_max_ ;
         using base::overlap_ ;
         using base::vecspace_ ;
-        //
-        using base::lt_couple ;
         //
         jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
                                  const size_t& nmin=1, const size_t& nmax=20)

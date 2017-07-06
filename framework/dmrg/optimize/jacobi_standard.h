@@ -53,6 +53,7 @@ namespace ietl
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
         typedef typename base::couple_val      couple_val;
         typedef typename base::couple_vec      couple_vec;
+        typedef typename base::lt_couple       lt_couple;
         typedef typename base::magnitude_type  magnitude_type;
         typedef typename base::matrix_double   matrix_double;
         typedef typename base::scalar_type     scalar_type;
@@ -60,6 +61,7 @@ namespace ietl
         typedef typename base::vector_double   vector_double;
         typedef typename base::vector_space    vector_space;
         typedef typename base::vector_type     vector_type;
+        //
         using base::get_eigenvalue ;
         using base::M ;
         using base::matrix_ ;
@@ -69,8 +71,6 @@ namespace ietl
         using base::overlap_ ;
         using base::site_ ;
         using base::vecspace_ ;
-        //
-        using base::lt_couple ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax)
                 : base::jacobi_davidson(matrix, vec, site, nmin, nmax) {} ;

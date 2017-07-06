@@ -53,6 +53,7 @@ namespace ietl
     public:
         typedef jacobi_davidson_modified<MATRIX, VS, ITER> base;
         typedef typename base::couple_vec      couple_vec ;
+        typedef typename base::gt_couple       gt_couple ;
         typedef typename base::magnitude_type  magnitude_type ;
         typedef typename base::matrix_double   matrix_double ;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap ;
@@ -67,8 +68,6 @@ namespace ietl
         using base::overlap_ ;
         using base::site_ ;
         using base::vecspace_ ;
-        //
-        using base::gt_couple ;
         //
         jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
                                     const partial_overlap& pov, const size_t n, const size_t& nmin=1, const size_t& nmax=20)
