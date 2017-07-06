@@ -203,7 +203,7 @@ namespace ietl
             t = gmres(op, inh, t, rel_tol);
     }
     template<class MATRIX, class VS, class ITER>
-    jacobi_davidson_modified<MATRIX, VS, ITER>::vector_double
+    typename jacobi_davidson_modified<MATRIX, VS, ITER>::vector_double
     jacobi_davidson_modified<MATRIX, VS, ITER>::generate_property(const vector_space& V, const vector_space& VA, const size_t& ndim,
                                                                   const matrix_double &props, const vector_double &eigvals)
     {
