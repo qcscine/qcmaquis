@@ -163,10 +163,10 @@ namespace ietl {
             if (overlaps[i] > overlaps[idx])
                 idx = i;
         }
-        std::cout << "Overlap - " << overlaps[idx] << std::endl ;
+        std::cout << "Overlap - " << overlaps[idx] << " " << idx << std::endl ;
         //
-        u  = V[0]*Mevecs(idx,0) ;
-        uA = VA[0]*Mevecs(idx,0);
+        u  = V[0]*Mevecs(0, idx) ;
+        uA = VA[0]*Mevecs(0, idx);
         for (int i = 1; i < dim; ++i) {
             u  += Mevecs(i, idx) * V[i];
             uA += Mevecs(i, idx) * VA[i];

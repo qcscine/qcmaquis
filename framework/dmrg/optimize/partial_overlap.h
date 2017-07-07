@@ -51,15 +51,16 @@ class partial_overlap
 {
 public:
     // Types definition
-    typedef typename boost::ptr_vector<Matrix> vector_overlap ;
-    typedef typename MPS<Matrix,SymmGroup>::MPS MPSWave ;
-    typedef typename MPSTensor<Matrix,SymmGroup>::MPSTensor MPSTensor ;
-    typedef typename block_matrix<Matrix,SymmGroup>::block_matrix bmatrix ;
+    typedef typename std::vector<basis_type>                        basis_vector ;
+    typedef typename block_matrix<Matrix,SymmGroup>::block_matrix   bmatrix ;
+    typedef typename SymmGroup::charge                              charge ;
+    typedef typename std::size_t                                    dim_type ;
+    typedef typename MPSTensor<Matrix,SymmGroup>::MPSTensor         MPSTensor ;
+    typedef typename MPS<Matrix,SymmGroup>::MPS                     MPSWave ;
+    typedef typename TwoSiteTensor<Matrix,SymmGroup>::TwoSiteTensor TwoSiteTensor ;
+    typedef typename Matrix::value_type                             value_type ;
+    typedef typename boost::ptr_vector<Matrix>                      vector_overlap ;
     typedef int basis_type ;
-    typedef typename std::vector<basis_type> basis_vector ;
-    typedef typename std::size_t dim_type ;
-    typedef typename SymmGroup::charge charge ;
-    typedef typename Matrix::value_type value_type ;
     // Constructors
     partial_overlap(void) ;
     partial_overlap(const MPSWave& MPS , const basis_vector& basis);
@@ -70,6 +71,7 @@ public:
     void update(const MPSWave& MPS, const dim_type& l, const int& direction) ;
     value_type overlap(const dim_type& i);
     value_type overlap(const MPSTensor& MPSTns , const dim_type& i) ;
+    value_type overlap(const TwoSiteTensor& TSTns , const dim_type& i, const dim_type& j) ;
 private:
     // Private attributes
     vector_overlap data_left_ , data_right_ ;
@@ -80,11 +82,11 @@ private:
     enum Modality { Left , Right };
     static const charge identity = SymmGroup::IdentityCharge ;
     // Private function
-    void multiply (const MPSWave& MPS, const dim_type& l, const Modality& mod, bool modality, vector_overlap& lst) ;
     Matrix *multiply (const MPSTensor& MPSTns, const Matrix& input, const basis_type& sigma, const Modality& mod, bool modality) ;
-    void multiply_first (const MPSWave& MPS, const Modality& mod, bool modality, vector_overlap& lst) ;
     Matrix* multiply_first (const MPSTensor& MPSTns, const basis_type& sigma, const Modality& mod, bool modality) ;
     void extract(const bmatrix& bm, const basis_type& sigma, const std::size_t m1, const std::size_t m2, Matrix& output) ;
+    void multiply (const MPSWave& MPS, const dim_type& l, const Modality& mod, bool modality, vector_overlap& lst) ;
+    void multiply_first (const MPSWave& MPS, const Modality& mod, bool modality, vector_overlap& lst) ;
 };
 
 // +------------+
@@ -209,7 +211,7 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
 };
 
 template<class Matrix, class SymmGroup>
-typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const partial_overlap<Matrix, SymmGroup>::MPSTensor& MPSTns,
+typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const MPSTensor& MPSTns,
                                                                                                     const dim_type &i)
 {
     // Check data consistency and declaration
@@ -268,11 +270,8 @@ void partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matrix,S
 }
 
 template<class Matrix, class SymmGroup>
-Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matrix,SymmGroup>::MPSTensor& MPSTns,
-                                                     const Matrix& input ,
-                                                     const basis_type& sigma,
-                                                     const partial_overlap<Matrix, SymmGroup>::Modality& mod,
-                                                     bool modality)
+Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const MPSTensor& MPSTns, const Matrix& input , const basis_type& sigma,
+                                                     const Modality& mod, bool modality)
 {
     // Initialization
     Matrix *tmp , *result , *result2;
@@ -292,6 +291,7 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const partial_overlap<Matri
             for (int j = 0; j < m2; ++j)
                 (*result2)(i,j) = 0. ;
         gemm(transpose(*tmp), input, *result);
+        // Eventually fills with zeros if the dimensions don't match
         // m2in = m2
         if (m2in == m2) {
             result2 = result;
