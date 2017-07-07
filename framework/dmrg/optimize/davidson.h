@@ -76,13 +76,13 @@ namespace ietl
     {
     public:
         // Types definition
-        typedef typename vectorspace_traits<VS>::vector_type vector_type ;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type ;
-        typedef typename vector_type::bm_type bm_type ;
-        typedef typename std::vector<vector_type> vector_set ;
+        typedef typename vectorspace_traits<VS>::vector_type 		  vector_type ;
+        typedef typename vectorspace_traits<VS>::scalar_type 		  scalar_type ;
+        typedef typename vector_type::bm_type 		      		  bm_type ;
+        typedef typename std::vector<vector_type> 	     		  vector_set ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        typedef typename alps::numeric::matrix<scalar_type> matrix_numeric ;
-        typedef typename std::size_t size_t ;
+        typedef typename alps::numeric::matrix<scalar_type> 		  matrix_numeric ;
+        typedef typename std::size_t 					  size_t ;
         // Constructor and destructor
         davidson(const MATRIX& matrix, const VS& vec, const int& site);
         virtual ~davidson() {};
@@ -93,12 +93,14 @@ namespace ietl
                                                                     const int& n_restart);
     protected:
         // Virtual Methods, defined in the derived classes
-        virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
-        virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual magnitude_type return_final(const magnitude_type& eigval) {} ;
-        virtual void precondition(vector_type& r, const vector_type& V, const magnitude_type theta ) {} ;
+        virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                                size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
+        virtual void precondition(vector_type& r, const vector_type& V, const magnitude_type theta ) {} ;
+	virtual void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs, 
+				      const size_t& i, vector_type& u, vector_type& uA) {} ; 
+        virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
         // Attributes
         MATRIX const & matrix_;
         VS vecspace_;
@@ -148,14 +150,7 @@ namespace ietl
             // TODO ALB Use here the same diagonalization algorithm as for JD
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
-            u = V2[0]*Mevecs(0,0) ;
-            for (int i = 1; i < iter_dim; ++i)
-                u += V2[i] * Mevecs(i, 0);
-            uA = VA[0]*Mevecs(0,0);
-            for (int i = 1; i < iter_dim; ++i)
-                uA += VA[i] * Mevecs(i,0);
-            uA /= ietl::two_norm(u) ;
-            u  /= ietl::two_norm(u) ;
+	    select_eigenpair(V2, VA, Mevecs, iter_dim, u, uA) ;
             magnitude_type energy = ietl::dot(u,uA)  ;
             r = uA - energy*u ;
             theta = energy ;

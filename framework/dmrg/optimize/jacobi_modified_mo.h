@@ -205,7 +205,8 @@ namespace ietl
                                                                                                     const magnitude_type& en, const double& overlap )
     {
         char buf[100];
-        int n = sprintf(buf, "%5d      | %1.4E  | %6.5f  |  %1.4f", i, error, en, overlap);
+	int a = i , n ;
+        n = sprintf(buf, "%5d      | %1.4E  | %6.5f  |  %1.4f", a, error, en, overlap);
         std::cout << buf << std::endl;
     }
 }

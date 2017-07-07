@@ -44,11 +44,12 @@ namespace ietl {
     class davidson_standard : public davidson<MATRIX, VS> {
     public:
         typedef davidson<MATRIX, VS> base;
-        typedef typename base::bm_type bm_type;
-        typedef typename base::vector_set vector_set;
-        typedef typename base::vector_type vector_type;
+        typedef typename base::bm_type        bm_type;
         typedef typename base::magnitude_type magnitude_type;
-        typedef typename base::size_t size_t;
+	typedef typename base::matrix_numeric matrix_numeric;
+        typedef typename base::vector_set     vector_set;
+        typedef typename base::vector_type    vector_type;
+        typedef typename base::size_t         size_t;
         using base::matrix_;
         using base::vecspace_;
         using base::atol_;
@@ -58,8 +59,10 @@ namespace ietl {
         ~davidson_standard() {};
     private:
         // Private methods
-        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
         void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
+	void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs, 
+	                      const size_t& i, vector_type& u, vector_type& uA); 
+        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
         vector_type apply_operator(const vector_type &x);
         magnitude_type return_final(const magnitude_type &x) { return x; };
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
@@ -117,6 +120,20 @@ namespace ietl {
             result = r ;
         }
         return result  ;
+    }
+    // Routine to select the proper eigenpair
+    template<class MATRIX, class VS>
+    void davidson_standard<MATRIX, VS>::select_eigenpair(const vector_set& V2, const vector_set& VA, const matrix_numeric& Mevecs,
+    							 const size_t& dim, vector_type& u, vector_type& uA)
+    {
+        u = V2[0]*Mevecs(0,0) ;
+        for (int i = 1; i < dim; ++i)
+            u += V2[i] * Mevecs(i, 0);
+        uA = VA[0]*Mevecs(0,0);
+        for (int i = 1; i < dim; ++i)
+            uA += VA[i] * Mevecs(i,0);
+        uA /= ietl::two_norm(u) ;
+        u  /= ietl::two_norm(u) ;
     }
 }
 

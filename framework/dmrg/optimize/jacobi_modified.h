@@ -70,7 +70,7 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
-                                 const size_t& nmin=1, const size_t& nmax=20)
+                                 const size_t& nmin, const size_t& nmax)
                 : base::jacobi_davidson(matrix, vec, site, nmin, nmax) , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
@@ -235,7 +235,8 @@ namespace ietl
                                                                          const magnitude_type& en, const double& overlap )
     {
         char buf[39];
-        int n = sprintf(buf, "%5d      | %1.4E  | %6.5f ", i, error, en);
+	int a = i , n;
+        n = sprintf(buf, "%5d      | %1.4E  | %6.5f ", a, error, en);
         std::cout << buf << std::endl;
     }
 }

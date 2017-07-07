@@ -133,7 +133,7 @@ namespace ietl
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix,  const VS& vec, const int& site,
-                                                       const size_t& n_min=1, const size_t& n_max=20) :
+                                                       const size_t& n_min, const size_t& n_max) :
         matrix_(matrix),
         vecspace_(vec),
         site_(site),

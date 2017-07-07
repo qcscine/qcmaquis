@@ -228,7 +228,8 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::print_newline_table(const size_t& i,          const double& error,
                                                                          const magnitude_type& en, const double& overlap ) {
         char buf[39];
-        int n = sprintf(buf, "%5d      | %1.4E  | %6.5F ", i, error, en);
+	int a = i , n ;
+        n = sprintf(buf, "%5d      | %1.4E  | %6.5F ", a , error, en);
         std::cout << buf << std::endl;
     }
 }

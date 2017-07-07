@@ -195,8 +195,9 @@ namespace ietl
     void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_newline_table(const size_t& i, const double& error,
                                                                                                     const magnitude_type& en, const double& overlap )
     {
-        char buf[39];
-        int n = sprintf(buf, "%5d     | %1.4E2  | %6.5f  |  %1.4f", i, error, en, overlap);
+        char buf[39] ;
+	int a = i , n;
+        n = sprintf(buf, "%5d     | %1.4E2  | %6.5f  |  %1.4f", a, error, en, overlap);
         std::cout << buf << std::endl;
     }
 }

@@ -211,10 +211,14 @@ public:
     //
     void print_header(int& sweep, int& site, int& lr){
         char buffer[40] ;
-        if (lr == 1)
-            int n = sprintf(buffer, "  Sweeep number %3d - site number %3d", 2*sweep+1, site);
-        else
-            int n = sprintf(buffer, "  Sweeep number %3d - site number %3d", 2*sweep+2, site);
+	int n , a ;
+        if (lr == 1) {
+	    a = 2*sweep+1 ;
+            n = sprintf(buffer, "  Sweeep number %3d - site number %3d", a, site);
+        } else {
+	    a = 2*sweep+2 ;
+            n = sprintf(buffer, "  Sweeep number %3d - site number %3d", a, site);
+	}
         std::cout << " +-----------------------------------+" << std::endl ;
         std::cout << buffer << std::endl ;
         std::cout << " +-----------------------------------+" << std::endl ;
