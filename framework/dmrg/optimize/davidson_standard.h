@@ -46,7 +46,7 @@ namespace ietl {
         typedef davidson<MATRIX, VS> base;
         typedef typename base::bm_type        bm_type;
         typedef typename base::magnitude_type magnitude_type;
-	typedef typename base::matrix_numeric matrix_numeric;
+	    typedef typename base::matrix_numeric matrix_numeric;
         typedef typename base::vector_set     vector_set;
         typedef typename base::vector_type    vector_type;
         typedef typename base::size_t         size_t;
@@ -55,18 +55,19 @@ namespace ietl {
         using base::atol_;
         using base::Hdiag_;
         // New constructors
-        davidson_standard(const MATRIX &matrix, const VS &vec, const int& site) : base::davidson(matrix, vec, site) {};
+        davidson_standard(const MATRIX &matrix, const VS &vec, const int& site, const int& nmin, const int& nmax)
+                : base::davidson(matrix, vec, site, nmin, nmax) {};
         ~davidson_standard() {};
     private:
         // Private methods
-        void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
-	void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs, 
-	                      const size_t& i, vector_type& u, vector_type& uA); 
-        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
-        vector_type apply_operator(const vector_type &x);
         magnitude_type return_final(const magnitude_type &x) { return x; };
+        vector_type apply_operator(const vector_type &x);
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
+        void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
+	    void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+	                          const size_t& i, vector_type& u, vector_type& uA);
+        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
     };
     // Definition of the virtual function update_vspace
     template<class MATRIX, class VS>

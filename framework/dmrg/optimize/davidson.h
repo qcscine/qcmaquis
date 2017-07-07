@@ -76,21 +76,20 @@ namespace ietl
     {
     public:
         // Types definition
-        typedef typename vectorspace_traits<VS>::vector_type 		  vector_type ;
-        typedef typename vectorspace_traits<VS>::scalar_type 		  scalar_type ;
-        typedef typename vector_type::bm_type 		      		  bm_type ;
-        typedef typename std::vector<vector_type> 	     		  vector_set ;
+        typedef typename vectorspace_traits<VS>::vector_type 		      vector_type ;
+        typedef typename vectorspace_traits<VS>::scalar_type 		      scalar_type ;
+        typedef typename vector_type::bm_type 		      		          bm_type ;
+        typedef typename std::vector<vector_type> 	     		          vector_set ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        typedef typename alps::numeric::matrix<scalar_type> 		  matrix_numeric ;
-        typedef typename std::size_t 					  size_t ;
+        typedef typename alps::numeric::matrix<scalar_type> 		      matrix_numeric ;
+        typedef typename std::size_t 					                  size_t ;
         // Constructor and destructor
-        davidson(const MATRIX& matrix, const VS& vec, const int& site);
+        davidson(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax);
         virtual ~davidson() {};
         // Public method to compute eigenvalue
         template <class GEN, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
-                                                                    ITER& iter,
-                                                                    const int& n_restart);
+                                                                    ITER& iter);
     protected:
         // Virtual Methods, defined in the derived classes
         virtual magnitude_type return_final(const magnitude_type& eigval) {} ;
@@ -98,22 +97,24 @@ namespace ietl
         virtual vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                                size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
         virtual void precondition(vector_type& r, const vector_type& V, const magnitude_type theta ) {} ;
-	virtual void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs, 
-				      const size_t& i, vector_type& u, vector_type& uA) {} ; 
+	    virtual void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+		                 		      const size_t& i, vector_type& u, vector_type& uA) {} ;
         virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
         // Attributes
         MATRIX const & matrix_;
         VS vecspace_;
         magnitude_type atol_ ;
         bm_type Hdiag_ ;
-        int site_ ;
+        int site_ , nmin_, nmax_ ;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
-    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& site) :
+    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax) :
             matrix_(matrix),
             vecspace_(vec),
-            site_(site)
+            site_(site),
+            nmin_(nmin),
+            nmax_(nmax)
     {
         vector_type tmp = new_vector(vecspace_) ;
         Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp);
@@ -122,7 +123,7 @@ namespace ietl
     template <class MATRIX, class VS>
     template <class GEN, class ITER>
     std::pair<typename davidson<MATRIX, VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type>
-    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, ITER& iter, const int& n_restart) {
+    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, ITER& iter) {
         // Initialization
         vector_type t  = new_vector(vecspace_);
         vector_type u  = new_vector(vecspace_);
@@ -150,7 +151,7 @@ namespace ietl
             // TODO ALB Use here the same diagonalization algorithm as for JD
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
-	    select_eigenpair(V2, VA, Mevecs, iter_dim, u, uA) ;
+	        select_eigenpair(V2, VA, Mevecs, iter_dim, u, uA) ;
             magnitude_type energy = ietl::dot(u,uA)  ;
             r = uA - energy*u ;
             theta = energy ;
@@ -160,7 +161,7 @@ namespace ietl
                 break;
             precondition(r, u, theta);
             // Restarting algorithm
-            t = finalize_iteration(u, r, n_restart, iter_dim, V2, VA);
+            t = finalize_iteration(u, r, nmax_, iter_dim, V2, VA);
         } while (true);
         // accept lambda=theta and x=u
         return std::make_pair(return_final(theta), u);

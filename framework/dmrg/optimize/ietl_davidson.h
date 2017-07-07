@@ -35,6 +35,8 @@
 
 #include "davidson_standard.h"
 #include "davidson_modified.h"
+#include "davidson_standard_mo.h"
+#include "davidson_modified_mo.h"
 
 template<class Matrix, class SymmGroup>
 std::pair< double , class MPSTensor<Matrix,SymmGroup> >
@@ -47,7 +49,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     // Initialization
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
-    int n_restart = params["ietl_diag_restart"] ;
+    int n_restart = params["ietl_diag_restart_nmax"] ;
     double atol   = params["ietl_diag_atol"];
     double rtol   = params["ietl_diag_rtol"];
     double omega  = params["ietl_si_omega"] ;
@@ -67,11 +69,25 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     // -- Calculation of eigenvalues
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
     if (fabs(omega) > 1.0E-15) {
-        ietl::davidson_modified < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs, site, omega);
-        r0 = davidson.calculate_eigenvalue(initial, iter, n_restart);
+        if ( poverlap.is_defined()) {
+            ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
+                    davidson(sp, vs, site, omega, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]);
+            r0 = davidson.calculate_eigenvalue(initial, iter);
+        } else {
+            ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
+                    davidson(sp, vs, site, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]);
+            r0 = davidson.calculate_eigenvalue(initial, iter);
+        }
     } else {
-        ietl::davidson_standard < SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > davidson(sp, vs, site);
-        r0 = davidson.calculate_eigenvalue(initial, iter, n_restart);
+        if ( poverlap.is_defined()) {
+            ietl::davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
+                    davidson(sp, vs, site, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]);
+            r0 = davidson.calculate_eigenvalue(initial, iter);
+        } else {
+            ietl::davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
+                    davidson(sp, vs, site, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]);
+            r0 = davidson.calculate_eigenvalue(initial, iter);
+        }
     }
     // Check again orthogonality in output
     for (int n = 0; n < ortho_vecs.size(); ++n)

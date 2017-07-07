@@ -25,23 +25,22 @@
  *
  *****************************************************************************/
 
-#ifndef IETL_DAVIDSON_MODIFIED_H
-#define IETL_DAVIDSON_MODIFIED_H
+#ifndef IETL_DAVIDSON_MODIFIED_MO_H
+#define IETL_DAVIDSON_MODIFIED_MO_H
 
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
 #include <ietl/gmres.h>
-#include <complex>
 #include <vector>
-#include <boost/function.hpp>
 
 #include "dmrg/optimize/davidson.h"
+#include "dmrg/optimize/partial_overlap.h"
 
 namespace ietl {
-    template<class MATRIX, class VS>
-    class davidson_modified : public davidson<MATRIX, VS> {
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    class davidson_modified_mo : public davidson<MATRIX, VS> {
     public:
         typedef davidson<MATRIX, VS> base;
         typedef typename base::bm_type        bm_type;
@@ -50,15 +49,17 @@ namespace ietl {
         typedef typename base::vector_set     vector_set;
         typedef typename base::vector_type    vector_type;
         typedef typename base::size_t         size_t;
-        using base::matrix_ ;
-        using base::vecspace_ ;
+        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         using base::atol_ ;
         using base::Hdiag_ ;
+        using base::matrix_ ;
+        using base::site_ ;
+        using base::vecspace_ ;
         // New constructors
-        davidson_modified(const MATRIX &matrix, const VS &vec, const int& site, const magnitude_type& omega,
-                          const int& nmin, const int& nmax)
-                : base::davidson(matrix, vec, site, nmin, nmax) , omega_(omega) {};
-        ~davidson_modified() {};
+        davidson_modified_mo(const MATRIX &matrix, const VS &vec, const int& site, const magnitude_type& omega,
+                             const partial_overlap& pov, const int& nmin, const int& nmax)
+                : base::davidson(matrix, vec, site, nmin, nmax) , omega_(omega) , pov_(pov) {};
+        ~davidson_modified_mo() {};
     private:
         // Private methods
         magnitude_type return_final(const magnitude_type &x) { return omega_-x; };
@@ -72,10 +73,12 @@ namespace ietl {
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
+        partial_overlap pov_ ;
     };
     // Construction of the virtual function apply operator
-    template <class MATRIX, class VS>
-    typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX, VS>::apply_operator(const vector_type& x)
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    typename davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::vector_type
+             davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::apply_operator(const vector_type& x)
     {
         vector_type tmp ;
         ietl::mult(matrix_, x, tmp);
@@ -84,8 +87,8 @@ namespace ietl {
         return tmp ;
     };
     // Construction of the virtual function update_vspace
-    template <class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim)
+    template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim)
     {
         magnitude_type tau = ietl::two_norm(t);
         vector_type tA ;
@@ -102,8 +105,8 @@ namespace ietl {
         VA.push_back(tA/ietl::two_norm(tA));
     } ;
     // Definition of the virtual function precondition
-    template<class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const magnitude_type &theta) {
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::precondition(vector_type &r, const vector_type &V, const magnitude_type &theta) {
         magnitude_type denom, x2, x1 = ietl::dot(V, r);
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();
@@ -121,8 +124,9 @@ namespace ietl {
         r = Vcpy - x2 * V;
     } ;
     // Virtual function finalize_iteration
-    template<class MATRIX, class VS>
-    typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX, VS>::finalize_iteration
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    typename davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::vector_type
+             davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::finalize_iteration
             (const vector_type &u, const vector_type &r, const size_t &n_restart,
              size_t &iter_dim, vector_set &V2, vector_set &VA)
     {
@@ -138,16 +142,35 @@ namespace ietl {
         return result  ;
     }
     // Routine to select the proper eigenpair
-    template<class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2, const vector_set& VA, const matrix_numeric& Mevecs,
-    							 const size_t& dim, vector_type& u, vector_type& uA)
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::select_eigenpair(const vector_set& V, const vector_set& VA,
+                                                                                    const matrix_numeric& Mevecs, const size_t& dim,
+                                                                                    vector_type& u, vector_type& uA)
     {
-        u = V2[0]*Mevecs(0,0) ;
-        for (int i = 1; i < dim; ++i)
-            u += V2[i] * Mevecs(i, 0);
-        uA = VA[0]*Mevecs(0,0);
-        for (int i = 1; i < dim; ++i)
-            uA += VA[i] * Mevecs(i,0);
+        int idx = 0 ;
+        vector_type u_local ;
+        std::vector<double> overlaps ;
+        overlaps.resize(dim) ;
+        for (int i = 0; i < dim; ++i) {
+            // Conversion to the original basis
+            u_local = Mevecs(0,i) * V[0];
+            for (int j = 1; j < dim; ++j)
+                u_local += Mevecs(j,i) * V[j];
+            double scr = pov_.overlap(u_local/ietl::two_norm(u_local), site_);
+            overlaps[i] = fabs(scr);
+        }
+        for (int i = 1; i < dim; ++i) {
+            if (overlaps[i] > overlaps[idx])
+                idx = i;
+        }
+        std::cout << "Overlap - " << overlaps[idx] << std::endl ;
+        //
+        u  = V[0]*Mevecs(idx,0) ;
+        uA = VA[0]*Mevecs(idx,0);
+        for (int i = 1; i < dim; ++i) {
+            u  += Mevecs(i, idx) * V[i];
+            uA += Mevecs(i, idx) * VA[i];
+        }
         uA /= ietl::two_norm(u) ;
         u  /= ietl::two_norm(u) ;
     }

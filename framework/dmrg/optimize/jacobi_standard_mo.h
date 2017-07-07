@@ -134,9 +134,9 @@ namespace ietl
         int idx = 0;
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis
-            u_local = eigvecs[i][0] * MPSTns_input_A[0];
+            u_local = eigvecs[i][0] * MPSTns_input[0];
             for (int j = 1; j < nevec; ++j)
-                u_local += eigvecs[i][j] * MPSTns_input_A[j];
+                u_local += eigvecs[i][j] * MPSTns_input[j];
             double scr = pov_.overlap(u_local, site_);
             overlaps[i] = fabs(scr);
         }
