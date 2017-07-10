@@ -28,15 +28,13 @@
 #ifndef IETL_JACOBI_STANDARD_H
 #define IETL_JACOBI_STANDARD_H
 
-#include <ietl/traits.h>
-#include <ietl/fmatrix.h>
-#include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
+#include <ietl/fmatrix.h>
 #include <ietl/gmres.h>
-#include <complex>
+#include <ietl/ietl2lapack.h>
+#include <ietl/traits.h>
 #include <vector>
 
-#include <boost/function.hpp>
 #include "dmrg/optimize/jacobi.h"
 #include "dmrg/optimize/jcd_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
@@ -72,8 +70,8 @@ namespace ietl
         using base::site_ ;
         using base::vecspace_ ;
         //
-        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax)
-                : base::jacobi_davidson(matrix, vec, site, nmin, nmax) {} ;
+        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax, const int& max_iter)
+                : base::jacobi_davidson(matrix, vec, site, nmin, nmax, max_iter) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
@@ -91,6 +89,7 @@ namespace ietl
         void print_header_table(void) ;
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
+
                     const magnitude_type& rel_tol) ;
         void sort_prop(couple_vec& vector_values) ;
     };
@@ -185,12 +184,12 @@ namespace ietl
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
         jcd_solver_operator_standard<MATRIX, VS, vector_type> op(u, r, matrix_, theta);
-        ietl_gmres gmres(max_iter_, false);
-        vector_type inh = r;
+        ietl_gmres gmres(max_iter_, true);
+        vector_type inh = -r;
         // initial guess for better convergence
         scalar_type dru = ietl::dot(r,u);
         scalar_type duu = ietl::dot(u,u);
-        t = r + dru/duu*u;
+        t = -r + dru/duu*u;
         if (max_iter_ > 0)
             t = gmres(op, inh, t, rel_tol);
     } ;

@@ -5,7 +5,6 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch> 
  *	                          Sebastian Keller <sebkelle@phys.ethz.ch>
- *	             2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -96,14 +95,13 @@ public:
         }
         
         for (; _site < 2*L-2; ++_site) {
+	    /* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
+	        | |                        |
+           site 1                      |
+	          |         left to right  | right to left, lr = -1
+	          site 2                   |                               */
+
             int lr, site1, site2;
-            // ALB - debug print
-            double i ;
-            if (poverlap.is_defined()) {
-                i = poverlap.overlap(site);
-                std::cout << "Overlap " << i << std::endl;
-            }
-            // ALB - end debug print
             if (_site < L-1) {
                 site = to_site(L, _site);
                 lr = 1;
@@ -145,8 +143,8 @@ public:
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 TwoSiteTensor<Matrix, SymmGroup> ts_ortho(base::ortho_mps[n][site1], base::ortho_mps[n][site2]);
-                ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps, ts_ortho.make_mps(), base::ortho_left_[n][site1],
-                                                                   base::ortho_right_[n][site2+1]);
+                ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps, ts_ortho.make_mps(),
+                                                                    base::ortho_left_[n][site1], base::ortho_right_[n][site2+1]);
             }
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
             if (d == Both ||
@@ -172,12 +170,21 @@ public:
                 res.second.clear();
             }
             twin_mps.clear();
-            int prec = maquis::cout.precision();
-            maquis::cout.precision(15);
-            maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy() << std::endl;
-            maquis::cout.precision(prec);
+#ifndef NDEBUG
+            // Caution: this is an O(L) operation, so it really should be done only in debug mode
+            for (int n = 0; n < base::northo; ++n)
+                maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
+#endif
+
+            {
+                int prec = maquis::cout.precision();
+                maquis::cout.precision(15);
+                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy() << std::endl;
+                maquis::cout.precision(prec);
+            }
             iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
-            // Introduction of the random noise
+            
+            
             double alpha;
             int ngs = parms["ngrowsweeps"], nms = parms["nmainsweeps"];
             if (sweep < ngs)
@@ -190,29 +197,47 @@ public:
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
             truncation_results trunc;
-            // Separate the Two Site MPS Tensor
+            
     	    if (lr == +1)
     	    {
         		// Write back result from optimization
+                BEGIN_TIMING("TRUNC")
                 if (parms["twosite_truncation"] == "svd")
                     boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
                 else
                     boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
+                END_TIMING("TRUNC")
                 tst.clear();
-                // ALB : updates the partial overlap object
-                if (poverlap.is_defined()) {
-                    poverlap.update(mps, site1, lr);
-                    poverlap.update(mps, site2, lr);
-                }
+
+
         		block_matrix<Matrix, SymmGroup> t;
+		
+        		//t = mps[site1].normalize_left(DefaultSolver());
+        		//mps[site2].multiply_from_left(t);
+        		//mps[site2].divide_by_scalar(mps[site2].scalar_norm());	
+
         		t = mps[site2].normalize_left(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
+
                 if (site1 != L-2)
                     Storage::drop(right_[site2+1]);
+
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
-                if (site1 != L-2){
+
+                if (site1 != L-2){ 
+                    if(site1 != 0){
+                        #ifdef USE_AMBIENT
+                        std::vector<int> placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                        parallel::scheduler_permute scheduler(placement_l, parallel::groups_granularity);
+                        for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
+                            parallel::guard group(scheduler(b), parallel::groups_granularity);
+                            storage::migrate(left_[site1][b], parallel::scheduler_size_indexed(left_[site1][b]));
+                        }
+                        parallel::sync();
+                        #endif
+                    }
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
@@ -221,25 +246,43 @@ public:
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
+                BEGIN_TIMING("TRUNC")
                 if (parms["twosite_truncation"] == "svd")
                     boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
                 else
                     boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
+                END_TIMING("TRUNC")
                 tst.clear();
-                // ALB : updates the partial overlap object
-                if (poverlap.is_defined()) {
-                    poverlap.update(mps, site1, lr);
-                    poverlap.update(mps, site2, lr);
-                }
+
+
         		block_matrix<Matrix, SymmGroup> t;
+
+        		//t = mps[site2].normalize_right(DefaultSolver());
+        		//mps[site1].multiply_from_right(t);
+        		//mps[site1].divide_by_scalar(mps[site1].scalar_norm());	
+
         		t = mps[site1].normalize_right(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
-                if (site1 != 0)
+
+                if(site1 != 0)
                     Storage::drop(left_[site1]);
+
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
+
                 if(site1 != 0){
+                    if(site1 != L-2){
+                        #ifdef USE_AMBIENT
+                        std::vector<int> placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                        parallel::scheduler_permute scheduler(placement_r, parallel::groups_granularity);
+                        for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
+                            parallel::guard group(scheduler(b), parallel::groups_granularity);
+                            storage::migrate(right_[site2+1][b], parallel::scheduler_size_indexed(right_[site2+1][b]));
+                        }
+                        parallel::sync();
+                        #endif
+                    }
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                 }
@@ -251,12 +294,16 @@ public:
             iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
             iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
             iteration_results_["SmallestEV"]        << trunc.smallest_ev;
+            
             parallel::meminfo();
+            
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
+            
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);
+
     	} // for sites
         initial_site = -1;
     } // sweep

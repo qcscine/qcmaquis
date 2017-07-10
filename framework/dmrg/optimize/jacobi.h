@@ -36,7 +36,6 @@
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
-#include <ietl/gmres.h>
 
 #include <vector>
 
@@ -81,7 +80,8 @@ namespace ietl
         typedef typename std::vector<vector_double> matrix_double ;
         typedef typename std::pair<int, float>   couple_val ;
         typedef typename std::vector<couple_val> couple_vec ;
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site, const size_t& n_min, const size_t& n_max);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site, const size_t& n_min,
+                        const size_t& n_max, const size_t& max_iter);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -129,16 +129,15 @@ namespace ietl
         // Private method, interface to the LAPACK diagonalization routine
         void restart_jd(vector_space &V, vector_space &VA, const matrix_double& eigvec, const vector_double& eigval);
     };
-
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix,  const VS& vec, const int& site,
-                                                       const size_t& n_min, const size_t& n_max) :
+                                                       const size_t& n_min, const size_t& n_max, const size_t& max_iter) :
         matrix_(matrix),
         vecspace_(vec),
         site_(site),
         M(1,1),
-        max_iter_(0),
+        max_iter_(max_iter),
         n_restart_min_(n_min),
         n_restart_max_(n_max),
         overlap_(0.)
@@ -189,7 +188,7 @@ namespace ietl
                 print_endline();
                 return std::make_pair(eigval, eigvec / ietl::two_norm(eigvec));
             }
-            rel_tol = 1. / pow(2.,double(n_iter+1));
+            rel_tol = 1. / pow(2.,double(n_iter+1)) ;
             solver(u, theta, r, V[n_iter], rel_tol) ;
             if (n_iter == n_restart_max_) {
                 restart_jd(V, VA, eigvecs, eigvals);

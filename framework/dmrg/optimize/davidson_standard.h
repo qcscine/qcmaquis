@@ -32,8 +32,6 @@
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
-#include <ietl/gmres.h>
-#include <complex>
 #include <vector>
 #include <boost/function.hpp>
 

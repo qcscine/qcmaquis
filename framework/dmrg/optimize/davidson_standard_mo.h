@@ -32,7 +32,6 @@
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
-#include <ietl/gmres.h>
 #include <vector>
 
 #include "dmrg/optimize/davidson.h"

@@ -28,15 +28,14 @@
 #ifndef IETL_JACOBI_MODIFIED_H
 #define IETL_JACOBI_MODIFIED_H
 
-#include <ietl/traits.h>
-#include <ietl/fmatrix.h>
-#include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
+#include <ietl/fmatrix.h>
 #include <ietl/gmres.h>
+#include <ietl/ietl2lapack.h>
+#include <ietl/traits.h>
 #include <vector>
 #include <cmath>
 
-#include <boost/function.hpp>
 #include "dmrg/optimize/jacobi.h"
 #include "dmrg/optimize/jcd_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
@@ -70,8 +69,8 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
-                                 const size_t& nmin, const size_t& nmax)
-                : base::jacobi_davidson(matrix, vec, site, nmin, nmax) , omega_(omega) {} ;
+                                 const size_t& nmin, const size_t& nmax, const size_t& max_iter)
+                : base::jacobi_davidson(matrix, vec, site, nmin, nmax, max_iter) , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
         // Methods
@@ -138,7 +137,7 @@ namespace ietl
         // Compute the error vector
         bool converged ;
         eigvec = u;
-        eigval = this->omega_ - 1. / theta;
+        eigval = this->omega_ - 1./theta;
         if(iter.finished(ietl::two_norm(r),this->omega_-1./theta)) {
             converged = true;
             return converged;
@@ -235,7 +234,7 @@ namespace ietl
                                                                          const magnitude_type& en, const double& overlap )
     {
         char buf[39];
-	int a = i , n;
+	    int a = i , n;
         n = sprintf(buf, "%5d      | %1.4E  | %6.5f ", a, error, en);
         std::cout << buf << std::endl;
     }

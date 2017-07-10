@@ -38,12 +38,8 @@
 #include <ietl/ietl2lapack.h> 
  
 #include <ietl/cg.h>
-#include <ietl/gmres.h>
 
-#include <complex>
 #include <vector>
-
-#include <boost/function.hpp>
 
 // +--------------+
 //  DAVIDSON CLASS
@@ -51,8 +47,8 @@
 // This is a general class for Davidson-type eigensolver.
 // The templates arguments are MATRIX and VS, that are usually:
 // MATRIX    : a SiteProblem object (see optimize.h for additional details)
-// VS        : a VectorSpace object, including a MPSTensor and several other vectors
-//             (for excited states orthogonalization)
+// VS        : a VectorSpace object, including a MPSTensor (or TwoSiteTensor for two site optimization)
+//             and several other vectors (for excited states orthogonalization)
 //
 // Includes the following attributes, that are common to all the Davidson eigensolvers;
 // matrix_   : the matrix representation of the operator for the site where the optimization is

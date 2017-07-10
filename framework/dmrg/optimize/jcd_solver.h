@@ -33,7 +33,6 @@
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
-#include <ietl/gmres.h>
 #include <complex>
 #include <vector>
 #include <boost/function.hpp>
@@ -103,8 +102,8 @@ namespace ietl {
         scalar_type ust = dot(u_, x);
         t2 = x - ust * u_;
         // y = (A-theta*1) t2
-        //ietl::mult(m_, t2, t3);
-         y = t2 - theta_ * t2;
+        ietl::mult(m_, t2, t3);
+        y = t3 - theta_ * t2;
         // t = (1-uu*) y
         ust = dot(u_, y);
         t = y - ust * u_;

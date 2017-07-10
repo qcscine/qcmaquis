@@ -31,10 +31,7 @@
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h> 
- 
 #include <ietl/cg.h>
-#include <ietl/gmres.h>
-
 #include <vector>
 
 #include "dmrg/optimize/partial_overlap.h"
@@ -67,8 +64,9 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
-                                    const partial_overlap& pov, const size_t n, const size_t& nmin=1, const size_t& nmax=20)
-                : base::jacobi_davidson_modified(matrix, vec, site, omega, nmin, nmax) , pov_(pov) , n_maxov_(n) {} ;
+                                    const partial_overlap& pov, const size_t n, const size_t& nmin, const size_t& nmax,
+                                    const size_t& max_iter)
+                : base::jacobi_davidson_modified(matrix, vec, site, omega, nmin, nmax, max_iter) , pov_(pov) , n_maxov_(n) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,

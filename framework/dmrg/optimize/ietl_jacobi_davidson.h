@@ -75,21 +75,21 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     if (fabs(omega) < 1.0E-15) {
         if ( !poverlap.is_defined()) {
             ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >
-                jd(sp, vs, site, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]) ;
+                jd(sp, vs, site, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"]) ;
             r0 = jd.calculate_eigenvalue(initial, iter);
          } else {
             ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
-                jd(sp, vs, site, poverlap, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]) ;
+                jd(sp, vs, site, poverlap, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"]) ;
             r0 = jd.calculate_eigenvalue(initial, iter);
         }
     } else {
         if ( !poverlap.is_defined()) {
             ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >
-                    jd(sp, vs, site, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]);
+                    jd(sp, vs, site, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"]);
             r0 = jd.calculate_eigenvalue(initial, iter );
         } else {
             ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
-                    jd(sp, vs, site, omega, poverlap, n_tofollow , params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"]);
+                    jd(sp, vs, site, omega, poverlap, n_tofollow , params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"]);
             r0 = jd.calculate_eigenvalue(initial, iter);
         }
     }

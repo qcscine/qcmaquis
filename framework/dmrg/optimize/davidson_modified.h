@@ -28,14 +28,11 @@
 #ifndef IETL_DAVIDSON_MODIFIED_H
 #define IETL_DAVIDSON_MODIFIED_H
 
-#include <ietl/traits.h>
+#include <ietl/cg.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h>
-#include <ietl/cg.h>
-#include <ietl/gmres.h>
-#include <complex>
+#include <ietl/traits.h>
 #include <vector>
-#include <boost/function.hpp>
 
 #include "dmrg/optimize/davidson.h"
 

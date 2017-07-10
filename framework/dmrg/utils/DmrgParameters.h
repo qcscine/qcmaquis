@@ -76,7 +76,8 @@ private:
         add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.));
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
-        add_option("ietl_jcd_gmres", "", value(0));
+        add_option("ietl_gmres_maxiter", "", value(20));
+        add_option("ietl_gmres_abstol", "convergence threshold for the GMRES algorithm", value(1.0e-1)) ;
         // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);
