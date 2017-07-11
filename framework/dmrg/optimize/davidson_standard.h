@@ -53,8 +53,9 @@ namespace ietl {
         using base::atol_;
         using base::Hdiag_;
         // New constructors
-        davidson_standard(const MATRIX &matrix, const VS &vec, const int& site, const int& nmin, const int& nmax)
-                : base::davidson(matrix, vec, site, nmin, nmax) {};
+        davidson_standard(const MATRIX &matrix, const VS &vec, const int& nmin, const int& nmax,
+                          const int& nsites, const int& site1, const int& site2)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) {};
         ~davidson_standard() {};
     private:
         // Private methods

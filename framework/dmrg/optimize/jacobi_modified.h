@@ -68,9 +68,9 @@ namespace ietl
         using base::overlap_ ;
         using base::vecspace_ ;
         //
-        jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
-                                 const size_t& nmin, const size_t& nmax, const size_t& max_iter)
-                : base::jacobi_davidson(matrix, vec, site, nmin, nmax, max_iter) , omega_(omega) {} ;
+        jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const size_t& nmin,
+                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1, const int& site2)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2) , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
         // Methods

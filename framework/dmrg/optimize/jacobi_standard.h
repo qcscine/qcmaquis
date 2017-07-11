@@ -70,8 +70,9 @@ namespace ietl
         using base::site_ ;
         using base::vecspace_ ;
         //
-        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax, const int& max_iter)
-                : base::jacobi_davidson(matrix, vec, site, nmin, nmax, max_iter) {} ;
+        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax, const int& max_iter,
+                                 const int& nsites, const int& site1, const int& site2)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);

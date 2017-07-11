@@ -157,11 +157,11 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, site, poverlap, ortho_vecs);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, ortho_vecs, 2, site1, site2);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, site, poverlap, ortho_vecs);
+                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, ortho_vecs, 2, site1, site2);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -170,12 +170,6 @@ public:
                 res.second.clear();
             }
             twin_mps.clear();
-#ifndef NDEBUG
-            // Caution: this is an O(L) operation, so it really should be done only in debug mode
-            for (int n = 0; n < base::northo; ++n)
-                maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
-#endif
-
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);

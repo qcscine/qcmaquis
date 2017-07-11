@@ -49,7 +49,7 @@ namespace ietl
     // +---------------------+
     // This is a general class for Davidson-type eigensolver.
     // The templates arguments are MATRIX and VS, that are usually:
-    // MATRIX    : a SiteProblem object (see optimize.h for additional details)
+    // MATRIX    : a SiteProblem object (see optimize.h for additional details -
     // VS        : a VectorSpace object, including a MPSTensor and several other vectors
     //             (for excited states orthogonalization)
     //
@@ -80,8 +80,8 @@ namespace ietl
         typedef typename std::vector<vector_double> matrix_double ;
         typedef typename std::pair<int, float>   couple_val ;
         typedef typename std::vector<couple_val> couple_vec ;
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, const int& site, const size_t& n_min,
-                        const size_t& n_max, const size_t& max_iter);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
+                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -121,7 +121,7 @@ namespace ietl
         // Protected attributes
         MATRIX const & matrix_ ;
         VS vecspace_ ;
-        int site_ ;
+        int nsites_, site1_, site2_ ;
         double overlap_ ;
         FortranMatrix<scalar_type> M ;
         size_t max_iter_ , n_restart_min_ , n_restart_max_ ;
@@ -131,11 +131,13 @@ namespace ietl
     };
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
-    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix,  const VS& vec, const int& site,
-                                                       const size_t& n_min, const size_t& n_max, const size_t& max_iter) :
+    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
+                                                       const size_t& max_iter, const int& nsites, const int& site1, const int& site2) :
         matrix_(matrix),
         vecspace_(vec),
-        site_(site),
+        nsites_(nsites),
+        site1_(site1),
+        site2_(site2),
         M(1,1),
         max_iter_(max_iter),
         n_restart_min_(n_min),

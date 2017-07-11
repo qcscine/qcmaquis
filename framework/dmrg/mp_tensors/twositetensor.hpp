@@ -148,6 +148,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
     return make_mps_(type_helper<false>());
 }
 
+// ALB THIS IS THE METHOD CALLED WHEN CONVERTING TWIN_MPS TO MPS TENSOR
 template<class Matrix, class SymmGroup>
 template<bool SU2>
 MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<SU2>) const

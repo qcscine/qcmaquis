@@ -80,7 +80,8 @@ namespace ietl
         typedef typename alps::numeric::matrix<scalar_type> 		      matrix_numeric ;
         typedef typename std::size_t 					                  size_t ;
         // Constructor and destructor
-        davidson(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax);
+        davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
+                 const int& nsites, const int& site1, const int& site2);
         virtual ~davidson() {};
         // Public method to compute eigenvalue
         template <class GEN, class ITER>
@@ -101,19 +102,23 @@ namespace ietl
         VS vecspace_;
         magnitude_type atol_ ;
         bm_type Hdiag_ ;
-        int site_ , nmin_, nmax_ ;
+        int site1_ , site2_, nmin_, nmax_, nsites_ ;
+        optimization_type opt_type_ ;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
-    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& site, const int& nmin, const int& nmax) :
+    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
+                                   const int& nsites, const int& site1, const int& site2) :
             matrix_(matrix),
             vecspace_(vec),
-            site_(site),
             nmin_(nmin),
-            nmax_(nmax)
+            nmax_(nmax),
+            site1_(site1),
+            site2_(site2),
+            nsites_(nsites)
     {
         vector_type tmp = new_vector(vecspace_) ;
-        Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp);
+        Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp) ;
     } ;
     // -- Method used to compute eigenpairs --
     template <class MATRIX, class VS>

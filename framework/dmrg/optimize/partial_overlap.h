@@ -71,7 +71,7 @@ public:
     void update(const MPSWave& MPS, const dim_type& l, const int& direction) ;
     value_type overlap(const dim_type& i);
     value_type overlap(const MPSTensor& MPSTns , const dim_type& i) ;
-    value_type overlap(const TwoSiteTensor& TSTns , const dim_type& i, const dim_type& j) ;
+    value_type overlap(const MPSTensor& MPSTns , const dim_type& i, const dim_type& j) ;
 private:
     // Private attributes
     vector_overlap data_left_ , data_right_ ;
@@ -84,11 +84,11 @@ private:
     // Private function
     Matrix *multiply (const MPSTensor& MPSTns, const Matrix& input, const basis_type& sigma, const Modality& mod,
                       bool modality) ;
-    Matrix *multiply (const TwoSiteTensor& TSTns, const Matrix& input, const basis_type& sigma1, const basis_type& sigma2,
+    Matrix *multiply (const MPSTensor& MPSTns, const Matrix& input, const basis_type& sigma1, const basis_type& sigma2,
                       const Modality& mod, bool modality) ;
     Matrix* multiply_first (const MPSTensor& MPSTns, const basis_type& sigma, const Modality& mod,
                             bool modality) ;
-    Matrix* multiply_first (const TwoSiteTensor& MPSTns, const basis_type& sigma1, const basis_type& sigma2,
+    Matrix* multiply_first (const MPSTensor& MPSTns, const basis_type& sigma1, const basis_type& sigma2,
                             const Modality& mod, bool modality) ;
     void extract(const bmatrix& bm, const basis_type& sigma, const std::size_t m1, const std::size_t m2, Matrix& output) ;
     void extract(const bmatrix& bm, const basis_type& sigma1, const basis_type& sigma2,
@@ -250,7 +250,7 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
 };
 
 template<class Matrix, class SymmGroup>
-typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const TwoSiteTensor& TSTns,
+typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const MPSTensor& MPSTns,
                                                                                                     const dim_type& i1,
                                                                                                     const dim_type& i2)
 {
@@ -267,9 +267,9 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
     } else {
         if (i1 == 0) {
             //assert (m1 == 1);
-            tmp2 = this->multiply_first(TSTns, basis_[i1], basis_[i2], Left, true);
+            tmp2 = this->multiply_first(MPSTns, basis_[i1], basis_[i2], Left, true);
         } else {
-            tmp2 = this->multiply(TSTns, data_left_[i1-1], basis_[i1], basis_[i2], Left, true);
+            tmp2 = this->multiply(MPSTns, data_left_[i1-1], basis_[i1], basis_[i2], Left, true);
         }
         assert((*tmp2).num_rows() == data_right_[indx].num_rows() &&
                (*tmp2).num_cols() == data_right_[indx].num_cols());
@@ -375,7 +375,7 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const MPSTensor& MPSTns,
 }
 
 template<class Matrix, class SymmGroup>
-Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const TwoSiteTensor& TSTns,
+Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const MPSTensor& MPSTns,
                                                      const Matrix& input ,
                                                      const basis_type& sigma1,
                                                      const basis_type& sigma2,
@@ -385,10 +385,10 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const TwoSiteTensor& TSTns,
     // Initialization
     Matrix *tmp , *result , *result2;
     bmatrix bm, output ;
-    TSTns.make_both_paired() ;
-    bm = TSTns.data() ;
-    std::size_t m1 = TSTns.row_dim().size_of_block(identity) ;
-    std::size_t m2 = TSTns.col_dim().size_of_block(identity) ;
+    MPSTns.make_left_paired() ;
+    bm = MPSTns.data() ;
+    std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
+    std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
     std::size_t m1in = input.num_rows();
     std::size_t m2in = input.num_cols();
     tmp     = new Matrix(m1, m2) ;
@@ -495,16 +495,16 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply_first(const MPSTensor& MPST
 }
 
 template<class Matrix, class SymmGroup>
-Matrix* partial_overlap<Matrix, SymmGroup>::multiply_first(const TwoSiteTensor& TSTns,
+Matrix* partial_overlap<Matrix, SymmGroup>::multiply_first(const MPSTensor& MPSTns,
                                                            const basis_type& sigma1,
                                                            const basis_type& sigma2,
                                                            const Modality& mod,
                                                            bool modality)
 {
-    TSTns.make_both_paired() ;
-    bmatrix bm = TSTns.data() ;
-    std::size_t m1 = TSTns.row_dim().size_of_block(identity) ;
-    std::size_t m2 = TSTns.col_dim().size_of_block(identity) ;
+    MPSTns.make_left_paired() ;
+    bmatrix bm = MPSTns.data() ;
+    std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
+    std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
     Matrix *tmp, *output ;
     if (mod == Left) {
         tmp = new Matrix(1,m2) ;

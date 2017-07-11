@@ -52,12 +52,15 @@ namespace ietl {
         using base::atol_ ;
         using base::Hdiag_ ;
         using base::matrix_ ;
-        using base::site_ ;
+        using base::nsites_ ;
+        using base::site1_ ;
+        using base::site2_ ;
         using base::vecspace_ ;
         // New constructors
-        davidson_modified_mo(const MATRIX &matrix, const VS &vec, const int& site, const magnitude_type& omega,
-                             const partial_overlap& pov, const int& nmin, const int& nmax)
-                : base::davidson(matrix, vec, site, nmin, nmax) , omega_(omega) , pov_(pov) {};
+        davidson_modified_mo(const MATRIX &matrix, const VS &vec, const magnitude_type& omega,
+                             const partial_overlap& pov, const int& nmin, const int& nmax,
+                             const int& nsites, const int& site1, const int& site2)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega) , pov_(pov) {};
         ~davidson_modified_mo() {};
     private:
         // Private methods
@@ -147,6 +150,7 @@ namespace ietl {
                                                                                     vector_type& u, vector_type& uA)
     {
         int idx = 0 ;
+        double scr ;
         vector_type u_local ;
         std::vector<double> overlaps ;
         overlaps.resize(dim) ;
@@ -155,7 +159,10 @@ namespace ietl {
             u_local = Mevecs(0,i) * V[0];
             for (int j = 1; j < dim; ++j)
                 u_local += Mevecs(j,i) * V[j];
-            double scr = pov_.overlap(u_local/ietl::two_norm(u_local), site_);
+            if (nsites_ == 1)
+                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_);
+            else if (nsites_ == 2)
+                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_, site2_);
             overlaps[i] = fabs(scr);
         }
         for (int i = 1; i < dim; ++i) {
