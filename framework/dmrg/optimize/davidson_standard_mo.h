@@ -145,9 +145,9 @@ namespace ietl {
             for (int j = 1; j < dim; ++j)
                 u_local += Mevecs(j,i) * V[j];
             if (nsites_ == 1)
-                scr = pov_.overlap(u_local, site1_);
+                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_);
             else
-                scr = pov_.overlap(u_local, site1_, site2_);
+                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_, site2_);
             overlaps[i] = fabs(scr);
         }
         for (int i = 1; i < dim; ++i) {

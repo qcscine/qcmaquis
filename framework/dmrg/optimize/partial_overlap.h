@@ -58,7 +58,6 @@ public:
     typedef typename std::size_t                                    dim_type ;
     typedef typename MPSTensor<Matrix,SymmGroup>::MPSTensor         MPSTensor ;
     typedef typename MPS<Matrix,SymmGroup>::MPS                     MPSWave ;
-    typedef typename TwoSiteTensor<Matrix,SymmGroup>::TwoSiteTensor TwoSiteTensor ;
     typedef typename Matrix::value_type                             value_type ;
     typedef typename boost::ptr_vector<Matrix>                      vector_overlap ;
     // Constructors
@@ -76,7 +75,7 @@ private:
     // Private attributes
     vector_overlap data_left_ , data_right_ ;
     dim_type lattice_L_ ;
-    basis_vector basis_ ;
+    basis_vector basis_ , phys_sizes_ ;
     bool is_defined_ ;
     // Local variables
     enum Modality { Left , Right };
@@ -91,8 +90,8 @@ private:
     Matrix* multiply_first (const MPSTensor& MPSTns, const basis_type& sigma1, const basis_type& sigma2,
                             const Modality& mod, bool modality) ;
     void extract(const bmatrix& bm, const basis_type& sigma, const std::size_t m1, const std::size_t m2, Matrix& output) ;
-    void extract(const bmatrix& bm, const basis_type& sigma1, const basis_type& sigma2,
-                 const std::size_t m1, const std::size_t m2, Matrix& output) ;
+    void extract(const bmatrix& bm, const basis_type& sigma1, const basis_type& sigma2, const std::size_t m1,
+                 const std::size_t m2, Matrix& output) ;
     void multiply (const MPSWave& MPS, const dim_type& l, const Modality& mod, bool modality, vector_overlap& lst) ;
     void multiply_first (const MPSWave& MPS, const Modality& mod, bool modality, vector_overlap& lst) ;
 };
@@ -106,8 +105,7 @@ partial_overlap<Matrix,SymmGroup>::partial_overlap(void) :
     lattice_L_(0) , is_defined_(false) { } ;
 
 template<class Matrix, class SymmGroup>
-partial_overlap<Matrix,SymmGroup>::partial_overlap(const partial_overlap<Matrix,SymmGroup>::MPSWave& MPS ,
-                                                   const partial_overlap<Matrix,SymmGroup>::basis_vector& basis)
+partial_overlap<Matrix,SymmGroup>::partial_overlap(const MPSWave& MPS, const basis_vector& basis)
 {
     dim_type L = MPS.size() ;
     if (basis.size() == 0) {
@@ -128,6 +126,7 @@ partial_overlap<Matrix,SymmGroup>::partial_overlap(const partial_overlap<Matrix,
                 multiply(MPS, i, Left, true, data_left_);
                 multiply(MPS, i, Right, true, data_right_);
             }
+            phys_sizes_.push_back(MPS.site_dim(i).size_of_block(identity)) ;
         }
     }
 };
@@ -383,9 +382,9 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const MPSTensor& MPSTns,
                                                      bool modality)
 {
     // Initialization
+    MPSTns.make_left_paired() ;
     Matrix *tmp , *result , *result2;
     bmatrix bm, output ;
-    MPSTns.make_left_paired() ;
     bm = MPSTns.data() ;
     std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
     std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
@@ -469,7 +468,7 @@ void partial_overlap<Matrix, SymmGroup>::multiply_first(const partial_overlap<Ma
 template<class Matrix, class SymmGroup>
 Matrix* partial_overlap<Matrix, SymmGroup>::multiply_first(const MPSTensor& MPSTns,
                                                            const basis_type& sigma,
-                                                           const partial_overlap<Matrix, SymmGroup>::Modality& mod,
+                                                           const Modality& mod,
                                                            bool modality)
 {
     bmatrix bm = MPSTns.data() ;
@@ -549,12 +548,12 @@ void partial_overlap<Matrix, SymmGroup>::extract(const bmatrix& bm,
                                                  const std::size_t m2,
                                                  Matrix& output)
 {
-    std::size_t offset1, offset2 ;
-    offset1 = m1*sigma1 ;
-    offset2 = m2*sigma2 ;
+    dim_type NMax = phys_sizes_[sigma2] ;
+    std::size_t offset = m1*7*sigma1 + m1*sigma2 ;
     for (int i = 0; i < m1; ++i)
-        for (int j = 0 ; j < m2 ; ++j)
-            output(i,j) = bm[0](i+offset,j);
+        for (int j = 0 ; j < m2 ; ++j) {
+            output(i, j) = bm[0](i+offset,j);
+        }
 };
 
 template<class Matrix, class SymmGroup>

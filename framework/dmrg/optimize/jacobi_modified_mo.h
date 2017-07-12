@@ -58,15 +58,17 @@ namespace ietl
         using base::apply_operator ;
         using base::get_eigenvalue ;
         using base::n_restart_max_ ;
+        using base::nsites_ ;
         using base::omega_ ;
         using base::overlap_ ;
-        using base::site_ ;
+        using base::site1_ ;
+        using base::site2_ ;
         using base::vecspace_ ;
         //
-        jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const int& site, const magnitude_type& omega,
-                                    const partial_overlap& pov, const size_t n, const size_t& nmin, const size_t& nmax,
-                                    const size_t& max_iter)
-                : base::jacobi_davidson_modified(matrix, vec, site, omega, nmin, nmax, max_iter) , pov_(pov) , n_maxov_(n) {} ;
+        jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const partial_overlap& pov,
+                                    const size_t n, const size_t& nmin, const size_t& nmax, const size_t& max_iter,
+                                    const int& nsites, const int& site1, const int& site2)
+                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2) , pov_(pov) , n_maxov_(n) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
@@ -112,7 +114,6 @@ namespace ietl
              vector_double& eigvals)
     {
         // Initialization
-        double thresh = 0.50 ;
         vector_double overlaps ;
         vector_type u_local , uA_local ;
         int imin , imax , nevec;
@@ -136,18 +137,21 @@ namespace ietl
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
         int idx = 0;
+        double scr ;
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis
             u_local = eigvecs[i][0] * MPSTns_input[0];
             for (int j = 1; j < dim; ++j)
                 u_local += eigvecs[i][j] * MPSTns_input[j];
-            double scr = pov_.overlap(u_local, site_);
+            if (nsites_ == 1)
+                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_);
+            else if (nsites_ == 2)
+                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_, site2_);
             overlaps[i] = fabs(scr);
         }
-        for (int i = 1; i < nevec; ++i) {
+        for (int i = 1; i < nevec; ++i)
             if (overlaps[i] > overlaps[idx])
                 idx = i;
-        }
         overlap_ = overlaps[idx] ;
         // Finalization
         MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
@@ -158,21 +162,25 @@ namespace ietl
         }
         theta = eigvals[idx] ;
     };
+    //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     typename jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::vector_double
-    jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::generate_property
-            (const vector_space &V, const vector_space& VA, const size_t& dim,
+    	     jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::generate_property
+             (const vector_space &V, const vector_space& VA, const size_t& dim,
              const matrix_double &eigvecs, const vector_double &eigvals)
     {
         // Variable declaration
-        vector_type   tmp_V ;
+        vector_type  tmp_V ;
         vector_double p_tmp(dim) ;
         // Rotates the properties
         for (int i = 0; i < dim ; i++) {
             tmp_V = eigvecs[i][0] * V[0];
             for (int j = 1 ; j < dim ; j++)
                 tmp_V  += eigvecs[i][j] * V[j];
-            p_tmp[i] = pov_.overlap(tmp_V/ietl::two_norm(tmp_V), site_) ;
+            if (nsites_ == 1)
+                p_tmp[i] = pov_.overlap(tmp_V/ietl::two_norm(tmp_V), site1_) ;
+            else if (nsites_ == 2)
+                p_tmp[i] = pov_.overlap(tmp_V/ietl::two_norm(tmp_V), site1_, site2_) ;
         }
         return p_tmp ;
     }
@@ -200,7 +208,7 @@ namespace ietl
                                                                                                     const magnitude_type& en, const double& overlap )
     {
         char buf[100];
-	int a = i , n ;
+	    int a = i , n ;
         n = sprintf(buf, "%5d      | %1.4E  | %6.5f  |  %1.4f", a, error, en, overlap);
         std::cout << buf << std::endl;
     }

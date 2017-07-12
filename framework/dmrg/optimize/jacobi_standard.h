@@ -66,8 +66,10 @@ namespace ietl
         using base::max_iter_ ;
         using base::n_restart_max_ ;
         using base::n_restart_min_ ;
+        using base::nsites_ ;
         using base::overlap_ ;
-        using base::site_ ;
+        using base::site1_ ;
+        using base::site2_ ;
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax, const int& max_iter,
@@ -185,7 +187,7 @@ namespace ietl
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
         jcd_solver_operator_standard<MATRIX, VS, vector_type> op(u, r, matrix_, theta);
-        ietl_gmres gmres(max_iter_, true);
+        ietl_gmres gmres(max_iter_, false);
         vector_type inh = -r;
         // initial guess for better convergence
         scalar_type dru = ietl::dot(r,u);
@@ -226,9 +228,10 @@ namespace ietl
     //
     template<class MATRIX, class VS, class ITER>
     void jacobi_davidson_standard<MATRIX, VS, ITER>::print_newline_table(const size_t& i,          const double& error,
-                                                                         const magnitude_type& en, const double& overlap ) {
+                                                                         const magnitude_type& en, const double& overlap )
+    {
         char buf[39];
-	int a = i , n ;
+	    int a = i , n ;
         n = sprintf(buf, "%5d      | %1.4E  | %6.5F ", a , error, en);
         std::cout << buf << std::endl;
     }

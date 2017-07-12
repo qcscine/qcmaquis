@@ -95,12 +95,13 @@ public:
         }
         
         for (; _site < 2*L-2; ++_site) {
-	    /* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
-	        | |                        |
-           site 1                      |
-	          |         left to right  | right to left, lr = -1
-	          site 2                   |                               */
-
+            //
+            double i ;
+            if (poverlap.is_defined()) {
+                i = poverlap.overlap(site);
+                std::cout << "Overlap " << i << std::endl;
+            }
+            //
             int lr, site1, site2;
             if (_site < L-1) {
                 site = to_site(L, _site);
@@ -157,11 +158,11 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, ortho_vecs, 2, site1, site2);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, ortho_vecs, site2);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, ortho_vecs, 2, site1, site2);
+                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, 2, site1, ortho_vecs, site2);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -283,7 +284,9 @@ public:
                 { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
                 { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
-            
+
+            if (poverlap.is_defined())
+                poverlap.update(mps, site, lr);
             iteration_results_["BondDimension"]     << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
             iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;

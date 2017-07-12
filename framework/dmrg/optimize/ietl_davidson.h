@@ -44,8 +44,10 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     MPSTensor<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
                     partial_overlap<Matrix, SymmGroup> poverlap,
+                    int nsites, int site1,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
-                    int nsites, int site1, int site2=0) {
+                    int site2=0)
+{
     // Initialization
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);

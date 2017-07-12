@@ -103,7 +103,6 @@ namespace ietl
         magnitude_type atol_ ;
         bm_type Hdiag_ ;
         int site1_ , site2_, nmin_, nmax_, nsites_ ;
-        optimization_type opt_type_ ;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
