@@ -63,7 +63,7 @@ namespace ietl {
         ~davidson_standard_mo() {};
     private:
         // Private methods
-        void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
+        void precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta);
         void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
                               const size_t& i, vector_type& u, vector_type& uA);
         void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
@@ -94,7 +94,7 @@ namespace ietl {
     };
     // Definition of the virtual function precondition
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
-    void davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::precondition(vector_type &r, const vector_type &V, const magnitude_type &theta) {
+    void davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta) {
         magnitude_type denom, x2, x1 = ietl::dot(V, r);
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();

@@ -93,7 +93,7 @@ namespace ietl
         virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                                size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
-        virtual void precondition(vector_type& r, const vector_type& V, const magnitude_type theta ) {} ;
+        virtual void precondition(vector_type& r, const vector_type& V, const vector_type& VA, const magnitude_type theta ) {} ;
 	    virtual void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
 		                 		      const size_t& i, vector_type& u, vector_type& uA) {} ;
         virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
@@ -152,14 +152,14 @@ namespace ietl
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
 	        select_eigenpair(V2, VA, Mevecs, iter_dim, u, uA) ;
-            magnitude_type energy = ietl::dot(u,uA)  ;
+            magnitude_type energy = ietl::dot(u,uA)/ietl::dot(u,u)  ;
             r = uA - energy*u ;
             theta = energy ;
             // if (|r|_2 < \epsilon) stop
             ++iter;
             if (iter.finished(ietl::two_norm(r), theta))
                 break;
-            precondition(r, u, theta);
+            precondition(r, u, uA, theta);
             // Restarting algorithm
             t = finalize_iteration(u, r, nmax_, iter_dim, V2, VA);
         } while (true);

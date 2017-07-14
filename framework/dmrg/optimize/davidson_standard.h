@@ -4,7 +4,7 @@
  *
  * ALPS Libraries
  *
- * Copyright (C) 2001-2015 by Alberto Baiardi <alberto.baiardi@sns.it>
+ * Copyright (C) 2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
@@ -63,7 +63,7 @@ namespace ietl {
         vector_type apply_operator(const vector_type &x);
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
-        void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
+        void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
 	    void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
 	                          const size_t& i, vector_type& u, vector_type& uA);
         void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
@@ -87,7 +87,7 @@ namespace ietl {
     };
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
-    void davidson_standard<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const magnitude_type &theta) {
+    void davidson_standard<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta) {
         magnitude_type denom, x2, x1 = ietl::dot(V, r);
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();

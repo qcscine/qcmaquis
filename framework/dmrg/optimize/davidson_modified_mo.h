@@ -68,7 +68,7 @@ namespace ietl {
         vector_type apply_operator(const vector_type &x);
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
-        void precondition(vector_type &r, const vector_type &V, const magnitude_type &theta);
+        void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
 	void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs, 
 	                      const size_t& i, vector_type& u, vector_type& uA); 
         void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
@@ -94,10 +94,10 @@ namespace ietl {
     {
         magnitude_type tau = ietl::two_norm(t);
         vector_type tA ;
-        for (int i = 0; i < dim; i++)
-            t -= ietl::dot(V_additional_[i], t) * V_additional_[i];
-        t /= ietl::two_norm(t);
-        V_additional_.push_back(t);
+        //for (int i = 0; i < dim; i++)
+        //    t -= ietl::dot(V_additional_[i], t) * V_additional_[i];
+        //t /= ietl::two_norm(t);
+        //V_additional_.push_back(t);
         tA = apply_operator(t) ;
         for (int i = 0; i < dim; i++) {
             t -= ietl::dot(VA[i], tA) * V[i];
@@ -108,8 +108,8 @@ namespace ietl {
     } ;
     // Definition of the virtual function precondition
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
-    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::precondition(vector_type &r, const vector_type &V, const magnitude_type &theta) {
-        magnitude_type denom, x2, x1 = ietl::dot(V, r);
+    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta) {
+        magnitude_type denom, x2, x1 = ietl::dot(V, r)/ietl::two_norm(V);
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();
         assert(shape_equal(data, Hdiag_));
@@ -122,8 +122,8 @@ namespace ietl {
                 }
             }
         }
-        x2 = ietl::dot(V, Vcpy);
-        r = Vcpy - x2 * V;
+        x2 = ietl::dot(VA, Vcpy)/ietl::two_norm(VA);
+        r = Vcpy - x2 * VA;
     } ;
     // Virtual function finalize_iteration
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
@@ -156,11 +156,11 @@ namespace ietl {
         overlaps.resize(dim) ;
         for (int i = 0; i < dim; ++i) {
             // Conversion to the original basis
-            u_local = Mevecs(0,i) * V[0];
+            u_local = Mevecs(0, i) * VA[0];
             for (int j = 1; j < dim; ++j)
-                u_local += Mevecs(j,i) * V[j];
+                u_local += Mevecs(j, i) * VA[j];
             if (nsites_ == 1)
-                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_);
+                scr = pov_.overlap(u_local, site1_);
             else if (nsites_ == 2)
                 scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_, site2_);
             overlaps[i] = fabs(scr);
@@ -177,8 +177,8 @@ namespace ietl {
             u  += Mevecs(i, idx) * V[i];
             uA += Mevecs(i, idx) * VA[i];
         }
-        uA /= ietl::two_norm(u) ;
-        u  /= ietl::two_norm(u) ;
+        uA /= ietl::two_norm(uA) ;
+        u  /= ietl::two_norm(uA) ;
     }
 }
 
