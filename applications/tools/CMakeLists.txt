@@ -2,11 +2,6 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 set(DMRG_APP_LIBRARIES dmrg_utils ${DMRG_LIBRARIES})
 
-if(USE_AMBIENT)
-  compile_with_ambient()
-endif(USE_AMBIENT)
-
-
 macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
   get_symm_group_name(SYMM_NAME ${SYMM})
   if(DMRG_HAS_${SYMM_NAME})
@@ -54,14 +49,6 @@ create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_
 create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps2ci_none"      "NONE"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-
-if(DMRG_HAS_TwoU1)
-create_tools_symm_target("mps_transform"    "SU2U1"   "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-endif(DMRG_HAS_TwoU1)
-if(DMRG_HAS_TwoU1PG)
-create_tools_symm_target("mps_transform_pg" "SU2U1PG" "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-endif(DMRG_HAS_TwoU1PG)
