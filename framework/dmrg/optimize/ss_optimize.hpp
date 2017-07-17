@@ -82,7 +82,8 @@ public:
             site = to_site(L, _site);
         }
         // Initialization of the overlap object
-        partial_overlap poverlap(mps,mps2follow) ;
+        //partial_overlap poverlap(mps,mps2follow) ;
+        partial_overlap poverlap(mps,mps) ;
         Storage::prefetch(left_[site]) ;
         Storage::prefetch(right_[site+1]) ;
         // Main loop
