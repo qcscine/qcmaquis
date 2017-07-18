@@ -52,6 +52,8 @@ public:
     using base::iteration_results_;
     using base::stop_callback;
     using base::mps2follow ;
+    using base::do_root_homing_ ;
+    using base::root_homing_type_ ;
     // Constructor
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -162,7 +164,7 @@ public:
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, 2, site1, ortho_vecs, site2);
+                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, 2, site1, root_homing_type_, ortho_vecs, site2);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

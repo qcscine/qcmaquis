@@ -100,6 +100,7 @@ namespace ietl
         // Attributes
         MATRIX const & matrix_;
         VS vecspace_;
+        vector_type v_guess_ ;
         magnitude_type atol_ ;
         bm_type Hdiag_ ;
         int site1_ , site2_, nmin_, nmax_, nsites_ ;
@@ -117,6 +118,7 @@ namespace ietl
             nsites_(nsites)
     {
         vector_type tmp = new_vector(vecspace_) ;
+        v_guess_ = new_vector(vecspace_) ;
         Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp) ;
     } ;
     // -- Method used to compute eigenpairs --

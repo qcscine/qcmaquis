@@ -49,18 +49,19 @@ namespace ietl {
         typedef typename base::vector_type    vector_type;
         typedef typename base::size_t         size_t;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
-        using base::atol_ ;
         using base::Hdiag_ ;
         using base::matrix_ ;
         using base::nsites_ ;
         using base::site1_ ;
         using base::site2_ ;
-        using base::vecspace_ ;
+        using base::v_guess_ ;
         // New constructors
         davidson_modified_mo(const MATRIX &matrix, const VS &vec, const magnitude_type& omega,
                              const partial_overlap& pov, const int& nmin, const int& nmax,
-                             const int& nsites, const int& site1, const int& site2)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega) , pov_(pov) {};
+                             const int& nsites, const int& site1, const int& site2,
+                             const int& root_homing_type)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega)
+                , pov_(pov) , root_homing_type_(root_homing_type) {};
         ~davidson_modified_mo() {};
     private:
         // Private methods
@@ -69,13 +70,15 @@ namespace ietl {
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
         void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
-	void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs, 
-	                      const size_t& i, vector_type& u, vector_type& uA); 
+	    void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+	                          const size_t& i, vector_type& u, vector_type& uA);
         void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
+        double compute_overlap(const vector_type& vec_test) ;
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
         partial_overlap pov_ ;
+        int root_homing_type_ ;
     };
     // Construction of the virtual function apply operator
     template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
@@ -156,14 +159,10 @@ namespace ietl {
         overlaps.resize(dim) ;
         for (int i = 0; i < dim; ++i) {
             // Conversion to the original basis
-            u_local = Mevecs(0, i) * VA[0];
+            u_local = Mevecs(0, i) * V[0];
             for (int j = 1; j < dim; ++j)
-                u_local += Mevecs(j, i) * VA[j];
-            if (nsites_ == 1)
-                scr = pov_.overlap(u_local, site1_);
-            else if (nsites_ == 2)
-                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_, site2_);
-            overlaps[i] = fabs(scr);
+                u_local += Mevecs(j, i) * V[j];
+            overlaps[i] = compute_overlap(u_local) ;
         }
         for (int i = 1; i < dim; ++i) {
             if (overlaps[i] > overlaps[idx])
@@ -177,8 +176,22 @@ namespace ietl {
             u  += Mevecs(i, idx) * V[i];
             uA += Mevecs(i, idx) * VA[i];
         }
-        uA /= ietl::two_norm(uA) ;
-        u  /= ietl::two_norm(uA) ;
+        uA /= ietl::two_norm(u) ;
+        u  /= ietl::two_norm(u) ;
+    }
+    // Routine to compute the overlaps
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    double davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::compute_overlap(const vector_type &vec_test)
+    {
+        double ret, scr ;
+        if (root_homing_type_ == 1)
+            if (nsites_ == 1)
+                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_);
+            else
+                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
+        else
+            scr = ietl::dot(vec_test, v_guess_)/ietl::two_norm(vec_test) ;
+        return fabs(ret) ;
     }
 }
 

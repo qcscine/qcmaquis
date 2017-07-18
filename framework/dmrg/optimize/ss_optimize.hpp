@@ -46,12 +46,14 @@ public:
     //
     using base::mpo ;
     using base::mps ;
+    using base::mps2follow ;
     using base::left_ ;
     using base::right_ ;
     using base::parms ;
     using base::iteration_results_ ;
     using base::stop_callback ;
-    using base::mps2follow ;
+    using base::do_root_homing_ ;
+    using base::root_homing_type_ ;
     // Constructor declaration
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -89,11 +91,6 @@ public:
         // Main loop
         for (; _site < 2*L; ++_site) {
             //
-            //double i ;
-            //if (poverlap.is_defined()) {
-            //    i = poverlap.overlap(site);
-            //    std::cout << "Overlap " << i << std::endl;
-            //}
             // lr indicates the direction of the sweep
             int lr = (_site < L) ? +1 : -1;
             site = to_site(L, _site);
@@ -136,7 +133,7 @@ public:
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, mps[site], parms, poverlap, 1, site, ortho_vecs);
+                    res = solve_ietl_davidson(sp, mps[site], parms, poverlap, 1, site, root_homing_type_, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -196,7 +193,7 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
-            if (poverlap.is_defined())
+            if (root_homing_type_ == 1)
                 poverlap.update(mps, site, lr);
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
