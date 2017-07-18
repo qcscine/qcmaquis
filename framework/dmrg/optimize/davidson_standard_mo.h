@@ -4,7 +4,7 @@
  *
  * ALPS Libraries
  *
- * Copyright (C) 2001-2015 by Alberto Baiardi <alberto.baiardi@sns.it>
+ * Copyright (C) 2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
@@ -50,16 +50,17 @@ namespace ietl {
         typedef typename base::size_t         size_t;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap ;
         using base::matrix_;
-        using base::vecspace_;
-        using base::atol_;
         using base::Hdiag_;
         using base::nsites_ ;
         using base::site1_;
         using base::site2_;
+        using base::v_guess_ ;
         // New constructors
         davidson_standard_mo(const MATRIX &matrix, const VS &vec, const partial_overlap poverlap,
-                             const int& nmin, const int& nmax, const int& nsites, const int& site1, const int& site2)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2), pov_(poverlap) {};
+                             const int& nmin, const int& nmax, const int& nsites, const int& site1, const int& site2,
+                             const int& root_homing_type)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2),
+                  pov_(poverlap), root_homing_type_(root_homing_type) {};
         ~davidson_standard_mo() {};
     private:
         // Private methods
@@ -71,7 +72,9 @@ namespace ietl {
         magnitude_type return_final(const magnitude_type &x) { return x; };
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
+        double compute_overlap(const vector_type& vec_test) ;
         // Private attribute
+        int root_homing_type_ ;
         partial_overlap  pov_ ;
     };
     // Definition of the virtual function update_vspace
@@ -144,11 +147,7 @@ namespace ietl {
             u_local = Mevecs(0,i) * V[0];
             for (int j = 1; j < dim; ++j)
                 u_local += Mevecs(j,i) * V[j];
-            if (nsites_ == 1)
-                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_);
-            else
-                scr = pov_.overlap(u_local/ietl::two_norm(u_local), site1_, site2_);
-            overlaps[i] = fabs(scr);
+            overlaps[i] = compute_overlap(u_local) ;
         }
         for (int i = 1; i < dim; ++i) {
             if (overlaps[i] > overlaps[idx])
@@ -165,6 +164,20 @@ namespace ietl {
         }
         uA /= ietl::two_norm(u) ;
         u  /= ietl::two_norm(u) ;
+    }
+    // Routine to compute the overlaps
+    template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
+    double davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::compute_overlap(const vector_type &vec_test)
+    {
+        double ret, scr ;
+        if (root_homing_type_ == 1)
+            if (nsites_ == 1)
+                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_);
+            else
+                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
+        else
+            scr = ietl::dot(vec_test, v_guess_)/ietl::two_norm(vec_test) ;
+        return fabs(ret) ;
     }
 }
 

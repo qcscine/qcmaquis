@@ -113,14 +113,29 @@ public:
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
-    , follow_root_(false)
+    , do_root_homing_(false)
     {
-        if (mps2follow.size() != 0)
-            follow_root_ = true ;
+        // Standard options
         std::size_t L = mps.length();
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
+        // Root-homing criteria
+        if (parms_["ietl_diag_homing_criterion"] == "") {
+            do_root_homing_   = false ;
+            root_homing_type_ = 0 ;
+        } else if (parms_["ietl_diag_homing_criterion"] == "input") {
+            do_root_homing_   = true ;
+            root_homing_type_ = 1 ;
+            if (mps2follow.size() != L)
+                throw std::runtime_error("ONV to follow not provided");
+        } else if (parms_["ietl_diag_homing_criterion"] == "last") {
+            do_root_homing_   = false ;
+            root_homing_type_ = 2 ;
+        } else {
+            throw std::runtime_error("Root homing criterion not recognized") ;
+        }
+        // Orthogonal states
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
         if (northo > 0 && !parms_.is_set("ortho_states"))
@@ -237,16 +252,18 @@ protected:
     // Protected attributes
     results_collector iteration_results_;
     MPS<Matrix, SymmGroup> & mps;
-    std::vector<int> const mps2follow;
-    bool follow_root_ ;
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
+    std::vector<int> const mps2follow;
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
+    // Root-homing procedure
+    bool do_root_homing_ ;
+    int root_homing_type_ ;
 };
 
 #include "ss_optimize.hpp"
