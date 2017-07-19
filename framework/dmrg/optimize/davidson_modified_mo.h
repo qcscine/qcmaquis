@@ -4,7 +4,7 @@
  *
  * ALPS Libraries
  *
- * Copyright (C) 2001-2015 by Alberto Baiardi <alberto.baiardi@sns.it>
+ * Copyright (C) 2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
@@ -72,7 +72,7 @@ namespace ietl {
         void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
 	    void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
 	                          const size_t& i, vector_type& u, vector_type& uA);
-        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
+        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, size_t dim);
         double compute_overlap(const vector_type& vec_test) ;
         // Additional attributes
         magnitude_type omega_ ;
@@ -93,14 +93,14 @@ namespace ietl {
     };
     // Construction of the virtual function update_vspace
     template <class MATRIX, class VS, class OtherMatrix, class SymmGroup>
-    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim)
+    void davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::update_vspace(vector_set& V, vector_set& VA, vector_type& t, size_t dim)
     {
         magnitude_type tau = ietl::two_norm(t);
         vector_type tA ;
-        //for (int i = 0; i < dim; i++)
-        //    t -= ietl::dot(V_additional_[i], t) * V_additional_[i];
-        //t /= ietl::two_norm(t);
-        //V_additional_.push_back(t);
+        for (int i = 0; i < dim; i++)
+            t -= ietl::dot(V_additional_[i], t) * V_additional_[i];
+        t /= ietl::two_norm(t);
+        V_additional_.push_back(t);
         tA = apply_operator(t) ;
         for (int i = 0; i < dim; i++) {
             t -= ietl::dot(VA[i], tA) * V[i];
@@ -125,8 +125,8 @@ namespace ietl {
                 }
             }
         }
-        x2 = ietl::dot(VA, Vcpy)/ietl::two_norm(VA);
-        r = Vcpy - x2 * VA;
+        x2 = ietl::dot(V, Vcpy)/ietl::two_norm(V);
+        r = Vcpy - x2 * V;
     } ;
     // Virtual function finalize_iteration
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
@@ -184,13 +184,14 @@ namespace ietl {
     double davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::compute_overlap(const vector_type &vec_test)
     {
         double ret, scr ;
-        if (root_homing_type_ == 1)
+        if (root_homing_type_ == 1) {
             if (nsites_ == 1)
                 ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_);
             else
                 ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
-        else
-            scr = ietl::dot(vec_test, v_guess_)/ietl::two_norm(vec_test) ;
+        } else {
+            ret = ietl::dot(vec_test, v_guess_) / ietl::two_norm(vec_test);
+        }
         return fabs(ret) ;
     }
 }

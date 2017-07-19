@@ -80,7 +80,6 @@ namespace ietl {
     // Definition of the virtual function update_vspace
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     void davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim) {
-        magnitude_type tau = ietl::two_norm(t);
         for (int i = 0; i < dim; i++)
             t -= ietl::dot(V[i], t) * V[i];
         V.push_back(t / ietl::two_norm(t));
@@ -176,7 +175,7 @@ namespace ietl {
             else
                 ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         else
-            scr = ietl::dot(vec_test, v_guess_)/ietl::two_norm(vec_test) ;
+            ret = ietl::dot(vec_test, v_guess_)/ietl::two_norm(vec_test) ;
         return fabs(ret) ;
     }
 }

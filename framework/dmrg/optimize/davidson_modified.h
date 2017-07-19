@@ -104,7 +104,8 @@ namespace ietl {
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
     void davidson_modified<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta) {
-        magnitude_type denom, x2, x1 = ietl::dot(V, r);
+        magnitude_type denom, x2, x1 ;
+        x1 = ietl::dot(VA, r)/ietl::dot(VA,V) ;
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();
         assert(shape_equal(data, Hdiag_));
@@ -117,8 +118,8 @@ namespace ietl {
                 }
             }
         }
-        x2 = ietl::dot(VA, Vcpy);
-        r = Vcpy - x2 * VA;
+        x2 = ietl::dot(VA, Vcpy)/ietl::dot(VA,V);
+        r = Vcpy - x2 * V ;
     } ;
     // Virtual function finalize_iteration
     template<class MATRIX, class VS>

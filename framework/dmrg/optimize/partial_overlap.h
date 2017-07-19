@@ -309,6 +309,7 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
                                                                                                     const dim_type &i)
 {
     // Check data consistency and declaration
+    MPSTns.make_left_paired() ;
     assert (i < lattice_L_) ;
     value_type result = 0 ;
     dim_type indx = lattice_L_-2-i ;
@@ -827,7 +828,7 @@ void partial_overlap<Matrix, SymmGroup>::extract(const bmatrix& bm,
     std::size_t offset = m1*sigma ;
     for (int i = 0; i < m1; ++i)
         for (int j = 0 ; j < m2 ; ++j)
-            output(i, j) = bm[0](i + offset, j);
+            output(i, j) = bm[0](i+offset, j);
 };
 
 template<class Matrix, class SymmGroup>

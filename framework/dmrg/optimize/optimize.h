@@ -130,7 +130,7 @@ public:
             if (mps2follow.size() != L)
                 throw std::runtime_error("ONV to follow not provided");
         } else if (parms_["ietl_diag_homing_criterion"] == "last") {
-            do_root_homing_   = false ;
+            do_root_homing_   = true ;
             root_homing_type_ = 2 ;
         } else {
             throw std::runtime_error("Root homing criterion not recognized") ;

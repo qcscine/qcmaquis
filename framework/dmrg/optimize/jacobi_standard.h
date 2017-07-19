@@ -188,7 +188,7 @@ namespace ietl
     {
         jcd_solver_operator_standard<MATRIX, VS, vector_type> op(u, r, matrix_, theta);
         ietl_gmres gmres(max_iter_, false);
-        vector_type inh = -r;
+        vector_type inh = -r, tmp;
         // initial guess for better convergence
         scalar_type dru = ietl::dot(r,u);
         scalar_type duu = ietl::dot(u,u);

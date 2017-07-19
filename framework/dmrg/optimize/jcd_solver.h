@@ -127,7 +127,7 @@ namespace ietl {
         jcd_solver_operator_modified(const vector_type &u, const vector_type &r, const Matrix &m,
                                      const magnitude_type &theta, const magnitude_type &omega,
                                      const vector_type &z)
-                                     : base::jcd_solver_operator(u, r, m, theta), omega_(omega), z_(z) {};
+                                     : base::jcd_solver_operator(u, r, m, theta), omega_(omega), z_(z) { };
         ~jcd_solver_operator_modified() {};
         void operator()(vector_type const &x, vector_type &y) const;
     private:
@@ -152,7 +152,7 @@ namespace ietl {
         // t = (1-uu*) y
         ust = dot(z_, y);
         t = y - ust * z_;
-        y = t;
+        y = t ;
     };
     // Multiplication of solvers
     template<class Matrix, class VS, class Vector>

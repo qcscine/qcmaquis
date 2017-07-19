@@ -1,4 +1,4 @@
-/*****************************************************************************
+ /*****************************************************************************
  *
  * ALPS Project: Algorithms and Libraries for Physics Simulations
  *
@@ -192,11 +192,12 @@ namespace ietl
         vector_type z, inh = r;
         z = apply_operator(u) ;
         jcd_solver_operator_modified<MATRIX, VS, vector_type> op(u, r, matrix_, theta, omega_, z);
-        ietl_gmres gmres(max_iter_, false);
+        ietl_gmres gmres(max_iter_, true);
         // initial guess for better convergence
         scalar_type dru = ietl::dot(r,u);
         scalar_type duu = ietl::dot(u,u);
-        t = r + dru/duu*u;
+        t = -r + dru/duu*u;
+        std::cout << max_iter_ << std::endl ;
         if (max_iter_ > 0)
             t = gmres(op, inh, t, rel_tol);
     }
