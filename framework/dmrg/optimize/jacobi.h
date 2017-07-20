@@ -81,7 +81,8 @@ namespace ietl
         typedef typename std::pair<int, float>   couple_val ;
         typedef typename std::vector<couple_val> couple_vec ;
         jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
-                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2);
+                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
+                        const double& ietl_tol);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -122,7 +123,7 @@ namespace ietl
         MATRIX const & matrix_ ;
         VS vecspace_ ;
         int nsites_, site1_, site2_ ;
-        double overlap_ ;
+        double ietl_tol_, overlap_ ;
         FortranMatrix<scalar_type> M ;
         size_t max_iter_ , n_restart_min_ , n_restart_max_ ;
     private:
@@ -132,7 +133,8 @@ namespace ietl
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
-                                                       const size_t& max_iter, const int& nsites, const int& site1, const int& site2) :
+                                                       const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
+                                                       const double& ietl_tol ) :
         matrix_(matrix),
         vecspace_(vec),
         nsites_(nsites),
@@ -142,7 +144,8 @@ namespace ietl
         max_iter_(max_iter),
         n_restart_min_(n_min),
         n_restart_max_(n_max),
-        overlap_(0.)
+        overlap_(0.),
+        ietl_tol_(ietl_tol)
     { } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
@@ -156,6 +159,7 @@ namespace ietl
         magnitude_type eigval, rel_tol, theta;
         bool converged ;
         int n_iter = 0 ;
+        rel_tol = ietl_tol_ ;
         // Vectors
         vector_double props(iter.max_iterations()) ;
         vector_space  V(iter.max_iterations())  ;
@@ -178,7 +182,7 @@ namespace ietl
             // Update of the M matrix and compute the eigenvalues and the eigenvectors
             for(int j = 0 ; j < n_iter+1; j++)
                 for(int i = 0 ; i < j+1; i++)
-                  M(i,j) = ietl::dot(V[i], VA[j]);
+                    M(i, j) = ietl::dot(V[i], VA[j]);
             diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals) ;
             // Check convergence
             ++iter ;
@@ -190,8 +194,7 @@ namespace ietl
                 print_endline();
                 return std::make_pair(eigval, eigvec / ietl::two_norm(eigvec));
             }
-            rel_tol = 1. / pow(2.,double(n_iter+1)) ;
-            solver(u, theta, r, V[n_iter], rel_tol) ;
+            solver(u, eigval, r, V[n_iter], rel_tol) ;
             if (n_iter == n_restart_max_) {
                 restart_jd(V, VA, eigvecs, eigvals);
                 print_endline() ;

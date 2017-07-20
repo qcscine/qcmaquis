@@ -70,8 +70,9 @@ namespace ietl
         //
         jacobi_davidson_standard_mo(const MATRIX& matrix, const VS& vec, const partial_overlap& pov, const size_t n,
                                     const size_t& nmin, const size_t& nmax, const size_t& max_iter,
-                                    const int& nsites, const int& site1, const int& site2)
-                : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2)
+                                    const int& nsites, const int& site1, const int& site2,
+                                    const double& tol)
+                : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol)
                 , pov_(pov) , n_maxov_(n) {} ;
         ~jacobi_davidson_standard_mo() {} ;
     private:

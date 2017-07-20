@@ -148,7 +148,7 @@ namespace ietl {
         mult(m_, t2, t3);
         t3 *= -1.;
         t3 += omega_ * t2;
-        y = t3 - t2 / theta_;
+        y = t3 - t2 * theta_;
         // t = (1-uu*) y
         ust = dot(z_, y);
         t = y - ust * z_;

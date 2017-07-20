@@ -69,8 +69,9 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const size_t& nmin,
-                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1, const int& site2)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2) , omega_(omega) {} ;
+                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
+                                 const double& tol)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol) , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
         // Methods
@@ -192,12 +193,11 @@ namespace ietl
         vector_type z, inh = r;
         z = apply_operator(u) ;
         jcd_solver_operator_modified<MATRIX, VS, vector_type> op(u, r, matrix_, theta, omega_, z);
-        ietl_gmres gmres(max_iter_, true);
+        ietl_gmres gmres(max_iter_, false);
         // initial guess for better convergence
         scalar_type dru = ietl::dot(r,u);
         scalar_type duu = ietl::dot(u,u);
         t = -r + dru/duu*u;
-        std::cout << max_iter_ << std::endl ;
         if (max_iter_ > 0)
             t = gmres(op, inh, t, rel_tol);
     }

@@ -67,8 +67,9 @@ namespace ietl
         //
         jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const partial_overlap& pov,
                                     const size_t n, const size_t& nmin, const size_t& nmax, const size_t& max_iter,
-                                    const int& nsites, const int& site1, const int& site2)
-                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2) , pov_(pov) , n_maxov_(n) {} ;
+                                    const int& nsites, const int& site1, const int& site2, const double& tol)
+                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, tol)
+                , pov_(pov) , n_maxov_(n) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,

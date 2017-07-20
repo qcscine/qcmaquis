@@ -30,7 +30,6 @@
 
 #include <ietl/cg.h>
 #include <ietl/fmatrix.h>
-#include <ietl/gmres.h>
 #include <ietl/ietl2lapack.h>
 #include <ietl/traits.h>
 #include <vector>
@@ -38,6 +37,7 @@
 #include "dmrg/optimize/jacobi.h"
 #include "dmrg/optimize/jcd_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
+#include "dmrg/optimize/gmres_alb.h"
 
 // +---------------------------+
 //  JACOBI-DAVIDSON EIGENSOLVER
@@ -73,8 +73,8 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax, const int& max_iter,
-                                 const int& nsites, const int& site1, const int& site2)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2) {} ;
+                                 const int& nsites, const int& site1, const int& site2, const double& tol)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
@@ -158,8 +158,9 @@ namespace ietl
         int imin , imax , nevec ;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_) {
-            imin = imax = 1;
-            nevec = 1 ;
+            imin  = 1 ;
+            imax  = dim ;
+            nevec = imax - imin + 1 ;
         } else {
             imin  = 1;
             imax  = dim ;
@@ -186,15 +187,16 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
-        jcd_solver_operator_standard<MATRIX, VS, vector_type> op(u, r, matrix_, theta);
-        ietl_gmres gmres(max_iter_, false);
-        vector_type inh = -r, tmp;
+        gmres_standard<MATRIX, vector_type> gmres(this->matrix_, u, theta, max_iter_, false);
+        vector_type inh = -r, t2 ;
         // initial guess for better convergence
         scalar_type dru = ietl::dot(r,u);
         scalar_type duu = ietl::dot(u,u);
-        t = -r + dru/duu*u;
-        if (max_iter_ > 0)
-            t = gmres(op, inh, t, rel_tol);
+        t = - r + dru/duu*u;
+        if (max_iter_ > 0) {
+            t2 = gmres(inh, t, rel_tol);
+            t = t2 / ietl::two_norm(t2);
+        }
     } ;
     //
     template<class MATRIX, class VS, class ITER>
