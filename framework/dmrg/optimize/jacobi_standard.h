@@ -61,6 +61,7 @@ namespace ietl
         typedef typename base::vector_type     vector_type;
         //
         using base::get_eigenvalue ;
+        using base::i_gmres_guess_ ;
         using base::M ;
         using base::matrix_ ;
         using base::max_iter_ ;
@@ -73,8 +74,8 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax, const int& max_iter,
-                                 const int& nsites, const int& site1, const int& site2, const double& tol)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol) {} ;
+                                 const int& nsites, const int& site1, const int& site2, const double& tol, const size_t& ietl_gmres_guess)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, ietl_gmres_guess) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
@@ -92,7 +93,6 @@ namespace ietl
         void print_header_table(void) ;
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
-
                     const magnitude_type& rel_tol) ;
         void sort_prop(couple_vec& vector_values) ;
     };
@@ -189,10 +189,16 @@ namespace ietl
     {
         gmres_standard<MATRIX, vector_type> gmres(this->matrix_, u, theta, max_iter_, false);
         vector_type inh = -r, t2 ;
+        scalar_type dru, duu ;
         // initial guess for better convergence
-        scalar_type dru = ietl::dot(r,u);
-        scalar_type duu = ietl::dot(u,u);
-        t = - r + dru/duu*u;
+        if (i_gmres_guess_ == 0) {
+            dru = ietl::dot(r, u);
+            duu = ietl::dot(u, u);
+            t = -r + dru / duu * u;
+        } else if (i_gmres_guess_ == 1) {
+            t = 0.*r ;
+        }
+        // Actual GMRES algorithm
         if (max_iter_ > 0) {
             t2 = gmres(inh, t, rel_tol);
             t = t2 / ietl::two_norm(t2);

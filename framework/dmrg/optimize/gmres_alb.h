@@ -76,11 +76,11 @@ namespace ietl
             v[0] = apply(x0) ;
             r = b - v[0];
             s[0] = two_norm(r);
-            if (std::abs(s[0]) < abs_tol) {
-                if (verbose)
-                    std::cout << "Already done with x0." << std::endl;
-                return x0;
-            }
+            //if (std::abs(s[0]) < abs_tol) {
+            //    if (verbose)
+            //        std::cout << "Already done with x0." << std::endl;
+            //    return x0;
+            //}
             v[0] = r / s[0];
             matrix_scalar H(max_iter+1, max_iter+1);
             size_t i = 0 ;
@@ -212,6 +212,54 @@ namespace ietl
             // Finalization
             return y ;
         }
+    };
+    //
+    // GMRES_MODIFIED OBJECT
+    // ---------------------
+    // GMRES solver object for the shift-and-invertedL problem
+    template<class Matrix, class Vector>
+    class gmres_modified : private gmres_general<Matrix, Vector>
+    {
+    public:
+        typedef gmres_general<Matrix, Vector> base ;
+        typedef typename base::size_t size_t ;
+        gmres_modified(Matrix const & A,
+                       Vector const & u,
+                       Vector const & z,
+                       double const & theta,
+                       double const & omega,
+                       size_t max_iter,
+                       bool verbose)
+                : base::gmres_general(A, u, theta, max_iter, verbose),
+                  omega_(omega), z_(z) { }
+        // Private attributes
+        using base::A_ ;
+        using base::theta_ ;
+        using base::u_ ;
+        using base::operator() ;
+    private:
+        Vector apply(const Vector& input){
+            // Initialization
+            Vector t, t2, t3, y ;
+            mult(A_, input, t);
+            t *= -1.;
+            t += omega_ * input;
+            double ust = dot(z_, t);
+            t2 = input - ust * u_;
+            // y = (A-theta*1) t2
+            mult(A_, t2, t3);
+            t3 *= -1.;
+            t3 += omega_ * t2;
+            y = t3 - t2 * theta_ ;
+            // t = (1-uu*) y
+            ust = dot(z_, y) ;
+            t = y - ust * z_ ;
+            // Finalization
+            return t ;
+        }
+        // Private attributes
+        double omega_ ;
+        Vector z_ ;
     };
 }
 

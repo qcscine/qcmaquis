@@ -206,9 +206,7 @@ protected:
         }
         Storage::evict(left_[site]);
         //tlb.end();
-
         maquis::cout << "Boundaries are partially initialized...\n";
-        
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();

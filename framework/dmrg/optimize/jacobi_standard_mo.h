@@ -35,7 +35,6 @@
 #include <vector>
 
 #include "dmrg/optimize/jacobi.h"
-#include "dmrg/optimize/jcd_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
 
 // +-------------------------------------------------+
@@ -48,11 +47,11 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson_standard<MATRIX, VS, ITER> base;
+        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         typedef typename base::couple_vec      couple_vec ;
         typedef typename base::gt_couple       gt_couple ;
         typedef typename base::magnitude_type  magnitude_type;
         typedef typename base::matrix_double   matrix_double;
-        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         typedef typename base::scalar_type     scalar_type ;
         typedef typename base::size_t          size_t ;
         typedef typename base::vector_double   vector_double ;
@@ -60,6 +59,7 @@ namespace ietl
         typedef typename base::vector_type     vector_type ;
         using base::apply_operator ;
         using base::get_eigenvalue ;
+        using base::i_gmres_guess_ ;
         using base::matrix_ ;
         using base::n_restart_max_ ;
         using base::nsites_ ;
@@ -71,8 +71,8 @@ namespace ietl
         jacobi_davidson_standard_mo(const MATRIX& matrix, const VS& vec, const partial_overlap& pov, const size_t n,
                                     const size_t& nmin, const size_t& nmax, const size_t& max_iter,
                                     const int& nsites, const int& site1, const int& site2,
-                                    const double& tol)
-                : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol)
+                                    const double& tol, const size_t& i_gmres_guess)
+                : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
                 , pov_(pov) , n_maxov_(n) {} ;
         ~jacobi_davidson_standard_mo() {} ;
     private:

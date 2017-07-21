@@ -160,7 +160,7 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, ortho_vecs, site2);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, root_homing_type_, ortho_vecs, site2);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")

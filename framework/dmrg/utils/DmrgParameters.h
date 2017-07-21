@@ -77,8 +77,11 @@ private:
         add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.));
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
+        // GMRES-related parameters
+        //ALB The guess option is kept for backward compatibility
         add_option("ietl_gmres_maxiter", "", value(20));
         add_option("ietl_gmres_abstol", "convergence threshold for the GMRES algorithm", value(1.0e-1)) ;
+        add_option("ietl_gmres_guess", "guess for the iterative GMRES solver", value("error")) ;
         // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

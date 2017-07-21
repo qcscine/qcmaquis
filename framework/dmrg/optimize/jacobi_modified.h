@@ -36,8 +36,8 @@
 #include <vector>
 #include <cmath>
 
+#include "dmrg/optimize/gmres_alb.h"
 #include "dmrg/optimize/jacobi.h"
-#include "dmrg/optimize/jcd_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
 
 // +------------------------------------+
@@ -60,18 +60,22 @@ namespace ietl
         typedef typename base::vector_double   vector_double;
         typedef typename base::vector_space    vector_space;
         typedef typename base::vector_type     vector_type;
+        // Attributes taken from the mother class
         using base::get_eigenvalue ;
+        using base::i_gmres_guess_ ;
         using base::M ;
         using base::matrix_ ;
         using base::max_iter_ ;
         using base::n_restart_max_ ;
         using base::overlap_ ;
         using base::vecspace_ ;
+        using base::v_guess_ ;
         //
         jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const size_t& nmin,
                                  const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                                 const double& tol)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol) , omega_(omega) {} ;
+                                 const double& tol, const size_t& i_gmres_guess)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
+                , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
         // Methods
@@ -190,16 +194,22 @@ namespace ietl
     void jacobi_davidson_modified<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
-        vector_type z, inh = r;
+        vector_type z, inh = -r, t2 ;
+        scalar_type dru, duu ;
         z = apply_operator(u) ;
-        jcd_solver_operator_modified<MATRIX, VS, vector_type> op(u, r, matrix_, theta, omega_, z);
-        ietl_gmres gmres(max_iter_, false);
+        gmres_modified<MATRIX, vector_type> gmres(this->matrix_, u, z, theta, omega_, max_iter_, false);
         // initial guess for better convergence
-        scalar_type dru = ietl::dot(r,u);
-        scalar_type duu = ietl::dot(u,u);
-        t = -r + dru/duu*u;
-        if (max_iter_ > 0)
-            t = gmres(op, inh, t, rel_tol);
+        if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
+            dru = ietl::dot(r, u);
+            duu = ietl::dot(u, u);
+            t = (-r + dru / duu * u);
+        } else if (i_gmres_guess_ == 1) {
+            t = 0.*r ;
+        }
+        if (max_iter_ > 0) {
+            t2 = gmres(inh, t, rel_tol);
+            t = t2 / ietl::two_norm(t2);
+        }
     }
     template<class MATRIX, class VS, class ITER>
     typename jacobi_davidson_modified<MATRIX, VS, ITER>::vector_double
