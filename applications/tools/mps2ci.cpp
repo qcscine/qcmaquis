@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
     }
     // compute the CI coefficients for all determinants in the input
     int i = 1;
-    for (std::vector< typename std::vector<int> >::iterator it = determinants.begin(); it != determinants.end(); ++it){
+    for (std::vector< std::vector<int> >::iterator it = determinants.begin(); it != determinants.end(); ++it){
         maquis::cout << "CI coefficient of det " << i <<": " << extract_coefficient(mps, *it) << std::endl;
         i++;
         }

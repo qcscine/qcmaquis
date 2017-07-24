@@ -344,7 +344,7 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
     // Check data consistency and declaration
     assert (i < lattice_L_) ;
     dim_type indx = lattice_L_-2-i ;
-    dim_type NM1 = MPS.site_dim.size_of_block(identity) ;
+    dim_type NM1 = MPSTns.site_dim.size_of_block(identity) ;
     dim_type NM2 = MPSOther.site_dim.size_of_block(identity) ;
     assert (NM1 == NM2) ;
     value_type result = 0 ;
