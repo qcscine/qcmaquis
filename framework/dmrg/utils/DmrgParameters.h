@@ -78,7 +78,7 @@ private:
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         // GMRES-related parameters
-        //ALB The guess option is kept for backward compatibility
+        //ALB The guess option is kept for backward compatibility, 'zero' should be always used
         add_option("ietl_gmres_maxiter", "", value(20));
         add_option("ietl_gmres_abstol", "convergence threshold for the GMRES algorithm", value(1.0e-1)) ;
         add_option("ietl_gmres_guess", "guess for the iterative GMRES solver", value("error")) ;
@@ -102,7 +102,7 @@ private:
         add_option("update_each", "", value(-1));
         add_option("entanglement_spectra", "", value(0));
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
-        
+        // Time evolution of a MPS
         add_option("expm_method", "algorithm used for exp(-i H dt): heev (default), geev", value("heev"));
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
         add_option("te_optim", "optimized nn time evolution", value(true));
@@ -116,19 +116,23 @@ private:
         add_option("init_state", "", value("default"));
         add_option("init_coeff", "coefficients for coherent init", value(""));
         add_option("init_basis_state", "local indexes for basis state init", value(""));
-        add_option("ci_level", "number of electrons excited from HF determinant", "1,2,3,4,5,6");
-
+        // State-average options
+        add_option("n_states_sa", "number of states to track to do state-averaging", value(1)) ;
+        add_option("sa_algorithm", "method used to update boundaries in SA calculation", value("lowest")) ;
+        add_option("init_mps_stateaverage", "comma separated list of ONV to be used as a guess in SA calculation", "") ;
+        add_option("follow_mps_stateaverage", "states to follow during diagonalization", value("")) ;
+        // Model-related options
         add_option("symmetry", "none, u1 or 2u1", value("u1"));
         add_option("lattice_library", "", value("alps"));
         add_option("model_library", "", value("alps"));
         add_option("model_file", "path to model parameters", value(""));
         
         add_option("beta_mode", "", value(0));
-        
+        // Excited-state calculation
         add_option("NUMBER_EIGENVALUES", "", value(1));
         add_option("n_ortho_states", "", value(0));
         add_option("ortho_states", "comma separated list of filenames", "");
-        
+        // Properties to be measured
         add_option("MEASURE[Energy]", "", value(true));
         add_option("MEASURE[EnergyVariance]", "", value(0));
         add_option("MEASURE[Entropy]", "", value(false));

@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch> 
  *	                          Sebastian Keller <sebkelle@phys.ethz.ch>
+ *	             2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -46,6 +47,7 @@ public:
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
     using base::mpo;
     using base::mps;
+    using base::n_sa_ ;
     using base::left_;
     using base::right_;
     using base::parms;
@@ -56,11 +58,12 @@ public:
     using base::root_homing_type_ ;
     // Constructor
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
+                std::vector< MPS<Matrix, SymmGroup> > & mps_sa_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
+    : base(mps_, mps_sa_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
@@ -87,7 +90,7 @@ public:
             _site = initial_site;
             site = to_site(L, _site);
         }
-        partial_overlap poverlap(mps, mps2follow) ;
+        partial_overlap poverlap(mps, mps2follow[0]) ;
         if (_site < L-1) {
             Storage::prefetch(left_[site]);
             Storage::prefetch(right_[site+2]);
@@ -160,11 +163,11 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, root_homing_type_, ortho_vecs, site2);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, n_sa_, root_homing_type_, ortho_vecs, site2);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, 2, site1, root_homing_type_, ortho_vecs, site2);
+                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, 2, site1, n_sa_, root_homing_type_, ortho_vecs, site2);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

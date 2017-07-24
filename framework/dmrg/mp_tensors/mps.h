@@ -123,12 +123,27 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps);
 template<class Matrix, class SymmGroup>
 void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps);
 
+//
+// Forward declaration of the initializer structure
+// ------------------------------------------------
+
 template<class Matrix, class SymmGroup>
 struct mps_initializer
 {
     virtual ~mps_initializer() {}
     virtual void operator()(MPS<Matrix, SymmGroup> & mps) = 0;
 };
+
+template<class Matrix, class SymmGroup>
+struct mps_initializer_sa
+{
+    virtual ~mps_initializer_sa() {}
+    virtual void operator()(std::vector< MPS<Matrix, SymmGroup> > & mps_vector) = 0;
+};
+
+//
+// Function to join two MPSs
+// -------------------------
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,

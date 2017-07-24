@@ -45,6 +45,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     BaseParameters & params,
                     partial_overlap<Matrix, SymmGroup> poverlap,
                     int nsites, int site1,
+                    int n_sa,
                     int root_homing_type,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                     int site2=0)
@@ -75,24 +76,24 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
         if ( poverlap.is_defined()) {
             ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
                     davidson(sp, vs, omega, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, site1, site2, root_homing_type);
+                             nsites, n_sa, site1, site2, root_homing_type);
             r0 = davidson.calculate_eigenvalue(initial, iter);
         } else {
             ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
                     davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, site1, site2);
+                             nsites, n_sa, site1, site2);
             r0 = davidson.calculate_eigenvalue(initial, iter);
         }
     } else {
         if ( poverlap.is_defined()) {
             ietl::davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
                     davidson(sp, vs, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, site1, site2, root_homing_type);
+                             nsites, n_sa, site1, site2, root_homing_type);
             r0 = davidson.calculate_eigenvalue(initial, iter);
         } else {
             ietl::davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
                     davidson(sp, vs, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, site1, site2);
+                             nsites, n_sa, site1, site2);
             r0 = davidson.calculate_eigenvalue(initial, iter);
         }
     }

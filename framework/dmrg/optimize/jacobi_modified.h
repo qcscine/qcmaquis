@@ -72,9 +72,9 @@ namespace ietl
         using base::v_guess_ ;
         //
         jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const size_t& nmin,
-                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                                 const double& tol, const size_t& i_gmres_guess)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
+                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& n_sa,
+                                 const int& site1, const int& site2, const double& tol, const size_t& i_gmres_guess)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, i_gmres_guess)
                 , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:

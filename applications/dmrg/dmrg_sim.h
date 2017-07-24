@@ -48,6 +48,7 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     typedef typename base::measurements_type measurements_type;
     
     using base::mps;
+    using base::mps_sa;
     using base::mpo;
     using base::parms;
     using base::all_measurements;
@@ -72,35 +73,36 @@ public:
         MPO<Matrix, SymmGroup> mpoc = mpo;
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
-        /// Optimizer initialization
+        //
+        // Optimizer initialization
+        // ------------------------
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite")
         {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, init_site) );
+                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
         }
         else if(parms["optimization"] == "twosite")
         {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, init_site) );
+                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
         }
         else {
             throw std::runtime_error("Don't know this optimizer");
         }
         measurements_type always_measurements = this->iteration_measurements(init_sweep);
-        /// Sweep iteration
+        //
+        // DMRG Sweep optimization
+        // -----------------------
         try {
             for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
-                // TODO: introduce some timings
-                
+                // Do the sweep
                 optimizer->sweep(sweep, Both);
                 storage::disk::sync();
-
+                // Check convergence and see if he has to write something
                 bool converged = false;
-                
                 if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
-                    /// write iteration results
                     {
                         storage::archive ar(rfile, "w");
                         ar[results_archive_path(sweep) + "/parameters"] << parms;

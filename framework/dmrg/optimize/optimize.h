@@ -73,6 +73,32 @@ struct SiteProblem
     double ortho_shift;
 };
 
+//
+// Vector set structure
+// --------------------
+//
+// This structure contains the MPS and the state-averaged states (for SA calculations).
+// Generalzies the MPS object that was previously passed to the optimizer
+//
+
+template<class Matrix, class SymmGroup>
+struct VectorSet
+{
+    typedef typename MPS<Matrix, SymmGroup>::MPS MPSTyp ;
+    typedef typename std::vector< MPSTyp > MPSVec ;
+    typedef typename std::size_t size_t  ;
+    // Constructor
+    VectorSet(MPSTyp& MPS_, MPSVec& MPS_SA_) : MPS_averaged(MPS_) , MPS_SA(MPS_SA_)
+    {
+        n_sa = MPS_SA.size() ;
+    } ;
+    // Attribute
+    MPSTyp MPS_averaged ;
+    MPSVec MPS_SA ;
+    size_t n_sa ;
+};
+
+
 #define BEGIN_TIMING(name) \
 now = boost::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
@@ -104,12 +130,13 @@ class optimizer_base
     typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
+                   std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
-    , mps2follow(parms_["follow_basis_state"].as< std::vector<int> >())
+    , mps_vector(mps_vector_)
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
@@ -120,6 +147,29 @@ public:
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
+        // State-average calculation
+        n_sa_ = mps_vector.size() ;
+        if (n_sa_ > 1) {
+            do_stateaverage_ = true;
+            std::vector<std::string> list_sa;
+            std::string input_str = parms["follow_mps_stateaverage"].str();
+            boost::split(list_sa, input_str, boost::is_any_of("|"));
+            if ( list_sa.size() != n_sa_ )
+                throw std::runtime_error("Number of states to track != from number of SA MPS");
+            for (int i = 0; i < list_sa.size(); i++) {
+                std::stringstream ss(list_sa[i]);
+                int ichar;
+                std::vector<int> tmp_vec;
+                while (ss >> ichar) {
+                    tmp_vec.push_back(ichar);
+                    ss.ignore(1);
+                }
+                mps2follow.push_back(tmp_vec);
+            }
+        } else {
+            do_stateaverage_ = false ;
+            mps2follow.push_back(parms_["follow_basis_state"].as< std::vector<int> >()) ;
+        }
         // Root-homing criteria
         if (parms_["ietl_diag_homing_criterion"] == "") {
             do_root_homing_   = false ;
@@ -253,15 +303,18 @@ protected:
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
-    std::vector<int> const mps2follow;
+    std::vector< std::vector<int> > mps2follow;
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
     // Root-homing procedure
-    bool do_root_homing_ ;
+    bool do_root_homing_ , do_stateaverage_ ;
     int root_homing_type_ ;
+    // State average
+    std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
+    int n_sa_ ;
 };
 
 #include "ss_optimize.hpp"

@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -46,7 +47,8 @@ template<class Matrix, class SymmGroup> class Measurements;
 template <class Matrix, class SymmGroup>
 class model_impl {
 public:
-    typedef boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer_ptr;
+    typedef boost::shared_ptr<mps_initializer<Matrix, SymmGroup> >    initializer_ptr;
+    typedef boost::shared_ptr<mps_initializer_sa<Matrix, SymmGroup> > initializer_sa_ptr;
 
     typedef TagHandler<Matrix, SymmGroup> table_type;
     typedef boost::shared_ptr<table_type> table_ptr;
@@ -79,26 +81,28 @@ public:
     
     virtual table_ptr operators_table() const=0;
     
-    virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
+    virtual initializer_ptr    initializer(Lattice const& lat, BaseParameters & parms) const;
+    virtual initializer_sa_ptr initializer_sa(Lattice const& lat, BaseParameters & parms) const;
 
 protected:
     terms_type terms_;
 };
 
-/// model factory
+// model factory
 template <class Matrix, class SymmGroup>
 boost::shared_ptr<model_impl<Matrix, SymmGroup> >
 model_factory(Lattice const& lattice, BaseParameters & parms);
 
 
-/// pimpl for Model
+// pimpl for Model
 template <class Matrix, class SymmGroup>
 class Model {
     typedef model_impl<Matrix, SymmGroup> impl_type;
     typedef boost::shared_ptr<impl_type> impl_ptr;
 public:
-    typedef typename impl_type::initializer_ptr initializer_ptr;
-    
+    typedef typename impl_type::initializer_ptr    initializer_ptr    ;
+    typedef typename impl_type::initializer_sa_ptr initializer_sa_ptr ;
+
     typedef typename impl_type::table_type table_type;
     typedef typename impl_type::table_ptr table_ptr;
     typedef typename impl_type::tag_type tag_type;
@@ -136,7 +140,8 @@ public:
     
     table_ptr operators_table() const { return impl_->operators_table(); }
     
-    initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
+    initializer_ptr    initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
+    initializer_sa_ptr initializer_sa(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer_sa(lat, parms); }
 
 private:
     impl_ptr impl_;

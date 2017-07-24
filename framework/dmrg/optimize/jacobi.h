@@ -81,8 +81,8 @@ namespace ietl
         typedef typename std::pair<int, float>   couple_val ;
         typedef typename std::vector<couple_val> couple_vec ;
         jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
-                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                        const double& ietl_tol, const size_t & i_gmres_guess);
+                        const size_t& max_iter, const int& nsites, const int& n_sa, const int& site1,
+                        const int& site2, const double& ietl_tol, const size_t & i_gmres_guess);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -121,7 +121,7 @@ namespace ietl
         };
         // Protected attributes
         double ietl_tol_, overlap_ ;
-        int nsites_, site1_, site2_ ;
+        int nsites_, site1_, site2_, n_sa_ ;
         FortranMatrix<scalar_type> M ;
         MATRIX const & matrix_ ;
         size_t i_gmres_guess_, max_iter_ , n_restart_min_ , n_restart_max_ ;
@@ -134,8 +134,8 @@ namespace ietl
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
-                                                       const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                                                       const double& ietl_tol, const size_t & i_gmres_guess ) :
+                                                       const size_t& max_iter, const int& nsites, const int& n_sa, const int& site1,
+                                                       const int& site2, const double& ietl_tol, const size_t & i_gmres_guess ) :
         matrix_(matrix),
         vecspace_(vec),
         nsites_(nsites),
@@ -145,6 +145,7 @@ namespace ietl
         max_iter_(max_iter),
         n_restart_min_(n_min),
         n_restart_max_(n_max),
+        n_sa_(n_sa),
         overlap_(0.),
         ietl_tol_(ietl_tol),
         i_gmres_guess_(i_gmres_guess)

@@ -57,9 +57,9 @@ namespace ietl {
         using base::v_guess_ ;
         // New constructors
         davidson_standard_mo(const MATRIX &matrix, const VS &vec, const partial_overlap poverlap,
-                             const int& nmin, const int& nmax, const int& nsites, const int& site1, const int& site2,
-                             const int& root_homing_type)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2),
+                             const int& nmin, const int& nmax, const int& nsites, const int& n_sa,
+                             const int& site1, const int& site2, const int& root_homing_type)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, n_sa, site1, site2),
                   pov_(poverlap), root_homing_type_(root_homing_type) {};
         ~davidson_standard_mo() {};
     private:

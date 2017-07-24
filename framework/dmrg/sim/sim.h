@@ -41,6 +41,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
+#include "dmrg/mp_tensors/mps_sa_initializers.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/generate_mpo.hpp"
 
@@ -89,7 +90,7 @@ protected:
 protected:
     DmrgParameters parms;
     
-    int init_sweep, init_site;
+    int init_sweep, init_site, n_states ;
     bool restore;
     bool dns;
     std::string chkpfile;
@@ -100,6 +101,7 @@ protected:
     Lattice lat;
     Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;
+    std::vector< MPS<Matrix, SymmGroup > > mps_sa ;
     MPO<Matrix, SymmGroup> mpo, mpoc;
     measurements_type all_measurements, sweep_measurements;
 };

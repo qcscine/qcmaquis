@@ -56,8 +56,9 @@ namespace ietl {
         using base::vecspace_ ;
         // New constructors
         davidson_modified(const MATRIX &matrix, const VS &vec, const magnitude_type& omega,
-                          const int& nmin, const int& nmax, const int& nsites, const int& site1, const int& site2)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega) {};
+                          const int& nmin, const int& nmax, const int& nsites, const int& n_sa,
+                          const int& site1, const int& site2)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, n_sa, site1, site2) , omega_(omega) {};
         ~davidson_modified() {};
     private:
         // Private methods

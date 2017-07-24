@@ -58,9 +58,9 @@ namespace ietl {
         // New constructors
         davidson_modified_mo(const MATRIX &matrix, const VS &vec, const magnitude_type& omega,
                              const partial_overlap& pov, const int& nmin, const int& nmax,
-                             const int& nsites, const int& site1, const int& site2,
+                             const int& nsites, const int& n_sa, const int& site1, const int& site2,
                              const int& root_homing_type)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, n_sa, site1, site2) , omega_(omega)
                 , pov_(pov) , root_homing_type_(root_homing_type) {};
         ~davidson_modified_mo() {};
     private:

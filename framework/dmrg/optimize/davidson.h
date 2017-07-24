@@ -1,4 +1,4 @@
-/*****************************************************************************
+ /*****************************************************************************
  *
  * ALPS Project: Algorithms and Libraries for Physics Simulations
  *
@@ -81,7 +81,7 @@ namespace ietl
         typedef typename std::size_t 					                  size_t ;
         // Constructor and destructor
         davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
-                 const int& nsites, const int& site1, const int& site2);
+                 const int& nsites, const int& n_sa, const int& site1, const int& site2);
         virtual ~davidson() {};
         // Public method to compute eigenvalue
         template <class GEN, class ITER>
@@ -103,19 +103,20 @@ namespace ietl
         vector_type v_guess_ ;
         magnitude_type atol_ ;
         bm_type Hdiag_ ;
-        int site1_ , site2_, nmin_, nmax_, nsites_ ;
+        int site1_ , site2_, nmin_, nmax_, nsites_, n_sa_ ;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
     davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
-                                   const int& nsites, const int& site1, const int& site2) :
+                                   const int& nsites, const int& n_sa, const int& site1, const int& site2) :
             matrix_(matrix),
             vecspace_(vec),
             nmin_(nmin),
             nmax_(nmax),
             site1_(site1),
             site2_(site2),
-            nsites_(nsites)
+            nsites_(nsites),
+            n_sa_(n_sa)
     {
         vector_type tmp = new_vector(vecspace_) ;
         v_guess_ = new_vector(vecspace_) ;

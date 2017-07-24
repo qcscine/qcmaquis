@@ -49,7 +49,8 @@
 // Three constructors are provided
 // 1) no input data
 // 2) the length of the chain provided as input
-// 3) the length of the chain and the matrix are provided as inpit
+// 3) the length of the chain and the initializer (which is a structure that has the () operator
+//    to generate a MPS) are provided as input
 
 template<class Matrix, class SymmGroup>
 std::string MPS<Matrix, SymmGroup>::description() const

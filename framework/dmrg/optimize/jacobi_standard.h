@@ -74,8 +74,9 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax, const int& max_iter,
-                                 const int& nsites, const int& site1, const int& site2, const double& tol, const size_t& ietl_gmres_guess)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, ietl_gmres_guess) {} ;
+                                 const int& nsites, const int& n_sa, const int& site1, const int& site2, const double& tol,
+                                 const size_t& ietl_gmres_guess)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, ietl_gmres_guess) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);

@@ -38,18 +38,17 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
 , rfile(parms["resultfile"].str())
 , stop_callback(static_cast<double>(parms["run_seconds"]))
+, n_states( parms["n_states_sa"])
 { 
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
-    
-    /// Model initialization
+    // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
     mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    
     {
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
@@ -58,13 +57,10 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
-                
                 if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
                     ar_in["/status/site"] >> init_site;
-                
                 if (init_site == -1)
                     ++init_sweep;
-
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
                 restore = true;
@@ -73,28 +69,28 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             }
         }
     }
-
-    /// MPS initialization
+    // MPS initialization
+    mps_sa.resize(n_states) ;
     if (restore) {
-
         maquis::checks::symmetry_check(parms, chkpfile);
         load(chkpfile, mps);
         maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-
     } else if (!parms["initfile"].empty()) {
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-
         maquis::checks::symmetry_check(parms, parms["initfile"].str());
         load(parms["initfile"].str(), mps);
         maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
-
     } else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+        // Initialize the state-average stuff
+        for (int i = 0 ; i < mps_sa.size() ; i++) {
+            mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size()) ;
+        }
+        (*(model.initializer_sa(lat,parms)))(mps_sa) ;
+        std::cout << overlap(mps_sa[0],mps_sa[1]) << std::endl ;
     }
-
     assert(mps.length() == lat.size());
-    
-    /// Update parameters - after checks have passed
+    // Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
         
@@ -128,9 +124,13 @@ sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
     return sweep_measurements;
 }
 
+// Destructor
 
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::~sim() { }
+
+// Method to save the results of a simulation at the end of
+// the last sweep
 
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)

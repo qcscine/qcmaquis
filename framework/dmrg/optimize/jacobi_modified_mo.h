@@ -69,9 +69,9 @@ namespace ietl
         //
         jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const partial_overlap& pov,
                                     const size_t n, const size_t& nmin, const size_t& nmax, const size_t& max_iter,
-                                    const int& nsites, const int& site1, const int& site2, const double& tol,
+                                    const int& nsites, const int& n_sa, const int& site1, const int& site2, const double& tol,
                                     const size_t& i_gmres_guess, const int& root_homing_type)
-                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
+                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, i_gmres_guess)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
@@ -125,7 +125,8 @@ namespace ietl
         int imin , imax , nevec;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_ && n_maxov_ > 0) {
-            nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
+            //nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
+            nevec  = dim ;
             imin   = 1      ;
             imax   = nevec ;
         } else {
@@ -169,7 +170,7 @@ namespace ietl
     typename jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::vector_double
     	     jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::generate_property
              (const vector_space &V, const vector_space& VA, const size_t& dim,
-             const matrix_double &eigvecs, const vector_double &eigvals)
+              const matrix_double &eigvecs, const vector_double &eigvals)
     {
         // Variable declaration
         vector_type  tmp_V ;
@@ -194,7 +195,7 @@ namespace ietl
             else
                 ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         } else {
-            ret = ietl::dot(vec_test, v_guess_) / ietl::two_norm(vec_test);
+            ret = ietl::dot(vec_test, v_guess_) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_));
         }
         return fabs(ret) ;
     }
