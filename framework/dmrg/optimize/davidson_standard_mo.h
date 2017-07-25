@@ -57,9 +57,9 @@ namespace ietl {
         using base::v_guess_ ;
         // New constructors
         davidson_standard_mo(const MATRIX &matrix, const VS &vec, const partial_overlap poverlap,
-                             const int& nmin, const int& nmax, const int& nsites, const int& n_sa,
-                             const int& site1, const int& site2, const int& root_homing_type)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, n_sa, site1, site2),
+                             const int& nmin, const int& nmax, const int& nsites, const int& site1,
+                             const int& site2, const int& root_homing_type)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2),
                   pov_(poverlap), root_homing_type_(root_homing_type) {};
         ~davidson_standard_mo() {};
     private:
@@ -67,7 +67,7 @@ namespace ietl {
         void precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta);
         void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
                               const size_t& i, vector_type& u, vector_type& uA);
-        void update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim);
+        void update_vspace(vector_set &V, vector_set &VA, vector_set &t, const size_t& dim);
         vector_type apply_operator(const vector_type &x);
         magnitude_type return_final(const magnitude_type &x) { return x; };
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
@@ -79,12 +79,16 @@ namespace ietl {
     };
     // Definition of the virtual function update_vspace
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
-    void davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::update_vspace(vector_set &V, vector_set &VA, vector_type &t, std::size_t dim) {
-        for (int i = 0; i < dim; i++)
-            t -= ietl::dot(V[i], t) * V[i];
-        V.push_back(t / ietl::two_norm(t));
-        VA.resize(V.size());
-        ietl::mult(matrix_, V[V.size() - 1], VA[V.size() - 1]);
+    void davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::update_vspace(vector_set &V, vector_set &VA,
+                                                                                 vector_set &t, const size_t& dim)
+    {
+        for (size_t j = 0 ; j < n_sa_ ; j++) {
+            for (size_t i = 0; i < dim; i++)
+                t[j] -= ietl::dot(V[i], t[j]) * V[i];
+            V.push_back(t / ietl::two_norm(t[j]));
+            VA.resize(V.size());
+            VA[V.size()-1] = apply_operator(V[V.size()-1]) ;
+        }
     };
     // Definition of the virtual function apply_operator
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
@@ -175,7 +179,7 @@ namespace ietl {
             else
                 ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         else
-            ret = ietl::dot(vec_test, v_guess_)/ietl::two_norm(vec_test) ;
+            ret = ietl::dot(vec_test, v_guess_[0])/ietl::two_norm(vec_test) ;
         return fabs(ret) ;
     }
 }

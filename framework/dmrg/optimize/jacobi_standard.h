@@ -35,7 +35,6 @@
 #include <vector>
 
 #include "dmrg/optimize/jacobi.h"
-#include "dmrg/optimize/jcd_solver.h"
 #include "dmrg/optimize/partial_overlap.h"
 #include "dmrg/optimize/gmres_alb.h"
 

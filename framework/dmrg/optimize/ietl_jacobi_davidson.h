@@ -93,7 +93,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
          } else {
             ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
                 jd(sp, vs, poverlap, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, n_sa, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess) ;
+                   nsites, n_sa, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, root_homing_type) ;
             r0 = jd.calculate_eigenvalue(initial, iter);
         }
     } else {

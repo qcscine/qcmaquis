@@ -33,6 +33,7 @@
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/optimize/partial_overlap.h"
+#include "dmrg/optimize/vectorset.h"
 #include <boost/tuple/tuple.hpp>
 
 //
@@ -47,6 +48,7 @@ public:
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
     using base::mpo;
     using base::mps;
+    using base::mps_vector;
     using base::n_sa_ ;
     using base::left_;
     using base::right_;
@@ -90,6 +92,7 @@ public:
             _site = initial_site;
             site = to_site(L, _site);
         }
+        // TODO ALB MOVE THIS PART IN THE VIRTUAL OPTIMIZER CLASS
         partial_overlap poverlap(mps, mps2follow[0]) ;
         if (_site < L-1) {
             Storage::prefetch(left_[site]);
@@ -142,9 +145,17 @@ public:
             boost::chrono::high_resolution_clock::time_point now, then;
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
-    	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+            MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
+            std::vector< MPSTensor<Matrix, SymmGroup> > tst_vec ;
+            for (int i = 0 ; i < n_sa_ ; i++){
+                TwoSiteTensor<Matrix, SymmGroup> tst_tmp(mps_vector[i][site1],mps_vector[i][site2]) ;
+                twin_mps = tst_tmp.make_mps() ;
+                tst_vec.push_back(twin_mps) ;
+                tst_tmp.clear();
+            }
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
+            VectorSet<Matrix,SymmGroup> vector_set(twin_mps,tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
@@ -167,7 +178,7 @@ public:
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, poverlap, 2, site1, n_sa_, root_homing_type_, ortho_vecs, site2);
+                    //res = solve_ietl_davidson(sp, vector_set, parms, poverlap, 2, site1, root_homing_type_, ortho_vecs, site2);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

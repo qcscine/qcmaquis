@@ -28,6 +28,7 @@
 #define IETL_LANCZOS_SOLVER_H
 
 #include "dmrg/utils/BaseParameters.h"
+#include "dmrg/optimize/vectorset.h"
 
 namespace ietl
 {
@@ -63,44 +64,8 @@ namespace ietl
 
 template<class Matrix, class SymmGroup> struct SiteProblem;
 
-template<class Matrix, class SymmGroup>
-class SingleSiteVS
-{
-public:
-    SingleSiteVS(MPSTensor<Matrix, SymmGroup> const & m,
-                 std::vector<MPSTensor<Matrix, SymmGroup> > const & ortho_vecs)
-    : instance(m)
-    , ortho_vecs(ortho_vecs)
-    {
-        for (std::size_t k = 0; k < m.data().n_blocks(); ++k)
-            N += num_rows(m.data()[k]) * num_cols(m.data()[k]);
-    }
-    
-    friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS const & vs)
-    {
-        return vs.instance;
-    }
-    
-    friend std::size_t vec_dimension(SingleSiteVS const & vs)
-    {
-        return vs.N;
-    }
-    
-    void project(MPSTensor<Matrix, SymmGroup> & t) const
-    {
-        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs.begin();
-             it != ortho_vecs.end(); ++it)
-            t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
-    }
-    
-private:
-    MPSTensor<Matrix, SymmGroup> instance;
-    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs;
-    
-    std::size_t N;
-};
-
 #include <ietl/vectorspace.h>
+#include "dmrg/optimize/singlesitevs.h"
 
 namespace ietl
 {

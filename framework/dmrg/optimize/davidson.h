@@ -75,100 +75,123 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::vector_type 		      vector_type ;
         typedef typename vectorspace_traits<VS>::scalar_type 		      scalar_type ;
         typedef typename vector_type::bm_type 		      		          bm_type ;
+        typedef typename std::vector< bool >                              vector_bool ;
         typedef typename std::vector<vector_type> 	     		          vector_set ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        typedef typename std::vector< magnitude_type >                    vector_magnitude ;
         typedef typename alps::numeric::matrix<scalar_type> 		      matrix_numeric ;
         typedef typename std::size_t 					                  size_t ;
+        typedef typename std::pair<magnitude_type, vector_type >          pair_results ;
+        typedef typename std::vector< pair_results >                      vector_pairs ;
         // Constructor and destructor
         davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
-                 const int& nsites, const int& n_sa, const int& site1, const int& site2);
+                 const int& nsites, const int& site1, const int& site2);
         virtual ~davidson() {};
         // Public method to compute eigenvalue
-        template <class GEN, class ITER>
-        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen,
-                                                                    ITER& iter);
+        template <class ITER>
+        vector_pairs calculate_eigenvalue(ITER& iter);
     protected:
         // Virtual Methods, defined in the derived classes
         virtual magnitude_type return_final(const magnitude_type& eigval) {} ;
-        virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
-                                               size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
+                                              size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
+        virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual void precondition(vector_type& r, const vector_type& V, const vector_type& VA, const magnitude_type& theta ) {} ;
 	    virtual void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
-		                 		      const size_t& i, vector_type& u, vector_type& uA) {} ;
-        virtual void update_vspace(vector_set& V, vector_set& VA, vector_type& t, std::size_t dim) {} ;
+		                 		      const size_t& i, vector_set& u, vector_set& uA) {} ;
+        virtual void update_vspace(vector_set& V, vector_set& VA, vector_set& t, const size_t& dim) {} ;
         // Attributes
-        MATRIX const & matrix_;
-        VS vecspace_;
-        vector_type v_guess_ ;
-        magnitude_type atol_ ;
         bm_type Hdiag_ ;
-        int site1_ , site2_, nmin_, nmax_, nsites_, n_sa_ ;
+        int site1_ , site2_, nmin_, nmax_, nsites_, n_sa_  ;
+        magnitude_type atol_ ;
+        MATRIX const & matrix_;
+        vector_bool convergence_check_ ;
+        vector_set v_guess_ ;
+        VS vecspace_;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
     davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
-                                   const int& nsites, const int& n_sa, const int& site1, const int& site2) :
+                                   const int& nsites, const int& site1, const int& site2) :
             matrix_(matrix),
             vecspace_(vec),
             nmin_(nmin),
             nmax_(nmax),
             site1_(site1),
             site2_(site2),
-            nsites_(nsites),
-            n_sa_(n_sa)
+            nsites_(nsites)
     {
         vector_type tmp = new_vector(vecspace_) ;
-        v_guess_ = new_vector(vecspace_) ;
-        Hdiag_ = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp) ;
+        Hdiag_          = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp) ;
+        n_sa_           = n_sa_dimension(vec) ;
+        for (size_t k = 0 ; k < n_sa_ ; k++) {
+            v_guess_.push_back(new_vector_sa(vec, k));
+            convergence_check_.push_back(false) ;
+        }
+
     } ;
     // -- Method used to compute eigenpairs --
     template <class MATRIX, class VS>
-    template <class GEN, class ITER>
-    std::pair<typename davidson<MATRIX, VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type>
-    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, ITER& iter) {
+    template <class ITER>
+    typename davidson<MATRIX, VS>::vector_pairs davidson<MATRIX, VS>::calculate_eigenvalue(ITER& iter)
+    {
         // Initialization
-        vector_type t  = new_vector(vecspace_);
-        vector_type u  = new_vector(vecspace_);
-        vector_type uA = new_vector(vecspace_);
-        vector_type r  = new_vector(vecspace_);
-        vector_set V2, VA ;
-        magnitude_type theta ;
+        size_t iter_dim = 0 ;
+        vector_pairs res ;
+        vector_set t = v_guess_ ;
+        vector_set u(n_sa_), uA(n_sa_), r(n_sa_) ;
+        vector_set V, VA ;
+        vector_magnitude theta(n_sa_) ;
         atol_ = iter.absolute_tolerance();
-        std::size_t iter_dim = 0 ;
         // Generate guess
-        ietl::generate(t,gen);
-        ietl::project(t,vecspace_);
+        for (size_t i = 0 ; i < n_sa_ ; i++)
+            ietl::project(t[i],vecspace_);
         // While loop
         do {
-            update_vspace(V2, VA, t, iter_dim);
-            iter_dim = V2.size();
+            update_vspace(V, VA, t, iter_dim);
+            iter_dim = V.size();
             matrix_numeric M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (int i = 0; i < iter_dim; ++i)
                 for (int j = i; j < iter_dim; ++j)
                 {
-                    M(i,j) = ietl::dot(V2[i], VA[j]);
+                    M(i,j) = ietl::dot(V[i], VA[j]);
                     M(j,i) = M(i,j);
                 }
             // TODO ALB Use here the same diagonalization algorithm as for JD
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
-	        select_eigenpair(V2, VA, Mevecs, iter_dim, u, uA) ;
-            magnitude_type energy = ietl::dot(u,uA)/ietl::dot(u,u)  ;
-            r = uA - energy*u ;
-            std::cout << "Energy = " << energy << std::endl ;
-            theta = energy ;
-            // if (|r|_2 < \epsilon) stop
+	        select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
             ++iter;
-            if (iter.finished(ietl::two_norm(r), theta))
-                break;
-            precondition(r, u, uA, theta);
+            std::cout << iter_dim << std::endl ;
+            std::cout << "------------" << std::endl ;
+            for (size_t i = 0 ; i < n_sa_ ; i++){
+                theta[i] = ietl::dot(u[i],uA[i])/ietl::dot(u[i],u[i])  ;
+                r[i]     = uA[i] - theta[i]*u[i] ;
+                std::cout << theta[i] << std::endl ;
+                // if (|r|_2 < \epsilon) stop
+                if (iter.finished(ietl::two_norm(r[i]), theta[i]))
+                    convergence_check_[i] = true;
+                else
+                    precondition(r[i], u[i], uA[i], theta[i]);
+            }
             // Restarting algorithm
-            t = finalize_iteration(u, r, nmax_, iter_dim, V2, VA);
-        } while (true);
+            size_t n_sa_local = 0 ;
+            for (size_t k = 0 ; k < n_sa_ ; k++) {
+                if (not convergence_check_[k]) {
+                    t[n_sa_local] = finalize_iteration(u[k], r[k], nmax_, iter_dim, V, VA);
+                    n_sa_local += 1;
+                }
+            }
+            std::cout << n_sa_local << std::endl ;
+            if (n_sa_local == 0) {
+                for (size_t k = 0 ; k < n_sa_ ; k++)
+                    res.push_back(std::make_pair(return_final(theta[k]), u[k])) ;
+                break;
+            }
+        } while(true);
         // accept lambda=theta and x=u
-        return std::make_pair(return_final(theta), u);
+        return res ;
     }
 }
 #endif

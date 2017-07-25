@@ -31,7 +31,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/optimize/partial_overlap.h"
-#include "ietl_lanczos_solver.h"
+#include "dmrg/optimize/vectorset.h"
 
 #include "davidson_standard.h"
 #include "davidson_modified.h"
@@ -39,13 +39,12 @@
 #include "davidson_modified_mo.h"
 
 template<class Matrix, class SymmGroup>
-std::pair< double , class MPSTensor<Matrix,SymmGroup> >
+std::vector< std::pair< double , class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
-                    MPSTensor<Matrix, SymmGroup> const & initial,
+                    VectorSet<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
                     partial_overlap<Matrix, SymmGroup> poverlap,
                     int nsites, int site1,
-                    int n_sa,
                     int root_homing_type,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                     int site2=0)
@@ -58,48 +57,48 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     double rtol   = params["ietl_diag_rtol"];
     double omega  = params["ietl_si_omega"] ;
     ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], rtol, atol);
-    std::pair<double, Vector> r0 ;
+    std::vector < std::pair<double, Vector> > r0 ;
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
-    if (initial.num_elements() <= ortho_vecs.size())
-    ortho_vecs.resize(initial.num_elements()-1);
+    if (initial.MPSTns_averaged.num_elements() <= ortho_vecs.size())
+    ortho_vecs.resize(initial.MPSTns_averaged.num_elements()-1);
     for (int n = 1; n < ortho_vecs.size(); ++n)
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
     // Check orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
+        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_averaged, ortho_vecs[n]) << std::endl;
     }
     // -- Calculation of eigenvalues
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
     if (fabs(omega) > 1.0E-15) {
         if ( poverlap.is_defined()) {
-            ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
-                    davidson(sp, vs, omega, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, n_sa, site1, site2, root_homing_type);
-            r0 = davidson.calculate_eigenvalue(initial, iter);
+            //ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
+            //        davidson(sp, vs, omega, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
+            //                 nsites, site1, site2, root_homing_type);
+            //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
         } else {
-            ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-                    davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, n_sa, site1, site2);
-            r0 = davidson.calculate_eigenvalue(initial, iter);
+            //ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
+            //        davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
+            //                 nsites, site1, site2);
+            //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
         }
     } else {
         if ( poverlap.is_defined()) {
-            ietl::davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
-                    davidson(sp, vs, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, n_sa, site1, site2, root_homing_type);
-            r0 = davidson.calculate_eigenvalue(initial, iter);
+            //ietl::davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
+            //        davidson(sp, vs, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
+            //                 nsites, site1, site2, root_homing_type);
+            //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
         } else {
             ietl::davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
                     davidson(sp, vs, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-                             nsites, n_sa, site1, site2);
-            r0 = davidson.calculate_eigenvalue(initial, iter);
+                             nsites, site1, site2);
+            r0 = davidson.calculate_eigenvalue(iter);
         }
     }
     // Check again orthogonality in output
     for (int n = 0; n < ortho_vecs.size(); ++n)
-        maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
+        maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0[0].second, ortho_vecs[n]) << std::endl;
     maquis::cout << "Davidson used " << iter.iterations() << " iterations." << std::endl;
     return r0;
 }

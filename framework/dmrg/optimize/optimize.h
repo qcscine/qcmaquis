@@ -73,32 +73,6 @@ struct SiteProblem
     double ortho_shift;
 };
 
-//
-// Vector set structure
-// --------------------
-//
-// This structure contains the MPS and the state-averaged states (for SA calculations).
-// Generalzies the MPS object that was previously passed to the optimizer
-//
-
-template<class Matrix, class SymmGroup>
-struct VectorSet
-{
-    typedef typename MPS<Matrix, SymmGroup>::MPS MPSTyp ;
-    typedef typename std::vector< MPSTyp > MPSVec ;
-    typedef typename std::size_t size_t  ;
-    // Constructor
-    VectorSet(MPSTyp& MPS_, MPSVec& MPS_SA_) : MPS_averaged(MPS_) , MPS_SA(MPS_SA_)
-    {
-        n_sa = MPS_SA.size() ;
-    } ;
-    // Attribute
-    MPSTyp MPS_averaged ;
-    MPSVec MPS_SA ;
-    size_t n_sa ;
-};
-
-
 #define BEGIN_TIMING(name) \
 now = boost::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
@@ -127,7 +101,9 @@ enum OptimizeDirection { Both, LeftOnly, RightOnly };
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
-    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
+    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>   contr ;
+    typedef std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >        boundaries_type ;
+    typedef std::vector< boundaries_type>                                                         boundaries_vector ;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
@@ -143,33 +119,21 @@ public:
     , do_root_homing_(false)
     {
         // Standard options
+        //TODO ALB UPDATE HERE!!!
+        mps2follow.resize(1) ;
+        mps2follow[0].resize(0) ;
         std::size_t L = mps.length();
-        mps.canonize(site);
-        for(int i = 0; i < mps.length(); ++i)
-            Storage::evict(mps[i]);
-        // State-average calculation
-        n_sa_ = mps_vector.size() ;
-        if (n_sa_ > 1) {
-            do_stateaverage_ = true;
-            std::vector<std::string> list_sa;
-            std::string input_str = parms["follow_mps_stateaverage"].str();
-            boost::split(list_sa, input_str, boost::is_any_of("|"));
-            if ( list_sa.size() != n_sa_ )
-                throw std::runtime_error("Number of states to track != from number of SA MPS");
-            for (int i = 0; i < list_sa.size(); i++) {
-                std::stringstream ss(list_sa[i]);
-                int ichar;
-                std::vector<int> tmp_vec;
-                while (ss >> ichar) {
-                    tmp_vec.push_back(ichar);
-                    ss.ignore(1);
-                }
-                mps2follow.push_back(tmp_vec);
+        if (n_sa_ > 0) {
+            for (int k = 0 ; k < L ; k++) {
+                mps[k] = mps_vector[0][k] ;
+                for (int i = 1; i < n_sa_; i++)
+                    mps[k] += mps_vector[i][k];
+                mps[k] /= n_sa_;
             }
-        } else {
-            do_stateaverage_ = false ;
-            mps2follow.push_back(parms_["follow_basis_state"].as< std::vector<int> >()) ;
         }
+        mps.canonize(site);
+        for (int i = 0; i < mps.length(); ++i)
+            Storage::evict(mps[i]);
         // Root-homing criteria
         if (parms_["ietl_diag_homing_criterion"] == "") {
             do_root_homing_   = false ;
@@ -184,6 +148,34 @@ public:
             root_homing_type_ = 2 ;
         } else {
             throw std::runtime_error("Root homing criterion not recognized") ;
+        }
+        // State-average calculation
+        n_sa_ = mps_vector.size() ;
+        for (int i = 0 ; i < n_sa_; ++i )
+            for (int j = 0 ; j < mps_vector[i].length(); ++j )
+                Storage::evict(mps_vector[i][j]) ;
+        if (do_root_homing_) {
+            if (n_sa_ > 0) {
+                do_stateaverage_ = true;
+                std::vector<std::string> list_sa;
+                std::string input_str = parms["follow_mps_stateaverage"].str();
+                boost::split(list_sa, input_str, boost::is_any_of("|"));
+                if (list_sa.size() != n_sa_)
+                    throw std::runtime_error("Number of states to track != from number of SA MPS");
+                for (int i = 0; i < list_sa.size(); i++) {
+                    std::stringstream ss(list_sa[i]);
+                    int ichar;
+                    std::vector<int> tmp_vec;
+                    while (ss >> ichar) {
+                        tmp_vec.push_back(ichar);
+                        ss.ignore(1);
+                    }
+                    mps2follow.push_back(tmp_vec);
+                }
+            } else {
+                do_stateaverage_ = false;
+                mps2follow.push_back(parms_["follow_basis_state"].as<std::vector<int> >());
+            }
         }
         // Orthogonal states
         northo = parms_["n_ortho_states"];
@@ -201,6 +193,7 @@ public:
             maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
+        // Initialization of the MPO
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
@@ -214,7 +207,8 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
-        Storage::pin(left_[site+1]);
+        for (size_t i = 0 ; i < n_sa_ ; i++)
+            left_sa_[i][site+1] = contr::overlap_mpo_left_step(mps_vector[i][site], mps_vector[i][site], left_sa_[i][site], mpo[site]);
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
@@ -222,7 +216,8 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
-        Storage::pin(right_[site]);
+        for (size_t i = 0 ; i < n_sa_ ; i++)
+            right_sa_[i][site] = contr::overlap_mpo_right_step(mps_vector[i][site], mps_vector[i][site], right_sa_[i][site+1], mpo[site]);
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
@@ -230,38 +225,40 @@ protected:
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         parallel::construct_placements(mpo);
-        std::size_t L = mps.length();
+        std::size_t L = mps.length()  ;
         //
-        left_.resize(mpo.length()+1);
-        right_.resize(mpo.length()+1);
+        left_.resize(mpo.length()+1)  ;
+        right_.resize(mpo.length()+1) ;
+        left_sa_.resize(n_sa_) ;
+        right_sa_.resize(n_sa_) ;
+        for (int i = 0 ; i < n_sa_ ; i++){
+            left_sa_[i].resize(mpo.length()+1) ;
+            right_sa_[i].resize(mpo.length()+1) ;
+        }
         ortho_left_.resize(northo);
         ortho_right_.resize(northo);
         for (int n = 0; n < northo; ++n) {
             ortho_left_[n].resize(L+1);
             ortho_right_[n].resize(L+1);
-            
             ortho_left_[n][0] = mps.left_boundary()[0];
             ortho_right_[n][L] = mps.right_boundary()[0];
         }
-        //Timer tlb("Init left boundaries"); tlb.begin();
-        Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
-        Storage::pin(left_[0]);
-        
+        for (int k = 0; k < n_sa_ ; ++k)
+            left_sa_[k][0] = mps_vector[k].left_boundary();
         for (int i = 0; i < site; ++i) {
-            Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
             Storage::evict(left_[i]);
             parallel::sync(); // to scale down memory
         }
         Storage::evict(left_[site]);
-        //tlb.end();
         maquis::cout << "Boundaries are partially initialized...\n";
-        //Timer trb("Init right boundaries"); trb.begin();
+        //
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
+        for (int k = 0; k < n_sa_ ; ++k)
+            right_sa_[k][L] = mps_vector[k].right_boundary();
         Storage::pin(right_[L]);
-
         for (int i = L-1; i >= site; --i) {
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
@@ -270,7 +267,6 @@ protected:
         }
         Storage::evict(right_[site]);
         //trb.end();
-
         maquis::cout << "Boundaries are fully initialized...\n";
     }
     
@@ -303,16 +299,17 @@ protected:
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
-    std::vector< std::vector<int> > mps2follow;
-    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
+    boundaries_type   left_,    right_;
+    boundaries_vector left_sa_, right_sa_;
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
     // Root-homing procedure
-    bool do_root_homing_ , do_stateaverage_ ;
+    bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_ ;
     int root_homing_type_ ;
     // State average
+    std::vector< std::vector<int> > mps2follow;
     std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
     int n_sa_ ;
 };
