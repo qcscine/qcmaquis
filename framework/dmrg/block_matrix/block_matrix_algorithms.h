@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -45,6 +46,19 @@
 
 #include "dmrg/utils/parallel.hpp"
 
+//
+// +----------------------+
+//  BLOCK MATRIX ALGORITHM
+// +----------------------+
+//
+// List of routines used to act on a block matrix object
+//
+// Truncation results
+// ------------------
+// Structure collecting the relevant data to be passed once the SVD truncation of
+// an MPS has been performed (the new bond dimension, the fraction of stuff that
+// has been neglected and the smallest eigenvalue that has been kept)
+
 struct truncation_results {
     std::size_t bond_dimension;     // new bond dimension
     double      truncated_weight;   // sum of discarded eigenvalues (square of singuler values)
@@ -61,6 +75,11 @@ struct truncation_results {
     { }
 };
 
+//
+// GEMM
+// ----
+// Subroutine that mimics the behaviour of LAPACK GEMM for block matrices
+
 //template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Scheduler = parallel::scheduler_nop>
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Scheduler>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
@@ -70,27 +89,24 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
 {
     C.clear();
     assert(B.basis().is_sorted());
-
     typedef typename SymmGroup::charge charge;
     typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
     const_iterator B_begin = B.basis().begin();
     const_iterator B_end = B.basis().end();
+    // Loop over the symmetry blocks of A
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-
         charge ar = A.basis().right_charge(k);
         const_iterator it = B.basis().left_lower_bound(ar);
-
+        // Loop over the corresponding symmetry block of B
         for ( ; it != B_end && it->lc == ar; ++it)
         {
             std::size_t matched_block = std::distance(B_begin, it);
             Matrix3 tmp(num_rows(A[k]), it->rs);
-
             parallel::guard proc(scheduler(k));
             gemm(A[k], B[matched_block], tmp);
             C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
         }
     }
-
     if(scheduler.propagate()){
         Index<SymmGroup> B_left_basis = B.left_basis();
         C.size_index.resize(C.n_blocks()); // propagating A size_index onto C - otherwise might C.index_sizes();
@@ -168,6 +184,11 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
     }
 }
 
+//
+// SVD
+// ---
+// Performs an SVD of a block matrix
+
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & U,
@@ -175,21 +196,31 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<DiagMatrix, SymmGroup> & S)
 {
     parallel::scheduler_balanced scheduler(M);
-
+    // Initialization of the index of the intermediate matrix.
+    // The dimension of the intermediate, diagonal matrix depends on the shape
+    // of M (different, for example, for left and right sweeps)
     Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
     for (std::size_t i = 0; i < M.n_blocks(); ++i)
         m[i].second = std::min(r[i].second, c[i].second);
-    
+    // Initialize the output matrices. Remember that, when a block_matrix object
+    // is initialized by giving two Index objects, the number of blocks is NOT
+    // the product of the two dimensions, but just the size of a single Index
     U = block_matrix<Matrix, SymmGroup>(r, m);
     V = block_matrix<Matrix, SymmGroup>(m, c);
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
-    
+    // Do the SVD of each block
     omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
         parallel::guard proc(scheduler(k));
         svd(M[k], U[k], V[k], S[k]);
     });
 }
+
+//
+// HEEV
+// ----
+// Diagonalization of a block matrix. The overall structure is similar to the previous
+// case
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void heev(block_matrix<Matrix, SymmGroup> const & M,
@@ -207,63 +238,6 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
         heev(M[k], evecs[k], evals[k]);
     });
 }
-    
-#ifdef USE_AMBIENT
-
-template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
-                block_matrix<Matrix, SymmGroup> & U,
-                block_matrix<Matrix, SymmGroup> & V,
-                block_matrix<DiagMatrix, SymmGroup> & S)
-{
-    parallel::scheduler_inplace scheduler;
-
-    Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
-    for (std::size_t i = 0; i < M.n_blocks(); ++i)
-        m[i].second = std::min(r[i].second, c[i].second);
-    
-    U = block_matrix<Matrix, SymmGroup>(r, m);
-    V = block_matrix<Matrix, SymmGroup>(m, c);
-    S = block_matrix<DiagMatrix, SymmGroup>(m, m);
-
-    ambient::for_each_redist(M.blocks().first, M.blocks().second, 
-                             [](const Matrix& m){ merge(m); },
-                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
-                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    parallel::sync();
-
-    std::size_t loop_max = M.n_blocks();
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(M[k]));
-        svd_merged(M[k], U[k], V[k], S[k]);
-    }
-    parallel::sync_mkl_parallel();
-}
-
-template<class Matrix, class DiagMatrix, class SymmGroup>
-void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
-                 block_matrix<Matrix, SymmGroup> & evecs,
-                 block_matrix<DiagMatrix, SymmGroup> & evals)
-{
-    parallel::scheduler_inplace scheduler;
-
-    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-
-    ambient::for_each_redist(M.blocks().first, M.blocks().second, 
-                             [](const Matrix& m){ merge(m); },
-                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
-                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    parallel::sync();
-
-    std::size_t loop_max = M.n_blocks();
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(M[k]));
-        heev_merged(M[k], evecs[k], evals[k]);
-    }
-    parallel::sync_mkl_parallel();
-}
-#endif
 
 template <class T>
 typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
@@ -273,41 +247,54 @@ typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
     return maquis::real(val);
 }
 
+//
+// ESTIMATE_TRUNCATION
+// -------------------
+// Estimate the error associated with the truncation in the DMRG algorithm
+//
 template<class DiagMatrix, class SymmGroup>
 void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals, 
-                         size_t Mmax, double cutoff, size_t* keeps, 
-                         double & truncated_fraction, double & truncated_weight, double & smallest_ev)
-{ // to be parallelized later (30.04.2012)
+                         size_t Mmax,
+                         size_t Mval,
+                         double cutoff,
+                         size_t* keeps,
+                         double & truncated_fraction,
+                         double & truncated_weight,
+                         double & smallest_ev)
+{
+    // Types declaration
     typedef typename DiagMatrix::value_type value_type;
-
+    // Compute the overall number of eigenvalues and extract them inside allevals
     size_t length = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         length += num_rows(evals[k]);
     }
-    
+    //
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
     {
         parallel::guard::serial guard;
         storage::migrate(evals);
     }
-    
+    //
     std::size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         std::transform(evals[k].diagonal().first, evals[k].diagonal().second, allevals.begin()+position, gather_real_pred<value_type>);
         position += num_rows(evals[k]);
     }
-    
+    // Sort and reverse the eigenvalues
     assert( allevals.size() > 0 );
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
-    
+    // Decides the threshold where to cut (expressed as relative value with respect to allevals[0])
     double evalscut = cutoff * allevals[0];
-    
-    if (allevals.size() > Mmax)
+    // Compute the smallest discarded eigenvalue
+    if (Mval > 0)
+        evalscut = allevals[Mval-1] ;
+    else if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
     smallest_ev = evalscut / allevals[0];
-    
+    // Compute the relative error
     truncated_fraction = 0.0; truncated_weight = 0.0;
     for (typename real_vector_t::const_iterator it = std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut);
          it != allevals.end(); ++it) {
@@ -316,7 +303,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     }
     truncated_fraction /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0,  boost::lambda::_1 + boost::lambda::_2 *boost::lambda::_2);
-    
+    // Keeps is a vector of the eigenvalues retained for each block
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         real_vector_t evals_k(num_rows(evals[k]));
         std::transform(evals[k].diagonal().first, evals[k].diagonal().second, evals_k.begin(), gather_real_pred<value_type>);
@@ -324,22 +311,24 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     }
 }
 
+//
+// SVD_TRUNCATE
+// ------------
+// Function that diagonalizes a block_matrix and removes the columns based on a given threshold.
+// Same as HEEV_TRUNCATE (see below), but employs SVD instead of standard diagonalization
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
 truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                 block_matrix<Matrix, SymmGroup> & U,
                                 block_matrix<Matrix, SymmGroup> & V,
                                 block_matrix<DiagMatrix, SymmGroup> & S,
-                                double rel_tol, std::size_t Mmax,
-                                bool verbose = true)
-{ 
+                                double rel_tol,
+                                std::size_t Mmax,
+                                bool verbose = true,
+                                std::size_t Mval = 0)
+{
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef USE_AMBIENT
-    svd_merged(M, U, V, S);
-    #else
     svd(M, U, V, S);
-    #endif
-    
     Index<SymmGroup> old_basis = S.left_basis();
     size_t* keeps = new size_t[S.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
@@ -347,8 +336,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
     //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
     //  (remove_rows/remove_cols methods for that)
-    estimate_truncation(S, Mmax, rel_tol, keeps, truncated_fraction, truncated_weight, smallest_ev);
-     
+    estimate_truncation(S, Mmax, Mval, rel_tol, keeps, truncated_fraction, truncated_weight, smallest_ev);
     for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
        size_t keep = keeps[k];
@@ -360,16 +348,8 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                            U.basis().right_charge(k));
             V.remove_block(V.basis().left_charge(k),
                            V.basis().right_charge(k));
-  // C- idem heev_truncate          --k; // everything gets shifted, to we have to look into the same k again
         } else {
-            #ifdef USE_AMBIENT
-            ambient::numeric::split(S(S.basis().left_charge(k), S.basis().right_charge(k)));
-            ambient::numeric::split(U(U.basis().left_charge(k), U.basis().right_charge(k)));
-            ambient::numeric::split(V(V.basis().left_charge(k), V.basis().right_charge(k)));
-            #endif
-
             if (keep >= num_rows(S[k])) continue;
-        
             S.resize_block(S.basis().left_charge(k),
                            S.basis().right_charge(k),
                            keep, keep);
@@ -383,80 +363,42 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                            V.basis().right_size(k));
         }
     }
-
     delete[] keeps;
-
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
     return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
 }
 
-// TODO: not yet working properly.
-template<class Matrix, class DiagMatrix, class SymmGroup>
-truncation_results alt_svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                                    block_matrix<Matrix, SymmGroup> & U,
-                                    block_matrix<Matrix, SymmGroup> & V,
-                                    block_matrix<DiagMatrix, SymmGroup> & S,
-                                    double rel_tol, std::size_t Mmax,
-                                    bool verbose = true)
-{
-    assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
 
-    block_matrix<Matrix, SymmGroup> t;
-    block_matrix<Matrix, SymmGroup> R;
-    block_matrix<DiagMatrix, SymmGroup> D;
-    
-//    maquis::cout << "M:" << std::endl << M;
-
-    
-    block_matrix<Matrix, SymmGroup> Mconj = conjugate(M);
-    
-    gemm(M, transpose(Mconj), t);    
-    truncation_results res = heev_truncate(t, U, D, rel_tol, Mmax, verbose);
-    
-    gemm(transpose(Mconj), U, t);
-    qr(t, V, R);
-    
-    maquis::cout << "S.n_blocks: " << D.n_blocks() << std::endl;
-    maquis::cout << "S.trace: " << trace(D) << std::endl;
-    maquis::cout << "R.n_blocks: " << R.n_blocks() << std::endl;
-    maquis::cout << "R.trace: " << trace(R) << std::endl;
-    
-//    maquis::cout << "S:" << std::endl << S;
-//    maquis::cout << "R:" << std::endl << R;
-    
-    using std::abs;
-    for (int n=0; n<D.n_blocks(); ++n)
-        for (int i=0; i<num_rows(D[n]); ++i)
-            if ( abs(D[n](i,i) - R[n](i,i)*R[n](i,i)) > 1e-6 )
-                maquis::cout << "n=" << n << ", i=" << i << " broken. D=" << D[n](i,i) << ", td=" << R[n](i,i)*R[n](i,i) << std::endl;
-    
-    S = sqrt(D);
-    S /= trace(S);
-    V.adjoint_inplace();
-    maquis::cout << "U:\n" << U.left_basis() << "\n" << U.right_basis() << std::endl;
-    maquis::cout << "S:\n" << S.left_basis() << "\n" << S.right_basis() << std::endl;
-    maquis::cout << "V:\n" << V.left_basis() << "\n" << V.right_basis() << std::endl;
-    
-//    assert( td == S );
-    return res;
-}
+//
+// HEEV_TRUNCATE
+// -------------
+// Function that diagonalizes a block_matrix and removes the columns based on a given threshold
+//ALB I added an optional argument, MVal, that can be set to set not a threshold for selecting m,
+//    but a precise value of m
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
 truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  block_matrix<Matrix, SymmGroup> & evecs,
                                  block_matrix<DiagMatrix, SymmGroup> & evals,
-                                 double cutoff, std::size_t Mmax,
+                                 double cutoff,
+                                 std::size_t Mmax,
+                                 std::size_t Mval = 0,
                                  bool verbose = true)
 {
+    // Simple checks
     assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    assert(Mval >= 0) ;
+    // Diagonalization of the input matrix
     heev(M, evecs, evals);
     Index<SymmGroup> old_basis = evals.left_basis();
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
-    estimate_truncation(evals, Mmax, cutoff, keeps, truncated_fraction, truncated_weight, smallest_ev);
-    for ( int k = evals.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
+    estimate_truncation(evals, Mmax, Mval, cutoff, keeps, truncated_fraction, truncated_weight, smallest_ev);
+    // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
+    // Removes the eigenvectors that are no longer needed
+    for ( int k = evals.n_blocks() - 1; k >= 0; --k)
     {
         size_t keep = keeps[k];
         if (keep == 0) {
@@ -464,12 +406,8 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                evals.basis().right_charge(k));
             evecs.remove_block(evecs.basis().left_charge(k),
                                evecs.basis().right_charge(k));
-//            --k; // everything gets shifted, to we have to look into the same k again
-// C - Tim : I reversed the loop because the new version was incompatible with the keeps array, and created a bug when keeps[k]=0.
         } else {
-
             if(keep >= num_rows(evals[k])) continue;
-
             evals.resize_block(evals.basis().left_charge(k),
                                evals.basis().right_charge(k),
                                keep, keep);
@@ -480,6 +418,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         }
     }
     delete[] keeps;
+    // Compute the new dimension of the bond and puts it into the reults collector
     std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
     // MD: for eigenvalues we care about summing the discraded
     return truncation_results(bond_dimension, truncated_fraction, truncated_fraction, smallest_ev);
@@ -602,21 +541,5 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 
     return m;
 }
-
-// Is it really useful?
-//template <class Matrix, class SymmGroup, class A>
-//block_matrix<Matrix, SymmGroup> exp (block_matrix<Matrix, SymmGroup> const & M, A const & alpha = 1)
-//{
-//    block_matrix<Matrix, SymmGroup> N, tmp, res;
-//    block_matrix<typename alps::numeric::associated_diagonal_matrix<Matrix>::type, SymmGroup> S;
-//    
-//    heev(M, N, S);
-//    for (std::size_t k = 0; k < S.n_blocks(); ++k)
-//        S[k] = exp(alpha*S[k]);
-//    gemm(N, S, tmp);
-//    gemm(tmp, adjoint(N), res);
-//    
-//    return res;
-//}
 
 #endif

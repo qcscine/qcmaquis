@@ -35,14 +35,13 @@ public:
     // Initializer from a single MPSTns
     SingleSiteVS(MPSTensor<Matrix, SymmGroup> const & m,
                  std::vector< class MPSTensor<Matrix, SymmGroup> > const & ortho_vecs)
-            : MPSTns(m)
-            , ortho_vecs_(ortho_vecs)
+            : ortho_vecs_(ortho_vecs)
     {
-        N_sa    = 0 ;
+        N_root  = 1 ;
         N_ortho = 0 ;
         for (std::size_t k = 0; k < m.data().n_blocks(); ++k)
-            N_ortho += num_rows(m.data()[k]) * num_cols(m.data()[k]);
-        MPSTns_vec.resize(N_sa) ;
+            N_ortho += num_rows(m.data()[k]) * num_cols(m.data()[k]) ;
+        MPSTns_vec.push_back(m) ;
     }
     // Initializer from a VectorSet object
     SingleSiteVS(VectorSet<Matrix, SymmGroup> const & vs,
@@ -50,17 +49,17 @@ public:
             : MPSTns(vs.MPSTns_averaged)
             , ortho_vecs_(ortho_vecs)
     {
-        N_sa    = vs.n_sa ;
+        N_root  = vs.n_sa ;
         N_ortho = 0 ;
         for (std::size_t k = 0; k < vs.MPSTns_averaged.data().n_blocks(); ++k)
             N_ortho += num_rows(vs.MPSTns_averaged.data()[k]) * num_cols(vs.MPSTns_averaged.data()[k]);
-        for (std::size_t k = 0 ; k < N_sa ;  k++)
+        for (std::size_t k = 0 ; k < N_root ;  k++)
             MPSTns_vec.push_back(vs.MPSTns_SA[k]) ;
     }
     // Function to access data
     friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS const & vs) { return vs.MPSTns ; }
     friend std::size_t vec_dimension(SingleSiteVS const & vs)  { return vs.N ; }
-    friend std::size_t n_sa_dimension(SingleSiteVS const & vs) { return vs.N_sa ; }
+    friend std::size_t n_root(SingleSiteVS const & vs) { return vs.N_root ; }
     friend MPSTensor<Matrix, SymmGroup> new_vector_sa(SingleSiteVS const & vs, const std::size_t & k) { return vs.MPSTns_vec[k] ; }
     // Function to perform orthogonalization
     void project(MPSTensor<Matrix, SymmGroup> & t) const
@@ -72,7 +71,7 @@ private:
     MPSTensor<Matrix, SymmGroup> MPSTns;
     std::vector< MPSTensor<Matrix, SymmGroup> > MPSTns_vec ;
     std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_ ;
-    std::size_t N_ortho, N_sa ;
+    std::size_t N_ortho, N_root ;
 };
 
 #endif

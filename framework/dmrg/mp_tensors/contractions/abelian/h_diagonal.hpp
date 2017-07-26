@@ -35,8 +35,8 @@
 
 namespace contraction {
 //
-// Function template for the calculation of the T matrix by assuming a diagonal MPO (see JCP 2015) for additional
-// details. The quantity which is computed is:
+// Function template for the calculation of the T matrix by assuming a diagonal MPO (see JCP 2015 for additional
+// details). The quantity which is computed is:
 //
 //  -----  -----   -----          o_l o_l'      |    b_{l-1}          |\/| o_l'
 //  \      \       \       \    /               |                     |  |

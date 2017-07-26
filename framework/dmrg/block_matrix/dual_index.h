@@ -35,27 +35,34 @@
 
 namespace dual_index_detail
 {
+    //
+    // +-------------------------+
+    //  QNBLOCK OBJECT DEFINITION
+    // +-------------------------+
+    // Object associated to a block inside a matrix associated to a specific
+    // couple of charges (SymmGroup object). Four attributes: the two quantum
+    // numbers (row and columns indexes) and the corresponding sites.
     template <class SymmGroup>
     class QnBlock
     {
         typedef typename SymmGroup::charge charge;
-
     public:
+        // Constructor
         QnBlock() {}
         QnBlock(charge lc_, charge rc_, std::size_t ls_, std::size_t rs_)
             : lc(lc_), rc(rc_), ls(ls_), rs(rs_) {}
-
-        bool operator==(QnBlock const & o) const
-        {
+        // Operator
+        bool operator==(QnBlock const & o) const {
             return lc == o.lc && rc == o.rc && ls == o.ls && rs == o.rs;
         }
-
+        // Attributes
         typename SymmGroup::charge lc;
         typename SymmGroup::charge rc;
         std::size_t                ls;
         std::size_t                rs;
     };
-
+    // Comparison of two QnBlock objects. Do the comparison on the rows (picking
+    // up the Charge object) and, if equal, compares the columns.
     template<class SymmGroup>
     struct gt {
         bool operator()(QnBlock<SymmGroup> const & a,
@@ -69,7 +76,8 @@ namespace dual_index_detail
                 return a.rc > b.rc;
         }
     };
-
+    // Similar to the previous one, but just returns the result of the comparison of
+    // the row index
     template<class SymmGroup>
     struct gt_row{
         bool operator()(QnBlock<SymmGroup> const & a,
@@ -78,7 +86,7 @@ namespace dual_index_detail
             return (a.lc > b.lc);
         }
     };
-
+    // As before, but < instead of >
     template<class SymmGroup>
     bool lt(QnBlock<SymmGroup> const & a,
             QnBlock<SymmGroup> const & b)
@@ -90,19 +98,13 @@ namespace dual_index_detail
         else
             return a.rc < b.rc;
     }
-
-    //// simpler, and potentially faster since inlining is easier for the compiler
+    // simpler, and potentially faster since inlining is easier for the compiler
     template<class SymmGroup>
     class is_first_equal
     {
     public:
         is_first_equal(typename SymmGroup::charge c1, typename SymmGroup::charge c2) : c1_(c1), c2_(c2) { }
-
-        bool operator()(QnBlock<SymmGroup> const & x) const
-        {
-            return x.lc == c1_ && x.rc == c2_;
-        }
-
+        bool operator()(QnBlock<SymmGroup> const & x) const { return x.lc == c1_ && x.rc == c2_; }
     private:
         typename SymmGroup::charge c1_;
         typename SymmGroup::charge c2_;
@@ -138,25 +140,31 @@ namespace boost { namespace serialization {
 
 }}
 
+// +----------------+
+//  DUAL INDEX CLASS
+// +----------------+
 
 template<class SymmGroup> class DualIndex
 {
     typedef std::vector<dual_index_detail::QnBlock<SymmGroup> > data_type;
-    
 public:
+    // Types definition
     typedef typename SymmGroup::charge charge;
     typedef typename data_type::value_type value_type;
-    
     typedef typename data_type::iterator iterator;
     typedef typename data_type::const_iterator const_iterator;
-    
     typedef typename data_type::reverse_iterator reverse_iterator;
     typedef typename data_type::const_reverse_iterator const_reverse_iterator;
-    
     typedef basis_iterator_<SymmGroup> basis_iterator;
-    
+    // +-----------+
+    //  Constructor
+    // +-----------+
     DualIndex() : sorted_(true) {}
-    
+    // +-------+
+    //  Methods
+    // +-------+
+    // -- LEFT_BLOCK_SIZE and RIGHT_BLOCK_SIZE --
+    // For a given couple of charges, returns the dimension of the left/right sizes
     std::size_t left_block_size(charge r, charge c) const {
         std::size_t pos = position(value_type(r,c,0,0));
         return (*this)[pos].ls;
@@ -165,7 +173,8 @@ public:
         std::size_t pos = position(value_type(r,c,0,0));
         return (*this)[pos].rs;
     }
-    
+    // -- POSITION --
+    // Returns the position of a given couple of Charges inside the data_ vector
     std::size_t position(charge row, charge col) const
     {
         const_iterator match;

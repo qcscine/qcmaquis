@@ -46,18 +46,18 @@ class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
+    using base::do_root_homing_ ;
+    using base::iteration_results_;
+    using base::left_;
     using base::mpo;
     using base::mps;
-    using base::mps_vector;
-    using base::n_sa_ ;
-    using base::left_;
-    using base::right_;
-    using base::parms;
-    using base::iteration_results_;
-    using base::stop_callback;
     using base::mps2follow ;
-    using base::do_root_homing_ ;
+    using base::mps_vector;
+    using base::n_root_ ;
+    using base::parms;
+    using base::right_;
     using base::root_homing_type_ ;
+    using base::stop_callback;
     // Constructor
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 std::vector< MPS<Matrix, SymmGroup> > & mps_sa_,
@@ -75,7 +75,7 @@ public:
     inline int to_site(const int L, const int i) const
     {
         if (i < 0) return 0;
-        /// i, or (L-1) - (i - (L-1))
+        // i, or (L-1) - (i - (L-1))
         return (i < L-1) ? i : 2*L - 2 - i;
     }
     // Function to perform a sweep
@@ -148,7 +148,7 @@ public:
             MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
             std::vector< MPSTensor<Matrix, SymmGroup> > tst_vec ;
-            for (int i = 0 ; i < n_sa_ ; i++){
+            for (int i = 0 ; i < n_root_ ; i++){
                 TwoSiteTensor<Matrix, SymmGroup> tst_tmp(mps_vector[i][site1],mps_vector[i][site2]) ;
                 twin_mps = tst_tmp.make_mps() ;
                 tst_vec.push_back(twin_mps) ;
@@ -174,7 +174,7 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, n_sa_, root_homing_type_, ortho_vecs, site2);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, n_root_, root_homing_type_, ortho_vecs, site2);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
@@ -283,17 +283,6 @@ public:
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
-                    if(site1 != L-2){
-                        #ifdef USE_AMBIENT
-                        std::vector<int> placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        parallel::scheduler_permute scheduler(placement_r, parallel::groups_granularity);
-                        for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
-                            parallel::guard group(scheduler(b), parallel::groups_granularity);
-                            storage::migrate(right_[site2+1][b], parallel::scheduler_size_indexed(right_[site2+1][b]));
-                        }
-                        parallel::sync();
-                        #endif
-                    }
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                 }

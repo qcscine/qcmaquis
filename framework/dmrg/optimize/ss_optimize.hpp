@@ -50,7 +50,7 @@ public:
     using base::mps ;
     using base::mps2follow ;
     using base::mps_vector ;
-    using base::n_sa_ ;
+    using base::n_root_ ;
     using base::left_ ;
     using base::left_sa_ ;
     using base::right_ ;
@@ -117,7 +117,7 @@ public:
             std::vector < std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
             // Generates the vectorset object
-            VectorSet<Matrix,SymmGroup> vector_set(mps,mps_vector,site) ;
+            VectorSet<Matrix,SymmGroup> vector_set(mps, mps_vector, site) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
@@ -139,7 +139,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    //res = solve_ietl_jcd(sp, mps[site], parms,  poverlap, 1, site, n_sa_, root_homing_type_, ortho_vecs);
+                    //res = solve_ietl_jcd(sp, mps[site], parms,  poverlap, 1, site, n_root_, root_homing_type_, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
@@ -151,18 +151,18 @@ public:
                 // Collects the results
                 mps[site]            = res[0].second ;
                 mps_vector[0][site]  = res[0].second ;
-                for (size_t k = 1 ; k < n_sa_ ; k++) {
+                for (size_t k = 1 ; k < n_root_ ; k++) {
                     mps_vector[k][site]  = res[k].second ;
                     mps[site]           += res[k].second ;
                 }
-                mps[site] /= n_sa_ ;
+                mps[site] /= n_root_ ;
             }
             //
             // Collection of results
             // ---------------------
             int prec = maquis::cout.precision();
             maquis::cout.precision(15);
-            for (size_t k = 0 ; k < n_sa_ ; k++)
+            for (size_t k = 0 ; k < n_root_ ; k++)
                 maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy() << std::endl;
             maquis::cout.precision(prec);
             iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
@@ -177,21 +177,26 @@ public:
                 alpha = parms.template get<double>("alpha_final");
             // Update of the MPS
             double cutoff = this->get_cutoff(sweep);
-            std::size_t Mmax = this->get_Mmax(sweep);
+            std::size_t Mmax = this->get_Mmax(sweep), Mval;
             truncation_results trunc;
             std::vector<truncation_results> trunc_sa ;
             //
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
-                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
-                    for (size_t k = 0 ; k < n_sa_ ; k++)
-                        trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax)) ;
+                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax) ;
+                    Mval = trunc.bond_dimension ;
+                    for (size_t k = 0 ; k < n_root_ ; k++) {
+                        trunc_sa.push_back(
+                                mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site + 1], site,
+                                                             alpha, cutoff, Mmax, Mval));
+                        std::cout << trunc_sa[k].bond_dimension << std::endl ;
+                    }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
-                    for (size_t k = 0 ; k < n_sa_ ; k++) {
+                    for (size_t k = 0 ; k < n_root_ ; k++) {
                         t = mps_vector[k][site].normalize_left(DefaultSolver());
                         if (site < L-1)
                             mps_vector[k][site+1].multiply_from_left(t);
@@ -207,13 +212,14 @@ public:
                 if (site > 0) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
-                    for (size_t k = 0 ; k < n_sa_ ; k++)
-                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax)) ;
+                    Mval = trunc.bond_dimension ;
+                    for (size_t k = 0 ; k < n_root_ ; k++)
+                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval)) ;
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)
                         mps[site-1].multiply_from_right(t);
-                    for (size_t k = 0 ; k < n_sa_ ; k++){
+                    for (size_t k = 0 ; k < n_root_ ; k++){
                         t = mps_vector[k][site].normalize_right(DefaultSolver());
                         if (site > 0)
                             mps_vector[k][site-1].multiply_from_right(t);

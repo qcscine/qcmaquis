@@ -183,6 +183,7 @@ private:
 };    
 
 #include "dmrg/block_matrix/block_matrix.hpp"
+
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> operator*(const typename block_matrix<Matrix,SymmGroup>::scalar_type& v,
                                           block_matrix<Matrix, SymmGroup> bm)

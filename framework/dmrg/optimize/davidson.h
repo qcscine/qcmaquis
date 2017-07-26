@@ -75,6 +75,7 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::vector_type 		      vector_type ;
         typedef typename vectorspace_traits<VS>::scalar_type 		      scalar_type ;
         typedef typename vector_type::bm_type 		      		          bm_type ;
+        typedef typename std::vector< bm_type >                           vector_bm ;
         typedef typename std::vector< bool >                              vector_bool ;
         typedef typename std::vector<vector_type> 	     		          vector_set ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
@@ -96,13 +97,15 @@ namespace ietl
         virtual vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                               size_t& iter_dim, vector_set& v2, vector_set& VA) {} ;
         virtual vector_type apply_operator(const vector_type& x) {} ;
-        virtual void precondition(vector_type& r, const vector_type& V, const vector_type& VA, const magnitude_type& theta ) {} ;
-	    virtual void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
-		                 		      const size_t& i, vector_set& u, vector_set& uA) {} ;
-        virtual void update_vspace(vector_set& V, vector_set& VA, vector_set& t, const size_t& dim) {} ;
+        virtual void precondition(vector_type& r, const vector_type& V, const vector_type& VA, const magnitude_type& theta,
+                                  const size_t& idx) {} ;
+	    virtual size_t select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+                                        const size_t& i, vector_set& u, vector_set& uA) {} ;
+        virtual void update_vspace(vector_set& V, vector_set& VA, vector_set& t) {} ;
         // Attributes
-        bm_type Hdiag_ ;
-        int site1_ , site2_, nmin_, nmax_, nsites_, n_sa_  ;
+        vector_bm Hdiag_ ;
+        int site1_ , site2_, nmin_, nmax_, nsites_ ;
+        size_t n_sa_  ;
         magnitude_type atol_ ;
         MATRIX const & matrix_;
         vector_bool convergence_check_ ;
@@ -121,14 +124,13 @@ namespace ietl
             site2_(site2),
             nsites_(nsites)
     {
-        vector_type tmp = new_vector(vecspace_) ;
-        Hdiag_          = contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, tmp) ;
-        n_sa_           = n_sa_dimension(vec) ;
-        for (size_t k = 0 ; k < n_sa_ ; k++) {
+        n_sa_ = n_root(vec) ;
+        vector_type tst = new_vector(vec) ;
+        for (size_t k = 0 ; k < n_sa_; k++) {
             v_guess_.push_back(new_vector_sa(vec, k));
             convergence_check_.push_back(false) ;
+            Hdiag_.push_back(contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, v_guess_[k])) ;
         }
-
     } ;
     // -- Method used to compute eigenpairs --
     template <class MATRIX, class VS>
@@ -148,7 +150,8 @@ namespace ietl
             ietl::project(t[i],vecspace_);
         // While loop
         do {
-            update_vspace(V, VA, t, iter_dim);
+            // Generate guess
+            update_vspace(V, VA, t);
             iter_dim = V.size();
             matrix_numeric M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
@@ -161,36 +164,37 @@ namespace ietl
             // TODO ALB Use here the same diagonalization algorithm as for JD
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
-	        select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
+	        size_t n_chosen = select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
             ++iter;
             std::cout << iter_dim << std::endl ;
-            std::cout << "------------" << std::endl ;
-            for (size_t i = 0 ; i < n_sa_ ; i++){
+            for (size_t i = 0 ; i < n_chosen ; i++){
                 theta[i] = ietl::dot(u[i],uA[i])/ietl::dot(u[i],u[i])  ;
                 r[i]     = uA[i] - theta[i]*u[i] ;
                 std::cout << theta[i] << std::endl ;
+                std::cout << ietl::two_norm(r[i]) << std::endl ;
                 // if (|r|_2 < \epsilon) stop
                 if (iter.finished(ietl::two_norm(r[i]), theta[i]))
                     convergence_check_[i] = true;
                 else
-                    precondition(r[i], u[i], uA[i], theta[i]);
+                    precondition(r[i], u[i], uA[i], theta[i], i);
             }
             // Restarting algorithm
             size_t n_sa_local = 0 ;
-            for (size_t k = 0 ; k < n_sa_ ; k++) {
+            for (size_t k = 0 ; k < n_chosen ; k++) {
                 if (not convergence_check_[k]) {
                     t[n_sa_local] = finalize_iteration(u[k], r[k], nmax_, iter_dim, V, VA);
                     n_sa_local += 1;
                 }
             }
-            std::cout << n_sa_local << std::endl ;
             if (n_sa_local == 0) {
                 for (size_t k = 0 ; k < n_sa_ ; k++)
                     res.push_back(std::make_pair(return_final(theta[k]), u[k])) ;
                 break;
             }
+            std::cout << "Cycle" << std::endl ;
         } while(true);
         // accept lambda=theta and x=u
+        std::cout << "Going out" << std::endl ;
         return res ;
     }
 }

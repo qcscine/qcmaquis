@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -180,16 +181,20 @@ namespace contraction {
             return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
         }
-
+        // -- PREDICT_NEW_STATE_L2R_SWEEP --
+        // Simple interface to the corresponding routine isnide ./common/predict
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
                                     Boundary<OtherMatrix, SymmGroup> const & right,
-                                    double alpha, double cutoff, std::size_t Mmax)
+                                    double alpha,
+                                    double cutoff,
+                                    std::size_t Mmax,
+                                    std::size_t Mval)
         {
             return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, Gemms, lbtm_functor>
-                   (mps, mpo, left, right, alpha, cutoff, Mmax);
+                   (mps, mpo, left, right, alpha, cutoff, Mmax, Mval);
         }
 
         static MPSTensor<Matrix, SymmGroup>
@@ -199,16 +204,20 @@ namespace contraction {
         {
             return common::predict_lanczos_l2r_sweep<Matrix, OtherMatrix, SymmGroup, Gemms>(B, psi, A);
         }
-
+        // -- PREDICT_NEW_STATE_R2L_SWEEP --
+        // Simple interface to the corresponding routine isnide ./common/predict
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
                                     Boundary<OtherMatrix, SymmGroup> const & right,
-                                    double alpha, double cutoff, std::size_t Mmax)
+                                    double alpha,
+                                    double cutoff,
+                                    std::size_t Mmax,
+                                    std::size_t Mval)
         {
             return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, Gemms, rbtm_functor>
-                   (mps, mpo, left, right, alpha, cutoff, Mmax);
+                   (mps, mpo, left, right, alpha, cutoff, Mmax, Mval);
         }
 
         static MPSTensor<Matrix, SymmGroup>

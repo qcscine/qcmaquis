@@ -4,7 +4,8 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
- *                            Michele Dolfi <dolfim@phys.ethz.ch>
+ *                            Michele Dolfi <dolfim@phys.ethz.chi>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>             
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -87,7 +88,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size()) ;
         }
         (*(model.initializer_sa(lat,parms)))(mps_sa) ;
-        std::cout << overlap(mps_sa[0],mps_sa[1]) << std::endl ;
     }
     assert(mps.length() == lat.size());
     // Update parameters - after checks have passed

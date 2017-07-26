@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -264,23 +265,36 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
         canonized_i = std::numeric_limits<size_t>::max();
 }
 
+// -- GROW_L2R_SWEEP --
+// Method to update the MPS after a sweep of the optimization cycles
+// In input the boundaries, the MPO (for adding noise) and the cutoff
+// are provided, returns a truncation_results object, that collects
+// the relevant data of the truncation (e.g. the error)
+
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 truncation_results
 MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+                                       std::size_t l,
+                                       double alpha,
+                                       double cutoff,
+                                       std::size_t Mmax,
+                                       std::size_t Mval )
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, Mval);
     (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
+
+// -- GROW_R2L_SWEEP --
+// Method to update the MPS after a sweep of the optimization cycles
+// See grow_l2r_sweep for additional details
 
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
@@ -288,15 +302,16 @@ truncation_results
 MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+                                       std::size_t l,
+                                       double alpha,
+                                       double cutoff,
+                                       std::size_t Mmax,
+                                       std::size_t Mval )
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
-    
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, Mval);
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;

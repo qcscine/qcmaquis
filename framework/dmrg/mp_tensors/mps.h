@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -87,14 +88,20 @@ public:
     truncation_results grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                      std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      std::size_t l,
+                                      double alpha,
+                                      double cutoff,
+                                      std::size_t Mmax,
+                                      std::size_t Mval=0 );
     template<class OtherMatrix>
     truncation_results grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                      std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      std::size_t l,
+                                      double alpha,
+                                      double cutoff,
+                                      std::size_t Mmax,
+                                      std::size_t Mval=0 ) ;
     
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;

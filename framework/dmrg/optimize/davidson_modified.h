@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "dmrg/optimize/davidson.h"
+#include "dmrg/optimize/utils/orthogonalizers.hpp"
 
 namespace ietl {
     template<class MATRIX, class VS>
@@ -63,13 +64,14 @@ namespace ietl {
     private:
         // Private methods
         magnitude_type return_final(const magnitude_type &x) { return omega_-x; };
+        size_t select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+                                const size_t& i, vector_set& u, vector_set& uA);
         vector_type apply_operator(const vector_type &x);
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
-        void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
-	    void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
-	                          const size_t& i, vector_set& u, vector_set& uA);
-        void update_vspace(vector_set &V, vector_set &VA, vector_set &t, const size_t& dim);
+        void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta,
+                          const size_t& idx);
+        void update_vspace(vector_set &V, vector_set &VA, vector_set &t);
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
@@ -86,15 +88,16 @@ namespace ietl {
     };
     // Construction of the virtual function update_vspace
     template <class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::update_vspace(vector_set& V, vector_set& VA, vector_set& t, const size_t& dim)
+    void davidson_modified<MATRIX, VS>::update_vspace(vector_set& V, vector_set& VA, vector_set& t)
     {
         vector_type tA ;
         for (size_t k = 0 ; k < n_sa_ ; k++) {
-            for (int i = 0; i < dim; i++)
+            for (int i = 0; i < V_additional_.size(); i++)
                 t[k] -= ietl::dot(V_additional_[i], t[k]) * V_additional_[i];
             t[k] /= ietl::two_norm(t[k]);
             V_additional_.push_back(t[k]);
         }
+        size_t dim = V.size() ;
         for (size_t k = 0 ; k < n_sa_ ; k++) {
             tA = apply_operator(t[k]);
             for (int i = 0; i < dim; i++) {
@@ -107,16 +110,17 @@ namespace ietl {
     } ;
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta) {
+    void davidson_modified<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta,
+                                                     const size_t& idx) {
         magnitude_type denom, x2, x1 ;
         x1 = ietl::dot(VA, r)/ietl::dot(VA,V) ;
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();
-        assert(shape_equal(data, Hdiag_));
+        assert(shape_equal(data, Hdiag_[idx]));
         for (size_t b = 0; b < data.n_blocks(); ++b) {
             for (size_t i = 0; i < num_rows(data[b]); ++i) {
                 for (size_t j = 0; j < num_cols(data[b]); ++j) {
-                    denom = (omega_ - Hdiag_[b](i, j)) - theta;
+                    denom = (omega_ - Hdiag_[idx][b](i, j)) - theta;
                     if (std::abs(denom))
                         data[b](i, j) /= denom;
                 }
@@ -132,23 +136,29 @@ namespace ietl {
              size_t &iter_dim, vector_set &V2, vector_set &VA)
     {
         vector_type result ;
-        if (iter_dim == n_restart){
-            iter_dim = 0 ;
-            V2.resize(0) ;
-            VA.resize(0) ;
-            result =  u ;
-        } else {
-            result = r ;
-        }
+        //if (iter_dim == n_restart){
+        //    iter_dim = 0 ;
+        //    V2.resize(0) ;
+        //    VA.resize(0) ;
+        //    result =  u ;
+        //} else {
+        //    result = r ;
+        //}
+        result = r ;
         return result  ;
     }
     // Routine to select the proper eigenpair
     template<class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2, const vector_set& VA, const matrix_numeric& Mevecs,
-    							                         const size_t& dim, vector_set& u, vector_set& uA)
+    davidson_modified<MATRIX, VS>::size_t davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2,
+                                                                                          const vector_set& VA,
+                                                                                          const matrix_numeric& Mevecs,
+                                                                                          const size_t& dim,
+                                                                                          vector_set& u,
+                                                                                          vector_set& uA)
     {
         assert(n_sa_ == u.size() && n_sa_ && uA.size()) ;
-        for (size_t k = 0 ; k < n_sa_ ; k++) {
+        size_t n_eigen = std::min(dim, n_sa_) ;
+        for (size_t k = 0 ; k < n_eigen ; k++) {
             u[k] = V2[0] * Mevecs(0,k);
             for (int i = 1; i < dim; ++i)
                 u[k] += V2[i] * Mevecs(i,k);
@@ -158,6 +168,7 @@ namespace ietl {
             uA[k] /= ietl::two_norm(u[k]);
             u[k] /= ietl::two_norm(u[k]);
         }
+        return n_eigen ;
     }
 }
 

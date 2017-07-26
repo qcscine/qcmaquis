@@ -96,7 +96,7 @@ enum OptimizeDirection { Both, LeftOnly, RightOnly };
 // --------------------
 //
 // Virtual class to be used to inherit classess whose scope is optimizing an MPS.
-//
+// From here, the ss_optimizer and ts_optimizer are inherited
 
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
@@ -123,17 +123,27 @@ public:
         mps2follow.resize(1) ;
         mps2follow[0].resize(0) ;
         std::size_t L = mps.length();
-        if (n_sa_ > 0) {
+        // State-average calculation
+        n_root_          = mps_vector.size() ;
+        do_stateaverage_ = n_root_ > 0 ;
+        if (do_stateaverage_) {
+            // Reset the first guess for the mps
             for (int k = 0 ; k < L ; k++) {
                 mps[k] = mps_vector[0][k] ;
-                for (int i = 1; i < n_sa_; i++)
+                for (int i = 1; i < n_root_ ; i++)
                     mps[k] += mps_vector[i][k];
-                mps[k] /= n_sa_;
+                mps[k] /= n_root_ ;
             }
         }
+        //TODO ALB TO CHECK IF IT'S USEFUL OR NOT
         mps.canonize(site);
         for (int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
+        for (int i = 0 ; i < n_root_; ++i ) {
+            mps_vector[i].canonize(site);
+            for (int j = 0; j < mps_vector[i].length(); ++j)
+                Storage::evict(mps_vector[i][j]);
+        }
         // Root-homing criteria
         if (parms_["ietl_diag_homing_criterion"] == "") {
             do_root_homing_   = false ;
@@ -141,26 +151,12 @@ public:
         } else if (parms_["ietl_diag_homing_criterion"] == "input") {
             do_root_homing_   = true ;
             root_homing_type_ = 1 ;
-            if (mps2follow.size() != L)
-                throw std::runtime_error("ONV to follow not provided");
-        } else if (parms_["ietl_diag_homing_criterion"] == "last") {
-            do_root_homing_   = true ;
-            root_homing_type_ = 2 ;
-        } else {
-            throw std::runtime_error("Root homing criterion not recognized") ;
-        }
-        // State-average calculation
-        n_sa_ = mps_vector.size() ;
-        for (int i = 0 ; i < n_sa_; ++i )
-            for (int j = 0 ; j < mps_vector[i].length(); ++j )
-                Storage::evict(mps_vector[i][j]) ;
-        if (do_root_homing_) {
-            if (n_sa_ > 0) {
-                do_stateaverage_ = true;
+            if (do_stateaverage_) {
+                // Extract the list of states to be followed
                 std::vector<std::string> list_sa;
                 std::string input_str = parms["follow_mps_stateaverage"].str();
                 boost::split(list_sa, input_str, boost::is_any_of("|"));
-                if (list_sa.size() != n_sa_)
+                if (list_sa.size() != n_root_ )
                     throw std::runtime_error("Number of states to track != from number of SA MPS");
                 for (int i = 0; i < list_sa.size(); i++) {
                     std::stringstream ss(list_sa[i]);
@@ -170,18 +166,28 @@ public:
                         tmp_vec.push_back(ichar);
                         ss.ignore(1);
                     }
+                    if (tmp_vec.size() != L)
+                        throw std::runtime_error("ONV to follow has a wrong length");
                     mps2follow.push_back(tmp_vec);
                 }
             } else {
-                do_stateaverage_ = false;
                 mps2follow.push_back(parms_["follow_basis_state"].as<std::vector<int> >());
+                if (mps2follow.size() != L)
+                    throw std::runtime_error("ONV to follow has a wrong length");
             }
+        } else if (parms_["ietl_diag_homing_criterion"] == "last") {
+            do_root_homing_   = true ;
+            root_homing_type_ = 2 ;
+        } else {
+            throw std::runtime_error("Root homing criterion not recognized") ;
         }
         // Orthogonal states
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
         if (northo > 0 && !parms_.is_set("ortho_states"))
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
+        if (northo > 0 && do_root_homing_)
+            throw std::runtime_error("Constrained optimization + SA NYI");
         ortho_mps.resize(northo);
         std::string files_ = parms_["ortho_states"].str();
         std::vector<std::string> files;
@@ -207,7 +213,7 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
-        for (size_t i = 0 ; i < n_sa_ ; i++)
+        for (size_t i = 0 ; i < n_root_ ; i++)
             left_sa_[i][site+1] = contr::overlap_mpo_left_step(mps_vector[i][site], mps_vector[i][site], left_sa_[i][site], mpo[site]);
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
@@ -216,7 +222,7 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
-        for (size_t i = 0 ; i < n_sa_ ; i++)
+        for (size_t i = 0 ; i < n_root_ ; i++)
             right_sa_[i][site] = contr::overlap_mpo_right_step(mps_vector[i][site], mps_vector[i][site], right_sa_[i][site+1], mpo[site]);
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
@@ -229,9 +235,9 @@ protected:
         //
         left_.resize(mpo.length()+1)  ;
         right_.resize(mpo.length()+1) ;
-        left_sa_.resize(n_sa_) ;
-        right_sa_.resize(n_sa_) ;
-        for (int i = 0 ; i < n_sa_ ; i++){
+        left_sa_.resize(n_root_) ;
+        right_sa_.resize(n_root_) ;
+        for (int i = 0 ; i < n_root_ ; i++){
             left_sa_[i].resize(mpo.length()+1) ;
             right_sa_[i].resize(mpo.length()+1) ;
         }
@@ -244,7 +250,7 @@ protected:
             ortho_right_[n][L] = mps.right_boundary()[0];
         }
         left_[0] = mps.left_boundary();
-        for (int k = 0; k < n_sa_ ; ++k)
+        for (int k = 0; k < n_root_ ; ++k)
             left_sa_[k][0] = mps_vector[k].left_boundary();
         for (int i = 0; i < site; ++i) {
             boundary_left_step(mpo, i);
@@ -256,7 +262,7 @@ protected:
         //
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
-        for (int k = 0; k < n_sa_ ; ++k)
+        for (int k = 0; k < n_root_ ; ++k)
             right_sa_[k][L] = mps_vector[k].right_boundary();
         Storage::pin(right_[L]);
         for (int i = L-1; i >= site; --i) {
@@ -279,7 +285,8 @@ protected:
             cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
         return cutoff;
     }
-
+    // -- GET_MMAX --
+    // Routine to get the maximum value for the bond dimension
     std::size_t get_Mmax(int sweep) const
     {
         std::size_t Mmax;
@@ -293,7 +300,9 @@ protected:
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
         return Mmax;
     }
-    // Protected attributes
+    // +----------+
+    //  ATTRIBUTES
+    // +----------+
     results_collector iteration_results_;
     MPS<Matrix, SymmGroup> & mps;
     MPO<Matrix, SymmGroup> const& mpo;
@@ -311,7 +320,7 @@ protected:
     // State average
     std::vector< std::vector<int> > mps2follow;
     std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
-    int n_sa_ ;
+    int n_root_ ;
 };
 
 #include "ss_optimize.hpp"

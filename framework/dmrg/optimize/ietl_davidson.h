@@ -61,7 +61,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
     if (initial.MPSTns_averaged.num_elements() <= ortho_vecs.size())
-    ortho_vecs.resize(initial.MPSTns_averaged.num_elements()-1);
+        ortho_vecs.resize(initial.MPSTns_averaged.num_elements()-1);
     for (int n = 1; n < ortho_vecs.size(); ++n)
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
@@ -78,10 +78,10 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
             //                 nsites, site1, site2, root_homing_type);
             //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
         } else {
-            //ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-            //        davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-            //                 nsites, site1, site2);
-            //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
+            ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
+                    davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
+                             nsites, site1, site2);
+            r0 = davidson.calculate_eigenvalue(iter);
         }
     } else {
         if ( poverlap.is_defined()) {
