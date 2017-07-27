@@ -44,6 +44,8 @@ public:
     // Inherits several data from the "mother" class
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     //
+    using base::do_root_homing_ ;
+    using base::do_stateaverage_ ;
     using base::mpo ;
     using base::mps ;
     using base::mps2follow ;
@@ -57,7 +59,6 @@ public:
     using base::poverlap_vec_ ;
     using base::iteration_results_ ;
     using base::stop_callback ;
-    using base::do_root_homing_ ;
     using base::root_homing_type_ ;
     // Constructor declaration
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
@@ -229,8 +230,15 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
-            if (root_homing_type_ == 1)
-                poverlap.update(mps, site, lr);
+            if (root_homing_type_ == 1){
+                if (do_stateaverage_){
+                    for (size_t k = 0 ; k < n_root_ ; k++) {
+                        poverlap_vec_[k].update(mps_vector[k], site, lr) ;
+                    }
+                } else {
+                    poverlap_vec_[0].update(mps, site, lr); 
+                }
+            }
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;

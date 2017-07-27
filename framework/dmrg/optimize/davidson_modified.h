@@ -42,12 +42,13 @@ namespace ietl {
     class davidson_modified : public davidson<MATRIX, VS> {
     public:
         typedef davidson<MATRIX, VS> base;
-        typedef typename base::bm_type        bm_type;
-        typedef typename base::magnitude_type magnitude_type;
-    	typedef typename base::matrix_numeric matrix_numeric;
-        typedef typename base::vector_set     vector_set;
-        typedef typename base::vector_type    vector_type;
-        typedef typename base::size_t         size_t;
+        typedef typename base::bm_type                bm_type;
+        typedef typename base::magnitude_type         magnitude_type;
+    	typedef typename base::matrix_numeric         matrix_numeric;
+        typedef typename base::result_selection_type  result_selection_type ;
+        typedef typename base::size_t                 size_t;
+        typedef typename base::vector_set             vector_set;
+        typedef typename base::vector_type            vector_type;
         using base::atol_ ;
         using base::Hdiag_ ;
         using base::matrix_ ;
@@ -65,8 +66,8 @@ namespace ietl {
     private:
         // Private methods
         magnitude_type return_final(const magnitude_type &x) { return omega_-x; };
-        size_t select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
-                                const size_t& i, vector_set& u, vector_set& uA);
+        result_selection_type select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+                                               const size_t& i, vector_set& u, vector_set& uA);
         vector_type apply_operator(const vector_type &x);
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
@@ -144,15 +145,20 @@ namespace ietl {
     }
     // Routine to select the proper eigenpair
     template<class MATRIX, class VS>
-    davidson_modified<MATRIX, VS>::size_t davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2,
-                                                                                          const vector_set& VA,
-                                                                                          const matrix_numeric& Mevecs,
-                                                                                          const size_t& dim,
-                                                                                          vector_set& u,
-                                                                                          vector_set& uA)
+    typename davidson_modified<MATRIX, VS>::result_selection_type 
+             davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2,
+                                                             const vector_set& VA,
+                                                             const matrix_numeric& Mevecs,
+                                                             const size_t& dim,
+                                                             vector_set& u,
+                                                             vector_set& uA)
     {
+        // Initialization
         assert(n_sa_ == u.size() && n_sa_ && uA.size()) ;
+        result_selection_type res ;
         size_t n_eigen = std::min(dim, n_sa_) ;
+        res.first = n_eigen ;
+        // Main loop
         for (size_t k = 0 ; k < n_eigen ; k++) {
             u[k] = V2[0] * Mevecs(0,k);
             for (int i = 1; i < dim; ++i)
@@ -162,8 +168,9 @@ namespace ietl {
                 uA[k] += VA[i] * Mevecs(i,k);
             uA[k] /= ietl::two_norm(u[k]);
             u[k] /= ietl::two_norm(u[k]);
+            res.second.push_back(ietl::dot(uA[k],u[k])) ;
         }
-        return n_eigen ;
+        return res ;
     }
     // Routine to print the header of the table
     template<class MATRIX, class VS>

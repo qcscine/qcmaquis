@@ -84,6 +84,7 @@ namespace ietl
         typedef typename alps::numeric::matrix<scalar_type> 		      matrix_numeric ;
         typedef typename std::size_t 					                  size_t ;
         typedef typename std::pair<magnitude_type, vector_type >          pair_results ;
+        typedef typename std::pair<size_t, std::vector<float> >           result_selection_type ;
         typedef typename std::vector< pair_results >                      vector_pairs ;
         // Constructor and destructor
         davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
@@ -100,8 +101,8 @@ namespace ietl
         virtual vector_type apply_operator(const vector_type& x) {} ;
         virtual void precondition(vector_type& r, const vector_type& V, const vector_type& VA, const magnitude_type& theta,
                                   const size_t& idx) {} ;
-	    virtual size_t select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
-                                        const size_t& i, vector_set& u, vector_set& uA) {} ;
+	    virtual result_selection_type select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+                                                       const size_t& i, vector_set& u, vector_set& uA) {} ;
         virtual void update_vspace(vector_set& V, vector_set& VA, vector_set& t) {} ;
         // Printing-related methods
         virtual void print_header_table(void) {} ;
@@ -152,6 +153,7 @@ namespace ietl
     typename davidson<MATRIX, VS>::vector_pairs davidson<MATRIX, VS>::calculate_eigenvalue(ITER& iter)
     {
         // Initialization
+        result_selection_type res_selection ;
         size_t iter_dim = 0 ;
         vector_pairs res ;
         vector_set t = v_guess_ ;
@@ -179,7 +181,8 @@ namespace ietl
             // TODO ALB Use here the same diagonalization algorithm as for JD
             boost::numeric::bindings::lapack::heevd('V', M, Mevals);
             Mevecs = M ;
-	        size_t n_chosen = select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
+            res_selection = select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
+	        size_t n_chosen = res_selection.first ;
             ++iter;
             for (size_t i = 0 ; i < n_chosen ; i++){
                 theta[i] = ietl::dot(u[i],uA[i])/ietl::dot(u[i],u[i])  ;
