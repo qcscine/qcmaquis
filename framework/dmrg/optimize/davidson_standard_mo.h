@@ -41,6 +41,8 @@ namespace ietl {
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     class davidson_standard_mo : public davidson<MATRIX, VS> {
     public:
+        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap ;
+        typedef typename std::vector<partial_overlap> pov_vec ;
         typedef davidson<MATRIX, VS> base;
         typedef typename base::bm_type        bm_type;
         typedef typename base::magnitude_type magnitude_type;
@@ -48,7 +50,6 @@ namespace ietl {
         typedef typename base::vector_set     vector_set;
         typedef typename base::vector_type    vector_type;
         typedef typename base::size_t         size_t;
-        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap ;
         using base::matrix_;
         using base::Hdiag_;
         using base::nsites_ ;
@@ -56,7 +57,7 @@ namespace ietl {
         using base::site2_;
         using base::v_guess_ ;
         // New constructors
-        davidson_standard_mo(const MATRIX &matrix, const VS &vec, const partial_overlap poverlap,
+        davidson_standard_mo(const MATRIX &matrix, const VS &vec, const pov_vec poverlap,
                              const int& nmin, const int& nmax, const int& nsites, const int& site1,
                              const int& site2, const int& root_homing_type)
                 : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2),
@@ -72,10 +73,10 @@ namespace ietl {
         magnitude_type return_final(const magnitude_type &x) { return x; };
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
-        double compute_overlap(const vector_type& vec_test) ;
+        std::vector<double> compute_overlap(const vector_set& vec_test) ;
         // Private attribute
         int root_homing_type_ ;
-        partial_overlap  pov_ ;
+        pov_vec  pov_ ;
     };
     // Definition of the virtual function update_vspace
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
@@ -170,16 +171,18 @@ namespace ietl {
     }
     // Routine to compute the overlaps
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
-    double davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::compute_overlap(const vector_type &vec_test)
+    std::vector<double> davidson_standard_mo<MATRIX, VS, OtherMatrix, SymmGroup>::compute_overlap(const vector_set &vec_test)
     {
         double ret, scr ;
-        if (root_homing_type_ == 1)
-            if (nsites_ == 1)
-                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_);
+        for (typename vector_set::iterator it = vec_test.begin() ; it != vec_test.end() ; it++) {
+            if (root_homing_type_ == 1)
+                if (nsites_ == 1)
+                    ret = pov_.overlap(vec_test / ietl::two_norm(vec_test), site1_);
+                else
+                    ret = pov_.overlap(vec_test / ietl::two_norm(vec_test), site1_, site2_);
             else
-                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
-        else
-            ret = ietl::dot(vec_test, v_guess_[0])/ietl::two_norm(vec_test) ;
+                ret = ietl::dot(vec_test, v_guess_[0]) / ietl::two_norm(vec_test);
+        }
         return fabs(ret) ;
     }
 }

@@ -30,7 +30,6 @@
 
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/optimize/optimize.h"
-#include "dmrg/optimize/partial_overlap.h"
 #include "dmrg/optimize/vectorset.h"
 #include "dmrg/utils/DmrgParameters.h"
 
@@ -44,7 +43,6 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
     // Inherits several data from the "mother" class
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
-    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap partial_overlap ;
     //
     using base::mpo ;
     using base::mps ;
@@ -56,6 +54,7 @@ public:
     using base::right_ ;
     using base::right_sa_ ;
     using base::parms ;
+    using base::poverlap_vec_ ;
     using base::iteration_results_ ;
     using base::stop_callback ;
     using base::do_root_homing_ ;
@@ -91,9 +90,6 @@ public:
             site = to_site(L, _site);
         }
         // Initialization of the overlap object
-        // TODO ALB MOVE THIS PART IN THE VIRTUAL OPTIMIZER CLASS
-        partial_overlap poverlap(mps,mps2follow[0]) ;
-        //partial_overlap poverlap(mps,mps) ;
         Storage::prefetch(left_[site]) ;
         Storage::prefetch(right_[site+1]) ;
         // Main loop
@@ -143,7 +139,7 @@ public:
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, vector_set, parms, poverlap, 1, site, root_homing_type_, ortho_vecs);
+                    res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

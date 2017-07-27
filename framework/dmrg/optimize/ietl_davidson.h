@@ -30,7 +30,6 @@
 #define IETL_DAVIDSON_SOLVER_H
 
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/optimize/partial_overlap.h"
 #include "dmrg/optimize/vectorset.h"
 
 #include "davidson_standard.h"
@@ -43,7 +42,7 @@ std::vector< std::pair< double , class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     VectorSet<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
-                    partial_overlap<Matrix, SymmGroup> poverlap,
+                    std::vector<partial_overlap<Matrix, SymmGroup> > poverlap_vec ,
                     int nsites, int site1,
                     int root_homing_type,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
@@ -64,33 +63,33 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
         ortho_vecs.resize(initial.MPSTns_averaged.num_elements()-1);
     for (int n = 1; n < ortho_vecs.size(); ++n)
         for (int n0 = 0; n0 < n; ++n0)
-            ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
+            ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0] ;
     // Check orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_averaged, ortho_vecs[n]) << std::endl;
+        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_averaged, ortho_vecs[n]) << std::endl ;
     }
     // -- Calculation of eigenvalues
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
     if (fabs(omega) > 1.0E-15) {
-        if ( poverlap.is_defined()) {
+        if ( poverlap_vec.size() > 0 ) {
             //ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
             //        davidson(sp, vs, omega, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
             //                 nsites, site1, site2, root_homing_type);
             //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
         } else {
-            ietl::davidson_modified<SiteProblem < Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
+            ietl::davidson_modified<typename SiteProblem< Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
                     davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
                              nsites, site1, site2);
             r0 = davidson.calculate_eigenvalue(iter);
         }
     } else {
-        if ( poverlap.is_defined()) {
-            //ietl::davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
-            //        davidson(sp, vs, poverlap, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-            //                 nsites, site1, site2, root_homing_type);
-            //r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
+        if ( poverlap_vec.size() > 0 ) {
+            ietl::davidson_standard_mo<typename SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
+                    davidson(sp, vs, poverlap_vec, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
+                             nsites, site1, site2, root_homing_type);
+            r0 = davidson.calculate_eigenvalue(initial.MPSTns_averaged, iter);
         } else {
-            ietl::davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
+            ietl::davidson_standard<typename SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
                     davidson(sp, vs, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
                              nsites, site1, site2);
             r0 = davidson.calculate_eigenvalue(iter);

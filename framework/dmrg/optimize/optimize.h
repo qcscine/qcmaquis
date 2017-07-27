@@ -50,6 +50,8 @@
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 
+#include "dmrg/optimize/partial_overlap.h"
+
 //
 // Site problem structure
 // ----------------------
@@ -104,6 +106,7 @@ class optimizer_base
     typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>   contr ;
     typedef std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >        boundaries_type ;
     typedef std::vector< boundaries_type>                                                         boundaries_vector ;
+    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap                           partial_overlap ;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
@@ -119,7 +122,6 @@ public:
     , do_root_homing_(false)
     {
         // Standard options
-        //TODO ALB UPDATE HERE!!!
         mps2follow.resize(1) ;
         mps2follow[0].resize(0) ;
         std::size_t L = mps.length();
@@ -145,6 +147,7 @@ public:
                 Storage::evict(mps_vector[i][j]);
         }
         // Root-homing criteria
+        poverlap_vec_.resize(0) ;
         if (parms_["ietl_diag_homing_criterion"] == "") {
             do_root_homing_   = false ;
             root_homing_type_ = 0 ;
@@ -174,6 +177,16 @@ public:
                 mps2follow.push_back(parms_["follow_basis_state"].as<std::vector<int> >());
                 if (mps2follow.size() != L)
                     throw std::runtime_error("ONV to follow has a wrong length");
+            }
+            // Builds the vector of partial overlap objects
+            if (do_stateaverage_) {
+                for (size_t i = 0 ; i < n_root_ ; i++){
+                    partial_overlap poverlap(mps_vector[i],mps2follow[i]) ;
+                    poverlap_vec_.push_back(poverlap) ;
+                }
+            } else {
+                partial_overlap poverlap(mps,mps2follow[0]) ;
+                poverlap_vec_.push_back(poverlap) ;
             }
         } else if (parms_["ietl_diag_homing_criterion"] == "last") {
             do_root_homing_   = true ;
@@ -317,6 +330,7 @@ protected:
     // Root-homing procedure
     bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_ ;
     int root_homing_type_ ;
+    std::vector<partial_overlap> poverlap_vec_;
     // State average
     std::vector< std::vector<int> > mps2follow;
     std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
