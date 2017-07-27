@@ -35,17 +35,30 @@
 template<class VECTOR, class MAGNITUDE>
 std::size_t gram_schmidt_orthogonalizer(std::vector<VECTOR> &V,
                                         std::vector<VECTOR> &t,
+                                        const bool &refine = false ,
+                                        const MAGNITUDE& thresh_refinement = 0.25,
                                         const MAGNITUDE& thresh_ortho = 1.0E-10 ) {
-    // Do some check
-    typedef std::size_t size_t ;
+    // Types definition
+    typedef MAGNITUDE             scalar_type ;
+    typedef std::size_t           size_t ;
+    typedef std::vector<VECTOR>   vector_type ;
+    typedef typename vector_type::iterator iter_vector ;
+    // Initialization
+    scalar_type tau = 0. ;
     std::vector<size_t> vector_size ;
     size_t size_ortho = t.size() , n_lin_ind = 0 , jcont = 0 ;
-    for (typename std::vector<VECTOR>::iterator it_t = t.begin(); it_t != t.end() ; it_t++) {
-        for (typename std::vector<VECTOR>::iterator it_V = V.begin(); it_V != V.end(); it_V++)
+    vector_type tmp ;
+    // Actual orthogonalization
+    for (iter_vector it_t = t.begin(); it_t != t.end() ; it_t++) {
+        tau = ietl::two_norm(*it_t) ;
+        for (iter_vector it_V = V.begin(); it_V != V.end(); it_V++)
             *it_t -= ietl::dot(*it_V, *it_t) * *it_V;
+        if (ietl::two_norm(*it_t) < thresh_refinement*tau && refine)
+            for (iter_vector it_V = V.begin(); it_V != V.end(); it_V++)
+                *it_t -= ietl::dot(*it_V, *it_t) * *it_V;
         if (ietl::two_norm(*it_t) > thresh_ortho) {
             n_lin_ind += 1 ;
-            V.push_back(t[jcont] / ietl::two_norm(t[jcont]));
+            V.push_back(*it_t / ietl::two_norm(*it_t));
         } else {
             vector_size.push_back(jcont) ;
         }
@@ -56,60 +69,44 @@ std::size_t gram_schmidt_orthogonalizer(std::vector<VECTOR> &V,
     return n_lin_ind ;
 };
 
-// +-------------------------------------+
-//  Mofidied Gram-Schmidt with refinement
-// +-------------------------------------+
 
-template<class VECTOR, class MAGNITUDE>
-std::size_t gram_schmidt_orthogonalizer_refinement(std::vector<VECTOR> &V,
-                                                   std::vector<VECTOR> &t,
-                                                   const MAGNITUDE& thresh_refinement = 0.25,
-                                                   const MAGNITUDE& thresh_ortho = 1.0E-10 ) {
-    // Do some check
-    typedef std::size_t size_t ;
-    std::vector<size_t> vector_size ;
-    MAGNITUDE tau ;
-    size_t size_ortho = t.size() , n_lin_ind = 0 , jcont = 0 ;
-    for (typename std::vector<VECTOR>::iterator it_t = t.begin(); it_t != t.end() ; it_t++) {
-        tau = ietl::two_norm(*it_t);
-        for (typename std::vector<VECTOR>::iterator it_V = V.begin(); it_V != V.end(); it_V++)
-            *it_t -= ietl::dot(*it_V, *it_t) * *it_V;
-        if (ietl::two_norm(*it_t) < thresh_refinement*tau )
-            for (typename std::vector<VECTOR>::iterator it_V = V.begin(); it_V != V.end(); it_V++)
-                *it_t -= ietl::dot(*it_V, *it_t) * *it_V;
-        if (ietl::two_norm(*it_t) > thresh_ortho) {
-            n_lin_ind += 1 ;
-            V.push_back(t[jcont] / ietl::two_norm(t[jcont]));
-        } else {
-            vector_size.push_back(jcont) ;
-        }
-        jcont += 1 ;
-    }
-    for (typename std::vector<size_t>::iterator it = vector_size.end() ; it != vector_size.begin() ; it--)
-        t.erase(t.begin() + *it) ;
-    return n_lin_ind ;
-};
-
-// +----------------------------------------------------------------------------+
-//  Mofidied Gram-Schmidt with refinement + additional vector space to transform
-// +----------------------------------------------------------------------------+
+// +------------------------------------------------------------+
+//  Mofidied Gram-Schmidt + additional vector space to transform
+// +------------------------------------------------------------+
 
 template<class VECTOR, class MAGNITUDE>
 std::size_t gram_schmidt_orthogonalizer_additional(std::vector<VECTOR> &V,
                                                    std::vector<VECTOR> &V_add,
                                                    std::vector<VECTOR> &t,
                                                    std::vector<VECTOR> &t_add,
+                                                   const bool& refine = false,
                                                    const MAGNITUDE& thresh_refinement = 0.25,
                                                    const MAGNITUDE& thresh_ortho = 1.0E-10 ) {
-    // Do some check
+    // Types definition
+    typedef MAGNITUDE   scalar_type ;
     typedef std::size_t size_t ;
-    typedef typename std::vector<VECTOR>::iterator iter ;
+    typedef std::vector<VECTOR> vector_space ;
+    typedef typename std::vector<VECTOR>::iterator iter_vector ;
+    // Initialization
+    scalar_type         tau = 0. ;
     std::vector<size_t> vector_size ;
     size_t size_ortho = t.size() , n_lin_ind = 0 , jcont = 0 ;
-    for (iter it_t = t.begin(), it_tA = t_add.begin(); it_t != t.end(), it_tA != t_add.end() ; it_t++, it_tA++) {
-        for (iter it_V = V.begin(), it_VA = V_add.begin() ; it_V != V.end(), it_VA != V_add.end(); it_V++, it_VA++) {
-            *it_t  -= ietl::dot(*it_V, *it_t) * *it_V  ;
-            *it_tA -= ietl::dot(*it_V, *it_t) * *it_VA ;
+    vector_space tmp_V, tmp_V_add ;
+    // Main loop
+    for (iter_vector it_t = t.begin(), it_tA = t_add.begin(); it_t != t.end(), it_tA != t_add.end() ; it_t++, it_tA++) {
+        for (iter_vector it_V = V.begin(), it_VA = V_add.begin() ; it_V != V.end(), it_VA != V_add.end(); it_V++, it_VA++) {
+            if (refine)
+                tau = ietl::two_norm(*it_t) ;
+            scalar_type coeff = ietl::dot(*it_V, *it_t) ;
+            *it_t  -= coeff * *it_V  ;
+            *it_tA -= coeff * *it_VA ;
+            if (ietl::two_norm(*it_t) < thresh_refinement*tau && refine) {
+                coeff = ietl::dot(*it_V, *it_t) ;
+                for (iter_vector it_V = V.begin(); it_V != V.end(); it_V++) {
+                    *it_t  -= coeff * *it_V  ;
+                    *it_tA -= coeff * *it_VA ;
+                }
+            }
         }
         if (ietl::two_norm(*it_t) > thresh_ortho) {
             n_lin_ind += 1 ;
@@ -120,6 +117,7 @@ std::size_t gram_schmidt_orthogonalizer_additional(std::vector<VECTOR> &V,
         }
         jcont += 1 ;
     }
+    // Finalization
     for (typename std::vector<size_t>::iterator it = vector_size.end() ; it != vector_size.begin() ; it--) {
         t.erase(t.begin() + *it);
         t_add.erase(t_add.begin() + *it);

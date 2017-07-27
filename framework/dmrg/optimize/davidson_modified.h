@@ -53,6 +53,7 @@ namespace ietl {
         using base::matrix_ ;
         using base::n_sa_ ;
         using base::nsites_ ;
+        using base::printer_ ;
         using base::site1_ ;
         using base::site2_ ;
         using base::vecspace_ ;
@@ -72,6 +73,11 @@ namespace ietl {
         void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta,
                           const size_t& idx);
         void update_vspace(vector_set &V, vector_set &VA, vector_set &t);
+        // Printing-related methods
+        void print_header_table(void) ;
+        void print_endline(void) ;
+        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy) ;
+        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy) ;
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
@@ -90,23 +96,12 @@ namespace ietl {
     template <class MATRIX, class VS>
     void davidson_modified<MATRIX, VS>::update_vspace(vector_set& V, vector_set& VA, vector_set& t)
     {
-        vector_type tA ;
-        for (size_t k = 0 ; k < n_sa_ ; k++) {
-            for (int i = 0; i < V_additional_.size(); i++)
-                t[k] -= ietl::dot(V_additional_[i], t[k]) * V_additional_[i];
-            t[k] /= ietl::two_norm(t[k]);
-            V_additional_.push_back(t[k]);
-        }
-        size_t dim = V.size() ;
-        for (size_t k = 0 ; k < n_sa_ ; k++) {
-            tA = apply_operator(t[k]);
-            for (int i = 0; i < dim; i++) {
-                t[k] -= ietl::dot(VA[i], tA) * V[i];
-                tA   -= ietl::dot(VA[i], tA) * VA[i];
-            }
-            V.push_back(t[k]/ietl::two_norm(tA));
-            VA.push_back(tA /ietl::two_norm(tA));
-        }
+        size_t n_lin_1 , n_lin_2 ;
+        vector_set tA ;
+        for (size_t i = 0 ; i < t.size() ; i++)
+            tA.push_back(apply_operator(t[i])) ;
+        //n_lin_1 = gram_schmidt_orthogonalizer_refinement<vector_type,magnitude_type>(V_additional_, t) ;
+        n_lin_2 = gram_schmidt_orthogonalizer_additional<vector_type,magnitude_type>(VA, V, tA, t) ;
     } ;
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
@@ -170,6 +165,32 @@ namespace ietl {
         }
         return n_eigen ;
     }
+    // Routine to print the header of the table
+    template<class MATRIX, class VS>
+    void davidson_modified<MATRIX, VS>::print_header_table(void) {
+        printer_.print_header_table_simple() ;
+    } ;
+    //
+    template<class MATRIX, class VS>
+    void davidson_modified<MATRIX, VS>::print_endline(void) {
+        printer_.print_endline_simple() ;
+    } ;
+    //
+    template<class MATRIX, class VS>
+    void davidson_modified<MATRIX, VS>::print_newline_table(const size_t& iter,
+                                                            const size_t& size,
+                                                            const magnitude_type& error,
+                                                            const magnitude_type& energy )
+    {
+        printer_.print_newline_table_simple(iter, size, error, energy) ;
+    } ;
+    //
+    template<class MATRIX, class VS>
+    void davidson_modified<MATRIX, VS>::print_newline_table_energyonly(const magnitude_type& error,
+                                                                       const magnitude_type& energy )
+    {
+        printer_.print_newline_table_simple_onlyenergy(error, energy) ;
+    } ;
 }
 
 #endif

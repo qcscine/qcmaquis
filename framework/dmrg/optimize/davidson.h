@@ -9,21 +9,21 @@
  *                            Matthias Troyer <troyer@comp-phys.org>
  *                            Bela Bauer <bauerb@phys.ethz.ch>
  *                            Sebastian Keller <sebkelle@phys.ethz.ch>
- *                            Alberto Baiardi <alberto.baiardi@sns.it>
+ *               2017         Alberto Baiardi <alberto.baiardi@sns.it>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Library License along with
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
  * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
@@ -36,8 +36,9 @@
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h> 
- 
 #include <ietl/cg.h>
+
+#include "utils/printer.hpp"
 
 #include <vector>
 
@@ -102,12 +103,18 @@ namespace ietl
 	    virtual size_t select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
                                         const size_t& i, vector_set& u, vector_set& uA) {} ;
         virtual void update_vspace(vector_set& V, vector_set& VA, vector_set& t) {} ;
+        // Printing-related methods
+        virtual void print_header_table(void) {} ;
+        virtual void print_endline(void) {} ;
+        virtual void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& ener) {} ;
+        virtual void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& ener) {} ;
         // Attributes
         vector_bm Hdiag_ ;
         int site1_ , site2_, nmin_, nmax_, nsites_ ;
         size_t n_sa_  ;
         magnitude_type atol_ ;
         MATRIX const & matrix_;
+        printer printer_ ;
         vector_bool convergence_check_ ;
         vector_set v_guess_ ;
         VS vecspace_;
@@ -126,10 +133,17 @@ namespace ietl
     {
         n_sa_ = n_root(vec) ;
         vector_type tst = new_vector(vec) ;
-        for (size_t k = 0 ; k < n_sa_; k++) {
-            v_guess_.push_back(new_vector_sa(vec, k));
+        if (n_sa_ == 1) {
+            v_guess_.push_back(new_vector(vec)) ;
             convergence_check_.push_back(false) ;
-            Hdiag_.push_back(contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, v_guess_[k])) ;
+            Hdiag_.push_back(contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, v_guess_[0]));
+        } else {
+            for (size_t k = 0; k < n_sa_; k++) {
+                v_guess_.push_back(new_vector_sa(vec, k));
+                convergence_check_.push_back(false);
+                Hdiag_.push_back(
+                        contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, v_guess_[k]));
+            }
         }
     } ;
     // -- Method used to compute eigenpairs --
@@ -149,6 +163,7 @@ namespace ietl
         for (size_t i = 0 ; i < n_sa_ ; i++)
             ietl::project(t[i],vecspace_);
         // While loop
+        print_header_table() ;
         do {
             // Generate guess
             update_vspace(V, VA, t);
@@ -166,13 +181,15 @@ namespace ietl
             Mevecs = M ;
 	        size_t n_chosen = select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
             ++iter;
-            std::cout << iter_dim << std::endl ;
             for (size_t i = 0 ; i < n_chosen ; i++){
                 theta[i] = ietl::dot(u[i],uA[i])/ietl::dot(u[i],u[i])  ;
                 r[i]     = uA[i] - theta[i]*u[i] ;
-                std::cout << theta[i] << std::endl ;
-                std::cout << ietl::two_norm(r[i]) << std::endl ;
-                // if (|r|_2 < \epsilon) stop
+                // Printing
+                if (i == 0)
+                    print_newline_table(iter_dim, iter_dim, ietl::two_norm(r[i]), return_final(theta[i])) ;
+                else
+                    print_newline_table_energyonly(ietl::two_norm(r[i]), return_final(theta[i])) ;
+                // Convergence check
                 if (iter.finished(ietl::two_norm(r[i]), theta[i]))
                     convergence_check_[i] = true;
                 else
@@ -186,15 +203,14 @@ namespace ietl
                     n_sa_local += 1;
                 }
             }
+            print_endline() ;
             if (n_sa_local == 0) {
                 for (size_t k = 0 ; k < n_sa_ ; k++)
                     res.push_back(std::make_pair(return_final(theta[k]), u[k])) ;
                 break;
             }
-            std::cout << "Cycle" << std::endl ;
         } while(true);
         // accept lambda=theta and x=u
-        std::cout << "Going out" << std::endl ;
         return res ;
     }
 }

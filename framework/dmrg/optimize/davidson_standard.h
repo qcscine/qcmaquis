@@ -52,6 +52,7 @@ namespace ietl {
         using base::Hdiag_;
         using base::matrix_;
         using base::n_sa_ ;
+        using base::printer_ ;
         using base::vecspace_;
         // New constructors
         davidson_standard(const MATRIX &matrix, const VS &vec, const int& nmin, const int& nmax,
@@ -69,6 +70,11 @@ namespace ietl {
 	    size_t select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
 	                            const size_t& i, vector_set& u, vector_set& uA);
         void update_vspace(vector_set &V, vector_set &VA, vector_set &t);
+        // Printing-related methods
+        void print_header_table(void) ;
+        void print_endline(void) ;
+        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy) ;
+        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy) ;
     };
     // +--------------------------------------------+
     //  Definition of the method for the update step
@@ -77,10 +83,10 @@ namespace ietl {
     void davidson_standard<MATRIX, VS>::update_vspace(vector_set &V, vector_set &VA, vector_set &t)
     {
         size_t n_lin ;
-        n_lin = gram_schmidt_orthogonalizer_refinement<vector_type ,magnitude_type>(V, t) ;
+        n_lin = gram_schmidt_orthogonalizer<vector_type ,magnitude_type>(V, t) ;
         assert (V.size()-VA.size() == n_lin) ;
         for (typename vector_set::iterator it = V.begin()+VA.size() ; it != V.end() ; it++)
-            VA.push_back(apply_operator(*it)) ;
+            VA.push_back(apply_operator(*it));
     };
     // Definition of the virtual function apply_operator
     template<class MATRIX, class VS>
@@ -150,6 +156,32 @@ namespace ietl {
         }
         return n_eigen ;
     }
+    // Routine to print the header of the table
+    template<class MATRIX, class VS>
+    void davidson_standard<MATRIX, VS>::print_header_table(void) {
+        printer_.print_header_table_simple() ;
+    } ;
+    //
+    template<class MATRIX, class VS>
+    void davidson_standard<MATRIX, VS>::print_endline(void) {
+        printer_.print_endline_simple() ;
+    } ;
+    //
+    template<class MATRIX, class VS>
+    void davidson_standard<MATRIX, VS>::print_newline_table(const size_t& iter,
+                                                            const size_t& size,
+                                                            const magnitude_type& error,
+                                                            const magnitude_type& energy )
+    {
+        printer_.print_newline_table_simple(iter, size, error, energy) ;
+    } ;
+    //
+    template<class MATRIX, class VS>
+    void davidson_standard<MATRIX, VS>::print_newline_table_energyonly(const magnitude_type& error,
+                                                                       const magnitude_type& energy )
+    {
+        printer_.print_newline_table_simple_onlyenergy(error, energy) ;
+    } ;
 }
 
 #endif

@@ -83,11 +83,13 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
     } else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-        // Initialize the state-average stuff
-        for (int i = 0 ; i < mps_sa.size() ; i++) {
-            mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size()) ;
+        if (n_states > 0) {
+            // Initialize the state-average stuff
+            for (int i = 0; i < mps_sa.size(); i++) {
+                mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
+            }
+            (*(model.initializer_sa(lat, parms)))(mps_sa);
         }
-        (*(model.initializer_sa(lat,parms)))(mps_sa) ;
     }
     assert(mps.length() == lat.size());
     // Update parameters - after checks have passed

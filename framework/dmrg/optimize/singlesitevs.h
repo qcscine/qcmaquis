@@ -44,22 +44,27 @@ public:
         MPSTns_vec.push_back(m) ;
     }
     // Initializer from a VectorSet object
+    // Note that here two possibilities are present:
     SingleSiteVS(VectorSet<Matrix, SymmGroup> const & vs,
                  std::vector< class MPSTensor<Matrix, SymmGroup> > const & ortho_vecs)
-            : MPSTns(vs.MPSTns_averaged)
-            , ortho_vecs_(ortho_vecs)
+            : ortho_vecs_(ortho_vecs)
     {
-        N_root  = vs.n_sa ;
+        if (vs.n_sa == 0) {
+            N_root = 1;
+            MPSTns_vec.push_back(vs.MPSTns_averaged);
+        } else {
+            N_root = vs.n_sa;
+            for (std::size_t k = 0 ; k < N_root ;  k++)
+                MPSTns_vec.push_back(vs.MPSTns_SA[k]) ;
+        }
         N_ortho = 0 ;
         for (std::size_t k = 0; k < vs.MPSTns_averaged.data().n_blocks(); ++k)
             N_ortho += num_rows(vs.MPSTns_averaged.data()[k]) * num_cols(vs.MPSTns_averaged.data()[k]);
-        for (std::size_t k = 0 ; k < N_root ;  k++)
-            MPSTns_vec.push_back(vs.MPSTns_SA[k]) ;
     }
     // Function to access data
-    friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS const & vs) { return vs.MPSTns ; }
     friend std::size_t vec_dimension(SingleSiteVS const & vs)  { return vs.N ; }
     friend std::size_t n_root(SingleSiteVS const & vs) { return vs.N_root ; }
+    friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS const & vs) { return vs.MPSTns_vec[0] ; }
     friend MPSTensor<Matrix, SymmGroup> new_vector_sa(SingleSiteVS const & vs, const std::size_t & k) { return vs.MPSTns_vec[k] ; }
     // Function to perform orthogonalization
     void project(MPSTensor<Matrix, SymmGroup> & t) const
@@ -68,7 +73,6 @@ public:
             t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
     }
 private:
-    MPSTensor<Matrix, SymmGroup> MPSTns;
     std::vector< MPSTensor<Matrix, SymmGroup> > MPSTns_vec ;
     std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_ ;
     std::size_t N_ortho, N_root ;

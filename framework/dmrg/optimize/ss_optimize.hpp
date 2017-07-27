@@ -149,13 +149,15 @@ public:
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
                 // Collects the results
-                mps[site]            = res[0].second ;
-                mps_vector[0][site]  = res[0].second ;
-                for (size_t k = 1 ; k < n_root_ ; k++) {
-                    mps_vector[k][site]  = res[k].second ;
-                    mps[site]           += res[k].second ;
+                mps[site]  = res[0].second ;
+                if (n_root_ > 0) {
+                    mps_vector[0][site]  = res[0].second ;
+                    for (size_t k = 1; k < n_root_; k++) {
+                        mps_vector[k][site] = res[k].second;
+                        mps[site] += res[k].second;
+                    }
+                    mps[site] /= n_root_;
                 }
-                mps[site] /= n_root_ ;
             }
             //
             // Collection of results
@@ -190,7 +192,6 @@ public:
                         trunc_sa.push_back(
                                 mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site + 1], site,
                                                              alpha, cutoff, Mmax, Mval));
-                        std::cout << trunc_sa[k].bond_dimension << std::endl ;
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
