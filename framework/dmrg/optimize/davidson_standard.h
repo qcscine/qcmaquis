@@ -74,8 +74,9 @@ namespace ietl {
         // Printing-related methods
         void print_header_table(void) ;
         void print_endline(void) ;
-        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy) ;
-        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy) ;
+        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy,
+                                 const magnitude_type& overlap = 0.) ;
+        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy, const magnitude_type& overlap = 0.) ;
     };
     // +--------------------------------------------+
     //  Definition of the method for the update step
@@ -99,7 +100,8 @@ namespace ietl {
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
     void davidson_standard<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA,
-                                                     const magnitude_type &theta, const size_t& idx) {
+                                                     const magnitude_type &theta, const size_t& idx)
+    {
         magnitude_type denom, x2, x1 = ietl::dot(V, r) ;
         vector_type Vcpy = r - V * x1;
         bm_type &data = Vcpy.data();
@@ -177,14 +179,16 @@ namespace ietl {
     void davidson_standard<MATRIX, VS>::print_newline_table(const size_t& iter,
                                                             const size_t& size,
                                                             const magnitude_type& error,
-                                                            const magnitude_type& energy )
+                                                            const magnitude_type& energy,
+                                                            const magnitude_type& overlap)
     {
         printer_.print_newline_table_simple(iter, size, error, energy) ;
     } ;
     //
     template<class MATRIX, class VS>
     void davidson_standard<MATRIX, VS>::print_newline_table_energyonly(const magnitude_type& error,
-                                                                       const magnitude_type& energy )
+                                                                       const magnitude_type& energy,
+                                                                       const magnitude_type& overlap )
     {
         printer_.print_newline_table_simple_onlyenergy(error, energy) ;
     } ;

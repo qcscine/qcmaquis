@@ -71,21 +71,23 @@ namespace ietl
     class jacobi_davidson
     {
     public:
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
+        typedef typename vectorspace_traits<VS>::scalar_type              scalar_type;
+        typedef typename vectorspace_traits<VS>::vector_type              vector_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        typedef typename std::size_t size_t ;
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename std::vector<vector_type> vector_space;
-        typedef typename std::vector<double> vector_double ;
-        typedef typename std::vector<vector_double> matrix_double ;
-        typedef typename std::pair<int, float>   couple_val ;
-        typedef typename std::vector<couple_val> couple_vec ;
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
-                        const size_t& max_iter, const int& nsites, const int& n_sa, const int& site1,
-                        const int& site2, const double& ietl_tol, const size_t & i_gmres_guess);
+        typedef typename std::size_t                                      size_t ;
+        typedef typename std::pair<int, float>                            couple_val ;
+        typedef typename std::vector<couple_val>                          couple_vec ;
+        typedef typename std::vector<double>                              vector_double ;
+        typedef typename std::vector<vector_double>                       matrix_double ;
+        typedef typename std::vector<vector_type>                         vector_space;
+        typedef typename std::pair<magnitude_type, vector_type >          pair_results ;
+        typedef typename std::vector< pair_results >                      vector_pairs ;
+        jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
+                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
+                        const double& ietl_tol, const size_t & i_gmres_guess);
         virtual ~jacobi_davidson() {};
         template <class GEN>
-        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, ITER& iter);
+        vector_pairs calculate_eigenvalue(const GEN& gen, ITER& iter);
     protected:
         //
         void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, fortran_int_t dim,
@@ -108,6 +110,7 @@ namespace ietl
                             const magnitude_type& rel_tol ) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i) {};
+        virtual void update_orthospace(VS& vecspace, const vector_type& u) {} ;
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -121,11 +124,11 @@ namespace ietl
         };
         // Protected attributes
         double ietl_tol_, overlap_ ;
-        int nsites_, site1_, site2_, n_sa_ ;
+        int nsites_, site1_, site2_ ;
         FortranMatrix<scalar_type> M ;
         MATRIX const & matrix_ ;
-        size_t i_gmres_guess_, max_iter_ , n_restart_min_ , n_restart_max_ ;
-        vector_type v_guess_ ;
+        size_t i_gmres_guess_, max_iter_ , n_restart_min_ , n_restart_max_, n_sa_ ;
+        vector_space v_guess_ ;
         VS vecspace_ ;
     private:
         // Private method, interface to the LAPACK diagonalization routine
@@ -133,9 +136,9 @@ namespace ietl
     };
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
-    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, const VS& vec, const size_t& n_min, const size_t& n_max,
-                                                       const size_t& max_iter, const int& nsites, const int& n_sa, const int& site1,
-                                                       const int& site2, const double& ietl_tol, const size_t & i_gmres_guess ) :
+    jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
+                                                       const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
+                                                       const double& ietl_tol, const size_t& i_gmres_guess ) :
         matrix_(matrix),
         vecspace_(vec),
         nsites_(nsites),
@@ -145,25 +148,29 @@ namespace ietl
         max_iter_(max_iter),
         n_restart_min_(n_min),
         n_restart_max_(n_max),
-        n_sa_(n_sa),
         overlap_(0.),
         ietl_tol_(ietl_tol),
         i_gmres_guess_(i_gmres_guess)
     {
-        v_guess_ = new_vector(vecspace_) ;
+        n_sa_ = n_root(vec) ;
+        if (n_sa_ == 1) {
+            v_guess_.push_back(new_vector(vec)) ;
+        } else {
+            for (size_t k = 0; k < n_sa_; k++)
+                v_guess_.push_back(new_vector_sa(vec, k));
+        }
     } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
     template <class GEN>
-    std::pair<typename jacobi_davidson<MATRIX,VS,ITER>::magnitude_type,
-              typename jacobi_davidson<MATRIX,VS,ITER>::vector_type>
-    jacobi_davidson<MATRIX, VS, ITER>::calculate_eigenvalue(const GEN& gen, ITER& iter)
+    typename jacobi_davidson<MATRIX, VS, ITER>::vector_pairs
+             jacobi_davidson<MATRIX, VS, ITER>::calculate_eigenvalue(const GEN& gen, ITER& iter)
     {
         // Variable declaration
         // Scalars
         magnitude_type eigval, rel_tol, theta;
         bool converged ;
-        int n_iter = 0 ;
+        int n_iter ;
         rel_tol = ietl_tol_ ;
         // Vectors
         vector_double props(iter.max_iterations()) ;
@@ -173,39 +180,47 @@ namespace ietl
         vector_double eigvals ;
         matrix_double eigvecs ;
         vector_type  eigvec ;
+        vector_pairs res ;
         // Initialization
-        ietl::generate(V[0],gen);
-        const_cast<GEN&>(gen).clear();
-        ietl::project(V[0],vecspace_);
         M.resize(iter.max_iterations(), iter.max_iterations());
         print_header_table() ;
         //
         // Main loop of the algorithm
         // --------------------------
-        do {
-            update_vecspace(V, VA , n_iter) ;
-            // Update of the M matrix and compute the eigenvalues and the eigenvectors
-            for(int j = 0 ; j < n_iter+1; j++)
-                for(int i = 0 ; i < j+1; i++)
-                    M(i, j) = ietl::dot(V[i], VA[j]);
-            diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals) ;
-            // Check convergence
-            ++iter ;
-            n_iter += 1 ;
-            vector_type r = compute_error(u, uA, theta);
-            converged     = check_convergence(u, r, theta, iter, eigvec, eigval);
-            print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_) ;
-            if (converged) {
-                print_endline();
-                return std::make_pair(eigval, eigvec / ietl::two_norm(eigvec));
-            }
-            solver(u, theta, r, V[n_iter], rel_tol) ;
-            if (n_iter == n_restart_max_) {
-                restart_jd(V, VA, eigvecs, eigvals);
-                print_endline() ;
-                n_iter = n_restart_min_-1  ;
-            }
-        } while(true);
+        // Loop over all the states to be orthogonalized
+        for (int k = 0 ; k < n_sa_ ; k++){
+            V[0] = v_guess_[k] ;
+            n_iter = 0 ;
+            do {
+                ietl::project(V[0],vecspace_);
+                update_vecspace(V, VA, n_iter);
+                // Update of the M matrix and compute the eigenvalues and the eigenvectors
+                for (int j = 0; j < n_iter + 1; j++)
+                    for (int i = 0; i < j + 1; i++)
+                        M(i, j) = ietl::dot(V[i], VA[j]);
+                diagonalize_and_select(V, VA, n_iter + 1, u, uA, theta, eigvecs, eigvals);
+                // Check convergence
+                ++iter;
+                n_iter += 1;
+                vector_type r = compute_error(u, uA, theta);
+                converged = check_convergence(u, r, theta, iter, eigvec, eigval);
+                print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
+                if (converged) {
+                    print_endline();
+                    eigvec /= ietl::two_norm(eigvec) ;
+                    update_orthospace(vecspace_, eigvec) ;
+                    res.push_back(std::make_pair(eigval, eigvec)) ;
+                    break ;
+                }
+                solver(u, theta, r, V[n_iter], rel_tol);
+                if (n_iter == n_restart_max_) {
+                    restart_jd(V, VA, eigvecs, eigvals);
+                    print_endline();
+                    n_iter = n_restart_min_ - 1;
+                }
+            } while (true);
+        }
+        return res ;
     }
     // Restarting routine
     template <class MATRIX, class VS, class ITER>

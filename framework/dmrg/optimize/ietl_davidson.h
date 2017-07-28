@@ -43,7 +43,8 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     VectorSet<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
                     std::vector<partial_overlap<Matrix, SymmGroup> > poverlap_vec ,
-                    int nsites, int site1,
+                    int nsites,
+                    int site1,
                     int root_homing_type,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                     int site2=0)
@@ -71,7 +72,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     // -- Calculation of eigenvalues
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
     if (fabs(omega) > 1.0E-15) {
-        if ( poverlap_vec.size() > 0 ) {
+        if ( root_homing_type > 0 ) {
             ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
                     davidson(sp, vs, omega, poverlap_vec, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
                              nsites, site1, site2, root_homing_type);
@@ -83,7 +84,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
             r0 = davidson.calculate_eigenvalue(iter);
         }
     } else {
-        if ( poverlap_vec.size() > 0 ) {
+        if ( root_homing_type > 0 ) {
             ietl::davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
                     davidson(sp, vs, poverlap_vec, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
                              nsites, site1, site2, root_homing_type);

@@ -34,8 +34,14 @@ struct printer {
     void print_header_table_simple(void) ;
     void print_newline_table_simple(const int& iter, const int& dim, const float& error, const float& en) ;
     void print_newline_table_simple_onlyenergy(const float& error, const float& en) ;
+    //
+    void print_endline_overlap(void) ;
+    void print_header_table_overlap(void) ;
+    void print_newline_table_overlap(const int& iter, const int& dim, const float& error, const float& en, const float& overlap) ;
+    void print_newline_table_overlap_onlyenergy(const float& error, const float& en, const float& overlap) ;
 };
 
+// Table without overlap
 void printer::print_endline_simple(void) {
     std::cout << "-----------+-----------+-------------+-------------" << std::endl ;
 } ;
@@ -55,6 +61,29 @@ void printer::print_newline_table_simple(const int& iter, const int& dim, const 
 void printer::print_newline_table_simple_onlyenergy(const float& error, const float& en){
     char buf[100];
     int n = sprintf(buf, "           |           | %1.4E  | %6.5F ", error, en);
+    std::cout << buf << std::endl;
+}
+
+// Table with overlap
+void printer::print_endline_overlap(void) {
+    std::cout << "-----------+-----------+-------------+-------------+-------------" << std::endl ;
+} ;
+
+void printer::print_header_table_overlap(void) {
+    print_endline_overlap() ;
+    std::cout << " Iteration | Sub. Dim. |    Error    |    Energy   |  Overlap" << std::endl ;
+    print_endline_overlap() ;
+} ;
+
+void printer::print_newline_table_overlap(const int& iter, const int& dim, const float& error, const float& en, const float& over){
+    char buf[100];
+    int n = sprintf(buf, "%5d      | %7d   | %1.4E  | %6.5F |   %6.5F ", iter , dim, error, en, over);
+    std::cout << buf << std::endl ;
+}
+
+void printer::print_newline_table_overlap_onlyenergy(const float& error, const float& en, const float& over){
+    char buf[100];
+    int n = sprintf(buf, "           |           | %1.4E  | %6.5F |   %6.5F", error, en, over);
     std::cout << buf << std::endl;
 }
 

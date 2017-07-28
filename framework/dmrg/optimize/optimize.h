@@ -122,8 +122,6 @@ public:
     , do_root_homing_(false)
     {
         // Standard options
-        mps2follow.resize(1) ;
-        mps2follow[0].resize(0) ;
         std::size_t L = mps.length();
         // State-average calculation
         n_root_          = mps_vector.size() ;
@@ -151,6 +149,8 @@ public:
         if (parms_["ietl_diag_homing_criterion"] == "") {
             do_root_homing_   = false ;
             root_homing_type_ = 0 ;
+            mps2follow.resize(1) ;
+            mps2follow[0].resize(0) ;
         } else if (parms_["ietl_diag_homing_criterion"] == "input") {
             do_root_homing_   = true ;
             root_homing_type_ = 1 ;

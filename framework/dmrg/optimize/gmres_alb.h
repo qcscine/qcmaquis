@@ -45,7 +45,7 @@ namespace ietl
     // -------------------
     // General class with the GMRES solver. The definition of the matrix of the linear system
     // is left free, since it differs for standard and shift-and-invert problem
-    template<class Matrix, class Vector>
+    template<class Matrix, class Vector, class VectorSpace>
     class gmres_general {
     //
     public:
@@ -59,8 +59,9 @@ namespace ietl
         // Public methods
         // --------------
         // Constructor
-        gmres_general(Matrix const & A, Vector const & u, double const & theta, std::size_t max_iter = 100, bool verbose = false)
-                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta)
+        gmres_general(Matrix const & A, Vector const & u, VectorSpace const & vs, double const & theta,
+                      std::size_t max_iter = 100, bool verbose = false)
+                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs)
         { }
         // () operator. Returns the solution of the GMRES problem
         Vector operator()(Vector const & b,
@@ -68,12 +69,12 @@ namespace ietl
                           double abs_tol = 1e-6)
         {
             // Types definiton
-            Vector r, w;
+            Vector r, w, init = x0 ;
             vector_scalar s(max_iter+1), cs(max_iter+1), sn(max_iter+1);
-            vector_scalar y ;
+            vector_scalar y;
             vector_space v(max_iter+1);
             // Initialization
-            v[0] = apply(x0) ;
+            v[0] = apply(init) ;
             r = b - v[0];
             s[0] = two_norm(r);
             //if (std::abs(s[0]) < abs_tol) {
@@ -160,7 +161,7 @@ namespace ietl
         // Compute the result of the application of the operator
         // THis function is left virtual since its definition is different for standard
         // and shift-and-invert problems
-        virtual Vector apply(const Vector& input) {} ;
+        virtual Vector apply(Vector& input) {} ;
         //
         // Private attributes
         // ------------------
@@ -173,33 +174,37 @@ namespace ietl
         std::size_t max_iter ;
         bool verbose ;
         double theta_ ;
+        VectorSpace vs_ ;
     };
     //
     // GMRES_STANDARD OBJECT
     // ---------------------
     // GMRES solver object for the standard problem
-    template<class Matrix, class Vector>
-    class gmres_standard : private gmres_general<Matrix, Vector>
+    template<class Matrix, class Vector, class VectorSpace>
+    class gmres_standard : private gmres_general<Matrix, Vector, VectorSpace>
     {
     public:
-        typedef gmres_general<Matrix, Vector> base ;
+        typedef gmres_general<Matrix, Vector, VectorSpace> base ;
         typedef typename base::size_t size_t ;
         gmres_standard(Matrix const & A,
                        Vector const & u,
+                       VectorSpace const & vs,
                        double const & theta,
                        size_t max_iter,
                        bool verbose)
-        : base::gmres_general(A, u, theta, max_iter, verbose) { }
+        : base::gmres_general(A, u, vs, theta, max_iter, verbose) { }
         // Private attributes
         using base::A_ ;
         using base::theta_ ;
         using base::u_ ;
+        using base::vs_ ;
         using base::operator() ;
     private:
-        Vector apply(const Vector& input){
+        Vector apply(Vector& input){
             // Initialization
             Vector t, t2, t3, y;
             // t2 = (1-uu*) x
+            ietl::project(input,vs_);
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
             // y = (A-theta*1) t2
@@ -209,6 +214,7 @@ namespace ietl
             ust = dot(u_, y) ;
             t = y - ust * u_;
             y = t ;
+            ietl::project(y,vs_);
             // Finalization
             return y ;
         }
@@ -217,28 +223,30 @@ namespace ietl
     // GMRES_MODIFIED OBJECT
     // ---------------------
     // GMRES solver object for the shift-and-inverted problem
-    template<class Matrix, class Vector>
-    class gmres_modified : private gmres_general<Matrix, Vector>
+    template<class Matrix, class Vector, class VectorSpace>
+    class gmres_modified : private gmres_general<Matrix, Vector, VectorSpace>
     {
     public:
-        typedef gmres_general<Matrix, Vector> base ;
+        typedef gmres_general<Matrix, Vector, VectorSpace> base ;
         typedef typename base::size_t size_t ;
         gmres_modified(Matrix const & A,
                        Vector const & u,
+                       VectorSpace const & vs,
                        Vector const & z,
                        double const & theta,
                        double const & omega,
                        size_t max_iter,
                        bool verbose)
-                : base::gmres_general(A, u, theta, max_iter, verbose),
+                : base::gmres_general(A, u, vs, theta, max_iter, verbose),
                   omega_(omega), z_(z) { }
         // Private attributes
         using base::A_ ;
         using base::theta_ ;
         using base::u_ ;
+        using base::vs_ ;
         using base::operator() ;
     private:
-        Vector apply(const Vector& input){
+        Vector apply(Vector& input){
             // Initialization
             Vector t, t2, t3, y ;
             mult(A_, input, t);
@@ -247,10 +255,12 @@ namespace ietl
             double ust = dot(z_, t);
             t2 = input - ust * u_;
             // y = (A-theta*1) t2
+            ietl::project(t2, vs_) ;
             mult(A_, t2, t3);
             t3 *= -1.;
             t3 += omega_ * t2;
             y = t3 - t2 / theta_ ;
+            ietl::project(y, vs_) ;
             // t = (1-uu*) y
             ust = dot(z_, y) ;
             t = y - ust * z_ ;

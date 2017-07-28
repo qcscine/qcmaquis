@@ -77,8 +77,9 @@ namespace ietl {
         // Printing-related methods
         void print_header_table(void) ;
         void print_endline(void) ;
-        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy) ;
-        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy) ;
+        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy,
+                                 const magnitude_type& overlap=0.) ;
+        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy, const magnitude_type& overlap=0.) ;
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
@@ -187,14 +188,16 @@ namespace ietl {
     void davidson_modified<MATRIX, VS>::print_newline_table(const size_t& iter,
                                                             const size_t& size,
                                                             const magnitude_type& error,
-                                                            const magnitude_type& energy )
+                                                            const magnitude_type& energy,
+                                                            const magnitude_type& overlap)
     {
         printer_.print_newline_table_simple(iter, size, error, energy) ;
     } ;
     //
     template<class MATRIX, class VS>
     void davidson_modified<MATRIX, VS>::print_newline_table_energyonly(const magnitude_type& error,
-                                                                       const magnitude_type& energy )
+                                                                       const magnitude_type& energy,
+                                                                       const magnitude_type& overlap )
     {
         printer_.print_newline_table_simple_onlyenergy(error, energy) ;
     } ;

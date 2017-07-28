@@ -72,6 +72,11 @@ public:
         for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_.begin(); it != ortho_vecs_.end(); ++it)
             t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
     }
+    void add_orthovec(const MPSTensor<Matrix, SymmGroup> & t)
+    {
+        ortho_vecs_.push_back(t) ;
+        N_ortho += 1 ;
+    }
 private:
     std::vector< MPSTensor<Matrix, SymmGroup> > MPSTns_vec ;
     std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_ ;

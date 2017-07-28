@@ -95,7 +95,6 @@ public:
         Storage::prefetch(right_[site+1]) ;
         // Main loop
         for (; _site < 2*L; ++_site) {
-            //
             // lr indicates the direction of the sweep
             int lr = (_site < L) ? +1 : -1;
             site = to_site(L, _site);
@@ -136,7 +135,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    //res = solve_ietl_jcd(sp, mps[site], parms,  poverlap, 1, site, n_root_, root_homing_type_, ortho_vecs);
+                    res = solve_ietl_jcd(sp, vector_set, parms,  poverlap_vec_, 1, site, root_homing_type_, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
@@ -186,9 +185,7 @@ public:
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax) ;
                     Mval = trunc.bond_dimension ;
                     for (size_t k = 0 ; k < n_root_ ; k++) {
-                        trunc_sa.push_back(
-                                mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site + 1], site,
-                                                             alpha, cutoff, Mmax, Mval));
+                        trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval));
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
@@ -253,14 +250,14 @@ public:
     //
     void print_header(int& sweep, int& site, int& lr){
         char buffer[40] ;
-	int n , a ;
+	    int n , a ;
         if (lr == 1) {
 	    a = 2*sweep+1 ;
             n = sprintf(buffer, "  Sweeep number %3d - site number %3d", a, site);
         } else {
 	    a = 2*sweep+2 ;
             n = sprintf(buffer, "  Sweeep number %3d - site number %3d", a, site);
-	}
+	    }
         std::cout << " +-----------------------------------+" << std::endl ;
         std::cout << buffer << std::endl ;
         std::cout << " +-----------------------------------+" << std::endl ;

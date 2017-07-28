@@ -72,14 +72,14 @@ namespace ietl
         using base::site2_ ;
         using base::vecspace_ ;
         //
-        jacobi_davidson_standard(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax, const int& max_iter,
-                                 const int& nsites, const int& n_sa, const int& site1, const int& site2, const double& tol,
-                                 const size_t& ietl_gmres_guess)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, ietl_gmres_guess) {} ;
+        jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
+                                 const int& nsites, const int& site1, const int& site2, const double& tol, const size_t& ietl_gmres_guess)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, ietl_gmres_guess) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
         void update_vecspace(vector_space &V, vector_space &VA, const int i);
+        void update_orthospace(VS& vecspace, const vector_type& v) ;
     private:
         bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
@@ -115,6 +115,7 @@ namespace ietl
         ietl::project(t,this->vecspace_) ;
         t /= ietl::two_norm(t) ;
         VA[idx] = apply_operator(t) ;
+        ietl::project(VA[idx],vecspace_);
     };
     // Compute the error vector
     template <class Matrix, class VS, class ITER>
@@ -125,6 +126,12 @@ namespace ietl
         vector_type r = uA ;
         r -= theta*u;
         return r ;
+    }
+    // Routine doing deflation
+    template <class Matrix, class VS, class ITER>
+    void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v)
+    {
+        vecspace_.add_orthovec(v) ;
     }
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class ITER>
@@ -187,7 +194,7 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
-        gmres_standard<MATRIX, vector_type> gmres(this->matrix_, u, theta, max_iter_, false);
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence

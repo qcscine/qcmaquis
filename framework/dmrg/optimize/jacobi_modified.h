@@ -71,10 +71,10 @@ namespace ietl
         using base::vecspace_ ;
         using base::v_guess_ ;
         //
-        jacobi_davidson_modified(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const size_t& nmin,
-                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& n_sa,
-                                 const int& site1, const int& site2, const double& tol, const size_t& i_gmres_guess)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, i_gmres_guess)
+        jacobi_davidson_modified(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const size_t& nmin,
+                                 const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1,
+                                 const int& site2, const double& tol, const size_t& i_gmres_guess)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
                 , omega_(omega) {} ;
         ~jacobi_davidson_modified() {} ;
     private:
@@ -96,6 +96,7 @@ namespace ietl
         // Methods
         void sort_prop(couple_vec& vector_values) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i);
+        void update_orthospace(VS& vecspace, const vector_type& v) ;
         // Attributes
         vector_type apply_operator (const vector_type& x);
         magnitude_type omega_ ;
@@ -109,6 +110,14 @@ namespace ietl
         y = this->omega_*x - buf;
         return y;
     };
+    // Routine doing deflation
+    template <class Matrix, class VS, class ITER>
+    void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v)
+    {
+        vector_type tmp = apply_operator(v) ;
+        tmp /= ietl::two_norm(tmp) ;
+        vecspace_.add_orthovec(tmp) ;
+    }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx)
@@ -197,7 +206,7 @@ namespace ietl
         vector_type z, inh = -r, t2 ;
         scalar_type dru, duu ;
         z = apply_operator(u) ;
-        gmres_modified<MATRIX, vector_type> gmres(this->matrix_, u, z, theta, omega_, max_iter_, false);
+        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u);

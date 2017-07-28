@@ -107,23 +107,26 @@ namespace ietl
         // Printing-related methods
         virtual void print_header_table(void) {} ;
         virtual void print_endline(void) {} ;
-        virtual void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& ener) {} ;
-        virtual void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& ener) {} ;
+        virtual void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& ener,
+                                         const magnitude_type& overlap=0.) {} ;
+        virtual void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& ener, const magnitude_type& overlap=0.) {} ;
         // Attributes
-        vector_bm Hdiag_ ;
+        bool homing_is_activated_ ;
         int site1_ , site2_, nmin_, nmax_, nsites_ ;
-        size_t n_sa_  ;
         magnitude_type atol_ ;
         MATRIX const & matrix_;
+        size_t n_sa_  ;
+        vector_bm Hdiag_ ;
         printer printer_ ;
         vector_bool convergence_check_ ;
-        vector_set v_guess_ ;
+        vector_set v_guess_ , v_guess_ov_ ;
         VS vecspace_;
     };
     // -- Constructor --
     template <class MATRIX, class VS>
     davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
                                    const int& nsites, const int& site1, const int& site2) :
+            homing_is_activated_(false),
             matrix_(matrix),
             vecspace_(vec),
             nmin_(nmin),
@@ -133,7 +136,8 @@ namespace ietl
             nsites_(nsites)
     {
         n_sa_ = n_root(vec) ;
-        vector_type tst = new_vector(vec) ;
+        v_guess_.resize(0) ;
+        v_guess_ov_.resize(n_sa_) ;
         if (n_sa_ == 1) {
             v_guess_.push_back(new_vector(vec)) ;
             convergence_check_.push_back(false) ;
@@ -170,6 +174,7 @@ namespace ietl
             // Generate guess
             update_vspace(V, VA, t);
             iter_dim = V.size();
+            //TODO ALB To check this if it's general enough
             matrix_numeric M(iter_dim, iter_dim), Mevecs(iter_dim, iter_dim);
             std::vector<magnitude_type> Mevals(iter_dim);
             for (int i = 0; i < iter_dim; ++i)
@@ -183,15 +188,20 @@ namespace ietl
             Mevecs = M ;
             res_selection = select_eigenpair(V, VA, Mevecs, iter_dim, u, uA) ;
 	        size_t n_chosen = res_selection.first ;
+            // Activates the homing procedure
+            if (n_chosen >= n_sa_ && !homing_is_activated_){
+                homing_is_activated_ = true ;
+                std::copy(u.begin(), u.begin()+n_sa_, v_guess_ov_.begin()) ;
+            }
             ++iter;
             for (size_t i = 0 ; i < n_chosen ; i++){
                 theta[i] = ietl::dot(u[i],uA[i])/ietl::dot(u[i],u[i])  ;
                 r[i]     = uA[i] - theta[i]*u[i] ;
                 // Printing
                 if (i == 0)
-                    print_newline_table(iter_dim, iter_dim, ietl::two_norm(r[i]), return_final(theta[i])) ;
+                    print_newline_table(iter_dim, iter_dim, ietl::two_norm(r[i]), return_final(theta[i]), res_selection.second[i]) ;
                 else
-                    print_newline_table_energyonly(ietl::two_norm(r[i]), return_final(theta[i])) ;
+                    print_newline_table_energyonly(ietl::two_norm(r[i]), return_final(theta[i]), res_selection.second[i]) ;
                 // Convergence check
                 if (iter.finished(ietl::two_norm(r[i]), theta[i]))
                     convergence_check_[i] = true;
@@ -206,11 +216,14 @@ namespace ietl
                     n_sa_local += 1;
                 }
             }
-            print_endline() ;
             if (n_sa_local == 0) {
                 for (size_t k = 0 ; k < n_sa_ ; k++)
                     res.push_back(std::make_pair(return_final(theta[k]), u[k])) ;
+                print_endline() ;
                 break;
+            } else {
+                if (n_chosen > 1)
+                    print_endline() ;
             }
         } while(true);
         // accept lambda=theta and x=u

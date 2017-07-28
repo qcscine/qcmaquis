@@ -30,24 +30,26 @@
 
 #include "ietl_lanczos_solver.h"
 #include "ietl/jd.h"
+
 #include "dmrg/optimize/jacobi_standard.h"
 #include "dmrg/optimize/jacobi_modified.h"
 #include "dmrg/optimize/jacobi_standard_mo.h"
 #include "dmrg/optimize/jacobi_modified_mo.h"
 #include "dmrg/optimize/partial_overlap.h"
+#include "dmrg/optimize/vectorset.h"
 
 //
 // Jacobi-Davidson diagonalization
 // -------------------------------
 
 template<class Matrix, class SymmGroup>
-std::pair<double, class MPSTensor<Matrix, SymmGroup> >
+std::vector< std::pair< double , class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
-               MPSTensor<Matrix, SymmGroup> const & initial,
-               BaseParameters & params,
-               partial_overlap<Matrix, SymmGroup> poverlap,
-               int nsites, int site1,
-               int n_sa,
+               VectorSet<Matrix, SymmGroup> const & initial,
+               BaseParameters & params ,
+               std::vector< partial_overlap<Matrix, SymmGroup> >  poverlap_vec,
+               int nsites,
+               int site1,
                int root_homing_type,
                std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                int site2=0)
@@ -59,20 +61,17 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     double omega = params["ietl_si_omega"] ;
     int n_tofollow = params["maximum_overlap_nstates"] ;
     int n_restart  = params["ietl_diag_restart"] ;
-    if (n_tofollow == 0 & poverlap.is_defined())
-        n_tofollow = 1 ;
-    std::pair<double, Vector> r0 ;
+    std::vector < std::pair<double, Vector> > r0 ;
     ietl::basic_iteration<double> iter(params["ietl_diag_maxiter"], rtol, atol);
     // -- Orthogonalization --
-    if (initial.num_elements() <= ortho_vecs.size())
-        ortho_vecs.resize(initial.num_elements()-1);
+    if (initial.MPSTns_averaged.num_elements() <= ortho_vecs.size())
+        ortho_vecs.resize(initial.MPSTns_averaged.num_elements()-1);
     for (int n = 1; n < ortho_vecs.size(); ++n)
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
     // --  JD ALGORITHM --
     for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Ortho norm " << n << ": " << ietl::two_norm(ortho_vecs[n]) << std::endl;
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial, ortho_vecs[n]) << std::endl;
+        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_averaged, ortho_vecs[n]) << std::endl ;
     }
     // -- GMRES STARTING GUESS --
     size_t i_gmres_guess ;
@@ -85,32 +84,30 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     //
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     if (fabs(omega) < 1.0E-15) {
-        if ( !poverlap.is_defined()) {
+        if ( root_homing_type == 0) {
             ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >
                 jd(sp, vs, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, n_sa, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess) ;
-            r0 = jd.calculate_eigenvalue(initial, iter);
+                   nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess) ;
+            r0 = jd.calculate_eigenvalue(initial, iter) ;
          } else {
-            ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
-                jd(sp, vs, poverlap, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, n_sa, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, root_homing_type) ;
-            r0 = jd.calculate_eigenvalue(initial, iter);
+            //ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
+            //    jd(sp, vs, poverlap, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
+            //       nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, root_homing_type) ;
+            //r0 = jd.calculate_eigenvalue(initial, iter);
         }
     } else {
-        if ( !poverlap.is_defined()) {
+        if ( root_homing_type == 0 ) {
             ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >
                     jd(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                       nsites, n_sa, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess);
-            r0 = jd.calculate_eigenvalue(initial, iter );
+                       nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess);
+            r0 = jd.calculate_eigenvalue(initial, iter) ;
         } else {
-            ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
-                    jd(sp, vs, omega, poverlap, n_tofollow , params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                       nsites, n_sa, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, root_homing_type);
-            r0 = jd.calculate_eigenvalue(initial, iter);
+            //ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
+            //        jd(sp, vs, omega, poverlap, n_tofollow , params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
+            //           nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, root_homing_type);
+            //r0 = jd.calculate_eigenvalue(initial, iter);
         }
     }
-    for (int n = 0; n < ortho_vecs.size(); ++n)
-        maquis::cout << "Output <MPS|O[" << n << "]> : " << ietl::dot(r0.second, ortho_vecs[n]) << std::endl;
     std::cout << "\n Summary of the results " << std::endl ;
     std::cout <<   " ---------------------- " << std::endl ;
     maquis::cout << " Number of iterations - " << iter.iterations() << std::endl;
