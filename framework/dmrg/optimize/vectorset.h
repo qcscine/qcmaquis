@@ -45,24 +45,21 @@ struct VectorSet
     typedef typename std::vector< MPSTns > MPSTnsVec ;
     typedef typename std::size_t size_t  ;
     // Constructor
-    VectorSet(const MPSTyp& MPS_, const MPSVec& MPS_SA_, const size_t& i)
+    VectorSet(const MPSVec& MPS_SA_, const size_t& i)
     {
-        n_sa = MPS_SA_.size()   ;
-        MPSTns_averaged = MPS_[i] ;
-        for (int j = 0 ; j < n_sa ; j++)
+        n_vec = MPS_SA_.size()   ;
+        for (int j = 0 ; j < n_vec ; j++)
             MPSTns_SA.push_back(MPS_SA_[j][i]) ;
     } ;
-    VectorSet(const MPSTns& MPSTns_, const MPSTnsVec& MPSTns_SA_)
+    VectorSet(const MPSTnsVec& MPSTns_SA_)
     {
-        n_sa = MPSTns_SA_.size()   ;
-        MPSTns_averaged = MPSTns_ ;
-        for (int j = 0 ; j < n_sa ; j++)
+        n_vec = MPSTns_SA_.size()   ;
+        for (int j = 0 ; j < n_vec ; j++)
             MPSTns_SA.push_back(MPSTns_SA_[j]) ;
     } ;
     // Attribute
-    MPSTns    MPSTns_averaged ;
     MPSTnsVec MPSTns_SA ;
-    size_t    n_sa ;
+    size_t    n_vec ;
 };
 
 #endif

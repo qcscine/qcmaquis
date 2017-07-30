@@ -84,7 +84,10 @@ public:
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
         iteration_results_.clear();
-        std::size_t L = mps.length();
+        std::size_t L = mps_vector[0].length();
+        for (size_t i = 0 ; i < n_root_ ; i++)
+            assert(mps_vector[0].length() == L);
+        //
         int _site = 0, site = 0;
         if (initial_site != -1) {
             _site = initial_site;
@@ -112,19 +115,10 @@ public:
             boost::chrono::high_resolution_clock::time_point now, then;
             std::vector < std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             //SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
-            Boundary<Matrix, SymmGroup> t1 = left_sa_[0][site] ;
-            Boundary<Matrix, SymmGroup> t2 = right_sa_[1][site+1] ;
-            t1 *= 1.9 ;
-            t2 *= 1.9 ;
-            for (size_t i = 1 ; i < n_root_ ; i++){
-                t1 += left_sa_[i][site]  ;
-                t2 += right_sa_[i][site+1] ;
-            }
-            t1 /= n_root_ ;
-            t2 /= n_root_ ;
-            SiteProblem<Matrix, SymmGroup> sp(t1, t2, mpo[site]);
+            //SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_[0][site], right_sa_[0][site+1], mpo[site]);
             // Generates the vectorset object
-            VectorSet<Matrix,SymmGroup> vector_set(mps, mps_vector, site) ;
+            VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
                 std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {

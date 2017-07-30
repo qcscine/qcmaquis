@@ -71,27 +71,37 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         }
     }
     // MPS initialization
-    mps_sa.resize(n_states) ;
-    if (restore) {
-        maquis::checks::symmetry_check(parms, chkpfile);
-        load(chkpfile, mps);
-        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-        maquis::checks::symmetry_check(parms, parms["initfile"].str());
-        load(parms["initfile"].str(), mps);
-        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
-    } else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-        if (n_states > 0) {
-            // Initialize the state-average stuff
-            for (int i = 0; i < mps_sa.size(); i++) {
-                mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
+    mps_sa.resize(std::max(n_states,1)) ;
+    if (n_states == 0) {
+        if (restore) {
+            maquis::checks::symmetry_check(parms, chkpfile);
+            load(chkpfile, mps_sa[0]);
+            maquis::checks::right_end_check(chkpfile, mps_sa[0], model.total_quantum_numbers(parms));
+        } else if (!parms["initfile"].empty()) {
+            maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+            maquis::checks::symmetry_check(parms, parms["initfile"].str());
+            load(parms["initfile"].str(), mps_sa[0]);
+            maquis::checks::right_end_check(parms["initfile"].str(), mps_sa[0], model.total_quantum_numbers(parms));
+        } else {
+            mps_sa[0] = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+        }
+    } else if (n_states > 0) {
+        if (restore) {
+            throw std::runtime_error("SA + restore NYI") ;
+        } else if (!parms["initfile"].empty()) {
+            throw std::runtime_error("SA + initialization from input chkp file NYI") ;
+        } else {
+            if (n_states > 0) {
+                // Initialize the state-average stuff
+                for (int i = 0; i < mps_sa.size(); i++) {
+                    mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
+                }
+                (*(model.initializer_sa(lat, parms)))(mps_sa);
             }
-            (*(model.initializer_sa(lat, parms)))(mps_sa);
         }
     }
-    assert(mps.length() == lat.size());
+    for (size_t i = 0 ; i < n_states ; i++ )
+        assert(mps_sa[i].length() == lat.size());
     // Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");

@@ -153,18 +153,16 @@ public:
             this->data_[i] /= rhs ;
     };
     //
-    Boundary const & operator*(scalar_type const & rhs, Boundary const & b_rhs)
+    friend Boundary const & operator*(scalar_type const & rhs, Boundary b_rhs)
     {
-        assert (this->data_.size() == b_rhs.data_.size()) ; 
-        for(size_t i = 0; i < this->data_.size(); ++i)
-            this->data_[i] = rhs*b_rhs.data_[i] ;
+        for(size_t i = 0; i < b_rhs.data_.size(); ++i)
+            b_rhs.data_.size() *= rhs ;
     };
     //
-    Boundary const & operator/(scalar_type const & rhs, Boundary const & b_rhs)
+    friend Boundary const & operator/(scalar_type const & rhs, Boundary b_rhs)
     {
-        assert (this->data_.size() == b_rhs.data_.size()) ; 
-        for(size_t i = 0; i < this->data_.size(); ++i)
-            this->data_[i] = b_rhs.data_[i]/rh/rhss ;
+        for(size_t i = 0; i < b_rhs.data_.size(); ++i)
+            b_rhs.data_.size() /= rhs ;
     };
     //
     block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
@@ -174,7 +172,7 @@ public:
 private:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 };
-
+//
 //
 // ADDITIONAL FUNCTIONS
 // --------------------

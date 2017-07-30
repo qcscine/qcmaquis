@@ -159,18 +159,10 @@ namespace ietl
         ietl_tol_(ietl_tol),
         i_gmres_guess_(i_gmres_guess)
     {
+        // Generates guess
         n_sa_ = n_root(vec) ;
-        if (n_sa_ == 1) {
-            v_guess_.push_back(new_vector(vec)) ;
-        } else {
-            for (size_t k = 0; k < n_sa_; k++){
-                //v_guess_.push_back(new_vector_sa(vec, k));
-                v_guess_.push_back(new_vector_sa(vec, 0));
-                for (size_t j = 1 ; j < n_sa_ ; j++)
-                    v_guess_[k] += new_vector_sa(vec, j) ;
-                v_guess_[k] /= n_sa_ ;
-            }
-        }
+        for (size_t k = 0; k < n_sa_; k++)
+            v_guess_.push_back(new_vector(vec, k));
     } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>

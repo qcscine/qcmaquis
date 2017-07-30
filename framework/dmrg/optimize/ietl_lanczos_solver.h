@@ -66,18 +66,10 @@ template<class Matrix, class SymmGroup> struct SiteProblem;
 
 #include <ietl/vectorspace.h>
 #include "dmrg/optimize/singlesitevs.h"
+#include "dmrg/optimize/siteproblem.h"
 
 namespace ietl
 {
-    template<class Matrix, class SymmGroup>
-    void mult(SiteProblem<Matrix, SymmGroup> const & H,
-              MPSTensor<Matrix, SymmGroup> const & x,
-              MPSTensor<Matrix, SymmGroup> & y)
-    {  
-        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo);
-        x.make_left_paired();
-    }
-    
     template<class Matrix, class SymmGroup>
     struct vectorspace_traits<SingleSiteVS<Matrix, SymmGroup> >
     {

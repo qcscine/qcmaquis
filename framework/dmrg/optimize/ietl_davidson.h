@@ -60,14 +60,14 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     std::vector < std::pair<double, Vector> > r0 ;
     // Check if the number of MPSTensors is higher than the one of the orthogonal vectors
     // and performs the GS orthogonalization
-    if (initial.MPSTns_averaged.num_elements() <= ortho_vecs.size())
-        ortho_vecs.resize(initial.MPSTns_averaged.num_elements()-1);
+    if (initial.MPSTns_SA[0].num_elements() <= ortho_vecs.size())
+        ortho_vecs.resize(initial.MPSTns_SA[0].num_elements()-1);
     for (int n = 1; n < ortho_vecs.size(); ++n)
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0] ;
     // Check orthogonality
     for (int n = 0; n < ortho_vecs.size(); ++n) {
-        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_averaged, ortho_vecs[n]) << std::endl ;
+        maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_SA[0], ortho_vecs[n]) << std::endl ;
     }
     // -- Calculation of eigenvalues
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better

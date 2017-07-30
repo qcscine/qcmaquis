@@ -51,29 +51,8 @@
 #include "dmrg/utils/checks.h"
 
 #include "dmrg/optimize/partial_overlap.h"
-
-//
-// Site problem structure
-// ----------------------
-//
-// This structure contains left and right boundary, together with the
-// MPO tensor of the site of interest
-
-template<class Matrix, class SymmGroup>
-struct SiteProblem
-{
-    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : left(left_)
-    , right(right_)
-    , mpo(mpo_) 
-    { }
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
-    MPOTensor<Matrix, SymmGroup> const & mpo;
-    double ortho_shift;
-};
+#include "dmrg/optimize/siteproblem.h"
+#include "dmrg/optimize/singlesitevs.h"
 
 #define BEGIN_TIMING(name) \
 now = boost::chrono::high_resolution_clock::now();
@@ -126,16 +105,8 @@ public:
         // State-average calculation
         n_root_          = mps_vector.size() ;
         do_stateaverage_ = n_root_ > 0 ;
-        if (do_stateaverage_) {
-            // Reset the first guess for the mps
-            for (int k = 0 ; k < L ; k++) {
-                mps[k] = mps_vector[0][k] ;
-                for (int i = 1; i < n_root_ ; i++)
-                    mps[k] += mps_vector[i][k];
-                mps[k] /= n_root_ ;
-            }
-        }
         //TODO ALB TO CHECK IF IT'S USEFUL OR NOT
+        mps = mps_vector[0] ;
         mps.canonize(site);
         for (int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);

@@ -141,13 +141,13 @@ namespace ietl
         if (n_sa_ == 1) {
             v_guess_.push_back(new_vector(vec)) ;
             convergence_check_.push_back(false) ;
-            Hdiag_.push_back(contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, v_guess_[0]));
+            Hdiag_.push_back(contraction::diagonal_hamiltonian(*matrix_.left[0], *matrix_.right[0], matrix_.mpo, v_guess_[0]));
         } else {
             for (size_t k = 0; k < n_sa_; k++) {
-                v_guess_.push_back(new_vector_sa(vec, k));
+                v_guess_.push_back(new_vector(vec, k));
                 convergence_check_.push_back(false);
                 Hdiag_.push_back(
-                        contraction::diagonal_hamiltonian(matrix_.left, matrix_.right, matrix_.mpo, v_guess_[k]));
+                        contraction::diagonal_hamiltonian(*matrix_.left[0], *matrix_.right[0], matrix_.mpo, v_guess_[k]));
             }
         }
     } ;
