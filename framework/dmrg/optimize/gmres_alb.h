@@ -204,17 +204,17 @@ namespace ietl
             // Initialization
             Vector t, t2, t3, y;
             // t2 = (1-uu*) x
-            ietl::project(input,vs_);
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
+            ietl::project(t2,vs_);
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3);
             y = t3 - theta_ * t2;
+            ietl::project(y,vs_);
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_;
             y = t ;
-            ietl::project(y,vs_);
             // Finalization
             return y ;
         }
@@ -252,15 +252,15 @@ namespace ietl
             mult(A_, input, t);
             t *= -1.;
             t += omega_ * input;
-            double ust = dot(z_, t);
+            double ust = dot(z_, t) ;
             t2 = input - ust * u_;
+            //ietl::project(t2, vs_ ) ;
             // y = (A-theta*1) t2
-            ietl::project(t2, vs_) ;
             mult(A_, t2, t3);
             t3 *= -1.;
             t3 += omega_ * t2;
             y = t3 - t2 / theta_ ;
-            ietl::project(y, vs_) ;
+            //ietl::project(y, vs_) ;
             // t = (1-uu*) y
             ust = dot(z_, y) ;
             t = y - ust * z_ ;

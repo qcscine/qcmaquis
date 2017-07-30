@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -61,7 +62,6 @@ class Boundary : public storage::disk::serializable<Boundary<Matrix, SymmGroup> 
 {
 public:
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename Matrix::value_type value_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
 
     template<class Archive>
@@ -126,7 +126,47 @@ public:
     void save(Archive & ar) const {
         ar["data"] << data_;
     }
-    
+    // 
+    Boundary const & operator+=(Boundary const & rhs)
+    {
+        assert (this->data_.size() == rhs.data_.size()) ; 
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] += rhs.data_[i] ;
+    };
+    // 
+    Boundary const & operator-=(Boundary const & rhs)
+    {
+        assert (this->data_.size() == rhs.data_.size()) ; 
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] -= rhs.data_[i] ;
+    };
+    //
+    Boundary const & operator*=(scalar_type const & rhs)
+    {
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] *= rhs ;
+    };
+    //
+    Boundary const & operator/=(scalar_type const & rhs)
+    {
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] /= rhs ;
+    };
+    //
+    Boundary const & operator*(scalar_type const & rhs, Boundary const & b_rhs)
+    {
+        assert (this->data_.size() == b_rhs.data_.size()) ; 
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] = rhs*b_rhs.data_[i] ;
+    };
+    //
+    Boundary const & operator/(scalar_type const & rhs, Boundary const & b_rhs)
+    {
+        assert (this->data_.size() == b_rhs.data_.size()) ; 
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] = b_rhs.data_[i]/rh/rhss ;
+    };
+    //
     block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
     block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
     //value_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); } // I hope this is never used (30.04.2012 / scalar/value discussion)

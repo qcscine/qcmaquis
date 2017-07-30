@@ -141,6 +141,7 @@ namespace ietl
     {
         vector_type r = uA ;
         r -= u / theta;
+        r /= ietl::two_norm(u) ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
@@ -150,7 +151,7 @@ namespace ietl
     {
         // Compute the error vector
         bool converged ;
-        eigvec = u;
+        eigvec = u/ietl::two_norm(u);
         eigval = this->omega_ - 1./theta;
         if(iter.finished(ietl::two_norm(r),this->omega_-1./theta)) {
             converged = true;

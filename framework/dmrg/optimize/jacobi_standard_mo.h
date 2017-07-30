@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "dmrg/optimize/jacobi.h"
+#include "dmrg/optimize/jacobi_standard.h"
 #include "dmrg/optimize/partial_overlap.h"
 
 // +-------------------------------------------------+
@@ -48,6 +49,7 @@ namespace ietl
     public:
         typedef jacobi_davidson_standard<MATRIX, VS, ITER> base;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
+        typedef typename std::vector<partial_overlap> pov_vec_type ;
         typedef typename base::couple_vec      couple_vec ;
         typedef typename base::gt_couple       gt_couple ;
         typedef typename base::magnitude_type  magnitude_type;
@@ -63,6 +65,7 @@ namespace ietl
         using base::i_gmres_guess_ ;
         using base::matrix_ ;
         using base::n_restart_max_ ;
+        using base::n_root_found_ ;
         using base::nsites_ ;
         using base::overlap_ ;
         using base::site1_ ;
@@ -70,11 +73,11 @@ namespace ietl
         using base::vecspace_ ;
         using base::v_guess_ ;
         //
-        jacobi_davidson_standard_mo(const MATRIX& matrix, const VS& vec, const partial_overlap& pov, const size_t n,
-                                    const size_t& nmin, const size_t& nmax, const size_t& max_iter,
-                                    const int& nsites, const int& n_sa, const int& site1, const int& site2,
-                                    const double& tol, const size_t& i_gmres_guess, const int& root_homing_type)
-                : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, i_gmres_guess)
+        jacobi_davidson_standard_mo(const MATRIX& matrix, VS& vec, const pov_vec_type& pov, const size_t n,
+                                    const int& nmin, const int& nmax, const int& max_iter, const int& nsites, 
+                                    const int& site1, const int& site2, const double& tol, const int& i_gmres_guess, 
+                                    const int& root_homing_type)
+                : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_standard_mo() {} ;
     private:
@@ -91,7 +94,7 @@ namespace ietl
         void update_vecspace(vector_space& V, vector_space& VA, const int idx) ;
         // Private attributes
         int root_homing_type_ ;
-        partial_overlap pov_  ;
+        pov_vec_type pov_  ;
         std::size_t n_maxov_  ;
     };
     // Update the vector space in JCD iteration
@@ -175,9 +178,9 @@ namespace ietl
             for (int j = 1 ; j < dim ; j++)
                 tmp_V  += eigvecs[i][j] * V[j];
             if (nsites_ == 1)
-                p_tmp[i] = pov_.overlap(tmp_V/ietl::two_norm(tmp_V), site1_) ;
+                p_tmp[i] = pov_[n_root_found_].overlap(tmp_V/ietl::two_norm(tmp_V), site1_) ;
             else if (nsites_ == 2)
-                p_tmp[i] = pov_.overlap(tmp_V/ietl::two_norm(tmp_V), site1_, site2_) ;
+                p_tmp[i] = pov_[n_root_found_].overlap(tmp_V/ietl::two_norm(tmp_V), site1_, site2_) ;
         }
         return p_tmp ;
     }
@@ -188,11 +191,11 @@ namespace ietl
         double ret, scr ;
         if (root_homing_type_ == 1) {
             if (nsites_ == 1)
-                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_);
+                ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
             else
-                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
+                ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         } else {
-            ret = ietl::dot(vec_test, v_guess_) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_));
+            ret = ietl::dot(vec_test, v_guess_[n_root_found_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[0]));
         }
         return fabs(ret) ;
     }

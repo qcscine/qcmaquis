@@ -127,12 +127,18 @@ namespace ietl
         int nsites_, site1_, site2_ ;
         FortranMatrix<scalar_type> M ;
         MATRIX const & matrix_ ;
-        size_t i_gmres_guess_, max_iter_ , n_restart_min_ , n_restart_max_, n_sa_ ;
+        size_t i_gmres_guess_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
         vector_space v_guess_ ;
         VS vecspace_ ;
     private:
         // Private method, interface to the LAPACK diagonalization routine
         void restart_jd(vector_space &V, vector_space &VA, const matrix_double& eigvec, const vector_double& eigval);
+        // Struct used for final sorting
+        struct lt_result {
+            inline bool operator() (const pair_results& a , const pair_results& b) {
+                return (a.first < b.first) ;
+            }
+        };
     };
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
@@ -148,6 +154,7 @@ namespace ietl
         max_iter_(max_iter),
         n_restart_min_(n_min),
         n_restart_max_(n_max),
+        n_root_found_(0),
         overlap_(0.),
         ietl_tol_(ietl_tol),
         i_gmres_guess_(i_gmres_guess)
@@ -156,8 +163,13 @@ namespace ietl
         if (n_sa_ == 1) {
             v_guess_.push_back(new_vector(vec)) ;
         } else {
-            for (size_t k = 0; k < n_sa_; k++)
-                v_guess_.push_back(new_vector_sa(vec, k));
+            for (size_t k = 0; k < n_sa_; k++){
+                //v_guess_.push_back(new_vector_sa(vec, k));
+                v_guess_.push_back(new_vector_sa(vec, 0));
+                for (size_t j = 1 ; j < n_sa_ ; j++)
+                    v_guess_[k] += new_vector_sa(vec, j) ;
+                v_guess_[k] /= n_sa_ ;
+            }
         }
     } ;
     // -- Calculation of eigenvalue --
@@ -172,6 +184,7 @@ namespace ietl
         bool converged ;
         int n_iter ;
         rel_tol = ietl_tol_ ;
+        size_t n_root_found = 0;
         // Vectors
         vector_double props(iter.max_iterations()) ;
         vector_space  V(iter.max_iterations())  ;
@@ -196,7 +209,7 @@ namespace ietl
                 update_vecspace(V, VA, n_iter);
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
                 for (int j = 0; j < n_iter + 1; j++)
-                    for (int i = 0; i < j + 1; i++)
+                     for (int i = 0; i < j + 1; i++)
                         M(i, j) = ietl::dot(V[i], VA[j]);
                 diagonalize_and_select(V, VA, n_iter + 1, u, uA, theta, eigvecs, eigvals);
                 // Check convergence
@@ -210,6 +223,7 @@ namespace ietl
                     eigvec /= ietl::two_norm(eigvec) ;
                     update_orthospace(vecspace_, eigvec) ;
                     res.push_back(std::make_pair(eigval, eigvec)) ;
+                    n_root_found_ += 1 ;
                     break ;
                 }
                 solver(u, theta, r, V[n_iter], rel_tol);
@@ -220,6 +234,8 @@ namespace ietl
                 }
             } while (true);
         }
+        // Sort the energies before 
+        std::sort(res.begin(), res.end(), lt_result()) ; 
         return res ;
     }
     // Restarting routine

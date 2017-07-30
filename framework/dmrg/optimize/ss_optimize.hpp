@@ -111,11 +111,22 @@ public:
             assert( right_[site+1].reasonable() ); // in case something went wrong
             boost::chrono::high_resolution_clock::time_point now, then;
             std::vector < std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
+            //SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
+            Boundary<Matrix, SymmGroup> t1 = left_sa_[0][site] ;
+            Boundary<Matrix, SymmGroup> t2 = right_sa_[1][site+1] ;
+            t1 *= 1.9 ;
+            t2 *= 1.9 ;
+            for (size_t i = 1 ; i < n_root_ ; i++){
+                t1 += left_sa_[i][site]  ;
+                t2 += right_sa_[i][site+1] ;
+            }
+            t1 /= n_root_ ;
+            t2 /= n_root_ ;
+            SiteProblem<Matrix, SymmGroup> sp(t1, t2, mpo[site]);
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps, mps_vector, site) ;
             // Compute orthogonal vectors
-            std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
+                std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site],
                                                                    base::ortho_mps[n][site],
@@ -155,9 +166,9 @@ public:
                     mps[site] /= n_root_;
                 }
             }
-            //
-            // Collection of results
-            // ---------------------
+            // +---------------------+
+            //  Collection of results
+            // +---------------------+
             int prec = maquis::cout.precision();
             maquis::cout.precision(15);
             for (size_t k = 0 ; k < n_root_ ; k++)
