@@ -51,6 +51,8 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                int nsites,
                int site1,
                int root_homing_type,
+               std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left,
+               std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
                std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                int site2=0)
 {
@@ -82,7 +84,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     else
         throw std::runtime_error("Guess for the GMRES procedure not recognized") ;
     //
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right);
     if (fabs(omega) < 1.0E-15) {
         if ( root_homing_type == 0) {
             ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >

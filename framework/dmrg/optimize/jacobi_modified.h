@@ -63,11 +63,13 @@ namespace ietl
         // Attributes taken from the mother class
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
+        using base::i_state_ ;
         using base::M ;
         using base::matrix_ ;
         using base::max_iter_ ;
         using base::n_restart_max_ ;
         using base::overlap_ ;
+        using base::site1_ ;
         using base::vecspace_ ;
         using base::v_guess_ ;
         //
@@ -96,7 +98,7 @@ namespace ietl
         // Methods
         void sort_prop(couple_vec& vector_values) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i);
-        void update_orthospace(VS& vecspace, const vector_type& v) ;
+        void update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx) ;
         // Attributes
         vector_type apply_operator (const vector_type& x);
         magnitude_type omega_ ;
@@ -106,17 +108,17 @@ namespace ietl
     typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type jacobi_davidson_modified<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
         vector_type y, buf ;
-        ietl::mult(this->matrix_ , x , buf);
+        ietl::mult(this->matrix_ , x , buf, i_state_);
         y = this->omega_*x - buf;
         return y;
     };
     // Routine doing deflation
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v)
+    void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx)
     {
         vector_type tmp = apply_operator(v) ;
         tmp /= ietl::two_norm(tmp) ;
-        vecspace_.add_orthovec(tmp) ;
+        vecspace_.add_orthovec(tmp, idx, site1_) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>

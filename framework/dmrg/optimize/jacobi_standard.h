@@ -61,6 +61,7 @@ namespace ietl
         //
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
+        using base::i_state_ ;
         using base::M ;
         using base::matrix_ ;
         using base::max_iter_ ;
@@ -79,7 +80,7 @@ namespace ietl
     protected:
         vector_type apply_operator (const vector_type& x);
         void update_vecspace(vector_space &V, vector_space &VA, const int i);
-        void update_orthospace(VS& vecspace, const vector_type& v) ;
+        void update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx) ;
     private:
         bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
@@ -102,7 +103,7 @@ namespace ietl
     typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
         vector_type y ;
-        ietl::mult(this->matrix_ , x , y);
+        ietl::mult(this->matrix_ , x , y, i_state_);
         return y;
     };
     // Update the vector space in JCD iteration
@@ -129,9 +130,9 @@ namespace ietl
     }
     // Routine doing deflation
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v)
+    void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx)
     {
-        vecspace_.add_orthovec(v) ;
+        vecspace_.add_orthovec(v, idx, site1_) ;
     }
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class ITER>

@@ -193,30 +193,16 @@ public:
     results_collector const& iteration_results() const { return iteration_results_; }
 
 protected:
-
-    inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
-    {
-        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
-        for (size_t i = 0 ; i < n_root_ ; i++)
-            left_sa_[i][site+1] = contr::overlap_mpo_left_step(mps_vector[i][site], mps_vector[i][site], left_sa_[i][site], mpo[site]);
-        for (int n = 0; n < northo; ++n)
-            ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
-    }
-    
-    inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
-    {
-        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
-        for (size_t i = 0 ; i < n_root_ ; i++)
-            right_sa_[i][site] = contr::overlap_mpo_right_step(mps_vector[i][site], mps_vector[i][site], right_sa_[i][site+1], mpo[site]);
-        for (int n = 0; n < northo; ++n)
-            ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
-    }
-
+    // +---------------+
+    //  INIT_LEFT_RIGHT
+    // +---------------+
+    // Routine used to initialize the boundaries
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         parallel::construct_placements(mpo);
         std::size_t L = mps.length()  ;
-        //
+        // -- Initialization of the various vectors --
+        // Allocate space for left and right bounaries
         left_.resize(mpo.length()+1)  ;
         right_.resize(mpo.length()+1) ;
         left_sa_.resize(n_root_) ;
@@ -225,6 +211,7 @@ protected:
             left_sa_[i].resize(mpo.length()+1) ;
             right_sa_[i].resize(mpo.length()+1) ;
         }
+        // Allocate and parially initialize the space for the left/right orthogonalization vectors
         ortho_left_.resize(northo);
         ortho_right_.resize(northo);
         for (int n = 0; n < northo; ++n) {
@@ -233,6 +220,22 @@ protected:
             ortho_left_[n][0] = mps.left_boundary()[0];
             ortho_right_[n][L] = mps.right_boundary()[0];
         }
+        // Allocate and parially initialize the space for the left/right orthogonalization vectors
+        // for the state-average calculation
+        vec_sa_left_.resize(n_root_) ;
+        vec_sa_right_.resize(n_root_) ;
+        for (int k = 0; k < n_root_; k++){
+            vec_sa_left_[k].resize(n_root_) ;
+            vec_sa_right_[k].resize(n_root_) ;
+            for (int h = 0; h < n_root_; h++) {
+                vec_sa_left_[k][h].resize(L+1) ;
+                vec_sa_right_[k][h].resize(L+1) ;
+                // Partial initialization
+                vec_sa_left_[k][h][0] = mps_vector[k].left_boundary()[0];
+                vec_sa_right_[k][h][L] = mps_vector[k].right_boundary()[0];
+            }
+        }
+        // Complete initialization and builds all the G
         left_[0] = mps.left_boundary();
         for (int k = 0; k < n_root_ ; ++k)
             left_sa_[k][0] = mps_vector[k].left_boundary();
@@ -259,7 +262,46 @@ protected:
         //trb.end();
         maquis::cout << "Boundaries are fully initialized...\n";
     }
-    
+    // +------------------+
+    //  BOUNDARY_LEFT_STEP
+    // +------------------+
+    // Shifts the boundary one site to the left
+    inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
+    {
+        // Shifts the boundaries
+        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        for (size_t i = 0 ; i < n_root_ ; i++)
+            left_sa_[i][site+1] = contr::overlap_mpo_left_step(mps_vector[i][site], mps_vector[i][site], left_sa_[i][site], mpo[site]);
+        // Updates the orthogonal vectors
+        for (int n = 0; n < northo; ++n)
+            ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
+        for (int i = 0; i < n_root_ ; i++)
+            for (int j = 0; j < n_root_; j++)
+                if ( i!= j )
+                    vec_sa_left_[i][j][site+1] = contr::overlap_left_step(mps_vector[i][site], mps_vector[j][site], vec_sa_left_[i][j][site]);
+    }
+    // +-------------------+
+    //  BOUNDARY_RIGHT_STEP
+    // +-------------------+
+    // Shifts the boundary one site to the right
+    inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
+    {
+        // Shifts the boundaries
+        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        for (size_t i = 0 ; i < n_root_ ; i++)
+            right_sa_[i][site] = contr::overlap_mpo_right_step(mps_vector[i][site], mps_vector[i][site], right_sa_[i][site+1], mpo[site]);
+        // Updates the orthogonal vectors
+        for (int n = 0; n < northo; ++n)
+            ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
+        for (int i = 0; i < n_root_ ; i++)
+            for (int j = 0; j < n_root_; j++)
+                if ( i!= j )
+                    vec_sa_right_[i][j][site] = contr::overlap_right_step(mps_vector[i][site], mps_vector[j][site], vec_sa_right_[i][j][site+1]);
+    }
+    // +----------+
+    //  GET_CUTOFF
+    // +----------+
+    // Simple routine to set the threshold for the truncation process
     double get_cutoff(int sweep) const
     {
         double cutoff;
@@ -297,6 +339,7 @@ protected:
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
+    std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left_, vec_sa_right_;
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
     // Root-homing procedure
     bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_ ;

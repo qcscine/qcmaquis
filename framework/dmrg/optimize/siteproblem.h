@@ -78,12 +78,10 @@ namespace ietl {
     template<class Matrix, class SymmGroup>
     void mult(SiteProblem<Matrix, SymmGroup> const &H,
               MPSTensor <Matrix, SymmGroup> const &x,
-              MPSTensor <Matrix, SymmGroup> &y) {
-        std::size_t idx = H.size ;
-        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[0]), *(H.right[0]), H.mpo);
-        for (std::size_t i = 0 ; i < idx-1 ; i++)
-            y += contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[i]), *(H.right[i]), H.mpo);
-        y /= H.size ;
+              MPSTensor <Matrix, SymmGroup> &y,
+              std::size_t const& idx = 0 ) {
+        assert( idx < H.left.size() && idx < H.right.size() ) ;
+        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx]), *(H.right[idx]), H.mpo);
         x.make_left_paired();
     }
 }

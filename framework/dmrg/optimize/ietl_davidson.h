@@ -46,12 +46,14 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     int nsites,
                     int site1,
                     int root_homing_type,
+                    std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left,
+                    std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                     int site2=0)
 {
     // Initialization
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right);
     int n_restart = params["ietl_diag_restart_nmax"] ;
     double atol   = params["ietl_diag_atol"];
     double rtol   = params["ietl_diag_rtol"];

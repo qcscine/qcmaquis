@@ -110,7 +110,7 @@ namespace ietl
                             const magnitude_type& rel_tol ) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i) {};
-        virtual void update_orthospace(VS& vecspace, const vector_type& u) {} ;
+        virtual void update_orthospace(VS& vecspace, const vector_type& u, const size_t& idx) {} ;
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -127,7 +127,7 @@ namespace ietl
         int nsites_, site1_, site2_ ;
         FortranMatrix<scalar_type> M ;
         MATRIX const & matrix_ ;
-        size_t i_gmres_guess_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
+        size_t i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
         vector_space v_guess_ ;
         VS vecspace_ ;
     private:
@@ -157,7 +157,8 @@ namespace ietl
         n_root_found_(0),
         overlap_(0.),
         ietl_tol_(ietl_tol),
-        i_gmres_guess_(i_gmres_guess)
+        i_gmres_guess_(i_gmres_guess),
+        i_state_(0)
     {
         // Generates guess
         n_sa_ = n_root(vec) ;
@@ -196,6 +197,7 @@ namespace ietl
         for (int k = 0 ; k < n_sa_ ; k++){
             V[0] = v_guess_[k] ;
             n_iter = 0 ;
+            i_state_ = k ;
             do {
                 ietl::project(V[0],vecspace_);
                 update_vecspace(V, VA, n_iter);
@@ -212,10 +214,11 @@ namespace ietl
                 print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
                 if (converged) {
                     print_endline();
-                    eigvec /= ietl::two_norm(eigvec) ;
-                    update_orthospace(vecspace_, eigvec) ;
-                    res.push_back(std::make_pair(eigval, eigvec)) ;
                     n_root_found_ += 1 ;
+                    eigvec /= ietl::two_norm(eigvec) ;
+                    if (k != n_sa_-1)
+                        update_orthospace(vecspace_, eigvec, n_root_found_) ;
+                    res.push_back(std::make_pair(eigval, eigvec)) ;
                     break ;
                 }
                 solver(u, theta, r, V[n_iter], rel_tol);

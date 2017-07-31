@@ -32,7 +32,11 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 
 namespace contraction {
-   
+    // +---------------------+
+    //  SITE_ORTHO_BOUNDARIES
+    // +---------------------+
+    // Routine to compute the MPSTensor objects to be given to the JD procedure
+    // for the deflation process
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
     site_ortho_boundaries(MPSTensor<Matrix, SymmGroup> const & mps,
@@ -40,24 +44,18 @@ namespace contraction {
                           block_matrix<OtherMatrix, SymmGroup> const & ortho_left,
                           block_matrix<OtherMatrix, SymmGroup> const & ortho_right)
     {
+        // Initialize and multiply the left overlap object by the MPS of the orthogonal vector
         ortho_mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> t, t2, t3;
         gemm(ortho_left, ortho_mps.data(), t);
-        reshape_right_to_left_new(mps.site_dim(),
-                                  ortho_left.left_basis(), ortho_mps.col_dim(),
-                                  t, t2);
+        reshape_right_to_left_new(mps.site_dim(), ortho_left.left_basis(), ortho_mps.col_dim(), t, t2);
+        // Multiply by the right overlap object
         gemm(t2, transpose(ortho_right), t3);
-        
+        // Final reshaping. Note that the data inside mps are not used, only its shape is employed
         mps.make_left_paired();
         t = mps.data();
-        reshape_and_pad_left(mps.site_dim(),
-                             ortho_left.left_basis(), ortho_right.left_basis(),
-                             mps.row_dim(), mps.col_dim(),
-                             t3, t);
-        
-        MPSTensor<Matrix, SymmGroup> t4(mps.site_dim(),
-                                        mps.row_dim(), mps.col_dim(),
-                                        t, LeftPaired);
+        reshape_and_pad_left(mps.site_dim(), ortho_left.left_basis(), ortho_right.left_basis(), mps.row_dim(), mps.col_dim(), t3, t);
+        MPSTensor<Matrix, SymmGroup> t4(mps.site_dim(), mps.row_dim(), mps.col_dim(), t, LeftPaired);
         return t4;
     }
     
@@ -185,10 +183,6 @@ namespace contraction {
                         size_t r_offset = 0;
                         size_t i_op_offset = 0;
                         size_t op_offset = 0;
-                        
-#ifdef USE_AMBIENT
-                        printf("UNOPTIMIZED FUNCTION (MULTIPLY WITH OP!)\n");
-#endif
                         for (size_t ss1 = 0; ss1 < phys_i[s1].second; ++ss1) {
                             for (size_t ss2 = 0; ss2 < phys_i[s2].second; ++ss2) {
                                 size_t o_l_start = l_offset + ss2*left_i[ls].second;

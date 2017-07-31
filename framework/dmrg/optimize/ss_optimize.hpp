@@ -60,6 +60,8 @@ public:
     using base::iteration_results_ ;
     using base::stop_callback ;
     using base::root_homing_type_ ;
+    using base::vec_sa_left_ ;
+    using base::vec_sa_right_ ;
     // Constructor declaration
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
@@ -115,12 +117,12 @@ public:
             boost::chrono::high_resolution_clock::time_point now, then;
             std::vector < std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             //SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
-            //SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site);
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_[0][site], right_sa_[0][site+1], mpo[site]);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site);
+            //SiteProblem<Matrix, SymmGroup> sp(left_sa_[0][site], right_sa_[0][site+1], mpo[site]);
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
-                std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
+            std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site],
                                                                    base::ortho_mps[n][site],
@@ -140,11 +142,13 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, vector_set, parms,  poverlap_vec_, 1, site, root_homing_type_, ortho_vecs);
+                    res = solve_ietl_jcd(sp, vector_set, parms,  poverlap_vec_, 1, site, root_homing_type_,
+                                         vec_sa_left_, vec_sa_right_, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_, ortho_vecs);
+                    res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_,
+                                              vec_sa_left_, vec_sa_right_, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -241,6 +245,7 @@ public:
                     poverlap_vec_[0].update(mps, site, lr); 
                 }
             }
+            //
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;

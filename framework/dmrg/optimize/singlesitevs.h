@@ -5,7 +5,6 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *
- *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
@@ -31,6 +30,7 @@
 template<class Matrix, class SymmGroup>
 class SingleSiteVS
 {
+    typedef typename std::vector< class std::vector< std::vector< class block_matrix< typename storage::constrained<Matrix>::type, SymmGroup> > > > vector_ortho_type ;
 public:
     // Initializer from a single MPSTns
     SingleSiteVS(MPSTensor<Matrix, SymmGroup> const & m,
@@ -46,8 +46,12 @@ public:
     // Initializer from a VectorSet object
     // Note that here two possibilities are present:
     SingleSiteVS(VectorSet<Matrix, SymmGroup> const & vs,
-                 std::vector< class MPSTensor<Matrix, SymmGroup> > const & ortho_vecs)
+                 std::vector< class MPSTensor<Matrix, SymmGroup> > const & ortho_vecs,
+                 vector_ortho_type vec_sa_left,
+                 vector_ortho_type vec_sa_right)
             : ortho_vecs_(ortho_vecs)
+            , vec_sa_left_(vec_sa_left)
+            , vec_sa_right_(vec_sa_right)
     {
         // Loads basis vectors
         N_root = vs.n_vec;
@@ -56,7 +60,8 @@ public:
         // Loads orthogonal vectors
         N_ortho = 0 ;
         for (std::size_t k = 0; k < vs.MPSTns_SA[0].data().n_blocks(); ++k)
-            N_ortho += num_rows(vs.MPSTns_SA[0].data()[k]) * num_cols(vs.MPSTns_SA[0].data()[k]);
+            N_ortho += num_rows(vs.MPSTns_SA[0].data()[k]) * num_cols(vs.MPSTns_SA[0].data()[k]) ;
+        ortho_vecs_add_.resize(0) ;
     }
     // Function to access data
     friend std::size_t n_root(SingleSiteVS const & vs) { return vs.N_root ; }
@@ -65,17 +70,27 @@ public:
     // Function to perform orthogonalization
     void project(MPSTensor<Matrix, SymmGroup> & t) const
     {
+        // Orthogonalization vs excited states
         for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_.begin(); it != ortho_vecs_.end(); ++it)
             t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
+        // Orthogonalization vs already converged roots
+        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it)
+            t -= ietl::dot(*it,t)*(*it);
     }
-    void add_orthovec(const MPSTensor<Matrix, SymmGroup> & t)
+    void add_orthovec(const MPSTensor<Matrix, SymmGroup> & t, const std::size_t& idx, const std::size_t& site)
     {
-        ortho_vecs_.push_back(t) ;
-        N_ortho += 1 ;
+        ortho_vecs_add_.resize(0) ;
+        MPSTensor<Matrix, SymmGroup> tmp ;
+        for (int i = 0; i < idx; i++) {
+            tmp = contraction::site_ortho_boundaries(MPSTns_vec[idx], t, vec_sa_left_[idx][i][site], vec_sa_right_[idx][i][site+1]);
+            ortho_vecs_add_.push_back(tmp);
+        }
     }
 private:
     std::vector< MPSTensor<Matrix, SymmGroup> > MPSTns_vec ;
     std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_ ;
+    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_add_ ;
+    vector_ortho_type vec_sa_left_, vec_sa_right_ ;
     std::size_t N_ortho, N_root ;
 };
 
