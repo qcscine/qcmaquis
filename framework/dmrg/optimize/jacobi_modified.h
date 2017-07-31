@@ -83,6 +83,7 @@ namespace ietl
         // Methods
         bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
+        magnitude_type project_and_return(vector_type& v) ;
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                         const matrix_double& eigvecs, const vector_double& eigvals) ;
         vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) ;
@@ -116,7 +117,8 @@ namespace ietl
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx)
     {
-        vector_type tmp = apply_operator(v) ;
+        //vector_type tmp = apply_operator(v) ;
+        vector_type tmp = v ;
         tmp /= ietl::two_norm(tmp) ;
         vecspace_.add_orthovec(tmp, idx, site1_) ;
     }
@@ -130,10 +132,8 @@ namespace ietl
             t -= ietl::dot(VA[i-1], tA) * V[i-1];
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
         }
-        ietl::project(t,this->vecspace_) ;
-        ietl::project(tA,this->vecspace_) ;
         t /= ietl::two_norm(tA) ;
-        VA[idx]    = tA/ietl::two_norm(tA) ;
+        VA[idx] = tA/ietl::two_norm(tA) ;
     };
     // Compute the error vector
     template <class Matrix, class VS, class ITER>
@@ -209,7 +209,7 @@ namespace ietl
         vector_type z, inh = -r, t2 ;
         scalar_type dru, duu ;
         z = apply_operator(u) ;
-        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, omega_, max_iter_, false);
+        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, i_state_, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u);

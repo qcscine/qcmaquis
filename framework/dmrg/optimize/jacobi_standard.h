@@ -103,8 +103,8 @@ namespace ietl
     typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
         vector_type y ;
-        ietl::mult(this->matrix_ , x , y, i_state_);
-        return y;
+        ietl::mult(this->matrix_ , x , y, i_state_) ;
+        return y ;
     };
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
@@ -195,7 +195,7 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, max_iter_, false);
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence

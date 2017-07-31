@@ -199,7 +199,6 @@ namespace ietl
             n_iter = 0 ;
             i_state_ = k ;
             do {
-                ietl::project(V[0],vecspace_);
                 update_vecspace(V, VA, n_iter);
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
                 for (int j = 0; j < n_iter + 1; j++)

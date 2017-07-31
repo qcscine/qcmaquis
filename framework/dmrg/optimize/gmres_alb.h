@@ -60,8 +60,8 @@ namespace ietl
         // --------------
         // Constructor
         gmres_general(Matrix const & A, Vector const & u, VectorSpace const & vs, double const & theta,
-                      std::size_t max_iter = 100, bool verbose = false)
-                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs)
+                      size_t const& n_root, std::size_t max_iter = 100, bool verbose = false)
+                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root)
         { }
         // () operator. Returns the solution of the GMRES problem
         Vector operator()(Vector const & b,
@@ -171,7 +171,7 @@ namespace ietl
         // vebose   --> Controls the output printing
         Matrix A_ ;
         Vector u_ ;
-        std::size_t max_iter ;
+        std::size_t max_iter , n_root_ ;
         bool verbose ;
         double theta_ ;
         VectorSpace vs_ ;
@@ -190,11 +190,13 @@ namespace ietl
                        Vector const & u,
                        VectorSpace const & vs,
                        double const & theta,
+                       size_t const& n_root,
                        size_t max_iter,
                        bool verbose)
-        : base::gmres_general(A, u, vs, theta, max_iter, verbose) { }
+        : base::gmres_general(A, u, vs, theta, n_root, max_iter, verbose) { }
         // Private attributes
         using base::A_ ;
+        using base::n_root_ ;
         using base::theta_ ;
         using base::u_ ;
         using base::vs_ ;
@@ -208,7 +210,7 @@ namespace ietl
             t2 = input - ust * u_;
             ietl::project(t2,vs_);
             // y = (A-theta*1) t2
-            ietl::mult(A_, t2, t3);
+            ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
             ietl::project(y,vs_);
             // t = (1-uu*) y
@@ -234,13 +236,15 @@ namespace ietl
                        VectorSpace const & vs,
                        Vector const & z,
                        double const & theta,
+                       size_t const& n_root,
                        double const & omega,
                        size_t max_iter,
                        bool verbose)
-                : base::gmres_general(A, u, vs, theta, max_iter, verbose),
+                : base::gmres_general(A, u, vs, theta, n_root, max_iter, verbose),
                   omega_(omega), z_(z) { }
         // Private attributes
         using base::A_ ;
+        using base::n_root_ ;
         using base::theta_ ;
         using base::u_ ;
         using base::vs_ ;
@@ -249,14 +253,14 @@ namespace ietl
         Vector apply(Vector& input){
             // Initialization
             Vector t, t2, t3, y ;
-            mult(A_, input, t);
+            mult(A_, input, t, n_root_);
             t *= -1.;
             t += omega_ * input;
             double ust = dot(z_, t) ;
             t2 = input - ust * u_;
             //ietl::project(t2, vs_ ) ;
             // y = (A-theta*1) t2
-            mult(A_, t2, t3);
+            mult(A_, t2, t3, n_root_);
             t3 *= -1.;
             t3 += omega_ * t2;
             y = t3 - t2 / theta_ ;
