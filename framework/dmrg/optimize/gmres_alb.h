@@ -275,6 +275,42 @@ namespace ietl
         double omega_ ;
         Vector z_ ;
     };
+    //
+    // GMRES_MODIFIED_INITIALIZER OBJECT
+    // ---------------------------------
+    // GMRES solver object for the shift-and-inverted problem
+    template<class Matrix, class Vector, class VectorSpace>
+    class gmres_initializer_modified : private gmres_general<Matrix, Vector, VectorSpace>
+    {
+    public:
+        typedef gmres_general<Matrix, Vector, VectorSpace> base ;
+        typedef typename base::size_t size_t ;
+        gmres_initializer_modified(Matrix const & A,
+                                   Vector const & u,
+                                   VectorSpace const & vs,
+                                   double const & theta,
+                                   size_t const & n_root,
+                                   size_t max_iter,
+                                   bool verbose)
+                : base::gmres_general(A, u, vs, theta, n_root, max_iter, verbose) {} ;
+        // 
+        using base::A_ ;
+        using base::n_root_ ;
+        using base::theta_ ;
+        using base::u_ ;
+        using base::vs_ ;
+        using base::operator() ;
+    private:
+        // Private attributes
+        Vector apply(Vector& input){
+            // Initialization
+            Vector t ;
+            mult(A_, input, t, n_root_);
+            t *= -1.;
+            t += theta_*input;
+            return t ;
+        }
+    } ;
 }
 
 #endif

@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -82,6 +83,7 @@ private:
         add_option("ietl_gmres_maxiter", "", value(20));
         add_option("ietl_gmres_abstol", "convergence threshold for the GMRES algorithm", value(1.0e-1)) ;
         add_option("ietl_gmres_guess", "guess for the iterative GMRES solver", value("error")) ;
+        add_option("ietl_gmres_init_atol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-10)) ;
         // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

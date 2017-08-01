@@ -73,6 +73,8 @@ namespace ietl
     public:
         typedef typename vectorspace_traits<VS>::scalar_type              scalar_type;
         typedef typename vectorspace_traits<VS>::vector_type              vector_type;
+        typedef typename vector_type::bm_type 		      		          bm_type ;
+        typedef typename std::vector< bm_type >                           vector_bm ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         typedef typename std::size_t                                      size_t ;
         typedef typename std::pair<int, float>                            couple_val ;
@@ -128,6 +130,7 @@ namespace ietl
         FortranMatrix<scalar_type> M ;
         MATRIX const & matrix_ ;
         size_t i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
+        vector_bm Hdiag_ ;
         vector_space v_guess_ ;
         VS vecspace_ ;
     private:
@@ -162,8 +165,9 @@ namespace ietl
     {
         // Generates guess
         n_sa_ = n_root(vec) ;
-        for (size_t k = 0; k < n_sa_; k++)
+        for (size_t k = 0; k < n_sa_; k++) {
             v_guess_.push_back(new_vector(vec, k));
+        }
     } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>

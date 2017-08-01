@@ -104,7 +104,7 @@ public:
         std::size_t L = mps_vector[0].length();
         // State-average calculation
         n_root_          = mps_vector.size() ;
-        do_stateaverage_ = n_root_ > 0 ;
+        do_stateaverage_ = parms_["n_states_sa"].as<int>() > 0 ;
         //TODO ALB TO CHECK IF IT'S USEFUL OR NOT
         mps = mps_vector[0] ;
         mps.canonize(site);
@@ -128,7 +128,7 @@ public:
             if (do_stateaverage_) {
                 // Extract the list of states to be followed
                 std::vector<std::string> list_sa;
-                std::string input_str = parms["follow_mps_stateaverage"].str();
+                std::string input_str = parms_["follow_mps_stateaverage"].str();
                 boost::split(list_sa, input_str, boost::is_any_of("|"));
                 if (list_sa.size() != n_root_ )
                     throw std::runtime_error("Number of states to track != from number of SA MPS");
@@ -146,7 +146,7 @@ public:
                 }
             } else {
                 mps2follow.push_back(parms_["follow_basis_state"].as<std::vector<int> >());
-                if (mps2follow.size() != L)
+                if (mps2follow[0].size() != L)
                     throw std::runtime_error("ONV to follow has a wrong length");
             }
             // Builds the vector of partial overlap objects

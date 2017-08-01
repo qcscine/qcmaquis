@@ -73,8 +73,8 @@ namespace ietl
         jacobi_davidson_modified_mo(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const pov_vec_type& pov, const size_t n,
                                     const int& nmin, const int& nmax, const int& max_iter, const int& nsites, 
                                     const int& site1, const int& site2, const double& tol, const int& i_gmres_guess,
-                                    const int& root_homing_type)
-                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
+                                    const double& atol_init, const int& root_homing_type)
+                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess, atol_init)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
@@ -89,6 +89,7 @@ namespace ietl
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
         void sort_prop(couple_vec& vector_values) ;
         // Private attributes
+        double atol_init_ ;
         int root_homing_type_ ;
         pov_vec_type pov_  ;
         size_t n_maxov_  ;
