@@ -101,7 +101,7 @@ public:
     , do_root_homing_(false)
     {
         // Standard options
-        std::size_t L = mps.length();
+        std::size_t L = mps_vector[0].length();
         // State-average calculation
         n_root_          = mps_vector.size() ;
         do_stateaverage_ = n_root_ > 0 ;

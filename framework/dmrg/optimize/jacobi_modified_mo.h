@@ -46,19 +46,22 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson_modified<MATRIX, VS, ITER> base;
+        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
+        typedef typename std::vector<partial_overlap> pov_vec_type ;
         typedef typename base::couple_vec      couple_vec ;
         typedef typename base::gt_couple       gt_couple ;
         typedef typename base::magnitude_type  magnitude_type ;
         typedef typename base::matrix_double   matrix_double ;
-        typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap ;
         typedef typename base::size_t          size_t ;
         typedef typename base::vector_double   vector_double ;
         typedef typename base::vector_space    vector_space ;
         typedef typename base::vector_type     vector_type ;
+        //
         using base::apply_operator ;
-        using base::i_gmres_guess_ ;
         using base::get_eigenvalue ;
+        using base::i_gmres_guess_ ;
         using base::n_restart_max_ ;
+        using base::n_root_found_ ;
         using base::nsites_ ;
         using base::omega_ ;
         using base::overlap_ ;
@@ -67,47 +70,30 @@ namespace ietl
         using base::vecspace_ ;
         using base::v_guess_ ;
         //
-        jacobi_davidson_modified_mo(const MATRIX& matrix, const VS& vec, const magnitude_type& omega, const partial_overlap& pov,
-                                    const size_t n, const size_t& nmin, const size_t& nmax, const size_t& max_iter,
-                                    const int& nsites, const int& n_sa, const int& site1, const int& site2, const double& tol,
-                                    const size_t& i_gmres_guess, const int& root_homing_type)
-                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, n_sa, site1, site2, tol, i_gmres_guess)
+        jacobi_davidson_modified_mo(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const pov_vec_type& pov, const size_t n,
+                                    const int& nmin, const int& nmax, const int& max_iter, const int& nsites, 
+                                    const int& site1, const int& site2, const double& tol, const int& i_gmres_guess,
+                                    const int& root_homing_type)
+                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
         double compute_overlap(const vector_type& vec_test) ;
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
-                                        const matrix_double& eigvecs, const vector_double& eigvals) ;
+                                        const matrix_double& eigvecs, const vector_double& eigvals);
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                     vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
-        void print_header_table(void) ;
         void print_endline(void) ;
+        void print_header_table(void) ;
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
         void sort_prop(couple_vec& vector_values) ;
-        void update_vecspace(vector_space& V, vector_space& VA, const int idx) ;
         // Private attributes
         int root_homing_type_ ;
-        partial_overlap pov_  ;
+        pov_vec_type pov_  ;
         size_t n_maxov_  ;
     };
-    // Update the vector space in JCD iteration
-    template <class Matrix, class VS, class ITER, class OtherMatrix, class SymmGroup>
-    void jacobi_davidson_modified_mo<Matrix, VS, ITER, OtherMatrix, SymmGroup>::update_vecspace
-            (vector_space& V, vector_space& VA, const int idx)
-    {
-        vector_type& t  = V[idx] ;
-        vector_type  tA = apply_operator(t);
-        for (int i = 1; i <= idx ; i++) {
-            t -= ietl::dot(VA[i-1], tA) * V[i-1];
-            tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
-        }
-        ietl::project(t,this->vecspace_) ;
-        ietl::project(tA,this->vecspace_) ;
-        t /= ietl::two_norm(tA) ;
-        VA[idx]    = tA/ietl::two_norm(tA) ;
-    };
-    //
+    // Diagonalization routine
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_and_select
             (const vector_space& MPSTns_input,
@@ -177,10 +163,13 @@ namespace ietl
         vector_double p_tmp(dim) ;
         // Rotates the properties
         for (int i = 0; i < dim ; i++) {
-            tmp_V = eigvecs[i][0] * V[0];
+            tmp_V = eigvecs[i][0] * VA[0];
             for (int j = 1 ; j < dim ; j++)
-                tmp_V  += eigvecs[i][j] * V[j];
-            p_tmp[i] = compute_overlap(tmp_V) ;
+                tmp_V  += eigvecs[i][j] * VA[j];
+            if (nsites_ == 1)
+                p_tmp[i] = pov_[n_root_found_].overlap(tmp_V/ietl::two_norm(tmp_V), site1_) ;
+            else if (nsites_ == 2)
+                p_tmp[i] = pov_[n_root_found_].overlap(tmp_V/ietl::two_norm(tmp_V), site1_, site2_) ;
         }
         return p_tmp ;
     }
@@ -191,11 +180,11 @@ namespace ietl
         double ret, scr ;
         if (root_homing_type_ == 1) {
             if (nsites_ == 1)
-                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_);
+                ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
             else
-                ret = pov_.overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
+                ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         } else {
-            ret = ietl::dot(vec_test, v_guess_) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_));
+            ret = ietl::dot(vec_test, v_guess_[n_root_found_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[n_root_found_]));
         }
         return fabs(ret) ;
     }
@@ -222,8 +211,8 @@ namespace ietl
     void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_newline_table(const size_t& i, const double& error,
                                                                                                     const magnitude_type& en, const double& overlap )
     {
-        char buf[100];
-	    int a = i , n ;
+        char buf[100] ;
+	    int a = i, n;
         n = sprintf(buf, "%5d      | %1.4E  | %6.5f  |  %1.4f", a, error, en, overlap);
         std::cout << buf << std::endl;
     }

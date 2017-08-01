@@ -77,6 +77,15 @@ public:
         for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it)
             t -= ietl::dot(*it,t)*(*it);
     }
+    //
+    std::vector<double> coeff(const MPSTensor<Matrix, SymmGroup> & t)
+    {
+        std::vector<double> res ;
+        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it)
+            res.push_back(ietl::dot(*it,t));
+        return res ;
+    }
+    //
     void add_orthovec(const MPSTensor<Matrix, SymmGroup> & t, const std::size_t& idx, const std::size_t& site)
     {
         ortho_vecs_add_.resize(0) ;

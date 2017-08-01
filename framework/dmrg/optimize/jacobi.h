@@ -93,7 +93,7 @@ namespace ietl
         void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, fortran_int_t dim,
                             fortran_int_t i1, fortran_int_t i2) ;
         // Virtual protected methods, to be inherited by derived classes
-        virtual bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
+        virtual bool check_convergence(const vector_type& u, const vector_type& uA , const vector_type& r, const magnitude_type theta ,
                                        ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
         virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
         virtual vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
@@ -109,7 +109,7 @@ namespace ietl
         virtual void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                             const magnitude_type& rel_tol ) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
-        virtual void update_vecspace(vector_space &V, vector_space &VA, const int i) {};
+        virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res) {};
         virtual void update_orthospace(VS& vecspace, const vector_type& u, const size_t& idx) {} ;
         // Structure used for restart
         struct lt_couple {
@@ -199,7 +199,7 @@ namespace ietl
             n_iter = 0 ;
             i_state_ = k ;
             do {
-                update_vecspace(V, VA, n_iter);
+                update_vecspace(V, VA, n_iter, res);
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
                 for (int j = 0; j < n_iter + 1; j++)
                      for (int i = 0; i < j + 1; i++)
@@ -209,7 +209,7 @@ namespace ietl
                 ++iter;
                 n_iter += 1;
                 vector_type r = compute_error(u, uA, theta);
-                converged = check_convergence(u, r, theta, iter, eigvec, eigval);
+                converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval);
                 print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
                 if (converged) {
                     print_endline();
@@ -228,8 +228,6 @@ namespace ietl
                 }
             } while (true);
         }
-        // Sort the energies before 
-        std::sort(res.begin(), res.end(), lt_result()) ; 
         return res ;
     }
     // Restarting routine

@@ -63,7 +63,6 @@ namespace ietl
         using base::apply_operator ;
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
-        using base::matrix_ ;
         using base::n_restart_max_ ;
         using base::n_root_found_ ;
         using base::nsites_ ;
@@ -91,23 +90,12 @@ namespace ietl
         void print_header_table(void) ;
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
         void sort_prop(couple_vec& vector_values) ;
-        void update_vecspace(vector_space& V, vector_space& VA, const int idx) ;
         // Private attributes
         int root_homing_type_ ;
         pov_vec_type pov_  ;
-        std::size_t n_maxov_  ;
+        size_t n_maxov_  ;
     };
-    // Update the vector space in JCD iteration
-    template <class Matrix, class VS, class ITER, class OtherMatrix, class SymmGroup>
-    void jacobi_davidson_standard_mo<Matrix, VS, ITER, OtherMatrix, SymmGroup>::update_vecspace(vector_space& V, vector_space& VA, const int idx)
-    {
-        vector_type& t = V[idx] ;
-        for (int i = 1; i <= idx; i++)
-            t -= ietl::dot(V[i-1], t) * V[i-1];
-        ietl::project(t,this->vecspace_) ;
-        t /= ietl::two_norm(t) ;
-        VA[idx] = apply_operator(t) ;
-    };
+    // Diagonalization routine
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_and_select
             (const vector_space& MPSTns_input,
@@ -195,7 +183,7 @@ namespace ietl
             else
                 ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         } else {
-            ret = ietl::dot(vec_test, v_guess_[n_root_found_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[0]));
+            ret = ietl::dot(vec_test, v_guess_[n_root_found_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[n_root_found_]));
         }
         return fabs(ret) ;
     }

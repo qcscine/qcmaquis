@@ -142,7 +142,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, vector_set, parms,  poverlap_vec_, 1, site, root_homing_type_,
+                    res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_,
                                          vec_sa_left_, vec_sa_right_, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
@@ -154,7 +154,6 @@ public:
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
                 // Collects the results
-                mps[site]  = res[0].second ;
                 if (n_root_ > 0) {
                     mps_vector[0][site]  = res[0].second ;
                     for (size_t k = 1; k < n_root_; k++) {

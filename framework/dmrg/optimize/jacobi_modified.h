@@ -58,6 +58,7 @@ namespace ietl
         typedef typename base::scalar_type     scalar_type;
         typedef typename base::size_t          size_t ;
         typedef typename base::vector_double   vector_double;
+        typedef typename base::vector_pairs    vector_pairs;
         typedef typename base::vector_space    vector_space;
         typedef typename base::vector_type     vector_type;
         // Attributes taken from the mother class
@@ -81,7 +82,7 @@ namespace ietl
         ~jacobi_davidson_modified() {} ;
     private:
         // Methods
-        bool check_convergence(const vector_type& u, const vector_type& uA , const magnitude_type theta ,
+        bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
         magnitude_type project_and_return(vector_type& v) ;
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
@@ -98,7 +99,7 @@ namespace ietl
     protected:
         // Methods
         void sort_prop(couple_vec& vector_values) ;
-        void update_vecspace(vector_space &V, vector_space &VA, const int i);
+        void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
         void update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx) ;
         // Attributes
         vector_type apply_operator (const vector_type& x);
@@ -117,20 +118,26 @@ namespace ietl
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx)
     {
-        //vector_type tmp = apply_operator(v) ;
         vector_type tmp = v ;
         tmp /= ietl::two_norm(tmp) ;
         vecspace_.add_orthovec(tmp, idx, site1_) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx)
+    void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type& t  = V[idx] ;
         vector_type  tA = apply_operator(t);
         for (int i = 1; i <= idx ; i++) {
             t -= ietl::dot(VA[i-1], tA) * V[i-1];
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
+        }
+        ietl::project(tA,vecspace_);
+        std::vector<double> coeff = vecspace_.coeff(tA) ;
+        size_t jcont = 0 ;
+        for (typename std::vector<double>::iterator it = coeff.begin(); it != coeff.end(); it++) {
+            t -= *it * res[jcont].second / res[jcont].first;
+            jcont += 1 ;
         }
         t /= ietl::two_norm(tA) ;
         VA[idx] = tA/ietl::two_norm(tA) ;
@@ -148,8 +155,8 @@ namespace ietl
     }
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class ITER>
-    bool jacobi_davidson_modified<Matrix, VS, ITER>::check_convergence(const vector_type &u, const vector_type &r, const magnitude_type theta,
-                                                                       ITER& iter, vector_type &eigvec, magnitude_type &eigval)
+    bool jacobi_davidson_modified<Matrix, VS, ITER>::check_convergence(const vector_type &u, const vector_type &uA, const vector_type &r,
+                                                                       const magnitude_type theta, ITER& iter, vector_type &eigvec, magnitude_type &eigval)
     {
         // Compute the error vector
         bool converged ;
