@@ -68,8 +68,8 @@ private:
         add_option("alpha_final", "", value(1e-8));
         // Options related to the eigensolver
         add_option("eigensolver", "", value("IETL_JCD"));
-        add_option("ietl_diag_atol", "", value(1e-4));
-        add_option("ietl_diag_rtol", "", value(1e-8));
+        add_option("ietl_diag_atol", "", value(1e-1));
+        add_option("ietl_diag_rtol", "", value(1e-5));
         add_option("ietl_diag_maxiter", "", value(20));
         add_option("ietl_diag_restart_nmin", "", value(1));
         add_option("ietl_diag_restart_nmax", "", value(20));

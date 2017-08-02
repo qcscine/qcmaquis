@@ -232,7 +232,7 @@ protected:
                 vec_sa_right_[k][h].resize(L+1) ;
                 // Partial initialization
                 vec_sa_left_[k][h][0] = mps_vector[k].left_boundary()[0];
-                vec_sa_right_[k][h][L] = mps_vector[k].right_boundary()[0];
+                vec_sa_right_[k][h][L] = mps_vector[h].right_boundary()[0];
             }
         }
         // Complete initialization and builds all the G
@@ -277,7 +277,7 @@ protected:
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
         for (int i = 0; i < n_root_ ; i++)
             for (int j = 0; j < n_root_; j++)
-                if ( i!= j )
+                if ( i != j )
                     vec_sa_left_[i][j][site+1] = contr::overlap_left_step(mps_vector[i][site], mps_vector[j][site], vec_sa_left_[i][j][site]);
     }
     // +-------------------+

@@ -113,6 +113,7 @@ namespace ietl
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res) {};
         virtual void update_orthospace(VS& vecspace, const vector_type& u, const size_t& idx) {} ;
+        virtual void update_u_and_uA(const vector_type& u, const vector_type& uA) {} ;
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -130,6 +131,7 @@ namespace ietl
         FortranMatrix<scalar_type> M ;
         MATRIX const & matrix_ ;
         size_t i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
+        std::vector< std::pair<vector_type,vector_type> > u_and_uA_ ;
         vector_bm Hdiag_ ;
         vector_space v_guess_ ;
         VS vecspace_ ;
@@ -219,6 +221,7 @@ namespace ietl
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;
+                    update_u_and_uA(u, uA) ;
                     if (k != n_sa_-1)
                         update_orthospace(vecspace_, eigvec, n_root_found_) ;
                     res.push_back(std::make_pair(eigval, eigvec)) ;

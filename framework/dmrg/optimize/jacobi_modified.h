@@ -148,7 +148,6 @@ namespace ietl
             t -= ietl::dot(VA[i-1], tA) * V[i-1];
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
         }
-        ietl::project(tA,vecspace_);
         std::vector<double> coeff = vecspace_.coeff(tA) ;
         size_t jcont = 0 ;
         for (typename std::vector<double>::iterator it = coeff.begin(); it != coeff.end(); it++) {
@@ -177,7 +176,6 @@ namespace ietl
         // Compute the error vector
         bool converged ;
         eigvec = uA/ietl::two_norm(uA);
-        //eigval = this->omega_ - 1./theta;
         eigval = this->omega_ - 1./ietl::dot(u,uA) ;
         if(iter.finished(ietl::two_norm(r),this->omega_-1./theta)) {
             converged = true;

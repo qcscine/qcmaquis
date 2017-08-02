@@ -15,7 +15,7 @@
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHoUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
  * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
@@ -72,6 +72,7 @@ namespace ietl
         using base::overlap_ ;
         using base::site1_ ;
         using base::site2_ ;
+        using base::u_and_uA_ ;
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
@@ -97,25 +98,42 @@ namespace ietl
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                     const magnitude_type& rel_tol) ;
         void sort_prop(couple_vec& vector_values) ;
-    };
-    //
-    // Compute the action of an operator
+        void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
+    } ;
+    // Computes the action of an operator
     template <class Matrix, class VS, class ITER>
-    typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
+    typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type
+             jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
-        vector_type y ;
-        ietl::mult(this->matrix_ , x , y, i_state_) ;
-        return y ;
+        vector_type y = x , y2 ;
+        for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++) {
+            y -= ietl::dot((*it).first, y) * (*it).first;
+        }
+        ietl::mult(this->matrix_ , y , y2, i_state_) ;
+        for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
+            y2 -= ietl::dot((*it).first,y2) * (*it).first ;
+        return y2 ;
     };
+    // Update the vector with the quantity to orthogonalize
+    template <class Matrix, class VS, class ITER>
+    void jacobi_davidson_standard<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA)
+    {
+        u_and_uA_.resize(0) ;
+        for (size_t i = 0; i <= i_state_; i++) {
+            vector_type tmp = vecspace_.return_orthovec(u/ietl::two_norm(u), i_state_, i, site1_) ;
+            u_and_uA_.push_back(std::make_pair(tmp, uA)) ;
+        }
+    }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
-        vector_type& t = V[idx] ;
+        vector_type t = V[idx] ;
+        ietl::project(t,vecspace_) ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
-        ietl::project(t,this->vecspace_) ;
         t /= ietl::two_norm(t) ;
+        V[idx] = t ;
         VA[idx] = apply_operator(t) ;
     };
     // Compute the error vector
@@ -189,6 +207,7 @@ namespace ietl
             MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
         }
         theta = eigvals[0] ;
+        std::cout << theta << std::endl ;
     };
     //
     template<class MATRIX, class VS, class ITER>
