@@ -55,13 +55,14 @@ namespace ietl
         typedef typename boost::numeric::ublas::matrix< scalar_type >  matrix_scalar ;
         typedef typename std::vector<scalar_type>                      vector_scalar ;
         typedef typename std::vector<Vector>                           vector_space ;
+        typedef typename std::vector< std::pair<Vector,Vector> >       vector_results ;
         //
         // Public methods
         // --------------
         // Constructor
         gmres_general(Matrix const & A, Vector const & u, VectorSpace const & vs, double const & theta,
-                      size_t const& n_root, std::size_t max_iter = 100, bool verbose = false)
-                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root)
+                      const vector_results& v_res, size_t const& n_root, std::size_t max_iter = 100, bool verbose = false)
+                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root), v_res_(v_res)
         { }
         // () operator. Returns the solution of the GMRES problem
         Vector operator()(Vector const & b,
@@ -175,6 +176,7 @@ namespace ietl
         bool verbose ;
         double theta_ ;
         VectorSpace vs_ ;
+        vector_results v_res_ ;
     };
     //
     // GMRES_STANDARD OBJECT
@@ -185,20 +187,24 @@ namespace ietl
     {
     public:
         typedef gmres_general<Matrix, Vector, VectorSpace> base ;
-        typedef typename base::size_t size_t ;
+        typedef typename base::size_t          size_t ;
+        typedef typename base::vector_results  vector_results ;
+        //
         gmres_standard(Matrix const & A,
                        Vector const & u,
                        VectorSpace const & vs,
                        double const & theta,
+                       vector_results const & v_res,
                        size_t const& n_root,
                        size_t max_iter,
                        bool verbose)
-        : base::gmres_general(A, u, vs, theta, n_root, max_iter, verbose) { }
+        : base::gmres_general(A, u, vs, theta, v_res, n_root, max_iter, verbose) { }
         // Private attributes
         using base::A_ ;
         using base::n_root_ ;
         using base::theta_ ;
         using base::u_ ;
+        using base::v_res_ ;
         using base::vs_ ;
         using base::operator() ;
     private:
@@ -208,11 +214,13 @@ namespace ietl
             // t2 = (1-uu*) x
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
-            ietl::project(t2,vs_);
+            for (typename vector_results::iterator it = v_res_.begin(); it != v_res_.end(); it++)
+                t2 -= ietl::dot((*it).first, t2)/ietl::dot((*it).first,(*it).first) * (*it).first;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
-            ietl::project(y,vs_);
+            for (typename vector_results::iterator it = v_res_.begin(); it != v_res_.end(); it++)
+                y -= ietl::dot((*it).first, y)/ietl::dot((*it).first,(*it).first) * (*it).first;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_;
@@ -230,17 +238,19 @@ namespace ietl
     {
     public:
         typedef gmres_general<Matrix, Vector, VectorSpace> base ;
-        typedef typename base::size_t size_t ;
+        typedef typename base::size_t          size_t ;
+        typedef typename base::vector_results  vector_results ;
         gmres_modified(Matrix const & A,
                        Vector const & u,
                        VectorSpace const & vs,
                        Vector const & z,
                        double const & theta,
+                       vector_results const & v_res,
                        size_t const& n_root,
                        double const & omega,
                        size_t max_iter,
                        bool verbose)
-                : base::gmres_general(A, u, vs, theta, n_root, max_iter, verbose),
+                : base::gmres_general(A, u, vs, theta, v_res, n_root, max_iter, verbose),
                   omega_(omega), z_(z) { }
         // Private attributes
         using base::A_ ;
@@ -248,6 +258,7 @@ namespace ietl
         using base::theta_ ;
         using base::u_ ;
         using base::vs_ ;
+        using base::v_res_ ;
         using base::operator() ;
     private:
         Vector apply(Vector& input){
@@ -284,15 +295,17 @@ namespace ietl
     {
     public:
         typedef gmres_general<Matrix, Vector, VectorSpace> base ;
-        typedef typename base::size_t size_t ;
+        typedef typename base::size_t          size_t ;
+        typedef typename base::vector_results  vector_results ;
         gmres_initializer_modified(Matrix const & A,
                                    Vector const & u,
                                    VectorSpace const & vs,
                                    double const & theta,
+                                   vector_results const & vec_res,
                                    size_t const & n_root,
                                    size_t max_iter,
                                    bool verbose)
-                : base::gmres_general(A, u, vs, theta, n_root, max_iter, verbose) {} ;
+                : base::gmres_general(A, u, vs, theta, vec_res, n_root, max_iter, verbose) {} ;
         // 
         using base::A_ ;
         using base::n_root_ ;

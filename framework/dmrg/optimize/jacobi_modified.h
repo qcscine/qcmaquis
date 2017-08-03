@@ -74,6 +74,7 @@ namespace ietl
         using base::n_sa_ ;
         using base::overlap_ ;
         using base::site1_ ;
+        using base::u_and_uA_ ;
         using base::vecspace_ ;
         using base::v_guess_ ;
         //
@@ -89,7 +90,7 @@ namespace ietl
             for (size_t idx = 0; idx < n_sa_; idx++) { 
                 vector_type a = v_guess_[idx] ;
                 vector_type b = 0.*v_guess_[idx] ;
-                gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_, idx, max_iter_, false);
+                gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_, u_and_uA_, idx, max_iter_, false);
                 v_guess_[idx] = gmres(a, b, atol_init_);
                 v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
             }
@@ -231,7 +232,7 @@ namespace ietl
         vector_type z, inh = -r, t2 ;
         scalar_type dru, duu ;
         z = apply_operator(u) ;
-        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, i_state_, omega_, max_iter_, false);
+        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, u_and_uA_, i_state_, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u);

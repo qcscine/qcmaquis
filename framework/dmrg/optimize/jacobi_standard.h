@@ -98,39 +98,35 @@ namespace ietl
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                     const magnitude_type& rel_tol) ;
         void sort_prop(couple_vec& vector_values) ;
-        void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
+        void update_u_and_uA(const vector_type& u, const vector_type& uA, const size_t& idx) ;
     } ;
-    // Computes the action of an operator
+    // Computes the action of an operatorStation 12
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type
              jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
         vector_type y = x , y2 ;
-        //for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++) {
-        //    y -= ietl::dot((*it).first, y) * (*it).first;
-        //}
         ietl::mult(this->matrix_ , y , y2, i_state_) ;
-        ietl::project(y2,vecspace_) ;
-        //for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
-        //    y2 -= ietl::dot((*it).first,y2) * (*it).first ;
+        //ietl::project(y2,vecspace_);
+        for (typename std::vector<typename std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
+            y2 -= ietl::dot((*it).first,y2)/ietl::dot((*it).first,(*it).first) * (*it).first ;
         return y2 ;
     };
     // Update the vector with the quantity to orthogonalize
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_standard<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA)
+    void jacobi_davidson_standard<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA, const size_t& idx)
     {
-        u_and_uA_.resize(0) ;
-        for (size_t i = 0; i <= i_state_; i++) {
-            vector_type tmp = vecspace_.return_orthovec(u/ietl::two_norm(u), i_state_+1, i, site1_) ;
-            u_and_uA_.push_back(std::make_pair(tmp, uA)) ;
-        }
+        vector_type tmp = vecspace_.return_orthovec(u, i_state_+1, idx, site1_) ;
+        u_and_uA_.push_back(std::make_pair(tmp, uA)) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type t = V[idx] ;
-        ietl::project(t,vecspace_) ;
+        //ietl::project(t,vecspace_);
+        for (typename std::vector<typename std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
+            t -= ietl::dot((*it).first, t) / ietl::dot((*it).first,(*it).first) * (*it).first ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -214,7 +210,7 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, i_state_, max_iter_, false);
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, u_and_uA_, i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence

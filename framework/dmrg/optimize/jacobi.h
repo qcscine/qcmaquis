@@ -113,7 +113,7 @@ namespace ietl
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res) {};
         virtual void update_orthospace(VS& vecspace, const vector_type& u, const size_t& idx) {} ;
-        virtual void update_u_and_uA(const vector_type& u, const vector_type& uA) {} ;
+        virtual void update_u_and_uA(const vector_type& u, const vector_type& uA, const size_t& idx) {} ;
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -183,7 +183,7 @@ namespace ietl
         bool converged ;
         int n_iter ;
         rel_tol = ietl_tol_ ;
-        size_t n_root_found = 0;
+        size_t jcont = 0;
         // Vectors
         vector_double props(iter.max_iterations()) ;
         vector_space  V(iter.max_iterations())  ;
@@ -221,11 +221,15 @@ namespace ietl
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;
-                    if (k != n_sa_-1) {
-                        update_u_and_uA(u, uA);
-                        update_orthospace(vecspace_, eigvec, n_root_found_);
-                    }
                     res.push_back(std::make_pair(eigval, eigvec)) ;
+                    if (k != n_sa_-1) {
+                        jcont = 0 ;
+                        u_and_uA_.resize(0) ;
+                        for (typename vector_pairs::iterator it = res.begin(); it != res.end(); it++) {
+                            update_u_and_uA((*it).second, uA, jcont);
+                            jcont += 1;
+                        }
+                    }
                     break ;
                 }
                 solver(u, theta, r, V[n_iter], rel_tol);
@@ -240,7 +244,8 @@ namespace ietl
     }
     // Restarting routine
     template <class MATRIX, class VS, class ITER>
-    void jacobi_davidson<MATRIX, VS, ITER>::restart_jd (vector_space &V, vector_space &VA,
+    void jacobi_davidson<MATRIX, VS, ITER>::restart_jd (vector_space &V,
+                                                        vector_space &VA,
                                                         const matrix_double& eigvecs,
                                                         const vector_double& eigvals)
     {
