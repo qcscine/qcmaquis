@@ -221,9 +221,10 @@ namespace ietl
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;
-                    update_u_and_uA(u, uA) ;
-                    if (k != n_sa_-1)
-                        update_orthospace(vecspace_, eigvec, n_root_found_) ;
+                    if (k != n_sa_-1) {
+                        update_u_and_uA(u, uA);
+                        update_orthospace(vecspace_, eigvec, n_root_found_);
+                    }
                     res.push_back(std::make_pair(eigval, eigvec)) ;
                     break ;
                 }

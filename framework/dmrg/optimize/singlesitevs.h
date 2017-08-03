@@ -74,8 +74,9 @@ public:
         for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_.begin(); it != ortho_vecs_.end(); ++it)
             t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
         // Orthogonalization vs already converged roots
-        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it)
-            t -= ietl::dot(*it,t)*(*it);
+        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it) {
+            t -= ietl::dot(*it, t)/ietl::dot(*it,*it) *(*it);
+        }
     }
     //
     std::vector<double> coeff(const MPSTensor<Matrix, SymmGroup> & t)
@@ -99,7 +100,7 @@ public:
     MPSTensor<Matrix, SymmGroup> return_orthovec(const MPSTensor<Matrix, SymmGroup> & t, const std::size_t& idx, const std::size_t& i_2ortho, const std::size_t& site)
     {
         MPSTensor<Matrix, SymmGroup> tmp ;
-        tmp = contraction::site_ortho_boundaries(MPSTns_vec[idx], t, vec_sa_left_[idx][i_2ortho][site], vec_sa_right_[i_2ortho][idx][site+1]);
+        tmp = contraction::site_ortho_boundaries(MPSTns_vec[i_2ortho], t, vec_sa_left_[idx][i_2ortho][site], vec_sa_right_[i_2ortho][idx][site+1]);
         return tmp ;
     };
 private:

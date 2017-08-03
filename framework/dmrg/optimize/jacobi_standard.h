@@ -106,12 +106,13 @@ namespace ietl
              jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
         vector_type y = x , y2 ;
-        for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++) {
-            y -= ietl::dot((*it).first, y) * (*it).first;
-        }
+        //for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++) {
+        //    y -= ietl::dot((*it).first, y) * (*it).first;
+        //}
         ietl::mult(this->matrix_ , y , y2, i_state_) ;
-        for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
-            y2 -= ietl::dot((*it).first,y2) * (*it).first ;
+        ietl::project(y2,vecspace_) ;
+        //for (typename std::vector< std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
+        //    y2 -= ietl::dot((*it).first,y2) * (*it).first ;
         return y2 ;
     };
     // Update the vector with the quantity to orthogonalize
@@ -120,7 +121,7 @@ namespace ietl
     {
         u_and_uA_.resize(0) ;
         for (size_t i = 0; i <= i_state_; i++) {
-            vector_type tmp = vecspace_.return_orthovec(u/ietl::two_norm(u), i_state_, i, site1_) ;
+            vector_type tmp = vecspace_.return_orthovec(u/ietl::two_norm(u), i_state_+1, i, site1_) ;
             u_and_uA_.push_back(std::make_pair(tmp, uA)) ;
         }
     }
@@ -207,7 +208,6 @@ namespace ietl
             MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
         }
         theta = eigvals[0] ;
-        std::cout << theta << std::endl ;
     };
     //
     template<class MATRIX, class VS, class ITER>
