@@ -48,17 +48,19 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
-        typedef typename base::couple_val      couple_val;
-        typedef typename base::couple_vec      couple_vec;
-        typedef typename base::lt_couple       lt_couple;
-        typedef typename base::magnitude_type  magnitude_type;
-        typedef typename base::matrix_double   matrix_double;
-        typedef typename base::scalar_type     scalar_type;
-        typedef typename base::size_t          size_t ;
-        typedef typename base::vector_double   vector_double;
-        typedef typename base::vector_pairs    vector_pairs;
-        typedef typename base::vector_space    vector_space;
-        typedef typename base::vector_type     vector_type;
+        typedef typename base::couple_val         couple_val;
+        typedef typename base::couple_vec         couple_vec;
+        typedef typename base::lt_couple          lt_couple;
+        typedef typename base::magnitude_type     magnitude_type;
+        typedef typename base::matrix_double      matrix_double;
+        typedef typename base::result_collector   result_collector ;
+        typedef typename base::scalar_type        scalar_type;
+        typedef typename base::size_t             size_t ;
+        typedef typename base::vector_double      vector_double;
+        typedef typename base::vector_ortho_vec   vector_ortho_vec;
+        typedef typename base::vector_pairs       vector_pairs;
+        typedef typename base::vector_space       vector_space;
+        typedef typename base::vector_type        vector_type;
         //
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
@@ -69,6 +71,8 @@ namespace ietl
         using base::n_restart_max_ ;
         using base::n_restart_min_ ;
         using base::nsites_ ;
+        using base::ortho_space_left_ ;
+        using base::ortho_space_right_ ;
         using base::overlap_ ;
         using base::site1_ ;
         using base::site2_ ;
@@ -82,7 +86,7 @@ namespace ietl
     protected:
         vector_type apply_operator (const vector_type& x);
         void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
-        void update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx) ;
+        void update_orthospace(void) ;
     private:
         bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
@@ -98,7 +102,7 @@ namespace ietl
         void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
                     const magnitude_type& rel_tol) ;
         void sort_prop(couple_vec& vector_values) ;
-        void update_u_and_uA(const vector_type& u, const vector_type& uA, const size_t& idx) ;
+        void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
     } ;
     // Computes the action of an operatorStation 12
     template <class Matrix, class VS, class ITER>
@@ -108,19 +112,32 @@ namespace ietl
         vector_type y = x , y2 ;
         ietl::mult(this->matrix_ , y , y2, i_state_) ;
         //ietl::project(y2,vecspace_);
-        for (typename std::vector<typename std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
+        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                y2 -= ietl::dot((*it).first,y2)/ietl::dot((*it).first,(*it).first) * (*it).first ;
+                y2 -= ietl::dot((*it).first,y2) * (*it).second ;
         return y2 ;
     };
     // Update the vector with the quantity to orthogonalize
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_standard<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA, const size_t& idx)
+    void jacobi_davidson_standard<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA)
     {
-        vector_type tmp = vecspace_.return_orthovec(u, i_state_+1, idx, site1_) ;
-        for (typename std::vector< std::pair<vector_type,vector_type> >::iterator it = u_and_uA_.begin(); it!= u_and_uA_.end(); it++)
-            tmp -= ietl::dot((*it).first,tmp)/ietl::dot((*it).first,(*it).first) * (*it).first ;
-        u_and_uA_.push_back(std::make_pair(tmp/ietl::two_norm(tmp), uA)) ;
+        vector_type tmp = u / ietl::two_norm(u) ;
+        u_and_uA_.push_back(std::make_pair(std::make_pair(tmp,tmp),tmp)) ;
+    }
+    // Routine doing deflation
+    template <class Matrix, class VS, class ITER>
+    void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(void)
+    {
+        size_t jcont = 0 ;
+        for (typename result_collector::iterator it = u_and_uA_.begin(); it!= u_and_uA_.end(); it++) {
+            vector_type tmp = vecspace_.return_orthovec((*it).first.first, i_state_ + 1, jcont, site1_) ;
+            for (size_t j = 0 ; j < jcont ; j++)
+                tmp -= ietl::dot(ortho_space_left_[j].first, tmp) * ortho_space_left_[j].second ;
+            tmp /= ietl::two_norm(tmp) ;
+            ortho_space_left_.push_back(std::make_pair(tmp, tmp));
+            ortho_space_right_.push_back(std::make_pair(tmp, tmp));
+            jcont += 1 ;
+        }
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
@@ -128,9 +145,9 @@ namespace ietl
     {
         vector_type t = V[idx] ;
         //ietl::project(t,vecspace_);
-        for (typename std::vector<typename std::pair<vector_type,vector_type > >::iterator it = u_and_uA_.begin(); it != u_and_uA_.end(); it++)
+        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                t -= ietl::dot((*it).first, t) / ietl::dot((*it).first, (*it).first) * (*it).first;
+                t -= ietl::dot((*it).first, t) * (*it).second ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -146,12 +163,6 @@ namespace ietl
         vector_type r = uA ;
         r -= theta*u;
         return r ;
-    }
-    // Routine doing deflation
-    template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx)
-    {
-        vecspace_.add_orthovec(v, idx, site1_) ;
     }
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class ITER>
@@ -214,7 +225,8 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
                                                             vector_type& t, const magnitude_type& rel_tol)
     {
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, u_and_uA_, i_state_, max_iter_, false);
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_left_, ortho_space_right_,
+                                                      i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence

@@ -55,14 +55,23 @@ namespace ietl
         typedef typename boost::numeric::ublas::matrix< scalar_type >  matrix_scalar ;
         typedef typename std::vector<scalar_type>                      vector_scalar ;
         typedef typename std::vector<Vector>                           vector_space ;
-        typedef typename std::vector< std::pair<Vector,Vector> >       vector_results ;
+        typedef typename std::pair<Vector , Vector >                   pair_vectors ;
+        typedef typename std::vector< pair_vectors >                   vector_ortho_vec ;
         //
         // Public methods
         // --------------
         // Constructor
-        gmres_general(Matrix const & A, Vector const & u, VectorSpace const & vs, double const & theta,
-                      const vector_results& v_res, size_t const& n_root, std::size_t max_iter = 100, bool verbose = false)
-                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root), v_res_(v_res)
+        gmres_general(Matrix const & A,
+                      Vector const & u,
+                      VectorSpace const & vs,
+                      double const & theta,
+                      const vector_ortho_vec& ortho_vec_left,
+                      const vector_ortho_vec& ortho_vec_right,
+                      size_t const& n_root,
+                      std::size_t max_iter = 100,
+                      bool verbose = false)
+                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root),
+                  ortho_vec_left_(ortho_vec_left), ortho_vec_right_(ortho_vec_right)
         { }
         // () operator. Returns the solution of the GMRES problem
         Vector operator()(Vector const & b,
@@ -163,6 +172,20 @@ namespace ietl
         // THis function is left virtual since its definition is different for standard
         // and shift-and-invert problems
         virtual Vector apply(Vector& input) {} ;
+        // Orthogonalization routine
+        void orthogonalize_left(Vector& input)
+        {
+            for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
+                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                    input -= ietl::dot((*it).first, input) * (*it).second ;
+        }
+        //
+        void orthogonalize_right(Vector& input)
+        {
+            for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
+                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                    input -= ietl::dot((*it).first, input) * (*it).second ;
+        }
         //
         // Private attributes
         // ------------------
@@ -170,13 +193,13 @@ namespace ietl
         // u_       --> Vector used to determine the orthogonal subspace
         // max_iter --> Maximum number of iterations for the GMRES algorithm
         // vebose   --> Controls the output printing
-        Matrix A_ ;
-        Vector u_ ;
-        std::size_t max_iter , n_root_ ;
         bool verbose ;
         double theta_ ;
+        Matrix A_ ;
+        std::size_t max_iter , n_root_ ;
+        Vector u_ ;
         VectorSpace vs_ ;
-        vector_results v_res_ ;
+        vector_ortho_vec ortho_vec_left_, ortho_vec_right_ ;
     };
     //
     // GMRES_STANDARD OBJECT
@@ -187,24 +210,26 @@ namespace ietl
     {
     public:
         typedef gmres_general<Matrix, Vector, VectorSpace> base ;
-        typedef typename base::size_t          size_t ;
-        typedef typename base::vector_results  vector_results ;
+        typedef typename base::size_t                      size_t ;
+        typedef typename base::vector_ortho_vec            vector_ortho_vec ;
         //
         gmres_standard(Matrix const & A,
                        Vector const & u,
                        VectorSpace const & vs,
                        double const & theta,
-                       vector_results const & v_res,
+                       const vector_ortho_vec& ortho_vec_left,
+                       const vector_ortho_vec& ortho_vec_right,
                        size_t const& n_root,
                        size_t max_iter,
                        bool verbose)
-        : base::gmres_general(A, u, vs, theta, v_res, n_root, max_iter, verbose) { }
+        : base::gmres_general(A, u, vs, theta, ortho_vec_left, ortho_vec_right, n_root, max_iter, verbose) { }
         // Private attributes
         using base::A_ ;
         using base::n_root_ ;
+        using base::ortho_vec_left_ ;
+        using base::ortho_vec_right_ ;
         using base::theta_ ;
         using base::u_ ;
-        using base::v_res_ ;
         using base::vs_ ;
         using base::operator() ;
     private:
@@ -214,15 +239,11 @@ namespace ietl
             // t2 = (1-uu*) x
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
-            for (typename vector_results::iterator it = v_res_.begin(); it != v_res_.end(); it++)
-                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    t2 -= ietl::dot((*it).first, t2)/ietl::dot((*it).first,(*it).first) * (*it).first;
+            orthogonalize_right(t2) ;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
-            for (typename vector_results::iterator it = v_res_.begin(); it != v_res_.end(); it++)
-                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    y -= ietl::dot((*it).first, y)/ietl::dot((*it).first,(*it).first) * (*it).first;
+            orthogonalize_left(y) ;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_;
@@ -240,27 +261,30 @@ namespace ietl
     {
     public:
         typedef gmres_general<Matrix, Vector, VectorSpace> base ;
-        typedef typename base::size_t          size_t ;
-        typedef typename base::vector_results  vector_results ;
+        typedef typename base::size_t                      size_t ;
+        typedef typename base::vector_ortho_vec            vector_ortho_vec ;
+        //
         gmres_modified(Matrix const & A,
                        Vector const & u,
                        VectorSpace const & vs,
                        Vector const & z,
                        double const & theta,
-                       vector_results const & v_res,
+                       const vector_ortho_vec& ortho_vec_left,
+                       const vector_ortho_vec& ortho_vec_right,
                        size_t const& n_root,
                        double const & omega,
                        size_t max_iter,
                        bool verbose)
-                : base::gmres_general(A, u, vs, theta, v_res, n_root, max_iter, verbose),
+                : base::gmres_general(A, u, vs, theta, ortho_vec_left, ortho_vec_right, n_root, max_iter, verbose),
                   omega_(omega), z_(z) { }
         // Private attributes
         using base::A_ ;
         using base::n_root_ ;
+        using base::ortho_vec_left_ ;
+        using base::ortho_vec_right_ ;
         using base::theta_ ;
         using base::u_ ;
         using base::vs_ ;
-        using base::v_res_ ;
         using base::operator() ;
     private:
         Vector apply(Vector& input){
@@ -297,17 +321,19 @@ namespace ietl
     {
     public:
         typedef gmres_general<Matrix, Vector, VectorSpace> base ;
-        typedef typename base::size_t          size_t ;
-        typedef typename base::vector_results  vector_results ;
+        typedef typename base::size_t                      size_t ;
+        typedef typename base::vector_ortho_vec            vector_ortho_vec ;
+        //
         gmres_initializer_modified(Matrix const & A,
                                    Vector const & u,
                                    VectorSpace const & vs,
                                    double const & theta,
-                                   vector_results const & vec_res,
+                                   const vector_ortho_vec& ortho_vec_left,
+                                   const vector_ortho_vec& ortho_vec_right,
                                    size_t const & n_root,
                                    size_t max_iter,
                                    bool verbose)
-                : base::gmres_general(A, u, vs, theta, vec_res, n_root, max_iter, verbose) {} ;
+                : base::gmres_general(A, u, vs, theta, ortho_vec_left, ortho_vec_right, n_root, max_iter, verbose) {} ;
         // 
         using base::A_ ;
         using base::n_root_ ;

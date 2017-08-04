@@ -71,19 +71,22 @@ namespace ietl
     class jacobi_davidson
     {
     public:
-        typedef typename vectorspace_traits<VS>::scalar_type              scalar_type;
-        typedef typename vectorspace_traits<VS>::vector_type              vector_type;
-        typedef typename vector_type::bm_type 		      		          bm_type ;
-        typedef typename std::vector< bm_type >                           vector_bm ;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        typedef typename std::size_t                                      size_t ;
-        typedef typename std::pair<int, float>                            couple_val ;
-        typedef typename std::vector<couple_val>                          couple_vec ;
-        typedef typename std::vector<double>                              vector_double ;
-        typedef typename std::vector<vector_double>                       matrix_double ;
-        typedef typename std::vector<vector_type>                         vector_space;
-        typedef typename std::pair<magnitude_type, vector_type >          pair_results ;
-        typedef typename std::vector< pair_results >                      vector_pairs ;
+        typedef typename vectorspace_traits<VS>::scalar_type                     scalar_type;
+        typedef typename vectorspace_traits<VS>::vector_type                     vector_type;
+        typedef typename vector_type::bm_type 		      		                 bm_type ;
+        typedef typename std::vector< bm_type >                                  vector_bm ;
+        typedef typename ietl::number_traits<scalar_type>::magnitude_type        magnitude_type;
+        typedef typename std::size_t                                             size_t ;
+        typedef typename std::pair<int, float>                                   couple_val ;
+        typedef typename std::vector<couple_val>                                 couple_vec ;
+        typedef typename std::vector<double>                                     vector_double ;
+        typedef typename std::vector<vector_double>                              matrix_double ;
+        typedef typename std::vector<vector_type>                                vector_space;
+        typedef typename std::pair<magnitude_type, vector_type >                 pair_results ;
+        typedef typename std::pair<vector_type , vector_type >                   pair_vectors ;
+        typedef typename std::vector< pair_results >                             vector_pairs ;
+        typedef typename std::vector< std::pair < pair_vectors, vector_type > >  result_collector ;
+        typedef typename std::vector< pair_vectors >                             vector_ortho_vec ;
         jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                         const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
                         const double& ietl_tol, const size_t & i_gmres_guess);
@@ -112,8 +115,8 @@ namespace ietl
                             const magnitude_type& rel_tol ) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res) {};
-        virtual void update_orthospace(VS& vecspace, const vector_type& u, const size_t& idx) {} ;
-        virtual void update_u_and_uA(const vector_type& u, const vector_type& uA, const size_t& idx) {} ;
+        virtual void update_orthospace(void) {} ;
+        virtual void update_u_and_uA(const vector_type& u, const vector_type& uA) {} ;
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -129,12 +132,13 @@ namespace ietl
         double ietl_tol_, overlap_ ;
         int nsites_, site1_, site2_ ;
         FortranMatrix<scalar_type> M ;
-        MATRIX const & matrix_ ;
-        size_t i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
-        std::vector< std::pair<vector_type,vector_type> > u_and_uA_ ;
-        vector_bm Hdiag_ ;
-        vector_space v_guess_ ;
-        VS vecspace_ ;
+        MATRIX const &      matrix_ ;
+        vector_ortho_vec    ortho_space_left_ , ortho_space_right_ ;
+        size_t              i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
+        vector_bm           Hdiag_ ;
+        result_collector    u_and_uA_ ;
+        vector_space        v_guess_ ;
+        VS                  vecspace_ ;
     private:
         // Private method, interface to the LAPACK diagonalization routine
         void restart_jd(vector_space &V, vector_space &VA, const matrix_double& eigvec, const vector_double& eigval);
@@ -183,7 +187,6 @@ namespace ietl
         bool converged ;
         int n_iter ;
         rel_tol = ietl_tol_ ;
-        size_t jcont = 0;
         // Vectors
         vector_double props(iter.max_iterations()) ;
         vector_space  V(iter.max_iterations())  ;
@@ -223,12 +226,10 @@ namespace ietl
                     eigvec /= ietl::two_norm(eigvec) ;
                     res.push_back(std::make_pair(eigval, eigvec)) ;
                     if (k != n_sa_-1) {
-                        jcont = 0 ;
-                        u_and_uA_.resize(0) ;
-                        for (typename vector_pairs::iterator it = res.begin(); it != res.end(); it++) {
-                            update_u_and_uA((*it).second, uA, jcont) ;
-                            jcont += 1;
-                        }
+                        ortho_space_left_.resize(0) ;
+                        ortho_space_right_.resize(0) ;
+                        update_u_and_uA(eigvec, uA) ;
+                        update_orthospace() ;
                     }
                     break ;
                 }

@@ -72,6 +72,8 @@ namespace ietl
         using base::max_iter_ ;
         using base::n_restart_max_ ;
         using base::n_sa_ ;
+        using base::ortho_space_left_ ;
+        using base::ortho_space_right_ ;
         using base::overlap_ ;
         using base::site1_ ;
         using base::u_and_uA_ ;
@@ -90,7 +92,9 @@ namespace ietl
             for (size_t idx = 0; idx < n_sa_; idx++) { 
                 vector_type a = v_guess_[idx] ;
                 vector_type b = 0.*v_guess_[idx] ;
-                gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_, u_and_uA_, idx, max_iter_, false);
+                gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_,
+                                                                          ortho_space_left_, ortho_space_right_, idx, max_iter_,
+                                                                          false);
                 v_guess_[idx] = gmres(a, b, atol_init_);
                 v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
             }
@@ -116,7 +120,8 @@ namespace ietl
         // Methods
         void sort_prop(couple_vec& vector_values) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
-        void update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx) ;
+        void update_orthospace(void) ;
+        void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
         // Attributes
         double atol_init_ ;
         magnitude_type omega_ ;
@@ -133,11 +138,31 @@ namespace ietl
     };
     // Routine doing deflation
     template <class Matrix, class VS, class ITER>
-    void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(VS& vecspace, const vector_type& v, const size_t& idx)
+    void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(void)
     {
-        vector_type tmp = v ;
-        tmp /= ietl::two_norm(tmp) ;
-        vecspace_.add_orthovec(tmp, idx, site1_) ;
+        size_t jcont = 0 ;
+        for (typename result_collector::iterator it = u_and_uA_.begin(); it!= u_and_uA_.end(); it++) {
+            vector_type tmp  = vecspace_.return_orthovec((*it).first.second, i_state_ + 1, jcont, site1_) ;
+            vector_type tmpA = vecspace_.return_orthovec((*it).second, i_state_ + 1, jcont, site1_) ;
+            for (size_t j = 0 ; j < jcont ; j++) {
+                tmp  -= ietl::dot(ortho_space_left_[j].first, tmp) * ortho_space_left_[j].second;
+                tmpA -= ietl::dot(ortho_space_right_[j].first, tmpA) * ortho_space_right_[j].second;
+            }
+            tmp /= ietl::two_norm(tmp) ;
+            ortho_space_left_.push_back(std::make_pair(tmp, tmp));
+            ortho_space_right_.push_back(std::make_pair(tmpA, tmpA));
+            jcont += 1 ;
+        }
+    }
+    // Update the vector with the quantity to orthogonalize
+    template <class Matrix, class VS, class ITER>
+    void jacobi_davidson_modified<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA)
+    {
+        vector_type tmp1, tmp2, tmp3 ;
+        tmp1 = u  / ietl::two_norm(uA) ;
+        tmp2 = uA / ietl::two_norm(uA) ;
+        tmp3 = apply_operator(uA) ;
+        u_and_uA_.push_back(std::make_pair(std::make_pair(tmp1,tmp2),tmp3)) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
@@ -225,27 +250,27 @@ namespace ietl
         theta = eigvals[0] ;
     };
     //
-    template<class MATRIX, class VS, class ITER>
-    void jacobi_davidson_modified<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
-                                                            vector_type& t, const magnitude_type& rel_tol)
-    {
-        vector_type z, inh = -r, t2 ;
-        scalar_type dru, duu ;
-        z = apply_operator(u) ;
-        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, u_and_uA_, i_state_, omega_, max_iter_, false);
-        // initial guess for better convergence
-        if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
-            dru = ietl::dot(r, u);
-            duu = ietl::dot(u, u);
-            t = (-r + dru / duu * u);
-        } else if (i_gmres_guess_ == 1) {
-            t = 0.*r ;
-        }
-        if (max_iter_ > 0) {
-            t2 = gmres(inh, t, rel_tol);
-            t = t2 / ietl::two_norm(t2);
-        }
-    }
+    //template<class MATRIX, class VS, class ITER>
+    //void jacobi_davidson_modified<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
+    //                                                        vector_type& t, const magnitude_type& rel_tol)
+    //{
+    //    vector_type z, inh = -r, t2 ;
+    //    scalar_type dru, duu ;
+    //    z = apply_operator(u) ;
+    //    gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, u_and_uA_, i_state_, omega_, max_iter_, false);
+    //    // initial guess for better convergence
+    //    if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
+    //        dru = ietl::dot(r, u);
+    //        duu = ietl::dot(u, u);
+    //        t = (-r + dru / duu * u);
+    //    } else if (i_gmres_guess_ == 1) {
+    //        t = 0.*r ;
+    //    }
+    //    if (max_iter_ > 0) {
+    //        t2 = gmres(inh, t, rel_tol);
+    //        t = t2 / ietl::two_norm(t2);
+    //    }
+    //}
     template<class MATRIX, class VS, class ITER>
     typename jacobi_davidson_modified<MATRIX, VS, ITER>::vector_double
     jacobi_davidson_modified<MATRIX, VS, ITER>::generate_property(const vector_space& V, const vector_space& VA, const size_t& ndim,
