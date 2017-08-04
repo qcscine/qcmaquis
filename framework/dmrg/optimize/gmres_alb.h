@@ -215,12 +215,14 @@ namespace ietl
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
             for (typename vector_results::iterator it = v_res_.begin(); it != v_res_.end(); it++)
-                t2 -= ietl::dot((*it).first, t2)/ietl::dot((*it).first,(*it).first) * (*it).first;
+                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                    t2 -= ietl::dot((*it).first, t2)/ietl::dot((*it).first,(*it).first) * (*it).first;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
             for (typename vector_results::iterator it = v_res_.begin(); it != v_res_.end(); it++)
-                y -= ietl::dot((*it).first, y)/ietl::dot((*it).first,(*it).first) * (*it).first;
+                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                    y -= ietl::dot((*it).first, y)/ietl::dot((*it).first,(*it).first) * (*it).first;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_;

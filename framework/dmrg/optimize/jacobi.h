@@ -226,7 +226,7 @@ namespace ietl
                         jcont = 0 ;
                         u_and_uA_.resize(0) ;
                         for (typename vector_pairs::iterator it = res.begin(); it != res.end(); it++) {
-                            update_u_and_uA((*it).second, uA, jcont);
+                            update_u_and_uA((*it).second, uA, jcont) ;
                             jcont += 1;
                         }
                     }
