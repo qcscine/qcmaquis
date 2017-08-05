@@ -70,18 +70,19 @@ namespace ietl
         using base::max_iter_ ;
         using base::n_restart_max_ ;
         using base::n_restart_min_ ;
-        using base::nsites_ ;
+        using base::n_root_found_ ;
+        using base::order_ ;
         using base::ortho_space_left_ ;
         using base::ortho_space_right_ ;
-        using base::overlap_ ;
         using base::site1_ ;
         using base::site2_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
-                                 const int& nsites, const int& site1, const int& site2, const double& tol, const size_t& ietl_gmres_guess)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, ietl_gmres_guess) {} ;
+                                 const int& nsites, const int& site1, const int& site2, const double& tol, const size_t& ietl_gmres_guess,
+                                 const std::vector<int>& order)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, ietl_gmres_guess, order) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
@@ -111,10 +112,9 @@ namespace ietl
     {
         vector_type y = x , y2 ;
         ietl::mult(this->matrix_ , y , y2, i_state_) ;
-        //ietl::project(y2,vecspace_);
         for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                y2 -= ietl::dot((*it).first,y2) * (*it).second ;
+                y2 -= ietl::dot((*it).first,y2) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         return y2 ;
     };
     // Update the vector with the quantity to orthogonalize
@@ -128,15 +128,13 @@ namespace ietl
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(void)
     {
-        size_t jcont = 0 ;
-        for (typename result_collector::iterator it = u_and_uA_.begin(); it!= u_and_uA_.end(); it++) {
-            vector_type tmp = vecspace_.return_orthovec((*it).first.first, i_state_ + 1, jcont, site1_) ;
+        for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
+            vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont].first.first, order_[n_root_found_], order_[jcont], site1_) ;
             for (size_t j = 0 ; j < jcont ; j++)
                 tmp -= ietl::dot(ortho_space_left_[j].first, tmp) * ortho_space_left_[j].second ;
             tmp /= ietl::two_norm(tmp) ;
             ortho_space_left_.push_back(std::make_pair(tmp, tmp));
             ortho_space_right_.push_back(std::make_pair(tmp, tmp));
-            jcont += 1 ;
         }
     }
     // Update the vector space in JCD iteration
@@ -147,7 +145,7 @@ namespace ietl
         //ietl::project(t,vecspace_);
         for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                t -= ietl::dot((*it).first, t) * (*it).second ;
+                t -= ietl::dot((*it).first, t) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -228,6 +226,9 @@ namespace ietl
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_left_, ortho_space_right_,
                                                       i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
+        //for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
+        //    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+        //        inh -= ietl::dot((*it).first, inh) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         scalar_type dru, duu ;
         // initial guess for better convergence
         if (i_gmres_guess_ == 0) {

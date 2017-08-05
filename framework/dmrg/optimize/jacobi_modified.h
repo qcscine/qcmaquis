@@ -51,17 +51,18 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
-        typedef typename base::bm_type         bm_type ;
-        typedef typename base::couple_vec      couple_vec ;
-        typedef typename base::lt_couple       lt_couple ;
-        typedef typename base::magnitude_type  magnitude_type;
-        typedef typename base::matrix_double   matrix_double ;
-        typedef typename base::scalar_type     scalar_type;
-        typedef typename base::size_t          size_t ;
-        typedef typename base::vector_double   vector_double;
-        typedef typename base::vector_pairs    vector_pairs;
-        typedef typename base::vector_space    vector_space;
-        typedef typename base::vector_type     vector_type;
+        typedef typename base::bm_type            bm_type ;
+        typedef typename base::couple_vec         couple_vec ;
+        typedef typename base::lt_couple          lt_couple ;
+        typedef typename base::magnitude_type     magnitude_type;
+        typedef typename base::matrix_double      matrix_double ;
+        typedef typename base::result_collector   result_collector ;
+        typedef typename base::scalar_type        scalar_type;
+        typedef typename base::size_t             size_t ;
+        typedef typename base::vector_double      vector_double;
+        typedef typename base::vector_pairs       vector_pairs;
+        typedef typename base::vector_space       vector_space;
+        typedef typename base::vector_type        vector_type;
         // Attributes taken from the mother class
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;

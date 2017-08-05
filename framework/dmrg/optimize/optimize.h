@@ -105,6 +105,8 @@ public:
         // State-average calculation
         n_root_          = mps_vector.size() ;
         do_stateaverage_ = parms_["n_states_sa"].as<int>() > 0 ;
+        for (size_t k = 0; k < n_root_; k++)
+            order.push_back(k) ;
         //TODO ALB TO CHECK IF IT'S USEFUL OR NOT
         mps = mps_vector[0] ;
         mps.canonize(site);
@@ -326,6 +328,12 @@ protected:
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
         return Mmax;
     }
+    // -- UPDATE THE ENERGY ORDER OF THE STATES --
+    void update_order(const std::vector< std::pair<float,int> >& sorter)
+    {
+        for (size_t i = 0; i < n_root_; i++)
+            order[i]  = sorter[i].second ;
+    }
     // +----------+
     //  ATTRIBUTES
     // +----------+
@@ -348,6 +356,7 @@ protected:
     // State average
     std::vector< std::vector<int> > mps2follow;
     std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
+    std::vector< int > order;
     int n_root_ ;
 };
 

@@ -51,6 +51,7 @@ public:
     using base::mps2follow ;
     using base::mps_vector ;
     using base::n_root_ ;
+    using base::order ;
     using base::left_ ;
     using base::left_sa_ ;
     using base::right_ ;
@@ -60,16 +61,17 @@ public:
     using base::iteration_results_ ;
     using base::stop_callback ;
     using base::root_homing_type_ ;
+    using base::update_order ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
     // Constructor declaration
-    ss_optimize(MPS<Matrix, SymmGroup> & mps_,
+    ss_optimize(MPS<Matrix, SymmGroup> & mps_, 
                 std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
+    : base(mps_, mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     { };
     // Inline function to get the site index modulo 2
@@ -87,14 +89,17 @@ public:
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
         iteration_results_.clear();
         std::size_t L = mps_vector[0].length();
-        for (size_t i = 0 ; i < n_root_ ; i++)
-            assert(mps_vector[0].length() == L);
+        for (size_t i = 1 ; i < n_root_ ; i++)
+            assert(mps_vector[i].length() == L);
         //
         int _site = 0, site = 0;
         if (initial_site != -1) {
             _site = initial_site;
             site = to_site(L, _site);
         }
+        //TODO ALB This should be done with pointers, very stupid
+        std::vector< std::pair<float,int> > sorter ;
+        sorter.resize(n_root_) ;
         // Initialization of the overlap object
         Storage::prefetch(left_[site]) ;
         Storage::prefetch(right_[site+1]) ;
@@ -116,15 +121,13 @@ public:
             assert( right_[site+1].reasonable() ); // in case something went wrong
             boost::chrono::high_resolution_clock::time_point now, then;
             std::vector < std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            //SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
             SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site);
-            //SiteProblem<Matrix, SymmGroup> sp(left_sa_[0][site], right_sa_[0][site+1], mpo[site]);
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
-                ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site],
+                ortho_vecs[n] = contraction::site_ortho_boundaries(mps_vector[0][site],
                                                                    base::ortho_mps[n][site],
                                                                    base::ortho_left_[n][site],
                                                                    base::ortho_right_[n][site+1]);
@@ -143,24 +146,25 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, ortho_vecs);
+                                         vec_sa_left_, vec_sa_right_, order, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
                     res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_,
-                                              vec_sa_left_, vec_sa_right_, ortho_vecs);
+                                              vec_sa_left_, vec_sa_right_, order, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
                 // Collects the results
                 if (n_root_ > 0) {
+                    mps[site]  = res[0].second ;
                     mps_vector[0][site]  = res[0].second ;
                     for (size_t k = 1; k < n_root_; k++) {
                         mps_vector[k][site] = res[k].second;
                         mps[site] += res[k].second;
                     }
-                    mps[site] /= n_root_;
+                    mps[site] /= n_root_ ;
                 }
             }
             // +---------------------+
@@ -186,7 +190,9 @@ public:
             std::size_t Mmax = this->get_Mmax(sweep), Mval;
             truncation_results trunc;
             std::vector<truncation_results> trunc_sa ;
-            //
+            // +---------------------+
+            //  Truncation of the MPS
+            // +---------------------+
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
@@ -235,15 +241,20 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
-            if (root_homing_type_ == 1){
-                if (do_stateaverage_){
-                    for (size_t k = 0 ; k < n_root_ ; k++) {
-                        poverlap_vec_[k].update(mps_vector[k], site, lr) ;
-                    }
-                } else {
-                    poverlap_vec_[0].update(mps, site, lr); 
-                }
+            // +----------------+
+            //  Final operations
+            // +----------------+
+            std::cout << "Pippo" << std::endl ;
+            for (size_t i = 0; i < n_root_; i++) {
+                sorter[i].first  = res[i].first ;
+                sorter[i].second = i ;
             }
+            std::sort(sorter.begin(), sorter.end()) ;
+            this->update_order(sorter) ;
+            //    
+            if (root_homing_type_ == 1)
+                for (size_t k = 0 ; k < n_root_ ; k++)
+                    poverlap_vec_[k].update(mps_vector[k], site, lr) ;
             //
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
@@ -257,6 +268,8 @@ public:
         initial_site = -1;
     }
     //
+    // Simple function to print the header
+    // -----------------------------------
     void print_header(int& sweep, int& site, int& lr){
         char buffer[40] ;
 	    int n , a ;
@@ -271,6 +284,9 @@ public:
         std::cout << buffer << std::endl ;
         std::cout << " +-----------------------------------+" << std::endl ;
     }
+// +----------+
+//  Attributes
+// +----------+
 private:
     int initial_site;
 };

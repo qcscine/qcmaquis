@@ -48,6 +48,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     int root_homing_type,
                     std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left,
                     std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
+                    const std::vector< int > & sorter, 
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >(),
                     int site2=0)
 {

@@ -89,7 +89,7 @@ namespace ietl
         typedef typename std::vector< pair_vectors >                             vector_ortho_vec ;
         jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                         const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                        const double& ietl_tol, const size_t & i_gmres_guess);
+                        const double& ietl_tol, const size_t & i_gmres_guess, const std::vector<int>& order);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         vector_pairs calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -129,16 +129,17 @@ namespace ietl
             }
         };
         // Protected attributes
-        double ietl_tol_, overlap_ ;
-        int nsites_, site1_, site2_ ;
-        FortranMatrix<scalar_type> M ;
-        MATRIX const &      matrix_ ;
-        vector_ortho_vec    ortho_space_left_ , ortho_space_right_ ;
-        size_t              i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
-        vector_bm           Hdiag_ ;
-        result_collector    u_and_uA_ ;
-        vector_space        v_guess_ ;
-        VS                  vecspace_ ;
+        double                       ietl_tol_, overlap_ ;
+        int                          nsites_, site1_, site2_ ;
+        FortranMatrix<scalar_type>   M ;
+        MATRIX const &               matrix_ ;
+        vector_ortho_vec             ortho_space_left_ , ortho_space_right_ ;
+        size_t                       i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
+        result_collector             u_and_uA_ ;
+        vector_bm                    Hdiag_ ;
+        vector_space                 v_guess_ ;
+        VS                           vecspace_ ;
+        std::vector<int>             order_ ;
     private:
         // Private method, interface to the LAPACK diagonalization routine
         void restart_jd(vector_space &V, vector_space &VA, const matrix_double& eigvec, const vector_double& eigval);
@@ -148,12 +149,13 @@ namespace ietl
                 return (a.first < b.first) ;
             }
         };
+        // Private attributes
     };
     // -- Constructor --
     template <class MATRIX, class VS, class ITER>
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                                                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                                                       const double& ietl_tol, const size_t& i_gmres_guess ) :
+                                                       const double& ietl_tol, const size_t& i_gmres_guess, const std::vector<int>& order) :
         matrix_(matrix),
         vecspace_(vec),
         nsites_(nsites),
@@ -170,6 +172,7 @@ namespace ietl
         i_state_(0)
     {
         // Generates guess
+        order_ = order ;
         n_sa_ = n_root(vec) ;
         for (size_t k = 0; k < n_sa_; k++) {
             v_guess_.push_back(new_vector(vec, k));
@@ -188,9 +191,9 @@ namespace ietl
         int n_iter ;
         rel_tol = ietl_tol_ ;
         // Vectors
-        vector_double props(iter.max_iterations()) ;
-        vector_space  V(iter.max_iterations())  ;
-        vector_space  VA(iter.max_iterations()) ;
+        vector_double  props(iter.max_iterations()) ;
+        vector_space   V(iter.max_iterations())  ;
+        vector_space   VA(iter.max_iterations()) ;
         vector_type u, uA;
         vector_double eigvals ;
         matrix_double eigvecs ;
@@ -198,15 +201,16 @@ namespace ietl
         vector_pairs res ;
         // Initialization
         M.resize(iter.max_iterations(), iter.max_iterations());
+        res.resize(n_sa_);
         print_header_table() ;
         //
         // Main loop of the algorithm
         // --------------------------
         // Loop over all the states to be orthogonalized
         for (int k = 0 ; k < n_sa_ ; k++){
-            V[0] = v_guess_[k] ;
-            n_iter = 0 ;
-            i_state_ = k ;
+            n_iter   = 0 ;
+            i_state_ = order_[k] ;
+            V[0]     = v_guess_[i_state_] ;
             do {
                 update_vecspace(V, VA, n_iter, res);
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
@@ -224,7 +228,7 @@ namespace ietl
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;
-                    res.push_back(std::make_pair(eigval, eigvec)) ;
+                    res[i_state_] = std::make_pair(eigval, eigvec) ;
                     if (k != n_sa_-1) {
                         ortho_space_left_.resize(0) ;
                         ortho_space_right_.resize(0) ;

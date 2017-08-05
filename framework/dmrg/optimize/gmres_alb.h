@@ -177,14 +177,14 @@ namespace ietl
         {
             for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
                 if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    input -= ietl::dot((*it).first, input) * (*it).second ;
+                    input -= ietl::dot((*it).first, input) * (*it).first / ietl::dot((*it).first, (*it).first);
         }
         //
         void orthogonalize_right(Vector& input)
         {
             for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
                 if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    input -= ietl::dot((*it).first, input) * (*it).second ;
+                    input -= ietl::dot((*it).first, input) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         }
         //
         // Private attributes
