@@ -135,9 +135,6 @@ namespace ietl
         vector_type y, buf ;
         ietl::mult(this->matrix_ , x , buf, i_state_);
         y = this->omega_*x - buf;
-        //for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-        //    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-        //        y -= ietl::dot((*it).first,y) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         return y;
     };
     // Routine doing deflation
@@ -206,6 +203,9 @@ namespace ietl
         vector_type r = uA ;
         r -= u / theta;
         r /= ietl::two_norm(u) ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
+            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                r -= ietl::dot((*it).first, r) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
@@ -272,14 +272,8 @@ namespace ietl
         vector_type z, inh = -r, t2 ;
         scalar_type dru, duu ;
         z = apply_operator(u) ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                z -= ietl::dot((*it).first, z) * (*it).first / ietl::dot((*it).first, (*it).first) ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                inh -= ietl::dot((*it).first, inh) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, z, theta, ortho_space_left_, ortho_space_right_, 
-                                                      i_state_, omega_, max_iter_, true);
+                                                      i_state_, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u);

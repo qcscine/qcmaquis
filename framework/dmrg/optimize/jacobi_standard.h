@@ -111,9 +111,6 @@ namespace ietl
     {
         vector_type y = x , y2 ;
         ietl::mult(this->matrix_ , y , y2, i_state_) ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                y2 -= ietl::dot((*it).first,y2) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         return y2 ;
     };
     // Update the vector with the quantity to orthogonalize
@@ -141,9 +138,10 @@ namespace ietl
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type t = V[idx] ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                t -= ietl::dot((*it).first, t) * (*it).first / ietl::dot((*it).first, (*it).first) ;
+        if (idx == 0) 
+            for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
+                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                    t -= ietl::dot((*it).first, t) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -165,6 +163,10 @@ namespace ietl
     {
         vector_type r = uA ;
         r -= theta*u;
+        // Deflates the error vector
+        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
+            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                r -= ietl::dot((*it).first,r) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
