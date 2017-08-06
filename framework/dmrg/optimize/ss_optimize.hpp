@@ -244,7 +244,6 @@ public:
             // +----------------+
             //  Final operations
             // +----------------+
-            std::cout << "Pippo" << std::endl ;
             for (size_t i = 0; i < n_root_; i++) {
                 sorter[i].first  = res[i].first ;
                 sorter[i].second = i ;

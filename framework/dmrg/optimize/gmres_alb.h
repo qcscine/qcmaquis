@@ -169,23 +169,24 @@ namespace ietl
         }
     protected:
         // Compute the result of the application of the operator
-        // THis function is left virtual since its definition is different for standard
+        // This function is left virtual since its definition is different for standard
         // and shift-and-invert problems
         virtual Vector apply(Vector& input) {} ;
         // Orthogonalization routine
-        void orthogonalize_left(Vector& input)
+        void orthogonalize_simple(Vector& input, const std::size_t& mod)
         {
-            for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
-                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    input -= ietl::dot((*it).first, input) * (*it).first / ietl::dot((*it).first, (*it).first);
+            if (mod == 1) {
+                for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
+                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                        input -= ietl::dot((*it).first, input) * (*it).second / ietl::dot((*it).first, (*it).first);
+            } else if (mod == 2) {
+                for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
+                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                        input -= ietl::dot((*it).first, input) * (*it).second / ietl::dot((*it).first, (*it).first);
+            } 
+            return ;
         }
         //
-        void orthogonalize_right(Vector& input)
-        {
-            for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
-                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    input -= ietl::dot((*it).first, input) * (*it).first / ietl::dot((*it).first, (*it).first) ;
-        }
         //
         // Private attributes
         // ------------------
@@ -239,11 +240,11 @@ namespace ietl
             // t2 = (1-uu*) x
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
-            orthogonalize_right(t2) ;
+            orthogonalize_simple(t2,2) ;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
-            orthogonalize_left(y) ;
+            orthogonalize_simple(y,1) ;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_;
@@ -287,6 +288,29 @@ namespace ietl
         using base::vs_ ;
         using base::operator() ;
     private:
+        // 
+        void orthogonalize_modified(Vector& input, const std::size_t& mod)
+        {
+            Vector tmp ;
+            mult(A_, input, tmp, n_root_);
+            tmp *= -1.;
+            tmp += omega_ * input;
+            if (mod == 1) {
+                for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
+                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                        tmp -= ietl::dot((*it).first, tmp) * (*it).second / ietl::dot((*it).first, (*it).first) ;
+                if (ortho_vec_left_.size() != 0)
+                    input -= tmp ;
+            } else if (mod == 2) {
+                for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
+                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
+                        tmp -= ietl::dot((*it).first, tmp) * (*it).second / ietl::dot((*it).first, (*it).first) ;
+                if (ortho_vec_right_.size() != 0)
+                    input -= tmp ;
+            }
+            return ;
+        }
+        //
         Vector apply(Vector& input){
             // Initialization
             Vector t, t2, t3, y ;
@@ -295,13 +319,13 @@ namespace ietl
             t += omega_ * input;
             double ust = dot(z_, t) ;
             t2 = input - ust * u_;
-            //ietl::project(t2, vs_ ) ;
+            orthogonalize_modified(t2, 2) ;
             // y = (A-theta*1) t2
             mult(A_, t2, t3, n_root_);
             t3 *= -1.;
             t3 += omega_ * t2;
-            y = t3 - t2 / theta_ ;
-            //ietl::project(y, vs_) ;
+            y = t3 - t2 * theta_ ;
+            orthogonalize_simple(y, 1) ;
             // t = (1-uu*) y
             ust = dot(z_, y) ;
             t = y - ust * z_ ;

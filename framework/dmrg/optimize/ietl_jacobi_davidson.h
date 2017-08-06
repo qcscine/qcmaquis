@@ -31,6 +31,7 @@
 #include "ietl_lanczos_solver.h"
 #include "ietl/jd.h"
 
+#include "dmrg/optimize/jacobi.h"
 #include "dmrg/optimize/jacobi_standard.h"
 #include "dmrg/optimize/jacobi_modified.h"
 #include "dmrg/optimize/jacobi_standard_mo.h"
@@ -100,14 +101,14 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         }
     } else {
         if ( root_homing_type == 0 ) {
-            //ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >
-            //        jd(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-            //           nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, params["ietl_gmres_init_atol"]);
-            //r0 = jd.calculate_eigenvalue(initial, iter) ;
+            ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> >
+                jd(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
+                   nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, order, params["ietl_gmres_init_atol"]);
+            r0 = jd.calculate_eigenvalue(initial, iter) ;
         } else {
             //ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::basic_iteration<double> , Matrix, SymmGroup>
             //        jd(sp, vs, omega, poverlap_vec, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-            //           nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, params["ietl_gmres_init_atol"], root_homing_type);
+            //           nsites, site1, site2, params["ietl_gmres_abstol"], i_gmres_guess, order, params["ietl_gmres_init_atol"], root_homing_type);
             //r0 = jd.calculate_eigenvalue(initial, iter);
         }
     }

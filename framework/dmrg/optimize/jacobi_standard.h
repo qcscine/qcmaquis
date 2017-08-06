@@ -48,7 +48,6 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
-        typedef typename base::couple_val         couple_val;
         typedef typename base::couple_vec         couple_vec;
         typedef typename base::lt_couple          lt_couple;
         typedef typename base::magnitude_type     magnitude_type;
@@ -75,7 +74,6 @@ namespace ietl
         using base::ortho_space_left_ ;
         using base::ortho_space_right_ ;
         using base::site1_ ;
-        using base::site2_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
         //
@@ -91,6 +89,7 @@ namespace ietl
     private:
         bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
+        magnitude_type get_matrix_element(const vector_type& V, const vector_type& VA);
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                         const matrix_double& eigvecs, const vector_double& eigvals) ;
         vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) ;
@@ -142,7 +141,6 @@ namespace ietl
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type t = V[idx] ;
-        //ietl::project(t,vecspace_);
         for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
                 t -= ietl::dot((*it).first, t) * (*it).first / ietl::dot((*it).first, (*it).first) ;
@@ -152,6 +150,13 @@ namespace ietl
         V[idx] = t ;
         VA[idx] = apply_operator(t) ;
     };
+    // Get the matrix element of the Hamiltionian
+    template <class Matrix, class VS, class ITER>
+    typename jacobi_davidson_standard<Matrix, VS, ITER>::magnitude_type
+             jacobi_davidson_standard<Matrix, VS, ITER>::get_matrix_element(const vector_type& V, const vector_type& VA)
+    {
+        return ietl::dot(V,VA) ;
+    }
     // Compute the error vector
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type jacobi_davidson_standard<Matrix,VS,ITER>::compute_error(const vector_type &u,
@@ -226,9 +231,6 @@ namespace ietl
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_left_, ortho_space_right_,
                                                       i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
-        //for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-        //    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-        //        inh -= ietl::dot((*it).first, inh) * (*it).first / ietl::dot((*it).first, (*it).first) ;
         scalar_type dru, duu ;
         // initial guess for better convergence
         if (i_gmres_guess_ == 0) {

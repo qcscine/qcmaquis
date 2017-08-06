@@ -101,6 +101,7 @@ namespace ietl
         virtual bool check_convergence(const vector_type& u, const vector_type& uA , const vector_type& r, const magnitude_type theta ,
                                        ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
         virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
+        virtual magnitude_type get_matrix_element(const vector_type& v, const vector_type& VA) {} ;
         virtual vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                                 const matrix_double& eigvecs, const vector_double& eigvals) {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
@@ -136,7 +137,6 @@ namespace ietl
         vector_ortho_vec             ortho_space_left_ , ortho_space_right_ ;
         size_t                       i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
         result_collector             u_and_uA_ ;
-        vector_bm                    Hdiag_ ;
         vector_space                 v_guess_ ;
         VS                           vecspace_ ;
         std::vector<int>             order_ ;
@@ -216,7 +216,7 @@ namespace ietl
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
                 for (int j = 0; j < n_iter + 1; j++)
                      for (int i = 0; i < j + 1; i++)
-                        M(i, j) = ietl::dot(V[i], VA[j]);
+                        M(i, j) = get_matrix_element(V[i], VA[j]);
                 diagonalize_and_select(V, VA, n_iter + 1, u, uA, theta, eigvecs, eigvals);
                 // Check convergence
                 ++iter;
@@ -232,7 +232,7 @@ namespace ietl
                     if (k != n_sa_-1) {
                         ortho_space_left_.resize(0) ;
                         ortho_space_right_.resize(0) ;
-                        update_u_and_uA(eigvec, uA) ;
+                        update_u_and_uA(u, uA) ;
                         update_orthospace() ;
                     }
                     break ;
