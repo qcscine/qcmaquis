@@ -89,7 +89,8 @@ namespace ietl
         typedef typename std::vector< pair_vectors >                             vector_ortho_vec ;
         jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                         const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                        const double& ietl_tol, const size_t & i_gmres_guess, const std::vector<int>& order);
+                        const double& ietl_atol, const double& ielt_rtol, const size_t & i_gmres_guess,
+                        const std::vector<int>& order);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         vector_pairs calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -112,8 +113,7 @@ namespace ietl
         virtual void print_endline(void) {} ;
         virtual void print_header_table(void) {} ;
         virtual void print_newline_table(const size_t& i , const double& er, const magnitude_type& ener, const double& ov) {} ;
-        virtual void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
-                            const magnitude_type& rel_tol ) {} ;
+        virtual void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta, const vector_type& r, vector_type& t) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res) {};
         virtual void update_orthospace(void) {} ;
@@ -130,7 +130,7 @@ namespace ietl
             }
         };
         // Protected attributes
-        double                       ietl_tol_, overlap_ ;
+        double                       ietl_atol_, ietl_rtol_, overlap_ ;
         int                          nsites_, site1_, site2_ ;
         FortranMatrix<scalar_type>   M ;
         MATRIX const &               matrix_ ;
@@ -155,7 +155,8 @@ namespace ietl
     template <class MATRIX, class VS, class ITER>
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                                                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
-                                                       const double& ietl_tol, const size_t& i_gmres_guess, const std::vector<int>& order) :
+                                                       const double& ietl_atol, const double& ietl_rtol, const size_t& i_gmres_guess,
+                                                       const std::vector<int>& order) :
         matrix_(matrix),
         vecspace_(vec),
         nsites_(nsites),
@@ -167,13 +168,14 @@ namespace ietl
         n_restart_max_(n_max),
         n_root_found_(0),
         overlap_(0.),
-        ietl_tol_(ietl_tol),
+        ietl_atol_(ietl_atol),
+        ietl_rtol_(ietl_rtol),
         i_gmres_guess_(i_gmres_guess),
         i_state_(0)
     {
         // Generates guess
         order_ = order ;
-        n_sa_ = n_root(vec) ;
+        n_sa_  = n_root(vec) ;
         for (size_t k = 0; k < n_sa_; k++) {
             v_guess_.push_back(new_vector(vec, k));
         }
@@ -186,10 +188,9 @@ namespace ietl
     {
         // Variable declaration
         // Scalars
-        magnitude_type eigval, rel_tol, theta;
+        magnitude_type eigval, theta;
         bool converged ;
         int n_iter ;
-        rel_tol = ietl_tol_ ;
         // Vectors
         vector_double  props(iter.max_iterations()) ;
         vector_space   V(iter.max_iterations())  ;
@@ -237,7 +238,7 @@ namespace ietl
                     }
                     break ;
                 }
-                solver(u, theta, r, V[n_iter], rel_tol);
+                solver(u, uA, theta, r, V[n_iter]);
                 if (n_iter == n_restart_max_) {
                     restart_jd(V, VA, eigvecs, eigvals);
                     print_endline();

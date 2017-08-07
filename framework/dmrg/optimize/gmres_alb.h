@@ -86,12 +86,13 @@ namespace ietl
             // Initialization
             v[0] = apply(init) ;
             r = b - v[0];
+            double normb = ietl::two_norm(b) ;
             s[0] = two_norm(r);
-            //if (std::abs(s[0]) < abs_tol) {
-            //    if (verbose)
-            //        std::cout << "Already done with x0." << std::endl;
-            //    return x0;
-            //}
+            if (std::abs(s[0])/normb < abs_tol) {
+                if (verbose)
+                    std::cout << "Already done with x0." << std::endl;
+                return x0;
+            }
             v[0] = r / s[0];
             matrix_scalar H(max_iter+1, max_iter+1);
             size_t i = 0 ;
@@ -113,7 +114,7 @@ namespace ietl
                 ApplyPlaneRotation(s[i], s[i+1], cs[i], sn[i]);
                 if (verbose)
                     std::cout << "GMRESAlb iteration " << i << ", resid = " << std::abs(s[i+1]) << std::endl;
-                if (std::abs(s[i+1]) < abs_tol) {
+                if (std::abs(s[i+1])/normb < abs_tol) {
                     y = Update(H, s, i);
                     r = x0;
                     for (std::size_t k = 0; k <= i; ++k)
@@ -178,12 +179,12 @@ namespace ietl
             if (mod == 1) {
                 for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
                     if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                        input -= ietl::dot((*it).first, input) * (*it).second / ietl::dot((*it).first, (*it).first);
+                        input -= ietl::dot((*it).first, input) * (*it).second;
             } else if (mod == 2) {
                 for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
                     if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                        input -= ietl::dot((*it).first, input) * (*it).second / ietl::dot((*it).first, (*it).first);
-            } 
+                        input -= ietl::dot((*it).first, input) * (*it).second;
+            }
             return ;
         }
         //
@@ -297,16 +298,10 @@ namespace ietl
             tmp += omega_ * input;
             if (mod == 1) {
                 for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
-                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                        tmp -= ietl::dot((*it).first, tmp) * (*it).second / ietl::dot((*it).first, (*it).first) ;
-                if (ortho_vec_left_.size() != 0)
-                    input -= tmp ;
+                    input -= ietl::dot((*it).first, tmp) * (*it).second;
             } else if (mod == 2) {
                 for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
-                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                        tmp -= ietl::dot((*it).first, tmp) * (*it).second / ietl::dot((*it).first, (*it).first) ;
-                if (ortho_vec_right_.size() != 0)
-                    input -= tmp ;
+                    input -= ietl::dot((*it).first, tmp) * (*it).second;
             }
             return ;
         }
@@ -324,7 +319,7 @@ namespace ietl
             mult(A_, t2, t3, n_root_);
             t3 *= -1.;
             t3 += omega_ * t2;
-            y = t3 - t2 * theta_ ;
+            y = t3 - t2 / theta_ ;
             orthogonalize_simple(y, 1) ;
             // t = (1-uu*) y
             ust = dot(z_, y) ;

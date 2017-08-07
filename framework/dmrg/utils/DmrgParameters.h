@@ -81,7 +81,8 @@ private:
         // GMRES-related parameters
         //ALB The guess option is kept for backward compatibility, 'zero' should be always used
         add_option("ietl_gmres_maxiter", "", value(20));
-        add_option("ietl_gmres_abstol", "convergence threshold for the GMRES algorithm", value(1.0e-1)) ;
+        add_option("ietl_gmres_abstol", "absolute convergence threshold for the GMRES algorithm", value(1.0e-10)) ;
+        add_option("ietl_gmres_reltol", "convergence threshold for the GMRES algorithm", value(1.0e-3)) ;
         add_option("ietl_gmres_guess", "guess for the iterative GMRES solver", value("error")) ;
         add_option("ietl_gmres_init_atol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-10)) ;
         // Options related to the number of sweeps

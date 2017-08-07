@@ -64,6 +64,8 @@ namespace ietl
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
         using base::i_state_ ;
+        using base::ietl_atol_ ;
+        using base::ietl_rtol_ ;
         using base::M ;
         using base::matrix_ ;
         using base::max_iter_ ;
@@ -78,9 +80,10 @@ namespace ietl
         using base::vecspace_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
-                                 const int& nsites, const int& site1, const int& site2, const double& tol, const size_t& ietl_gmres_guess,
-                                 const std::vector<int>& order)
-                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, ietl_gmres_guess, order) {} ;
+                                 const int& nsites, const int& site1, const int& site2, const double& ietl_atol,
+                                 const double& ietl_rtol, const size_t& ietl_gmres_guess, const std::vector<int>& order)
+                : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol,
+                                        ietl_gmres_guess, order) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
@@ -99,8 +102,7 @@ namespace ietl
         void print_endline(void) ;
         void print_header_table(void) ;
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
-        void solver(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t,
-                    const magnitude_type& rel_tol) ;
+        void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta, const vector_type& r, vector_type& t) ;
         void sort_prop(couple_vec& vector_values) ;
         void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
     } ;
@@ -140,8 +142,7 @@ namespace ietl
         vector_type t = V[idx] ;
         if (idx == 0) 
             for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-                if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                    t -= ietl::dot((*it).first, t) * (*it).first / ietl::dot((*it).first, (*it).first) ;
+               t -= ietl::dot((*it).first, t) * (*it).first  ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -166,7 +167,7 @@ namespace ietl
         // Deflates the error vector
         for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                r -= ietl::dot((*it).first,r) * (*it).first / ietl::dot((*it).first, (*it).first) ;
+                r -= ietl::dot((*it).first,r) * (*it).first ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
@@ -227,8 +228,11 @@ namespace ietl
     };
     //
     template<class MATRIX, class VS, class ITER>
-    void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u, const magnitude_type& theta, const vector_type& r,
-                                                            vector_type& t, const magnitude_type& rel_tol)
+    void jacobi_davidson_standard<MATRIX, VS, ITER>::solver(const vector_type& u,
+                                                            const vector_type& uA,
+                                                            const magnitude_type& theta,
+                                                            const vector_type& r,
+                                                            vector_type& t)
     {
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_left_, ortho_space_right_,
                                                       i_state_, max_iter_, false);
@@ -244,7 +248,7 @@ namespace ietl
         }
         // Actual GMRES algorithm
         if (max_iter_ > 0) {
-            t2 = gmres(inh, t, rel_tol);
+            t2 = gmres(inh, t, ietl_atol_);
             t = t2 / ietl::two_norm(t2);
         }
     } ;
