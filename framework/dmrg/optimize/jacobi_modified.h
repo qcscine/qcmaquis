@@ -88,17 +88,17 @@ namespace ietl
                 : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, tol, i_gmres_guess, order)
                 , omega_(omega), atol_init_(atol_init) 
         {
-            //magnitude_type denom ;
-            //vector_type a, b ;
-            //for (size_t idx = 0; idx < n_sa_; idx++) { 
-            //    vector_type a = v_guess_[idx] ;
-            //    vector_type b = 0.*v_guess_[idx] ;
-            //    gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_,
-            //                                                              ortho_space_left_, ortho_space_right_, idx, max_iter_,
-            //                                                              false);
-            //    v_guess_[idx] = gmres(a, b, atol_init_);
-            //    v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
-            //}
+            magnitude_type denom ;
+            vector_type a, b ;
+            for (size_t idx = 0; idx < n_sa_; idx++) { 
+                vector_type a = v_guess_[idx] ;
+                vector_type b = 0.*v_guess_[idx] ;
+                gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_,
+                                                                          ortho_space_left_, ortho_space_right_, idx, max_iter_,
+                                                                          false);
+                v_guess_[idx] = gmres(a, b, atol_init_);
+                v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
+            }
         } ;
         ~jacobi_davidson_modified() {} ;
     private:
@@ -202,10 +202,10 @@ namespace ietl
     {
         vector_type r = uA ;
         r -= u / theta;
-        r /= ietl::two_norm(u) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
             if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
                 r -= ietl::dot((*it).first, r) * (*it).first / ietl::dot((*it).first, (*it).first) ;
+        r /= ietl::two_norm(u) ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
