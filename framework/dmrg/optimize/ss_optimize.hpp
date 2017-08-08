@@ -128,7 +128,8 @@ public:
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps_vector[0][site],
-                                                                   base::ortho_mps[n][site],
+                
+   base::ortho_mps[n][site],
                                                                    base::ortho_left_[n][site],
                                                                    base::ortho_right_[n][site+1]);
             }

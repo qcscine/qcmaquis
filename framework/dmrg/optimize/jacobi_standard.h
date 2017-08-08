@@ -248,7 +248,7 @@ namespace ietl
         }
         // Actual GMRES algorithm
         if (max_iter_ > 0) {
-            t2 = gmres(inh, t, ietl_atol_);
+            t2 = gmres(inh, t, ietl_atol_, ietl_rtol_);
             t = t2 / ietl::two_norm(t2);
         }
     } ;

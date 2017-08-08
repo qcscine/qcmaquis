@@ -76,7 +76,8 @@ namespace ietl
         // () operator. Returns the solution of the GMRES problem
         Vector operator()(Vector const & b,
                           Vector const & x0,
-                          double abs_tol = 1e-6)
+                          double abs_tol = 1e-6,
+                          double rel_tol = 1e-3)
         {
             // Types definiton
             Vector r, w, init = x0 ;
@@ -88,11 +89,11 @@ namespace ietl
             r = b - v[0];
             double normb = ietl::two_norm(b) ;
             s[0] = two_norm(r);
-            if (std::abs(s[0])/normb < abs_tol) {
-                if (verbose)
-                    std::cout << "Already done with x0." << std::endl;
-                return x0;
-            }
+            //if (std::abs(s[0])/normb < abs_tol) {
+            //    if (verbose)
+            //        std::cout << "Already done with x0." << std::endl;
+            //    return x0;
+            //}
             v[0] = r / s[0];
             matrix_scalar H(max_iter+1, max_iter+1);
             size_t i = 0 ;
@@ -112,9 +113,11 @@ namespace ietl
                 GeneratePlaneRotation(H(i,i), H(i+1,i), cs[i], sn[i]);
                 ApplyPlaneRotation(H(i,i), H(i+1,i), cs[i], sn[i]);
                 ApplyPlaneRotation(s[i], s[i+1], cs[i], sn[i]);
-                if (verbose)
-                    std::cout << "GMRESAlb iteration " << i << ", resid = " << std::abs(s[i+1]) << std::endl;
-                if (std::abs(s[i+1])/normb < abs_tol) {
+                if (verbose) {
+                    std::cout << "GMRESAlb iteration " << i << ", Abs. Err. = " << std::abs(s[i+1]) 
+                                                            << ", Rel. Err. = " << std::abs(s[i+1])/normb << std::endl;
+                }
+                if (std::abs(s[i+1])/normb < rel_tol || std::abs(s[i+1]) < abs_tol) {
                     y = Update(H, s, i);
                     r = x0;
                     for (std::size_t k = 0; k <= i; ++k)
@@ -298,10 +301,10 @@ namespace ietl
             tmp += omega_ * input;
             if (mod == 1) {
                 for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
-                    input -= ietl::dot((*it).first, tmp) * (*it).second;
+                    input -= ietl::dot((*it).first, tmp) * (*it).second ;
             } else if (mod == 2) {
                 for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
-                    input -= ietl::dot((*it).first, tmp) * (*it).second;
+                    input -= ietl::dot((*it).first, tmp) * (*it).second ;
             }
             return ;
         }
