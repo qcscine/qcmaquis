@@ -85,8 +85,8 @@ namespace ietl
         typedef typename std::pair<magnitude_type, vector_type >                 pair_results ;
         typedef typename std::pair<vector_type , vector_type >                   pair_vectors ;
         typedef typename std::vector< pair_results >                             vector_pairs ;
-        typedef typename std::vector< std::pair < pair_vectors, vector_type > >  result_collector ;
-        typedef typename std::vector< pair_vectors >                             vector_ortho_vec ;
+        typedef typename std::vector< std::vector < vector_type > >              result_collector ;
+        typedef typename std::vector< std::vector < vector_type > >              vector_ortho_vec ;
         jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                         const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
                         const double& ietl_atol, const double& ielt_rtol, const size_t & i_gmres_guess,
@@ -134,7 +134,7 @@ namespace ietl
         int                          nsites_, site1_, site2_ ;
         FortranMatrix<scalar_type>   M ;
         MATRIX const &               matrix_ ;
-        vector_ortho_vec             ortho_space_left_ , ortho_space_right_ ;
+        vector_ortho_vec             ortho_space_ ;
         size_t                       i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
         result_collector             u_and_uA_ ;
         vector_space                 v_guess_ ;
@@ -231,17 +231,17 @@ namespace ietl
                     eigvec /= ietl::two_norm(eigvec) ;
                     res[i_state_] = std::make_pair(eigval, eigvec) ;
                     if (k != n_sa_-1) {
-                        ortho_space_left_.resize(0) ;
-                        ortho_space_right_.resize(0) ;
+                        ortho_space_.resize(0) ;
                         update_u_and_uA(u, uA) ;
                         update_orthospace() ;
                     }
+                    iter.reset() ;
                     break ;
                 }
                 solver(u, uA, theta, r, V[n_iter]);
                 if (n_iter == n_restart_max_) {
                     restart_jd(V, VA, eigvecs, eigvals);
-                    print_endline();
+                    std::cout << " RESTART" << std::endl ;
                     n_iter = n_restart_min_ - 1;
                 }
             } while (true);

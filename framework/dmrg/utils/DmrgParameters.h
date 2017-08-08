@@ -84,7 +84,9 @@ private:
         add_option("ietl_gmres_abstol", "absolute convergence threshold for the GMRES algorithm", value(1.0e-10)) ;
         add_option("ietl_gmres_reltol", "convergence threshold for the GMRES algorithm", value(1.0e-3)) ;
         add_option("ietl_gmres_guess", "guess for the iterative GMRES solver", value("error")) ;
-        add_option("ietl_gmres_init_atol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-10)) ;
+        add_option("ietl_gmres_init_atol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-5)) ;
+        add_option("ietl_gmres_init_rtol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-5)) ;
+        add_option("ietl_gmres_init_maxiter","maximum number of iterations for the initial GMRES cycle", value(20)) ;
         // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

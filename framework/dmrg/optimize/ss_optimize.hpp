@@ -128,8 +128,7 @@ public:
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps_vector[0][site],
-                
-   base::ortho_mps[n][site],
+                                                                   base::ortho_mps[n][site],
                                                                    base::ortho_left_[n][site],
                                                                    base::ortho_right_[n][site+1]);
             }
@@ -157,6 +156,7 @@ public:
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
+                BEGIN_TIMING("MPS UPDATE")
                 // Collects the results
                 if (n_root_ > 0) {
                     mps[site]  = res[0].second ;
@@ -167,6 +167,7 @@ public:
                     }
                     mps[site] /= n_root_ ;
                 }
+                END_TIMING("MPS UPDATE")
             }
             // +---------------------+
             //  Collection of results
@@ -194,6 +195,7 @@ public:
             // +---------------------+
             //  Truncation of the MPS
             // +---------------------+
+            BEGIN_TIMING("MPS TRUNCATION")
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
@@ -242,6 +244,7 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
+            END_TIMING("MPS TRUNCATION")
             // +----------------+
             //  Final operations
             // +----------------+

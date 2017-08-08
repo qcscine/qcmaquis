@@ -60,6 +60,7 @@ namespace ietl
         using base::apply_operator ;
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
+        using base::i_state_ ;
         using base::n_restart_max_ ;
         using base::n_root_found_ ;
         using base::nsites_ ;
@@ -72,10 +73,11 @@ namespace ietl
         //
         jacobi_davidson_modified_mo(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const pov_vec_type& pov, const size_t n,
                                     const int& nmin, const int& nmax, const int& max_iter, const int& nsites, 
-                                    const int& site1, const int& site2, const double& tol, const int& i_gmres_guess,
-                                    const std::vector<int>& order, const double& atol_init, const int& root_homing_type)
-                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, tol,
-                                                 i_gmres_guess, order, atol_init)
+                                    const int& site1, const int& site2, const double& ietl_atol, const double& ietl_rtol,
+                                    const int& i_gmres_guess, const std::vector<int>& order, const double& atol_init, const double& rtol_init,
+                                    const size_t& max_iter_init, const int& root_homing_type)
+                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol,
+                                                 i_gmres_guess, order, atol_init, rtol_init, max_iter_init)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
@@ -168,10 +170,7 @@ namespace ietl
             tmp_V = eigvecs[i][0] * VA[0];
             for (int j = 1 ; j < dim ; j++)
                 tmp_V  += eigvecs[i][j] * VA[j];
-            if (nsites_ == 1)
-                p_tmp[i] = pov_[n_root_found_].overlap(tmp_V/ietl::two_norm(tmp_V), site1_) ;
-            else if (nsites_ == 2)
-                p_tmp[i] = pov_[n_root_found_].overlap(tmp_V/ietl::two_norm(tmp_V), site1_, site2_) ;
+            p_tmp[i] = compute_overlap(tmp_V) ;
         }
         return p_tmp ;
     }
@@ -182,11 +181,11 @@ namespace ietl
         double ret, scr ;
         if (root_homing_type_ == 1) {
             if (nsites_ == 1)
-                ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
+                ret = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
             else
-                ret = pov_[n_root_found_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
+                ret = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         } else {
-            ret = ietl::dot(vec_test, v_guess_[n_root_found_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[n_root_found_]));
+            ret = ietl::dot(vec_test, v_guess_[i_state_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[i_state_]));
         }
         return fabs(ret) ;
     }

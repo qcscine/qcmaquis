@@ -56,7 +56,7 @@ namespace ietl
         typedef typename std::vector<scalar_type>                      vector_scalar ;
         typedef typename std::vector<Vector>                           vector_space ;
         typedef typename std::pair<Vector , Vector >                   pair_vectors ;
-        typedef typename std::vector< pair_vectors >                   vector_ortho_vec ;
+        typedef typename std::vector< std::vector<Vector> >            vector_ortho_vec ;
         //
         // Public methods
         // --------------
@@ -65,13 +65,11 @@ namespace ietl
                       Vector const & u,
                       VectorSpace const & vs,
                       double const & theta,
-                      const vector_ortho_vec& ortho_vec_left,
-                      const vector_ortho_vec& ortho_vec_right,
+                      const vector_ortho_vec& ortho_vec,
                       size_t const& n_root,
                       std::size_t max_iter = 100,
                       bool verbose = false)
-                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root),
-                  ortho_vec_left_(ortho_vec_left), ortho_vec_right_(ortho_vec_right)
+                : max_iter(max_iter), verbose(verbose), A_(A), u_(u), theta_(theta), vs_(vs), n_root_(n_root), ortho_vec_(ortho_vec)
         { }
         // () operator. Returns the solution of the GMRES problem
         Vector operator()(Vector const & b,
@@ -177,17 +175,11 @@ namespace ietl
         // and shift-and-invert problems
         virtual Vector apply(Vector& input) {} ;
         // Orthogonalization routine
-        void orthogonalize_simple(Vector& input, const std::size_t& mod)
+        void orthogonalize_simple(Vector& input)
         {
-            if (mod == 1) {
-                for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
-                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                        input -= ietl::dot((*it).first, input) * (*it).second;
-            } else if (mod == 2) {
-                for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
-                    if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                        input -= ietl::dot((*it).first, input) * (*it).second;
-            }
+            for (typename vector_ortho_vec::iterator it = ortho_vec_.begin(); it != ortho_vec_.end(); it++)
+                if (ietl::dot((*it)[0], (*it)[0]) > 1.0E-15)
+                    input -= ietl::dot((*it)[0], input) * (*it)[0] ;
             return ;
         }
         //
@@ -204,7 +196,7 @@ namespace ietl
         std::size_t max_iter , n_root_ ;
         Vector u_ ;
         VectorSpace vs_ ;
-        vector_ortho_vec ortho_vec_left_, ortho_vec_right_ ;
+        vector_ortho_vec ortho_vec_ ;
     };
     //
     // GMRES_STANDARD OBJECT
@@ -222,17 +214,15 @@ namespace ietl
                        Vector const & u,
                        VectorSpace const & vs,
                        double const & theta,
-                       const vector_ortho_vec& ortho_vec_left,
-                       const vector_ortho_vec& ortho_vec_right,
+                       const vector_ortho_vec& ortho_vec,
                        size_t const& n_root,
                        size_t max_iter,
                        bool verbose)
-        : base::gmres_general(A, u, vs, theta, ortho_vec_left, ortho_vec_right, n_root, max_iter, verbose) { }
+        : base::gmres_general(A, u, vs, theta, ortho_vec, n_root, max_iter, verbose) { }
         // Private attributes
         using base::A_ ;
         using base::n_root_ ;
-        using base::ortho_vec_left_ ;
-        using base::ortho_vec_right_ ;
+        using base::ortho_vec_ ;
         using base::theta_ ;
         using base::u_ ;
         using base::vs_ ;
@@ -244,11 +234,11 @@ namespace ietl
             // t2 = (1-uu*) x
             double ust = dot(u_, input) ;
             t2 = input - ust * u_;
-            orthogonalize_simple(t2,2) ;
+            orthogonalize_simple(t2) ;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
-            orthogonalize_simple(y,1) ;
+            orthogonalize_simple(y) ;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_;
@@ -273,20 +263,19 @@ namespace ietl
                        Vector const & u,
                        VectorSpace const & vs,
                        Vector const & z,
+                       Vector const & Az,
                        double const & theta,
-                       const vector_ortho_vec& ortho_vec_left,
-                       const vector_ortho_vec& ortho_vec_right,
+                       const vector_ortho_vec& ortho_vec,
                        size_t const& n_root,
                        double const & omega,
                        size_t max_iter,
                        bool verbose)
-                : base::gmres_general(A, u, vs, theta, ortho_vec_left, ortho_vec_right, n_root, max_iter, verbose),
-                  omega_(omega), z_(z) { }
+                : base::gmres_general(A, u, vs, theta, ortho_vec, n_root, max_iter, verbose),
+                  omega_(omega), z_(z), Az_(Az) { }
         // Private attributes
         using base::A_ ;
         using base::n_root_ ;
-        using base::ortho_vec_left_ ;
-        using base::ortho_vec_right_ ;
+        using base::ortho_vec_ ;
         using base::theta_ ;
         using base::u_ ;
         using base::vs_ ;
@@ -295,16 +284,14 @@ namespace ietl
         // 
         void orthogonalize_modified(Vector& input, const std::size_t& mod)
         {
-            Vector tmp ;
-            mult(A_, input, tmp, n_root_);
-            tmp *= -1.;
-            tmp += omega_ * input;
-            if (mod == 1) {
-                for (typename vector_ortho_vec::iterator it = ortho_vec_left_.begin(); it != ortho_vec_left_.end(); it++)
-                    input -= ietl::dot((*it).first, tmp) * (*it).second ;
-            } else if (mod == 2) {
-                for (typename vector_ortho_vec::iterator it = ortho_vec_right_.begin(); it != ortho_vec_right_.end(); it++)
-                    input -= ietl::dot((*it).first, tmp) * (*it).second ;
+            for (typename vector_ortho_vec::iterator it = ortho_vec_.begin(); it != ortho_vec_.end(); it++) {
+                if (mod == 1) {
+                    input -= ietl::dot((*it)[1], input) * (*it)[1];
+                } else if (mod == 2) {
+                    input -= ietl::dot((*it)[1], input) * (*it)[0];
+                } else if (mod == 3) {
+                    input -= ietl::dot((*it)[2], input) * (*it)[0];
+                }
             }
             return ;
         }
@@ -312,18 +299,15 @@ namespace ietl
         Vector apply(Vector& input){
             // Initialization
             Vector t, t2, t3, y ;
-            mult(A_, input, t, n_root_);
-            t *= -1.;
-            t += omega_ * input;
-            double ust = dot(z_, t) ;
+            double ust = dot(Az_, input) ;
             t2 = input - ust * u_;
-            orthogonalize_modified(t2, 2) ;
+            orthogonalize_modified(t2, 3) ;
             // y = (A-theta*1) t2
             mult(A_, t2, t3, n_root_);
             t3 *= -1.;
             t3 += omega_ * t2;
             y = t3 - t2 / theta_ ;
-            orthogonalize_simple(y, 1) ;
+            orthogonalize_modified(y, 1) ;
             // t = (1-uu*) y
             ust = dot(z_, y) ;
             t = y - ust * z_ ;
@@ -332,7 +316,7 @@ namespace ietl
         }
         // Private attributes
         double omega_ ;
-        Vector z_ ;
+        Vector z_ , Az_ ;
     };
     //
     // GMRES_MODIFIED_INITIALIZER OBJECT
@@ -350,12 +334,11 @@ namespace ietl
                                    Vector const & u,
                                    VectorSpace const & vs,
                                    double const & theta,
-                                   const vector_ortho_vec& ortho_vec_left,
-                                   const vector_ortho_vec& ortho_vec_right,
+                                   const vector_ortho_vec& ortho_vec,
                                    size_t const & n_root,
                                    size_t max_iter,
                                    bool verbose)
-                : base::gmres_general(A, u, vs, theta, ortho_vec_left, ortho_vec_right, n_root, max_iter, verbose) {} ;
+                : base::gmres_general(A, u, vs, theta, ortho_vec, n_root, max_iter, verbose) {} ;
         // 
         using base::A_ ;
         using base::n_root_ ;

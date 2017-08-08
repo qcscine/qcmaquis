@@ -76,8 +76,7 @@ namespace ietl
         using base::n_root_found_ ;
         using base::n_sa_ ;
         using base::order_ ;
-        using base::ortho_space_left_ ;
-        using base::ortho_space_right_ ;
+        using base::ortho_space_ ;
         using base::site1_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
@@ -86,18 +85,18 @@ namespace ietl
         jacobi_davidson_modified(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const size_t& nmin,
                                  const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1,
                                  const int& site2, const double& ietl_atol, const double& ietl_rtol, const size_t& i_gmres_guess,
-                                 const std::vector<int>& order, const double& atol_init)
+                                 const std::vector<int>& order, const double& atol_init, const double& rtol_init,
+                                 const size_t& max_iter_init)
                 : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol, i_gmres_guess, order)
-                , omega_(omega), atol_init_(atol_init) 
+                , omega_(omega), atol_init_(atol_init), rtol_init_(rtol_init), max_iter_init_(max_iter_init)
         {
             vector_type a, b ;
             for (size_t idx = 0; idx < n_sa_; idx++) {
                 vector_type a = v_guess_[idx] ;
                 vector_type b = 0.*v_guess_[idx] ;
                 gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_,
-                                                                          ortho_space_left_, ortho_space_right_, idx, 100,
-                                                                          false);
-                v_guess_[idx] = gmres(a, b, 1.0E-5, 1.0E-3);
+                                                                          ortho_space_, idx, max_iter_init_, false);
+                v_guess_[idx] = gmres(a, b, atol_init_, rtol_init_);
                 v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
             }
         } ;
@@ -124,8 +123,9 @@ namespace ietl
         void update_orthospace(void) ;
         void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
         // Attributes
-        double atol_init_ ;
+        double atol_init_, rtol_init_ ;
         magnitude_type omega_ ;
+        size_t max_iter_init_ ;
         vector_type apply_operator (const vector_type& x);
     };
     // Compute the action of an operator
@@ -145,15 +145,20 @@ namespace ietl
             vector_type tmp  = vecspace_.return_orthovec(u_and_uA_[jcont].first.first,  order_[n_root_found_], order_[jcont], site1_) ;
             vector_type tmpA = vecspace_.return_orthovec(u_and_uA_[jcont].first.second, order_[n_root_found_], order_[jcont], site1_) ;
             for (size_t j = 0 ; j < jcont ; j++) {
-                tmp  -= ietl::dot(ortho_space_right_[j].first, tmpA) * ortho_space_right_[j].first  ;
-                tmpA -= ietl::dot(ortho_space_right_[j].first, tmpA) * ortho_space_right_[j].second ;
+                tmp  -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_right_[j][1] ;
+                tmpA -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_right_[j][0] ;
             }
             if (ietl::two_norm(tmpA) > 0.) {
-                tmp /= ietl::two_norm(tmpA);
-                tmpA /= ietl::two_norm(tmpA);
+                vector_type tmpAA = apply_operator(tmpA) ;
+                tmp   /= ietl::two_norm(tmpA);
+                tmpA  /= ietl::two_norm(tmpA);
+                tmpAA /= ietl::two_norm(tmpA);
+                std::vector< vector_type > junk ;
+                junk.push_back(tmp)   ;
+                junk.push_back(tmpA)  ;
+                junk.push_back(tmpAA) ;
+                ortho_space_.push_back(junk);
             }
-            ortho_space_left_.push_back(std::make_pair(tmpA, tmpA));
-            ortho_space_right_.push_back(std::make_pair(tmpA, tmp));
         }
     }
     // Update the vector with the quantity to orthogonalize
@@ -164,18 +169,23 @@ namespace ietl
         tmp1 = u  / ietl::two_norm(uA) ;
         tmp2 = uA / ietl::two_norm(uA) ;
         tmp3 = apply_operator(uA) ;
-        u_and_uA_.push_back(std::make_pair(std::make_pair(tmp1,tmp2),tmp3)) ;
+        std::vector< vector_type > junk ;
+        junk.push_back(tmp1) ;
+        junk.push_back(tmp2) ;
+        junk.push_back(tmp3) ;
+        u_and_uA_.push_back(junk) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
-        vector_type t  = V[idx] ;
-        vector_type tA = apply_operator(t);
+        vector_type& t  = V[idx] ;
+        vector_type& tA = VA[idx] ;
+        tA = apply_operator(t) ;
         //
-        for (typename vector_ortho_vec::iterator it = ortho_space_right_.begin(); it != ortho_space_right_.end(); it++) {
-            t  -= ietl::dot((*it).first, tA) * (*it).second;
-            tA -= ietl::dot((*it).first, tA) * (*it).first ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
+            t  -= ietl::dot((*it)[1], tA) * (*it)[0] ;
+            tA -= ietl::dot((*it)[1], tA) * (*it)[1] ;
         }
         //
         for (int i = 1; i <= idx ; i++) {
@@ -183,8 +193,8 @@ namespace ietl
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
         }
         //
-        V[idx]  = t /ietl::two_norm(tA) ;
-        VA[idx] = tA/ietl::two_norm(tA) ;
+        V[idx]  /= ietl::two_norm(tA) ;
+        VA[idx] /= ietl::two_norm(tA) ;
     };
     // Get the matrix element of the Hamiltionian
     template <class Matrix, class VS, class ITER>
@@ -201,8 +211,8 @@ namespace ietl
     {
         vector_type r = uA, tmp = u ;
         r -= tmp / theta;
-        for (typename vector_ortho_vec::iterator it = ortho_space_right_.begin(); it != ortho_space_right_.end(); it++) 
-            r    -= ietl::dot((*it).first, r) * (*it).first ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            r    -= ietl::dot((*it)[1], r) * (*it)[1] ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
@@ -268,14 +278,14 @@ namespace ietl
                                                             const vector_type& r,
                                                             vector_type& t)
     {
-        vector_type inh = -r, t2 ;
+        vector_type inh = -r, t2, Az = apply_operator(uA) ;
         scalar_type dru, duu ;
-        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, theta, ortho_space_left_, ortho_space_right_,
+        gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
                                                       i_state_, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
-            dru = ietl::dot(r, u);
-            duu = ietl::dot(u, u);
+            dru = ietl::dot(r, u) ;
+            duu = ietl::dot(u, u) ;
             t = (-r + dru / duu * u);
         } else if (i_gmres_guess_ == 1) {
             t = 0.*r ;

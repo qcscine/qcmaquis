@@ -73,8 +73,7 @@ namespace ietl
         using base::n_restart_min_ ;
         using base::n_root_found_ ;
         using base::order_ ;
-        using base::ortho_space_left_ ;
-        using base::ortho_space_right_ ;
+        using base::ortho_space_ ;
         using base::site1_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
@@ -120,19 +119,28 @@ namespace ietl
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_u_and_uA(const vector_type &u, const vector_type &uA)
     {
         vector_type tmp = u / ietl::two_norm(u) ;
-        u_and_uA_.push_back(std::make_pair(std::make_pair(tmp,tmp),tmp)) ;
+        std::vector< vector_type > junk ;
+        junk.push_back(tmp) ;
+        junk.push_back(tmp) ;
+        junk.push_back(tmp) ;
+        u_and_uA_.push_back(junk) ;
     }
     // Routine doing deflation
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(void)
     {
         for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
-            vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont].first.first, order_[n_root_found_], order_[jcont], site1_) ;
+            vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
             for (size_t j = 0 ; j < jcont ; j++)
-                tmp -= ietl::dot(ortho_space_left_[j].first, tmp) * ortho_space_left_[j].second ;
-            tmp /= ietl::two_norm(tmp) ;
-            ortho_space_left_.push_back(std::make_pair(tmp, tmp));
-            ortho_space_right_.push_back(std::make_pair(tmp, tmp));
+                tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
+            if (ietl::two_norm(tmp) > 1.0E-20) {
+                tmp /= ietl::two_norm(tmp);
+                std::vector< vector_type > junk ;
+                junk.push_back(tmp) ;
+                junk.push_back(tmp) ;
+                junk.push_back(tmp) ;
+                ortho_space_.push_back(junk);
+            }
         }
     }
     // Update the vector space in JCD iteration
@@ -141,8 +149,8 @@ namespace ietl
     {
         vector_type t = V[idx] ;
         if (idx == 0) 
-            for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-               t -= ietl::dot((*it).first, t) * (*it).first  ;
+            for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+               t -= ietl::dot((*it)[0], t) * (*it)[0]  ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -165,9 +173,9 @@ namespace ietl
         vector_type r = uA ;
         r -= theta*u;
         // Deflates the error vector
-        for (typename vector_ortho_vec::iterator it = ortho_space_left_.begin(); it != ortho_space_left_.end(); it++)
-            if (ietl::dot((*it).first, (*it).first) > 1.0E-15)
-                r -= ietl::dot((*it).first,r) * (*it).first ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            if (ietl::dot((*it)[0], (*it)[0]) > 1.0E-15)
+                r -= ietl::dot((*it)[0],r) * (*it)[0] ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
@@ -234,7 +242,7 @@ namespace ietl
                                                             const vector_type& r,
                                                             vector_type& t)
     {
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_left_, ortho_space_right_,
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
                                                       i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
