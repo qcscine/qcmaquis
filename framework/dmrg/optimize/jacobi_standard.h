@@ -121,8 +121,6 @@ namespace ietl
         vector_type tmp = u / ietl::two_norm(u) ;
         std::vector< vector_type > junk ;
         junk.push_back(tmp) ;
-        junk.push_back(tmp) ;
-        junk.push_back(tmp) ;
         u_and_uA_.push_back(junk) ;
     }
     // Routine doing deflation
@@ -136,8 +134,6 @@ namespace ietl
             if (ietl::two_norm(tmp) > 1.0E-20) {
                 tmp /= ietl::two_norm(tmp);
                 std::vector< vector_type > junk ;
-                junk.push_back(tmp) ;
-                junk.push_back(tmp) ;
                 junk.push_back(tmp) ;
                 ortho_space_.push_back(junk);
             }

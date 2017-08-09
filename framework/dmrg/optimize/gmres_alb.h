@@ -301,7 +301,11 @@ namespace ietl
             Vector t, t2, t3, y ;
             double ust = dot(Az_, input) ;
             t2 = input - ust * u_;
-            orthogonalize_modified(t2, 3) ;
+            mult(A_, t2, t3, n_root_);
+            t3 *= -1.;
+            t3 += omega_ * t2;
+            for (typename vector_ortho_vec::iterator it = ortho_vec_.begin(); it != ortho_vec_.end(); it++) 
+                    t2 -= ietl::dot((*it)[1], t3) * (*it)[0];
             // y = (A-theta*1) t2
             mult(A_, t2, t3, n_root_);
             t3 *= -1.;
