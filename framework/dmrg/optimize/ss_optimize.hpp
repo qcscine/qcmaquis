@@ -202,7 +202,8 @@ public:
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax) ;
                     Mval = trunc.bond_dimension ;
                     for (size_t k = 0 ; k < n_root_ ; k++) {
-                        trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval));
+                        //trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval));
+                        trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax));
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
@@ -226,7 +227,8 @@ public:
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
                     Mval = trunc.bond_dimension ;
                     for (size_t k = 0 ; k < n_root_ ; k++)
-                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval)) ;
+                        //trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval)) ;
+                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax)) ;
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)

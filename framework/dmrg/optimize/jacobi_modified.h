@@ -95,9 +95,10 @@ public:
             vector_type a = v_guess_[idx] ;
             vector_type b = 0.*v_guess_[idx] ;
             gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_,
-                                                                      ortho_space_, idx, max_iter_init_, false);
-            v_guess_[idx] = gmres(a, b, atol_init_, rtol_init_);
-            v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
+                                                                      ortho_space_, idx, 10, true);
+            v_guess_[idx] = gmres(a, b, 1.0E-20, 1.0E-20);
+            if (ietl::two_norm(v_guess_[idx]) > 1.0E-20)
+                v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
         }
     } ;
     ~jacobi_davidson_modified() {} ;
@@ -145,16 +146,14 @@ protected:
             vector_type tmp   = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
             vector_type tmpA  = vecspace_.return_orthovec(u_and_uA_[jcont][1], order_[n_root_found_], order_[jcont], site1_) ;
             vector_type tmpAA = vecspace_.return_orthovec(u_and_uA_[jcont][2], order_[n_root_found_], order_[jcont], site1_) ;
-            for (size_t j = 0 ; j < jcont ; j++) {
-                tmp   -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][0] ;
-                tmpA  -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][1] ;
-                tmpAA -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][2] ;
-            }
+            //for (size_t j = 0 ; j < jcont ; j++) {
+            //    tmp   -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][0] ;
+            //    tmpA  -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][1] ;
+            //}
             if (ietl::two_norm(tmpA) > 0.) {
-                vector_type tmpAA = apply_operator(tmpA) ;
-                tmp   /= ietl::two_norm(tmpA);
-                tmpAA /= ietl::two_norm(tmpA);
-                tmpA  /= ietl::two_norm(tmpA);
+                tmp    /= ietl::two_norm(tmpA);
+                tmpAA  /= ietl::two_norm(tmpA);
+                tmpA   /= ietl::two_norm(tmpA);
                 std::vector< vector_type > junk ;
                 junk.push_back(tmp)   ;
                 junk.push_back(tmpA)  ;
@@ -181,8 +180,8 @@ protected:
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
-        vector_type& t  = V[idx] ;
-        vector_type& tA = VA[idx] ;
+        vector_type t  = V[idx] ;
+        vector_type tA = VA[idx] ;
         tA = apply_operator(t) ;
         //
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
@@ -195,8 +194,8 @@ protected:
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
         }
         //
-        V[idx]  /= ietl::two_norm(tA) ;
-        VA[idx] /= ietl::two_norm(tA) ;
+        V[idx]  = t/ietl::two_norm(tA) ;
+        VA[idx] = tA/ietl::two_norm(tA) ;
     };
     // Get the matrix element of the Hamiltionian
     template <class Matrix, class VS, class ITER>
@@ -212,7 +211,7 @@ protected:
                                                                                                                              magnitude_type theta)
     {
         vector_type r = uA, tmp = u ;
-        r -= tmp / theta;
+        r -= tmp / theta ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             r -= ietl::dot((*it)[1], r) * (*it)[1] ;
         return r ;
@@ -283,7 +282,7 @@ protected:
         vector_type inh = -r, t2, Az = apply_operator(uA) ;
         scalar_type dru, duu ;
         gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
-                                                      i_state_, omega_, max_iter_, true);
+                                                      i_state_, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u) ;
@@ -293,7 +292,7 @@ protected:
             t = 0.*r ;
         }
         if (max_iter_ > 0) {
-            inh -= ietl::dot(inh, uA) * uA / ietl::dot(uA, uA) ;
+            //inh -= ietl::dot(inh, uA) * uA / ietl::dot(uA, uA) ;
             t2 = gmres(inh, t, ietl_atol_, ietl_rtol_) ;
             t = t2 / ietl::two_norm(t2);
         }
