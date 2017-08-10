@@ -144,15 +144,20 @@ protected:
     {
         for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
             vector_type tmp   = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
+            vector_type tmpA  = vecspace_.return_orthovec(u_and_uA_[jcont][1], order_[n_root_found_], order_[jcont], site1_) ;
+            vector_type tmpAA = vecspace_.return_orthovec(u_and_uA_[jcont][2], order_[n_root_found_], order_[jcont], site1_) ;
             //for (size_t j = 0 ; j < jcont ; j++) {
             //    tmp   -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][0] ;
             //    tmpA  -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][1] ;
             //}
-            std::cout << ietl::two_norm(tmp) << std::endl ;
             if (ietl::two_norm(tmp) > 1.0E-10) {
                 tmp    /= ietl::two_norm(tmp);
+                tmpA   /= ietl::two_norm(tmp);
+                tmpAA  /= ietl::two_norm(tmp);
                 std::vector< vector_type > junk ;
                 junk.push_back(tmp)   ;
+                junk.push_back(tmpA)  ;
+                junk.push_back(tmpAA) ;
                 ortho_space_.push_back(junk);
             }
         }
@@ -178,10 +183,11 @@ protected:
         vector_type t  = V[idx] ;
         vector_type tA = VA[idx] ;
         //
-        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
-            t  -= ietl::dot((*it)[0], t) * (*it)[0] ;
-        }
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            t   -= ietl::dot((*it)[0], t) * (*it)[0] ;
         tA = apply_operator(t) ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            tA   -= ietl::dot((*it)[0], tA) * (*it)[0] ;
         //
         for (int i = 1; i <= idx ; i++) {
             t -= ietl::dot(VA[i-1], tA) * V[i-1];
@@ -204,10 +210,10 @@ protected:
                                                                                                                              const vector_type &uA,
                                                                                                                              magnitude_type theta)
     {
-        vector_type r ;
-        r = uA/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
-        //for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-        //    r -= ietl::dot((*it)[1], r) * (*it)[1] ;
+        vector_type r, tmp = uA ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            tmp -= ietl::dot((*it)[0], tmp) * (*it)[0] ;
+        r = tmp/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence
@@ -273,7 +279,7 @@ protected:
                                                             const vector_type& r,
                                                             vector_type& t)
     {
-        vector_type inh = -r, t2, Az = apply_operator(uA) ;
+        vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
                                                       i_state_, max_iter_, false);

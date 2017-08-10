@@ -233,7 +233,7 @@ namespace ietl
             Vector t, t2, t3, y;
             // t2 = (1-uu*) x
             double ust = dot(u_, input) ;
-            t2 = input - ust * u_ / ietl::dot(u_,u_) ;
+            t2 = input - ust * u_ ;
             orthogonalize_simple(t2) ;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
@@ -241,7 +241,7 @@ namespace ietl
             orthogonalize_simple(y) ;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
-            t = y - ust * u_ / ietl::dot(u_,u_);
+            t = y - ust * u_ ;
             y = t ;
             // Finalization
             return y ;

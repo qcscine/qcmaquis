@@ -1,11 +1,10 @@
-
-
 /*****************************************************************************
  *
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2014-2014 by Yingjin Ma <yingjin.ma@phys.chem.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -33,12 +32,6 @@
 #include <boost/random.hpp>
 #include <math.h>
 #include <string.h>
-
-#ifdef DEBUG
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-#endif
 
 #include "ci_encode.hpp"
 
