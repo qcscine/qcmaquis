@@ -51,4 +51,6 @@ create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_
 
 create_tools_symm_target("mps2ci_none"      "NONE"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+create_tools_symm_target("srcas_none"       "NONE"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+
 create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")

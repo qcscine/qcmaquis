@@ -88,10 +88,9 @@ parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
 //
 // Main program to extract CI coefficients from an MPS
 // ---------------------------------------------------
-int main(int argc, char ** argv)
-{
-    if (argc != 3)
-    {
+int main(int argc, char ** argv) {
+    // Initialization
+    if (argc != 3) {
         maquis::cout << "Usage: mps2ci <mps.h5> <determinants_file> " << std::endl;
         maquis::cout << "See J. Chem. Phys. 126, 244109(2007)" << std::endl;
         exit(1);
@@ -116,8 +115,8 @@ int main(int argc, char ** argv)
     // load the determinants
     std::vector<std::vector<int> > determinants = parse_config<matrix, grp>(std::string(argv[2]), phys_dims) ;
     // DEBUG print of the
-    for (pos_t q = 0;q < determinants.size(); ++q){
-       for (pos_t p = 0; p < L; ++p){
+    for (pos_t q = 0; q < determinants.size(); ++q) {
+       for (pos_t p = 0; p < L; ++p) {
            std::cout << determinants[q][p];
        }   
        std::cout << std::endl;
@@ -127,7 +126,7 @@ int main(int argc, char ** argv)
     for (std::vector< std::vector<int> >::iterator it = determinants.begin(); it != determinants.end(); ++it){
         maquis::cout << "CI coefficient of det " << i <<": " << extract_coefficient(mps, *it) << std::endl;
         i++;
-        }
+    }
     maquis::cout << std::endl;
     return 0;
 }

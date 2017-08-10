@@ -1,4 +1,4 @@
-/*****************************************************************************
+ /*****************************************************************************
  *
  * ALPS MPS DMRG Project
  *
@@ -29,9 +29,6 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
-#include <string>
-#include <sys/time.h>
-#include <sys/stat.h>
 
 #include <vector>
 #include <boost/lexical_cast.hpp>
@@ -58,41 +55,30 @@ typedef TrivialGroup grp;
 // Small function to read determinants from a input file
 // -----------------------------------------------------
 
-template<class Matrix, class SymmGroup>
-std::vector<std::vector<typename SymmGroup::charge> >
-parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims, std::vector<int> order)
+template<class SymmGroup>
+std::vector<std::vector<int> >
+parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
 {
-    // Initialization
     std::ifstream config_file;
     config_file.open(file.c_str());
-    typename SymmGroup::charge A(1), B(0), C(0), D(0);
-    B[0]=1;
-    C[1]=1;
-    std::vector<std::vector<typename SymmGroup::charge> > configs;
-    // Parsing of the determinant
+    // The output of the routine is a vector of vectors of charges
+    std::vector<std::vector<int> > configs;
+    // Parses all the lines of the file
     for (std::string line; std::getline(config_file, line); ) {
         std::vector<std::string> det_coeff;
         boost::split(det_coeff, line, boost::is_any_of(" "));
         std::string det = det_coeff[0];
         if (det.size() != site_dims.size())
             throw std::runtime_error("The determinant length doesn't match the mps length\n");
-        std::vector<typename SymmGroup::charge> tmp;
+        // Actual conversion of the determinant to MPS
+        // Basically loads in
+        std::vector<int> tmp;
         for (std::size_t i = 0; i < det.size(); ++i) {
-            int occ = boost::lexical_cast<int>(det[order[i]-1]); 
-            switch(occ) {
-                case 4:
-                    tmp.push_back(site_dims[i][0].first); // doubly occ
-                    break;
-                case 3:
-                    tmp.push_back(site_dims[i][1].first); // up
-                    break;
-                case 2:
-                    tmp.push_back(site_dims[i][2].first); // down 
-                    break;
-                case 1:
-                    tmp.push_back(site_dims[i][3].first); // empty
-                    break;
-            }
+            int occ = boost::lexical_cast<int>(det[i]);
+            if (occ >= 0)
+                tmp.push_back(occ);
+            else
+                throw std::runtime_error("Negative occupation numbers not allowed");
         }
         configs.push_back(tmp);
     }
@@ -145,14 +131,14 @@ int main(int argc, char ** argv)
     for (pos_t p = 0; p < L; ++p)
         phys_dims.push_back(mps[p].site_dim());
     // Load the determinants
-    std::vector<std::vector<typename grp::charge> > determinants = parse_config<matrix, grp>(std::string(argv[2]), phys_dims, order);
+    std::vector< std::vector<int> > determinants = parse_config<grp>(std::string(argv[2]), phys_dims);
     // printout the determinants
     for (pos_t p = 0; p < L; ++p)
         std::cout << determinants[0][p];
     std::cout << std::endl;
     if(argc == 3){
         // compute the CI coefficients for all determinants in the input
-        for (typename std::vector< std::vector<grp::charge> >::iterator it = determinants.begin(); it != determinants.end(); ++it)
+        for (typename std::vector< std::vector<int> >::iterator it = determinants.begin(); it != determinants.end(); ++it)
             maquis::cout << "CI coefficient: " << extract_coefficient(mps, *it) << std::endl;
     } else {
         // Sets default input parameters
@@ -168,9 +154,9 @@ int main(int argc, char ** argv)
              Nsamples = atoi(argv[5]);
         }
         // determinants reservoir | optional
-        std::vector<std::vector<typename grp::charge> > determinants_mclr;
+        std::vector<std::vector<int> > determinants_mclr;
         if(argc == 7){
-            determinants_mclr = parse_config<matrix, grp>(std::string(argv[6]), phys_dims, order);
+            determinants_mclr = parse_config<grp>(std::string(argv[6]), phys_dims);
         } else {
             determinants_mclr = determinants;
         }
@@ -181,7 +167,7 @@ int main(int argc, char ** argv)
         typedef std::map<std::vector<typename grp::charge>, long>   Hash_Map_with_index ;
         Hash_Map_with_index hash_index;
         // SR-CAS -- Sampling Reconstructed CAS determinants
-        Sampling().generate_dets <std::vector<std::vector<typename grp::charge> >, MPS<matrix, grp>, Hash_Map_with_value, Hash_Map_with_index, std::vector<Index<grp> >, std::vector<typename grp::charge>, grp >
+        Sampling().generate_dets <std::vector<std::vector<typename int> >, MPS<matrix, grp>, Hash_Map_with_value, Hash_Map_with_index, std::vector<Index<grp> >, std::vector<typename grp::charge>, grp >
                 (determinants, determinants_mclr, mps, hash_value, hash_index, phys_dims, L, Nsamples, CI_threshold, COM_threshold);
     }
     maquis::cout << std::endl;
