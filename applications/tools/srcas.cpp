@@ -106,7 +106,8 @@ int main(int argc, char ** argv)
         maquis::cerr << "Could not open the mps." << std::endl;
         exit(1);
     }
-    typedef int pos_t;
+    typedef int pos_t ;
+    typedef typename std::vector< int > determinant_type ;
     //
     // LOADING OF INPUT DATA
     // ---------------------
@@ -119,19 +120,12 @@ int main(int argc, char ** argv)
     // Loading the parameters
     DmrgParameters parms;
     ar_in["/parameters"] >> parms;
-    // Reads ordering from parms:
-    std::vector<pos_t> order(mps.length());
-    order = parms["orbital_order"].as<std::vector<pos_t> >();
-    maquis::cout << " orbital_order " << std::endl;
-    for (pos_t p = 0; p < L; ++p)
-        maquis::cout << " " << order[p] << " "; // Here should be mps[order[p]]
-    std::cout << std::endl; 
     // Extract physical basis for every site from MPS
     std::vector<Index<grp> > phys_dims;
     for (pos_t p = 0; p < L; ++p)
         phys_dims.push_back(mps[p].site_dim());
     // Load the determinants
-    std::vector< std::vector<int> > determinants = parse_config<grp>(std::string(argv[2]), phys_dims);
+    std::vector< determinant_type > determinants = parse_config<grp>(std::string(argv[2]), phys_dims);
     // printout the determinants
     for (pos_t p = 0; p < L; ++p)
         std::cout << determinants[0][p];
@@ -161,13 +155,13 @@ int main(int argc, char ** argv)
             determinants_mclr = determinants;
         }
         // This is used for determinants reservoir
-        typedef std::map<std::vector<typename grp::charge>, double> Hash_Map_with_value ;
+        typedef typename std::map< std::vector<int> , double> Hash_Map_with_value ;
         Hash_Map_with_value hash_value ;
         // determinants index in determinants reservoir
-        typedef std::map<std::vector<typename grp::charge>, long>   Hash_Map_with_index ;
+        typedef typename std::map< std::vector<int>, long>   Hash_Map_with_index ;
         Hash_Map_with_index hash_index;
         // SR-CAS -- Sampling Reconstructed CAS determinants
-        Sampling().generate_dets <std::vector<std::vector<typename int> >, MPS<matrix, grp>, Hash_Map_with_value, Hash_Map_with_index, std::vector<Index<grp> >, std::vector<typename grp::charge>, grp >
+        Sampling().generate_dets < std::vector< determinant_type >, matrix, grp, Hash_Map_with_value, Hash_Map_with_index >
                 (determinants, determinants_mclr, mps, hash_value, hash_index, phys_dims, L, Nsamples, CI_threshold, COM_threshold);
     }
     maquis::cout << std::endl;

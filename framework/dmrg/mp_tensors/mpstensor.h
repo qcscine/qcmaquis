@@ -38,7 +38,7 @@ enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
 enum Indicator { Unorm, Lnorm, Rnorm };
-enum DecompMethod {QR, SVD}; 
+enum DecompMethod {QR, SVD};
 
 static DecompMethod DefaultSolver() {return QR;} // QR or SVD
 

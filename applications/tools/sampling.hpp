@@ -30,6 +30,7 @@
 
 #include <iostream>
 #include <boost/random.hpp>
+#include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <string.h>
 
@@ -39,27 +40,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-
-template<class Matrix, class SymmGroup>
-std::vector<typename SymmGroup::charge>
-parse_det(std::vector<typename SymmGroup::charge> const & det, std::vector<Index<SymmGroup> > const & site_dims)
-{
-    typename SymmGroup::charge A(1), B(0), C(0), D(0);
-    B[0]=1; C[1]=1;
-    std::vector<typename SymmGroup::charge> tmp;
-    for(std::size_t i = 0; i < det.size(); i++) {
-        if(det[i][0]==1 && det[i][1]==1)  
-          tmp.push_back(site_dims[i][0].first); // doubly occ
-        else if(det[i][0]==1 && det[i][1]==0)
-          tmp.push_back(site_dims[i][1].first); // up
-        else if(det[i][0]==0 && det[i][1]==1)
-          tmp.push_back(site_dims[i][2].first); // down 
-        else if(det[i][0]==0 && det[i][1]==0)
-          tmp.push_back(site_dims[i][3].first); // empty            
-        }
-
-    return tmp;
-}
 
 // refer from wiki
 void quick_sort (double data[], int left, int right) {
@@ -136,144 +116,99 @@ struct Sampling {
         generator.seed(seed+time(NULL));
     }
     // template generate_dets
-    template <typename Determinants, typename MPS, typename Hash_value, typename Hash_index, typename SiteSymm, typename Determinant, typename SymmGroup>
-    void generate_dets(Determinants dets, Determinants dets_mclr, MPS mps, Hash_value hash, Hash_index hash_index, SiteSymm site_dims, int norb, int nsample, double CI_threshold, double COM_threshold)
+    template <typename Determinants, typename Matrix, typename SymmGroup, typename Hash_value, typename Hash_index>
+    void generate_dets(Determinants dets, Determinants dets_mclr, MPS<Matrix, SymmGroup> mps,
+                       Hash_value hash, Hash_index hash_index, std::vector< Index<SymmGroup> > site_dims,
+                       int norb, int nsample, double CI_threshold, double COM_threshold)
     {
+        // Header printing
         maquis::cout << "    CI-threshold  : " <<  CI_threshold << std::endl;
         maquis::cout << "   COM-threshold  : " << COM_threshold << std::endl;
+        // Type definition
+        typename Hash_value::iterator                       iter ;
+        typename Hash_index::iterator                       iter_idx ;
+        typedef typename Determinants::value_type           Determinant ;
+        typedef typename MPS<Matrix,SymmGroup>::scalar_type scalar_type ;
         // Set up the initial parameters, fix the symmetry group
-        double   ci , ci0 , ci_ratio , ci_tmp ;
-        double   sum_ci2=0.0 , completeness=0.0 ;
-        unsigned det_length = dets[0].size() ;
-	    unsigned number_of_dets ;
-        typename Hash_value::iterator iter ;
-        typename Hash_index::iterator iter_idx ;
+        scalar_type ci , ci0 , ci_ratio , ci_tmp ;
+        scalar_type sum_ci2 = 0.0 ;
+        scalar_type completeness = 0.0 ;
+        std::size_t det_length = dets[0].size() ;
+        std::size_t n_total_dim ;
+	    std::size_t number_of_dets ;
         // This part will be used as the determinants reservoir
         Determinant det;
-        for (std::size_t c = 0; c < intdets.size(); ++c) {
-            det = dets[c] ;
-            hash_index[det] = c ;
-        }
+        for (std::size_t c = 0; c < dets.size(); ++c)
+            hash_index[dets[c]] = c ;
         // determinant spawnning -- preparing part
         Determinant det_queen , det_bee , det_tmp ; // determinant "queen bee tmp"
         int iaccept = 0 ;
         int iaccept_queen = 0 ;
         // Loop over the determinants to be followed
-        for (std::size_t c = 0; c < dets_mclr.size(); ++c)
-        {
+        for (std::size_t c = 0; c < dets_mclr.size(); ++c) {
             det = dets_mclr[c];
-            ci0 = extract_coefficient(mps, det);
+            //ci0 = extract_coefficient(mps, det);
             hash[det] = ci0 ;
         }
-        // Get the number of electrons & holes (alpha, beta, total)
-        int nele_alpha  = 0 ;
-        int nele_beta   = 0 ;
-        int nhole_alpha = 0 ;
-        int nhole_beta  = 0 ;
-        int nele_total  = 0 ;
-        int igroup_sym  = 0 ;
         // Computes the total number of electron/holes for alpha or beta orbitals
-        for (int p = det_length-1; p >= 0; --p)
-        {
-            // Alpha
-            if(det[p][0]==1)
-                nele_alpha++ ;
-            else
-                nhole_alpha++;
-            // Beta
-            if(det[p][1]==1) 
-                nele_beta++  ;
-            else
-                nhole_beta++ ;
-        }
-        nele_total = nele_alpha + nele_beta ;
-        // Initial vectors
-        std::vector<int>ele_alpha(nele_alpha); 
-        std::vector<int>ele_beta(nele_beta);
-        std::vector<int>hole_alpha(nhole_alpha); 
-        std::vector<int>hole_beta(nhole_beta);
+        n_total_dim = 0 ;
+        for (std::size_t i = 0; i < det_length; i++)
+            n_total_dim += site_dims[i][0].second ;
         // Get the number of excited electrons. This number is generated randomly
-        int nele_excited;
-        nele_excited = int(floor(nele_total*random_number())+1);
-        maquis::cout << " nele_excited " << nele_excited << " in " << norb << " orbitals" << std::endl;
-        // determinant spawnning -- doing part
-        det_queen=dets[0];
+        int nmodes_excited ;
+        det_queen = dets[0];
         int nMAX = 0 ;
-        // -- MAIN LOOP --
+        // +-----------+
+        //   MAIN LOOP
+        // +-----------+
         do {
             nMAX++ ;
-            for( int isample=0; isample < nsample; isample++ ) {
+            for ( int isample = 0; isample < nsample; isample++ ) {
                 // Loop over the determinants to be sampled
                 // Updates the "queen" determinant
+                nmodes_excited = int(floor(n_total_dim*random_number()) + 1);
                 det_tmp = det_queen ;
                 int iele_excited = 0 ;
-                do {
-                    int i=0, j=0, k=0, l=0 ;
-                    // Note - the number of orbitals is provided in input
-                    for( int p=0; p < norb; p++ ) {
-                        // Checks what are the orbitals in which electron/holes are present
-                        // Alpha
-                        if(det_tmp[p][0]==1)
-                            ele_alpha[i++]=p;
-                        else
-                            hole_alpha[j++]=p;
-                        // Beta
-                        if(det_tmp[p][1]==1)
-                            ele_beta[k++]=p;
-                        else
-                            hole_beta[l++]=p;
-                    }
+                for (std::size_t idx = 0; idx < nmodes_excited; idx++){
                     // Excites an alpha electron with probability 1/2
                     iele_excited++ ;
-                    if(nhole_alpha !=0 && nele_alpha!=0 && random_number() > 0.5) {
-                        // Decides the electron to be excited
-                        int fr  = int(floor(random_number()*nele_alpha ));   //fr -> from
-                        int to  = int(floor(random_number()*nhole_alpha));
-                        int ifr = ele_alpha[fr]  ;
-                        int ito = hole_alpha[to] ;
-//                      maquis::cout << " alpha - electron from " << ifr << " goto " << ito << std::endl;
-                        det_tmp[ifr][0]=0;
-                        det_tmp[ito][0]=1;
-                    } else if(nhole_beta !=0 && nele_beta!=0) {
-                        // Beta case
-                        int fr = int(floor(random_number()*nele_beta )) ;   //fr -> from
-                        int to = int(floor(random_number()*nhole_beta)) ;
-                        int ifr=ele_beta[fr] ;
-                        int ito=hole_beta[to];
-//                      maquis::cout << " beta  - electron from " << ifr << " goto " << ito << std::endl;
-                        det_tmp[ifr][1]=0;
-                        det_tmp[ito][1]=1;
-                    }
-                    det_bee = parse_det<matrix, TrivialGroup>(det_tmp,site_dims) ;
-                    // Check the symmetry group
-                    if( iele_excited >= nele_excited)
-                        break ;
-                } while(true) ;
-                ci = extract_coefficient(mps, det_bee);
-                sum_ci2 = sum_ci2 + pow(ci,2.0);
-                // Use Hash(Map) technique, in order to quick access the data
-                iter = hash.find(det_bee);
+                    // Decides the electron to be excited
+                    int mode_2excite = int(floor(random_number()*n_total_dim )) ;
+                    det_tmp[mode_2excite] += 1 ;
+                } ;
+                // Corrects the occupation number by the modulus
+                for (std::size_t idx = 0; idx < det_length; idx++) {
+                    det_tmp[idx] %= site_dims[idx][0].second ;
+                    std::cout << det_tmp[idx] << std::endl ;
+                }
+                // Updates the data
+                iter = hash.find(det_tmp) ;
+                std::cout << "Pippo" << std::endl ;
                 if(iter == hash.end()) {
+                    ci = extract_coefficient<Matrix,SymmGroup>(mps, det_tmp);
+                    std::cout << ci << std::endl ;
+                    std::cout << "Pippo" << std::endl ;
                     if(std::abs(ci) >= CI_threshold) {
+                        std::cout << "Pippo" << std::endl ;
                         hash[det_bee] = ci ;
                         iaccept++;
                     }
                 } else {
                     ci = iter->second;
                 }
-                ci_ratio=pow(ci,2.0)/pow(ci0,2);
+                sum_ci2  = sum_ci2 + pow(ci,2.0);
+                ci_ratio = pow(ci,2.0)/pow(ci0,2);
                 // Whether use this bee-det as the new queen-det
                 if( ci_ratio > random_number()) {
-                    det_queen=det_bee ;
+                    det_queen = det_tmp ;
                     ci0 = ci ;
                     iaccept_queen++ ;
                 }
             }
             sum_ci2=0.0;
-            for( iter=hash.begin(); iter!=hash.end(); iter++)
-            {
-                ci_tmp = iter->second;
-                sum_ci2=sum_ci2+pow(ci_tmp,2.0);
+            for( iter=hash.begin(); iter!=hash.end(); iter++) {
+                ci_tmp  = iter->second;
+                sum_ci2 = sum_ci2+pow(ci_tmp,2.0);
             }
             // Prints results
             maquis::cout << "Determinant-naccept" << iaccept << std::endl;
@@ -281,35 +216,25 @@ struct Sampling {
             completeness=1.0-sum_ci2;
             maquis::cout << " Current completeness (1-\\sum(ci^2)) : " << completeness << std::endl;
         } while(completeness>COM_threshold && nMAX< 100) ;
-        // Back to "2", "u", "d", "0" type electron representation, and print out
-        //Determinants  dets_show;
+        // +---------------+
+        //   FINAL PRINTING
+        // +---------------+
         double    CIs_show[hash.size()]  ; //value
         uint32_t  CIs_index[hash.size()] ; //index in the reservoir
         string    dets_show[hash.size()] ; //dets represent
         uint32_t  i = 0 ;
-        for(iter=hash.begin(); iter!=hash.end(); iter++)
-        {
+        for(iter=hash.begin(); iter!=hash.end(); iter++) {
+            // Local initialization
             string ctmp;
-            CIs_show[i]=iter->second;
-            // idets_show.push_back(iter->first);
+            CIs_show[i] = iter->second;
             for(int p = 0; p < det_length; p++)
-            {
-                if(iter->first[p][0]==1 && iter->first[p][1]==1)
-                    ctmp=ctmp+"2";
-                if(iter->first[p][0]==1 && iter->first[p][1]==0)
-                    ctmp=ctmp+"u";
-                if(iter->first[p][0]==0 && iter->first[p][1]==1)
-                    ctmp=ctmp+"d";
-                if(iter->first[p][0]==0 && iter->first[p][1]==0)
-                    ctmp=ctmp+"0";
-            }
-            dets_show[i]=ctmp;
+                ctmp = ctmp + boost::lexical_cast<string>(iter->first[p]) ;
+            dets_show[i] = ctmp;
             iter_idx = hash_index.find(iter->first);
-            if(iter_idx == hash_index.end())
-            {
-                CIs_index[i]=0;
+            if(iter_idx == hash_index.end()) {
+                CIs_index[i] = 0 ;
             } else {
-                CIs_index[i]=iter_idx->second+1;
+                CIs_index[i] = iter_idx->second + 1 ;
             }
             i++;
         }
