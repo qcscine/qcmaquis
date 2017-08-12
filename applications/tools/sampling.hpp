@@ -177,19 +177,13 @@ struct Sampling {
                     det_tmp[mode_2excite] += 1 ;
                 } ;
                 // Corrects the occupation number by the modulus
-                for (std::size_t idx = 0; idx < det_length; idx++) {
+                for (std::size_t idx = 0; idx < det_length; idx++) 
                     det_tmp[idx] %= site_dims[idx][0].second ;
-                    std::cout << det_tmp[idx] << std::endl ;
-                }
                 // Updates the data
                 iter = hash.find(det_tmp) ;
-                std::cout << "Pippo" << std::endl ;
                 if(iter == hash.end()) {
                     ci = extract_coefficient<Matrix,SymmGroup>(mps, det_tmp);
-                    std::cout << ci << std::endl ;
-                    std::cout << "Pippo" << std::endl ;
                     if(std::abs(ci) >= CI_threshold) {
-                        std::cout << "Pippo" << std::endl ;
                         hash[det_bee] = ci ;
                         iaccept++;
                     }
@@ -211,9 +205,9 @@ struct Sampling {
                 sum_ci2 = sum_ci2+pow(ci_tmp,2.0);
             }
             // Prints results
-            maquis::cout << "Determinant-naccept" << iaccept << std::endl;
-            maquis::cout << "Determinant-naccept-queen" << iaccept_queen << std::endl;
-            completeness=1.0-sum_ci2;
+            maquis::cout << "Determinant-naccept " << iaccept << std::endl;
+            maquis::cout << "Determinant-naccept-queen " << iaccept_queen << std::endl;
+            completeness = 1.0-sum_ci2;
             maquis::cout << " Current completeness (1-\\sum(ci^2)) : " << completeness << std::endl;
         } while(completeness>COM_threshold && nMAX< 100) ;
         // +---------------+

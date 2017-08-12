@@ -107,7 +107,7 @@ int main(int argc, char ** argv)
         exit(1);
     }
     typedef int pos_t ;
-    typedef typename std::vector< int > determinant_type ;
+    typedef std::vector< int > determinant_type ;
     //
     // LOADING OF INPUT DATA
     // ---------------------
@@ -132,7 +132,7 @@ int main(int argc, char ** argv)
     std::cout << std::endl;
     if(argc == 3){
         // compute the CI coefficients for all determinants in the input
-        for (typename std::vector< std::vector<int> >::iterator it = determinants.begin(); it != determinants.end(); ++it)
+        for (std::vector< std::vector<int> >::iterator it = determinants.begin(); it != determinants.end(); ++it)
             maquis::cout << "CI coefficient: " << extract_coefficient(mps, *it) << std::endl;
     } else {
         // Sets default input parameters
@@ -155,10 +155,10 @@ int main(int argc, char ** argv)
             determinants_mclr = determinants;
         }
         // This is used for determinants reservoir
-        typedef typename std::map< std::vector<int> , double> Hash_Map_with_value ;
+        typedef std::map< std::vector<int> , double> Hash_Map_with_value ;
         Hash_Map_with_value hash_value ;
         // determinants index in determinants reservoir
-        typedef typename std::map< std::vector<int>, long>   Hash_Map_with_index ;
+        typedef std::map< std::vector<int>, long>   Hash_Map_with_index ;
         Hash_Map_with_index hash_index;
         // SR-CAS -- Sampling Reconstructed CAS determinants
         Sampling().generate_dets < std::vector< determinant_type >, matrix, grp, Hash_Map_with_value, Hash_Map_with_index >

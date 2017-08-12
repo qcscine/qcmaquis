@@ -1,5 +1,3 @@
-
-
 /*****************************************************************************
  *
  * ALPS MPS DMRG Project
@@ -71,7 +69,7 @@
 //
 
 template <class Matrix, class SymmGroup>
-typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & det)
+typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> & mps, std::vector<int> const & det)
 {
     typedef typename SymmGroup::charge charge ;
     charge identity = SymmGroup::IdentityCharge ;
@@ -81,56 +79,49 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
     charge total  = identity ;
     charge sector = identity ;
     double res ;
-    //    mps[0].make_left_paired();
-    //    block_matrix<Matrix, SymmGroup> const &block = mps[0].data();
+    mps[0].make_left_paired();
     std::size_t mrows = mps[0].row_dim().size_of_block(sector);
     std::size_t mcols = mps[0].col_dim().size_of_block(sector);
-    //    std::size_t b = block.left_basis().position(sector);
-    //    Matrix const &coeff_full = block[b];
-    //alps::numeric::matrix<double> coeff(mrows, mcols);
-    //for (int i = 0; i < mrows; i++)
-    //    std::copy(block[b].row(mrows * det[0] + i).first,
-    //              block[b].row(mrows * det[0] + i).second,
-    //              coeff.row(i).first);
-    //for (unsigned p = 1; p < mps.length(); ++p) {
-    //    // Takes the point group of the input determinant on the p-th site,
-    //    // the symmetry group of the input matrix and fuse it, looks for the
-    //    // same block in the right matrix
-    //    charge left_input = identity;
-    //    sector = SymmGroup::fuse(sector, identity);
-    //    // Left pairing
-    //    std::size_t mrows = mps[p].row_dim().size_of_block(identity);
-    //    mps[p].make_left_paired();
-    //    // Extract the matrix associated to the p-th site.
-    //    // NOTE: it's a tensor with 2 indexes, since it has been left_paired
-    //    block_matrix<Matrix, SymmGroup> const &block_p = mps[p].data();
-    //    // The product of the symmetry of the previous phys_site and of the input
-    //    // determinant on the next site has to be coherent with the third site
-    //    std::size_t b = block_p.left_basis().position(sector);
-    //    // This is now a Nmax*m x m matrix (the tensor has been left paired)
-    //    Matrix const &sector_matrix = block_p[b];
-    //    // determine voffset - row offset for site_charge in sector_matrix
-    //    // if permformance is an issue, do not recalculate the ProductBasis on every call
-    //    ProductBasis<SymmGroup> left_pb(mps[p].site_dim(), mps[p].row_dim());
-    //    std::size_t voffset = left_pb(identity, left_input);
-    //    voffset += mrows * det[p];
-    //    // determine vlen and set hlen, the size of the matrix subblock
-    //    unsigned vlen = mps[p - 1].col_dim().size_of_block(identity);
-    //    unsigned hlen = block_p.right_basis().size_of_block(sector);
-    //    // Extract the subblock
-    //    Matrix site_block(vlen, hlen);
-    //    for (unsigned rowcnt = 0; rowcnt < vlen; ++rowcnt)
-    //        std::copy(sector_matrix.row(voffset + rowcnt).first,
-    //                  sector_matrix.row(voffset + rowcnt).second, site_block.row(rowcnt).first);
-    //    if (coeff.num_cols() != site_block.num_rows())
-    //        throw std::runtime_error("coeff.num_cols() != site_block.num_rows()\n");
-    //    // multiply sub-block with previous sub-block
-    //    Matrix tmp(coeff.num_rows(), site_block.num_cols());
-    //    gemm(coeff, site_block, tmp);
-    //    coeff = tmp;
-    //}
-    //res = coeff(0, 0);
-    return 0.0 ;
+    Matrix* coeff = new Matrix(mrows, mcols, 0.);
+    for (int i = 0; i < mrows; i++)
+        std::copy(mps[0].data()[0].row(mrows*det[0] + i).first,
+                  mps[0].data()[0].row(mrows*det[0] + i).second,
+                  (*coeff).row(i).first);
+    for (unsigned p = 1; p < mps.length(); ++p) {
+        // Takes the point group of the input determinant on the p-th site,
+        // the symmetry group of the input matrix and fuse it, looks for the
+        // same block in the right matrix
+        charge left_input = identity;
+        sector = SymmGroup::fuse(sector, identity);
+        // Left pairing
+        mps[p].make_left_paired();
+        std::size_t mrows = mps[p].row_dim().size_of_block(identity);
+        // Extract the matrix associated to the p-th site.
+        // NOTE: it's a tensor with 2 indexes, since it has been left_paired
+        block_matrix<Matrix, SymmGroup> const &block_p = mps[p].data();
+        // determine voffset - row offset for site_charge in sector_matrix
+        // if permformance is an issue, do not recalculate the ProductBasis on every call
+        ProductBasis<SymmGroup>* left_pb = new ProductBasis<SymmGroup>(mps[p].site_dim(), mps[p].row_dim());
+        std::size_t voffset = (*left_pb)(identity, left_input);
+        voffset += mrows * det[p];
+        // determine vlen and set hlen, the size of the matrix subblock
+        unsigned vlen = mps[p-1].col_dim().size_of_block(identity);
+        unsigned hlen = block_p.right_basis().size_of_block(sector);
+        // Extract the subblock
+        Matrix* site_block = new Matrix(vlen, hlen);
+        for (unsigned rowcnt = 0; rowcnt < vlen; ++rowcnt)
+            std::copy(block_p[0].row(voffset + rowcnt).first,
+                      block_p[0].row(voffset + rowcnt).second, 
+                      (*site_block).row(rowcnt).first);
+        if ((*coeff).num_cols() != (*site_block).num_rows())
+            throw std::runtime_error("coeff.num_cols() != site_block.num_rows()\n");
+        // multiply sub-block with previous sub-block
+        Matrix* tmp = new Matrix((*coeff).num_rows(), (*site_block).num_cols());
+        gemm(*coeff, *site_block, *tmp);
+        *coeff = *tmp;
+    }
+    res = (*coeff)(0,0) ;
+    return res ;
 }
 
 //
