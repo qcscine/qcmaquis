@@ -83,11 +83,13 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> & mps, st
     std::size_t mrows = mps[0].row_dim().size_of_block(sector);
     std::size_t mcols = mps[0].col_dim().size_of_block(sector);
     Matrix* coeff = new Matrix(mrows, mcols, 0.);
+    Matrix* site_block; 
+    Matrix* tmp ;
     for (int i = 0; i < mrows; i++)
         std::copy(mps[0].data()[0].row(mrows*det[0] + i).first,
                   mps[0].data()[0].row(mrows*det[0] + i).second,
                   (*coeff).row(i).first);
-    for (unsigned p = 1; p < mps.length(); ++p) {
+    for (std::size_t p = 1; p < mps.length(); ++p) {
         // Takes the point group of the input determinant on the p-th site,
         // the symmetry group of the input matrix and fuse it, looks for the
         // same block in the right matrix
@@ -96,31 +98,31 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> & mps, st
         // Left pairing
         mps[p].make_left_paired();
         std::size_t mrows = mps[p].row_dim().size_of_block(identity);
-        // Extract the matrix associated to the p-th site.
-        // NOTE: it's a tensor with 2 indexes, since it has been left_paired
-        block_matrix<Matrix, SymmGroup> const &block_p = mps[p].data();
         // determine voffset - row offset for site_charge in sector_matrix
         // if permformance is an issue, do not recalculate the ProductBasis on every call
         ProductBasis<SymmGroup>* left_pb = new ProductBasis<SymmGroup>(mps[p].site_dim(), mps[p].row_dim());
         std::size_t voffset = (*left_pb)(identity, left_input);
         voffset += mrows * det[p];
         // determine vlen and set hlen, the size of the matrix subblock
-        unsigned vlen = mps[p-1].col_dim().size_of_block(identity);
-        unsigned hlen = block_p.right_basis().size_of_block(sector);
+        std::size_t vlen = mps[p-1].col_dim().size_of_block(identity);
+        std::size_t hlen = mps[p].col_dim().size_of_block(sector);
         // Extract the subblock
-        Matrix* site_block = new Matrix(vlen, hlen);
-        for (unsigned rowcnt = 0; rowcnt < vlen; ++rowcnt)
-            std::copy(block_p[0].row(voffset + rowcnt).first,
-                      block_p[0].row(voffset + rowcnt).second, 
+        site_block = new Matrix(vlen, hlen, 0.);
+        for (std::size_t rowcnt = 0; rowcnt < vlen; ++rowcnt)
+            std::copy(mps[p].data()[0].row(voffset + rowcnt).first,
+                      mps[p].data()[0].row(voffset + rowcnt).second, 
                       (*site_block).row(rowcnt).first);
         if ((*coeff).num_cols() != (*site_block).num_rows())
             throw std::runtime_error("coeff.num_cols() != site_block.num_rows()\n");
         // multiply sub-block with previous sub-block
-        Matrix* tmp = new Matrix((*coeff).num_rows(), (*site_block).num_cols());
+        tmp = new Matrix((*coeff).num_rows(), (*site_block).num_cols());
         gemm(*coeff, *site_block, *tmp);
         *coeff = *tmp;
     }
     res = (*coeff)(0,0) ;
+    delete tmp ;
+    delete coeff ;
+    delete site_block ;
     return res ;
 }
 

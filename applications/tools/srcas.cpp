@@ -140,13 +140,12 @@ int main(int argc, char ** argv)
         double  CI_threshold  = 0.01 ;
         double  COM_threshold = 0.01 ;
         // Changes if parameters have been provided in input
-        if(argc > 3){
+        if(argc > 3)
             CI_threshold  = atof(argv[3]);
-        } else if(argc > 4) {
+        if(argc > 4) 
             COM_threshold = atof(argv[4]);
-        } else if(argc > 5) {
+        if(argc > 5) 
              Nsamples = atoi(argv[5]);
-        }
         // determinants reservoir | optional
         std::vector<std::vector<int> > determinants_mclr;
         if(argc == 7){

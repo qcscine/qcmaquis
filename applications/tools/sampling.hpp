@@ -141,13 +141,13 @@ struct Sampling {
         for (std::size_t c = 0; c < dets.size(); ++c)
             hash_index[dets[c]] = c ;
         // determinant spawnning -- preparing part
-        Determinant det_queen , det_bee , det_tmp ; // determinant "queen bee tmp"
+        Determinant det_queen , det_tmp ; // determinant "queen bee tmp"
         int iaccept = 0 ;
         int iaccept_queen = 0 ;
         // Loop over the determinants to be followed
         for (std::size_t c = 0; c < dets_mclr.size(); ++c) {
             det = dets_mclr[c];
-            //ci0 = extract_coefficient(mps, det);
+            ci0 = extract_coefficient(mps, det);
             hash[det] = ci0 ;
         }
         // Computes the total number of electron/holes for alpha or beta orbitals
@@ -184,16 +184,16 @@ struct Sampling {
                 if(iter == hash.end()) {
                     ci = extract_coefficient<Matrix,SymmGroup>(mps, det_tmp);
                     if(std::abs(ci) >= CI_threshold) {
-                        hash[det_bee] = ci ;
+                        hash[det_tmp] = ci ;
                         iaccept++;
                     }
                 } else {
                     ci = iter->second;
                 }
-                sum_ci2  = sum_ci2 + pow(ci,2.0);
                 ci_ratio = pow(ci,2.0)/pow(ci0,2);
+                double x = random_number() ;
                 // Whether use this bee-det as the new queen-det
-                if( ci_ratio > random_number()) {
+                if( ci_ratio > x ) {
                     det_queen = det_tmp ;
                     ci0 = ci ;
                     iaccept_queen++ ;
@@ -202,8 +202,9 @@ struct Sampling {
             sum_ci2=0.0;
             for( iter=hash.begin(); iter!=hash.end(); iter++) {
                 ci_tmp  = iter->second;
-                sum_ci2 = sum_ci2+pow(ci_tmp,2.0);
+                sum_ci2 = sum_ci2 + pow(ci_tmp,2.0);
             }
+            std::cout << "-----" << std::endl ;
             // Prints results
             maquis::cout << "Determinant-naccept " << iaccept << std::endl;
             maquis::cout << "Determinant-naccept-queen " << iaccept_queen << std::endl;
@@ -240,13 +241,13 @@ struct Sampling {
                 fout << CIs_index[hash.size()-i-1] << "  " << CIs_show[hash.size()-i-1] << std::endl;
         // Final sorting
         quicksort(dets_show, CIs_show,0, hash.size()-1);
-        for(int i=0; i<hash.size() ; i++)
+        for(int i = 0; i < hash.size() ; i++)
             maquis::cout << " The sorted determinants: " << dets_show[hash.size()-i-1] << " " << CIs_show[hash.size()-i-1] << std::endl;
     }
     // Definition of the variables used for the random generation
     boost::mt19937 generator;
     boost::uniform_real<> distribution;
-    boost::variate_generator<boost::mt19937&, boost::uniform_real<> > random_number;
+    boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > random_number;
 };
 
 
