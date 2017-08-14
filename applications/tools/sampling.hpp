@@ -119,7 +119,7 @@ struct Sampling {
     template <typename Determinants, typename Matrix, typename SymmGroup, typename Hash_value, typename Hash_index>
     void generate_dets(Determinants dets, Determinants dets_mclr, MPS<Matrix, SymmGroup> mps,
                        Hash_value hash, Hash_index hash_index, std::vector< Index<SymmGroup> > site_dims,
-                       int norb, int nsample, double CI_threshold, double COM_threshold)
+                       int nmodes, int nsample, double CI_threshold, double COM_threshold)
     {
         // Header printing
         maquis::cout << "    CI-threshold  : " <<  CI_threshold << std::endl;
@@ -138,10 +138,13 @@ struct Sampling {
 	    std::size_t number_of_dets ;
         // This part will be used as the determinants reservoir
         Determinant det;
+        Determinant det_queen , det_tmp ;
+        det.resize(det_length) ;
+        det_queen.resize(det_length) ;
+        det_tmp.resize(det_length) ;
         for (std::size_t c = 0; c < dets.size(); ++c)
             hash_index[dets[c]] = c ;
         // determinant spawnning -- preparing part
-        Determinant det_queen , det_tmp ; // determinant "queen bee tmp"
         int iaccept = 0 ;
         int iaccept_queen = 0 ;
         // Loop over the determinants to be followed
@@ -168,12 +171,9 @@ struct Sampling {
                 // Updates the "queen" determinant
                 nmodes_excited = int(floor(n_total_dim*random_number()) + 1);
                 det_tmp = det_queen ;
-                int iele_excited = 0 ;
                 for (std::size_t idx = 0; idx < nmodes_excited; idx++){
-                    // Excites an alpha electron with probability 1/2
-                    iele_excited++ ;
-                    // Decides the electron to be excited
-                    int mode_2excite = int(floor(random_number()*n_total_dim )) ;
+                    // Compute mode excitation
+                    int mode_2excite = int(floor(random_number()*nmodes )) ;
                     det_tmp[mode_2excite] += 1 ;
                 } ;
                 // Corrects the occupation number by the modulus
@@ -204,8 +204,8 @@ struct Sampling {
                 ci_tmp  = iter->second;
                 sum_ci2 = sum_ci2 + pow(ci_tmp,2.0);
             }
-            std::cout << "-----" << std::endl ;
             // Prints results
+            std::cout << "-----" << std::endl ;
             maquis::cout << "Determinant-naccept " << iaccept << std::endl;
             maquis::cout << "Determinant-naccept-queen " << iaccept_queen << std::endl;
             completeness = 1.0-sum_ci2;
@@ -218,7 +218,7 @@ struct Sampling {
         uint32_t  CIs_index[hash.size()] ; //index in the reservoir
         string    dets_show[hash.size()] ; //dets represent
         uint32_t  i = 0 ;
-        for(iter=hash.begin(); iter!=hash.end(); iter++) {
+        for(iter = hash.begin(); iter!=hash.end(); iter++) {
             // Local initialization
             string ctmp;
             CIs_show[i] = iter->second;
