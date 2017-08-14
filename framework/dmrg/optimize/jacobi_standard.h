@@ -137,7 +137,7 @@ namespace ietl
     {
         for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
             vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
-            for (size_t j = 0 ; j < jcont ; j++)
+            for (size_t j = 0 ; j < ortho_space_.size() ; j++)
                 tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
             if (ietl::two_norm(tmp) > 1.0E-20) {
                 tmp /= ietl::two_norm(tmp);
@@ -152,7 +152,7 @@ namespace ietl
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type t = V[idx] ;
-        if (idx == 0) 
+        //if (idx == 0)
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                t -= ietl::dot((*it)[0], t) * (*it)[0]  ;
         for (int i = 1; i <= idx; i++)

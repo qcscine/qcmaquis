@@ -227,7 +227,7 @@ namespace ietl
                 vector_type r = compute_error(u, uA, theta);
                 converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval);
                 print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
-                if (converged) {
+                if (converged && n_iter != 1) {
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;

@@ -49,6 +49,7 @@ public:
     using base::do_root_homing_ ;
     using base::iteration_results_;
     using base::left_;
+    using base::left_sa_;
     using base::mpo;
     using base::mps;
     using base::mps2follow ;
@@ -56,6 +57,7 @@ public:
     using base::n_root_ ;
     using base::parms;
     using base::right_;
+    using base::right_sa_ ;
     using base::root_homing_type_ ;
     using base::stop_callback;
     // Constructor
@@ -86,6 +88,8 @@ public:
         iteration_results_.clear();
         std::size_t L = mps.length();
         parallel::scheduler_balanced scheduler_mps(L);
+        std::vector< std::pair<float,int> > sorter ;
+        sorter.resize(n_root_) ;
         // Definition of the initial site
         int _site = 0, site = 0;
         if (initial_site != -1) {
@@ -101,15 +105,13 @@ public:
             Storage::prefetch(left_[site-1]);
             Storage::prefetch(right_[site+1]);
         }
-        
+        // +------------------------------+
+        //  MAIN LOOP - SWEEP OPTIMIZATION
+        // +------------------------------+
         for (; _site < 2*L-2; ++_site) {
             //
             double i ;
-            if (poverlap.is_defined()) {
-                i = poverlap.overlap(site);
-                std::cout << "Overlap " << i << std::endl;
-            }
-            //
+            // -- GENERATES THE TWO SITE MPO --
             int lr, site1, site2;
             if (_site < L-1) {
                 site = to_site(L, _site);
@@ -128,6 +130,7 @@ public:
             }
     	    maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
+            // -- STORAGE MANAGEMENT --
             if (_site != L-1)
             { 
                 Storage::fetch(left_[site1]);
@@ -154,15 +157,20 @@ public:
                 tst_vec.push_back(twin_mps) ;
                 tst_tmp.clear();
             }
-            SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 TwoSiteTensor<Matrix, SymmGroup> ts_ortho(base::ortho_mps[n][site1], base::ortho_mps[n][site2]);
-                ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps, ts_ortho.make_mps(),
-                                                                    base::ortho_left_[n][site1], base::ortho_right_[n][site2+1]);
+                ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps,
+                                                                   ts_ortho.make_mps(),
+                                                                   base::ortho_left_[n][site1],
+                                                                   base::ortho_right_[n][site2+1] );
             }
+            // +-----------------------------+
+            //  MAIN PART: performs the sweep
+            // +-----------------------------+
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
@@ -186,6 +194,9 @@ public:
         		tst << res.second;
                 res.second.clear();
             }
+            // +---------------------+
+            //  Collection of results
+            // +---------------------+
             twin_mps.clear();
             {
                 int prec = maquis::cout.precision();
@@ -194,8 +205,9 @@ public:
                 maquis::cout.precision(prec);
             }
             iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
-            
-            
+            // +---------------------+
+            //  Truncation of the MPS
+            // +---------------------+
             double alpha;
             int ngs = parms["ngrowsweeps"], nms = parms["nmainsweeps"];
             if (sweep < ngs)
@@ -238,17 +250,6 @@ public:
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){ 
-                    if(site1 != 0){
-                        #ifdef USE_AMBIENT
-                        std::vector<int> placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        parallel::scheduler_permute scheduler(placement_l, parallel::groups_granularity);
-                        for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
-                            parallel::guard group(scheduler(b), parallel::groups_granularity);
-                            storage::migrate(left_[site1][b], parallel::scheduler_size_indexed(left_[site1][b]));
-                        }
-                        parallel::sync();
-                        #endif
-                    }
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
@@ -289,23 +290,21 @@ public:
                 { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
                 { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
-
+            // +------------+
+            //  FINALIZATION
+            // +------------+
             if (poverlap.is_defined())
                 poverlap.update(mps, site, lr);
             iteration_results_["BondDimension"]     << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
             iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
             iteration_results_["SmallestEV"]        << trunc.smallest_ev;
-            
             parallel::meminfo();
-            
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
-            
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);
-
     	} // for sites
         initial_site = -1;
     } // sweep

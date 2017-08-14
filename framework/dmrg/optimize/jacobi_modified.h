@@ -127,9 +127,9 @@ protected:
     {
         vector_type a = v_guess_[i_state_] ;
         vector_type b = 0.*v_guess_[i_state_] ;
-        gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
-                                                                  ortho_space_, i_state_, 5, false);
-        a = gmres(a, b, 1.0E-20, 1.0E-20);
+        //gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
+        //                                                          ortho_space_, i_state_, 10, false);
+        //a = gmres(a, b, 1.0E-20, 1.0E-20);
         return a ;
     }
     // Compute the action of an operator
@@ -186,8 +186,9 @@ protected:
         vector_type t  = V[idx] ;
         vector_type tA = VA[idx] ;
         //
-        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-            t   -= ietl::dot((*it)[0], t) * (*it)[0] ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
+            t -= ietl::dot((*it)[0], t) * (*it)[0];
+        }
         tA = apply_operator(t) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             tA   -= ietl::dot((*it)[0], tA) * (*it)[0] ;
