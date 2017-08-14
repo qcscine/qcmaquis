@@ -77,6 +77,7 @@ namespace ietl
         using base::site1_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
+        using base::v_guess_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
                                  const int& nsites, const int& site1, const int& site2, const double& ietl_atol,
@@ -86,6 +87,7 @@ namespace ietl
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
+        vector_type get_guess (void) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
         void update_orthospace(void) ;
     private:
@@ -105,7 +107,13 @@ namespace ietl
         void sort_prop(couple_vec& vector_values) ;
         void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
     } ;
-    // Computes the action of an operatorStation 12
+    template <class Matrix, class VS, class ITER>
+    typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type
+             jacobi_davidson_standard<Matrix, VS, ITER>::get_guess()
+    {
+        return v_guess_[i_state_] ;
+    }
+    // Computes the action of an operator
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type
              jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)

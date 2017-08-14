@@ -90,16 +90,6 @@ public:
             : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol, i_gmres_guess, order)
             , omega_(omega), atol_init_(atol_init), rtol_init_(rtol_init), max_iter_init_(max_iter_init)
     {
-        //vector_type a, b ;
-        //for (size_t idx = 0; idx < n_sa_; idx++) {
-        //    vector_type a = v_guess_[idx] ;
-        //    vector_type b = 0.*v_guess_[idx] ;
-        //    gmres_initializer_modified<MATRIX, vector_type, VS> gmres(this->matrix_, v_guess_[idx], vecspace_, omega_,
-        //                                                              ortho_space_, idx, 10, true);
-        //    v_guess_[idx] = gmres(a, b, 1.0E-20, 1.0E-20);
-        //    if (ietl::two_norm(v_guess_[idx]) > 1.0E-20)
-        //        v_guess_[idx] /= ietl::two_norm(v_guess_[idx]) ;
-        //}
     } ;
     ~jacobi_davidson_modified() {} ;
 private:
@@ -119,6 +109,8 @@ private:
     void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta, const vector_type& r, vector_type& t) ;
 protected:
     // Methods
+    vector_type apply_operator (const vector_type& x);
+    vector_type get_guess(void) ;
     void sort_prop(couple_vec& vector_values) ;
     void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
     void update_orthospace(void) ;
@@ -127,8 +119,19 @@ protected:
     double atol_init_, rtol_init_ ;
     magnitude_type omega_ ;
     size_t max_iter_init_ ;
-    vector_type apply_operator (const vector_type& x);
 };
+    // Get the starting guess for the subspace iteration
+    template <class Matrix, class VS, class ITER>
+    typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type
+             jacobi_davidson_modified<Matrix, VS, ITER>::get_guess()
+    {
+        vector_type a = v_guess_[i_state_] ;
+        vector_type b = 0.*v_guess_[i_state_] ;
+        gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
+                                                                  ortho_space_, i_state_, 5, false);
+        a = gmres(a, b, 1.0E-20, 1.0E-20);
+        return a ;
+    }
     // Compute the action of an operator
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type jacobi_davidson_modified<Matrix, VS, ITER>::apply_operator(vector_type const & x)
@@ -146,10 +149,10 @@ protected:
             vector_type tmp   = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
             vector_type tmpA  = vecspace_.return_orthovec(u_and_uA_[jcont][1], order_[n_root_found_], order_[jcont], site1_) ;
             vector_type tmpAA = vecspace_.return_orthovec(u_and_uA_[jcont][2], order_[n_root_found_], order_[jcont], site1_) ;
-            //for (size_t j = 0 ; j < jcont ; j++) {
-            //    tmp   -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][0] ;
-            //    tmpA  -= ietl::dot(ortho_space_[j][1], tmpA) * ortho_space_[j][1] ;
-            //}
+            for (size_t j = 0 ; j < ortho_space_.size() ; j++) {
+                tmp   -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
+                tmpA  -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][1] ;
+            }
             if (ietl::two_norm(tmp) > 1.0E-10) {
                 tmp    /= ietl::two_norm(tmp);
                 tmpA   /= ietl::two_norm(tmp);
@@ -211,9 +214,9 @@ protected:
                                                                                                                              magnitude_type theta)
     {
         vector_type r, tmp = uA ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-            tmp -= ietl::dot((*it)[0], tmp) * (*it)[0] ;
         r = tmp/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            r -= ietl::dot((*it)[0], r) * (*it)[0] ;
         return r ;
     }
     // Check if the JD iteration is arrived at convergence

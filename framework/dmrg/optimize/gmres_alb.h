@@ -290,9 +290,6 @@ namespace ietl
                 } else if (mod == 2) {
                     input -= ietl::dot((*it)[1], input) * (*it)[0];
                 } else if (mod == 3) {
-                    //std::cout << "scalar product = " << ietl::dot((*it)[2], input) << std::endl ;
-                    //std::cout << "orthogonalizer = " << ietl::two_norm((*it)[2]) << std::endl ;
-                    //std::cout << "Trial vector = " << ietl::two_norm(input) << std::endl ;
                     input -= ietl::dot((*it)[2], input) * (*it)[0];
                 }
             }
@@ -304,15 +301,6 @@ namespace ietl
             Vector t, t2, t3, y ;
             double ust = dot(Az_, input) ;
             t2 = input - ust * u_;
-            //mult(A_, t2, t3, n_root_);
-            //t3 *= -1.;
-            //t3 += omega_ * t2;
-            //for (typename vector_ortho_vec::iterator it = ortho_vec_.begin(); it != ortho_vec_.end(); it++) {
-            //    t2 -= ietl::dot((*it)[1], t3) * (*it)[0] ;
-            //    //std::cout << "scalar product = " << ietl::dot((*it)[1], t3) << std::endl ;
-            //    //std::cout << "orthogonalizer = " << ietl::two_norm((*it)[1]) << std::endl ;
-            //    //std::cout << "Trial vector = " << ietl::two_norm(t3) << std::endl ;
-            //}
             orthogonalize_modified(t2, 3) ;
             // y = (A-theta*1) t2
             mult(A_, t2, t3, n_root_);
@@ -363,9 +351,11 @@ namespace ietl
         Vector apply(Vector& input){
             // Initialization
             Vector t ;
+            orthogonalize_simple(input) ;
             mult(A_, input, t, n_root_);
             t *= -1.;
             t += theta_*input;
+            orthogonalize_simple(t) ;
             return t ;
         }
     } ;

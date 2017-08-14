@@ -136,7 +136,7 @@ struct Sampling {
         std::size_t det_length = dets[0].size() ;
         std::size_t n_total_dim ;
 	    std::size_t number_of_dets ;
-        // This part will be used as the determinants reservoir
+        // Determinants initialization
         Determinant det;
         Determinant det_queen , det_tmp ;
         det.resize(det_length) ;
@@ -185,14 +185,14 @@ struct Sampling {
                     ci = extract_coefficient<Matrix,SymmGroup>(mps, det_tmp);
                     if(std::abs(ci) >= CI_threshold) {
                         hash[det_tmp] = ci ;
-                        iaccept++;
+                        iaccept++ ;
                     }
                 } else {
                     ci = iter->second;
                 }
                 ci_ratio = pow(ci,2.0)/pow(ci0,2);
                 double x = random_number() ;
-                // Whether use this bee-det as the new queen-det
+                // Whether use this bee-dt as the new queen-det
                 if( ci_ratio > x ) {
                     det_queen = det_tmp ;
                     ci0 = ci ;
@@ -214,9 +214,9 @@ struct Sampling {
         // +---------------+
         //   FINAL PRINTING
         // +---------------+
-        double    CIs_show[hash.size()]  ; //value
-        uint32_t  CIs_index[hash.size()] ; //index in the reservoir
-        string    dets_show[hash.size()] ; //dets represent
+        double    CIs_show[hash.size()]  ; // value
+        uint32_t  CIs_index[hash.size()] ; // index in the reservoir
+        string    dets_show[hash.size()] ; // dets represent
         uint32_t  i = 0 ;
         for(iter = hash.begin(); iter!=hash.end(); iter++) {
             // Local initialization
@@ -237,7 +237,7 @@ struct Sampling {
         fout.open("det_coeff.tmp");
         fout << i << std::endl;
         for( uint32_t i=0 ; i<hash.size() ; i++)
-            if(CIs_index[hash.size()-i-1]!=0)
+            if(CIs_index[hash.size()-i-1] != 0)
                 fout << CIs_index[hash.size()-i-1] << "  " << CIs_show[hash.size()-i-1] << std::endl;
         // Final sorting
         quicksort(dets_show, CIs_show,0, hash.size()-1);

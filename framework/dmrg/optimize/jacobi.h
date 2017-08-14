@@ -107,6 +107,7 @@ namespace ietl
                                                 const matrix_double& eigvecs, const vector_double& eigvals) {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
         virtual vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) {} ;
+        virtual vector_type get_guess(void) {} ;
         virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                             vector_type& output, vector_type& outputA, magnitude_type& theta,
                                             matrix_double& eigvecs, vector_double& eigvals) {} ;
@@ -211,7 +212,8 @@ namespace ietl
         for (int k = 0 ; k < n_sa_ ; k++){
             n_iter   = 0 ;
             i_state_ = order_[k] ;
-            V[0]     = v_guess_[i_state_] ;
+            V[0]     = get_guess() ;
+            //V[0]     = v_guess_[i_state_] ;
             do {
                 update_vecspace(V, VA, n_iter, res);
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
