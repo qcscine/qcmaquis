@@ -137,8 +137,6 @@ namespace ietl
     void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(void)
     {
         for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
-            std::cout << order_[n_root_found_] << std::endl ;
-            std::cout << order_[jcont] << std::endl ;
             vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
             for (size_t j = 0 ; j < ortho_space_.size() ; j++)
                 tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;

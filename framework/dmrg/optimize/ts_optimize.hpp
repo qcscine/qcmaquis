@@ -152,14 +152,17 @@ public:
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
             MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
+            //
             std::vector< MPSTensor<Matrix, SymmGroup> > tst_vec ;
+            std::vector< TwoSiteTensor<Matrix, SymmGroup> > two_vec ;
             for (int i = 0 ; i < n_root_ ; i++){
                 TwoSiteTensor<Matrix, SymmGroup> tst_tmp(mps_vector[i][site1],mps_vector[i][site2]) ;
+                two_vec.push_back(tst_tmp) ;
                 twin_mps = tst_tmp.make_mps() ;
                 tst_vec.push_back(twin_mps) ;
                 tst_tmp.clear();
             }
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site1, site2);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site1, site2+1);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
@@ -195,7 +198,14 @@ public:
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
         		tst << res[0].second;
-                res[0].second.clear();
+                if (n_root_ > 0) {
+                    two_vec[0] << res[0].second ;
+                    res[0].second.clear();
+                    for (size_t k = 1; k < n_root_; k++) {
+                        two_vec[k] << res[k].second;
+                        res[k].second.clear();
+                    }
+                }
             }
             // +---------------------+
             //  Collection of results
@@ -204,7 +214,8 @@ public:
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
-                maquis::cout << "Energy " << lr << " " << res[0].first + mpo.getCoreEnergy() << std::endl;
+                for (size_t k = 0 ; k < n_root_ ; k++)
+                    maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy() << std::endl;
                 maquis::cout.precision(prec);
             }
             iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
@@ -226,13 +237,15 @@ public:
     	    if (lr == +1)
     	    {
         		// Write back result from optimization
-                BEGIN_TIMING("TRUNC")
-                if (parms["twosite_truncation"] == "svd")
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
-                else
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
-                END_TIMING("TRUNC")
-                tst.clear();
+                for (std::size_t i = 0; i < n_root_; i++) {
+                    BEGIN_TIMING("TRUNC")
+                    if (parms["twosite_truncation"] == "svd")
+                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].split_mps_l2r(Mmax, cutoff);
+                    else
+                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
+                    END_TIMING("TRUNC")
+                    two_vec[i].clear();
+                }
         		block_matrix<Matrix, SymmGroup> t;
         		t = mps[site2].normalize_left(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
@@ -250,13 +263,15 @@ public:
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
-                BEGIN_TIMING("TRUNC")
-                if (parms["twosite_truncation"] == "svd")
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
-                else
-                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
-                END_TIMING("TRUNC")
-                tst.clear();
+                for (std::size_t i = 0; i < n_root_; i++) {
+                    BEGIN_TIMING("TRUNC")
+                    if (parms["twosite_truncation"] == "svd")
+                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].split_mps_r2l(Mmax, cutoff);
+                    else
+                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
+                    END_TIMING("TRUNC")
+                    two_vec[i].clear();
+                }
         		block_matrix<Matrix, SymmGroup> t;
         		t = mps[site1].normalize_right(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
