@@ -128,9 +128,9 @@ protected:
     {
         vector_type a = v_guess_[i_state_] ;
         vector_type b = 0.*v_guess_[i_state_] ;
-        //gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
-        //                                                          ortho_space_, i_state_, 10, false);
-        //a = gmres(a, b, 1.0E-20, 1.0E-20);
+        gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
+                                                                  ortho_space_, i_state_, 10, false);
+        a = gmres(a, b, 1.0E-20, 1.0E-20);
         return a ;
     }
     // Compute the action of an operator

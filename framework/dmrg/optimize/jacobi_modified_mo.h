@@ -140,7 +140,6 @@ namespace ietl
             for (int j = 1; j < dim; ++j)
                 u_local += eigvecs[i][j] * MPSTns_input_A[j];
             overlaps[i] = compute_overlap(u_local) ;
-            std::cout << overlaps[i] << std::endl ;
         }
         for (int i = 1; i < nevec; ++i)
             if (overlaps[i] > overlaps[idx])
