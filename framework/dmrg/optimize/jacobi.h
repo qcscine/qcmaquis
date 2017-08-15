@@ -213,21 +213,20 @@ namespace ietl
             n_iter   = 0 ;
             i_state_ = order_[k] ;
             V[0]     = get_guess() ;
-            //V[0]     = v_guess_[i_state_] ;
             do {
                 update_vecspace(V, VA, n_iter, res);
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
                 for (int j = 0; j < n_iter + 1; j++)
                      for (int i = 0; i < j + 1; i++)
                         M(i, j) = get_matrix_element(V[i], VA[j]);
-                diagonalize_and_select(V, VA, n_iter + 1, u, uA, theta, eigvecs, eigvals);
+                diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals);
                 // Check convergence
                 ++iter;
                 n_iter += 1;
                 vector_type r = compute_error(u, uA, theta);
                 converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval);
                 print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
-                if (converged && n_iter != 1) {
+                if (converged && n_iter) {
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;

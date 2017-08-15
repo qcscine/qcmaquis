@@ -115,8 +115,7 @@ namespace ietl
         int imin , imax , nevec;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_ && n_maxov_ > 0) {
-            //nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
-            nevec  = dim ;
+            nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
             imin   = 1      ;
             imax   = nevec ;
         } else {
@@ -127,9 +126,9 @@ namespace ietl
         // Definition of the dimensions and dynamic memory allocation
         assert (nevec > 0) ;
         overlaps.resize(nevec) ;
-        eigvals.resize(nevec) ;
+        eigvals.resize(dim) ;
         eigvecs.resize(nevec) ;
-        for (int i = 0 ; i < nevec ; ++i)
+        for (int i = 0 ; i < nevec ; i++)
             eigvecs[i].resize(dim) ;
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
@@ -137,9 +136,9 @@ namespace ietl
         double scr ;
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis
-            u_local = eigvecs[i][0] * MPSTns_input[0];
+            u_local = eigvecs[i][0] * MPSTns_input_A[0];
             for (int j = 1; j < dim; ++j)
-                u_local += eigvecs[i][j] * MPSTns_input[j];
+                u_local += eigvecs[i][j] * MPSTns_input_A[j];
             overlaps[i] = compute_overlap(u_local) ;
         }
         for (int i = 1; i < nevec; ++i)

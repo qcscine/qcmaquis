@@ -152,7 +152,7 @@ namespace ietl
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type t = V[idx] ;
-        //if (idx == 0)
+        if (idx == 0)
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                t -= ietl::dot((*it)[0], t) * (*it)[0]  ;
         for (int i = 1; i <= idx; i++)

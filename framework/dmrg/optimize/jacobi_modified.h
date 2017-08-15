@@ -183,23 +183,36 @@ protected:
     template <class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
-        vector_type t  = V[idx] ;
-        vector_type tA = VA[idx] ;
-        //
+        magnitude_type tau ;
+        vector_type& t   = V[idx] ;
+        vector_type& tA = VA[idx] ;
+        // Deflation
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
             t -= ietl::dot((*it)[0], t) * (*it)[0];
         }
         tA = apply_operator(t) ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-            tA   -= ietl::dot((*it)[0], tA) * (*it)[0] ;
-        //
-        for (int i = 1; i <= idx ; i++) {
-            t -= ietl::dot(VA[i-1], tA) * V[i-1];
-            tA -= ietl::dot(VA[i-1], tA) * VA[i-1];
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
+            tA -= ietl::dot((*it)[0], tA) * (*it)[0];
         }
-        //
-        V[idx]  = t/ietl::two_norm(tA) ;
-        VA[idx] = tA/ietl::two_norm(tA) ;
+        // Update
+        tau = ietl::two_norm(tA) ;
+        for (int i = 1; i <= idx ; i++) {
+            t -= ietl::dot(VA[i-1], tA) * V[i-1] ;
+            tA -= ietl::dot(VA[i-1], tA) * VA[i-1] ;
+        }
+        if (std::fabs(ietl::two_norm(tA)/tau) < 0.25) {
+            std::cout << ietl::two_norm(tA) << std::endl ;
+            t /= ietl::two_norm(tA) ;
+            tA /= ietl::two_norm(tA) ;
+            for (int i = 1; i <= idx ; i++) {
+                t -= ietl::dot(VA[i-1], tA) * V[i-1] ;
+                tA -= ietl::dot(VA[i-1], tA) * VA[i-1] ;
+            }
+            std::cout << ietl::two_norm(tA) << std::endl ;
+        }
+        // Final update
+        t /= ietl::two_norm(tA);
+        tA /= ietl::two_norm(tA);
     };
     // Get the matrix element of the Hamiltionian
     template <class Matrix, class VS, class ITER>
