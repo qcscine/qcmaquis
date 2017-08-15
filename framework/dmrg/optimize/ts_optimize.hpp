@@ -55,11 +55,15 @@ public:
     using base::mps2follow ;
     using base::mps_vector;
     using base::n_root_ ;
+    using base::order ;
     using base::parms;
+    using base::poverlap_vec_ ;
     using base::right_;
     using base::right_sa_ ;
     using base::root_homing_type_ ;
-    using base::stop_callback;
+    using base::stop_callback ;
+    using base::vec_sa_left_ ;
+    using base::vec_sa_right_ ;
     // Constructor
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 std::vector< MPS<Matrix, SymmGroup> > & mps_sa_,
@@ -88,16 +92,14 @@ public:
         iteration_results_.clear();
         std::size_t L = mps.length();
         parallel::scheduler_balanced scheduler_mps(L);
-        std::vector< std::pair<float,int> > sorter ;
-        sorter.resize(n_root_) ;
         // Definition of the initial site
         int _site = 0, site = 0;
         if (initial_site != -1) {
             _site = initial_site;
             site = to_site(L, _site);
         }
-        // TODO ALB MOVE THIS PART IN THE VIRTUAL OPTIMIZER CLASS
-        partial_overlap poverlap(mps, mps2follow[0]) ;
+        std::vector< std::pair<float,int> > sorter ;
+        sorter.resize(n_root_) ;
         if (_site < L-1) {
             Storage::prefetch(left_[site]);
             Storage::prefetch(right_[site+2]);
@@ -146,7 +148,7 @@ public:
                 }
             }
             boost::chrono::high_resolution_clock::time_point now, then;
-    	    // Create TwoSite objects
+    	    // Create TwoSite objects. For SA calculations, creates a vector
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
             MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
@@ -157,7 +159,7 @@ public:
                 tst_vec.push_back(twin_mps) ;
                 tst_tmp.clear();
             }
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site1, site2);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
@@ -171,28 +173,29 @@ public:
             // +-----------------------------+
             //  MAIN PART: performs the sweep
             // +-----------------------------+
-            std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+            std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
             {
                 if (parms["eigensolver"] == std::string("IETL")) {
             	    BEGIN_TIMING("IETL")
-                    res = solve_ietl_lanczos(sp, twin_mps, parms);
+                    //res = solve_ietl_lanczos(sp, twin_mps, parms);
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    //res = solve_ietl_jcd(sp, twin_mps, parms, poverlap, 2, site1, n_root_, root_homing_type_, ortho_vecs, site2);
+                    res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 2, site1, site2, root_homing_type_,
+                                         vec_sa_left_, vec_sa_right_, order, ortho_vecs);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    //res = solve_ietl_davidson(sp, vector_set, parms, poverlap, 2, site1, root_homing_type_, ortho_vecs, site2);
+                    //res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 2, site1, root_homing_type_, ortho_vecs, site2);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
-        		tst << res.second;
-                res.second.clear();
+        		tst << res[0].second;
+                res[0].second.clear();
             }
             // +---------------------+
             //  Collection of results
@@ -201,10 +204,10 @@ public:
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
-                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy() << std::endl;
+                maquis::cout << "Energy " << lr << " " << res[0].first + mpo.getCoreEnergy() << std::endl;
                 maquis::cout.precision(prec);
             }
-            iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
+            iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
             // +---------------------+
             //  Truncation of the MPS
             // +---------------------+
@@ -220,7 +223,6 @@ public:
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
             truncation_results trunc;
-            
     	    if (lr == +1)
     	    {
         		// Write back result from optimization
@@ -231,25 +233,15 @@ public:
                     boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
                 END_TIMING("TRUNC")
                 tst.clear();
-
-
         		block_matrix<Matrix, SymmGroup> t;
-		
-        		//t = mps[site1].normalize_left(DefaultSolver());
-        		//mps[site2].multiply_from_left(t);
-        		//mps[site2].divide_by_scalar(mps[site2].scalar_norm());	
-
         		t = mps[site2].normalize_left(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
-
                 if (site1 != L-2)
                     Storage::drop(right_[site2+1]);
-
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
-
-                if (site1 != L-2){ 
+                if (site1 != L-2){
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
@@ -265,24 +257,14 @@ public:
                     boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
                 END_TIMING("TRUNC")
                 tst.clear();
-
-
         		block_matrix<Matrix, SymmGroup> t;
-
-        		//t = mps[site2].normalize_right(DefaultSolver());
-        		//mps[site1].multiply_from_right(t);
-        		//mps[site1].divide_by_scalar(mps[site1].scalar_norm());	
-
         		t = mps[site1].normalize_right(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
-
                 if(site1 != 0)
                     Storage::drop(left_[site1]);
-
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
-
                 if(site1 != 0){
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
@@ -293,8 +275,15 @@ public:
             // +------------+
             //  FINALIZATION
             // +------------+
-            if (poverlap.is_defined())
-                poverlap.update(mps, site, lr);
+            for (size_t i = 0; i < n_root_; i++) {
+                sorter[i].first  = res[i].first ;
+                sorter[i].second = i ;
+            }
+            std::sort(sorter.begin(), sorter.end()) ;
+            this->update_order(sorter) ;
+            if (root_homing_type_ == 1)
+                for (size_t k = 0 ; k < n_root_ ; k++)
+                    poverlap_vec_[k].update(mps_vector[k], site, lr) ;
             iteration_results_["BondDimension"]     << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
             iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;

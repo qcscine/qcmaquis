@@ -78,6 +78,7 @@ public:
     using base::order_ ;
     using base::ortho_space_ ;
     using base::site1_ ;
+    using base::site2_ ;
     using base::u_and_uA_ ;
     using base::vecspace_ ;
     using base::v_guess_ ;
@@ -146,9 +147,9 @@ protected:
     void jacobi_davidson_modified<Matrix,VS,ITER>::update_orthospace(void)
     {
         for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
-            vector_type tmp   = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
-            vector_type tmpA  = vecspace_.return_orthovec(u_and_uA_[jcont][1], order_[n_root_found_], order_[jcont], site1_) ;
-            vector_type tmpAA = vecspace_.return_orthovec(u_and_uA_[jcont][2], order_[n_root_found_], order_[jcont], site1_) ;
+            vector_type tmp   = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
+            vector_type tmpA  = vecspace_.return_orthovec(u_and_uA_[jcont][1], order_[n_root_found_], order_[jcont], site1_, site2_) ;
+            vector_type tmpAA = vecspace_.return_orthovec(u_and_uA_[jcont][2], order_[n_root_found_], order_[jcont], site1_, site2_) ;
             for (size_t j = 0 ; j < ortho_space_.size() ; j++) {
                 tmp   -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
                 tmpA  -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][1] ;
@@ -200,15 +201,14 @@ protected:
             t -= ietl::dot(VA[i-1], tA) * V[i-1] ;
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1] ;
         }
+        // Refinement
         if (std::fabs(ietl::two_norm(tA)/tau) < 0.25) {
-            std::cout << ietl::two_norm(tA) << std::endl ;
             t /= ietl::two_norm(tA) ;
             tA /= ietl::two_norm(tA) ;
             for (int i = 1; i <= idx ; i++) {
                 t -= ietl::dot(VA[i-1], tA) * V[i-1] ;
                 tA -= ietl::dot(VA[i-1], tA) * VA[i-1] ;
             }
-            std::cout << ietl::two_norm(tA) << std::endl ;
         }
         // Final update
         t /= ietl::two_norm(tA);

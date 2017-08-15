@@ -97,10 +97,14 @@ public:
         }
     }
     //
-    MPSTensor<Matrix, SymmGroup> return_orthovec(const MPSTensor<Matrix, SymmGroup> & t, const std::size_t& idx, const std::size_t& i_2ortho, const std::size_t& site)
+    MPSTensor<Matrix, SymmGroup> return_orthovec(const MPSTensor<Matrix, SymmGroup> & t,
+                                                 const std::size_t& idx,
+                                                 const std::size_t& i_2ortho,
+                                                 const std::size_t& site1,
+                                                 const std::size_t& site2)
     {
         MPSTensor<Matrix, SymmGroup> tmp ;
-        tmp = contraction::site_ortho_boundaries(MPSTns_vec[idx], t, vec_sa_left_[idx][i_2ortho][site], vec_sa_right_[idx][i_2ortho][site+1]);
+        tmp = contraction::site_ortho_boundaries(MPSTns_vec[idx], t, vec_sa_left_[idx][i_2ortho][site1], vec_sa_right_[idx][i_2ortho][site2]);
         return tmp ;
     };
 private:

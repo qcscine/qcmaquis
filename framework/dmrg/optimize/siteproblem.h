@@ -54,14 +54,18 @@ struct SiteProblem
         size = 1 ;
     }
     // Constructor with a vector of boundaries
-    SiteProblem(boundaries & left_vec_ , boundaries & right_vec_ , MPOTensor<Matrix, SymmGroup> const & mpo_, std::size_t const & idx)
+    SiteProblem(boundaries & left_vec_ ,
+                boundaries & right_vec_ ,
+                MPOTensor<Matrix, SymmGroup> const & mpo_,
+                std::size_t const & idx1,
+                std::size_t const & idx2)
             : mpo(mpo_)
     {
         size = 0 ;
         assert (left_vec_.size() == right_vec_.size()) ;
         for (typename boundaries::iterator it1 = left_vec_.begin(), it2 = right_vec_.begin() ; it1 != left_vec_.end(), it2 != right_vec_.end() ; it1++, it2++) {
-            left.push_back(&((*it1)[idx]));
-            right.push_back(&((*it2)[idx+1]));
+            left.push_back(&((*it1)[idx1]));
+            right.push_back(&((*it2)[idx2]));
             size += 1 ;
         }
     }

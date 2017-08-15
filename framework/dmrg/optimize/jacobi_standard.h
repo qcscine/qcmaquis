@@ -75,6 +75,7 @@ namespace ietl
         using base::order_ ;
         using base::ortho_space_ ;
         using base::site1_ ;
+        using base::site2_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
         using base::v_guess_ ;
@@ -136,7 +137,7 @@ namespace ietl
     void jacobi_davidson_standard<Matrix,VS,ITER>::update_orthospace(void)
     {
         for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
-            vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_) ;
+            vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
             for (size_t j = 0 ; j < ortho_space_.size() ; j++)
                 tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
             if (ietl::two_norm(tmp) > 1.0E-20) {

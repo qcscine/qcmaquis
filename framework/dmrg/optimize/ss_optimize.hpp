@@ -121,7 +121,7 @@ public:
             assert( right_[site+1].reasonable() ); // in case something went wrong
             boost::chrono::high_resolution_clock::time_point now, then;
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1);
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
@@ -145,12 +145,12 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_,
+                    res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, site+1, root_homing_type_,
                                          vec_sa_left_, vec_sa_right_, order, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, root_homing_type_,
+                    res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, site+1, root_homing_type_,
                                               vec_sa_left_, vec_sa_right_, order, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
@@ -228,7 +228,7 @@ public:
                     Mval = trunc.bond_dimension ;
                     for (size_t k = 0 ; k < n_root_ ; k++)
                         //trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval)) ;
-                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site + 1], site, alpha, cutoff, Mmax));
+                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax));
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)
@@ -250,16 +250,18 @@ public:
             // +----------------+
             //  Final operations
             // +----------------+
+            BEGIN_TIMING("FINAL OPERATIONS")
             for (size_t i = 0; i < n_root_; i++) {
                 sorter[i].first  = res[i].first ;
                 sorter[i].second = i ;
             }
             std::sort(sorter.begin(), sorter.end()) ;
             this->update_order(sorter) ;
-            //    
+            //
             if (root_homing_type_ == 1)
                 for (size_t k = 0 ; k < n_root_ ; k++)
                     poverlap_vec_[k].update(mps_vector[k], site, lr) ;
+            END_TIMING("FINAL OPERATIONS")
             //
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
