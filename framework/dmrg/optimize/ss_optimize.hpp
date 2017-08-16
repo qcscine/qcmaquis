@@ -105,6 +105,8 @@ public:
         Storage::prefetch(right_[site+1]) ;
         // Main loop
         for (; _site < 2*L; ++_site) {
+            boost::chrono::high_resolution_clock::time_point now, then;
+            BEGIN_TIMING("PRELIMINARY OPERATIONS")
             // lr indicates the direction of the sweep
             int lr = (_site < L) ? +1 : -1;
             site = to_site(L, _site);
@@ -119,7 +121,6 @@ public:
             if (lr == -1 && site > 0)    Storage::prefetch(left_[site-1]);
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
-            boost::chrono::high_resolution_clock::time_point now, then;
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1);
             // Generates the vectorset object
@@ -132,6 +133,7 @@ public:
                                                                    base::ortho_left_[n][site],
                                                                    base::ortho_right_[n][site+1]);
             }
+            END_TIMING("PRELIMINARY OPERATIONS")
             // +-----------------------------+
             //  MAIN PART: performs the sweep
             // +-----------------------------+

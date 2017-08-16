@@ -77,17 +77,13 @@ public:
         // Optimizer initialization
         // ------------------------
         boost::shared_ptr<opt_base_t> optimizer;
-        if (parms["optimization"] == "singlesite")
-        {
+        if (parms["optimization"] == "singlesite") {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
                             (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
-        }
-        else if(parms["optimization"] == "twosite")
-        {
+        } else if(parms["optimization"] == "twosite") {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
                             (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
-        }
-        else {
+        } else {
             throw std::runtime_error("Don't know this optimizer");
         }
         measurements_type always_measurements = this->iteration_measurements(init_sweep);
@@ -101,8 +97,7 @@ public:
                 storage::disk::sync();
                 // Check convergence and see if he has to write something
                 bool converged = false;
-                if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
-                {
+                if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"]) {
                     {
                         storage::archive ar(rfile, "w");
                         ar[results_archive_path(sweep) + "/parameters"] << parms;
@@ -126,22 +121,20 @@ public:
                                 converged = true;
                         }
                     }
-                    
-                    /// measure observables specified in 'always_measure'
+                    // measure observables specified in 'always_measure'
                     if (always_measurements.size() > 0)
                         this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                 }
-                
-                /// write checkpoint
+                // write checkpoint
                 bool stopped = stop_callback() || converged;
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
-                    checkpoint_simulation(mps, sweep, -1);
-                
+                    checkpoint_simulation(mps, mps_sa, sweep, -1);
+                // Exit condition
                 if (stopped) break;
             }
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
-            checkpoint_simulation(mps, e.sweep(), e.site());
+            checkpoint_simulation(mps, mps_sa, e.sweep(), e.site());
             
             {
                 storage::archive ar(rfile, "w");
@@ -152,25 +145,24 @@ public:
         }
     }
     
-    ~dmrg_sim()
-    {
-        storage::disk::sync();
-    }
+    ~dmrg_sim() { storage::disk::sync() ; }
 
 private:
-    std::string results_archive_path(int sweep) const
-    {
+    std::string results_archive_path(int sweep) const {
         status_type status;
         status["sweep"] = sweep;
         return base::results_archive_path(status);
     }
     
-    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
+    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state,
+                               std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
+                               int sweep,
+                               int site)
     {
         status_type status;
         status["sweep"] = sweep;
         status["site"]  = site;
-        return base::checkpoint_simulation(state, status);
+        return base::checkpoint_simulation(state, state_vec, status);
     }
 
 };

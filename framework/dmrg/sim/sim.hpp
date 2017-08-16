@@ -29,21 +29,33 @@
 #include <boost/algorithm/string.hpp>
 #include "dmrg/version.h"
 
+// +-----------+
+//  CONSTRUCTOR
+// +-----------+
+
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
-: parms(parms_)
-, init_sweep(0)
-, init_site(-1)
-, restore(false)
-, dns( (parms["donotsave"] != 0) )
-, chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
-, rfile(parms["resultfile"].str())
-, stop_callback(static_cast<double>(parms["run_seconds"]))
-, n_states( parms["n_states_sa"])
+     : parms(parms_)
+     , init_sweep(0)
+     , init_site(-1)
+     , restore(false)
+     , dns( (parms["donotsave"] != 0) )
+     , chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
+     , rfile(parms["resultfile"].str())
+     , stop_callback(static_cast<double>(parms["run_seconds"]))
+     , n_states( parms["n_states_sa"])
 { 
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
+    typename std::stringstream ss;
+    // Creates the name for the SA states
+    for (std::size_t i = 0; i < n_states; i++) {
+        ss.str("") ;
+        ss << i ;
+        std::string str = chkpfile + '_' + ss.str() ;
+        chkpfile_sa.push_back(str) ;
+    }
     // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
@@ -52,11 +64,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     {
         boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
-        {
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5")) {
             storage::archive ar_in(chkpfile+"/props.h5");
-            if (ar_in.is_scalar("/status/sweep"))
-            {
+            if (ar_in.is_scalar("/status/sweep")) {
                 ar_in["/status/sweep"] >> init_sweep;
                 if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
                     ar_in["/status/site"] >> init_site;
@@ -105,7 +115,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     // Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
-        
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
@@ -113,10 +122,17 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
+        for (std::size_t i = 0; i < n_states; i++)
+            if (!boost::filesystem::exists(chkpfile_sa[i]))
+                boost::filesystem::create_directory(chkpfile_sa[i]);
         storage::archive ar(chkpfile+"/props.h5", "w");
-        
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
+        for (std::size_t i = 0; i < n_states; i++) {
+            storage::archive ar(chkpfile_sa[i] + "/props.h5", "w");
+            ar["/parameters"] << parms;
+            ar["/version"] << DMRG_VERSION_STRING;
+        }
     }
     
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
@@ -145,16 +161,23 @@ sim<Matrix, SymmGroup>::~sim() { }
 // the last sweep
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
+void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state,
+                                                   std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
+                                                   status_type const& status)
 {
     if (!dns) {
-        /// save state to chkp dir
+        // save state to chkp dir
         save(chkpfile, state);
-        
-        /// save status
+        for (size_t i = 0; i < n_states; i++)
+            save(chkpfile_sa[i], state_vec[i]) ;
+        // save status
         if(!parallel::master()) return;
         storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/status"] << status;
+        for (size_t i = 0; i < n_states; i++){
+            storage::archive ar(chkpfile_sa[i] + "/props.h5", "w");
+            ar["/status"] << status;
+        }
     }
 }
 
