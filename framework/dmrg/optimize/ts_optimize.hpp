@@ -245,12 +245,12 @@ public:
                         boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
                     END_TIMING("TRUNC")
                     two_vec[i].clear();
+        		    block_matrix<Matrix, SymmGroup> t;
+        		    t = mps_vector[i][site2].normalize_left(DefaultSolver());
+                    // MD: DEBUGGING OUTPUT
+                    maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
+        		    if (site2 < L-1) mps_vector[i][site2+1].multiply_from_left(t);
                 }
-        		block_matrix<Matrix, SymmGroup> t;
-        		t = mps[site2].normalize_left(DefaultSolver());
-                // MD: DEBUGGING OUTPUT
-                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
-        		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
                 if (site1 != L-2)
                     Storage::drop(right_[site2+1]);
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
@@ -271,12 +271,12 @@ public:
                         boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
                     END_TIMING("TRUNC")
                     two_vec[i].clear();
+        		    block_matrix<Matrix, SymmGroup> t;
+        		    t = mps_vector[i][site1].normalize_right(DefaultSolver());
+                    // MD: DEBUGGING OUTPUT
+                    maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
+        		    if (site1 > 0) mps_vector[i][site1-1].multiply_from_right(t);
                 }
-        		block_matrix<Matrix, SymmGroup> t;
-        		t = mps[site1].normalize_right(DefaultSolver());
-                // MD: DEBUGGING OUTPUT
-                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
-        		if (site1 > 0) mps[site1-1].multiply_from_right(t);
                 if(site1 != 0)
                     Storage::drop(left_[site1]);
                 this->boundary_right_step(mpo, site2); // creating right_[site2]

@@ -104,7 +104,7 @@ public:
                                                  const std::size_t& site2)
     {
         MPSTensor<Matrix, SymmGroup> tmp ;
-        tmp = contraction::site_ortho_boundaries(MPSTns_vec[idx], t, vec_sa_left_[idx][i_2ortho][site1], vec_sa_right_[idx][i_2ortho][site2]);
+        tmp = contraction::site_ortho_boundaries(MPSTns_vec[idx], t, vec_sa_left_[idx][i_2ortho][site1], vec_sa_right_[idx][i_2ortho][site2+1]);
         return tmp ;
     };
 private:
