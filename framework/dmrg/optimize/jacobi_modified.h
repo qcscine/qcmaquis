@@ -228,7 +228,9 @@ protected:
                                                                                                                              magnitude_type theta)
     {
         vector_type r, tmp = uA ;
-        r = tmp/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
+        //r = tmp/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
+        r = uA - u/theta ;
+        r /= ietl::two_norm(u) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             r -= ietl::dot((*it)[0], r) * (*it)[0] ;
         return r ;
@@ -298,10 +300,12 @@ protected:
     {
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
-                                                      i_state_, max_iter_, false);
+        //gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
+        //                                              i_state_, max_iter_, false);
         //gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
         //                                              i_state_, omega_, max_iter_, false);
+        gmres_skew<MATRIX, vector_type, VS> gmres(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
+                                                    i_state_, omega_, max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u) ;

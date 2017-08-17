@@ -319,6 +319,62 @@ namespace ietl
         Vector z_ , Az_ ;
     };
     //
+    // GMRES_SKEW OBJECT
+    // -----------------
+    // GMRES solver object for the shift-and-inverted problem
+    template<class Matrix, class Vector, class VectorSpace>
+    class gmres_skew : private gmres_general<Matrix, Vector, VectorSpace>
+    {
+    public:
+        typedef gmres_general<Matrix, Vector, VectorSpace> base ;
+        typedef typename base::size_t                      size_t ;
+        typedef typename base::vector_ortho_vec            vector_ortho_vec ;
+        //
+        gmres_skew(Matrix const & A,
+                   Vector const & u,
+                   Vector const & Au,
+                   VectorSpace const & vs,
+                   double const & theta,
+                   const vector_ortho_vec& ortho_vec,
+                   size_t const& n_root,
+                   double const & omega,
+                   size_t max_iter,
+                   bool verbose)
+                : base::gmres_general(A, u, vs, theta, ortho_vec, n_root, max_iter, verbose),
+                  omega_(omega), Au_(Au) { }
+        // Private attributes
+        using base::A_ ;
+        using base::n_root_ ;
+        using base::ortho_vec_ ;
+        using base::theta_ ;
+        using base::u_ ;
+        using base::vs_ ;
+        using base::operator() ;
+    private:
+        //
+        Vector apply(Vector& input){
+            // Initialization
+            Vector t, t2, t3, y ;
+            double ust = dot(Au_, input) ;
+            t2 = input - ust * u_ / ietl::dot(u_,Au_) ;
+            orthogonalize_simple(t2) ;
+            // y = (A-theta*1) t2
+            mult(A_, t2, t3, n_root_);
+            t3 *= -1.;
+            t3 += omega_ * t2;
+            y = t3 - t2 / theta_ ;
+            orthogonalize_simple(y) ;
+            // t = (1-uu*) y
+            ust = dot(Au_, y) ;
+            t = y - ust * u_ / ietl::dot(u_,Au_) ;
+            // Finalization
+            return t ;
+        }
+        // Private attributes
+        double omega_ ;
+        Vector Au_ ;
+    };
+    //
     // GMRES_MODIFIED_INITIALIZER OBJECT
     // ---------------------------------
     // GMRES solver object for the shift-and-inverted problem

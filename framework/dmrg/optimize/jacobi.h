@@ -239,7 +239,8 @@ namespace ietl
                     iter.reset() ;
                     break ;
                 }
-                solver(eigvec, uA, eigval, r, V[n_iter]);
+                //solver(eigvec, uA, eigval, r, V[n_iter]);
+                solver(u, uA, theta, r, V[n_iter]);
                 if (n_iter == n_restart_max_) {
                     restart_jd(V, VA, eigvecs, eigvals);
                     std::cout << " RESTART" << std::endl ;
