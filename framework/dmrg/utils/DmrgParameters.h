@@ -72,7 +72,7 @@ private:
         add_option("ietl_diag_rtol", "", value(1e-5));
         add_option("ietl_diag_maxiter", "", value(20));
         add_option("ietl_diag_restart_nmin", "", value(1));
-        add_option("ietl_diag_restart_nmax", "", value(20));
+        add_option("ietl_diag_restart_nmax", "", value(100));
         add_option("ietl_diag_homing_criterion", "", value(""));
         add_option("ietl_diag_restart", "Number of iterations before restarting", value(10));
         add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.));

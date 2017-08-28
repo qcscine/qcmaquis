@@ -226,7 +226,7 @@ namespace ietl
                 vector_type r = compute_error(u, uA, theta);
                 converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval);
                 print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
-                if (converged && n_iter) {
+                if (converged || n_iter == iter.max_iterations() ) {
                     print_endline();
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;
@@ -243,7 +243,6 @@ namespace ietl
                 solver(u, uA, theta, r, V[n_iter]);
                 if (n_iter == n_restart_max_) {
                     restart_jd(V, VA, eigvecs, eigvals);
-                    std::cout << " RESTART" << std::endl ;
                     n_iter = n_restart_min_ - 1;
                 }
             } while (true);

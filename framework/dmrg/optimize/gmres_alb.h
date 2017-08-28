@@ -179,7 +179,7 @@ namespace ietl
         {
             for (typename vector_ortho_vec::iterator it = ortho_vec_.begin(); it != ortho_vec_.end(); it++)
                 if (ietl::dot((*it)[0], (*it)[0]) > 1.0E-15)
-                    input -= ietl::dot((*it)[0], input) * (*it)[0] ;
+                    input -= ietl::dot((*it)[0], input) * (*it)[0] / ietl::dot((*it)[0], (*it)[0]) ;
             return ;
         }
         //
