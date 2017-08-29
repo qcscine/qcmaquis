@@ -123,7 +123,7 @@ private:
         add_option("init_basis_state", "local indexes for basis state init", value(""));
         // State-average options
         add_option("n_states_sa", "number of states to track to do state-averaging", value(0)) ;
-        add_option("sa_algorithm", "method used to update boundaries in SA calculation", value("lowest")) ;
+        add_option("sa_algorithm", "method used to update boundaries in SA calculation", value(-2)) ;
         add_option("init_mps_stateaverage", "comma separated list of ONV to be used as a guess in SA calculation", "") ;
         add_option("follow_mps_stateaverage", "states to follow during diagonalization", value("")) ;
         // Model-related options

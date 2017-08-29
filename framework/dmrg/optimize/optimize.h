@@ -188,8 +188,9 @@ public:
         // Initialization of the MPO
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
+        init_bound_ptr();
     }
-    
+    // 
     virtual ~optimizer_base() {}
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
     results_collector const& iteration_results() const { return iteration_results_; }
@@ -264,6 +265,28 @@ protected:
         //trb.end();
         maquis::cout << "Boundaries are fully initialized...\n";
     }
+    // +---------------+
+    //  INIT_LEFT_RIGHT
+    // +---------------+
+    void init_bound_ptr(void)
+    {
+        size_t idx = parms_["sa_algorithm"];
+        bound_vec_pnt_.resize(n_root_);
+        if (idx >=0 ) {
+            if (idx >= n_root_) {
+                throw std::runtime_error("sa_algorithm parameter must be <= number of SA states");
+            } else {
+                for (size_t i = 0; i < bound_vec_pnt_.size(); i++)
+                    bound_vec_pnt_[i] = std::make_pair(&left_sa_[idx],&right_sa_[idx]) ;
+            }
+        } else if (idx == -1) {
+            for (size_t i = 0; i < bound_vec_pnt_.size(); i++)
+                bound_vec_pnt_[i] = std::make_pair(&left_,&right_) ;
+        } else if (idx == -2) {
+            for (size_t i = 0; i < bound_vec_pnt_.size(); i++)
+                bound_vec_pnt_[i] = std::make_pair(&left_sa_[idx],&right_sa_[idx]) ;
+        }
+    }
     // +------------------+
     //  BOUNDARY_LEFT_STEP
     // +------------------+
@@ -313,7 +336,9 @@ protected:
             cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
         return cutoff;
     }
-    // -- GET_MMAX --
+    // +----------+
+    //   GET_MMAX
+    // +----------+
     // Routine to get the maximum value for the bond dimension
     std::size_t get_Mmax(int sweep) const
     {
@@ -344,6 +369,7 @@ protected:
     boost::function<bool ()> stop_callback;
     boundaries_type   left_,    right_;
     boundaries_vector left_sa_, right_sa_;
+    std::vector< std::pair< boundaries_type*, boundaries_type*> > bound_vec_pnt_ ;
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;

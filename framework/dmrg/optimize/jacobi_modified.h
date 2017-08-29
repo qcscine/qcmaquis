@@ -126,11 +126,12 @@ protected:
     typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type
              jacobi_davidson_modified<Matrix, VS, ITER>::get_guess()
     {
+        //vector_type a = v_guess_[i_state_] ;
         vector_type a = v_guess_[i_state_] ;
         vector_type b = 0.*v_guess_[i_state_] ;
-        gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
-                                                                  ortho_space_, i_state_, max_iter_init_, false);
-        a = gmres(a, b, atol_init_, rtol_init_);
+        //gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
+        //                                                          ortho_space_, i_state_, max_iter_init_, false);
+        //a = gmres(a, b, atol_init_, rtol_init_);
         return a ;
     }
     // Compute the action of an operator
@@ -188,9 +189,8 @@ protected:
         vector_type& t   = V[idx] ;
         vector_type& tA = VA[idx] ;
         // Deflation
-        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             t -= ietl::dot((*it)[0], t) * (*it)[0];
-        }
         tA = apply_operator(t) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
             tA -= ietl::dot((*it)[0], tA) * (*it)[0];
@@ -227,8 +227,8 @@ protected:
                                                                                                                              const vector_type &uA,
                                                                                                                              magnitude_type theta)
     {
-        vector_type r, tmp = uA ;
-        //r = tmp/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
+        vector_type r ;
+        //r = uA/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
         r = uA - u/theta ;
         r /= ietl::two_norm(u) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
@@ -243,7 +243,8 @@ protected:
         // Compute the error vector
         bool converged ;
         eigvec = u/ietl::two_norm(u);
-        eigval = this->omega_ - theta/ietl::dot(u,u) ;
+        //eigval = this->omega_ - theta/ietl::dot(u,u) ;
+        eigval = this->omega_ - 1.0/theta ;  
         if(iter.finished(ietl::two_norm(r),1.0)) {
             converged = true;
             return converged;

@@ -81,6 +81,8 @@ namespace ietl
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
+        bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
+                               ITER& iter, vector_type& eigvec, magnitude_type& eigval);
         double compute_overlap(const vector_type& vec_test) ;
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                         const matrix_double& eigvecs, const vector_double& eigvals);
@@ -136,9 +138,9 @@ namespace ietl
         double scr ;
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis
-            u_local = eigvecs[i][0] * MPSTns_input_A[0];
+            u_local = eigvecs[i][0] * MPSTns_input[0];
             for (int j = 1; j < dim; ++j)
-                u_local += eigvecs[i][j] * MPSTns_input_A[j];
+                u_local += eigvecs[i][j] * MPSTns_input[j];
             overlaps[i] = compute_overlap(u_local) ;
         }
         for (int i = 1; i < nevec; ++i)
@@ -154,6 +156,24 @@ namespace ietl
         }
         theta = eigvals[idx] ;
     };
+    // Check if the JD iteration is arrived at convergence
+    template <class Matrix, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    bool jacobi_davidson_modified_mo<Matrix, VS, ITER, OtherMatrix, SymmGroup>::check_convergence(const vector_type &u, const vector_type &uA, const vector_type &r,
+                                                                                                  const magnitude_type theta, ITER& iter, vector_type &eigvec, 
+                                                                                                  magnitude_type &eigval)
+    {
+        // Compute the error vector
+        bool converged ;
+        eigvec = u/ietl::two_norm(u);
+        eigval = this->omega_ - theta/ietl::dot(u,u) ;
+        if(iter.finished(ietl::two_norm(r),1.0) && overlap_ > 0.2) {
+            converged = true;
+            return converged;
+        } else {
+            converged = false ;
+            return converged ;
+        }
+    };
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     typename jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::vector_double
@@ -166,9 +186,9 @@ namespace ietl
         vector_double p_tmp(dim) ;
         // Rotates the properties
         for (int i = 0; i < dim ; i++) {
-            tmp_V = eigvecs[i][0] * VA[0];
+            tmp_V = eigvecs[i][0] * V[0];
             for (int j = 1 ; j < dim ; j++)
-                tmp_V  += eigvecs[i][j] * VA[j];
+                tmp_V  += eigvecs[i][j] * V[j];
             p_tmp[i] = compute_overlap(tmp_V) ;
         }
         return p_tmp ;
