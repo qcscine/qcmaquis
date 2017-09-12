@@ -101,6 +101,7 @@ void quicksort(string dets[], double b[], int left, int right) {
 //  SAMPLING STRUCTURE
 // +------------------+
 
+
 struct Sampling {
     // Random number generator, work together with boost library
     // Distribution is a variable modelling a random distribution over the 0-1 range
@@ -119,7 +120,7 @@ struct Sampling {
     template <typename Determinants, typename Matrix, typename SymmGroup, typename Hash_value, typename Hash_index>
     void generate_dets(Determinants dets, Determinants dets_mclr, MPS<Matrix, SymmGroup> mps,
                        Hash_value hash, Hash_index hash_index, std::vector< Index<SymmGroup> > site_dims,
-                       int nmodes, int nsample, double CI_threshold, double COM_threshold)
+                       int nmodes, int nsample, int nitermax, double CI_threshold, double COM_threshold)
     {
         // Header printing
         maquis::cout << "    CI-threshold  : " <<  CI_threshold << std::endl;
@@ -161,11 +162,14 @@ struct Sampling {
         int nmodes_excited ;
         det_queen = dets[0];
         int nMAX = 0 ;
+        float x ;
         // +-----------+
         //   MAIN LOOP
         // +-----------+
         do {
             nMAX++ ;
+            //n_total_dim = 12  ;
+            std::cout << "Inizio" << std::endl ;
             for ( int isample = 0; isample < nsample; isample++ ) {
                 // Loop over the determinants to be sampled
                 // Updates the "queen" determinant
@@ -174,16 +178,21 @@ struct Sampling {
                 for (std::size_t idx = 0; idx < nmodes_excited; idx++){
                     // Compute mode excitation
                     int mode_2excite = int(floor(random_number()*nmodes )) ;
-                    det_tmp[mode_2excite] += 1 ;
+                    x = random_number() ;
+                    if (std::fabs(x) < 0.5)
+                        det_tmp[mode_2excite] += 1 ;
+                    else 
+                        det_tmp[mode_2excite] -= 1 ;
                 } ;
                 // Corrects the occupation number by the modulus
-                for (std::size_t idx = 0; idx < det_length; idx++) 
+                for (std::size_t idx = 0; idx < det_length; idx++) {
                     det_tmp[idx] %= site_dims[idx][0].second ;
+                }
                 // Updates the data
                 iter = hash.find(det_tmp) ;
                 if(iter == hash.end()) {
                     ci = extract_coefficient<Matrix,SymmGroup>(mps, det_tmp);
-                    if(std::abs(ci) >= CI_threshold) {
+                    if(std::fabs(ci) >= CI_threshold) {
                         hash[det_tmp] = ci ;
                         iaccept++ ;
                     }
@@ -199,7 +208,8 @@ struct Sampling {
                     iaccept_queen++ ;
                 }
             }
-            sum_ci2=0.0;
+            std::cout << "Fine" << std::endl ;
+            sum_ci2 = 0.0;
             for( iter=hash.begin(); iter!=hash.end(); iter++) {
                 ci_tmp  = iter->second;
                 sum_ci2 = sum_ci2 + pow(ci_tmp,2.0);
@@ -210,7 +220,7 @@ struct Sampling {
             maquis::cout << "Determinant-naccept-queen " << iaccept_queen << std::endl;
             completeness = 1.0-sum_ci2;
             maquis::cout << " Current completeness (1-\\sum(ci^2)) : " << completeness << std::endl;
-        } while(completeness>COM_threshold && nMAX< 100) ;
+        } while(completeness>COM_threshold && nMAX< nitermax) ;
         // +---------------+
         //   FINAL PRINTING
         // +---------------+

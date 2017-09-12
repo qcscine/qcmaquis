@@ -44,23 +44,24 @@ public:
     // Inherits several data from the "mother" class
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     //
+    using base::boundaries_database_ ;
     using base::do_root_homing_ ;
     using base::do_stateaverage_ ;
+    using base::iteration_results_ ;
     using base::mpo ;
-    using base::mps ;
+    using base::mps_average ;
     using base::mps2follow ;
     using base::mps_vector ;
+    using base::n_bound_ ;
     using base::n_root_ ;
     using base::order ;
-    using base::left_ ;
     using base::left_sa_ ;
-    using base::right_ ;
     using base::right_sa_ ;
     using base::parms ;
     using base::poverlap_vec_ ;
-    using base::iteration_results_ ;
-    using base::stop_callback ;
     using base::root_homing_type_ ;
+    using base::sa_alg_ ;
+    using base::stop_callback ;
     using base::update_order ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
@@ -100,9 +101,6 @@ public:
         //TODO ALB This should be done with pointers, very stupid
         std::vector< std::pair<float,int> > sorter ;
         sorter.resize(n_root_) ;
-        // Initialization of the overlap object
-        Storage::prefetch(left_[site]) ;
-        Storage::prefetch(right_[site+1]) ;
         // Main loop
         for (; _site < 2*L; ++_site) {
             boost::chrono::high_resolution_clock::time_point now, then;
@@ -115,14 +113,8 @@ public:
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
-            Storage::fetch(left_[site]);
-            Storage::fetch(right_[site+1]);
-            if (lr == +1 && site+2 <= L) Storage::prefetch(right_[site+2]);
-            if (lr == -1 && site > 0)    Storage::prefetch(left_[site-1]);
-            assert( left_[site].reasonable() );    // in case something went wrong
-            assert( right_[site+1].reasonable() ); // in case something went wrong
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1, boundaries_database_);
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
@@ -161,13 +153,13 @@ public:
                 BEGIN_TIMING("MPS UPDATE")
                 // Collects the results
                 if (n_root_ > 0) {
-                    mps[site]  = res[0].second ;
+                    mps_average[site]  = res[0].second ;
                     mps_vector[0][site]  = res[0].second ;
                     for (size_t k = 1; k < n_root_; k++) {
                         mps_vector[k][site] = res[k].second;
-                        //mps[site] += res[k].second;
+                        mps_average[site] += res[k].second;
                     }
-                    //mps[site] /= n_root_ ;
+                    mps_average[site] /= n_root_ ;
                 }
                 END_TIMING("MPS UPDATE")
             }
@@ -192,61 +184,57 @@ public:
             // Update of the MPS
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep), Mval;
-            truncation_results trunc;
-            std::vector<truncation_results> trunc_sa ;
+            std::vector<truncation_results> trunc(n_bound_) ;
             // +---------------------+
             //  Truncation of the MPS
             // +---------------------+
             BEGIN_TIMING("MPS TRUNCATION")
             if (lr == +1) {
                 if (site < L-1) {
-                    maquis::cout << " Alpha = " << alpha << std::endl;
-                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax) ;
-                    Mval = trunc.bond_dimension ;
-                    for (size_t k = 0 ; k < n_root_ ; k++) {
-                        //trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval));
-                        trunc_sa.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax));
+                    maquis::cout << " Alpha = " << alpha << std::endl ;
+                    for (size_t idx = 0; idx < n_bound_; idx++)
+                        trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], 
+                                                                                           (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                           (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                           site, alpha, cutoff, Mmax) ;
+                    if (sa_alg_ >= -1) {
+                        Mval = trunc[0].bond_dimension ;
+                        for (size_t k = 0 ; k < n_root_ ; k++)
+                            if (k != sa_alg_)
+                                trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
+                                                                                        (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
+                                                                                           site, alpha, cutoff, Mval, Mmax));
                     }
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
-                    if (site < L-1)
-                        mps[site+1].multiply_from_left(t);
-                    for (size_t k = 0 ; k < n_root_ ; k++) {
+                    block_matrix<Matrix, SymmGroup> t = mps_average[site].normalize_left(DefaultSolver());
+                    for (size_t k = 0 ; k < n_root_ ; k++)
                         t = mps_vector[k][site].normalize_left(DefaultSolver());
-                        if (site < L-1)
-                            mps_vector[k][site+1].multiply_from_left(t);
-                    }
                 }
                 // Update the left boundary
                 this->boundary_left_step(mpo, site);
-                if (site != L-1) {
-                    Storage::drop(right_[site+1]);
-                    Storage::evict(left_[site]);
-                }
             } else if (lr == -1) {
                 if (site > 0) {
-                    maquis::cout << " Alpha = " << alpha << std::endl;
-                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], site, alpha, cutoff, Mmax);
-                    Mval = trunc.bond_dimension ;
-                    for (size_t k = 0 ; k < n_root_ ; k++)
-                        //trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax, Mval)) ;
-                        trunc_sa.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], left_sa_[k][site], right_sa_[k][site+1], site, alpha, cutoff, Mmax));
-                } else {
-                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
-                    if (site > 0)
-                        mps[site-1].multiply_from_right(t);
-                    for (size_t k = 0 ; k < n_root_ ; k++){
-                        t = mps_vector[k][site].normalize_right(DefaultSolver());
-                        if (site > 0)
-                            mps_vector[k][site-1].multiply_from_right(t);
+                    maquis::cout << " Alpha = " << alpha << std::endl ;
+                    for (size_t idx = 0; idx < n_bound_; idx++)
+                        trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], 
+                                                                                          (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                           site, alpha, cutoff, Mmax) ;
+                    if (sa_alg_ >= -1) {
+                        Mval = trunc[0].bond_dimension ;
+                        for (size_t k = 0 ; k < n_root_ ; k++)
+                            if (k != sa_alg_)
+                                trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
+                                                                                        (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
+                                                                                        site, alpha, cutoff, Mval, Mmax));
                     }
+                } else {
+                    block_matrix<Matrix, SymmGroup> t = mps_average[site].normalize_right(DefaultSolver());
+                    for (size_t k = 0 ; k < n_root_ ; k++)
+                        t = mps_vector[k][site].normalize_right(DefaultSolver());
                 }
                 // Update the right boundary
                 this->boundary_right_step(mpo, site);
-                if (site > 0) {
-                    Storage::drop(left_[site]);
-                    Storage::evict(right_[site+1]);
-                }
             }
             END_TIMING("MPS TRUNCATION")
             // +----------------+
@@ -265,9 +253,9 @@ public:
                     poverlap_vec_[k].update(mps_vector[k], site, lr) ;
             END_TIMING("FINAL OPERATIONS")
             //
-            iteration_results_["BondDimension"]   << trunc.bond_dimension;
-            iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
-            iteration_results_["SmallestEV"]      << trunc.smallest_ev;
+            iteration_results_["BondDimension"]   << trunc[0].bond_dimension;
+            iteration_results_["TruncatedWeight"] << trunc[0].truncated_weight;
+            iteration_results_["SmallestEV"]      << trunc[0].smallest_ev;
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;

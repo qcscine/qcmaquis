@@ -32,6 +32,8 @@
 // This structure contains left and right boundary, together with the
 // MPO tensor of the site of interest
 
+#include "dmrg/optimize/utils/bound_database.h"
+
 #ifndef SITE_PROBLEM_H
 #define SITE_PROBLEM_H
 
@@ -41,10 +43,11 @@ struct SiteProblem
     //TODO ALB the constructor with only one boundary is kept only for back-compatibility
     //TODO ALB should be generalized
     // Types definition
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> boundary_type ;
-    typedef std::vector<boundary_type> boundary_vector ;
-    typedef std::vector<boundary_vector> boundaries ;
-    typedef std::vector<boundary_type*> boundary_vector_ptr ;
+    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup>                      boundary_type ;
+    typedef std::vector<boundary_type>                                                            boundary_vector ;
+    typedef typename bound_database< MPS<Matrix, SymmGroup>, boundary_vector>::bound_database     bound_database ;
+    typedef std::vector<boundary_vector>                                                          boundaries ;
+    typedef std::vector<boundary_type*>                                                           boundary_vector_ptr ;
     // Constructor with only one element
     SiteProblem(boundary_type & left_, boundary_type & right_, MPOTensor<Matrix, SymmGroup> const & mpo_)
             : mpo(mpo_)
@@ -58,20 +61,22 @@ struct SiteProblem
                 boundaries & right_vec_ ,
                 MPOTensor<Matrix, SymmGroup> const & mpo_,
                 std::size_t const & idx1,
-                std::size_t const & idx2)
+                std::size_t const & idx2,
+                bound_database & database)
             : mpo(mpo_)
     {
         size = 0 ;
         assert (left_vec_.size() == right_vec_.size()) ;
-        for (typename boundaries::iterator it1 = left_vec_.begin(), it2 = right_vec_.begin() ; it1 != left_vec_.end(), it2 != right_vec_.end() ; it1++, it2++) {
-            left.push_back(&((*it1)[idx1]));
-            right.push_back(&((*it2)[idx2]));
+        for (std::size_t i = 0; i < database.n_MPS_; i++) 
+        {
+            left.push_back(&(*(database.get_boundaries_left(i)))[idx1]);
+            right.push_back(&(*(database.get_boundaries_right(i)))[idx2]);
             size += 1 ;
         }
     }
     // Attributes (public)
-    boundary_vector_ptr left;
-    boundary_vector_ptr right;
+    boundary_vector_ptr  left ;
+    boundary_vector_ptr  right ;
     std::size_t size ;
     MPOTensor<Matrix, SymmGroup> const & mpo;
 };

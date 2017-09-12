@@ -46,6 +46,7 @@ class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
+    using base::bound_vec_pnt_ ;
     using base::do_root_homing_ ;
     using base::iteration_results_;
     using base::left_;
@@ -162,7 +163,7 @@ public:
                 tst_vec.push_back(twin_mps) ;
                 tst_tmp.clear();
             }
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site1, site2+1);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site1, site2+1, bound_vec_pnt_);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);

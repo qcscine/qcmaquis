@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
 {
     // If less than three arguments have been provided, just prints info
     if (argc < 3) {
-        maquis::cout << "srcas <mps.h5> <determinants_file> <CI_threshold> <CI_completeness> ( <Nsamples>  <determinants_reservoir> )" << std::endl;
+        maquis::cout << "srcas <mps.h5> <determinants_file> <CI_threshold> <CI_completeness> <NIterMax> ( <Nsamples>  <determinants_reservoir> )" << std::endl;
         maquis::cout << "See J. Chem. Phys. 134, 224101 (2011) for details" << std::endl;
         exit(1);
     }
@@ -137,6 +137,7 @@ int main(int argc, char ** argv)
     } else {
         // Sets default input parameters
         int     Nsamples      = 1000 ;
+        int     nitermax      = 1000 ;
         double  CI_threshold  = 0.01 ;
         double  COM_threshold = 0.01 ;
         // Changes if parameters have been provided in input
@@ -145,11 +146,13 @@ int main(int argc, char ** argv)
         if(argc > 4) 
             COM_threshold = atof(argv[4]);
         if(argc > 5) 
-             Nsamples = atoi(argv[5]);
+             nitermax = atoi(argv[5]);
+        if(argc > 6) 
+             Nsamples = atoi(argv[6]);
         // determinants reservoir | optional
         std::vector<std::vector<int> > determinants_mclr;
-        if(argc == 7){
-            determinants_mclr = parse_config<grp>(std::string(argv[6]), phys_dims);
+        if(argc == 8){
+            determinants_mclr = parse_config<grp>(std::string(argv[7]), phys_dims);
         } else {
             determinants_mclr = determinants;
         }
@@ -161,7 +164,7 @@ int main(int argc, char ** argv)
         Hash_Map_with_index hash_index;
         // SR-CAS -- Sampling Reconstructed CAS determinants
         Sampling().generate_dets < std::vector< determinant_type >, matrix, grp, Hash_Map_with_value, Hash_Map_with_index >
-                (determinants, determinants_mclr, mps, hash_value, hash_index, phys_dims, L, Nsamples, CI_threshold, COM_threshold);
+                (determinants, determinants_mclr, mps, hash_value, hash_index, phys_dims, L, Nsamples, nitermax, CI_threshold, COM_threshold);
     }
     maquis::cout << std::endl;
     return 0;

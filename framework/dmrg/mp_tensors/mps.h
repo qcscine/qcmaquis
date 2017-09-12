@@ -40,8 +40,8 @@ struct mps_initializer;
 template<class Matrix, class SymmGroup>
 class MPS
 {
-    typedef std::vector<MPSTensor<Matrix, SymmGroup> > data_t;
 public:
+    typedef std::vector<MPSTensor<Matrix, SymmGroup> > data_t;
     typedef std::size_t size_t;
 
     // reproducing interface of std::vector
