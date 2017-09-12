@@ -59,7 +59,7 @@ private:
     std::vector< MPS* > vec_MPS_ ;
     // Dimensions
 public:
-    size_t n_MPS_ ;
+    int n_MPS_ ;
 } ;
 
 // 
@@ -74,7 +74,7 @@ bound_database<MPS, Bound>::bound_database(void)
 template<class MPS, class Bound>
 bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
                                            MPS& MPSAverage, 
-                                           Bound_vector& bound_left, 
+                                           Bound_vector& bound_left,
                                            Bound_vector& bound_right, 
                                            const int& sa_algorithm)
 {

@@ -105,7 +105,7 @@ public:
     , do_root_homing_(false)
     {
         // Standard options
-        std::size_t L = mps_vector[0].length();
+        L_ = mps_vector[0].length();
         //
         // Initialization of the MPS
         // -------------------------
@@ -115,7 +115,7 @@ public:
         for (size_t k = 0; k < n_root_; k++)
             order.push_back(k) ;
         mps_average = mps_vector[0] ;
-        for (size_t k = 0; k < L; k++) {
+        for (size_t k = 0; k < L_; k++) {
             for (int i = 1; i < n_root_; i++)
                 mps_average[k] += mps_vector[i][k] ;
             mps_average[k] /= n_root_ ;
@@ -155,13 +155,13 @@ public:
                         tmp_vec.push_back(ichar);
                         ss.ignore(1);
                     }
-                    if (tmp_vec.size() != L)
+                    if (tmp_vec.size() != L_)
                         throw std::runtime_error("ONV to follow has a wrong length");
                     mps2follow.push_back(tmp_vec);
                 }
             } else {
                 mps2follow.push_back(parms_["follow_basis_state"].as<std::vector<int> >());
-                if (mps2follow[0].size() != L)
+                if (mps2follow[0].size() != L_)
                     throw std::runtime_error("ONV to follow has a wrong length");
             }
             // Once the states to be followed have been initialized, builds the vector of 
@@ -231,16 +231,15 @@ protected:
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         parallel::construct_placements(mpo);
-        std::size_t L = mps.length()  ;
         // -- Initialization of the various vectors --
         // Allocate and parially initialize the space for the left/right orthogonalization vectors
         ortho_left_.resize(northo);
         ortho_right_.resize(northo);
         for (int n = 0; n < northo; ++n) {
-            ortho_left_[n].resize(L+1) ;
-            ortho_right_[n].resize(L+1) ;
+            ortho_left_[n].resize(L_+1) ;
+            ortho_right_[n].resize(L_+1) ;
             ortho_left_[n][0] = mps.left_boundary()[0] ;
-            ortho_right_[n][L] = mps.right_boundary()[0] ;
+            ortho_right_[n][L_] = mps.right_boundary()[0] ;
         }
         // Allocate and parially initialize the space for the left/right orthogonalization vectors
         // for the state-average calculation
@@ -250,11 +249,11 @@ protected:
             vec_sa_left_[k].resize(n_root_) ;
             vec_sa_right_[k].resize(n_root_) ;
             for (int h = 0; h < n_root_; h++) {
-                vec_sa_left_[k][h].resize(L+1) ;
-                vec_sa_right_[k][h].resize(L+1) ;
+                vec_sa_left_[k][h].resize(L_+1) ;
+                vec_sa_right_[k][h].resize(L_+1) ;
                 // Partial initialization
                 vec_sa_left_[k][h][0] = mps_vector[k].left_boundary()[0];
-                vec_sa_right_[k][h][L] = mps_vector[h].right_boundary()[0];
+                vec_sa_right_[k][h][L_] = mps_vector[h].right_boundary()[0];
             }
         }
         // Complete initialization and builds all the boundaries objects
@@ -267,8 +266,8 @@ protected:
         maquis::cout << "Boundaries are partially initialized...\n";
         //
         for (size_t i = 0; i < n_bound_; i++)
-            (*(boundaries_database_.get_boundaries_right(i)))[L] = (*(boundaries_database_.get_mps(i))).right_boundary();
-        for (int i = L-1; i >= site; --i) {
+            (*(boundaries_database_.get_boundaries_right(i)))[L_] = (*(boundaries_database_.get_mps(i))).right_boundary();
+        for (int i = L_-1; i >= site; --i) {
             boundary_right_step(mpo, i);
             parallel::sync(); // to scale down memory
         }
@@ -282,7 +281,7 @@ protected:
     {
         // Decides the number of boundaries to be stored
         if (n_root_ > 0) {
-            if (sa_alg_ > 0) {
+            if (sa_alg_ >= 0) {
                 if (sa_alg_ >= n_root_-1)
                     throw std::runtime_error("sa_algorithm parameter must be <= number of SA states") ;
                 else
@@ -303,7 +302,7 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         // Shifts the boundaries
-        for (size_t i = 0 ; i < n_root_ ; i++)
+        for (size_t i = 0 ; i < n_bound_ ; i++)
             (*(boundaries_database_.get_boundaries_left(i)))[site+1] = contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)), 
                                                                                                     *(boundaries_database_.get_mps(i,site)), 
                                                                                                     (*(boundaries_database_.get_boundaries_left(i)))[site], 
@@ -323,11 +322,12 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         // Shifts the boundaries
-        for (size_t i = 0 ; i < n_root_ ; i++)
-            (*(boundaries_database_.get_boundaries_right(i)))[site] = contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)), 
-                                                                                                   *(boundaries_database_.get_mps(i,site)), 
+        std::cout << "Pippo1" << std::endl ;
+        for (size_t i = 0 ; i < n_bound_ ; i++)
+            (*(boundaries_database_.get_boundaries_right(i)))[site] = contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
+                                                                                                    *(boundaries_database_.get_mps(i,site)),
                                                                                                    (*(boundaries_database_.get_boundaries_right(i)))[site+1], 
-                                                                                                mpo[site]);
+                                                                                                    mpo[site]);
         // Updates the orthogonal vectors
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
@@ -396,7 +396,7 @@ protected:
     std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
     std::vector< int > order ;
     int n_root_ , sa_alg_ ;
-    size_t n_bound_ ;
+    size_t n_bound_ , L_ ;
 };
 
 #include "ss_optimize.hpp"

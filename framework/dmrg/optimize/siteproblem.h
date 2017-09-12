@@ -75,8 +75,8 @@ struct SiteProblem
         }
     }
     // Attributes (public)
-    boundary_vector_ptr  left ;
-    boundary_vector_ptr  right ;
+    boundary_vector_ptr left ;
+    boundary_vector_ptr right ;
     std::size_t size ;
     MPOTensor<Matrix, SymmGroup> const & mpo;
 };
@@ -91,7 +91,7 @@ namespace ietl {
               std::size_t const& idx = 0 ) {
         assert( idx < H.left.size() && idx < H.right.size() ) ;
         y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx]), *(H.right[idx]), H.mpo);
-        x.make_left_paired();
+        x.make_left_paired() ;
     }
 }
 
