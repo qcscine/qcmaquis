@@ -56,7 +56,7 @@ namespace ietl {
         using base::printer_ ;
         using base::vecspace_;
         // New constructors
-        davidson_standard(const MATRIX &matrix, const VS &vec, const int& nmin, const int& nmax,
+        davidson_standard(const MATRIX &matrix, VS &vec, const int& nmin, const int& nmax,
                           const int& nsites, const int& site1, const int& site2)
                 : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) {};
         ~davidson_standard() {};

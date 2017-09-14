@@ -37,10 +37,10 @@
 #include "davidson_standard_mo.h"
 #include "davidson_modified_mo.h"
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, class BoundDatabase>
 std::vector< std::pair< double , class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
-                    VectorSet<Matrix, SymmGroup> const & initial,
+                    VectorSet<Matrix, SymmGroup> & initial,
                     BaseParameters & params,
                     std::vector<partial_overlap<Matrix, SymmGroup> > poverlap_vec ,
                     int nsites,
@@ -49,12 +49,13 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     int root_homing_type,
                     std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left,
                     std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
-                    const std::vector< int > & sorter, 
+                    const std::vector< int > & order, 
+                    BoundDatabase bound_database,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >())
 {
     // Initialization
     typedef MPSTensor<Matrix, SymmGroup> Vector ;
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right);
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right, bound_database);
     int n_restart = params["ietl_diag_restart_nmax"] ;
     double atol   = params["ietl_diag_atol"];
     double rtol   = params["ietl_diag_rtol"];

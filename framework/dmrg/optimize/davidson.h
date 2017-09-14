@@ -87,7 +87,7 @@ namespace ietl
         typedef typename std::pair<size_t, std::vector<float> >           result_selection_type ;
         typedef typename std::vector< pair_results >                      vector_pairs ;
         // Constructor and destructor
-        davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
+        davidson(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax,
                  const int& nsites, const int& site1, const int& site2);
         virtual ~davidson() {};
         // Public method to compute eigenvalue
@@ -124,7 +124,7 @@ namespace ietl
     };
     // -- Constructor --
     template <class MATRIX, class VS>
-    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, const int& nmin, const int& nmax,
+    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax,
                                    const int& nsites, const int& site1, const int& site2) :
             homing_is_activated_(false),
             matrix_(matrix),

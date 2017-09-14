@@ -26,6 +26,8 @@
  *
  *****************************************************************************/
 
+// Object used for multi-state targeting algorithms
+
 #ifndef BOUNDARY_DATABASE_H
 #define BOUNDARY_DATABASE_H
 

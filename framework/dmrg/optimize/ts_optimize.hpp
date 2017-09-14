@@ -46,6 +46,7 @@ class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
+    using base::boundaries_database_ ;
     using base::bound_vec_pnt_ ;
     using base::do_root_homing_ ;
     using base::iteration_results_;
@@ -189,7 +190,7 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 2, site1, site2, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, order, ortho_vecs);
+                                         vec_sa_left_, vec_sa_right_, order, ortho_vecs, boundaries_database_ );
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")

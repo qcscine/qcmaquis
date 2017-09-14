@@ -252,8 +252,8 @@ protected:
                 vec_sa_left_[k][h].resize(L_+1) ;
                 vec_sa_right_[k][h].resize(L_+1) ;
                 // Partial initialization
-                vec_sa_left_[k][h][0] = mps_vector[k].left_boundary()[0];
-                vec_sa_right_[k][h][L_] = mps_vector[h].right_boundary()[0];
+                vec_sa_left_[k][h][0]   = (*(boundaries_database_.get_mps(k))).left_boundary()[0];
+                vec_sa_right_[k][h][L_] = (*(boundaries_database_.get_mps(h))).right_boundary()[0];
             }
         }
         // Complete initialization and builds all the boundaries objects
@@ -282,10 +282,7 @@ protected:
         // Decides the number of boundaries to be stored
         if (n_root_ > 0) {
             if (sa_alg_ >= 0) {
-                if (sa_alg_ >= n_root_-1)
-                    throw std::runtime_error("sa_algorithm parameter must be <= number of SA states") ;
-                else
-                    n_bound_ = 1 ; 
+                n_bound_ = 1 ; 
             } else if (sa_alg_ == -1) {
                 n_bound_ = 1 ; 
             } else if (sa_alg_ == -2) {
@@ -301,19 +298,24 @@ protected:
     // Shifts the boundary one site to the left
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        // Variables definition
+        MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++)
             (*(boundaries_database_.get_boundaries_left(i)))[site+1] = contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)), 
                                                                                                     *(boundaries_database_.get_mps(i,site)), 
-                                                                                                    (*(boundaries_database_.get_boundaries_left(i)))[site], 
+                                                                                                   (*(boundaries_database_.get_boundaries_left(i)))[site],
                                                                                                     mpo[site]);
         // Updates the orthogonal vectors
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
         for (int i = 0; i < n_root_ ; i++)
             for (int j = 0; j < n_root_; j++)
-                if ( i != j )
-                    vec_sa_left_[i][j][site+1] = contr::overlap_left_step(mps_vector[i][site], mps_vector[j][site], vec_sa_left_[i][j][site]);
+                if ( i != j ) {
+                    tmp = *(boundaries_database_.get_mps(j,site)) ; 
+                    vec_sa_left_[i][j][site+1] = contr::overlap_left_step(*(boundaries_database_.get_mps(i,site)), 
+                                                                          tmp, vec_sa_left_[i][j][site]);
+                }
     }
     // +-------------------+
     //  BOUNDARY_RIGHT_STEP
@@ -321,6 +323,8 @@ protected:
     // Shifts the boundary one site to the right
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        // Variables definition
+        MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++)
             (*(boundaries_database_.get_boundaries_right(i)))[site] = contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
@@ -332,8 +336,11 @@ protected:
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
         for (int i = 0; i < n_root_ ; i++)
             for (int j = 0; j < n_root_; j++)
-                if ( i!= j )
-                    vec_sa_right_[i][j][site] = contr::overlap_right_step(mps_vector[i][site], mps_vector[j][site], vec_sa_right_[i][j][site+1]);
+                if ( i != j ) {
+                    tmp = *(boundaries_database_.get_mps(j,site)) ;
+                    vec_sa_right_[i][j][site] = contr::overlap_right_step(*(boundaries_database_.get_mps(i,site)), 
+                                                                          tmp, vec_sa_right_[i][j][site+1]);
+                }
     }
     // +----------+
     //  GET_CUTOFF

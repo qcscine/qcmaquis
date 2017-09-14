@@ -114,7 +114,7 @@ public:
                 Storage::sync();
             }
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1, boundaries_database_);
+            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1, boundaries_database_) ;
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
@@ -140,12 +140,12 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, order, ortho_vecs);
+                                         vec_sa_left_, vec_sa_right_, order, boundaries_database_, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
                     res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                              vec_sa_left_, vec_sa_right_, order, ortho_vecs);
+                                              vec_sa_left_, vec_sa_right_, order, boundaries_database_, ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -199,11 +199,12 @@ public:
                                                                                            site, alpha, cutoff, Mmax) ;
                     if (sa_alg_ >= -1) {
                         Mval = trunc[0].bond_dimension ;
-                        for (size_t k = 0 ; k < n_root_ ; k++)
+                        for (size_t k = 0 ; k < n_root_ ; k++) {
                             if (k != sa_alg_)
                                 trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
                                                                                         (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
-                                                                                           site, alpha, cutoff, Mval, Mmax));
+                                                                                           site, alpha, cutoff, Mmax, Mval));
+                        }
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps_average[site].normalize_left(DefaultSolver());
@@ -223,10 +224,11 @@ public:
                     if (sa_alg_ >= -1) {
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++)
-                            if (k != sa_alg_)
-                                trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
+                            if ( k != sa_alg_ ) {
+                                trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
                                                                                         (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
-                                                                                        site, alpha, cutoff, Mval, Mmax));
+                                                                                        site, alpha, cutoff, Mmax, Mval));
+                            }
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps_average[site].normalize_right(DefaultSolver());
@@ -244,6 +246,7 @@ public:
             for (size_t i = 0; i < n_root_; i++) {
                 sorter[i].first  = res[i].first ;
                 sorter[i].second = i ;
+                std::cout << trunc[i].bond_dimension << std::endl ; 
             }
             std::sort(sorter.begin(), sorter.end()) ;
             this->update_order(sorter) ;
@@ -272,10 +275,10 @@ public:
 	    int n , a ;
         if (lr == 1) {
 	        a = 2*sweep+1 ;
-            n = sprintf(buffer, "  Sweeep number %3d - site number %3d", a, site);
+            n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
         } else {
 	        a = 2*sweep+2 ;
-            n = sprintf(buffer, "  Sweeep number %3d - site number %3d", a, site);
+            n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
 	    }
         std::cout << " +-----------------------------------+" << std::endl ;
         std::cout << buffer << std::endl ;

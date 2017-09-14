@@ -44,10 +44,10 @@
 // Jacobi-Davidson diagonalization
 // -------------------------------
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, class BoundDatabase>
 std::vector< std::pair< double , class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
-               VectorSet<Matrix, SymmGroup> const & initial,
+               VectorSet<Matrix, SymmGroup> & initial,
                BaseParameters & params ,
                std::vector< partial_overlap<Matrix, SymmGroup> >  poverlap_vec,
                int nsites,
@@ -57,6 +57,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left,
                std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
                std::vector< int > const & order,
+               BoundDatabase bound_database,
                std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >())
 {
     // -- Initialization --
@@ -89,7 +90,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     // +----------------------+
     //  EIGENVALUE CALCULATION
     // +----------------------+
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right);
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right, bound_database);
     if (fabs(omega) < 1.0E-15) {
         if ( root_homing_type == 0) {
             ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> >

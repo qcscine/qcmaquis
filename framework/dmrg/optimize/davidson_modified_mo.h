@@ -60,7 +60,7 @@ namespace ietl {
         using base::printer_ ;
         using base::v_guess_ ;
         // New constructors
-        davidson_modified_mo(const MATRIX &matrix, const VS &vec, const magnitude_type& omega,
+        davidson_modified_mo(const MATRIX &matrix, VS &vec, const magnitude_type& omega,
                              const pov_vec& poverlap, const int& nmin, const int& nmax,
                              const int& nsites, const int& site1, const int& site2, const int& root_homing_type)
                 : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega)
