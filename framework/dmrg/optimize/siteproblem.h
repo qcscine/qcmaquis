@@ -57,6 +57,7 @@ struct SiteProblem
         size = 1 ;
     }
     // Constructor with a vector of boundaries
+    // ALB TODO Clean left_vec_ and right_vec_ from here
     SiteProblem(boundaries & left_vec_ ,
                 boundaries & right_vec_ ,
                 MPOTensor<Matrix, SymmGroup> const & mpo_,
