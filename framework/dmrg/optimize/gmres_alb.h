@@ -234,11 +234,11 @@ namespace ietl
             // t2 = (1-uu*) x
             double ust = dot(u_, input) ;
             t2 = input - ust * u_ ;
-            orthogonalize_simple(t2) ;
+            this->orthogonalize_simple(t2) ;
             // y = (A-theta*1) t2
             ietl::mult(A_, t2, t3, n_root_);
             y = t3 - theta_ * t2;
-            orthogonalize_simple(y) ;
+            this->orthogonalize_simple(y) ;
             // t = (1-uu*) y
             ust = dot(u_, y) ;
             t = y - ust * u_ ;
@@ -357,13 +357,13 @@ namespace ietl
             Vector t, t2, t3, y ;
             double ust = dot(Au_, input) ;
             t2 = input - ust * u_ / ietl::dot(u_,Au_) ;
-            orthogonalize_simple(t2) ;
+            this->orthogonalize_simple(t2) ;
             // y = (A-theta*1) t2
             mult(A_, t2, t3, n_root_);
             t3 *= -1.;
             t3 += omega_ * t2;
             y = t3 - t2 / theta_ ;
-            orthogonalize_simple(y) ;
+            this->orthogonalize_simple(y) ;
             // t = (1-uu*) y
             ust = dot(Au_, y) ;
             t = y - ust * u_ / ietl::dot(u_,Au_) ;
@@ -407,11 +407,11 @@ namespace ietl
         Vector apply(Vector& input){
             // Initialization
             Vector t ;
-            orthogonalize_simple(input) ;
+            this->orthogonalize_simple(input) ;
             mult(A_, input, t, n_root_);
             t *= -1.;
             t += theta_*input;
-            orthogonalize_simple(t) ;
+            this->orthogonalize_simple(t) ;
             return t ;
         }
     } ;

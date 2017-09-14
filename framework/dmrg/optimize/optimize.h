@@ -322,7 +322,6 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         // Shifts the boundaries
-        std::cout << "Pippo1" << std::endl ;
         for (size_t i = 0 ; i < n_bound_ ; i++)
             (*(boundaries_database_.get_boundaries_right(i)))[site] = contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
                                                                                                     *(boundaries_database_.get_mps(i,site)),

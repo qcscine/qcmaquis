@@ -97,7 +97,7 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_left_paired() const
         ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     
-    swap(data_, tmp);
+    std::swap(data_, tmp);
     cur_storage = TSLeftPaired;
     
     // assert( right_i == data_.right_basis() );
@@ -117,7 +117,7 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_both_paired() const
         ts_reshape::reshape_left_to_both<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     
-    swap(data_, tmp);
+    std::swap(data_, tmp);
     cur_storage = TSBothPaired;
 }
 
@@ -136,7 +136,7 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
         ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     
-    swap(data_, tmp);
+    std::swap(data_, tmp);
     cur_storage = TSRightPaired;
     
     // assert( left_i == data_.left_basis() );
@@ -230,7 +230,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             tdm *= alpha;
-            swap(tdm, half_dm[b]);
+            std::swap(tdm, half_dm[b]);
         });
         
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
@@ -298,7 +298,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
             tdm *= alpha;
-            swap(tdm, half_dm[b]);
+            std::swap(tdm, half_dm[b]);
         });
 
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
@@ -371,20 +371,20 @@ template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::clear()
 {
     block_matrix<Matrix, SymmGroup> empty;
-    swap(data(), empty);
+    std::swap(data(), empty);
 }
 
 template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup> & b)
 {
-    swap(this->phys_i, b.phys_i);
-    swap(this->phys_i_left, b.phys_i_left);
-    swap(this->phys_i_right, b.phys_i_right);
-    swap(this->left_i, b.left_i);
-    swap(this->right_i, b.right_i);
-    swap(this->data_, b.data_);
-    swap(this->cur_storage, b.cur_storage);
-    swap(this->cur_normalization, b.cur_normalization);
+    std::swap(this->phys_i, b.phys_i);
+    std::swap(this->phys_i_left, b.phys_i_left);
+    std::swap(this->phys_i_right, b.phys_i_right);
+    std::swap(this->left_i, b.left_i);
+    std::swap(this->right_i, b.right_i);
+    std::swap(this->data_, b.data_);
+    std::swap(this->cur_storage, b.cur_storage);
+    std::swap(this->cur_normalization, b.cur_normalization);
 }
 
 template<class Matrix, class SymmGroup>

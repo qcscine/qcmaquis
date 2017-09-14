@@ -243,8 +243,7 @@ protected:
         // Compute the error vector
         bool converged ;
         eigvec = u/ietl::two_norm(u);
-        //eigval = this->omega_ - theta/ietl::dot(u,u) ;
-        eigval = this->omega_ - 1.0/theta ;  
+        eigval = this->omega_ - theta/ietl::dot(u,u) ;
         if(iter.finished(ietl::two_norm(r),1.0)) {
             converged = true;
             return converged;
