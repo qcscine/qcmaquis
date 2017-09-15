@@ -49,7 +49,6 @@ public:
     using base::do_stateaverage_ ;
     using base::iteration_results_ ;
     using base::mpo ;
-    using base::mps_average ;
     using base::mps2follow ;
     using base::mps_vector ;
     using base::n_bound_ ;
@@ -114,7 +113,7 @@ public:
                 Storage::sync();
             }
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, mpo[site], site, site+1, boundaries_database_) ;
+            SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_) ;
             // Generates the vectorset object
             VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
             // Compute orthogonal vectors
@@ -153,14 +152,14 @@ public:
                 BEGIN_TIMING("MPS UPDATE")
                 // Collects the results
                 if (n_root_ > 0) {
-                    mps_average[site]  = res[0].second ;
                     mps_vector[0][site]  = res[0].second ;
-                    for (size_t k = 1; k < n_root_; k++) {
+                    for (size_t k = 1; k < n_root_; k++)
                         mps_vector[k][site] = res[k].second;
-                        mps_average[site] += res[k].second;
-                    }
-                    mps_average[site] /= n_root_ ;
                 }
+                // Correct the energies
+                if (sa_alg_ == -1)
+                    for (size_t k = 0; k < n_root_; k++)
+                        res[k].first = ietl::get_energy(sp, res[k].second, k) ;
                 END_TIMING("MPS UPDATE")
             }
             // +---------------------+
@@ -192,12 +191,18 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << " Alpha = " << alpha << std::endl ;
-                    for (size_t idx = 0; idx < n_bound_; idx++)
-                        trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], 
-                                                                                           (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                           (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                           site, alpha, cutoff, Mmax) ;
-                    if (sa_alg_ >= -1) {
+                    if (sa_alg_ == -1) {
+                        for (size_t idx = 0; idx < n_bound_; idx++)
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                                             site, alpha, cutoff, Mmax, Mmax);
+                    } else if (sa_alg_ == -2) {
+                        for (size_t idx = 0; idx < n_bound_; idx++)
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                                             site, alpha, cutoff, Mmax);
+                    }
+                    if (sa_alg_ > -1) {
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++) {
                             if (k != sa_alg_)
@@ -207,8 +212,8 @@ public:
                         }
                     }
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps_average[site].normalize_left(DefaultSolver());
-                    for (size_t k = 0 ; k < n_root_ ; k++)
+                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_left(DefaultSolver());
+                    for (size_t k = 1 ; k < n_root_ ; k++)
                         t = mps_vector[k][site].normalize_left(DefaultSolver());
                 }
                 // Update the left boundary
@@ -216,12 +221,18 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << " Alpha = " << alpha << std::endl ;
-                    for (size_t idx = 0; idx < n_bound_; idx++)
-                        trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], 
-                                                                                          (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                           site, alpha, cutoff, Mmax) ;
-                    if (sa_alg_ >= -1) {
+                    if (sa_alg_ == -1) {
+                        for (size_t idx = 0; idx < n_bound_; idx++)
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                                             site, alpha, cutoff, Mmax, Mmax);
+                    } else if (sa_alg_ == -2) {
+                        for (size_t idx = 0; idx < n_bound_; idx++)
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                                             site, alpha, cutoff, Mmax);
+                    }
+                    if (sa_alg_ > -1) {
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++)
                             if ( k != sa_alg_ ) {
@@ -231,8 +242,8 @@ public:
                             }
                     }
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps_average[site].normalize_right(DefaultSolver());
-                    for (size_t k = 0 ; k < n_root_ ; k++)
+                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_right(DefaultSolver());
+                    for (size_t k = 1 ; k < n_root_ ; k++)
                         t = mps_vector[k][site].normalize_right(DefaultSolver());
                 }
                 // Update the right boundary

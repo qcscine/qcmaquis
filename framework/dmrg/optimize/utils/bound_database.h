@@ -40,7 +40,7 @@ class bound_database
 public:
     // Types definition
     typedef typename std::size_t               size_t ;
-    typedef typename std::vector<Bound>        Bound_vector ; 
+    typedef typename std::vector<Bound>        Bound_vector ;
     typedef typename std::vector<MPS>          MPS_vector ;
     typedef typename MPS::data_t::value_type   MPSTensor ;
     // Constructors
@@ -50,23 +50,29 @@ public:
     // Public methods
     Bound*     get_boundaries_left(const size_t& idx) ;
     Bound*     get_boundaries_right(const size_t& idx) ;
+    Bound*     get_boundaries_left_sp(const size_t& idx, const size_t& k) ;
+    Bound*     get_boundaries_right_sp(const size_t& idx, const size_t& k) ;
+    float      get_coefficients(const size_t& idx, const size_t& k) ;
     MPS*       get_mps(const size_t& idx) ;
     MPSTensor* get_mps(const size_t& idx, const size_t& site) ;
+    size_t     get_num_bound(const size_t& idx) ;
 //
 // Private attributes
 // ------------------
 private:
     // Main attribures
-    std::vector< Bound* > vec_bound_left_, vec_bound_right_ ; 
-    std::vector< MPS* > vec_MPS_ ;
+    std::vector< Bound* >                vec_bound_left_, vec_bound_right_  ;
+    std::vector< std::vector< Bound*> >  vec_left_sp_, vec_right_sp_ ;
+    std::vector< MPS* >                  vec_MPS_ ;
+    std::vector< std::vector<float> >    matrix_coefficients_ ;
     // Dimensions
 public:
     int n_MPS_ ;
 } ;
 
-// 
-// Constructor
-// -----------
+// +-----------+
+//  Constructor
+// +-----------+
 template<class MPS, class Bound>
 bound_database<MPS, Bound>::bound_database(void)
 {
@@ -84,27 +90,49 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
     n_MPS_ = MPSVec.size() ;
     vec_bound_left_.resize(n_MPS_) ;
     vec_bound_right_.resize(n_MPS_) ;
+    vec_left_sp_.resize(n_MPS_) ;
+    vec_right_sp_.resize(n_MPS_) ;
     vec_MPS_.resize(n_MPS_) ;
+    matrix_coefficients_.resize(n_MPS_) ;
     // Case 1 - boundaries built from a specific state
-    if (sa_algorithm >= -1 ) {
+    if (sa_algorithm >= 0 ) {
         if (sa_algorithm >= n_MPS_) { 
             throw std::runtime_error("sa_algorithm parameter must be <= number of SA states") ;
         } else {
             for (size_t idx = 0; idx < n_MPS_; idx++) {
-                vec_bound_left_[idx]  = &(bound_left[0]) ;
-                vec_bound_right_[idx] = &(bound_right[0]) ;
-                if (sa_algorithm == -1)
-                    vec_MPS_[idx] = &(MPSAverage) ;
-                else
-                    vec_MPS_[idx] = &(MPSVec[sa_algorithm]) ;
+                vec_bound_left_[idx] = &(bound_left[0]);
+                vec_bound_right_[idx] = &(bound_right[0]);
+                vec_left_sp_[idx].push_back(&(bound_left[0])) ;
+                vec_right_sp_[idx].push_back(&(bound_right[0])) ;
+                vec_MPS_[idx] = &(MPSVec[sa_algorithm]) ;
+                matrix_coefficients_[idx].push_back(1.0) ;
             }
         }
+    // Case 2 - Pure state-average algorithm
+    } else if (sa_algorithm == -1) {
+        float factor = 1./n_MPS_ ;
+        for (size_t idx = 0; idx < n_MPS_; idx++) {
+            vec_bound_left_[idx]  = &(bound_left[idx]) ;
+            vec_bound_right_[idx] = &(bound_right[idx]) ;
+            for (size_t k = 0; k < n_MPS_; k++){
+                vec_left_sp_[idx].push_back(&(bound_left[k])) ;
+                vec_right_sp_[idx].push_back(&(bound_right[k])) ;
+                matrix_coefficients_[idx].push_back(factor) ;
+            }
+            vec_MPS_[idx] = &(MPSVec[idx]) ;
+        }
+    // Case 3 - Advanced state-average calculation
     } else if (sa_algorithm == -2) {
         for (size_t idx = 0; idx < n_MPS_; idx++) {
             vec_bound_left_[idx]  = &(bound_left[idx]) ;
             vec_bound_right_[idx] = &(bound_right[idx]) ;
-            vec_MPS_[idx]         = &(MPSVec[idx]) ;
+            vec_left_sp_[idx].push_back(&(bound_left[idx])) ;
+            vec_right_sp_[idx].push_back(&(bound_right[idx])) ;
+            vec_MPS_[idx] = &(MPSVec[idx]) ;
+            matrix_coefficients_[idx].push_back(1.0) ;
         }
+    } else {
+        throw std::runtime_error("sa_algorithm parameter not recognized") ;
     }
 }
 
@@ -118,9 +146,57 @@ Bound* bound_database<MPS, Bound>::get_boundaries_left(const size_t& idx)
 }
 
 template<class MPS, class Bound>
+Bound* bound_database<MPS, Bound>::get_boundaries_left_sp(const size_t& idx, const size_t& k)
+{
+    Bound* res ;
+    if (idx >= n_MPS_) {
+        throw std::runtime_error("error in the idx index");
+    } else {
+        if (k >= vec_left_sp_[idx].size()) {
+            throw std::runtime_error("error in the k index");
+        } else {
+            res = vec_left_sp_[idx][k] ;
+        }
+    }
+    return res ;
+}
+
+template<class MPS, class Bound>
 Bound* bound_database<MPS, Bound>::get_boundaries_right(const size_t& idx)
 {
     return vec_bound_right_[idx] ;
+}
+
+template<class MPS, class Bound>
+Bound* bound_database<MPS, Bound>::get_boundaries_right_sp(const size_t& idx, const size_t& k)
+{
+    Bound* res ;
+    if (idx >= n_MPS_) {
+        throw std::runtime_error("error in the idx index");
+    } else {
+        if (k >= vec_right_sp_[idx].size()) {
+            throw std::runtime_error("error in the k index");
+        } else {
+            res = vec_right_sp_[idx][k] ;
+        }
+    }
+    return res ;
+}
+
+template<class MPS, class Bound>
+float bound_database<MPS, Bound>::get_coefficients(const size_t &idx, const size_t &k)
+{
+    float res ;
+    if (idx >= n_MPS_) {
+        throw std::runtime_error("error in the idx index");
+    } else {
+        if (k >= vec_right_sp_[idx].size()) {
+            throw std::runtime_error("error in the k index");
+        } else {
+            res = matrix_coefficients_[idx][k] ;
+        }
+    }
+    return res ;
 }
 
 template<class MPS, class Bound>
@@ -134,6 +210,18 @@ typename bound_database<MPS, Bound>::MPSTensor* bound_database<MPS, Bound>::get_
                                                                                     const size_t& site)
 {
     return &((*(vec_MPS_[idx]))[site]) ;
+}
+
+template<class MPS, class Bound>
+typename bound_database<MPS, Bound>::size_t bound_database<MPS, Bound>::get_num_bound(const size_t& idx)
+{
+    size_t res ;
+    if (idx >= this->n_MPS_ || idx < 0) {
+        throw std::runtime_error("wrong index in bound_database") ;
+    } else {
+        res = matrix_coefficients_[idx].size() ;
+    }
+    return res ;
 }
 
 #endif

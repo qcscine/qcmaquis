@@ -49,20 +49,20 @@ namespace contraction {
             = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemms>(ket_tensor, left, mpo);
 	    // Here indexes a grouped together
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-                               & left_i = ket_tensor.row_dim();
+                               & left_i = ket_tensor.row_dim() ;
         Index<SymmGroup> right_i = ket_tensor.col_dim(),
-                         out_left_i = physical_i * left_i;
+                         out_left_i = physical_i * left_i ;
         common_subset(out_left_i, right_i);
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
 	    // Set the new MPSTensor
-        MPSTensor<Matrix, SymmGroup> ret;
-        ret.phys_i = ket_tensor.site_dim();
-	    ret.left_i = ket_tensor.row_dim();
-	    ret.right_i = ket_tensor.col_dim();
-        index_type loop_max = mpo.col_dim();
+        MPSTensor<Matrix, SymmGroup> ret ;
+        ret.phys_i = ket_tensor.site_dim() ;
+	    ret.left_i = ket_tensor.row_dim() ;
+	    ret.right_i = ket_tensor.col_dim() ;
+        index_type loop_max = mpo.col_dim() ;
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);

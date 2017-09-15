@@ -164,7 +164,7 @@ public:
                 tst_vec.push_back(twin_mps) ;
                 tst_tmp.clear();
             }
-            SiteProblem<Matrix, SymmGroup> sp(left_sa_, right_sa_, ts_cache_mpo[site1], site1, site2+1, bound_vec_pnt_);
+            SiteProblem<Matrix, SymmGroup> sp(ts_cache_mpo[site1], site1, site2+1, bound_vec_pnt_);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);

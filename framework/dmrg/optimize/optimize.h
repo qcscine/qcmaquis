@@ -284,7 +284,7 @@ protected:
             if (sa_alg_ >= 0) {
                 n_bound_ = 1 ; 
             } else if (sa_alg_ == -1) {
-                n_bound_ = 1 ; 
+                n_bound_ = n_root_ ;
             } else if (sa_alg_ == -2) {
                 n_bound_ = n_root_ ;
             }
@@ -302,8 +302,8 @@ protected:
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++)
-            (*(boundaries_database_.get_boundaries_left(i)))[site+1] = contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)), 
-                                                                                                    *(boundaries_database_.get_mps(i,site)), 
+            (*(boundaries_database_.get_boundaries_left(i)))[site+1] = contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
+                                                                                                    *(boundaries_database_.get_mps(i,site)),
                                                                                                    (*(boundaries_database_.get_boundaries_left(i)))[site],
                                                                                                     mpo[site]);
         // Updates the orthogonal vectors
