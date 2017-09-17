@@ -90,7 +90,7 @@ namespace ietl
         jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                         const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
                         const double& ietl_atol, const double& ielt_rtol, const size_t & i_gmres_guess,
-                        const std::vector<int>& order);
+                        const std::vector<int>& order, const int& sa_alg);
         virtual ~jacobi_davidson() {};
         template <class GEN>
         vector_pairs calculate_eigenvalue(const GEN& gen, ITER& iter);
@@ -103,11 +103,11 @@ namespace ietl
                                        ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
         virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
         virtual magnitude_type get_matrix_element(const vector_type& v, const vector_type& VA) {} ;
+        virtual size_t initialize_vecspace(vector_space& V, vector_space& VA) {} ;
         virtual vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                                 const matrix_double& eigvecs, const vector_double& eigvals) {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
         virtual vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) {} ;
-        virtual vector_type get_guess(void) {} ;
         virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                             vector_type& output, vector_type& outputA, magnitude_type& theta,
                                             matrix_double& eigvecs, vector_double& eigvals) {} ;
@@ -132,7 +132,7 @@ namespace ietl
         };
         // Protected attributes
         double                       ietl_atol_, ietl_rtol_, overlap_ ;
-        int                          nsites_, site1_, site2_ ;
+        int                          nsites_, sa_alg_, site1_, site2_ ;
         FortranMatrix<scalar_type>   M ;
         MATRIX const &               matrix_ ;
         vector_ortho_vec             ortho_space_ ;
@@ -157,7 +157,7 @@ namespace ietl
     jacobi_davidson<MATRIX, VS, ITER>::jacobi_davidson(const MATRIX& matrix, VS& vec, const size_t& n_min, const size_t& n_max,
                                                        const size_t& max_iter, const int& nsites, const int& site1, const int& site2,
                                                        const double& ietl_atol, const double& ietl_rtol, const size_t& i_gmres_guess,
-                                                       const std::vector<int>& order) :
+                                                       const std::vector<int>& order, const int& sa_alg) :
         matrix_(matrix),
         vecspace_(vec),
         nsites_(nsites),
@@ -172,14 +172,12 @@ namespace ietl
         ietl_atol_(ietl_atol),
         ietl_rtol_(ietl_rtol),
         i_gmres_guess_(i_gmres_guess),
-        i_state_(0)
+        i_state_(0),
+        sa_alg_(sa_alg)
     {
         // Generates guess
         order_ = order ;
         n_sa_  = n_root(vec) ;
-        for (size_t k = 0; k < n_sa_; k++) {
-            v_guess_.push_back(new_vector(vec, k));
-        }
     } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
@@ -190,8 +188,8 @@ namespace ietl
         // Variable declaration
         // Scalars
         magnitude_type eigval, theta;
-        bool converged ;
-        int n_iter ;
+        bool converged, starting ;
+        size_t n_iter ;
         // Vectors
         vector_double  props(iter.max_iterations()) ;
         vector_space   V(iter.max_iterations())  ;
@@ -209,15 +207,20 @@ namespace ietl
         // Main loop of the algorithm
         // --------------------------
         // Loop over all the states to be orthogonalized
-        for (int k = 0 ; k < n_sa_ ; k++){
-            n_iter   = 0 ;
+        for (size_t k = 0 ; k < n_sa_ ; k++) {
+            starting = true ;
             i_state_ = order_[k] ;
-            V[0]     = get_guess() ;
             do {
-                update_vecspace(V, VA, n_iter, res);
+                // Initialization/update of the vector space
+                if (starting) {
+                    n_iter = initialize_vecspace(V, VA) ;
+                    starting = false ;
+                } else {
+                    update_vecspace(V, VA, n_iter, res) ;
+                }
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
-                for (int j = 0; j < n_iter + 1; j++)
-                     for (int i = 0; i < j + 1; i++)
+                for (size_t j = 0; j < n_iter + 1; j++)
+                     for (size_t i = 0; i < j + 1; i++)
                         M(i, j) = get_matrix_element(V[i], VA[j]);
                 diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals);
                 // Check convergence

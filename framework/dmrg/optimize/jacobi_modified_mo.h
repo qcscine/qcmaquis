@@ -74,10 +74,10 @@ namespace ietl
         jacobi_davidson_modified_mo(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const pov_vec_type& pov, const size_t n,
                                     const int& nmin, const int& nmax, const int& max_iter, const int& nsites, 
                                     const int& site1, const int& site2, const double& ietl_atol, const double& ietl_rtol,
-                                    const int& i_gmres_guess, const std::vector<int>& order, const double& atol_init, const double& rtol_init,
-                                    const size_t& max_iter_init, const int& root_homing_type)
+                                    const int& i_gmres_guess, const std::vector<int>& order, const int& sa_alg, const double& atol_init, 
+                                    const double& rtol_init, const size_t& max_iter_init, const int& root_homing_type)
                 : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol,
-                                                 i_gmres_guess, order, atol_init, rtol_init, max_iter_init)
+                                                 i_gmres_guess, order, sa_alg, atol_init, rtol_init, max_iter_init)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:

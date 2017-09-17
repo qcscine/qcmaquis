@@ -58,6 +58,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
                std::vector< int > const & order,
                BoundDatabase bound_database,
+               int sa_alg,
                std::vector< class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >())
 {
     // -- Initialization --
@@ -95,25 +96,25 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         if ( root_homing_type == 0) {
             ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> >
                 jd(sp, vs, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order) ;
+                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg) ;
             r0 = jd.calculate_eigenvalue(initial, iter) ;
         } else {
             ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> , Matrix, SymmGroup >
                 jd(sp, vs, poverlap_vec, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, root_homing_type) ;
+                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, root_homing_type) ;
             r0 = jd.calculate_eigenvalue(initial, iter);
         }
     } else {
         if ( root_homing_type == 0 ) {
             ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> >
                 jd(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, params["ietl_gmres_init_atol"],
+                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, params["ietl_gmres_init_atol"],
                    params["ietl_gmres_init_rtol"], params["ietl_gmres_init_maxiter"] );
             r0 = jd.calculate_eigenvalue(initial, iter) ;
         } else {
             ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> , Matrix, SymmGroup>
                     jd(sp, vs, omega, poverlap_vec, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                       nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, params["ietl_gmres_init_atol"],
+                       nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, params["ietl_gmres_init_atol"],
                        params["ietl_gmres_init_rtol"], params["ietl_gmres_init_maxiter"], root_homing_type);
             r0 = jd.calculate_eigenvalue(initial, iter);
         }
