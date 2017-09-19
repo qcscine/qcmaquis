@@ -77,18 +77,18 @@ public:
     using base::n_sa_ ;
     using base::order_ ;
     using base::ortho_space_ ;
+    using base::sa_alg_ ;
     using base::site1_ ;
     using base::site2_ ;
     using base::u_and_uA_ ;
     using base::vecspace_ ;
-    using base::v_guess_ ;
     //
     jacobi_davidson_modified(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const size_t& nmin,
                              const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1,
                              const int& site2, const double& ietl_atol, const double& ietl_rtol, const size_t& i_gmres_guess,
-                             const std::vector<int>& order, const double& atol_init, const double& rtol_init,
+                             const std::vector<int>& order, const int& sa_alg, const double& atol_init, const double& rtol_init,
                              const size_t& max_iter_init)
-            : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol, i_gmres_guess, order)
+            : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol, i_gmres_guess, order, sa_alg)
             , omega_(omega), atol_init_(atol_init), rtol_init_(rtol_init), max_iter_init_(max_iter_init)
     {
     } ;
@@ -110,8 +110,8 @@ private:
     void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta, const vector_type& r, vector_type& t) ;
 protected:
     // Methods
+    size_t initialize_vecspace(vector_space &V, vector_space &VA) ;
     vector_type apply_operator (const vector_type& x);
-    vector_type get_guess(void) ;
     void sort_prop(couple_vec& vector_values) ;
     void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
     void update_orthospace(void) ;
@@ -121,19 +121,52 @@ protected:
     magnitude_type omega_ ;
     size_t max_iter_init_ ;
 };
-    // Get the starting guess for the subspace iteration
+    // New version for generation of the guess
     template <class Matrix, class VS, class ITER>
-    typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type
-             jacobi_davidson_modified<Matrix, VS, ITER>::get_guess()
+    typename jacobi_davidson_modified<Matrix, VS, ITER>::size_t
+             jacobi_davidson_modified<Matrix, VS, ITER>::initialize_vecspace(vector_space &V, vector_space &VA)
     {
-        //vector_type a = v_guess_[i_state_] ;
-        vector_type a = v_guess_[i_state_] ;
-        vector_type b = 0.*v_guess_[i_state_] ;
-        gmres_initializer_modified<Matrix, vector_type, VS> gmres(this->matrix_, v_guess_[i_state_], vecspace_, omega_,
-                                                                  ortho_space_, i_state_, max_iter_init_, false);
-        a = gmres(a, b, atol_init_, rtol_init_);
-        return a ;
-    }
+        // Variable declaration
+        size_t res = n_sa_ ;
+        std::vector<size_t> lst_toerase ;
+        // Orthogonalization
+        if (sa_alg_ == -2) {
+            res = 1 ;
+            V[0]   = new_vector(vecspace_, i_state_) ;
+            VA[0]  = apply_operator(V[0]) ;
+            V[0]  /= ietl::two_norm(VA[0]) ;
+            VA[0] /= ietl::two_norm(VA[0]) ;
+        } else {
+            for (size_t i = 0; i < n_sa_; i++) {
+                V[i] = new_vector(vecspace_, i) ;
+                for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+                    V[i] -= ietl::dot((*it)[0], V[i]) * (*it)[0];
+                VA[i] = apply_operator(V[i]) ;
+                for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+                    VA[i] -= ietl::dot((*it)[0], VA[i]) * (*it)[0];
+                V[i] /= ietl::two_norm(VA[i]) ;
+                VA[i] /= ietl::two_norm(VA[i]) ;
+                for (size_t j = 0; j < i; j++) {
+                    V[i]  -= ietl::dot(VA[i],VA[j]) * V[j] ;
+                    VA[i] -= ietl::dot(VA[i],VA[j]) * VA[j] ;
+                }
+                if (ietl::two_norm(VA[i]) > 1.0E-10) {
+                    V[i] /= ietl::two_norm(VA[i]) ;
+                    VA[i] /= ietl::two_norm(VA[i]) ;
+                }
+            }
+            // Remove the elements with null norm
+            for (size_t i = 0; i < n_sa_; i++)
+                if (ietl::two_norm(VA[i]) < 1.0E-10)
+                    lst_toerase.push_back(i) ;
+            for (typename std::vector<size_t>::iterator it = lst_toerase.begin() ; it != lst_toerase.end() ; it++) {
+                V.erase(V.begin() + *it) ;
+                VA.erase(VA.begin() + *it) ;
+                res -= 1 ;
+            }
+        }
+        return res-1 ;
+    };
     // Compute the action of an operator
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_modified<Matrix, VS, ITER>::vector_type jacobi_davidson_modified<Matrix, VS, ITER>::apply_operator(vector_type const & x)
@@ -197,7 +230,7 @@ protected:
         }
         // Update
         tau = ietl::two_norm(tA) ;
-        for (int i = 1; i <= idx ; i++) {
+        for (size_t i = 1; i <= idx ; i++) {
             t -= ietl::dot(VA[i-1], tA) * V[i-1] ;
             tA -= ietl::dot(VA[i-1], tA) * VA[i-1] ;
         }
@@ -205,7 +238,7 @@ protected:
         if (std::fabs(ietl::two_norm(tA)/tau) < 0.25) {
             t /= ietl::two_norm(tA) ;
             tA /= ietl::two_norm(tA) ;
-            for (int i = 1; i <= idx ; i++) {
+            for (size_t i = 1; i <= idx ; i++) {
                 t -= ietl::dot(VA[i-1], tA) * V[i-1] ;
                 tA -= ietl::dot(VA[i-1], tA) * VA[i-1] ;
             }

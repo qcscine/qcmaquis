@@ -139,12 +139,14 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, order, boundaries_database_, ortho_vecs);
+                                         vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_, 
+                                         ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
                     res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                              vec_sa_left_, vec_sa_right_, order, boundaries_database_, ortho_vecs);
+                                              vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_, 
+                                              ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

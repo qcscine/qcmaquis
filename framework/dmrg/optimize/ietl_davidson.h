@@ -51,6 +51,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
                     const std::vector< int > & order, 
                     BoundDatabase bound_database,
+                    int sa_alg,
                     std::vector<class MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector< class MPSTensor<Matrix, SymmGroup> >())
 {
     // Initialization

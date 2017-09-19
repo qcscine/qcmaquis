@@ -72,23 +72,25 @@ namespace ietl
         using base::n_restart_max_ ;
         using base::n_restart_min_ ;
         using base::n_root_found_ ;
+        using base::n_sa_ ;
         using base::order_ ;
         using base::ortho_space_ ;
+        using base::sa_alg_ ;
         using base::site1_ ;
         using base::site2_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
-        using base::v_guess_ ;
         //
         jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
                                  const int& nsites, const int& site1, const int& site2, const double& ietl_atol,
-                                 const double& ietl_rtol, const size_t& ietl_gmres_guess, const std::vector<int>& order)
+                                 const double& ietl_rtol, const size_t& ietl_gmres_guess, const std::vector<int>& order,
+                                 const int& sa_alg)
                 : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol,
-                                        ietl_gmres_guess, order) {} ;
+                                        ietl_gmres_guess, order, sa_alg) {} ;
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
-        vector_type get_guess (void) ;
+        size_t initialize_vecspace(vector_space &V, vector_space &VA) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
         void update_orthospace(void) ;
     private:
@@ -97,7 +99,7 @@ namespace ietl
         magnitude_type get_matrix_element(const vector_type& V, const vector_type& VA);
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                         const matrix_double& eigvecs, const vector_double& eigvals) ;
-        vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) ;
+        vector_type compute_error(const vector_type& u , const vector_type& uA, magnitude_type theta) ;
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                     vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
@@ -108,19 +110,50 @@ namespace ietl
         void sort_prop(couple_vec& vector_values) ;
         void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
     } ;
+    // New version for generation of the guess
     template <class Matrix, class VS, class ITER>
-    typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type
-             jacobi_davidson_standard<Matrix, VS, ITER>::get_guess()
+    typename jacobi_davidson_standard<Matrix, VS, ITER>::size_t
+             jacobi_davidson_standard<Matrix, VS, ITER>::initialize_vecspace(vector_space &V, vector_space &VA)
     {
-        return v_guess_[i_state_] ;
-    }
+        // Variable declaration
+        size_t res = n_sa_ ;
+        // Orthogonalization
+        if (sa_alg_ == -2) {
+            res = 1 ;
+            V[0]  = new_vector(vecspace_, i_state_) ;
+            V[0]  /= ietl::two_norm(V[0]) ;
+            VA[0] = apply_operator(V[0]) ; 
+        } else {
+            std::vector<size_t> lst_toerase ;
+            for (size_t i = 0; i < n_sa_; i++) {
+                V[i] = new_vector(vecspace_, i) ;
+                for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+                   V[i] -= ietl::dot((*it)[0], V[i]) * (*it)[0]  ;
+                for (size_t j = 0; j < i; j++)
+                    V[i] -= ietl::dot(V[i],V[j]) * V[j] ;
+                if (ietl::two_norm(V[i]) > 1.0E-20)
+                    V[i] /= ietl::two_norm(V[i]) ;
+                VA[i] = apply_operator(V[i]) ;
+            }
+            // Remove the elements with null norm
+            for (size_t i = 0; i < n_sa_; i++)
+                if (ietl::two_norm(V[i]) < 1.0E-20)
+                    lst_toerase.push_back(i) ;
+            for (typename std::vector<size_t>::iterator it = lst_toerase.begin() ; it != lst_toerase.end() ; it++) {
+                V.erase(V.begin() + *it) ;
+                VA.erase(VA.begin() + *it) ;
+                res -= 1 ;
+            }
+        }
+        return res-1 ;
+    };
     // Computes the action of an operator
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_standard<Matrix, VS, ITER>::vector_type
              jacobi_davidson_standard<Matrix, VS, ITER>::apply_operator(vector_type const & x)
     {
         vector_type y = x , y2 ;
-        ietl::mult(this->matrix_ , y , y2, i_state_) ;
+        ietl::mult(this->matrix_, y, y2, i_state_) ;
         return y2 ;
     };
     // Update the vector with the quantity to orthogonalize

@@ -63,6 +63,7 @@ public:
     using base::right_;
     using base::right_sa_ ;
     using base::root_homing_type_ ;
+    using base::sa_alg_ ;
     using base::stop_callback ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
@@ -190,7 +191,8 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 2, site1, site2, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, order, ortho_vecs, boundaries_database_ );
+                                         vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_ ,
+                                         ortho_vecs);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
