@@ -1,5 +1,6 @@
 /*****************************************************************************
  *
+ *
  * ALPS Project: Algorithms and Libraries for Physics Simulations
  *
  * ALPS Libraries
@@ -42,44 +43,53 @@ namespace ietl {
     class davidson_modified : public davidson<MATRIX, VS> {
     public:
         typedef davidson<MATRIX, VS> base;
-        typedef typename base::bm_type                bm_type;
-        typedef typename base::magnitude_type         magnitude_type;
-    	typedef typename base::matrix_numeric         matrix_numeric;
-        typedef typename base::result_selection_type  result_selection_type ;
-        typedef typename base::size_t                 size_t;
-        typedef typename base::vector_set             vector_set;
-        typedef typename base::vector_type            vector_type;
-        using base::atol_ ;
+        typedef typename base::bm_type               bm_type ;
+        typedef typename base::magnitude_type        magnitude_type ;
+    	typedef typename base::matrix_numeric        matrix_numeric ;
+        typedef typename base::size_t                size_t ;
+        typedef typename base::vector_numeric        vector_numeric ;
+        typedef typename base::vector_ortho_vec      vector_ortho_vec ;
+        typedef typename base::vector_set            vector_set ;
+        typedef typename base::vector_type           vector_type ;
+        // Inherited attributes
         using base::Hdiag_ ;
+        using base::i_state_ ;
         using base::matrix_ ;
+        using base::n_root_found_ ;
         using base::n_sa_ ;
         using base::nsites_ ;
+        using base::order_ ;
+        using base::ortho_space_ ;
         using base::printer_ ;
         using base::site1_ ;
         using base::site2_ ;
+        using base::u_and_uA_ ;
         using base::vecspace_ ;
         // New constructors
         davidson_modified(const MATRIX &matrix, VS &vec, const magnitude_type& omega, const int& nmin,
-                          const int& nmax, const int& nsites, const int& site1, const int& site2)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega) {};
+                          const int& nmax, const int& nsites, const int& site1, const int& site2,
+                          const std::vector<int>& order)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2, order) , omega_(omega) {};
         ~davidson_modified() {};
     private:
         // Private methods
-        magnitude_type return_final(const magnitude_type &x) { return omega_-x; };
-        result_selection_type select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
-                                               const size_t& i, vector_set& u, vector_set& uA);
+        magnitude_type return_final(const magnitude_type &x) { return omega_-1./x; };
+        void select_eigenpair(const vector_set& V, const vector_set& VA, const matrix_numeric& eigvecs,
+                              const vector_numeric& eigvals, const size_t& i, vector_type& u, vector_type& uA,
+                              magnitude_type& theta);
         vector_type apply_operator(const vector_type &x);
+        vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) ;
         vector_type finalize_iteration(const vector_type& u, const vector_type& r, const size_t& n_restart,
                                        size_t& iter_dim, vector_set& V2, vector_set& VA);
         void precondition(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta,
                           const size_t& idx);
         void update_vspace(vector_set &V, vector_set &VA, vector_set &t);
+        void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
+        void update_orthospace(void) ;
         // Printing-related methods
         void print_header_table(void) ;
         void print_endline(void) ;
-        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy,
-                                 const magnitude_type& overlap=0.) ;
-        void print_newline_table_energyonly(const magnitude_type& error, const magnitude_type& energy, const magnitude_type& overlap=0.) ;
+        void print_newline_table(const size_t& iter, const size_t& size, const magnitude_type& error, const magnitude_type& energy) ;
         // Additional attributes
         magnitude_type omega_ ;
         vector_set V_additional_ ;
@@ -89,21 +99,69 @@ namespace ietl {
     typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX, VS>::apply_operator(const vector_type& x)
     {
         vector_type tmp ;
-        ietl::mult(matrix_, x, tmp);
+        ietl::mult(matrix_, x, tmp, i_state_);
         tmp *= -1. ;
         tmp += omega_*x ;
         return tmp ;
     };
+    // Compute the error vector
+    template <class MATRIX, class VS>
+    typename davidson_modified<MATRIX, VS>::vector_type davidson_modified<MATRIX,VS>::compute_error(const vector_type &u,
+                                                                                                    const vector_type &uA,
+                                                                                                    magnitude_type theta)
+    {
+        vector_type r ;
+        r = uA - u/theta ;
+        r /= ietl::two_norm(u) ;
+        return r ;
+    }
+    // Routine doing deflation
+    template <class Matrix, class VS>
+    void davidson_modified<Matrix,VS>::update_orthospace(void)
+    {
+        for (size_t jcont = 0; jcont < n_root_found_; jcont++) {
+            vector_type tmp   = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
+            vector_type tmpA  = vecspace_.return_orthovec(u_and_uA_[jcont][1], order_[n_root_found_], order_[jcont], site1_, site2_) ;
+            vector_type tmpAA = vecspace_.return_orthovec(u_and_uA_[jcont][2], order_[n_root_found_], order_[jcont], site1_, site2_) ;
+            for (size_t j = 0 ; j < ortho_space_.size() ; j++) {
+                tmp   -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
+                tmpA  -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][1] ;
+            }
+            if (ietl::two_norm(tmp) > 1.0E-10) {
+                tmp    /= ietl::two_norm(tmp);
+                tmpA   /= ietl::two_norm(tmp);
+                tmpAA  /= ietl::two_norm(tmp);
+                std::vector< vector_type > junk ;
+                junk.push_back(tmp)   ;
+                junk.push_back(tmpA)  ;
+                junk.push_back(tmpAA) ;
+                ortho_space_.push_back(junk);
+            }
+        }
+    }
+    // Update the vector with the quantity to orthogonalize
+    template <class Matrix, class VS>
+    void davidson_modified<Matrix, VS>::update_u_and_uA(const vector_type &u, const vector_type &uA)
+    {
+        vector_type tmp1, tmp2, tmp3 ;
+        tmp1 = u  / ietl::two_norm(u) ;
+        tmp2 = uA / ietl::two_norm(u) ;
+        tmp3 = apply_operator(tmp2) ;
+        std::vector< vector_type > junk ;
+        junk.push_back(tmp1) ;
+        junk.push_back(tmp2) ;
+        junk.push_back(tmp3) ;
+        u_and_uA_.push_back(junk) ;
+    }
     // Construction of the virtual function update_vspace
     template <class MATRIX, class VS>
     void davidson_modified<MATRIX, VS>::update_vspace(vector_set& V, vector_set& VA, vector_set& t)
     {
-        size_t n_lin_1 , n_lin_2 ;
+        size_t n_lin ;
         vector_set tA ;
         for (size_t i = 0 ; i < t.size() ; i++)
             tA.push_back(apply_operator(t[i])) ;
-        //n_lin_1 = gram_schmidt_orthogonalizer_refinement<vector_type,magnitude_type>(V_additional_, t) ;
-        n_lin_2 = gram_schmidt_orthogonalizer_additional<vector_type,magnitude_type>(VA, V, tA, t) ;
+        n_lin = gram_schmidt_orthogonalizer_additional<vector_type,magnitude_type>(VA, V, tA, t);
     } ;
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
@@ -146,32 +204,28 @@ namespace ietl {
     }
     // Routine to select the proper eigenpair
     template<class MATRIX, class VS>
-    typename davidson_modified<MATRIX, VS>::result_selection_type 
-             davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2,
-                                                             const vector_set& VA,
-                                                             const matrix_numeric& Mevecs,
-                                                             const size_t& dim,
-                                                             vector_set& u,
-                                                             vector_set& uA)
+    void davidson_modified<MATRIX, VS>::select_eigenpair(const vector_set& V2,
+                                                         const vector_set& VA,
+                                                         const matrix_numeric& Mevecs,
+                                                         const vector_numeric& Mevals,
+                                                         const size_t& dim,
+                                                         vector_type& u,
+                                                         vector_type& uA,
+                                                         magnitude_type& theta)
     {
         // Initialization
-        assert(n_sa_ == u.size() && n_sa_ && uA.size()) ;
-        result_selection_type res ;
-        size_t n_eigen = std::min(dim, n_sa_) ;
-        res.first = n_eigen ;
+        vector_type res ;
         // Main loop
-        for (size_t k = 0 ; k < n_eigen ; k++) {
-            u[k] = V2[0] * Mevecs(0,k);
-            for (int i = 1; i < dim; ++i)
-                u[k] += V2[i] * Mevecs(i,k);
-            uA[k] = VA[0] * Mevecs(0,k);
-            for (int i = 1; i < dim; ++i)
-                uA[k] += VA[i] * Mevecs(i,k);
-            uA[k] /= ietl::two_norm(u[k]);
-            u[k] /= ietl::two_norm(u[k]);
-            res.second.push_back(ietl::dot(uA[k],u[k])) ;
-        }
-        return res ;
+        u = V2[0] * Mevecs(0,0) ;
+        for (int i = 1; i < dim; ++i)
+            u += V2[i] * Mevecs(i,0) ;
+        uA = VA[0] * Mevecs(0,0) ;
+        for (int i = 1; i < dim; ++i)
+            uA += VA[i] * Mevecs(i,0) ;
+        u  /= ietl::two_norm(uA) ;
+        uA /= ietl::two_norm(uA) ;
+        theta = Mevals[0] ;
+        return ;
     }
     // Routine to print the header of the table
     template<class MATRIX, class VS>
@@ -188,18 +242,9 @@ namespace ietl {
     void davidson_modified<MATRIX, VS>::print_newline_table(const size_t& iter,
                                                             const size_t& size,
                                                             const magnitude_type& error,
-                                                            const magnitude_type& energy,
-                                                            const magnitude_type& overlap)
+                                                            const magnitude_type& energy)
     {
         printer_.print_newline_table_simple(iter, size, error, energy) ;
-    } ;
-    //
-    template<class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::print_newline_table_energyonly(const magnitude_type& error,
-                                                                       const magnitude_type& energy,
-                                                                       const magnitude_type& overlap )
-    {
-        printer_.print_newline_table_simple_onlyenergy(error, energy) ;
     } ;
 }
 

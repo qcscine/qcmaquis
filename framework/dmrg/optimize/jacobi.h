@@ -193,14 +193,12 @@ namespace ietl
         bool converged ;
         int n_iter ;
         // Vectors
-        vector_double  props(iter.max_iterations()) ;
+        matrix_double  eigvecs ;
+        vector_double  props(iter.max_iterations()), eigvals ;
+        vector_pairs   res ;
         vector_space   V(iter.max_iterations())  ;
         vector_space   VA(iter.max_iterations()) ;
-        vector_type u, uA;
-        vector_double eigvals ;
-        matrix_double eigvecs ;
-        vector_type  eigvec ;
-        vector_pairs res ;
+        vector_type    u, uA, eigvec ;
         // Initialization
         M.resize(iter.max_iterations(), iter.max_iterations());
         res.resize(n_sa_);
@@ -214,20 +212,20 @@ namespace ietl
             i_state_ = order_[k] ;
             V[0]     = get_guess() ;
             do {
-                update_vecspace(V, VA, n_iter, res);
+                update_vecspace(V, VA, n_iter, res) ;
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
-                for (int j = 0; j < n_iter + 1; j++)
-                     for (int i = 0; i < j + 1; i++)
-                        M(i, j) = get_matrix_element(V[i], VA[j]);
-                diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals);
+                for (int j = 0; j < n_iter+1; j++)
+                     for (int i = 0; i < j+1; i++)
+                         M(i, j) = get_matrix_element(V[i], VA[j]) ;
+                diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals) ;
                 // Check convergence
                 ++iter;
                 n_iter += 1;
-                vector_type r = compute_error(u, uA, theta);
-                converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval);
+                vector_type r = compute_error(u, uA, theta) ;
+                converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval) ;
                 print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
                 if (converged || n_iter == iter.max_iterations() ) {
-                    print_endline();
+                    print_endline() ;
                     n_root_found_ += 1 ;
                     eigvec /= ietl::two_norm(eigvec) ;
                     res[i_state_] = std::make_pair(eigval, eigvec) ;
@@ -238,8 +236,7 @@ namespace ietl
                     }
                     iter.reset() ;
                     break ;
-                }
-                //solver(eigvec, uA, eigval, r, V[n_iter]);
+                } ;
                 solver(u, uA, theta, r, V[n_iter]);
                 if (n_iter == n_restart_max_) {
                     restart_jd(V, VA, eigvecs, eigvals);

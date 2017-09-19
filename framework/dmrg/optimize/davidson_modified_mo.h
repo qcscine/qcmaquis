@@ -48,13 +48,15 @@ namespace ietl {
     	typedef typename base::matrix_numeric        matrix_numeric;
         typedef typename base::magnitude_type        magnitude_type;
         typedef typename base::result_selection_type result_selection_type ;
-        typedef typename base::size_t                size_t;
-        typedef typename base::vector_set            vector_set;
-        typedef typename base::vector_type           vector_type;
+        typedef typename base::size_t                size_t ;
+        typedef typename base::vector_set            vector_set ;
+        typedef typename base::vector_type           vector_type ;
+        // Inherited attributes
         using base::Hdiag_ ;
         using base::matrix_ ;
         using base::nsites_ ;
         using base::n_sa_ ;
+        using base::order_ ;
         using base::site1_ ;
         using base::site2_ ;
         using base::printer_ ;
@@ -62,8 +64,9 @@ namespace ietl {
         // New constructors
         davidson_modified_mo(const MATRIX &matrix, VS &vec, const magnitude_type& omega,
                              const pov_vec& poverlap, const int& nmin, const int& nmax,
-                             const int& nsites, const int& site1, const int& site2, const int& root_homing_type)
-                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2) , omega_(omega)
+                             const int& nsites, const int& site1, const int& site2,
+                             const std::vector<int>& order, const int& root_homing_type)
+                : base::davidson(matrix, vec, nmin, nmax, nsites, site1, site2, order) , omega_(omega)
                 , pov_(poverlap) , root_homing_type_(root_homing_type) {};
         ~davidson_modified_mo() {};
     private:
