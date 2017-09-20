@@ -225,9 +225,8 @@ protected:
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             t -= ietl::dot((*it)[0], t) * (*it)[0];
         tA = apply_operator(t) ;
-        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++) {
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             tA -= ietl::dot((*it)[0], tA) * (*it)[0];
-        }
         // Update
         tau = ietl::two_norm(tA) ;
         for (size_t i = 1; i <= idx ; i++) {
@@ -261,7 +260,6 @@ protected:
                                                                                                                              magnitude_type theta)
     {
         vector_type r ;
-        //r = uA/ietl::two_norm(u) - theta*u/(ietl::two_norm(u)*ietl::dot(u,u)) ;
         r = uA - u/theta ;
         r /= ietl::two_norm(u) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)

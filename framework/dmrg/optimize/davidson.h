@@ -171,7 +171,6 @@ namespace ietl
             V.resize(0) ;
             VA.resize(0) ;
             t[0] = v_guess_[i_state_] ;
-            std::cout << t[0] << std::endl ;
             do {
                 // Generate guess
                 update_vspace(V, VA, t) ;

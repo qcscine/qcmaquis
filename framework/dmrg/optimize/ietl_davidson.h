@@ -78,10 +78,10 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     // TODO Alb - here the choice is done based on the numerical value of omega, might be done better
     if (fabs(omega) > 1.0E-15) {
         if ( root_homing_type > 0 ) {
-            //ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
-            //        davidson(sp, vs, omega, poverlap_vec, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
-            //                 nsites, site1, site2, order, root_homing_type);
-            //r0 = davidson.calculate_eigenvalue(iter);
+            ietl::davidson_modified_mo<SiteProblem <Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, Matrix, SymmGroup >
+                    davidson(sp, vs, omega, poverlap_vec, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],
+                             nsites, site1, site2, order, root_homing_type);
+            r0 = davidson.calculate_eigenvalue(iter);
         } else {
             ietl::davidson_modified< SiteProblem< Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
                     davidson(sp, vs, omega, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"],

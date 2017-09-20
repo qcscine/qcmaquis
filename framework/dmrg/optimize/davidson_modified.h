@@ -113,6 +113,8 @@ namespace ietl {
         vector_type r ;
         r = uA - u/theta ;
         r /= ietl::two_norm(u) ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            r -= ietl::dot((*it)[0], r) * (*it)[0] ;
         return r ;
     }
     // Routine doing deflation
@@ -159,14 +161,17 @@ namespace ietl {
     {
         size_t n_lin ;
         vector_set tA ;
-        for (size_t i = 0 ; i < t.size() ; i++)
-            tA.push_back(apply_operator(t[i])) ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            t[0] -= ietl::dot((*it)[0], t[0]) * (*it)[0];
+        tA[0] = apply_operator(t[0]) ;
+        for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+            tA[0] -= ietl::dot((*it)[0], tA[0]) * (*it)[0];
         n_lin = gram_schmidt_orthogonalizer_additional<vector_type,magnitude_type>(VA, V, tA, t);
     } ;
     // Definition of the virtual function precondition
     template<class MATRIX, class VS>
-    void davidson_modified<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA, const magnitude_type &theta,
-                                                     const size_t& idx) {
+    void davidson_modified<MATRIX, VS>::precondition(vector_type &r, const vector_type &V, const vector_type& VA,
+                                                     const magnitude_type &theta, const size_t& idx) {
         magnitude_type denom, x2, x1 ;
         x1 = ietl::dot(VA, r)/ietl::dot(VA,V) ;
         vector_type Vcpy = r - V * x1;
