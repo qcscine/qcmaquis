@@ -47,23 +47,23 @@ public:
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
     using base::boundaries_database_ ;
-    using base::bound_vec_pnt_ ;
     using base::do_root_homing_ ;
     using base::iteration_results_;
-    using base::left_;
+    using base::L_ ;
     using base::left_sa_;
     using base::mpo;
     using base::mps;
     using base::mps2follow ;
-    using base::mps_vector;
+    using base::mps_vector ;
+    using base::n_bound_ ;
     using base::n_root_ ;
     using base::order ;
-    using base::parms;
+    using base::parms ;
     using base::poverlap_vec_ ;
-    using base::right_;
     using base::right_sa_ ;
     using base::root_homing_type_ ;
     using base::sa_alg_ ;
+    using base::sorter_ ;
     using base::stop_callback ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
@@ -78,7 +78,7 @@ public:
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
-        make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
+        make_ts_cache_mpo(mpo, ts_cache_mpo, mps_sa_[0]) ;
     }
     // Inline function to convert from 2L to L the index of the site
     inline int to_site(const int L, const int i) const
@@ -93,40 +93,31 @@ public:
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
         iteration_results_.clear();
-        std::size_t L = mps.length();
-        parallel::scheduler_balanced scheduler_mps(L);
+        parallel::scheduler_balanced scheduler_mps(L_);
         // Definition of the initial site
-        int _site = 0, site = 0;
+        int _site = 0;
+        int site = 0 ;
         if (initial_site != -1) {
             _site = initial_site;
-            site = to_site(L, _site);
-        }
-        std::vector< std::pair<float,int> > sorter ;
-        sorter.resize(n_root_) ;
-        if (_site < L-1) {
-            Storage::prefetch(left_[site]);
-            Storage::prefetch(right_[site+2]);
-        } else {
-            Storage::prefetch(left_[site-1]);
-            Storage::prefetch(right_[site+1]);
+            site = to_site(L_, _site);
         }
         // +------------------------------+
         //  MAIN LOOP - SWEEP OPTIMIZATION
         // +------------------------------+
-        for (; _site < 2*L-2; ++_site) {
+        for (; _site < 2*L_-2; ++_site) {
             //
             double i ;
             // -- GENERATES THE TWO SITE MPO --
             int lr, site1, site2;
-            if (_site < L-1) {
-                site = to_site(L, _site);
+            if (_site < L_-1) {
+                site = to_site(L_, _site);
                 lr = 1;
         		site1 = site;
         		site2 = site+1;
                 ts_cache_mpo[site1].placement_l = mpo[site1].placement_l;
                 ts_cache_mpo[site1].placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
             } else {
-                site = to_site(L, _site);
+                site = to_site(L_, _site);
                 lr = -1;
         		site1 = site-1;
         		site2 = site;
@@ -135,27 +126,9 @@ public:
             }
     	    maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
-            // -- STORAGE MANAGEMENT --
-            if (_site != L-1)
-            { 
-                Storage::fetch(left_[site1]);
-                Storage::fetch(right_[site2+1]);
-            }
-            if (lr == +1) {
-                if (site2+2 < right_.size()){
-                    Storage::prefetch(right_[site2+2]);
-                }
-            } else {
-                if (site1 > 0){
-                    Storage::prefetch(left_[site1-1]);
-                }
-            }
             boost::chrono::high_resolution_clock::time_point now, then;
     	    // Create TwoSite objects. For SA calculations, creates a vector
-    	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
-            MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
-            tst.clear();
-            //
+            MPSTensor<Matrix, SymmGroup> twin_mps ;
             std::vector< MPSTensor<Matrix, SymmGroup> > tst_vec ;
             std::vector< TwoSiteTensor<Matrix, SymmGroup> > two_vec ;
             for (int i = 0 ; i < n_root_ ; i++){
@@ -165,13 +138,13 @@ public:
                 tst_vec.push_back(twin_mps) ;
                 tst_tmp.clear();
             }
-            SiteProblem<Matrix, SymmGroup> sp(ts_cache_mpo[site1], site1, site2+1, bound_vec_pnt_);
+            SiteProblem<Matrix, SymmGroup> sp(ts_cache_mpo[site1], site1, site2+1, boundaries_database_);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 TwoSiteTensor<Matrix, SymmGroup> ts_ortho(base::ortho_mps[n][site1], base::ortho_mps[n][site2]);
-                ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps,
+                ortho_vecs[n] = contraction::site_ortho_boundaries(tst_vec[0],
                                                                    ts_ortho.make_mps(),
                                                                    base::ortho_left_[n][site1],
                                                                    base::ortho_right_[n][site2+1] );
@@ -201,15 +174,17 @@ public:
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
-        		tst << res[0].second;
-                if (n_root_ > 0) {
-                    two_vec[0] << res[0].second ;
-                    res[0].second.clear();
-                    for (size_t k = 1; k < n_root_; k++) {
-                        two_vec[k] << res[k].second;
-                        res[k].second.clear();
-                    }
+                // Collects the results
+                two_vec[0] << res[0].second ;
+                res[0].second.clear();
+                for (size_t k = 1; k < n_root_; k++) {
+                    two_vec[k] << res[k].second;
+                    res[k].second.clear();
                 }
+                // Correct the energies
+                if (sa_alg_ == -1)
+                    for (size_t k = 0; k < n_root_; k++)
+                        res[k].first = ietl::get_energy(sp, res[k].second, k) ;
             }
             // +---------------------+
             //  Collection of results
@@ -223,9 +198,7 @@ public:
                 maquis::cout.precision(prec);
             }
             iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
-            // +---------------------+
-            //  Truncation of the MPS
-            // +---------------------+
+            //
             double alpha;
             int ngs = parms["ngrowsweeps"], nms = parms["nmainsweeps"];
             if (sweep < ngs)
@@ -234,79 +207,209 @@ public:
                 alpha = parms["alpha_main"];
             else
                 alpha = parms["alpha_final"];
-
-            double cutoff = this->get_cutoff(sweep);
-            std::size_t Mmax = this->get_Mmax(sweep);
-            truncation_results trunc;
-    	    if (lr == +1)
-    	    {
+            // +---------------------+
+            //  Truncation of the MPS
+            // +---------------------+
+            double cutoff = this->get_cutoff(sweep) ;
+            std::size_t Mmax = this->get_Mmax(sweep) , Mval ;
+            std::vector<truncation_results> trunc(n_root_) ;
+            //
+            // Forward sweep
+            // -------------
+            BEGIN_TIMING("MPS TRUNCATION")
+    	    if (lr == +1) {
         		// Write back result from optimization
-                for (std::size_t i = 0; i < n_root_; i++) {
-                    BEGIN_TIMING("TRUNC")
+                if (sa_alg_ == -1) {
+                    // Truncation of the reference state
                     if (parms["twosite_truncation"] == "svd")
-                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].split_mps_l2r(Mmax, cutoff);
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].split_mps_l2r(Mmax, cutoff);
                     else
-                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
-                    END_TIMING("TRUNC")
-                    two_vec[i].clear();
-        		    block_matrix<Matrix, SymmGroup> t;
-        		    t = mps_vector[i][site2].normalize_left(DefaultSolver());
-                    // MD: DEBUGGING OUTPUT
-                    maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
-        		    if (site2 < L-1) mps_vector[i][site2+1].multiply_from_left(t);
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
+                    two_vec[0].clear();
+                    Mval = trunc[0].bond_dimension ;
+                    block_matrix<Matrix, SymmGroup> t;
+                    t = mps_vector[0][site2].normalize_left(DefaultSolver());
+                    if (site2 < L_-1)
+                        mps_vector[0][site2+1].multiply_from_left(t);
+                    // Truncation of the other states
+                    for (size_t idx = 1; idx < n_bound_; idx++) {
+                        if (parms["twosite_truncation"] == "svd")
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, Mval);
+                        else
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1], Mval);
+                        two_vec[idx].clear();
+                        block_matrix<Matrix, SymmGroup> t;
+                        t = mps_vector[idx][site2].normalize_left(DefaultSolver());
+                        if (site2 < L_-1)
+                            mps_vector[idx][site2 + 1].multiply_from_left(t);
+                    }
+                } else if (sa_alg_ == -2) {
+                    for (size_t idx = 0; idx < n_bound_; idx++) {
+                        if (parms["twosite_truncation"] == "svd")
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff);
+                        else
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1]);
+                        two_vec[idx].clear();
+                        block_matrix<Matrix, SymmGroup> t;
+                        t = mps_vector[idx][site2].normalize_left(DefaultSolver());
+                        if (site2 < L_-1)
+                            mps_vector[idx][site2 + 1].multiply_from_left(t);
+                    }
+                } else if (sa_alg_ > -1) {
+                    // Truncation of the reference state
+                    if (parms["twosite_truncation"] == "svd")
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].split_mps_l2r(Mmax, cutoff);
+                    else
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
+                    two_vec[0].clear();
+                    Mval = trunc[0].bond_dimension ;
+                    block_matrix<Matrix, SymmGroup> t;
+                    t = mps_vector[0][site2].normalize_left(DefaultSolver());
+                    if (site2 < L_-1)
+                        mps_vector[0][site2+1].multiply_from_left(t);
+                    // Truncation of the other states
+                    for (size_t idx = 1; idx < n_root_; idx++) {
+                        if (parms["twosite_truncation"] == "svd")
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, Mval);
+                        else
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1], Mval);
+                        two_vec[idx].clear();
+                        block_matrix<Matrix, SymmGroup> t;
+                        t = mps_vector[idx][site2].normalize_left(DefaultSolver());
+                        if (site2 < L_-1)
+                            mps_vector[idx][site2 + 1].multiply_from_left(t);
+                    }
                 }
-                if (site1 != L-2)
-                    Storage::drop(right_[site2+1]);
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
-                if (site1 != L-2){
+                if (site1 != L_-2)
                     Storage::evict(mps[site1]);
-                    Storage::evict(left_[site1]);
-                }
                 { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
                 { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
+            //
+            // Backward sweep
+            // --------------
     	    if (lr == -1){
-        		// Write back result from optimization
-                for (std::size_t i = 0; i < n_root_; i++) {
-                    BEGIN_TIMING("TRUNC")
+                // Write back result from optimization
+                if (sa_alg_ == -1) {
+                    // Truncation of the reference state
                     if (parms["twosite_truncation"] == "svd")
-                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].split_mps_r2l(Mmax, cutoff);
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].split_mps_r2l(Mmax, cutoff);
                     else
-                        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
-                    END_TIMING("TRUNC")
-                    two_vec[i].clear();
-        		    block_matrix<Matrix, SymmGroup> t;
-        		    t = mps_vector[i][site1].normalize_right(DefaultSolver());
-                    // MD: DEBUGGING OUTPUT
-                    maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
-        		    if (site1 > 0) mps_vector[i][site1-1].multiply_from_right(t);
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
+                    two_vec[0].clear();
+                    Mval = trunc[0].bond_dimension ;
+                    block_matrix<Matrix, SymmGroup> t;
+                    t = mps_vector[0][site1].normalize_right(DefaultSolver());
+                    if (site1 > 0)
+                        mps_vector[0][site1].multiply_from_right(t);
+                    // Truncation of the other states
+                    for (size_t idx = 1; idx < n_bound_; idx++) {
+                        if (parms["twosite_truncation"] == "svd")
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mval);
+                        else
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], Mval);
+                        two_vec[idx].clear();
+                        block_matrix<Matrix, SymmGroup> t;
+                        t = mps_vector[idx][site1].normalize_right(DefaultSolver());
+                        if (site1 > 1)
+                            mps_vector[idx][site1].multiply_from_right(t);
+                    }
+                } else if (sa_alg_ == -2) {
+                    for (size_t idx = 0; idx < n_bound_; idx++) {
+                        if (parms["twosite_truncation"] == "svd")
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff);
+                        else
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2]);
+                        two_vec[idx].clear();
+                        block_matrix<Matrix, SymmGroup> t;
+                        t = mps_vector[idx][site1].normalize_right(DefaultSolver());
+                        if (site1 > 1)
+                            mps_vector[idx][site1].multiply_from_right(t);
+                    }
+                } else if (sa_alg_ > -1) {
+                    // Truncation of the reference state
+                    if (parms["twosite_truncation"] == "svd")
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].split_mps_r2l(Mmax, cutoff);
+                    else
+                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                                = two_vec[0].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
+                    two_vec[0].clear();
+                    Mval = trunc[0].bond_dimension ;
+                    block_matrix<Matrix, SymmGroup> t;
+                    t = mps_vector[0][site1].normalize_right(DefaultSolver());
+                    if (site2 < L_-1)
+                        mps_vector[0][site1].multiply_from_right(t);
+                    // Truncation of the other states
+                    for (size_t idx = 1; idx < n_root_; idx++) {
+                        if (parms["twosite_truncation"] == "svd")
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mval);
+                        else
+                            boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1], Mval);
+                        two_vec[idx].clear();
+                        block_matrix<Matrix, SymmGroup> t;
+                        t = mps_vector[idx][site1].normalize_right(DefaultSolver());
+                        if (site1 > 1)
+                            mps_vector[idx][site1].multiply_from_right(t);
+                    }
                 }
-                if(site1 != 0)
-                    Storage::drop(left_[site1]);
-                this->boundary_right_step(mpo, site2); // creating right_[site2]
-                if(site1 != 0){
-                    Storage::evict(mps[site2]);
-                    Storage::evict(right_[site2+1]); 
-                }
-                { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
-                { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
+        		//// Write back result from optimization
+                //for (std::size_t i = 0; i < n_root_; i++) {
+                //    if (parms["twosite_truncation"] == "svd")
+                //        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].split_mps_r2l(Mmax, cutoff);
+                //    else
+                //        boost::tie(mps_vector[i][site1], mps_vector[i][site2], trunc) = two_vec[i].predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
+                //    two_vec[i].clear();
+        		//    block_matrix<Matrix, SymmGroup> t;
+        		//    t = mps_vector[i][site1].normalize_right(DefaultSolver());
+        		//    if (site1 > 0) mps_vector[i][site1-1].multiply_from_right(t);
+                //}
+                //if(site1 != 0)
+                //    Storage::drop(left_[site1]);
+                //this->boundary_right_step(mpo, site2); // creating right_[site2]
+                //if(site1 != 0){
+                //    Storage::evict(mps[site2]);
+                //    Storage::evict(right_[site2+1]);
+                //}
+                //{ parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
+                //{ parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
+            END_TIMING("MPS TRUNCATION")
             // +------------+
             //  FINALIZATION
             // +------------+
             for (size_t i = 0; i < n_root_; i++) {
-                sorter[i].first  = res[i].first ;
-                sorter[i].second = i ;
+                sorter_[i].first  = res[i].first ;
+                sorter_[i].second = i ;
             }
-            std::sort(sorter.begin(), sorter.end()) ;
-            this->update_order(sorter) ;
+            std::sort(sorter_.begin(), sorter_.end()) ;
+            this->update_order(sorter_) ;
             if (root_homing_type_ == 1)
                 for (size_t k = 0 ; k < n_root_ ; k++)
                     poverlap_vec_[k].update(mps_vector[k], site, lr) ;
-            iteration_results_["BondDimension"]     << trunc.bond_dimension;
-            iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
-            iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
-            iteration_results_["SmallestEV"]        << trunc.smallest_ev;
+            iteration_results_["BondDimension"]     << trunc[0].bond_dimension;
+            iteration_results_["TruncatedWeight"]   << trunc[0].truncated_weight;
+            iteration_results_["TruncatedFraction"] << trunc[0].truncated_fraction;
+            iteration_results_["SmallestEV"]        << trunc[0].smallest_ev;
             parallel::meminfo();
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();

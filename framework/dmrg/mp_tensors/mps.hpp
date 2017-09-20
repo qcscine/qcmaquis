@@ -124,7 +124,8 @@ typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](
 // 2) normalize_left and normalize_right: normalize the MPS
 // 3) move_normalization_l2r and move_normalization_r2l shifts the point wrt to which
 //    the MPS is normalized
-// 4) grow_l2r_sweep and grow_r2l_sweep TODO check once you study the contraction class
+// 4) grow_l2r_sweep and grow_r2l_sweep. Truncate the MPS though a SVD (during the
+//    sweep optimization)
 // 5) left_bountary and right_boundary create boundaries matrix from the MPS
 //
 

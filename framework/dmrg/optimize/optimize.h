@@ -88,7 +88,8 @@ class optimizer_base
     typedef std::vector< boundary >                                                               boundaries_type ;
     typedef std::vector< boundaries_type >                                                        boundaries_vector ;
     typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap                           partial_overlap ;
-    typedef typename bound_database< MPS<Matrix, SymmGroup>, boundaries_type>::bound_database     bound_database ; 
+    typedef typename bound_database< MPS<Matrix, SymmGroup>, boundaries_type>::bound_database     bound_database ;
+    typedef typename std::vector< std::pair<float,int> >                                          sorter_type ;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
@@ -105,7 +106,8 @@ public:
     , do_root_homing_(false)
     {
         // Standard options
-        L_ = mps_vector[0].length();
+        L_ = mps_vector[0].length() ;
+        sorter_.resize(n_root_) ;
         //
         // Initialization of the MPS
         // -------------------------
@@ -387,6 +389,7 @@ protected:
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
     boundaries_vector left_sa_, right_sa_;
+    sorter_type sorter_ ;
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;

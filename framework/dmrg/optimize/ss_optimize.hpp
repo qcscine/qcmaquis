@@ -60,6 +60,7 @@ public:
     using base::poverlap_vec_ ;
     using base::root_homing_type_ ;
     using base::sa_alg_ ;
+    using base::sorter_ ;
     using base::stop_callback ;
     using base::update_order ;
     using base::vec_sa_left_ ;
@@ -97,16 +98,13 @@ public:
             _site = initial_site;
             site = to_site(L, _site);
         }
-        //TODO ALB This should be done with pointers, very stupid
-        std::vector< std::pair<float,int> > sorter ;
-        sorter.resize(n_root_) ;
         // Main loop
         for (; _site < 2*L; ++_site) {
             boost::chrono::high_resolution_clock::time_point now, then;
             BEGIN_TIMING("PRELIMINARY OPERATIONS")
             // lr indicates the direction of the sweep
-            int lr = (_site < L) ? +1 : -1;
-            site = to_site(L, _site);
+            int lr = (_site < L) ? +1 : -1 ;
+            site = to_site(L, _site) ;
             print_header(sweep, site, lr) ;
             if (lr == -1 && site == L-1) {
                 maquis::cout << "Syncing storage" << std::endl;
@@ -153,11 +151,9 @@ public:
                 }
                 BEGIN_TIMING("MPS UPDATE")
                 // Collects the results
-                if (n_root_ > 0) {
-                    mps_vector[0][site]  = res[0].second ;
-                    for (size_t k = 1; k < n_root_; k++)
-                        mps_vector[k][site] = res[k].second ;
-                }
+                mps_vector[0][site]  = res[0].second ;
+                for (size_t k = 1; k < n_root_; k++)
+                    mps_vector[k][site] = res[k].second ;
                 // Correct the energies
                 if (sa_alg_ == -1)
                     for (size_t k = 0; k < n_root_; k++)
@@ -189,6 +185,7 @@ public:
             // +---------------------+
             //  Truncation of the MPS
             // +---------------------+
+            // Forward sweep
             BEGIN_TIMING("MPS TRUNCATION")
             if (lr == +1) {
                 if (site < L-1) {
@@ -209,6 +206,10 @@ public:
                                                                                                              site, alpha, cutoff, Mmax);
                     }
                     if (sa_alg_ > -1) {
+                        for (size_t idx = 0; idx < n_bound_; idx++)
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++) {
                             if (k != sa_alg_)
@@ -223,14 +224,15 @@ public:
                         t = mps_vector[k][site].normalize_left(DefaultSolver());
                 }
                 // Update the left boundary
-                this->boundary_left_step(mpo, site);
+                this->boundary_left_step(mpo, site) ;
+            // Backward sweep
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << " Alpha = " << alpha << std::endl ;
                     if (sa_alg_ == -1) {
                         trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(0)))[site],
-                                                                                       (*(boundaries_database_.get_boundaries_right(0)))[site+1],
-                                                                                       site, alpha, cutoff, Mmax);
+                                                                                                  (*(boundaries_database_.get_boundaries_right(0)))[site+1],
+                                                                                                     site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension ;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
@@ -241,8 +243,11 @@ public:
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
                                                                                                           (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
                                                                                                              site, alpha, cutoff, Mmax);
-                    }
-                    if (sa_alg_ > -1) {
+                    } else if (sa_alg_ > -1) {
+                        for (size_t idx = 0; idx < n_bound_; idx++)
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++)
                             if ( k != sa_alg_ ) {
@@ -265,12 +270,12 @@ public:
             // +----------------+
             BEGIN_TIMING("FINAL OPERATIONS")
             for (size_t i = 0; i < n_root_; i++) {
-                sorter[i].first  = res[i].first ;
-                sorter[i].second = i ;
+                sorter_[i].first  = res[i].first ;
+                sorter_[i].second = i ;
                 std::cout << trunc[i].bond_dimension << std::endl ; 
             }
-            std::sort(sorter.begin(), sorter.end()) ;
-            this->update_order(sorter) ;
+            std::sort(sorter_.begin(), sorter_.end()) ;
+            this->update_order(sorter_) ;
             //
             if (root_homing_type_ == 1)
                 for (size_t k = 0 ; k < n_root_ ; k++)

@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -168,7 +169,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_he
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff) const
+TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff, std::size_t Mval) const
 {
     make_both_paired();
     
@@ -176,7 +177,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
-    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true, Mval);
     
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), u, LeftPaired);
     assert( mps_tensor1.reasonable() );
@@ -189,7 +190,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff) const
+TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff, std::size_t Mval) const
 {
     make_both_paired();
     
@@ -197,7 +198,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
-    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true, Mval);
     
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, v.left_basis(), right_i, v, RightPaired);
     
@@ -209,7 +210,8 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo,
+                                                    std::size_t Mval)
 {
     make_both_paired();
     
@@ -256,7 +258,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
     /// truncation
     block_matrix<Matrix, SymmGroup> U;
     block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-    truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
+    truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, Mval);
     dm = block_matrix<Matrix, SymmGroup>();
 
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, U.right_basis(), U, LeftPaired);
@@ -277,7 +279,8 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo,
+                                                    std::size_t Mval)
 {
     make_both_paired();
     
@@ -321,18 +324,15 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
     }
     assert( weak_equal(dm.right_basis(), data_.right_basis()) );
     
-    /// truncation
+    // truncation
     block_matrix<Matrix, SymmGroup> U;
     block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-    truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
+    truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, Mval);
     dm = block_matrix<Matrix, SymmGroup>();
     
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, U.left_basis(), right_i, transpose(conjugate(U)), RightPaired);
     assert( mps_tensor2.reasonable() );
 
-//    block_matrix<Matrix, SymmGroup> t = U;
-//    gemm(U, S, t);
-    
     block_matrix<Matrix, SymmGroup> V;
     gemm(data_, U, V);
 

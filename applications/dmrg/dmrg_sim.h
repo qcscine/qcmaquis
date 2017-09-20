@@ -81,8 +81,8 @@ public:
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
                             (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
         } else if(parms["optimization"] == "twosite") {
-            //optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-            //                (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
+            optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
+                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
         } else {
             throw std::runtime_error("Don't know this optimizer");
         }
