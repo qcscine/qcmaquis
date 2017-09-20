@@ -102,7 +102,7 @@ private:
                                     const matrix_double& eigvecs, const vector_double& eigvals) ;
     vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) ;
     void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                 matrix_double& eigvecs, vector_double& eigvals) ;
     void print_endline(void) ;
     void print_header_table(void) ;
@@ -116,6 +116,9 @@ protected:
     void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
     void update_orthospace(void) ;
     void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
+    void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                            vector_type& output, vector_type& outputA, magnitude_type& theta,
+                            matrix_double& eigvecs, vector_double& eigvals) {} ;
     // Attributes
     double atol_init_, rtol_init_ ;
     magnitude_type omega_ ;
@@ -288,6 +291,7 @@ protected:
     void jacobi_davidson_modified<MATRIX, VS, ITER>::diagonalize_and_select(const vector_space& MPSTns_input,
                                                                             const vector_space& MPSTns_input_A,
                                                                             const fortran_int_t& dim,
+                                                                            const int& mod,
                                                                             vector_type& MPSTns_output,
                                                                             vector_type& MPSTns_output_A,
                                                                             magnitude_type &theta,
@@ -296,6 +300,8 @@ protected:
     {
         // Initialization
         int imin , imax , nevec ;
+        if (mod != 0 && mod != 1)
+            throw std::runtime_error("Unrecognized modality in diagonalize_and_select") ;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_) {
             imin  = imax = 1;

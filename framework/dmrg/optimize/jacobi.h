@@ -96,11 +96,12 @@ namespace ietl
         vector_pairs calculate_eigenvalue(const GEN& gen, ITER& iter);
     protected:
         //
-        void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, fortran_int_t dim,
-                            fortran_int_t i1, fortran_int_t i2) ;
+        void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs,
+                            fortran_int_t dim, fortran_int_t i1, fortran_int_t i2) ;
         // Virtual protected methods, to be inherited by derived classes
-        virtual bool check_convergence(const vector_type& u, const vector_type& uA , const vector_type& r, const magnitude_type theta ,
-                                       ITER& iter, vector_type& eigvec, magnitude_type& eigval) {};
+        virtual bool check_convergence(const vector_type& u, const vector_type& uA , const vector_type& r,
+                                       const magnitude_type theta , ITER& iter, vector_type& eigvec,
+                                       magnitude_type& eigval) {};
         virtual magnitude_type compute_property(const vector_space& V, const vector_space& VA, const int& i) {} ;
         virtual magnitude_type get_matrix_element(const vector_type& v, const vector_type& VA) {} ;
         virtual size_t initialize_vecspace(vector_space& V, vector_space& VA) {} ;
@@ -108,13 +109,18 @@ namespace ietl
                                                 const matrix_double& eigvecs, const vector_double& eigvals) {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
         virtual vector_type compute_error (const vector_type& u , const vector_type& uA, magnitude_type theta) {} ;
-        virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                            vector_type& output, vector_type& outputA, magnitude_type& theta,
+        virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
+                                            const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                             matrix_double& eigvecs, vector_double& eigvals) {} ;
+        virtual void diagonalize_second(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
+                                        vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                        matrix_double& eigvecs, vector_double& eigvals) {} ;
         virtual void print_endline(void) {} ;
         virtual void print_header_table(void) {} ;
-        virtual void print_newline_table(const size_t& i , const double& er, const magnitude_type& ener, const double& ov) {} ;
-        virtual void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta, const vector_type& r, vector_type& t) {} ;
+        virtual void print_newline_table(const size_t& i , const double& er, const magnitude_type& ener,
+                                         const double& ov) {} ;
+        virtual void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta,
+                            const vector_type& r, vector_type& t) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res) {};
         virtual void update_orthospace(void) {} ;
@@ -191,8 +197,8 @@ namespace ietl
         bool converged, starting ;
         size_t n_iter ;
         // Vectors
-        matrix_double  eigvecs ;
-        vector_double  props(iter.max_iterations()), eigvals ;
+        matrix_double  eigvecs1, eigvecs2;
+        vector_double  props(iter.max_iterations()), eigvals1, eigvals2;
         vector_pairs   res ;
         vector_space   V(iter.max_iterations())  ;
         vector_space   VA(iter.max_iterations()) ;
@@ -220,7 +226,8 @@ namespace ietl
                 for (size_t j = 0; j < n_iter + 1; j++)
                      for (size_t i = 0; i < j + 1; i++)
                         M(i, j) = get_matrix_element(V[i], VA[j]);
-                diagonalize_and_select(V, VA, n_iter+1, u, uA, theta, eigvecs, eigvals);
+                diagonalize_and_select(V, VA, n_iter+1, 0, u, uA, theta, eigvecs1, eigvals1) ;
+                diagonalize_second(V, VA, n_iter+1, u, uA, theta, eigvecs2, eigvals2) ;
                 // Check convergence
                 ++iter;
                 n_iter += 1;
@@ -242,7 +249,7 @@ namespace ietl
                 } ;
                 solver(u, uA, theta, r, V[n_iter]);
                 if (n_iter == n_restart_max_) {
-                    restart_jd(V, VA, eigvecs, eigvals);
+                    restart_jd(V, VA, eigvecs1, eigvals1);
                     n_iter = n_restart_min_ - 1;
                 }
             } while (true);

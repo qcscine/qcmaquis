@@ -101,7 +101,7 @@ namespace ietl
                                         const matrix_double& eigvecs, const vector_double& eigvals) ;
         vector_type compute_error(const vector_type& u , const vector_type& uA, magnitude_type theta) ;
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                    vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                    const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
         void print_endline(void) ;
         void print_header_table(void) ;
@@ -238,6 +238,7 @@ namespace ietl
     void jacobi_davidson_standard<MATRIX, VS, ITER>::diagonalize_and_select(const vector_space& MPSTns_input,
                                                                             const vector_space& MPSTns_input_A,
                                                                             const fortran_int_t& dim,
+                                                                            const int& mod,
                                                                             vector_type& MPSTns_output,
                                                                             vector_type& MPSTns_output_A,
                                                                             magnitude_type &theta,
@@ -246,6 +247,8 @@ namespace ietl
     {
         // Initialization
         int imin , imax , nevec ;
+        if (mod != 0 && mod != 1)
+            throw std::runtime_error("Unrecognized modality in diagonalize_and_select") ;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_) {
             imin  = 1 ;

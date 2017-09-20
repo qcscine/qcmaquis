@@ -224,7 +224,7 @@ public:
     virtual ~optimizer_base() {}
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
     results_collector const& iteration_results() const { return iteration_results_; }
-
+    //
 protected:
     // +---------------+
     //  INIT_LEFT_RIGHT

@@ -68,6 +68,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     double omega = params["ietl_si_omega"] ;
     int n_tofollow = params["maximum_overlap_nstates"] ;
     int n_restart  = params["ietl_diag_restart"] ;
+    int side_tofollow = params["maximum_overlap_side"] ;
     std::vector < std::pair<double, Vector> > r0 ;
     ietl::jcd_iterator<double> iter(params["ietl_diag_maxiter"], rtol, atol);
     // -- Orthogonalization --
@@ -100,7 +101,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
             r0 = jd.calculate_eigenvalue(initial, iter) ;
         } else {
             ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> , Matrix, SymmGroup >
-                jd(sp, vs, poverlap_vec, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
+                jd(sp, vs, poverlap_vec, n_tofollow, side_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
                    nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, root_homing_type) ;
             r0 = jd.calculate_eigenvalue(initial, iter);
         }
@@ -113,7 +114,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
             r0 = jd.calculate_eigenvalue(initial, iter) ;
         } else {
             ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> , Matrix, SymmGroup>
-                    jd(sp, vs, omega, poverlap_vec, n_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
+                    jd(sp, vs, omega, poverlap_vec, n_tofollow, side_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
                        nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, params["ietl_gmres_init_atol"],
                        params["ietl_gmres_init_rtol"], params["ietl_gmres_init_maxiter"], root_homing_type);
             r0 = jd.calculate_eigenvalue(initial, iter);

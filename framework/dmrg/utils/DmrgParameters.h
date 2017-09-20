@@ -75,9 +75,10 @@ private:
         add_option("ietl_diag_restart_nmax", "", value(100));
         add_option("ietl_diag_homing_criterion", "", value(""));
         add_option("ietl_diag_restart", "Number of iterations before restarting", value(10));
-        add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.));
+        add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
+        add_option("maximum_overlap_side", "side where to take the eigenvalue", value(0)) ;
         // GMRES-related parameters
         //ALB The guess option is kept for backward compatibility, 'zero' should be always used
         add_option("ietl_gmres_maxiter", "", value(20));

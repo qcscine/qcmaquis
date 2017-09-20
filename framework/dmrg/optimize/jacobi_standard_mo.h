@@ -73,27 +73,30 @@ namespace ietl
         using base::v_guess_ ;
         //
         jacobi_davidson_standard_mo(const MATRIX& matrix, VS& vec, const pov_vec_type& pov, const size_t n,
-                                    const int& nmin, const int& nmax, const int& max_iter, const int& nsites, 
-                                    const int& site1, const int& site2, const double& ietl_atol, const double& ietl_rtol,
-                                    const int& i_gmres_guess, const std::vector<int>& order, const int& sa_alg, 
-                                    const int& root_homing_type)
+                                    const int& side_tofollow, const int& nmin, const int& nmax, const int& max_iter,
+                                    const int& nsites, const int& site1, const int& site2, const double& ietl_atol,
+                                    const double& ietl_rtol, const int& i_gmres_guess, const std::vector<int>& order,
+                                    const int& sa_alg, const int& root_homing_type)
                 : base::jacobi_davidson_standard(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol,
                                                  ietl_rtol, i_gmres_guess, order, sa_alg)
-                , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type) {} ;
+                , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type), side_tofollow_(side_tofollow) {} ;
         ~jacobi_davidson_standard_mo() {} ;
     private:
         double compute_overlap(const vector_type& vec_test) ;
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                         const matrix_double& eigvecs, const vector_double& eigvals);
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
-                                    vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                    const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
+        void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                                vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                matrix_double& eigvecs, vector_double& eigvals) ;
         void print_endline(void) ;
         void print_header_table(void) ;
         void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
         void sort_prop(couple_vec& vector_values) ;
         // Private attributes
-        int root_homing_type_ ;
+        int root_homing_type_ , side_tofollow_ ;
         pov_vec_type pov_  ;
         size_t n_maxov_  ;
     };
@@ -103,6 +106,7 @@ namespace ietl
             (const vector_space& MPSTns_input,
              const vector_space& MPSTns_input_A,
              const fortran_int_t& dim,
+             const int& mod,
              vector_type& MPSTns_output,
              vector_type& MPSTns_output_A,
              magnitude_type &theta,
@@ -110,18 +114,23 @@ namespace ietl
              vector_double& eigvals)
     {
         // Initialization
+        int imin , imax , nevec;
         vector_double overlaps ;
         vector_type u_local , uA_local ;
-        int imin , imax , nevec;
         // Definition of the dimensions and dynamic memory allocation
-        if (dim != n_restart_max_ && n_maxov_ > 0) {
+        if (dim != n_restart_max_ && n_maxov_ > 0)
             nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
-            imin   = 1      ;
-            imax   = nevec ;
+        else
+            nevec = dim ;
+        // Definition of the dimensions
+        if (mod == 0) {
+            imin = 1;
+            imax = nevec;
+        } else if (mod == 1) {
+            imin = dim-nevec+1;
+            imax = dim;
         } else {
-            imin  = 1;
-            imax  = dim ;
-            nevec = imax - imin + 1 ;
+            throw std::runtime_error("Unrecognized modality in diagonalize_and_select") ;
         }
         overlaps.resize(nevec) ;
         eigvals.resize(nevec) ;
@@ -130,8 +139,7 @@ namespace ietl
             eigvecs[i].resize(dim) ;
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
-        int idx = 0 ;
-        double scr ;
+        // Eigenvalue selection
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis
             u_local = eigvecs[i][0] * MPSTns_input[0];
@@ -139,18 +147,40 @@ namespace ietl
                 u_local += eigvecs[i][j] * MPSTns_input[j];
             overlaps[i] = compute_overlap(u_local) ;
         }
-        for (int i = 1; i < nevec; ++i)
-            if (overlaps[i] > overlaps[idx])
-                idx = i;
-        overlap_ = overlaps[idx] ;
         // Finalization
-        MPSTns_output   = eigvecs[idx][0]*MPSTns_input[0] ;
-        MPSTns_output_A = eigvecs[idx][0]*MPSTns_input_A[0] ;
-        for (int j = 1; j < dim; ++j) {
-            MPSTns_output   += eigvecs[idx][j]*MPSTns_input[j] ;
-            MPSTns_output_A += eigvecs[idx][j]*MPSTns_input_A[j] ;
+        int idx = -1  ;
+        if (mod == 0)
+            overlap_ = 0. ;
+        for (int i = 0; i < nevec; ++i) {
+            if (overlaps[i] > overlap_) {
+                idx = i;
+                overlap_ = overlaps[idx];
+            }
         }
-        theta = eigvals[idx] ;
+        // Finalization
+        if (idx != -1) {
+            MPSTns_output = eigvecs[idx][0] * MPSTns_input[0];
+            MPSTns_output_A = eigvecs[idx][0] * MPSTns_input_A[0];
+            for (int j = 1; j < dim; ++j) {
+                MPSTns_output += eigvecs[idx][j] * MPSTns_input[j];
+                MPSTns_output_A += eigvecs[idx][j] * MPSTns_input_A[j];
+            }
+            theta = eigvals[idx];
+        }
+    };
+    // Diagonalization routine - rediagonalization
+    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_second
+            (const vector_space& MPSTns_input,
+             const vector_space& MPSTns_input_A,
+             const fortran_int_t& dim,
+             vector_type& MPSTns_output,
+             vector_type& MPSTns_output_A,
+             magnitude_type &theta,
+             matrix_double& eigvecs,
+             vector_double& eigvals)
+    {
+        diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 1, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
     };
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
@@ -178,7 +208,7 @@ namespace ietl
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     double jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::compute_overlap(const vector_type &vec_test)
     {
-        double ret, scr ;
+        double ret ;
         if (root_homing_type_ == 1) {
             if (nsites_ == 1)
                 ret = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
