@@ -112,6 +112,9 @@ namespace ietl
         virtual void diagonalize_and_select(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                             const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                             matrix_double& eigvecs, vector_double& eigvals) {} ;
+        virtual void diagonalize_first(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
+                                       vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                       matrix_double& eigvecs, vector_double& eigvals) {} ;
         virtual void diagonalize_second(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                         vector_type& output, vector_type& outputA, magnitude_type& theta,
                                         matrix_double& eigvecs, vector_double& eigvals) {} ;
@@ -226,7 +229,7 @@ namespace ietl
                 for (size_t j = 0; j < n_iter + 1; j++)
                      for (size_t i = 0; i < j + 1; i++)
                         M(i, j) = get_matrix_element(V[i], VA[j]);
-                diagonalize_and_select(V, VA, n_iter+1, 0, u, uA, theta, eigvecs1, eigvals1) ;
+                diagonalize_first(V, VA, n_iter+1, u, uA, theta, eigvecs1, eigvals1) ;
                 diagonalize_second(V, VA, n_iter+1, u, uA, theta, eigvecs2, eigvals2) ;
                 // Check convergence
                 ++iter;

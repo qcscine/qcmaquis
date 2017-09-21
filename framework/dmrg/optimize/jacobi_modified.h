@@ -83,14 +83,16 @@ public:
     using base::u_and_uA_ ;
     using base::vecspace_ ;
     //
-    jacobi_davidson_modified(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const size_t& nmin,
-                             const size_t& nmax, const size_t& max_iter, const int& nsites, const int& site1,
-                             const int& site2, const double& ietl_atol, const double& ietl_rtol, const size_t& i_gmres_guess,
-                             const std::vector<int>& order, const int& sa_alg, const double& atol_init, const double& rtol_init,
-                             const size_t& max_iter_init)
+    jacobi_davidson_modified(const MATRIX& matrix, VS& vec, const std::vector<magnitude_type>& omega_vec, 
+                             const size_t& nmin, const size_t& nmax, const size_t& max_iter, const int& nsites, 
+                             const int& site1, const int& site2, const double& ietl_atol, const double& ietl_rtol, 
+                             const size_t& i_gmres_guess, const std::vector<int>& order, const int& sa_alg, 
+                             const double& atol_init, const double& rtol_init, const size_t& max_iter_init)
             : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol, i_gmres_guess, order, sa_alg)
-            , omega_(omega), atol_init_(atol_init), rtol_init_(rtol_init), max_iter_init_(max_iter_init)
+            , atol_init_(atol_init), rtol_init_(rtol_init), max_iter_init_(max_iter_init)
     {
+        for (size_t idx = 0; idx < n_sa_; idx++)
+            omega_vec_.push_back(omega_vec[idx]) ;
     } ;
     ~jacobi_davidson_modified() {} ;
 private:
@@ -116,12 +118,15 @@ protected:
     void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
     void update_orthospace(void) ;
     void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
+    void diagonalize_first(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                           vector_type& output, vector_type& outputA, magnitude_type& theta,
+                           matrix_double& eigvecs, vector_double& eigvals) ;
     void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                             vector_type& output, vector_type& outputA, magnitude_type& theta,
                             matrix_double& eigvecs, vector_double& eigvals) {} ;
     // Attributes
     double atol_init_, rtol_init_ ;
-    magnitude_type omega_ ;
+    std::vector<magnitude_type> omega_vec_ ;
     size_t max_iter_init_ ;
 };
     // New version for generation of the guess
@@ -176,7 +181,7 @@ protected:
     {
         vector_type y, buf ;
         ietl::mult(this->matrix_ , x , buf, i_state_);
-        y = this->omega_*x - buf;
+        y = this->omega_vec_[i_state_]*x - buf;
         return y;
     };
     // Routine doing deflation
@@ -277,7 +282,7 @@ protected:
         // Compute the error vector
         bool converged ;
         eigvec = u/ietl::two_norm(u);
-        eigval = this->omega_ - theta/ietl::dot(u,u) ;
+        eigval = this->omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
         if(iter.finished(ietl::two_norm(r),1.0)) {
             converged = true;
             return converged;
@@ -285,6 +290,20 @@ protected:
             converged = false ;
             return converged ;
         }
+    };
+    // Diagonalization routine - rediagonalization
+    template<class Matrix, class VS, class ITER>
+    void jacobi_davidson_modified<Matrix, VS, ITER>::diagonalize_first
+            (const vector_space& MPSTns_input,
+             const vector_space& MPSTns_input_A,
+             const fortran_int_t& dim,
+             vector_type& MPSTns_output,
+             vector_type& MPSTns_output_A,
+             magnitude_type &theta,
+             matrix_double& eigvecs,
+             vector_double& eigvals)
+    {
+        diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
     };
     //
     template<class MATRIX, class VS, class ITER>
@@ -342,7 +361,7 @@ protected:
         //gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
         //                                              i_state_, omega_, max_iter_, false);
         gmres_skew<MATRIX, vector_type, VS> gmres(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
-                                                    i_state_, omega_, max_iter_, false);
+                                                    i_state_, omega_vec_[i_state_], max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             dru = ietl::dot(r, u) ;
@@ -364,7 +383,7 @@ protected:
     {
         vector_double prop_values(ndim) ;
         for (int i = 0; i < ndim ; i++)
-            prop_values[i] = omega_-1./eigvals[i];
+            prop_values[i] = omega_vec_[i_state_]-1./eigvals[i];
         return prop_values ;
     }
     //

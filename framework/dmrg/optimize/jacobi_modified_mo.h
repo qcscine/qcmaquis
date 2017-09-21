@@ -64,20 +64,20 @@ namespace ietl
         using base::n_restart_max_ ;
         using base::n_root_found_ ;
         using base::nsites_ ;
-        using base::omega_ ;
+        using base::omega_vec_ ;
         using base::overlap_ ;
         using base::site1_ ;
         using base::site2_ ;
         using base::vecspace_ ;
         using base::v_guess_ ;
         //
-        jacobi_davidson_modified_mo(const MATRIX& matrix, VS& vec, const magnitude_type& omega, const pov_vec_type& pov,
-                                    const size_t n, const int& side_tofollow, const int& nmin, const int& nmax,
-                                    const int& max_iter, const int& nsites, const int& site1, const int& site2,
+        jacobi_davidson_modified_mo(const MATRIX& matrix, VS& vec, const std::vector<magnitude_type>& omega_vec, 
+                                    const pov_vec_type& pov, const size_t n, const int& side_tofollow, const int& nmin, 
+                                    const int& nmax, const int& max_iter, const int& nsites, const int& site1, const int& site2,
                                     const double& ietl_atol, const double& ietl_rtol, const int& i_gmres_guess,
-                                    const std::vector<int>& order, const int& sa_alg, const double& atol_init,
+                                    const std::vector<int>& order, int& sa_alg, const double& atol_init,
                                     const double& rtol_init, const size_t& max_iter_init, const int& root_homing_type)
-                : base::jacobi_davidson_modified(matrix, vec, omega, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol,
+                : base::jacobi_davidson_modified(matrix, vec, omega_vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol,
                                                  i_gmres_guess, order, sa_alg, atol_init, rtol_init, max_iter_init)
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type), side_tofollow_(side_tofollow) {} ;
         ~jacobi_davidson_modified_mo() {} ;
@@ -90,6 +90,9 @@ namespace ietl
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                     const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
+        void diagonalize_first(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
+                               vector_type& output, vector_type& outputA, magnitude_type& theta,
+                               matrix_double& eigvecs, vector_double& eigvals) ;
         void diagonalize_second(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                 vector_type& output, vector_type& outputA, magnitude_type& theta,
                                 matrix_double& eigvecs, vector_double& eigvals) ;
@@ -158,7 +161,6 @@ namespace ietl
             if (overlaps[i] > overlap_) {
                 idx = i;
                 overlap_ = overlaps[idx];
-                std::cout << overlap_ << std::endl ;
             }
         }
         // Finalization
@@ -172,6 +174,21 @@ namespace ietl
             theta = eigvals[idx];
         }
     };
+    // Diagonalization routine
+    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_first
+            (const vector_space& MPSTns_input,
+             const vector_space& MPSTns_input_A,
+             const fortran_int_t& dim,
+             vector_type& MPSTns_output,
+             vector_type& MPSTns_output_A,
+             magnitude_type &theta,
+             matrix_double& eigvecs,
+             vector_double& eigvals)
+    {
+        if (side_tofollow_ == 0 || side_tofollow_ == 1)
+            diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
+    };
     // Diagonalization routine - rediagonalization
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_second
@@ -184,7 +201,10 @@ namespace ietl
              matrix_double& eigvecs,
              vector_double& eigvals)
     {
-        diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 1, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
+        if (side_tofollow_ == 0)
+            diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 1, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
+        else if (side_tofollow_ == -1)
+            diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
     };
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class ITER, class OtherMatrix, class SymmGroup>
@@ -195,8 +215,8 @@ namespace ietl
         // Compute the error vector
         bool converged ;
         eigvec = u/ietl::two_norm(u);
-        eigval = this->omega_ - theta/ietl::dot(u,u) ;
-        if(iter.finished(ietl::two_norm(r),1.0) && overlap_ > 0.2) {
+        eigval = this->omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
+        if(iter.finished(ietl::two_norm(r),1.0)) {
             converged = true;
             return converged;
         } else {

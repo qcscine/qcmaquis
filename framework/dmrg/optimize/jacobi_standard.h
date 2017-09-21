@@ -93,6 +93,12 @@ namespace ietl
         size_t initialize_vecspace(vector_space &V, vector_space &VA) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
         void update_orthospace(void) ;
+        void diagonalize_first(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                               vector_type& output, vector_type& outputA, magnitude_type& theta,
+                               matrix_double& eigvecs, vector_double& eigvals) ;
+        void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                                vector_type& output, vector_type& outputA, magnitude_type& theta,
+                                matrix_double& eigvecs, vector_double& eigvals) {} ;
     private:
         bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
@@ -232,6 +238,20 @@ namespace ietl
             converged = false ;
             return converged ;
         }
+    };
+    // Diagonalization routine
+    template<class Matrix, class VS, class ITER>
+    void jacobi_davidson_standard<Matrix, VS, ITER>::diagonalize_first
+            (const vector_space& MPSTns_input,
+             const vector_space& MPSTns_input_A,
+             const fortran_int_t& dim,
+             vector_type& MPSTns_output,
+             vector_type& MPSTns_output_A,
+             magnitude_type &theta,
+             matrix_double& eigvecs,
+             vector_double& eigvals)
+    {
+        diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
     };
     //
     template<class MATRIX, class VS, class ITER>

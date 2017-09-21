@@ -88,6 +88,9 @@ namespace ietl
         void diagonalize_and_select(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                     const int& mod, vector_type& output, vector_type& outputA, magnitude_type& theta,
                                     matrix_double& eigvecs, vector_double& eigvals) ;
+        void diagonalize_first(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+                               vector_type& output, vector_type& outputA, magnitude_type& theta,
+                               matrix_double& eigvecs, vector_double& eigvals) ;
         void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                                 vector_type& output, vector_type& outputA, magnitude_type& theta,
                                 matrix_double& eigvecs, vector_double& eigvals) ;
@@ -168,6 +171,21 @@ namespace ietl
             theta = eigvals[idx];
         }
     };
+    // Diagonalization routine
+    template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
+    void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_first
+            (const vector_space& MPSTns_input,
+             const vector_space& MPSTns_input_A,
+             const fortran_int_t& dim,
+             vector_type& MPSTns_output,
+             vector_type& MPSTns_output_A,
+             magnitude_type &theta,
+             matrix_double& eigvecs,
+             vector_double& eigvals)
+    {
+        if (side_tofollow_ == 0 || side_tofollow_ == 1)
+            diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
+    };
     // Diagonalization routine - rediagonalization
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::diagonalize_second
@@ -180,7 +198,10 @@ namespace ietl
              matrix_double& eigvecs,
              vector_double& eigvals)
     {
-        diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 1, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
+        if (side_tofollow_ == 0)
+            diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 1, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
+        else if (side_tofollow_ == -1)
+            diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
     };
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>

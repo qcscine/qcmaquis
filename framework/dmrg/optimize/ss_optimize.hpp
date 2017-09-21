@@ -46,22 +46,25 @@ public:
     //
     using base::boundaries_database_ ;
     using base::do_root_homing_ ;
+    using base::do_shiftandinvert_ ;
     using base::do_stateaverage_ ;
     using base::iteration_results_ ;
+    using base::left_sa_ ;
     using base::mpo ;
     using base::mps2follow ;
     using base::mps_vector ;
     using base::n_bound_ ;
     using base::n_root_ ;
+    using base::omega_vec ;
     using base::order ;
-    using base::left_sa_ ;
-    using base::right_sa_ ;
     using base::parms ;
     using base::poverlap_vec_ ;
+    using base::right_sa_ ;
     using base::root_homing_type_ ;
     using base::sa_alg_ ;
     using base::sorter_ ;
     using base::stop_callback ;
+    using base::update_omega ;
     using base::update_order ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
@@ -126,9 +129,7 @@ public:
             // +-----------------------------+
             //  MAIN PART: performs the sweep
             // +-----------------------------+
-            if (d == Both ||
-                (d == LeftOnly && lr == -1) ||
-                (d == RightOnly && lr == +1))
+            if (d == Both || (d == LeftOnly && lr == -1) || (d == RightOnly && lr == +1))
             {
                 if (parms["eigensolver"] == std::string("IETL")) {
                     BEGIN_TIMING("IETL")
@@ -137,8 +138,8 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_, 
-                                         ortho_vecs);
+                                         do_shiftandinvert_, vec_sa_left_, vec_sa_right_, order, boundaries_database_, 
+                                         sa_alg_, omega_vec, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
@@ -272,7 +273,9 @@ public:
             for (size_t i = 0; i < n_root_; i++) {
                 sorter_[i].first  = res[i].first ;
                 sorter_[i].second = i ;
-                std::cout << trunc[i].bond_dimension << std::endl ; 
+                std::cout << trunc[i].bond_dimension << std::endl ;
+                if (update_omega)
+                    omega_vec[i] = res[i].first - 1. ;
             }
             std::sort(sorter_.begin(), sorter_.end()) ;
             this->update_order(sorter_) ;

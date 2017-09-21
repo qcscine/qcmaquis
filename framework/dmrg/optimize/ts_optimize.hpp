@@ -48,6 +48,7 @@ public:
     typedef typename partial_overlap<Matrix, SymmGroup>::partial_overlap partial_overlap;
     using base::boundaries_database_ ;
     using base::do_root_homing_ ;
+    using base::do_shiftandinvert_ ;
     using base::iteration_results_;
     using base::L_ ;
     using base::left_sa_;
@@ -57,6 +58,7 @@ public:
     using base::mps_vector ;
     using base::n_bound_ ;
     using base::n_root_ ;
+    using base::omega_vec ;
     using base::order ;
     using base::parms ;
     using base::poverlap_vec_ ;
@@ -164,8 +166,8 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 2, site1, site2, root_homing_type_,
-                                         vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_ ,
-                                         ortho_vecs);
+                                         do_shiftandinvert_, vec_sa_left_, vec_sa_right_, order, boundaries_database_, 
+                                         sa_alg_, omega_vec, ortho_vecs);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
