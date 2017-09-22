@@ -81,6 +81,7 @@ public:
     using base::site1_ ;
     using base::site2_ ;
     using base::u_and_uA_ ;
+    using base::v_guess_ ;
     using base::vecspace_ ;
     //
     jacobi_davidson_modified(const MATRIX& matrix, VS& vec, const std::vector<magnitude_type>& omega_vec, 
@@ -91,6 +92,7 @@ public:
             : base::jacobi_davidson(matrix, vec, nmin, nmax, max_iter, nsites, site1, site2, ietl_atol, ietl_rtol, i_gmres_guess, order, sa_alg)
             , atol_init_(atol_init), rtol_init_(rtol_init), max_iter_init_(max_iter_init)
     {
+        omega_vec_.resize(0) ;
         for (size_t idx = 0; idx < n_sa_; idx++)
             omega_vec_.push_back(omega_vec[idx]) ;
     } ;
@@ -137,11 +139,16 @@ protected:
         // Variable declaration
         size_t res = n_sa_ ;
         std::vector<size_t> lst_toerase ;
+        v_guess_[i_state_] = new_vector(vecspace_, i_state_) ;
         // Orthogonalization
         if (sa_alg_ == -2) {
             res = 1 ;
             V[0]   = new_vector(vecspace_, i_state_) ;
+            for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+                V[0] -= ietl::dot((*it)[0], V[0]) * (*it)[0];
             VA[0]  = apply_operator(V[0]) ;
+            for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+                VA[0] -= ietl::dot((*it)[0], VA[0]) * (*it)[0];
             V[0]  /= ietl::two_norm(VA[0]) ;
             VA[0] /= ietl::two_norm(VA[0]) ;
         } else {
@@ -282,7 +289,7 @@ protected:
         // Compute the error vector
         bool converged ;
         eigvec = u/ietl::two_norm(u);
-        eigval = this->omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
+        eigval = omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
         if(iter.finished(ietl::two_norm(r),1.0)) {
             converged = true;
             return converged;

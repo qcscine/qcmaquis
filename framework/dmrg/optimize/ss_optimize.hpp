@@ -275,7 +275,7 @@ public:
                 sorter_[i].second = i ;
                 std::cout << trunc[i].bond_dimension << std::endl ;
                 if (update_omega)
-                    omega_vec[i] = res[i].first - 1. ;
+                    omega_vec[i] = res[i].first - 10. ;
             }
             std::sort(sorter_.begin(), sorter_.end()) ;
             this->update_order(sorter_) ;

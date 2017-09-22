@@ -82,8 +82,6 @@ namespace ietl
                 , pov_(pov) , n_maxov_(n), root_homing_type_(root_homing_type), side_tofollow_(side_tofollow) {} ;
         ~jacobi_davidson_modified_mo() {} ;
     private:
-        bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
-                               ITER& iter, vector_type& eigvec, magnitude_type& eigval);
         double compute_overlap(const vector_type& vec_test) ;
         vector_double generate_property(const vector_space& V, const vector_space& VA, const size_t& dim,
                                         const matrix_double& eigvecs, const vector_double& eigvals);
@@ -122,19 +120,19 @@ namespace ietl
         // Initialization
         int imin , imax , nevec;
         vector_double overlaps ;
-        vector_type u_local , uA_local ;
+        vector_type u_local ;
         // Definition of the dimensions and dynamic memory allocation
-        if (dim != n_restart_max_ && n_maxov_ > 0)
+        if (dim != n_restart_max_)
             nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
         else
             nevec = dim ;
         // Definition of the dimensions
         if (mod == 0) {
-            imin = 1;
-            imax = nevec;
+            imin = 1 ;
+            imax = nevec ;
         } else if (mod == 1) {
-            imin = dim-nevec+1;
-            imax = dim;
+            imin = dim-nevec+1 ;
+            imax = dim ;
         } else {
             throw std::runtime_error("Unrecognized modality in diagonalize_and_select") ;
         }
@@ -154,12 +152,12 @@ namespace ietl
             overlaps[i] = compute_overlap(u_local) ;
         }
         // Finalization
-        int idx = -1  ;
+        int idx = -1 ;
         if (mod == 0)
             overlap_ = 0. ;
         for (int i = 0; i < nevec; ++i) {
             if (overlaps[i] > overlap_) {
-                idx = i;
+                idx = i ;
                 overlap_ = overlaps[idx];
             }
         }
@@ -171,7 +169,7 @@ namespace ietl
                 MPSTns_output += eigvecs[idx][j] * MPSTns_input[j];
                 MPSTns_output_A += eigvecs[idx][j] * MPSTns_input_A[j];
             }
-            theta = eigvals[idx];
+            theta = eigvals[idx] ;
         }
     };
     // Diagonalization routine
@@ -205,24 +203,6 @@ namespace ietl
             diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 1, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
         else if (side_tofollow_ == -1)
             diagonalize_and_select(MPSTns_input, MPSTns_input_A, dim, 0, MPSTns_output, MPSTns_output_A, theta, eigvecs, eigvals) ;
-    };
-    // Check if the JD iteration is arrived at convergence
-    template <class Matrix, class VS, class ITER, class OtherMatrix, class SymmGroup>
-    bool jacobi_davidson_modified_mo<Matrix, VS, ITER, OtherMatrix, SymmGroup>::check_convergence(const vector_type &u, const vector_type &uA, const vector_type &r,
-                                                                                                  const magnitude_type theta, ITER& iter, vector_type &eigvec, 
-                                                                                                  magnitude_type &eigval)
-    {
-        // Compute the error vector
-        bool converged ;
-        eigvec = u/ietl::two_norm(u);
-        eigval = this->omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
-        if(iter.finished(ietl::two_norm(r),1.0)) {
-            converged = true;
-            return converged;
-        } else {
-            converged = false ;
-            return converged ;
-        }
     };
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>

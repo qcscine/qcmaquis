@@ -187,6 +187,7 @@ namespace ietl
         // Generates guess
         order_ = order ;
         n_sa_  = n_root(vec) ;
+        v_guess_.resize(n_sa_) ;
     } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>
