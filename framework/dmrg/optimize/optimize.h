@@ -106,6 +106,7 @@ public:
     , omega_vec(0)
     , do_root_homing_(false)
     , do_shiftandinvert_(false)
+    , update_omega(false)
     {
         // Standard options
         L_ = mps_vector[0].length() ;
@@ -117,13 +118,13 @@ public:
         if (std::fabs(omega) > 1.0E-15) {
             do_shiftandinvert_ = true ;
             omega_vec.resize(n_root_, omega) ;
+            if (parms["si_omega_schedule" ]== "constant")
+                update_omega = false ;
+            else if (parms["si_omega_schedule"] == "update")
+                update_omega = true ;
+            else
+                throw std::runtime_error("Scheduler for omega update not recognized") ; 
         }
-        if (parms["si_omega_schedule" ]== "constant")
-            update_omega = false ;
-        else if (parms["si_omega_schedule"] == "update")
-            update_omega = true ;
-        else
-            throw std::runtime_error("Scheduler for omega update not recognized") ; 
          //
         // Initialization of the MPS
         // -------------------------
