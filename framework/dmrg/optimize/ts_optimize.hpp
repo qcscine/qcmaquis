@@ -126,8 +126,7 @@ public:
                 ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                 ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
-    	    maquis::cout << std::endl;
-            maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
+            print_header(sweep, site1, site, lr) ;
             boost::chrono::high_resolution_clock::time_point now, then;
     	    // Create TwoSite objects. For SA calculations, creates a vector
             MPSTensor<Matrix, SymmGroup> twin_mps ;
@@ -247,7 +246,7 @@ public:
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
-                            mps_vector[idx][site2 + 1].multiply_from_left(t);
+                            mps_vector[idx][site2+1].multiply_from_left(t);
                     }
                 } else if (sa_alg_ == -2) {
                     for (size_t idx = 0; idx < n_bound_; idx++) {
@@ -289,14 +288,10 @@ public:
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
-                            mps_vector[idx][site2 + 1].multiply_from_left(t);
+                            mps_vector[idx][site2+1].multiply_from_left(t);
                     }
                 }
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
-                if (site1 != L_-2)
-                    Storage::evict(mps[site1]);
-                { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
-                { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
             //
             // Backward sweep
@@ -316,7 +311,7 @@ public:
                     block_matrix<Matrix, SymmGroup> t;
                     t = mps_vector[0][site1].normalize_right(DefaultSolver());
                     if (site1 > 0)
-                        mps_vector[0][site1].multiply_from_right(t);
+                        mps_vector[0][site1-1].multiply_from_right(t);
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
@@ -329,7 +324,7 @@ public:
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 1)
-                            mps_vector[idx][site1].multiply_from_right(t);
+                            mps_vector[idx][site1-1].multiply_from_right(t);
                     }
                 } else if (sa_alg_ == -2) {
                     for (size_t idx = 0; idx < n_bound_; idx++) {
@@ -342,8 +337,8 @@ public:
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site1].normalize_right(DefaultSolver());
-                        if (site1 > 1)
-                            mps_vector[idx][site1].multiply_from_right(t);
+                        if (site1 > 0)
+                            mps_vector[idx][site1-1].multiply_from_right(t);
                     }
                 } else if (sa_alg_ > -1) {
                     // Truncation of the reference state
@@ -358,7 +353,7 @@ public:
                     block_matrix<Matrix, SymmGroup> t;
                     t = mps_vector[0][site1].normalize_right(DefaultSolver());
                     if (site2 < L_-1)
-                        mps_vector[0][site1].multiply_from_right(t);
+                        mps_vector[0][site1-1].multiply_from_right(t);
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
@@ -366,12 +361,12 @@ public:
                                     = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mval);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1], Mval);
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site1], Mval);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 1)
-                            mps_vector[idx][site1].multiply_from_right(t);
+                            mps_vector[idx][site1-1].multiply_from_right(t);
                     }
                 }
         		//// Write back result from optimization
@@ -387,13 +382,7 @@ public:
                 //}
                 //if(site1 != 0)
                 //    Storage::drop(left_[site1]);
-                //this->boundary_right_step(mpo, site2); // creating right_[site2]
-                //if(site1 != 0){
-                //    Storage::evict(mps[site2]);
-                //    Storage::evict(right_[site2+1]);
-                //}
-                //{ parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
-                //{ parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
+                this->boundary_right_step(mpo, site2); // creating right_[site2]
     	    }
             END_TIMING("MPS TRUNCATION")
             // +------------+
@@ -423,8 +412,28 @@ public:
     } // sweep
 
 private:
+    // --------------------
+    //  Private attributes
+    // --------------------
     int initial_site;
     MPO<Matrix, SymmGroup> ts_cache_mpo;
+    // -------------------------------------
+    //  Simple function to print the header
+    // -------------------------------------
+    void print_header(int& sweep, int& site1, int& site2, int& lr){
+        char buffer[50] ;
+        int n , a ;
+        if (lr == 1) {
+            a = 2*sweep+1 ;
+            n = sprintf(buffer, "  Sweep number %3d - site numbers %3d and %3d", a, site1, site2);
+        } else {
+            a = 2*sweep+2 ;
+            n = sprintf(buffer, "  Sweep number %3d - site numbers %3d and %3d", a, site1, site2);
+        }
+        std::cout << " +--------------------------------------------+" << std::endl ;
+        std::cout << buffer << std::endl ;
+        std::cout << " +--------------------------------------------+" << std::endl ;
+    }
 };
 
 #endif
