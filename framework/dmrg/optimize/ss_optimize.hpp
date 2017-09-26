@@ -50,6 +50,7 @@ public:
     using base::do_stateaverage_ ;
     using base::iteration_results_ ;
     using base::left_sa_ ;
+    using base::L_ ;
     using base::mpo ;
     using base::mps2follow ;
     using base::mps_vector ;
@@ -209,8 +210,8 @@ public:
                     if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                               site, alpha, cutoff, Mmax);
+                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                                           site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++) {
                             if (k != sa_alg_)
@@ -246,15 +247,15 @@ public:
                                                                                                              site, alpha, cutoff, Mmax);
                     } else if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
-                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                               site, alpha, cutoff, Mmax);
+                               trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                                             (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                                                site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension ;
                         for (size_t k = 0 ; k < n_root_ ; k++)
                             if ( k != sa_alg_ ) {
                                 trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
                                                                                         (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
-                                                                                        site, alpha, cutoff, Mmax, Mval));
+                                                                                           site, alpha, cutoff, Mmax, Mval));
                             }
                     }
                 } else {
@@ -273,7 +274,6 @@ public:
             for (size_t i = 0; i < n_root_; i++) {
                 sorter_[i].first  = res[i].first ;
                 sorter_[i].second = i ;
-                std::cout << trunc[i].bond_dimension << std::endl ;
                 if (update_omega)
                     omega_vec[i] = res[i].first - 10. ;
             }

@@ -70,7 +70,6 @@ public:
     basis_type get_basis(const dim_type& site) ;
     void print(void) ;
     void update(const MPSWave& MPS, const dim_type& l, const int& direction) ;
-    void update(const MPSWave& MPS, const MPSWave& MPSOther, const dim_type& l, const int& direction) ;
     value_type overlap(const dim_type& i);
     value_type overlap(const MPSTensor& MPSTns , const dim_type& i) ;
     value_type overlap(const MPSTensor& MPSTns , const MPSTensor& MPSOther, const dim_type& i) ;
@@ -231,59 +230,6 @@ void partial_overlap<Matrix, SymmGroup>::update(const MPSWave& MPS,
     //
 };
 
-
-template<class Matrix, class SymmGroup>
-void partial_overlap<Matrix, SymmGroup>::update(const MPSWave& MPS,
-                                                const MPSWave& MPSOther,
-                                                const dim_type& l,
-                                                const int& direction)
-{
-    // Get the index to update in the left and right overlaps
-    dim_type i1l, i2l;
-    dim_type i1r, i2r;
-    Modality mod ;
-    if (direction == 1)
-        mod = Left;
-    else if (direction == -1)
-        mod = Right;
-    // Set the sites where the
-    if (mod == Left) {
-        i1l = l;
-        i2l = l + 1;
-        i1r = lattice_L_ - 1 - i2l ;
-        i2r = lattice_L_ - 1 - i1l ;
-    } else {
-        i1l = l - 1 ;
-        i2l = l ;
-        i1r = lattice_L_ - 1 - i2l ;
-        i2r = lattice_L_ - 1 - i1l ;
-    }
-    //
-    if (i1l == 0) {
-        multiply_first(MPS, Left, false, data_left_);
-    } else if (i1l > 0 && i1l < lattice_L_)
-        multiply(MPS, i1l, Left, false, data_left_);
-    //
-    if (i2l == 0) {
-        multiply_first(MPS, Left, false, data_left_);
-    } else if (i2l > 0 && i2l < lattice_L_) {
-        multiply(MPS, i2l, Left, false, data_left_);
-    }
-    //
-    if (i1r == 0) {
-        multiply_first(MPS, Right, false, data_right_);
-    } else if (i1r > 0 && i1r < lattice_L_) {
-        multiply(MPS, i1r, Right, false, data_right_);
-    }
-    //
-    if (i2r == 0) {
-        multiply_first(MPS, Right, false, data_right_);
-    } else if (i2r > 0 && i2r < lattice_L_) {
-        multiply(MPS, i2r, Right, false, data_right_);
-    }
-    //
-};
-
 template<class Matrix, class SymmGroup>
 typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const dim_type &i)
 {
@@ -321,16 +267,15 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
         result = (*tmp2)(0,0) ;
     } else {
         if (i == 0) {
-            //assert (m1 == 1);
             tmp2 = this->multiply_first(MPSTns, basis_[0], Left, true);
         } else {
             tmp2 = this->multiply(MPSTns, data_left_[i-1], basis_[i], Left, true);
         }
-        assert((*tmp2).num_rows() == data_right_[indx].num_rows() &&
-               (*tmp2).num_cols() == data_right_[indx].num_cols());
+        assert((*tmp2).num_rows() == data_right_[indx].num_cols() &&
+               (*tmp2).num_cols() == data_right_[indx].num_rows());
         for (int k1 = 0; k1 < (*tmp2).num_rows(); ++k1)
             for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2) {
-                result += (*tmp2)(k1, k2)*data_right_[indx](k1, k2);
+                result += (*tmp2)(k1, k2)*data_right_[indx](k2, k1);
         }
     }
     return result ;
@@ -477,48 +422,11 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const MPSTensor& MPSTns,
     extract(bm, sigma, m1, m2, *tmp) ;
     // Matrix multiplication calculation
     if (mod == Left) {
-        result  = new Matrix(m2, m2in) ;
-        result2 = new Matrix(m2, m2) ;
-        for (int i = 0; i < m2 ; ++i)
-            for (int j = 0; j < m2; ++j)
-                (*result2)(i,j) = 0. ;
-        gemm(transpose(*tmp), input, *result);
-        // Eventually fills with zeros if the dimensions don't match
-        // m2in = m2
-        if (m2in == m2) {
-            result2 = result;
-            // m2in < m2
-        } else if (m2in < m2) {
-            for (int i = 0; i < m2; ++i)
-                for (int j = 0; j < m2in; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-            // m2in > m2
-        } else {
-            for (int i = 0; i < m2 ; ++i)
-                for (int j = 0; j < m2; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-        }
+        result2  = new Matrix(m2, m2in) ;
+        gemm(transpose(*tmp), input, *result2);
     }  else {
-        result  = new Matrix(m1in, m1) ;
-        result2 = new Matrix(m1, m1) ;
-        for (int i = 0; i < m1 ; ++i)
-            for (int j = 0; j < m1; ++j)
-                (*result2)(i,j) = 0. ;
-        gemm(input, transpose(*tmp), *result);
-        // m1in = m1
-        if (m1in == m1) {
-            result2 = result;
-            // m1in < m1
-        } else if (m1in < m1) {
-            for (int i = 0; i < m1in; ++i)
-                for (int j = 0; j < m1; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-            // m1in > m1
-        } else {
-            for (int i = 0; i < m1 ; ++i)
-                for (int j = 0; j < m1; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-        }
+        result2  = new Matrix(m1in, m1) ;
+        gemm(input, transpose(*tmp), *result2);
     }
     return result2 ;
 }
@@ -609,48 +517,11 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply(const MPSTensor& MPSTns,
     extract(bm, sigma1, sigma2, m1, m2, *tmp) ;
     // Matrix multiplication calculation
     if (mod == Left) {
-        result  = new Matrix(m2, m2in) ;
-        result2 = new Matrix(m2, m2) ;
-        for (int i = 0; i < m2 ; ++i)
-            for (int j = 0; j < m2; ++j)
-                (*result2)(i,j) = 0. ;
-        gemm(transpose(*tmp), input, *result);
-        // Eventually fills with zeros if the dimensions don't match
-        // m2in = m2
-        if (m2in == m2) {
-            result2 = result;
-            // m2in < m2
-        } else if (m2in < m2) {
-            for (int i = 0; i < m2; ++i)
-                for (int j = 0; j < m2in; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-            // m2in > m2
-        } else {
-            for (int i = 0; i < m2 ; ++i)
-                for (int j = 0; j < m2; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-        }
+        result2 = new Matrix(m2, m2in) ;
+        gemm(transpose(*tmp), input, *result2);
     }  else {
-        result  = new Matrix(m1in, m1) ;
-        result2 = new Matrix(m1, m1) ;
-        for (int i = 0; i < m1 ; ++i)
-            for (int j = 0; j < m1; ++j)
-                (*result2)(i,j) = 0. ;
-        gemm(input, transpose(*tmp), *result);
-        // m1in = m1
-        if (m1in == m1) {
-            result2 = result;
-            // m1in < m1
-        } else if (m1in < m1) {
-            for (int i = 0; i < m1in; ++i)
-                for (int j = 0; j < m1; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-            // m1in > m1
-        } else {
-            for (int i = 0; i < m1 ; ++i)
-                for (int j = 0; j < m1; ++j)
-                    (*result2)(i, j) = (*result)(i, j);
-        }
+        result2 = new Matrix(m1in, m1) ;
+        gemm(input, transpose(*tmp), *result2);
     }
     return result2 ;
 }
@@ -715,23 +586,21 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply_first(const MPSTensor& MPST
     bmatrix bm = MPSTns.data() ;
     size_t m1  = MPSTns.row_dim().size_of_block(identity) ;
     size_t m2  = MPSTns.col_dim().size_of_block(identity) ;
-    Matrix *tmp, *output ;
+    Matrix *tmp, *tmp2;
     if (mod == Left) {
-        tmp = new Matrix(1,m2) ;
-        output = new Matrix(m2,m2) ;
-        extract(bm, sigma, m1, m2, *tmp) ;
-        assert (m1 == 1) ;
-        for (int i = 0; i < m2; ++i)
-            (*output)(i,i) = (*tmp)(0,i) ;
+        tmp  = new Matrix(1,m2) ;
+        tmp2 = new Matrix(m2,1) ;
+        extract(bm, sigma, 1, m2, *tmp) ;
+        for (size_t i = 0; i < m2; i++)
+            (*tmp2)(i,0) = (*tmp)(0,i) ;
     } else if (mod == Right) {
-        tmp = new Matrix(m1,1) ;
-        output = new Matrix(m1,m1) ;
-        extract(bm, sigma, m1, m2, *tmp) ;
-        assert (m2 == 1) ;
-        for (int i = 0; i < m1; ++i)
-            (*output)(i,i) = (*tmp)(i,0) ;
+        tmp  = new Matrix(m1,1) ;
+        tmp2 = new Matrix(1,m1) ;
+        extract(bm, sigma, m1, 1, *tmp) ;
+        for (size_t i = 0; i < m1; i++)
+            (*tmp2)(0,i) = (*tmp)(i,0) ;
     }
-    return output ;
+    return tmp2 ;
 }
 
 template<class Matrix, class SymmGroup>
@@ -854,13 +723,15 @@ void partial_overlap<Matrix, SymmGroup>::print(void)
     std::cout << " ------------------------------------ " << std::endl ;
     std::cout << " STATUS OF THE PARTIAL OVERLAP OBJECT " << std::endl ;
     std::cout << " ------------------------------------ " << std::endl ;
+    Matrix m1 ;
+    for (i = 0; i < lattice_L_ ; ++i) {
+        m1 = data_left_[i];
+        j = m1.num_rows();
+        k = m1.num_cols();
+        std::cout << " Block number left - " << i << " is " << j << "x" << k << std::endl;
+    }
     for (i = 0; i < lattice_L_ ; ++i){
-        Matrix m1, m2 ;
-        m1 = data_left_[i] ;
-        j  = m1.num_rows() ;
-        k  = m1.num_cols() ;
-        std::cout << " Block number left - " << i << " is " << j << "x" << k << std::endl ;
-        m1 = data_left_[lattice_L_-1-i] ;
+        m1 = data_right_[i] ;
         j  = m1.num_rows() ;
         k  = m1.num_cols() ;
         std::cout << " Block number right - " << i << " is " << j << "x" << k << std::endl ;
