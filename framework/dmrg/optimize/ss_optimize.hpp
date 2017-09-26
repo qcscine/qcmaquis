@@ -88,13 +88,12 @@ public:
     //
     // SWEEP ROUTINE
     // -------------
-    void sweep(int sweep, OptimizeDirection d = Both)
-    {
+    void sweep(int sweep, OptimizeDirection d = Both) {
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
         iteration_results_.clear();
         std::size_t L = mps_vector[0].length();
-        for (size_t i = 1 ; i < n_root_ ; i++)
+        for (size_t i = 1; i < n_root_; i++)
             assert(mps_vector[i].length() == L);
         //
         int _site = 0, site = 0;
@@ -103,35 +102,34 @@ public:
             site = to_site(L, _site);
         }
         // Main loop
-        for (; _site < 2*L; ++_site) {
+        for (; _site < 2 * L; ++_site) {
             boost::chrono::high_resolution_clock::time_point now, then;
             BEGIN_TIMING("PRELIMINARY OPERATIONS")
             // lr indicates the direction of the sweep
-            int lr = (_site < L) ? +1 : -1 ;
-            site = to_site(L, _site) ;
-            print_header(sweep, site, lr) ;
-            if (lr == -1 && site == L-1) {
+            int lr = (_site < L) ? +1 : -1;
+            site = to_site(L, _site);
+            print_header(sweep, site, lr);
+            if (lr == -1 && site == L - 1) {
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_) ;
+            SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site + 1, boundaries_database_);
             // Generates the vectorset object
-            VectorSet<Matrix,SymmGroup> vector_set(mps_vector, site) ;
+            VectorSet<Matrix, SymmGroup> vector_set(mps_vector, site);
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps_vector[0][site],
                                                                    base::ortho_mps[n][site],
                                                                    base::ortho_left_[n][site],
-                                                                   base::ortho_right_[n][site+1]);
+                                                                   base::ortho_right_[n][site + 1]);
             }
             END_TIMING("PRELIMINARY OPERATIONS")
             // +-----------------------------+
             //  MAIN PART: performs the sweep
             // +-----------------------------+
-            if (d == Both || (d == LeftOnly && lr == -1) || (d == RightOnly && lr == +1))
-            {
+            if (d == Both || (d == LeftOnly && lr == -1) || (d == RightOnly && lr == +1)) {
                 if (parms["eigensolver"] == std::string("IETL")) {
                     BEGIN_TIMING("IETL")
                     //res = solve_ietl_lanczos(sp, mps[site], parms);
@@ -139,13 +137,13 @@ public:
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                         do_shiftandinvert_, vec_sa_left_, vec_sa_right_, order, boundaries_database_, 
+                                         do_shiftandinvert_, vec_sa_left_, vec_sa_right_, order, boundaries_database_,
                                          sa_alg_, omega_vec, ortho_vecs);
                     END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
                     BEGIN_TIMING("DAVIDSON")
                     res = solve_ietl_davidson(sp, vector_set, parms, poverlap_vec_, 1, site, site, root_homing_type_,
-                                              vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_, 
+                                              vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_,
                                               ortho_vecs);
                     END_TIMING("DAVIDSON")
                 } else {
@@ -153,13 +151,13 @@ public:
                 }
                 BEGIN_TIMING("MPS UPDATE")
                 // Collects the results
-                mps_vector[0][site]  = res[0].second ;
+                mps_vector[0][site] = res[0].second;
                 for (size_t k = 1; k < n_root_; k++)
-                    mps_vector[k][site] = res[k].second ;
+                    mps_vector[k][site] = res[k].second;
                 // Correct the energies
                 if (sa_alg_ == -1)
                     for (size_t k = 0; k < n_root_; k++)
-                        res[k].first = ietl::get_energy(sp, res[k].second, k) ;
+                        res[k].first = ietl::get_energy(sp, res[k].second, k);
                 END_TIMING("MPS UPDATE")
             }
             // +---------------------+
@@ -167,8 +165,9 @@ public:
             // +---------------------+
             int prec = maquis::cout.precision();
             maquis::cout.precision(15);
-            for (size_t k = 0 ; k < n_root_ ; k++)
-                maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy() << std::endl ;
+            for (size_t k = 0; k < n_root_; k++)
+                maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy()
+                             << std::endl;
             maquis::cout.precision(prec);
             iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
             // Loads the alpha parameter
@@ -183,84 +182,120 @@ public:
             // Update of the MPS
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep), Mval;
-            std::vector<truncation_results> trunc(n_bound_) ;
+            std::vector<truncation_results> trunc(n_bound_);
             // +---------------------+
             //  Truncation of the MPS
             // +---------------------+
             // Forward sweep
             BEGIN_TIMING("MPS TRUNCATION")
             if (lr == +1) {
-                if (site < L-1) {
-                    maquis::cout << " Alpha = " << alpha << std::endl ;
+                if (site < L - 1) {
+                    maquis::cout << " Alpha = " << alpha << std::endl;
                     if (sa_alg_ == -1) {
-                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(0)))[site],
-                                                                                                  (*(boundaries_database_.get_boundaries_right(0)))[site+1],
-                                                                                                     site, alpha, cutoff, Mmax) ;
-                        Mval = trunc[0].bond_dimension ;
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep(mpo[site],
+                                                                                       (*(boundaries_database_.get_boundaries_left(
+                                                                                               0)))[site],
+                                                                                       (*(boundaries_database_.get_boundaries_right(
+                                                                                               0)))[site + 1],
+                                                                                       site, alpha, cutoff, Mmax);
+                        Mval = trunc[0].bond_dimension;
                         for (size_t idx = 1; idx < n_bound_; idx++)
-                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                                             site, alpha, cutoff, Mmax, Mval) ;
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
+                                                                                               (*(boundaries_database_.get_boundaries_left(
+                                                                                                       idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(
+                                                                                                       idx)))[site + 1],
+                                                                                               site, alpha, cutoff,
+                                                                                               Mmax, Mval);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
-                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                                             site, alpha, cutoff, Mmax);
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
+                                                                                               (*(boundaries_database_.get_boundaries_left(
+                                                                                                       idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(
+                                                                                                       idx)))[site + 1],
+                                                                                               site, alpha, cutoff,
+                                                                                               Mmax);
                     }
                     if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
-                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                                           site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension ;
-                        for (size_t k = 0 ; k < n_root_ ; k++) {
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
+                                                                                               (*(boundaries_database_.get_boundaries_left(
+                                                                                                       idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(
+                                                                                                       idx)))[site + 1],
+                                                                                               site, alpha, cutoff,
+                                                                                               Mmax);
+                        Mval = trunc[0].bond_dimension;
+                        for (size_t k = 0; k < n_root_; k++) {
                             if (k != sa_alg_)
-                                trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
-                                                                                        (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
-                                                                                           site, alpha, cutoff, Mmax, Mval));
+                                trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site],
+                                                                             (*(boundaries_database_.get_boundaries_left(
+                                                                                     k)))[site],
+                                                                             (*(boundaries_database_.get_boundaries_right(
+                                                                                     k)))[site + 1],
+                                                                             site, alpha, cutoff, Mmax, Mval));
                         }
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_left(DefaultSolver());
-                    for (size_t k = 1 ; k < n_root_ ; k++)
+                    for (size_t k = 1; k < n_root_; k++)
                         t = mps_vector[k][site].normalize_left(DefaultSolver());
                 }
                 // Update the left boundary
-                this->boundary_left_step(mpo, site) ;
-            // Backward sweep
+                this->boundary_left_step(mpo, site);
+                // Backward sweep
             } else if (lr == -1) {
                 if (site > 0) {
-                    maquis::cout << " Alpha = " << alpha << std::endl ;
+                    maquis::cout << " Alpha = " << alpha << std::endl;
                     if (sa_alg_ == -1) {
-                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(0)))[site],
-                                                                                                  (*(boundaries_database_.get_boundaries_right(0)))[site+1],
-                                                                                                     site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension ;
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep(mpo[site],
+                                                                                       (*(boundaries_database_.get_boundaries_left(
+                                                                                               0)))[site],
+                                                                                       (*(boundaries_database_.get_boundaries_right(
+                                                                                               0)))[site + 1],
+                                                                                       site, alpha, cutoff, Mmax);
+                        Mval = trunc[0].bond_dimension;
                         for (size_t idx = 1; idx < n_bound_; idx++)
-                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                                             site, alpha, cutoff, Mmax, Mval);
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
+                                                                                               (*(boundaries_database_.get_boundaries_left(
+                                                                                                       idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(
+                                                                                                       idx)))[site + 1],
+                                                                                               site, alpha, cutoff,
+                                                                                               Mmax, Mval);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
-                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                                          (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                                             site, alpha, cutoff, Mmax);
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
+                                                                                               (*(boundaries_database_.get_boundaries_left(
+                                                                                                       idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(
+                                                                                                       idx)))[site + 1],
+                                                                                               site, alpha, cutoff,
+                                                                                               Mmax);
                     } else if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
-                               trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                                             (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                                                site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension ;
-                        for (size_t k = 0 ; k < n_root_ ; k++)
-                            if ( k != sa_alg_ ) {
-                                trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site], (*(boundaries_database_.get_boundaries_left(k)))[site], 
-                                                                                        (*(boundaries_database_.get_boundaries_right(k)))[site+1], 
-                                                                                           site, alpha, cutoff, Mmax, Mval));
+                            trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
+                                                                                               (*(boundaries_database_.get_boundaries_left(
+                                                                                                       idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(
+                                                                                                       idx)))[site + 1],
+                                                                                               site, alpha, cutoff,
+                                                                                               Mmax);
+                        Mval = trunc[0].bond_dimension;
+                        for (size_t k = 0; k < n_root_; k++)
+                            if (k != sa_alg_) {
+                                trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site],
+                                                                             (*(boundaries_database_.get_boundaries_left(
+                                                                                     k)))[site],
+                                                                             (*(boundaries_database_.get_boundaries_right(
+                                                                                     k)))[site + 1],
+                                                                             site, alpha, cutoff, Mmax, Mval));
                             }
                     }
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_right(DefaultSolver());
-                    for (size_t k = 1 ; k < n_root_ ; k++)
+                    for (size_t k = 1; k < n_root_; k++)
                         t = mps_vector[k][site].normalize_right(DefaultSolver());
                 }
                 // Update the right boundary
@@ -272,52 +307,53 @@ public:
             // +----------------+
             BEGIN_TIMING("FINAL OPERATIONS")
             for (size_t i = 0; i < n_root_; i++) {
-                sorter_[i].first  = res[i].first ;
-                sorter_[i].second = i ;
+                sorter_[i].first = res[i].first;
+                sorter_[i].second = i;
                 if (update_omega)
-                    omega_vec[i] = res[i].first - 10. ;
+                    omega_vec[i] = res[i].first - 10.;
             }
-            std::sort(sorter_.begin(), sorter_.end()) ;
-            this->update_order(sorter_) ;
+            std::sort(sorter_.begin(), sorter_.end());
+            this->update_order(sorter_);
             //
             if (root_homing_type_ == 1)
-                for (size_t k = 0 ; k < n_root_ ; k++)
-                    poverlap_vec_[k].update(mps_vector[k], site, lr) ;
+                for (size_t k = 0; k < n_root_; k++)
+                    poverlap_vec_[k].update(mps_vector[k], site, lr);
             END_TIMING("FINAL OPERATIONS")
             //
-            iteration_results_["BondDimension"]   << trunc[0].bond_dimension;
+            iteration_results_["BondDimension"] << trunc[0].bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc[0].truncated_weight;
-            iteration_results_["SmallestEV"]      << trunc[0].smallest_ev;
+            iteration_results_["SmallestEV"] << trunc[0].smallest_ev;
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
             if (stop_callback())
-                throw dmrg::time_limit(sweep, _site+1);
+                throw dmrg::time_limit(sweep, _site + 1);
         }
         initial_site = -1;
     }
+    //
+private:
+    // --------------------
+    //  Private attributes
+    // --------------------
+    int initial_site ;
     //
     // Simple function to print the header
     // -----------------------------------
     void print_header(int& sweep, int& site, int& lr){
         char buffer[40] ;
-	    int n , a ;
+        int n , a ;
         if (lr == 1) {
-	        a = 2*sweep+1 ;
+            a = 2*sweep+1 ;
             n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
         } else {
-	        a = 2*sweep+2 ;
+            a = 2*sweep+2 ;
             n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
-	    }
+        }
         std::cout << " +-----------------------------------+" << std::endl ;
         std::cout << buffer << std::endl ;
         std::cout << " +-----------------------------------+" << std::endl ;
     }
-// +----------+
-//  Attributes
-// +----------+
-private:
-    int initial_site;
 };
 
 #endif

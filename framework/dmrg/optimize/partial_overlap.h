@@ -230,6 +230,10 @@ void partial_overlap<Matrix, SymmGroup>::update(const MPSWave& MPS,
     //
 };
 
+// +-------------------------------+
+//  METHODS TO COMPUTE THE OVERLAPS
+// +-------------------------------+
+
 template<class Matrix, class SymmGroup>
 typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, SymmGroup>::overlap(const dim_type &i)
 {
@@ -261,16 +265,14 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
     dim_type indx = lattice_L_-2-i ;
     Matrix *tmp , *tmp2 ;
     if ( i == lattice_L_-1 ) {
-        //assert (m2 == 1);
         tmp2 = this->multiply(MPSTns, data_left_[i-1], basis_[i], Left, true) ;
         assert ((*tmp2).num_rows() == (*tmp2).num_cols() == 1) ;
         result = (*tmp2)(0,0) ;
     } else {
-        if (i == 0) {
+        if (i == 0)
             tmp2 = this->multiply_first(MPSTns, basis_[0], Left, true);
-        } else {
+        else
             tmp2 = this->multiply(MPSTns, data_left_[i-1], basis_[i], Left, true);
-        }
         assert((*tmp2).num_rows() == data_right_[indx].num_cols() &&
                (*tmp2).num_cols() == data_right_[indx].num_rows());
         for (int k1 = 0; k1 < (*tmp2).num_rows(); ++k1)
@@ -293,23 +295,23 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
     dim_type NM2 = MPSOther.site_dim.size_of_block(identity) ;
     assert (NM1 == NM2) ;
     value_type result = 0 ;
-    Matrix *tmp , *tmp2 ;
+    Matrix *tmp ;
     if ( i == lattice_L_-1 ) {
         //assert (m2 == 1);
-        tmp2 = multiply(MPSTns, MPSOther, data_left_[i-1], NM1, Left, true) ;
-        assert ((*tmp2).num_rows() == (*tmp2).num_cols() == 1) ;
-        result = (*tmp2)(0,0) ;
+        tmp = multiply(MPSTns, MPSOther, data_left_[i-1], NM1, Left, true) ;
+        assert ((*tmp).num_rows() == (*tmp).num_cols() == 1) ;
+        result = (*tmp)(0,0) ;
     } else {
         if (i == 0) {
-            tmp2 = multiply_first(MPSTns, MPSOther, NM1, Left, true);
+            tmp = multiply_first(MPSTns, MPSOther, NM1, Left, true);
         } else {
-            tmp2 = multiply(MPSTns, data_left_[i-1], basis_[i], Left, true);
+            tmp = multiply(MPSTns, data_left_[i-1], basis_[i], Left, true);
         }
-        assert((*tmp2).num_rows() == data_right_[indx].num_rows() &&
-               (*tmp2).num_cols() == data_right_[indx].num_cols());
-        for (int k1 = 0; k1 < (*tmp2).num_rows(); ++k1)
-            for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2) {
-                result += (*tmp2)(k1, k2)*data_right_[indx](k1, k2);
+        assert((*tmp).num_rows() == data_right_[indx].num_cols() &&
+               (*tmp).num_cols() == data_right_[indx].num_rows());
+        for (int k1 = 0; k1 < (*tmp).num_rows(); ++k1)
+            for (int k2 = 0; k2 < (*tmp).num_cols(); ++k2) {
+                result += (*tmp)(k1, k2)*data_right_[indx](k2, k1);
             }
     }
     return result ;
@@ -337,15 +339,19 @@ typename partial_overlap<Matrix, SymmGroup>::value_type partial_overlap<Matrix, 
         } else {
             tmp2 = this->multiply(MPSTns, data_left_[i1-1], basis_[i1], basis_[i2], Left, true);
         }
-        assert((*tmp2).num_rows() == data_right_[indx].num_rows() &&
-               (*tmp2).num_cols() == data_right_[indx].num_cols());
+        assert((*tmp2).num_rows() == data_right_[indx].num_cols() &&
+               (*tmp2).num_cols() == data_right_[indx].num_rows());
         for (int k1 = 0; k1 < (*tmp2).num_rows(); ++k1)
             for (int k2 = 0; k2 < (*tmp2).num_cols(); ++k2) {
-                result += (*tmp2)(k1, k2)*data_right_[indx](k1, k2);
+                result += (*tmp2)(k1, k2)*data_right_[indx](k2, k1);
             }
     }
     return result ;
 };
+
+// +-----------------------+
+//  MULTIPLICATION ROUTINES
+// +-----------------------+
 
 template<class Matrix, class SymmGroup>
 void partial_overlap<Matrix, SymmGroup>::multiply(const MPSWave& MPS,
@@ -664,23 +670,21 @@ Matrix* partial_overlap<Matrix, SymmGroup>::multiply_first(const MPSTensor& MPST
     bmatrix bm = MPSTns.data() ;
     std::size_t m1 = MPSTns.row_dim().size_of_block(identity) ;
     std::size_t m2 = MPSTns.col_dim().size_of_block(identity) ;
-    Matrix *tmp, *output ;
+    Matrix *tmp , *tmp2 ;
     if (mod == Left) {
-        tmp = new Matrix(1,m2) ;
-        output = new Matrix(m2,m2) ;
-        extract(bm, sigma1, sigma2, m1, m2, *tmp) ;
-        assert (m1 == 1) ;
-        for (int i = 0; i < m2; ++i)
-            (*output)(i,i) = (*tmp)(0,i) ;
+        tmp  = new Matrix(1,m2) ;
+        tmp2 = new Matrix(m2,1) ;
+        extract(bm, sigma1, sigma2, 1, m2, *tmp) ;
+        for (size_t i = 0; i < m2; i++)
+            (*tmp2)(i,0) = (*tmp)(0,i) ;
     } else if (mod == Right) {
-        tmp = new Matrix(m1,1) ;
-        output = new Matrix(m1,m1) ;
-        extract(bm, sigma1, sigma2, m1, m2, *tmp) ;
-        assert (m2 == 1) ;
-        for (int i = 0; i < m1; ++i)
-            (*output)(i,i) = (*tmp)(i,0) ;
+        tmp  = new Matrix(m1,1) ;
+        tmp2 = new Matrix(1,m1) ;
+        extract(bm, sigma1, sigma2, m1, 1, *tmp) ;
+        for (size_t i = 0; i < m1; i++)
+            (*tmp2)(0,i) = (*tmp)(i,0) ;
     }
-    return output ;
+    return tmp2 ;
 }
 
 // +---------------+
