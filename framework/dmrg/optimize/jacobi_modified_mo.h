@@ -119,7 +119,7 @@ namespace ietl
     {
         // Initialization
         int imin , imax , nevec;
-        vector_double overlaps ;
+        vector_double overlaps , overlaps_2 ;
         vector_type u_local ;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_)
@@ -137,6 +137,7 @@ namespace ietl
             throw std::runtime_error("Unrecognized modality in diagonalize_and_select") ;
         }
         overlaps.resize(nevec) ;
+        overlaps_2.resize(nevec) ;
         eigvals.resize(nevec) ;
         eigvecs.resize(nevec) ;
         for (int i = 0 ; i < nevec ; ++i)
@@ -150,15 +151,20 @@ namespace ietl
             for (int j = 1; j < dim; ++j)
                 u_local += eigvecs[i][j] * MPSTns_input[j];
             overlaps[i] = compute_overlap(u_local) ;
+            // Conversion to the original basis
+            u_local = eigvecs[i][0] * MPSTns_input_A[0];
+            for (int j = 1; j < dim; ++j)
+                u_local += eigvecs[i][j] * MPSTns_input_A[j];
+            overlaps_2[i] = compute_overlap(u_local) ;
         }
         // Finalization
         int idx = -1 ;
         if (mod == 0)
             overlap_ = 0. ;
         for (int i = 0; i < nevec; ++i) {
-            if (overlaps[i] > overlap_) {
+            if ((overlaps[i]+overlaps_2[i])/2. > overlap_) {
                 idx = i ;
-                overlap_ = overlaps[idx];
+                overlap_ = (overlaps[idx] + overlaps_2[idx])/2. ;
             }
         }
         // Finalization
