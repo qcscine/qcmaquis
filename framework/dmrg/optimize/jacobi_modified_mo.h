@@ -121,6 +121,7 @@ namespace ietl
         int imin , imax , nevec;
         vector_double overlaps , overlaps_2 ;
         vector_type u_local ;
+	magnitude_type tmp_overlap = 0. ; 
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_)
             nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
@@ -162,9 +163,13 @@ namespace ietl
         if (mod == 0)
             overlap_ = 0. ;
         for (int i = 0; i < nevec; ++i) {
-            if ((overlaps[i]+overlaps_2[i])/2. > overlap_) {
+            if (root_homing_type_ == 1)
+	    	tmp_overlap = (overlaps[i]+overlaps_2[i])/2. ;
+	    else 
+                tmp_overlap = overlaps[i] ;
+            if (tmp_overlap > overlap_) {
                 idx = i ;
-                overlap_ = (overlaps[idx] + overlaps_2[idx])/2. ;
+                overlap_ = tmp_overlap ;
             }
         }
         // Finalization

@@ -115,6 +115,7 @@ public:
         // Shift-and-invert paramters
         // --------------------------
         double omega = parms["ietl_si_omega"] ;
+	omega_shift_ = parms["si_omega_shift"] ;
         if (std::fabs(omega) > 1.0E-15) {
             do_shiftandinvert_ = true ;
             omega_vec.resize(n_root_, omega) ;
@@ -415,6 +416,7 @@ protected:
     // Root-homing procedure
     bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_ ;
     int root_homing_type_ ;
+    double omega_shift_ ;
     std::vector<partial_overlap> poverlap_vec_;
     // Energy-specific diagonalization
     bool update_omega ;
