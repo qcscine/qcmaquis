@@ -151,7 +151,7 @@ protected:
                 VA[0] -= ietl::dot((*it)[0], VA[0]) * (*it)[0];
             V[0]  /= ietl::two_norm(VA[0]) ;
             VA[0] /= ietl::two_norm(VA[0]) ;
-        } else {
+        } else { 
             for (size_t i = 0; i < n_sa_; i++) {
                 V[i] = new_vector(vecspace_, i) ;
                 for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
@@ -289,8 +289,7 @@ protected:
         // Compute the error vector
         bool converged ;
         eigvec = u/ietl::two_norm(u);
-        //eigval = omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
-        eigval = omega_vec_[i_state_] - 1./theta  ;
+        eigval = omega_vec_[i_state_] - theta/ietl::dot(u,u) ;
         if(iter.finished(ietl::two_norm(r),1.0)) {
             converged = true;
             return converged;

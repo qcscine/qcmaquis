@@ -56,6 +56,7 @@ public:
     using base::mps_vector ;
     using base::n_bound_ ;
     using base::n_root_ ;
+    using base::omega_shift_ ;
     using base::omega_vec ;
     using base::order ;
     using base::parms ;
@@ -310,7 +311,7 @@ public:
                 sorter_[i].first = res[i].first;
                 sorter_[i].second = i;
                 if (update_omega)
-                    omega_vec[i] = res[i].first - 10.;
+                    omega_vec[i] = res[i].first - omega_shift_ ;
             }
             std::sort(sorter_.begin(), sorter_.end());
             this->update_order(sorter_);
