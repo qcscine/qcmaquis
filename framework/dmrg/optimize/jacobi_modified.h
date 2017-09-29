@@ -50,6 +50,7 @@ class jacobi_davidson_modified : public jacobi_davidson<MATRIX, VS, ITER>
 {
 public:
     typedef jacobi_davidson<MATRIX, VS, ITER> base;
+    typedef typename base::bm_type            bm_type ;
     typedef typename base::couple_vec         couple_vec;
     typedef typename base::lt_couple          lt_couple;
     typedef typename base::magnitude_type     magnitude_type;
@@ -64,6 +65,7 @@ public:
     typedef typename base::vector_type        vector_type;
     //
     using base::get_eigenvalue ;
+    using base::Hdiag_ ;
     using base::i_gmres_guess_ ;
     using base::i_state_ ;
     using base::ietl_atol_ ;
@@ -126,11 +128,36 @@ protected:
     void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                             vector_type& output, vector_type& outputA, magnitude_type& theta,
                             matrix_double& eigvecs, vector_double& eigvals) {} ;
+    void multiply_diagonal(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
     // Attributes
     double atol_init_, rtol_init_ ;
     std::vector<magnitude_type> omega_vec_ ;
     size_t max_iter_init_ ;
 };
+    // Definition of the virtual function precondition
+    template<class Matrix, class VS, class ITER>
+    void jacobi_davidson_modified<Matrix, VS, ITER>::multiply_diagonal(vector_type &r,
+                                                                       const vector_type &V,
+                                                                       const vector_type& VA,
+                                                                       const magnitude_type &theta)
+    {
+        magnitude_type denom, x2, x1 ;
+        x1 = ietl::dot(VA, r)/ietl::dot(VA,V) ;
+        vector_type Vcpy = r - V * x1;
+        bm_type &data = Vcpy.data();
+        assert(shape_equal(data, Hdiag_[i_state_]));
+        for (size_t b = 0; b < data.n_blocks(); ++b) {
+            for (size_t i = 0; i < num_rows(data[b]); ++i) {
+                for (size_t j = 0; j < num_cols(data[b]); ++j) {
+                    denom = (omega_vec_[i_state_] - Hdiag_[i_state_][b](i, j)) - theta ;
+                    if (std::abs(denom))
+                        data[b](i, j) /= denom;
+                }
+            }
+        }
+        x2 = ietl::dot(VA, Vcpy)/ietl::dot(VA,V);
+        r = Vcpy - x2 * V ;
+    } ;
     // New version for generation of the guess
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_modified<Matrix, VS, ITER>::size_t
@@ -151,7 +178,7 @@ protected:
                 VA[0] -= ietl::dot((*it)[0], VA[0]) * (*it)[0];
             V[0]  /= ietl::two_norm(VA[0]) ;
             VA[0] /= ietl::two_norm(VA[0]) ;
-        } else { 
+        } else {
             for (size_t i = 0; i < n_sa_; i++) {
                 V[i] = new_vector(vecspace_, i) ;
                 for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
@@ -368,12 +395,11 @@ protected:
         //gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
         //                                              i_state_, omega_, max_iter_, false);
         gmres_skew<MATRIX, vector_type, VS> gmres(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
-                                                    i_state_, omega_vec_[i_state_], max_iter_, false);
+                                                    i_state_, omega_vec_[i_state_], max_iter_, true);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
-            dru = ietl::dot(r, u) ;
-            duu = ietl::dot(u, u) ;
-            t = (-r + dru / duu * u);
+            t = inh ;
+            multiply_diagonal(t, u, uA, theta) ;
         } else if (i_gmres_guess_ == 1) {
             t = 0.*r ;
         }

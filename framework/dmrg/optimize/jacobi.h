@@ -73,7 +73,7 @@ namespace ietl
     public:
         typedef typename vectorspace_traits<VS>::scalar_type                     scalar_type;
         typedef typename vectorspace_traits<VS>::vector_type                     vector_type;
-        typedef typename vector_type::bm_type 		      		                 bm_type ;
+        typedef typename vector_type::bm_type 		      		         bm_type ;
         typedef typename std::vector< bm_type >                                  vector_bm ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type        magnitude_type;
         typedef typename std::size_t                                             size_t ;
@@ -147,6 +147,7 @@ namespace ietl
         vector_ortho_vec             ortho_space_ ;
         size_t                       i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
         result_collector             u_and_uA_ ;
+        vector_bm                    Hdiag_ ;
         vector_space                 v_guess_ ;
         VS                           vecspace_ ;
         std::vector<int>             order_ ;
@@ -188,6 +189,10 @@ namespace ietl
         order_ = order ;
         n_sa_  = n_root(vec) ;
         v_guess_.resize(n_sa_) ;
+        for (size_t k = 0; k < n_sa_; k++) {
+            v_guess_[k] = (new_vector(vec, k)) ;
+            Hdiag_.push_back(contraction::diagonal_hamiltonian(*matrix_.left[0][0], *matrix_.right[0][0], matrix_.mpo, v_guess_[k]));
+        }
     } ;
     // -- Calculation of eigenvalue --
     template <class MATRIX, class VS, class ITER>

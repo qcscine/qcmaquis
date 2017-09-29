@@ -75,6 +75,7 @@ private:
         add_option("ietl_diag_restart_nmax", "", value(100));
         add_option("ietl_diag_homing_criterion", "", value(""));
         add_option("ietl_diag_restart", "Number of iterations before restarting", value(10));
+	add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
         add_option("si_omega_schedule", "algorithm to update omega at each iteration", value("constant")) ;
         add_option("si_omega_shift", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
