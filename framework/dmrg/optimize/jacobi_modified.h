@@ -390,12 +390,13 @@ protected:
     {
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
+        vector_type Az = apply_operator(uA) ;
         //gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
         //                                              i_state_, max_iter_, false);
-        //gmres_modified<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
-        //                                              i_state_, omega_, max_iter_, false);
-        gmres_skew<MATRIX, vector_type, VS> gmres(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
-                                                    i_state_, omega_vec_[i_state_], max_iter_, true);
+        gmres_modified<MATRIX, vector_type, VS> gmres_modified(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
+                                                               i_state_, omega_vec_[i_state_], max_iter_, false);
+        gmres_skew<MATRIX, vector_type, VS> gmres_skew(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
+                                                       i_state_, omega_vec_[i_state_], max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             t = inh ;
@@ -405,7 +406,10 @@ protected:
         }
         if (max_iter_ > 0) {
             //inh -= ietl::dot(inh, uA) * uA / ietl::dot(uA, uA) ;
-            t2 = gmres(inh, t, ietl_atol_, ietl_rtol_) ;
+            if (n_sa_ == 1)
+                t2 = gmres_modified(inh, t, ietl_atol_, ietl_rtol_) ;
+            else
+                t2 = gmres_skew(inh, t, ietl_atol_, ietl_rtol_) ;
             t = t2 / ietl::two_norm(t2);
         }
     }

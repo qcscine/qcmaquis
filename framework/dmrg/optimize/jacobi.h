@@ -189,9 +189,10 @@ namespace ietl
         order_ = order ;
         n_sa_  = n_root(vec) ;
         v_guess_.resize(n_sa_) ;
+        Hdiag_.resize(n_sa_) ;
         for (size_t k = 0; k < n_sa_; k++) {
             v_guess_[k] = (new_vector(vec, k)) ;
-            Hdiag_.push_back(contraction::diagonal_hamiltonian(*matrix_.left[0][0], *matrix_.right[0][0], matrix_.mpo, v_guess_[k]));
+            Hdiag_[k] = contraction::diagonal_hamiltonian(*matrix_.left[k][0], *matrix_.right[k][0], matrix_.mpo, v_guess_[k]) ;
         }
     } ;
     // -- Calculation of eigenvalue --

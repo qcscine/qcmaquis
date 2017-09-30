@@ -125,9 +125,8 @@ namespace ietl
                                                                        const vector_type &V,
                                                                        const magnitude_type &theta)
     {
-        magnitude_type denom, x2, x1 = ietl::dot(V, r)/ietl::dot(V, V) ;
-        vector_type Vcpy = r - V * x1;
-        bm_type &data = Vcpy.data();
+        magnitude_type denom ;
+        bm_type &data = r.data();
         assert(shape_equal(data, Hdiag_[i_state_]));
         for (size_t b = 0; b < data.n_blocks(); ++b) {
             for (size_t i = 0; i < num_rows(data[b]); ++i) {
@@ -138,8 +137,6 @@ namespace ietl
                 }
             }
         }
-        x2 = ietl::dot(V, Vcpy) / ietl::dot(V, V);
-        r = Vcpy - x2 * V;
     };
     // New version for generation of the guess
     template <class Matrix, class VS, class ITER>
@@ -329,13 +326,16 @@ namespace ietl
                                                             vector_type& t)
     {
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta,
-                                                      ortho_space_, i_state_, max_iter_, true);
+                                                      ortho_space_, i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence
         if (i_gmres_guess_ == 0) {
-            t = inh ;
-            multiply_diagonal(t, u, theta) ;
+            vector_type ri = r, ui = u ;
+            multiply_diagonal(ri, u, theta) ;
+            multiply_diagonal(ui, u, theta) ;
+            magnitude_type epsilon = ietl::dot(u,ri) / ietl::dot(u,ui) ;
+            t = epsilon*ui - ri ;
         } else if (i_gmres_guess_ == 1) {
             t = 0.*r ;
         }
