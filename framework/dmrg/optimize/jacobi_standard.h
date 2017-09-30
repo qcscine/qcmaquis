@@ -326,10 +326,9 @@ namespace ietl
                                                             vector_type& t)
     {
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta,
-                                                      ortho_space_, i_state_, max_iter_, true);
+                                                      ortho_space_, i_state_, max_iter_, false);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
-        std::cout << ietl::two_norm(u) << std::endl ;
         // initial guess for better convergence
         if (i_gmres_guess_ == 0) {
             vector_type ri = r, ui = u ;
