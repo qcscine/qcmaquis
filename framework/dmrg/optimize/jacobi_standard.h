@@ -48,6 +48,7 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson<MATRIX, VS, ITER> base;
+        typedef typename base::bm_type            bm_type ;
         typedef typename base::couple_vec         couple_vec;
         typedef typename base::lt_couple          lt_couple;
         typedef typename base::magnitude_type     magnitude_type;
@@ -66,6 +67,7 @@ namespace ietl
         using base::i_state_ ;
         using base::ietl_atol_ ;
         using base::ietl_rtol_ ;
+        using base::Hdiag_ ;
         using base::M ;
         using base::matrix_ ;
         using base::max_iter_ ;
@@ -99,6 +101,7 @@ namespace ietl
         void diagonalize_second(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                 vector_type& output, vector_type& outputA, magnitude_type& theta,
                                 matrix_double& eigvecs, vector_double& eigvals) {} ;
+        void multiply_diagonal(vector_type &r, const vector_type &V, const magnitude_type &theta) ;
     private:
         bool check_convergence(const vector_type& u, const vector_type& uA, const vector_type& r, const magnitude_type theta ,
                                ITER& iter, vector_type& eigvec, magnitude_type& eigval);
@@ -116,6 +119,28 @@ namespace ietl
         void sort_prop(couple_vec& vector_values) ;
         void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
     } ;
+    // Definition of the virtual function precondition
+    template<class Matrix, class VS, class ITER>
+    void jacobi_davidson_standard<Matrix, VS, ITER>::multiply_diagonal(vector_type &r,
+                                                                       const vector_type &V,
+                                                                       const magnitude_type &theta)
+    {
+        magnitude_type denom, x2, x1 = ietl::dot(V, r)/ietl::dot(V, V) ;
+        vector_type Vcpy = r - V * x1;
+        bm_type &data = Vcpy.data();
+        assert(shape_equal(data, Hdiag_[i_state_]));
+        for (size_t b = 0; b < data.n_blocks(); ++b) {
+            for (size_t i = 0; i < num_rows(data[b]); ++i) {
+                for (size_t j = 0; j < num_cols(data[b]); ++j) {
+                    denom = Hdiag_[i_state_][b](i, j) - theta;
+                    if (std::abs(denom))
+                        data[b](i, j) /= denom;
+                }
+            }
+        }
+        x2 = ietl::dot(V, Vcpy) / ietl::dot(V, V);
+        r = Vcpy - x2 * V;
+    };
     // New version for generation of the guess
     template <class Matrix, class VS, class ITER>
     typename jacobi_davidson_standard<Matrix, VS, ITER>::size_t
@@ -303,15 +328,14 @@ namespace ietl
                                                             const vector_type& r,
                                                             vector_type& t)
     {
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
-                                                      i_state_, max_iter_, false);
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta,
+                                                      ortho_space_, i_state_, max_iter_, true);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence
         if (i_gmres_guess_ == 0) {
-            dru = ietl::dot(r, u);
-            duu = ietl::dot(u, u);
-            t = -r + dru / duu * u;
+            t = inh ;
+            multiply_diagonal(t, u, theta) ;
         } else if (i_gmres_guess_ == 1) {
             t = 0.*r ;
         }
