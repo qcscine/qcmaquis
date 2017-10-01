@@ -142,21 +142,23 @@ protected:
                                                                        const magnitude_type &theta)
     {
         magnitude_type denom, x2, x1 ;
-        x1 = ietl::dot(VA, r)/ietl::dot(VA,V) ;
-        vector_type Vcpy = r - V * x1;
+        //x1 = ietl::dot(V, r)/ietl::dot(V,V) ;
+        //vector_type Vcpy = r - V * x1;
+        vector_type Vcpy = r ;
         bm_type &data = Vcpy.data();
         assert(shape_equal(data, Hdiag_[i_state_]));
         for (size_t b = 0; b < data.n_blocks(); ++b) {
             for (size_t i = 0; i < num_rows(data[b]); ++i) {
                 for (size_t j = 0; j < num_cols(data[b]); ++j) {
-                    denom = (omega_vec_[i_state_] - Hdiag_[i_state_][b](i, j)) - theta ;
+                    denom = Hdiag_[i_state_][b](i, j) - theta ;
                     if (std::abs(denom))
                         data[b](i, j) /= denom;
                 }
             }
         }
-        x2 = ietl::dot(VA, Vcpy)/ietl::dot(VA,V);
-        r = Vcpy - x2 * V ;
+        //x2 = ietl::dot(V, Vcpy)/ietl::dot(V, V);
+        //r = Vcpy - x2 * V ;
+        r = Vcpy ;
     } ;
     // New version for generation of the guess
     template <class Matrix, class VS, class ITER>
@@ -302,7 +304,7 @@ protected:
                                                                                                                              magnitude_type theta)
     {
         vector_type r ;
-        r = uA - u/theta ;
+        r = uA - u * ietl::dot(u, uA) / ietl::dot(u, u) ;
         r /= ietl::two_norm(u) ;
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
             r -= ietl::dot((*it)[0], r) * (*it)[0] ;
@@ -391,25 +393,26 @@ protected:
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         vector_type Az = apply_operator(uA) ;
-        //gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta, ortho_space_,
-        //                                              i_state_, max_iter_, false);
+        scalar_type ray = omega_vec_[i_state_] - ietl::dot(u,uA) / ietl::dot(u,u) ;
+        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, ray, ortho_space_,
+                                                      i_state_, max_iter_, true);
         gmres_modified<MATRIX, vector_type, VS> gmres_modified(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
-                                                               i_state_, omega_vec_[i_state_], max_iter_, false);
+                                                               i_state_, omega_vec_[i_state_], max_iter_, true);
         gmres_skew<MATRIX, vector_type, VS> gmres_skew(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
                                                        i_state_, omega_vec_[i_state_], max_iter_, false);
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
-            t = inh ;
-            multiply_diagonal(t, u, uA, theta) ;
+            vector_type ri = r, ui = u ;
+            multiply_diagonal(ri, u, uA, ray) ;
+            multiply_diagonal(ui, u, uA, ray) ;
+            magnitude_type epsilon = ietl::dot(u,ri) / ietl::dot(u,ui) ;
+            t = epsilon*ui - ri ;
         } else if (i_gmres_guess_ == 1) {
             t = 0.*r ;
         }
         if (max_iter_ > 0) {
             //inh -= ietl::dot(inh, uA) * uA / ietl::dot(uA, uA) ;
-            if (n_sa_ == 1)
-                t2 = gmres_modified(inh, t, ietl_atol_, ietl_rtol_) ;
-            else
-                t2 = gmres_skew(inh, t, ietl_atol_, ietl_rtol_) ;
+            t2 = gmres(inh, t, ietl_atol_, ietl_rtol_) ;
             t = t2 / ietl::two_norm(t2);
         }
     }

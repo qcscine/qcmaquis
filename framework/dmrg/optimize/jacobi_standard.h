@@ -326,7 +326,7 @@ namespace ietl
                                                             vector_type& t)
     {
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, theta,
-                                                      ortho_space_, i_state_, max_iter_, false);
+                                                      ortho_space_, i_state_, max_iter_, true);
         vector_type inh = -r, t2 ;
         scalar_type dru, duu ;
         // initial guess for better convergence
