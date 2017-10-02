@@ -232,7 +232,7 @@ namespace ietl
             // Initialization
             Vector t, t2, t3, y;
             // t2 = (1-uu*) x
-            double ust = dot(u_, input) ;
+            double ust = dot(u_, input) / ietl::dot(u_, u_) ;
             t2 = input - ust * u_ ;
             this->orthogonalize_simple(t2) ;
             // y = (A-theta*1) t2
@@ -240,7 +240,7 @@ namespace ietl
             y = t3 - theta_ * t2;
             this->orthogonalize_simple(y) ;
             // t = (1-uu*) y
-            ust = dot(u_, y) ;
+            ust = dot(u_, y) / ietl::dot(u_, u_) ;
             t = y - ust * u_ ;
             y = t ;
             // Finalization
