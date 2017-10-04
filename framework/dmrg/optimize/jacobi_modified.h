@@ -128,7 +128,7 @@ protected:
     void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
                             vector_type& output, vector_type& outputA, magnitude_type& theta,
                             matrix_double& eigvecs, vector_double& eigvals) {} ;
-    void multiply_diagonal(vector_type &r, const vector_type &V, const vector_type &VA, const magnitude_type &theta);
+    void multiply_diagonal(vector_type &r, const vector_type &V, const magnitude_type &theta);
     // Attributes
     double atol_init_, rtol_init_ ;
     std::vector<magnitude_type> omega_vec_ ;
@@ -138,12 +138,9 @@ protected:
     template<class Matrix, class VS, class ITER>
     void jacobi_davidson_modified<Matrix, VS, ITER>::multiply_diagonal(vector_type &r,
                                                                        const vector_type &V,
-                                                                       const vector_type& VA,
                                                                        const magnitude_type &theta)
     {
         magnitude_type denom, x2, x1 ;
-        //x1 = ietl::dot(V, r)/ietl::dot(V,V) ;
-        //vector_type Vcpy = r - V * x1;
         vector_type Vcpy = r ;
         bm_type &data = Vcpy.data();
         assert(shape_equal(data, Hdiag_[i_state_]));
@@ -156,8 +153,6 @@ protected:
                 }
             }
         }
-        //x2 = ietl::dot(V, Vcpy)/ietl::dot(V, V);
-        //r = Vcpy - x2 * V ;
         r = Vcpy ;
     } ;
     // New version for generation of the guess
@@ -403,8 +398,8 @@ protected:
         // initial guess for better convergence
         if (i_gmres_guess_ == 0 || max_iter_ <= 1 ) {
             vector_type ri = r, ui = u ;
-            multiply_diagonal(ri, u, uA, ray) ;
-            multiply_diagonal(ui, u, uA, ray) ;
+            multiply_diagonal(ri, u, ray) ;
+            multiply_diagonal(ui, u, ray) ;
             magnitude_type epsilon = ietl::dot(u,ri) / ietl::dot(u,ui) ;
             t = epsilon*ui - ri ;
         } else if (i_gmres_guess_ == 1) {

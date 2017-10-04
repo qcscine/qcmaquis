@@ -58,6 +58,7 @@ public:
     using base::mps_vector ;
     using base::n_bound_ ;
     using base::n_root_ ;
+    using base::omega_shift_ ;
     using base::omega_vec ;
     using base::order ;
     using base::parms ;
@@ -67,6 +68,7 @@ public:
     using base::sa_alg_ ;
     using base::sorter_ ;
     using base::stop_callback ;
+    using base::update_omega ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
     // Constructor
@@ -80,7 +82,7 @@ public:
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
-        make_ts_cache_mpo(mpo, ts_cache_mpo, mps_sa_[0]) ;
+        make_ts_cache_mpo(mpo, ts_cache_mpo, mps_vector[0]) ;
     }
     // Inline function to convert from 2L to L the index of the site
     inline int to_site(const int L, const int i) const
@@ -214,9 +216,9 @@ public:
             double cutoff = this->get_cutoff(sweep) ;
             std::size_t Mmax = this->get_Mmax(sweep) , Mval ;
             std::vector<truncation_results> trunc(n_root_) ;
-            //
-            // Forward sweep
-            // -------------
+            // +-------------+
+            //  Forward sweep
+            // +-------------+
             BEGIN_TIMING("MPS TRUNCATION")
     	    if (lr == +1) {
         		// Write back result from optimization
@@ -260,7 +262,7 @@ public:
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
-                            mps_vector[idx][site2 + 1].multiply_from_left(t);
+                            mps_vector[idx][site2+1].multiply_from_left(t);
                     }
                 } else if (sa_alg_ > -1) {
                     // Truncation of the reference state
@@ -293,9 +295,9 @@ public:
                 }
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
     	    }
-            //
-            // Backward sweep
-            // --------------
+            // +--------------+
+            //  Backward sweep
+            // +--------------+
     	    if (lr == -1){
                 // Write back result from optimization
                 if (sa_alg_ == -1) {
@@ -319,11 +321,11 @@ public:
                                     = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mval);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], Mval);
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], Mval);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site1].normalize_right(DefaultSolver());
-                        if (site1 > 1)
+                        if (site1 > 0)
                             mps_vector[idx][site1-1].multiply_from_right(t);
                     }
                 } else if (sa_alg_ == -2) {
@@ -358,14 +360,14 @@ public:
                     for (size_t idx = 1; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mval);
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mmax);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site1], Mval);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t;
                         t = mps_vector[idx][site1].normalize_right(DefaultSolver());
-                        if (site1 > 1)
+                        if (site1 > 0)
                             mps_vector[idx][site1-1].multiply_from_right(t);
                     }
                 }
@@ -391,6 +393,8 @@ public:
             for (size_t i = 0; i < n_root_; i++) {
                 sorter_[i].first  = res[i].first ;
                 sorter_[i].second = i ;
+                if (update_omega)
+                    omega_vec[i] = res[i].first - omega_shift_ ;
             }
             std::sort(sorter_.begin(), sorter_.end()) ;
             this->update_order(sorter_) ;

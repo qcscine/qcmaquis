@@ -115,7 +115,7 @@ public:
                 Storage::sync();
             }
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site + 1, boundaries_database_);
+            SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_);
             // Generates the vectorset object
             VectorSet<Matrix, SymmGroup> vector_set(mps_vector, site);
             // Compute orthogonal vectors
@@ -194,47 +194,34 @@ public:
                     maquis::cout << " Alpha = " << alpha << std::endl;
                     if (sa_alg_ == -1) {
                         trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep(mpo[site],
-                                                                                       (*(boundaries_database_.get_boundaries_left(
-                                                                                               0)))[site],
-                                                                                       (*(boundaries_database_.get_boundaries_right(
-                                                                                               0)))[site + 1],
+                                                                                       (*(boundaries_database_.get_boundaries_left(0)))[site],
+                                                                                       (*(boundaries_database_.get_boundaries_right(0)))[site+1],
                                                                                        site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(
-                                                                                                       idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(
-                                                                                                       idx)))[site + 1],
-                                                                                               site, alpha, cutoff,
-                                                                                               Mmax, Mval);
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax, Mval);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(
-                                                                                                       idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(
-                                                                                                       idx)))[site + 1],
-                                                                                               site, alpha, cutoff,
-                                                                                               Mmax);
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax);
                     }
                     if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(
-                                                                                                       idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(
-                                                                                                       idx)))[site + 1],
-                                                                                               site, alpha, cutoff,
-                                                                                               Mmax);
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension;
                         for (size_t k = 0; k < n_root_; k++) {
                             if (k != sa_alg_)
                                 trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site],
-                                                                             (*(boundaries_database_.get_boundaries_left(
-                                                                                     k)))[site],
-                                                                             (*(boundaries_database_.get_boundaries_right(
-                                                                                     k)))[site + 1],
+                                                                             (*(boundaries_database_.get_boundaries_left(k)))[site],
+                                                                             (*(boundaries_database_.get_boundaries_right(k)))[site+1],
                                                                              site, alpha, cutoff, Mmax, Mval));
                         }
                     }
@@ -251,46 +238,33 @@ public:
                     maquis::cout << " Alpha = " << alpha << std::endl;
                     if (sa_alg_ == -1) {
                         trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep(mpo[site],
-                                                                                       (*(boundaries_database_.get_boundaries_left(
-                                                                                               0)))[site],
-                                                                                       (*(boundaries_database_.get_boundaries_right(
-                                                                                               0)))[site + 1],
+                                                                                       (*(boundaries_database_.get_boundaries_left(0)))[site],
+                                                                                       (*(boundaries_database_.get_boundaries_right(0)))[site+1],
                                                                                        site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(
-                                                                                                       idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(
-                                                                                                       idx)))[site + 1],
-                                                                                               site, alpha, cutoff,
-                                                                                               Mmax, Mval);
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax, Mval);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(
-                                                                                                       idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(
-                                                                                                       idx)))[site + 1],
-                                                                                               site, alpha, cutoff,
-                                                                                               Mmax);
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax);
                     } else if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(
-                                                                                                       idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(
-                                                                                                       idx)))[site + 1],
-                                                                                               site, alpha, cutoff,
-                                                                                               Mmax);
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               site, alpha, cutoff, Mmax);
                         Mval = trunc[0].bond_dimension;
                         for (size_t k = 0; k < n_root_; k++)
                             if (k != sa_alg_) {
                                 trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site],
-                                                                             (*(boundaries_database_.get_boundaries_left(
-                                                                                     k)))[site],
-                                                                             (*(boundaries_database_.get_boundaries_right(
-                                                                                     k)))[site + 1],
+                                                                             (*(boundaries_database_.get_boundaries_left(k)))[site],
+                                                                             (*(boundaries_database_.get_boundaries_right(k)))[site+1],
                                                                              site, alpha, cutoff, Mmax, Mval));
                             }
                     }
