@@ -116,19 +116,19 @@ public:
             if (_site < L_-1) {
                 site = to_site(L_, _site);
                 lr = 1;
-        		site1 = site;
-        		site2 = site+1;
+        		site1 = site ;
+        		site2 = site+1 ;
                 ts_cache_mpo[site1].placement_l = mpo[site1].placement_l;
                 ts_cache_mpo[site1].placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
             } else {
                 site = to_site(L_, _site);
                 lr = -1;
-        		site1 = site-1;
-        		site2 = site;
+        		site1 = site-1 ;
+        		site2 = site ;
                 ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                 ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
-            print_header(sweep, site1, site, lr) ;
+            print_header(sweep, site1, site2, lr) ;
             boost::chrono::high_resolution_clock::time_point now, then;
     	    // Create TwoSite objects. For SA calculations, creates a vector
             MPSTensor<Matrix, SymmGroup> twin_mps ;

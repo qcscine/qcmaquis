@@ -94,7 +94,6 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     //  EIGENVALUE CALCULATION
     // +----------------------+
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right, bound_database);
-    std::cout << do_shiftandinvert << std::endl ;
     if ( !do_shiftandinvert ) {
         if ( root_homing_type == 0) {
             ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> >

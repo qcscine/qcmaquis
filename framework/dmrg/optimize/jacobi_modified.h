@@ -390,9 +390,9 @@ protected:
         vector_type Az = apply_operator(uA) ;
         scalar_type ray = omega_vec_[i_state_] - ietl::dot(u,uA) / ietl::dot(u,u) ;
         gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, ray, ortho_space_,
-                                                      i_state_, max_iter_, true);
+                                                      i_state_, max_iter_, false);
         gmres_modified<MATRIX, vector_type, VS> gmres_modified(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
-                                                               i_state_, omega_vec_[i_state_], max_iter_, true);
+                                                               i_state_, omega_vec_[i_state_], max_iter_, false);
         gmres_skew<MATRIX, vector_type, VS> gmres_skew(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
                                                        i_state_, omega_vec_[i_state_], max_iter_, false);
         // initial guess for better convergence
