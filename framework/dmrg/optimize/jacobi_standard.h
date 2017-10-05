@@ -95,10 +95,10 @@ namespace ietl
         size_t initialize_vecspace(vector_space &V, vector_space &VA) ;
         void update_vecspace(vector_space &V, vector_space &VA, const int i, vector_pairs& res);
         void update_orthospace(void) ;
-        void diagonalize_first(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+        void diagonalize_first(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                vector_type& output, vector_type& outputA, magnitude_type& theta,
                                matrix_double& eigvecs, vector_double& eigvals) ;
-        void diagonalize_second(const vector_space& input, const vector_space& inputA,  const fortran_int_t& dim,
+        void diagonalize_second(const vector_space& input, const vector_space& inputA, const fortran_int_t& dim,
                                 vector_type& output, vector_type& outputA, magnitude_type& theta,
                                 matrix_double& eigvecs, vector_double& eigvals) {} ;
         void multiply_diagonal(vector_type &r, const vector_type &V, const magnitude_type &theta) ;
