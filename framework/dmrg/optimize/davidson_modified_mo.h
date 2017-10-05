@@ -262,16 +262,24 @@ namespace ietl {
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>
     double davidson_modified_mo<MATRIX, VS, OtherMatrix, SymmGroup>::compute_overlap(const vector_type& vec_test)
     {
-        double ret, scr ;
-        if (root_homing_type_ == 1) {
+        double ret1, ret2, ret ;
+        // Calculates the two overlaps
+        if (root_homing_type_ == 1 || root_homing_type_ == 3) {
             if (nsites_ == 1)
-                ret = pov_[i_state_].overlap(vec_test / ietl::two_norm(vec_test), site1_);
+                ret1 = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
             else
-                ret = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
-        } else {
-            ret = ietl::dot(vec_test, v_guess_[i_state_]) / ietl::two_norm(vec_test);
+                ret1 = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         }
-        return fabs(ret) ;
+        if (root_homing_type_ == 2 || root_homing_type_ == 3)
+            ret2 = ietl::dot(vec_test, v_guess_[i_state_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[i_state_]));
+        // Finalizes the calculation
+        if (root_homing_type_ == 1)
+            ret = fabs(ret1) ;
+        else if (root_homing_type_ == 2)
+            ret = fabs(ret2) ;
+        else
+            ret = (fabs(ret1) + fabs(ret2)) * 0.5 ;
+        return ret ;
     }
     // Routine to print the header of the table
     template<class MATRIX, class VS, class OtherMatrix, class SymmGroup>

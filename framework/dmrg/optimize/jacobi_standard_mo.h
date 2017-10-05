@@ -229,16 +229,24 @@ namespace ietl
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     double jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::compute_overlap(const vector_type &vec_test)
     {
-        double ret ;
-        if (root_homing_type_ == 1) {
+        double ret1, ret2, ret ;
+        // Calculates the two overlaps
+        if (root_homing_type_ == 1 || root_homing_type_ == 3) {
             if (nsites_ == 1)
-                ret = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
+                ret1 = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
             else
-                ret = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
-        } else {
-            ret = ietl::dot(vec_test, v_guess_[i_state_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[i_state_]));
+                ret1 = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
         }
-        return fabs(ret) ;
+        if (root_homing_type_ == 2 || root_homing_type_ == 3)
+            ret2 = ietl::dot(vec_test, v_guess_[i_state_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[i_state_]));
+        // Finalizes the calculation
+        if (root_homing_type_ == 1)
+            ret = fabs(ret1) ;
+        else if (root_homing_type_ == 2)
+            ret = fabs(ret2) ;
+        else
+            ret = (fabs(ret1) + fabs(ret2)) * 0.5 ;
+        return ret ;
     }
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>

@@ -157,9 +157,12 @@ public:
             root_homing_type_ = 0 ;
             mps2follow.resize(1) ;
             mps2follow[0].resize(0) ;
-        } else if (parms_["ietl_diag_homing_criterion"] == "input") {
+        } else if (parms_["ietl_diag_homing_criterion"] == "input" || parms_["ietl_diag_homing_criterion"] == "both") {
             do_root_homing_   = true ;
-            root_homing_type_ = 1 ;
+            if (parms_["ietl_diag_homing_criterion"] == "input")
+                root_homing_type_ = 1 ;
+            else
+                root_homing_type_ = 3 ;
             if (do_stateaverage_) {
                 // Extract the list of states to be followed
                 std::vector<std::string> list_sa;

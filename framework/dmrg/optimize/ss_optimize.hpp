@@ -290,7 +290,7 @@ public:
             std::sort(sorter_.begin(), sorter_.end());
             this->update_order(sorter_);
             //
-            if (root_homing_type_ == 1)
+            if (root_homing_type_ == 1 || root_homing_type_ == 3)
                 for (size_t k = 0; k < n_root_; k++)
                     poverlap_vec_[k].update(mps_vector[k], site, lr);
             END_TIMING("FINAL OPERATIONS")
