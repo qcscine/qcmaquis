@@ -115,7 +115,7 @@ public:
         // Shift-and-invert paramters
         // --------------------------
         double omega = parms["ietl_si_omega"] ;
-	omega_shift_ = parms["si_omega_shift"] ;
+	    omega_shift_ = parms["si_omega_shift"] ;
         if (std::fabs(omega) > 1.0E-15) {
             do_shiftandinvert_ = true ;
             omega_vec.resize(n_root_, omega) ;
@@ -134,13 +134,15 @@ public:
         do_stateaverage_ = parms_["n_states_sa"].as<int>() > 0 ;
         for (size_t k = 0; k < n_root_; k++)
             order.push_back(k) ;
-        mps_average = mps_vector[0] ;
-        for (size_t k = 0; k < L_; k++) {
-            for (int i = 1; i < n_root_; i++)
-                mps_average[k] += mps_vector[i][k] ;
-            mps_average[k] /= n_root_ ;
+        if (sa_alg_ == 1) {
+            mps_average = mps_vector[0];
+            for (size_t k = 0; k < L_; k++) {
+                for (int i = 1; i < n_root_; i++)
+                    mps_average[k] += mps_vector[i][k];
+                mps_average[k] /= n_root_;
+            }
+            mps_average.canonize(site);
         }
-        mps_average.canonize(site);
         for (int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
         for (int i = 0 ; i < n_root_; ++i ) {
