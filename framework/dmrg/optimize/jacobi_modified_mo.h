@@ -121,7 +121,7 @@ namespace ietl
         int imin , imax , nevec;
         vector_double overlaps , overlaps_2 ;
         vector_type u_local ;
-	magnitude_type tmp_overlap = 0. ; 
+	    magnitude_type tmp_overlap = 0. ;
         // Definition of the dimensions and dynamic memory allocation
         if (dim != n_restart_max_)
             nevec  = ((n_maxov_ > dim) ? dim : n_maxov_) ;
@@ -145,6 +145,7 @@ namespace ietl
             eigvecs[i].resize(dim) ;
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
+        std::cout << omega_vec_[0] << std::endl ;
         // Eigenvalue selection
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis

@@ -62,7 +62,6 @@ private:
         // Optimization algorithm
         add_option("optimization", "singlesite or twosite", value("twosite"));
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
-        
         add_option("alpha_initial","", value(1e-2));
         add_option("alpha_main", "", value(1e-4));
         add_option("alpha_final", "", value(1e-8));
@@ -81,6 +80,8 @@ private:
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         add_option("maximum_overlap_side", "side where to take the eigenvalue", value(0)) ;
+        add_option("activate_constant_omega", "number of sweeps after which the constant omega is activated", value(0)) ;
+        add_option("activate_last_overlap", "number of sweeps after which the constant overlap is activated", value(0)) ;
         // GMRES-related parameters
         //ALB The guess option is kept for backward compatibility, 'zero' should be always used
         add_option("ietl_gmres_maxiter", "", value(20));

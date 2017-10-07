@@ -403,6 +403,15 @@ protected:
         for (size_t i = 0; i < n_root_; i++)
             order[i]  = sorter[i].second ;
     }
+    // -- UPDATES THE PARAMETERS --
+    void update_paramters(const int& sweep)
+    {
+        if (sweep == i_activate_constant_omega_)
+            update_omega = false ;
+        if (sweep == i_activate_last_overlap_)
+            root_homing_type_ = 2 ;
+
+    }
     // +----------+
     //  ATTRIBUTES
     // +----------+
@@ -420,11 +429,12 @@ protected:
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
     // Root-homing procedure
     bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_ ;
-    int root_homing_type_ ;
-    double omega_shift_ ;
+    int i_activate_last_overlap_, root_homing_type_ ;
     std::vector<partial_overlap> poverlap_vec_;
     // Energy-specific diagonalization
     bool update_omega ;
+    double omega_shift_ ;
+    int i_activate_constant_omega_ ;
     std::vector<double> omega_vec ;
     // State average
     bound_database boundaries_database_ ;
