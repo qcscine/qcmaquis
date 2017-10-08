@@ -145,7 +145,6 @@ namespace ietl
             eigvecs[i].resize(dim) ;
         // Diagonalization
         get_eigenvalue(eigvals, eigvecs, dim , imin, imax) ;
-        std::cout << omega_vec_[0] << std::endl ;
         // Eigenvalue selection
         for (int i = 0; i < nevec; ++i) {
             // Conversion to the original basis

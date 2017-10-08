@@ -406,11 +406,14 @@ protected:
     // -- UPDATES THE PARAMETERS --
     void update_paramters(const int& sweep)
     {
-        if (sweep == i_activate_constant_omega_)
-            update_omega = false ;
-        if (sweep == i_activate_last_overlap_)
-            root_homing_type_ = 2 ;
-
+        if (sweep == i_activate_constant_omega_) {
+            std::cout << "Omega update deactivated" << std::endl ;
+            update_omega = false;
+        }
+        if (sweep == i_activate_last_overlap_) {
+            std::cout << "Last homing deactivated" << std::endl;
+            root_homing_type_ = 2;
+        }
     }
     // +----------+
     //  ATTRIBUTES

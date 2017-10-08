@@ -114,6 +114,9 @@ public:
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
+            std::cout << " -- VALUES OF OMEGA -- " << std::endl ;
+            for (size_t idx = 0; idx < n_root_; idx++)
+                std::cout << omega_vec[idx] << std::endl ;
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_);
             // Generates the vectorset object
