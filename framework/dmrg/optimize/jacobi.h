@@ -120,8 +120,7 @@ namespace ietl
                                         matrix_double& eigvecs, vector_double& eigvals) {} ;
         virtual void print_endline(void) {} ;
         virtual void print_header_table(void) {} ;
-        virtual void print_newline_table(const size_t& i , const double& er, const magnitude_type& ener,
-                                         const double& ov) {} ;
+        virtual void print_newline_table(const size_t& i , const double& er, const magnitude_type& ener) {} ;
         virtual void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta,
                             const vector_type& r, vector_type& t) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
@@ -141,11 +140,12 @@ namespace ietl
         };
         // Protected attributes
         double                       ietl_atol_, ietl_rtol_, overlap_ ;
-        int                          nsites_, sa_alg_, site1_, site2_ ;
+        int                          i_homing_selected, nsites_, sa_alg_, site1_, site2_ ;
         FortranMatrix<scalar_type>   M ;
         MATRIX const &               matrix_ ;
         vector_ortho_vec             ortho_space_ ;
-        size_t                       i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ , n_restart_max_, n_root_found_, n_sa_ ;
+        size_t                       i_gmres_guess_, i_state_, max_iter_ , n_restart_min_ ,
+                                     n_restart_max_, n_root_found_, n_sa_ ;
         result_collector             u_and_uA_ ;
         vector_bm                    Hdiag_ ;
         vector_space                 v_guess_ ;
@@ -182,6 +182,7 @@ namespace ietl
         ietl_atol_(ietl_atol),
         ietl_rtol_(ietl_rtol),
         i_gmres_guess_(i_gmres_guess),
+        i_homing_selected(0),
         i_state_(0),
         sa_alg_(sa_alg)
     {
@@ -226,6 +227,7 @@ namespace ietl
             i_state_ = order_[k] ;
             do {
                 // Initialization/update of the vector space
+                i_homing_selected = 0 ;
                 if (starting) {
                     n_iter = initialize_vecspace(V, VA) ;
                     starting = false ;
@@ -243,7 +245,7 @@ namespace ietl
                 n_iter += 1;
                 vector_type r = compute_error(u, uA, theta) ;
                 converged = check_convergence(u, uA, r, theta, iter, eigvec, eigval) ;
-                print_newline_table(n_iter, ietl::two_norm(r), eigval, overlap_);
+                print_newline_table(n_iter, ietl::two_norm(r), eigval);
                 if (converged || n_iter == iter.max_iterations() ) {
                     print_endline() ;
                     n_root_found_ += 1 ;

@@ -60,6 +60,7 @@ namespace ietl
         using base::apply_operator ;
         using base::get_eigenvalue ;
         using base::i_gmres_guess_ ;
+        using base::i_homing_selected ;
         using base::i_state_ ;
         using base::n_restart_max_ ;
         using base::n_root_found_ ;
@@ -96,7 +97,7 @@ namespace ietl
                                 matrix_double& eigvecs, vector_double& eigvals) ;
         void print_endline(void) ;
         void print_header_table(void) ;
-        void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
+        void print_newline_table(const size_t& i, const double& error, const magnitude_type& en) ;
         void sort_prop(couple_vec& vector_values) ;
         // Private attributes
         double atol_init_ ;
@@ -151,11 +152,13 @@ namespace ietl
             u_local = eigvecs[i][0] * MPSTns_input[0];
             for (int j = 1; j < dim; ++j)
                 u_local += eigvecs[i][j] * MPSTns_input[j];
+            u_local /= ietl::two_norm(u_local) ;
             overlaps[i] = compute_overlap(u_local) ;
             // Conversion to the original basis
             u_local = eigvecs[i][0] * MPSTns_input_A[0];
             for (int j = 1; j < dim; ++j)
                 u_local += eigvecs[i][j] * MPSTns_input_A[j];
+            u_local /= ietl::two_norm(u_local) ;
             overlaps_2[i] = compute_overlap(u_local) ;
         }
         // Finalization
@@ -164,8 +167,8 @@ namespace ietl
             overlap_ = 0. ;
         for (int i = 0; i < nevec; ++i) {
             if (root_homing_type_ == 1)
-	    	tmp_overlap = (overlaps[i]+overlaps_2[i])/2. ;
-	    else 
+	        	tmp_overlap = (overlaps[i]+overlaps_2[i])/2. ;
+	        else
                 tmp_overlap = overlaps[i] ;
             if (tmp_overlap > overlap_) {
                 idx = i ;
@@ -174,6 +177,10 @@ namespace ietl
         }
         // Finalization
         if (idx != -1) {
+            if (mod == 0)
+                i_homing_selected = idx ;
+            else
+                i_homing_selected = -idx ;
             MPSTns_output = eigvecs[idx][0] * MPSTns_input[0];
             MPSTns_output_A = eigvecs[idx][0] * MPSTns_input_A[0];
             for (int j = 1; j < dim; ++j) {
@@ -242,9 +249,9 @@ namespace ietl
         // Calculates the two overlaps
         if (root_homing_type_ == 1 || root_homing_type_ == 3) {
             if (nsites_ == 1)
-                ret1 = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_);
+                ret1 = pov_[i_state_].overlap(vec_test, site1_);
             else
-                ret1 = pov_[i_state_].overlap(vec_test/ietl::two_norm(vec_test), site1_, site2_);
+                ret1 = pov_[i_state_].overlap(vec_test, site1_, site2_);
         }
         if (root_homing_type_ == 2 || root_homing_type_ == 3)
             ret2 = ietl::dot(vec_test, v_guess_[i_state_]) / (ietl::two_norm(vec_test)*ietl::two_norm(v_guess_[i_state_]));
@@ -267,22 +274,23 @@ namespace ietl
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_header_table(void) {
         print_endline() ;
-        std::cout << " Iteration |    Error    |    Energy    |  Overlap  " << std::endl ;
+        std::cout << " Iteration |    Error    |    Energy    |  Overlap  | Hom. Indx." << std::endl ;
         print_endline() ;
     } ;
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_endline(void) {
-        std::cout << "-----------+-------------+--------------+-----------" << std::endl ;
+        std::cout << "-----------+-------------+--------------+-----------+-------------" << std::endl ;
     } ;
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
-    void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_newline_table(const size_t& i, const double& error,
-                                                                                                    const magnitude_type& en, const double& overlap )
+    void jacobi_davidson_modified_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_newline_table(const size_t& i,
+                                                                                                    const double& error,
+                                                                                                    const magnitude_type& en)
     {
         char buf[100] ;
 	    int a = i, n;
-        n = sprintf(buf, "%5d      | %1.4E  | %6.5f  |  %1.4f", a, error, en, overlap);
+        n = sprintf(buf, "%5d      | %1.4E  | %6.5f  |  %1.4f   | %5d", a, error, en, overlap_, i_homing_selected);
         std::cout << buf << std::endl;
     }
 }

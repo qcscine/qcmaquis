@@ -114,7 +114,7 @@ namespace ietl
                                     matrix_double& eigvecs, vector_double& eigvals) ;
         void print_endline(void) ;
         void print_header_table(void) ;
-        void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const double& overlap) ;
+        void print_newline_table(const size_t& i, const double& error, const magnitude_type& en) ;
         void solver(const vector_type& u, const vector_type& uA, const magnitude_type& theta, const vector_type& r, vector_type& t) ;
         void sort_prop(couple_vec& vector_values) ;
         void update_u_and_uA(const vector_type& u, const vector_type& uA) ;
@@ -376,8 +376,9 @@ namespace ietl
     } ;
     //
     template<class MATRIX, class VS, class ITER>
-    void jacobi_davidson_standard<MATRIX, VS, ITER>::print_newline_table(const size_t& i,          const double& error,
-                                                                         const magnitude_type& en, const double& overlap )
+    void jacobi_davidson_standard<MATRIX, VS, ITER>::print_newline_table(const size_t& i,
+                                                                         const double& error,
+                                                                         const magnitude_type& en)
     {
         char buf[39];
 	    int a = i , n ;
