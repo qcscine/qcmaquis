@@ -118,11 +118,12 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> & mps, st
         tmp = new Matrix((*coeff).num_rows(), (*site_block).num_cols());
         gemm(*coeff, *site_block, *tmp);
         *coeff = *tmp;
+        delete site_block ;
+        delete left_pb ;
     }
     res = (*coeff)(0,0) ;
-    delete tmp ;
     delete coeff ;
-    delete site_block ;
+    delete tmp ;
     return res ;
 }
 

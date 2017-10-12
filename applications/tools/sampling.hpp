@@ -116,11 +116,28 @@ struct Sampling {
         unsigned int seed = 123456;
         generator.seed(seed+time(NULL));
     }
-    // template generate_dets
+    // Template generate_dets
+    // -- ARGUMENTS --
+    // 1)  dets          --> determinant provided in input.
+    // 2)  dets_mclr     --> determinant reservoir
+    // 3)  mps           --> reference MPS
+    // 4)  hash          --> dictionary associating each index to the overlap
+    // 5)  hash_index    --> dictionary associating each intex to a long integer
+    // 6)  site_dims     --> physical dimension of each site of the DMRG lattice
+    // 7)  nmodes        --> size L of the DMRG lattice
+    // 8)  nsample       --> number of samples
+    // 9)  nitermax      --> maximum number of iterations of the algorithm
+    // 10) CI_threshold  --> threshold to use to store the determinant
+    // 11) COM_threshold --> threshold to assess the convergence of the SRCAS algorithm
     template <typename Determinants, typename Matrix, typename SymmGroup, typename Hash_value, typename Hash_index>
-    void generate_dets(Determinants dets, Determinants dets_mclr, MPS<Matrix, SymmGroup> mps,
-                       Hash_value hash, Hash_index hash_index, std::vector< Index<SymmGroup> > site_dims,
-                       int nmodes, int nsample, int nitermax, double CI_threshold, double COM_threshold)
+    void generate_dets(Determinants dets,
+                       Determinants dets_mclr,
+                       MPS<Matrix, SymmGroup> mps,
+                       Hash_value hash,
+                       Hash_index hash_index,
+                       std::vector< Index<SymmGroup> > site_dims,
+                       int nmodes, int nsample, int nitermax,
+                       double CI_threshold, double COM_threshold)
     {
         // Header printing
         maquis::cout << "    CI-threshold  : " <<  CI_threshold << std::endl;
@@ -134,21 +151,17 @@ struct Sampling {
         scalar_type ci , ci0 , ci_ratio , ci_tmp ;
         scalar_type sum_ci2 = 0.0 ;
         scalar_type completeness = 0.0 ;
-        std::size_t det_length = dets[0].size() ;
-        std::size_t n_total_dim ;
-	    std::size_t number_of_dets ;
+        std::size_t det_length = dets[0].size() , n_total_dim , number_of_dets ;
         // Determinants initialization
-        Determinant det;
-        Determinant det_queen , det_tmp ;
+        Determinant det, det_queen , det_tmp ;
         det.resize(det_length) ;
         det_queen.resize(det_length) ;
         det_tmp.resize(det_length) ;
         for (std::size_t c = 0; c < dets.size(); ++c)
             hash_index[dets[c]] = c ;
         // determinant spawnning -- preparing part
-        int iaccept = 0 ;
-        int iaccept_queen = 0 ;
-        // Loop over the determinants to be followed
+        int iaccept = 0 , iaccept_queen = 0 ;
+        // Loop over the determinants of the reservoir
         for (std::size_t c = 0; c < dets_mclr.size(); ++c) {
             det = dets_mclr[c];
             ci0 = extract_coefficient(mps, det);
@@ -159,8 +172,8 @@ struct Sampling {
         for (std::size_t i = 0; i < det_length; i++)
             n_total_dim += site_dims[i][0].second ;
         // Get the number of excited electrons. This number is generated randomly
-        int nmodes_excited ;
-        det_queen = dets[0];
+        int nmodes_excited , mode_2excite ;
+        det_queen = dets[0] ;
         int nMAX = 0 ;
         float x ;
         // +-----------+
@@ -168,16 +181,14 @@ struct Sampling {
         // +-----------+
         do {
             nMAX++ ;
-            //n_total_dim = 12  ;
-            std::cout << "Inizio" << std::endl ;
-            for ( int isample = 0; isample < nsample; isample++ ) {
+            for ( int isample = 0; isample < nsample ; isample++ ) {
                 // Loop over the determinants to be sampled
                 // Updates the "queen" determinant
                 nmodes_excited = int(floor(n_total_dim*random_number()) + 1);
                 det_tmp = det_queen ;
                 for (std::size_t idx = 0; idx < nmodes_excited; idx++){
                     // Compute mode excitation
-                    int mode_2excite = int(floor(random_number()*nmodes )) ;
+                    mode_2excite = int(floor(random_number()*nmodes )) ;
                     x = random_number() ;
                     if (std::fabs(x) < 0.5)
                         det_tmp[mode_2excite] += 1 ;
@@ -188,7 +199,8 @@ struct Sampling {
                 for (std::size_t idx = 0; idx < det_length; idx++) {
                     det_tmp[idx] %= site_dims[idx][0].second ;
                 }
-                // Updates the data
+                // Updates the data if the determinant has not been visited yet.
+                // The data are stored based on the CI_threshold parameter
                 iter = hash.find(det_tmp) ;
                 if(iter == hash.end()) {
                     ci = extract_coefficient<Matrix,SymmGroup>(mps, det_tmp);
@@ -199,17 +211,16 @@ struct Sampling {
                 } else {
                     ci = iter->second;
                 }
-                ci_ratio = pow(ci,2.0)/pow(ci0,2);
-                double x = random_number() ;
-                // Whether use this bee-dt as the new queen-det
+                // Determinant update
+                ci_ratio = pow(ci,2.0)/pow(ci0,2) ;
+                x = random_number() ;
                 if( ci_ratio > x ) {
                     det_queen = det_tmp ;
                     ci0 = ci ;
                     iaccept_queen++ ;
                 }
             }
-            std::cout << "Fine" << std::endl ;
-            sum_ci2 = 0.0;
+            sum_ci2 = 0.0 ;
             for( iter=hash.begin(); iter!=hash.end(); iter++) {
                 ci_tmp  = iter->second;
                 sum_ci2 = sum_ci2 + pow(ci_tmp,2.0);
@@ -220,7 +231,7 @@ struct Sampling {
             maquis::cout << "Determinant-naccept-queen " << iaccept_queen << std::endl;
             completeness = 1.0-sum_ci2;
             maquis::cout << " Current completeness (1-\\sum(ci^2)) : " << completeness << std::endl;
-        } while(completeness>COM_threshold && nMAX< nitermax) ;
+        } while( completeness > COM_threshold && nMAX< nitermax ) ;
         // +---------------+
         //   FINAL PRINTING
         // +---------------+
