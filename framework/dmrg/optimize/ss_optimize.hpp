@@ -103,6 +103,7 @@ public:
             site = to_site(L, _site);
         }
         // Main loop
+		this->update_parameter() ;
         for (; _site < 2 * L; ++_site) {
             boost::chrono::high_resolution_clock::time_point now, then;
             BEGIN_TIMING("PRELIMINARY OPERATIONS")

@@ -80,8 +80,8 @@ private:
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         add_option("maximum_overlap_side", "side where to take the eigenvalue", value(0)) ;
-        add_option("activate_constant_omega", "number of sweeps after which the constant omega is activated", value(0)) ;
-        add_option("activate_last_overlap", "number of sweeps after which the constant overlap is activated", value(0)) ;
+        add_option("activate_constant_omega", "number of sweeps after which the constant omega is activated", value(-1)) ;
+        add_option("activate_last_overlap", "number of sweeps after which the constant overlap is activated", value(-1)) ;
         // GMRES-related parameters
         //ALB The guess option is kept for backward compatibility, 'zero' should be always used
         add_option("ietl_gmres_maxiter", "", value(20));

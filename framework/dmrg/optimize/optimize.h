@@ -116,6 +116,8 @@ public:
         // --------------------------
         double omega = parms["ietl_si_omega"] ;
 	    omega_shift_ = parms["si_omega_shift"] ;
+		i_activate_last_overlap_   = parms["activate_last_overlap"] ; 
+		i_activate_constant_omega_ = parms["activate_constant_omega"] ; 
         if (std::fabs(omega) > 1.0E-15) {
             do_shiftandinvert_ = true ;
             omega_vec.resize(n_root_, omega) ;
@@ -404,7 +406,7 @@ protected:
             order[i]  = sorter[i].second ;
     }
     // -- UPDATES THE PARAMETERS --
-    void update_paramters(const int& sweep)
+    void update_parameters(const int& sweep)
     {
         if (sweep == i_activate_constant_omega_) {
             std::cout << "Omega update deactivated" << std::endl ;
