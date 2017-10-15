@@ -108,9 +108,16 @@ public:
         // +------------------------------+
         //  MAIN LOOP - SWEEP OPTIMIZATION
         // +------------------------------+
+		this->update_parameters(sweep) ;
         for (; _site < 2*L_-2; ++_site) {
             //
             double i ;
+			// Debug printing
+			if (do_shiftandinvert_) {
+            	std::cout << " -- VALUES OF OMEGA -- " << std::endl ;
+            	for (size_t idx = 0; idx < n_root_; idx++)
+            	    std::cout << omega_vec[idx] << std::endl ;
+			}
             // -- GENERATES THE TWO SITE MPO --
             int lr, site1, site2;
             if (_site < L_-1) {

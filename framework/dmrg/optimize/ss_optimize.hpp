@@ -103,7 +103,7 @@ public:
             site = to_site(L, _site);
         }
         // Main loop
-		this->update_parameter() ;
+		this->update_parameters(sweep) ;
         for (; _site < 2 * L; ++_site) {
             boost::chrono::high_resolution_clock::time_point now, then;
             BEGIN_TIMING("PRELIMINARY OPERATIONS")
@@ -115,9 +115,12 @@ public:
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
-            std::cout << " -- VALUES OF OMEGA -- " << std::endl ;
-            for (size_t idx = 0; idx < n_root_; idx++)
-                std::cout << omega_vec[idx] << std::endl ;
+			// Debug printing
+			if (do_shiftandinvert_) {
+            	std::cout << " -- VALUES OF OMEGA -- " << std::endl ;
+            	for (size_t idx = 0; idx < n_root_; idx++)
+            	    std::cout << omega_vec[idx] << std::endl ;
+			}
             std::vector<std::pair<double, MPSTensor<Matrix, SymmGroup> > > res;
             SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_);
             // Generates the vectorset object
