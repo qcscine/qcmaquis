@@ -36,6 +36,8 @@
 #include <cmath>
 
 #include "dmrg/optimize/gmres_alb.h"
+#include "dmrg/optimize/conjugate_gradient.h"
+#include "dmrg/optimize/biconjugate_gradient_stabilized.h"
 #include "dmrg/optimize/jacobi.h"
 #include "dmrg/optimize/partial_overlap.h"
 
@@ -389,8 +391,8 @@ protected:
         scalar_type dru, duu ;
         vector_type Az = apply_operator(uA) ;
         scalar_type ray = omega_vec_[i_state_] - ietl::dot(u,uA) / ietl::dot(u,u) ;
-        gmres_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, ray, ortho_space_,
-                                                      i_state_, max_iter_, false);
+        biconjgrad_stab_standard<MATRIX, vector_type, VS> gmres(this->matrix_, u, vecspace_, ray, ortho_space_,
+                                                                i_state_, max_iter_, true);
         gmres_modified<MATRIX, vector_type, VS> gmres_modified(this->matrix_, u, vecspace_, uA, Az, theta, ortho_space_,
                                                                i_state_, omega_vec_[i_state_], max_iter_, false);
         gmres_skew<MATRIX, vector_type, VS> gmres_skew(this->matrix_, u, uA, vecspace_, theta, ortho_space_,
