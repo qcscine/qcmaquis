@@ -401,6 +401,8 @@ namespace measurements {
             pos_t p1_end   = lattice.size();
             pos_t p2_end   = lattice.size();
             pos_t p3_end   = lattice.size();
+            pos_t p4_end   = lattice.size();
+            pos_t p5_end   = lattice.size();
 
             if(positions_first.size() == 2){
                 p1_start = positions_first[0];
@@ -426,10 +428,10 @@ namespace measurements {
             #endif
             for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
             for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
-                for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
-                for (pos_t p4 = 0;                p4 < lattice.size(); ++p4)
-                for (pos_t p5 = 0;                p5 < lattice.size(); ++p5)
-                { 
+            for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
+            for (pos_t p4 = 0;                p4 < p4_end; ++p4)
+            for (pos_t p5 = 0;                p5 < p5_end; ++p5)
+            {
                     // index restrictions
                     if(p1 < p2 ) continue;
                     if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) continue;
@@ -496,7 +498,7 @@ namespace measurements {
                         this->labels.reserve(this->labels.size() + dct.size());
                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                     }
-                }// p3,p4,p5
+            }// p1, p2, p3, p4, p5
         }
 
 
@@ -516,8 +518,8 @@ namespace measurements {
             pos_t p1_end   = 0;
             pos_t p2_end   = 0;
             pos_t p_max    = lattice.size();
-
-            if(positions_first.size() == 4){
+            pos_t p_size   = positions_first.size();
+            if(p_size == 4){
                 p4_start = positions_first[0];
                 p3_start = positions_first[1];
                 p1_start = positions_first[2];
@@ -527,19 +529,15 @@ namespace measurements {
                 p1_end   = positions_first[2];
                 p2_end   = positions_first[3];
             }
-            for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
+                         #ifdef MAQUIS_OPENMP
+                         #pragma omp parallel for collapse(4) schedule(dynamic,1)
+                         #endif
             for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
+            for (pos_t p4 = p4_start ; p4 <= p3; ++p4)
             {
-                 for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
+                 for (pos_t p1 = p1_start; p1 > p4; --p1)
                  {
-                      if(p4 > p3 || p4 > p1 || p3 > p1) continue;
-
-                      if(positions_first.size() == 0){
-                          p2_start = p1;
-                          p2_end   = 0; 
-                      }
-
-                      for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
+                      for (pos_t p2 = ((p_size == 0) ? p1: p2_start); p2 >= ((p_size == 0) ? 0: p2_end); --p2)
                       {
                           if(p3 > p2) continue;
 
@@ -555,9 +553,9 @@ namespace measurements {
                           bool     kl_equal = (p1 != p2 && p2 != p3 && p3 == p4); // case 4
                           bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
 
-                          #ifdef MAQUIS_OPENMP
-                          #pragma omp parallel for collapse(3) schedule(dynamic,1)
-                          #endif
+                         // #ifdef MAQUIS_OPENMP
+                         // #pragma omp parallel for collapse(3) schedule(dynamic,1)
+                         // #endif
 
                           for (pos_t p5 = p1; p5 >= 0; --p5)
                           for (pos_t p6 = p1; p6 >= 0; --p6)
