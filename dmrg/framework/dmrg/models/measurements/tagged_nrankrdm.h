@@ -529,9 +529,9 @@ namespace measurements {
                 p1_end   = positions_first[2];
                 p2_end   = positions_first[3];
             }
-                         #ifdef MAQUIS_OPENMP
-                         #pragma omp parallel for collapse(4) schedule(dynamic,1)
-                         #endif
+            //#ifdef MAQUIS_OPENMP
+            //#pragma omp parallel for collapse(4) schedule(dynamic,1)
+            //#endif
             for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
             for (pos_t p4 = p4_start ; p4 <= p3; ++p4)
             {
@@ -541,7 +541,7 @@ namespace measurements {
                       {
                           if(p3 > p2) continue;
 
-                          // third index must be different if p1 == p2 
+                          // third index must be different if p1 == p2
                           if(p1 == p2 && p3 == p1) continue;
 
                           // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
@@ -553,9 +553,9 @@ namespace measurements {
                           bool     kl_equal = (p1 != p2 && p2 != p3 && p3 == p4); // case 4
                           bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
 
-                         // #ifdef MAQUIS_OPENMP
-                         // #pragma omp parallel for collapse(3) schedule(dynamic,1)
-                         // #endif
+                          #ifdef MAQUIS_OPENMP
+                          #pragma omp parallel for collapse(3) schedule(dynamic,1)
+                          #endif
 
                           for (pos_t p5 = p1; p5 >= 0; --p5)
                           for (pos_t p6 = p1; p6 >= 0; --p6)
