@@ -376,6 +376,7 @@ void TwoSiteTensor<Matrix, SymmGroup>::clear()
 template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup> & b)
 {
+    using std::swap;
     swap(this->phys_i, b.phys_i);
     swap(this->phys_i_left, b.phys_i_left);
     swap(this->phys_i_right, b.phys_i_right);
