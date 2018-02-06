@@ -117,10 +117,8 @@ class MaquisMeasurement:
         pq_dm_matrix[ 5, 5] = self.corr_ndownndown[p,q] - self.corr_ndowndocc[p,q] - self.corr_doccndown[p,q] + self.corr_docc[p,q]
         pq_dm_matrix[ 6, 6] = self.corr_nupndown[p,q] - self.corr_doccndown[p,q] - self.corr_nupdocc[p,q] + self.corr_docc[p,q]
         pq_dm_matrix[ 7, 7] = self.corr_doccndown[p,q] - self.corr_docc[p,q]
-        pq_dm_matrix[ 8, 8] = -self.loc_docc[q] - self.corr_docc[p,q] + self.corr_ndowndocc[p,q] + self.corr_nupdocc[p,q]
-\
-                             + self.loc_nup[q] + self.corr_doccnup[p,q] - self.corr_ndownnup[p,q] - self.corr_nupnup[p,q]
-
+        pq_dm_matrix[ 8, 8] = -self.loc_docc[q] - self.corr_docc[p,q] + self.corr_ndowndocc[p,q] + self.corr_nupdocc[p,q] \
+                            + self.loc_nup[q] + self.corr_doccnup[p,q] - self.corr_ndownnup[p,q] - self.corr_nupnup[p,q]
         pq_dm_matrix[ 9, 9] = self.corr_ndownnup[p,q] - self.corr_ndowndocc[p,q] - self.corr_doccnup[p,q] + self.corr_docc[p,q]
         pq_dm_matrix[10,10] = self.corr_nupnup[p,q] - self.corr_nupdocc[p,q] - self.corr_doccnup[p,q] + self.corr_docc[p,q]
         pq_dm_matrix[11,11] = self.corr_doccnup[p,q] - self.corr_docc[p,q]
