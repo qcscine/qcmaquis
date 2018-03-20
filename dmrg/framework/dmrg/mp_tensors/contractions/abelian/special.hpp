@@ -32,7 +32,11 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 
 namespace contraction {
-   
+    // +---------------------+
+    //  SITE_ORTHO_BOUNDARIES
+    // +---------------------+
+    // Routine to compute the MPSTensor objects to be given to the JD procedure
+    // for the deflation process
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
     site_ortho_boundaries(MPSTensor<Matrix, SymmGroup> const & mps,
@@ -40,14 +44,17 @@ namespace contraction {
                           block_matrix<OtherMatrix, SymmGroup> const & ortho_left,
                           block_matrix<OtherMatrix, SymmGroup> const & ortho_right)
     {
+        // Initialize and multiply the left overlap object by the MPS of the orthogonal vector
         ortho_mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> t, t2, t3;
         gemm(ortho_left, ortho_mps.data(), t);
         reshape_right_to_left_new(mps.site_dim(),
                                   ortho_left.left_basis(), ortho_mps.col_dim(),
                                   t, t2);
+        // Multiply by the right overlap object
         gemm(t2, transpose(ortho_right), t3);
         
+        // Final reshaping. Note that the data inside mps are not used, only its shape is employed
         mps.make_left_paired();
         t = mps.data();
         reshape_and_pad_left(mps.site_dim(),

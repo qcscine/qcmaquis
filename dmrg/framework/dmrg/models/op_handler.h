@@ -41,13 +41,28 @@
 
 #include "dmrg/models/tag_detail.h"
 
+//
+// OPTABLE CLASS
+// -------------
+// Inherited from a class of vector of site operators.
+// Defines three types:
+// - op_t        : site_operators type
+// - tag_type    : integer
+// - mvalue_type : type of the element of the matrix
+//
+// Has two methods:
+// - register         : takes an operator and returns in output an integer. Basically
+//                      increments this index for each operator that is added
+// - checked_register : check if an operator has been registered and, if yes, returns
+//                      a double which is the proportionality constant
+//
+
 template <class Matrix, class SymmGroup>
 class OPTable : public std::vector<typename operator_selector<Matrix, SymmGroup>::type>
 {
 public:
     typedef tag_detail::tag_type tag_type;
     typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
-
 private:
     typedef typename Matrix::value_type mvalue_type;
 
@@ -55,6 +70,18 @@ public:
     tag_type register_op(op_t const & op_);
     std::pair<tag_type, mvalue_type> checked_register(op_t const& sample);
 };
+
+//
+// TAGHANDLER CLASS
+// ----------------
+// Attributes:
+// - operator_table : pointer to an OpTable object that is dynamically allocated
+// - hermitian      : vector of "tag_type" object (integer), pointing to the hermitian
+//                    of each operator
+// - sign_table     : stores if each operator is fermionic or bosonic
+// - product_tab    : a map that associates to each couple of operator its product, and the
+//                    corresponding proportionality constant
+//
 
 template <class Matrix, class SymmGroup>
 class TagHandler

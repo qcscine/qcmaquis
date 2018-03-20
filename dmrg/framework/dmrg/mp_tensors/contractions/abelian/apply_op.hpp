@@ -33,6 +33,7 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/abelian/functors.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/detail.hpp"
+//#include "dmrg/block_matrix/indexing.h"
 
 namespace contraction {
     namespace abelian {

@@ -40,6 +40,26 @@
 // implementation of join functions
 #include "dmrg/mp_tensors/mps_join.h"
 
+//
+// CLASS MPTENSOR
+// --------------
+//
+// It's an extension of the block_matrix class. It has three public
+// attributes (phys_i, left_i and right_i), that are the three indexes
+// of an MPO, and three private attributes, the data_ (which is the
+// actual matrix), and the info regarding the storage and the normalization
+//
+
+//
+// CONSTRUCTORS
+// ------------
+//
+// Two different constructors, depending wheter a matrix is provided in input
+// or not. If a matrix is not provided, a boolead fillrand is used to fill
+// the MPS with random numbers or with constant values.
+// NOTE: in the first case the MPS is assumed to be LeftPaired.
+//
+
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
                                         Index<SymmGroup> const & ld,
@@ -54,22 +74,18 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 {
     Index<SymmGroup> lb = sd*ld, rb = rd;
     common_subset(lb, rb);
-    
     // remove blocks from the right index that may not be allowed by the left index
     right_i = rb;
     // remove blocks from the left index that may not be allowed by the right index
     Index<SymmGroup> possible_rp = adjoin(phys_i)*right_i, ltemp = ld;
     common_subset(ltemp, possible_rp);
     left_i = ltemp;
-    
     // this is safe, since sd \otimes ld = rd forces the block_matrix to be diagonal
     lb.sort();
     rb.sort();
     left_i.sort();
     right_i.sort();
-    
     data() = block_matrix<Matrix, SymmGroup>(lb, rb);
-    
     if (fillrand)
         data().generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
     else
@@ -110,6 +126,18 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
         swap(right_i, old_right_i);
     }
 }
+
+// RELEVANT METHODS
+// ----------------
+//
+// 1) replace_left_paired and replace_right_paired TODO still need to understand
+// 2) make_left_paired and make_right_paired transform the MPS in left_paired and
+//    right_paired format, respectively.
+// 3) normalize_left and normalize_right perform normalization of the matrix, using
+//    either QR or SVD decompositions
+// 4) multiply_from_left, multiply_from_right and multiply_by_scalar provide interfaces
+//    to standard operations
+// 5) scalar_overlap computes overlap of matrices
 
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, SymmGroup> const & rhs, Indicator normalization)
@@ -449,6 +477,13 @@ MPSTensor<Matrix, SymmGroup>::const_data() const
     return data_;
 }
 
+//
+// OPERATORS
+// ---------
+//
+// Interfaces to standard operators are provided (like multiplication by scalar,
+// division by scalar or sum/subtractions between MPSs)
+//
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &

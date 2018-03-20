@@ -97,31 +97,43 @@ namespace index_detail
 template<class SymmGroup>
 class basis_iterator_;
 
+// +-----------+
+//  INDEX CLASS
+// +-----------+
+// Template that use the SymmGroup parent class
+// The main attribute of Index is a vector of couples (charge, dimension), called data_type.
+// All the types derived from data_type are redefined.
+//
 template<class SymmGroup> class Index
 {
     typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > data_type;
-    
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef typename data_type::value_type value_type;
-    
-    typedef typename data_type::iterator iterator;
-    typedef typename data_type::const_iterator const_iterator;
-    
-    typedef typename data_type::reverse_iterator reverse_iterator;
+    // Type definition
+    typedef typename SymmGroup::charge                 charge;
+    typedef typename data_type::value_type             value_type;
+    typedef typename data_type::iterator               iterator;
+    typedef typename data_type::const_iterator         const_iterator;
+    typedef typename data_type::reverse_iterator       reverse_iterator;
     typedef typename data_type::const_reverse_iterator const_reverse_iterator;
-    
     typedef basis_iterator_<SymmGroup> basis_iterator;
-    
+    // +-----------+
+    //  Constructor
+    // +-----------+
+    // Either the simple constructor, or a constructor where the size of the vector (data_) is
+    // provided in input
     Index() : sorted_(true) {}
     Index(std::size_t s_) : sorted_(true), data_(s_) {}
-    
+    // +-------+
+    //  Methods
+    // +-------+
+    // -- SIZE_OF_BLOCK --
+    // gives the size of the block for a given charge
     std::size_t size_of_block(charge c) const
     {
         assert( has(c) );
         return (*this)[position(c)].second;
     }
-
+    
     std::size_t size_of_block(charge c, bool position_check) const
     {
         // I have to ignore the position_check argument because I can't dereference the end() iterator anyway
@@ -130,7 +142,9 @@ public:
             return 0;
         return (*this)[pos].second;
     }
-    
+    // -- POSITION --
+    // If sorted, finding the position is easier. The comparison is made on the SymmetryGroup object,
+    // and not on the dimension
     std::size_t position(charge c) const
     {
         const_iterator match;
@@ -142,7 +156,7 @@ public:
         if (match != data_.end() && (*match).first != c) match = data_.end();
         return std::distance(data_.begin(), match);
     }
-
+    
     std::size_t position(value_type x) const
     {
         assert( has(x.first) );
@@ -152,7 +166,8 @@ public:
                                           boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
                                          );
     }
-    
+    // -- HAS --
+    // Boolean function to check if a symmetry block is present
     bool has(charge c) const
     {
         if (sorted_)
@@ -162,12 +177,17 @@ public:
                                 index_detail::is_first_equal<SymmGroup>(c)) != data_.end();
     }
     
+    // -- SORT --
+    // The sorting is based on the SymmGroup comparison.
     void sort()
     {
         std::sort(data_.begin(), data_.end(), index_detail::gt<SymmGroup>());
         sorted_ = true;
     }
-    
+    // -- INSERT --
+    // Update the index object by adding a couple of Symmetry/Dim provided in input.
+    // Returns the final dimension of the Index object.
+    // A specific position can be provided in input
     std::size_t insert(value_type const & x)
     {
         if (sorted_) {
@@ -179,69 +199,74 @@ public:
             return data_.size()-1;
         }
     }
-    
+    //
     void insert(std::size_t position, value_type const & x)
     {
         data_.insert(data_.begin() + position, x);
         sorted_ = false;
     }
-    
+    // -- SHIFT --
+    // Multiply all the elements of the Index object by a constant SymmGroup (diff)
     void shift(charge diff)
     {
         for (std::size_t k = 0; k < data_.size(); ++k)
             (*this)[k].first = SymmGroup::fuse((*this)[k].first, diff);
     }
-    
+    // -- OPERATORS == and != --
     bool operator==(Index const & o) const
     {
         return (data_.size() == o.size()) && std::equal(data_.begin(), data_.end(), o.begin());
     }
-
+    //
     bool operator!=(Index const & o) const
     {
         return !( *this == o );
     }
-
+    // -- ITERATOR --
     basis_iterator basis_begin() const
     {
         assert( data_.size() > 0 );
         return basis_iterator(*this);
     }
-    
+    // -- CHARGES --
+    // Get a vector with all the charges of the Index object
     std::vector<charge> charges() const
     {
         std::vector<charge> ret(data_.size());
         for (std::size_t k = 0; k < data_.size(); ++k) ret[k] = (*this)[k].first;
         return ret;
     }
-    
+    // -- SIZES --
+    // Get a vector of all the sizes of the Index object
     std::vector<std::size_t> sizes() const
     {
         std::vector<std::size_t> ret(data_.size());
         for (std::size_t k = 0; k < data_.size(); ++k) ret[k] = (*this)[k].second;
         return ret;
     }
-    
+    // -- SUM_OF_SIZES --
+    // Sum over the vector returned by sizes
     std::size_t sum_of_sizes() const
     {
 		//boost::function<std::size_t (std::size_t,std::size_t)> pred = boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2);
         return std::accumulate(data_.begin(), data_.end(), 0, boost::lambda::ret<std::size_t>(boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)));
     }
 
+    // -- INTERFACES WITH THE METHODS OF STD::VECTOR --
     // This is mostly forwarding of the std::vector
     iterator begin() { return data_.begin(); }
     iterator end() { return data_.end(); }
     const_iterator begin() const { return data_.begin(); }
     const_iterator end() const { return data_.end(); }
-    
     reverse_iterator rbegin() { return data_.rbegin(); }
     reverse_iterator rend() { return data_.rend(); }
     const_reverse_iterator rbegin() const { return data_.rbegin(); }
     const_reverse_iterator rend() const { return data_.rend(); }
-    
     value_type & operator[](std::size_t p) { return data_[p]; }
     value_type const & operator[](std::size_t p) const { return data_[p]; }
-    
+    // -- ELEMENT --
+    // Takes in input an integer i and returns the corresponding couple
+    // of SymmGroup and Size
     boost::tuple<charge, std::size_t> element(std::size_t p) const
     {
         std::size_t i=0;
@@ -251,27 +276,25 @@ public:
         }
         return boost::make_tuple( (*this)[i].first, p );
     }
-
+    // Standard methods
     std::size_t size() const { return data_.size(); }
-    
     iterator erase(iterator p) { iterator r = data_.erase(p); return r; }
     iterator erase(iterator a, iterator b) { iterator r = data_.erase(a,b); return r; }
-    
     friend void swap(Index & a, Index & b)
     {
         using std::swap;
         swap(a.data_,   b.data_);
         swap(a.sorted_, b.sorted_);
     }
-    
+    //
 private:
+    // Private attributes
     data_type data_;
     bool sorted_;
-    
+    // Private methods
     void push_back(value_type const & x){
         data_.push_back(x);
     }
-    
     std::size_t destination(charge c) const
     {
         return std::find_if(data_.begin(), data_.end(),
@@ -317,19 +340,27 @@ public:
 
 #include "dual_index.h"
 
+// +-------------------+
+//  PRODUCTBASIS OBJECT
+// +-------------------+
+
 template<class SymmGroup>
 class ProductBasis
 {
 public:
+    // Types definiton
     typedef typename SymmGroup::charge charge;
     typedef std::size_t size_t;
-    
-    ProductBasis(Index<SymmGroup> const & a,
-                 Index<SymmGroup> const & b)
+    // +------------+
+    //  Constructors
+    // +------------+
+    // The constructors are based on the init private method. If no fusion algorithm is
+    // provided, the fuse method is used to combine the two charges
+    ProductBasis(Index<SymmGroup> const & a, Index<SymmGroup> const & b)
     {
         init(a, b, static_cast<charge(*)(charge, charge)>(SymmGroup::fuse));
     }
-    
+    //
     template<class Fusion>
     ProductBasis(Index<SymmGroup> const & a,
                  Index<SymmGroup> const & b,
@@ -338,7 +369,10 @@ public:
         init(a, b, f);
     }
    
-private: 
+private:
+    // -- INIT --
+    // This function is used to initialize a ProductBasis object. Fusion is a general, template
+    // function that takes two Charges and returns a third charge
     template<class Fusion>
     void init(Index<SymmGroup> const & a,
               Index<SymmGroup> const & b,
@@ -356,6 +390,9 @@ private:
     }
 
 public:
+    //
+    // -- OPERATOR () --
+    // Takes two charges and returns the size of the size of the block of the two charges
     size_t operator()(charge a, charge b) const
     {
         typedef typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator match_type;
@@ -363,7 +400,8 @@ public:
         assert( match != keys_vals_.end() );
         return match->second;
     }
-    
+    // -- SIZE() --
+    // Do the same, but taking only one charge in input
     inline size_t size(charge pc) const
     {
         assert(size_.count(pc) > 0);
@@ -371,10 +409,12 @@ public:
     }
     
     // for the moment let's avoid the default template argument (C++11)
+    // Does the same, but do also the fuse in-place
     inline size_t size(charge a, charge b) const
     {
         return size(a, b, static_cast<charge(*)(charge, charge)>(SymmGroup::fuse));
     }
+    // The same as before, but a fusing function can be provided
     template<class Fusion>
     size_t size(charge a, charge b, Fusion f) const
     {
@@ -382,8 +422,8 @@ public:
         assert(size_.count(pc) > 0);
         return size_[pc];
     }
-
 private:
+    // Private
     mutable boost::unordered_map<charge, size_t> size_;
     boost::unordered_map<std::pair<charge, charge>, size_t> keys_vals_;
 };

@@ -43,6 +43,15 @@
 #include "../applications/cideas/ci_generator.cpp"
 //#include "../applications/tools/deas.hpp"
 
+#ifdef USE_AMBIENT
+    #include "dmrg/block_matrix/detail/ambient.hpp"
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+#else
+    #include "dmrg/block_matrix/detail/alps.hpp"
+    typedef alps::numeric::matrix<double> matrix;
+#endif
+
+
 #if defined(USE_TWOU1)
 typedef TwoU1 grp;
 #elif defined(USE_TWOU1PG)

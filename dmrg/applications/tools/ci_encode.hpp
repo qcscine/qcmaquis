@@ -1,27 +1,26 @@
-
-
 /*****************************************************************************
  *
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *               2017-2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -38,6 +37,7 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
+
 
 /*
     Small function to read determinants from a input file
@@ -71,7 +71,7 @@ parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
                     tmp.push_back(site_dims[i][1].first); // up
                     break;
                 case 2:
-                    tmp.push_back(site_dims[i][2].first); // down 
+                    tmp.push_back(site_dims[i][2].first); // down
                     break;
                 case 1:
                     tmp.push_back(site_dims[i][3].first); // empty
@@ -151,7 +151,7 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
             maquis::cout << "current sector: " << sector << std::endl;
             maquis::cout << "site " << p << ", selected " << vlen << "x" << hlen << " block, offset " << voffset
                          << ", sector_matrix " << sector_matrix.num_rows() << "x" << sector_matrix.num_cols() << std::endl;
-            maquis::cout << "  ---> sector_matrix " << std::endl; 
+            maquis::cout << "  ---> sector_matrix " << std::endl;
             maquis::cout << sector_matrix << std::endl;
             maquis::cout << "  --->  vlen " << vlen << " hlen " << hlen << std::endl;
 
@@ -174,6 +174,126 @@ typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> const & m
     #endif
 
     return coeff(0,0);
+ /* Leon: commented Alberto's code on his request
+//
+// Function to extract the CI coefficients from an MPS
+// ---------------------------------------------------
+//
+// Let p and q be two MPS expressed as
+//
+//         ---     ---  |\ /|^s_1       |\ /|^s_l
+// | p > = >       >    | v |           | v |      |s_i ... s_l>
+//         --- ... ---  |   |     ....  |   |
+//         s_1     s_l
+//
+//         ---     ---  |\  |^s_1       |\  |^s_l
+// | q > = >       >    | \ |           | \ |      |s_i ... s_l>
+//         --- ... ---  |  \|     ....  |  \|
+//         s_1     s_l
+//
+// In our case, |q> is a product state (so only one value of the string s_1 ... s_l is
+// allowed). The overlap is computed by successive contraction of M and N matrices,
+// for increasing value of s_i. The algorithm proceeds as follows:
+//
+// 1) takes the initial vectors. The direct product of those vectors gives a matrix. However,
+//    only one value of sigma is allowed in N, and this "block" is equal to the identity. So
+//    the final matrix has only one sigma-block non null, and this block is equal to the one of M
+// 2) we sweep to the next site. Also in this case the sum over sigma_2 selects only one term,
+//    which is the identity matrix. We then perform the product of the only two matrix that
+//    survive.
+//
+// NOTE : the code works only for TrivialGroup symmetry
+//
+
+template <class Matrix, class SymmGroup>
+typename Matrix::value_type extract_coefficient(MPS<Matrix, SymmGroup> & mps, std::vector<int> const & det)
+{
+    typedef typename SymmGroup::charge charge ;
+    charge identity = SymmGroup::IdentityCharge ;
+    // Initialization
+    if (mps.length() != det.size())
+        throw std::runtime_error("extract_coefficient: length of mps != length of basis state\n");
+    charge total  = identity ;
+    charge sector = identity ;
+    double res ;
+    mps[0].make_left_paired();
+    std::size_t mrows = mps[0].row_dim().size_of_block(sector);
+    std::size_t mcols = mps[0].col_dim().size_of_block(sector);
+    Matrix* coeff = new Matrix(mrows, mcols, 0.);
+    Matrix* site_block;
+    Matrix* tmp ;
+    for (int i = 0; i < mrows; i++)
+        std::copy(mps[0].data()[0].row(mrows*det[0] + i).first,
+                  mps[0].data()[0].row(mrows*det[0] + i).second,
+                  (*coeff).row(i).first);
+    for (std::size_t p = 1; p < mps.length(); ++p) {
+        // Takes the point group of the input determinant on the p-th site,
+        // the symmetry group of the input matrix and fuse it, looks for the
+        // same block in the right matrix
+        charge left_input = identity;
+        sector = SymmGroup::fuse(sector, identity);
+        // Left pairing
+        mps[p].make_left_paired();
+        std::size_t mrows = mps[p].row_dim().size_of_block(identity);
+        // determine voffset - row offset for site_charge in sector_matrix
+        // if permformance is an issue, do not recalculate the ProductBasis on every call
+        ProductBasis<SymmGroup>* left_pb = new ProductBasis<SymmGroup>(mps[p].site_dim(), mps[p].row_dim());
+        std::size_t voffset = (*left_pb)(identity, left_input);
+        voffset += mrows * det[p];
+        // determine vlen and set hlen, the size of the matrix subblock
+        std::size_t vlen = mps[p-1].col_dim().size_of_block(identity);
+        std::size_t hlen = mps[p].col_dim().size_of_block(sector);
+        // Extract the subblock
+        site_block = new Matrix(vlen, hlen, 0.);
+        for (std::size_t rowcnt = 0; rowcnt < vlen; ++rowcnt)
+            std::copy(mps[p].data()[0].row(voffset + rowcnt).first,
+                      mps[p].data()[0].row(voffset + rowcnt).second,
+                      (*site_block).row(rowcnt).first);
+        if ((*coeff).num_cols() != (*site_block).num_rows())
+            throw std::runtime_error("coeff.num_cols() != site_block.num_rows()\n");
+        // multiply sub-block with previous sub-block
+        tmp = new Matrix((*coeff).num_rows(), (*site_block).num_cols());
+        gemm(*coeff, *site_block, *tmp);
+        *coeff = *tmp;
+        delete site_block ;
+        delete left_pb ;
+    }
+    res = (*coeff)(0,0) ;
+    delete coeff ;
+    delete tmp ;
+    return res ;
+}
+
+//
+// Simple function to extract, from an MPS, the block associated to a specific
+// local physical basis function, site and charge of the symmetry point group
+//
+template<class Matrix, class SymmGroup>
+Matrix extract_sigma_block( const MPS<Matrix, SymmGroup> & mps,
+                            std::size_t sigma,
+                            std::size_t site,
+                            typename SymmGroup::charge charge)
+{
+    // Initialization
+    // NOTE: here the objects hierarchy is:
+    //    1) mps is a vector of MPSTensors
+    //    2) mps[0] is a MPSTensor
+    //    3) mps[0].data is the block_matrix associated to the MPSTensor
+    mps[site].make_left_paired() ;
+    block_matrix<Matrix, SymmGroup> const & block = mps[site].data() ;
+    std::size_t mrows = mps[site].row_dim().size_of_block(charge) ;
+    std::size_t mcols = mps[site].col_dim().size_of_block(charge) ;
+    std::size_t b = block.left_basis().position(charge) ;
+    Matrix coeff_full = block[b] ;
+    Matrix coeff_out(mrows,mcols);
+    // ALB TODO Put some checks here on the dimension of coeff_full
+    for (int i = 0 ; i < mrows ; i++)
+        std::copy(coeff_full.row(mrows*sigma+i).first,
+                  coeff_full.row(mrows*sigma+i).second,
+                  coeff_out.row(i).first);
+    return coeff_out;
+>>>>>>> ModifiedDavidson
+*/
 }
 
 template <class Matrix, class SymmGroup>
@@ -211,7 +331,7 @@ void set_coefficient(MPS<Matrix, SymmGroup> & mps, std::vector<typename SymmGrou
         charge input = left_sector;
         left_sector = SymmGroup::fuse(left_sector, site_charge);
 
-        maquis::cout << "coding site " << p << ", site_charge " << site_charge << ", left_sector " << left_sector << std::endl; 
+        maquis::cout << "coding site " << p << ", site_charge " << site_charge << ", left_sector " << left_sector << std::endl;
 
         block_matrix<Matrix, SymmGroup> & data = mps[p].data();
         Matrix & sector_matrix = data[data.left_basis().position(left_sector)];
@@ -255,7 +375,7 @@ void set_coefficient(MPS<Matrix, SymmGroup> & mps, std::vector<typename SymmGrou
 
     mps[L-1].make_right_paired();
     mps[L-1].data()[mps[L-1].data().left_basis().position(right_sector)](0,0) = 1;
-    
+
     for(std::size_t p=L-2; p >= (L+1)/2; --p)
     {
         mps[p].make_right_paired();
@@ -264,7 +384,7 @@ void set_coefficient(MPS<Matrix, SymmGroup> & mps, std::vector<typename SymmGrou
         charge input = right_sector;
         right_sector = SymmGroup::fuse(right_sector, -site_charge);
 
-        maquis::cout << "coding site " << p << ", site_charge " << site_charge << ", right_sector " << right_sector << std::endl; 
+        maquis::cout << "coding site " << p << ", site_charge " << site_charge << ", right_sector " << right_sector << std::endl;
 
         block_matrix<Matrix, SymmGroup> & data = mps[p].data();
         Matrix & sector_matrix = data[data.right_basis().position(right_sector)];
@@ -300,7 +420,7 @@ void set_coefficient(MPS<Matrix, SymmGroup> & mps, std::vector<typename SymmGrou
 
     if (left_sector != right_sector)
         throw std::runtime_error("code-sector right/left mismatch\n");
-    
+
     // set coefficient
     block_matrix<Matrix, SymmGroup> & center = mps[(L+1)/2 - 1].data();
     Matrix & code_block = center[center.left_basis().position(left_sector)];

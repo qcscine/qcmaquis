@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  *               2012      by Jan Gukelberger <gukelberger@phys.ethz.ch>
+ *               2017      by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -39,6 +40,8 @@ struct coded_model_factory<Matrix, TrivialGroup> {
             return impl_ptr( new BoseHubbardNone<Matrix>(lattice, parms) );
         else if (parms["MODEL"] == std::string("super boson Hubbard"))
             return impl_ptr( new SuperBoseHubbardNone<Matrix>(lattice, parms) );
+/*       if (parms["MODEL"] == std::string("Watson"))
+            return impl_ptr( new WatsonHamiltonianNone<Matrix>(lattice, parms) ); */
         else {
             throw std::runtime_error("Don't know this model with NONE symmetry group!");
             return impl_ptr();

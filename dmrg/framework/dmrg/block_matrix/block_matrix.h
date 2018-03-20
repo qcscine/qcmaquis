@@ -48,6 +48,12 @@ struct operator_selector
     typedef SiteOperator<Matrix, SymmGroup> type;
 };
 
+// The two private attributes of block_matrix are
+// 1) data, which is a vector of matrices
+// 2) basis, collecting DualIndex, two of them with the qn
+//    of the block and the other two with the number of rows
+//    and columns of each block
+
 template<class Matrix, class SymmGroup>
 class block_matrix
 {

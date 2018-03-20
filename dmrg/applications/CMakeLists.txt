@@ -48,7 +48,6 @@ if(BUILD_CUSTOMAPP)
   add_subdirectory(strcorr)
 endif(BUILD_CUSTOMAPP)
 
-
 if(BUILD_EXAMPLES)
   add_subdirectory(simple_main/dmrg_u1_current)
   add_subdirectory(simple_main/dmrg_current)

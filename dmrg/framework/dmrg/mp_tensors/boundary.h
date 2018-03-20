@@ -4,22 +4,23 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -36,6 +37,26 @@
 #include <iostream>
 #include <set>
 
+//
+// BOUNDARY CLASS
+// --------------
+//
+// Attributes:
+// data_ : vector of block_matrices
+//
+// Constructors:
+// Two constructors are available, one by using a second Boundary object,
+// the other one giving the size and the basis
+//
+// Methods:
+// aux_dim --> gives the auxiliary dimension of the boundary
+// resize  --> change the size of the boundary (i.e. the auxiliary dimension)
+// traces  --> compute the traces of each matrix
+//
+// Operator:
+// [i]     ---> get the i-th block_matrix of the boundary
+//
+
 template<class Matrix, class SymmGroup>
 class Boundary : public storage::disk::serializable<Boundary<Matrix, SymmGroup> >
 {
@@ -48,13 +69,15 @@ public:
     void serialize(Archive &ar, const unsigned int version){
         ar & data_;
     }
-    
+    //
+    // Constructors
+    // ------------
     Boundary(Index<SymmGroup> const & ud = Index<SymmGroup>(),
              Index<SymmGroup> const & ld = Index<SymmGroup>(),
              std::size_t ad = 1)
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
     { }
-    
+
     template <class OtherMatrix>
     Boundary(Boundary<OtherMatrix, SymmGroup> const& rhs)
     {
@@ -62,19 +85,21 @@ public:
         for (std::size_t n=0; n<rhs.aux_dim(); ++n)
             data_.push_back(rhs[n]);
     }
-
-    std::size_t aux_dim() const { 
-        return data_.size(); 
+    //
+    // Methods
+    // -------
+    std::size_t aux_dim() const {
+        return data_.size();
     }
 
     void resize(size_t n){
-        if(n < data_.size()) 
+        if(n < data_.size())
             return data_.resize(n);
         data_.reserve(n);
         for(int i = data_.size(); i < n; ++i)
             data_.push_back(block_matrix<Matrix, SymmGroup>());
     }
-    
+
     std::vector<scalar_type> traces() const {
         std::vector<scalar_type> ret; ret.reserve(data_.size());
         for (size_t k=0; k < data_.size(); ++k) ret.push_back(data_[k].trace());
@@ -86,8 +111,8 @@ public:
             if(!data_[i].reasonable()) return false;
         return true;
     }
-   
-    template<class Archive> 
+
+    template<class Archive>
     void load(Archive & ar){
         std::vector<std::string> children = ar.list_children("data");
         data_.resize(children.size());
@@ -97,12 +122,62 @@ public:
              ar["data/"+children[i]] >> data_[alps::cast<std::size_t>(children[i])];
         }
     }
-    
-    template<class Archive> 
+
+    template<class Archive>
     void save(Archive & ar) const {
         ar["data"] << data_;
     }
-    
+
+    //
+    //
+    Boundary const & operator+=(Boundary const & rhs)
+    {
+        assert (this->data_.size() == rhs.data_.size()) ;
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] += rhs.data_[i] ;
+    };
+    //
+    Boundary const & operator-=(Boundary const & rhs)
+    {
+        assert (this->data_.size() == rhs.data_.size()) ;
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] -= rhs.data_[i] ;
+    };
+    //
+    Boundary const & operator*=(scalar_type const & rhs)
+    {
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] *= rhs ;
+    };
+    //
+    Boundary const & operator/=(scalar_type const & rhs)
+    {
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] /= rhs ;
+    };
+    //
+    friend Boundary operator*(scalar_type const & rhs, const Boundary& b_rhs)
+    {
+        Boundary res(b_rhs);
+        for(size_t i = 0; i < res.data_.size(); ++i)
+            res.data_[i] *= rhs ;
+        return res;
+    };
+    //
+    friend Boundary operator/(scalar_type const & rhs, const Boundary& b_rhs)
+    {
+      Boundary res(b_rhs);
+      for(size_t i = 0; i < res.data_.size(); ++i)
+            res.data_[i] /= rhs ;
+      return res;
+    };
+
+    void print()
+    {
+      for (auto x : data_)
+        std::cout << x << std::endl;
+    };
+    //
     block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
     block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
     //value_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); } // I hope this is never used (30.04.2012 / scalar/value discussion)
@@ -111,26 +186,33 @@ private:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 };
 
+//
+//
+// ADDITIONAL FUNCTIONS
+// --------------------
+//
+// Simplify: performs an SVD of each block_matrix of the boundary and returns the
+//           a "smaller" block_matrix
 
 template<class Matrix, class SymmGroup>
 Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
 {
     typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
-    
+
     for (std::size_t k = 0; k < b.aux_dim(); ++k)
     {
         block_matrix<Matrix, SymmGroup> U, V, t;
         block_matrix<dmt, SymmGroup> S;
-        
+
         if (b[k].basis().sum_of_left_sizes() == 0)
             continue;
-        
+
         svd_truncate(b[k], U, V, S, 1e-4, 1, false);
-        
+
         gemm(U, S, t);
         gemm(t, V, b[k]);
     }
-    
+
     return b;
 }
 

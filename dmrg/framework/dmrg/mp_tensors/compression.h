@@ -159,7 +159,7 @@ struct compression {
             
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
-            else 
+            else
                 maquis::cout << "Norm reduction: " << trace(t) << std::endl;
         }
         

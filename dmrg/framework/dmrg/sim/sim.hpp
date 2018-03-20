@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
+ *                    2017 by Alberto Baiardi <alberto.baiardi@sns.it>             
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -28,76 +29,121 @@
 #include <boost/algorithm/string.hpp>
 #include "dmrg/version.h"
 
+// +-----------+
+//  CONSTRUCTOR
+// +-----------+
+
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
-: parms(parms_)
-, init_sweep(0)
-, init_site(-1)
-, restore(false)
-, dns( (parms["donotsave"] != 0) )
-, chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
-, rfile(parms["resultfile"].str())
-, stop_callback(static_cast<double>(parms["run_seconds"]))
-{ 
+     : parms(parms_)
+     , init_sweep(0)
+     , init_site(-1)
+     , restore(false)
+     , dns( (parms["donotsave"] != 0) )
+     , chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
+     , rfile(parms["resultfile"].str())
+     , stop_callback(static_cast<double>(parms["run_seconds"]))
+{
+    // Preliminary operations
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
-    
-    /// Model initialization
+    typename std::stringstream ss;
+    // Creates the name for the SA states
+    n_states = parms["n_states_sa"] ;
+    if (n_states == 0)
+        n_states = 1;
+    for (std::size_t i = 0; i < n_states; i++) {
+        ss.str("") ;
+        ss << i ;
+        std::string str = chkpfile + '_' + ss.str() ;
+        chkpfile_sa.push_back(str) ;
+    }
+    // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
     mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    
     {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
-        {
-            storage::archive ar_in(chkpfile+"/props.h5");
-            if (ar_in.is_scalar("/status/sweep"))
-            {
-                ar_in["/status/sweep"] >> init_sweep;
-                
-                if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
-                    ar_in["/status/site"] >> init_site;
-                
-                if (init_site == -1)
-                    ++init_sweep;
-
-                maquis::cout << "Restoring state." << std::endl;
-                maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
-                restore = true;
-            } else {
-                maquis::cout << "A fresh simulation will start." << std::endl;
+        if (n_states == 0) {
+            boost::filesystem::path p(chkpfile);
+            if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5")) {
+                storage::archive ar_in(chkpfile + "/props.h5");
+                if (ar_in.is_scalar("/status/sweep")) {
+                    ar_in["/status/sweep"] >> init_sweep;
+                    if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
+                        ar_in["/status/site"] >> init_site;
+                    if (init_site == -1)
+                        ++init_sweep;
+                    maquis::cout << "Restoring state." << std::endl;
+                    maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
+                    restore = true;
+                } else {
+                    maquis::cout << "A fresh simulation will start." << std::endl;
+                }
+            }
+        } else {
+            for (std::size_t idx = 0; idx < n_states; idx++) {
+                boost::filesystem::path p(chkpfile_sa[idx]);
+                if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5")) {
+                    storage::archive ar_in(chkpfile + "/props.h5");
+                    if (ar_in.is_scalar("/status/sweep")) {
+                        // Retrieve initial site
+                        ar_in["/status/sweep"] >> init_sweep;
+                        if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
+                            ar_in["/status/site"] >> init_site;
+                        if (init_site == -1)
+                            ++init_sweep;
+                        maquis::cout << "Restoring state - number " << idx << " " << std::endl;
+                        maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep
+                                     << std::endl;
+                        restore = true;
+                    } else {
+                        maquis::cout << "A fresh simulation will start for state " << idx << " " << std::endl ;
+                    }
+                }
             }
         }
     }
-
-    /// MPS initialization
-    if (restore) {
-
-        maquis::checks::symmetry_check(parms, chkpfile);
-        load(chkpfile, mps);
-        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-
-        maquis::checks::symmetry_check(parms, parms["initfile"].str());
-        load(parms["initfile"].str(), mps);
-        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
-
-    } else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+    // MPS initialization
+    mps_sa.resize(std::max(n_states,1)) ;
+    if (n_states == 0) {
+        if (restore) {
+            maquis::checks::symmetry_check(parms, chkpfile);
+            load(chkpfile, mps_sa[0]);
+            maquis::checks::right_end_check(chkpfile, mps_sa[0], model.total_quantum_numbers(parms));
+        } else if (!parms["initfile"].empty()) {
+            maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+            maquis::checks::symmetry_check(parms, parms["initfile"].str());
+            load(parms["initfile"].str(), mps_sa[0]);
+            maquis::checks::right_end_check(parms["initfile"].str(), mps_sa[0], model.total_quantum_numbers(parms));
+        } else {
+            mps_sa[0] = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+        }
+    } else if (n_states > 0) {
+        if (restore) {
+            for (size_t idx = 0; idx < n_states; idx++) {
+                maquis::checks::symmetry_check(parms, chkpfile_sa[idx]);
+                load(chkpfile_sa[idx], mps_sa[idx]);
+                maquis::checks::right_end_check(chkpfile_sa[idx], mps_sa[idx], model.total_quantum_numbers(parms));
+            }
+        } else if (!parms["initfile"].empty()) {
+            throw std::runtime_error("SA + initialization from input chkp file NYI") ;
+        } else {
+            if (n_states > 0) {
+                // Initialize the state-average stuff
+                for (int i = 0; i < mps_sa.size(); i++)
+                    mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
+                (*(model.initializer_sa(lat, parms)))(mps_sa);
+            }
+        }
     }
-
-    assert(mps.length() == lat.size());
-    
-    /// Update parameters - after checks have passed
+    for (size_t i = 0 ; i < n_states ; i++ )
+        assert(mps_sa[i].length() == lat.size());
+    // Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
-        
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
@@ -105,12 +151,18 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
+        for (std::size_t i = 0; i < n_states; i++)
+            if (!boost::filesystem::exists(chkpfile_sa[i]))
+                boost::filesystem::create_directory(chkpfile_sa[i]);
         storage::archive ar(chkpfile+"/props.h5", "w");
-        
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
+        for (std::size_t i = 0; i < n_states; i++) {
+            storage::archive ar(chkpfile_sa[i] + "/props.h5", "w");
+            ar["/parameters"] << parms;
+            ar["/version"] << DMRG_VERSION_STRING;
+        }
     }
-    
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
 }
 
@@ -128,23 +180,32 @@ sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
     return sweep_measurements;
 }
 
+// Destructor
 
 template <class Matrix, class SymmGroup>
-sim<Matrix, SymmGroup>::~sim()
-{
-}
+sim<Matrix, SymmGroup>::~sim() { }
+
+// Method to save the results of a simulation at the end of
+// the last sweep
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
+void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state,
+                                                   std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
+                                                   status_type const& status)
 {
     if (!dns) {
-        /// save state to chkp dir
+        // save state to chkp dir
         save(chkpfile, state);
-        
-        /// save status
+        for (size_t i = 0; i < n_states; i++)
+            save(chkpfile_sa[i], state_vec[i]) ;
+        // save status
         if(!parallel::master()) return;
         storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/status"] << status;
+        for (size_t i = 0; i < n_states; i++){
+            storage::archive ar(chkpfile_sa[i] + "/props.h5", "w");
+            ar["/status"] << status;
+        }
     }
 }
 

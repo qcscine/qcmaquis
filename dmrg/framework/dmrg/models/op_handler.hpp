@@ -40,7 +40,12 @@ OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)
     this->push_back(op_);
     return ret;
 }
-
+//
+// Method checked_register for the OPTable
+// ---------------------------------------
+// If not present, register the operator, otherwise returns the
+// position and the proportionality constant
+//
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::mvalue_type>
 OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
@@ -52,14 +57,12 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
         if (cmp_result.first)
             break;
     }
-
     if (it_pt == this->end()) {
         return std::make_pair(this->register_op(sample), 1.0);
     } else
         return std::make_pair(it_pt - this->begin(), cmp_result.second);
     
 }
-
 // **************************************************************************
 // TagHandler implementation
 // **************************************************************************
@@ -74,25 +77,37 @@ TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
 {}
 
 // simple const query
+//
+// TAGHANDLER METHODS
+// ------------------
+//
+// Returns the size of the OperatorTable
+// -------------------------------------
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::size() const
 {
     return operator_table->size();
 }
-
+//
+// Return the operator table
+// -------------------------
 template <class Matrix, class SymmGroup>
 boost::shared_ptr<OPTable<Matrix, SymmGroup> > TagHandler<Matrix, SymmGroup>::get_operator_table() const
 {
     return operator_table;
 }
-
+//
+// Check if the operator identified by query_tag is fermionic or bosonic
+// ---------------------------------------------------------------------
 template <class Matrix, class SymmGroup>
 bool TagHandler<Matrix, SymmGroup>::is_fermionic(typename OPTable<Matrix, SymmGroup>::tag_type query_tag) const
 {
     assert(query_tag < sign_table.size());
     return sign_table[query_tag];
 }
-
+//
+// Returns the hermitian of the operator
+// -------------------------------------
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
 herm_conj(typename OPTable<Matrix, SymmGroup>::tag_type query_tag) const
@@ -101,7 +116,12 @@ herm_conj(typename OPTable<Matrix, SymmGroup>::tag_type query_tag) const
     return hermitian[query_tag];
 }
 
-// register new operators
+// Register new operators
+// ----------------------
+// The following actions are performed
+// 1) update the sign list (fermionic or bosonic)
+// 2) register the operator in the list (without checking...)
+// 3)
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
 register_op(const op_t & op_, tag_detail::operator_kind kind)

@@ -34,6 +34,21 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 
+// +------------------+
+//  Block matrix class
+// +------------------+
+
+// CONSTRUCTORS
+// 5 functions are overloaded as constructors
+// 1) no arguments given, nothing appens
+// 2) rows and columns can be given in input (as vectors of Index)
+//    then the basis is created on-the-fly
+// 3) if the basis is already provided in input, it just creates the
+//    matrix
+// 4) a block_matrix can be copied from another block_matrix
+// 5) a block_matrix can be copied from another block_matrix which is
+//    however inherited from a DIFFERENT type of matrix class
+
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix()
 {
@@ -44,11 +59,11 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
                                               Index<SymmGroup> const & cols)
 {
     assert(rows.size() == cols.size());
-
     basis_.resize(rows.size());
+    // Loads basis
     for (size_type k = 0; k < rows.size(); ++k)
         basis_[k] = typename DualIndex<SymmGroup>::value_type(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
-
+    // Loads the matrix
     for (size_type k = 0; k < rows.size(); ++k)
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
 }
@@ -81,6 +96,11 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
         data_.push_back(new Matrix(rhs[k]));
 }
+
+// OPERATORS
+// 1) assignment (=) : just switch the pointers. The assignment can be done
+//    also from another type of matrix
+// 2) sum (+) and subtractions (-) of block_matrices
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(block_matrix rhs)
@@ -134,6 +154,24 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
     return *this;
 }
 
+// FUNCTIONS
+// 1)  insert_block: takes in input the two QN and a matrix and insert this matrix
+//     in the block made of those two QN (the matrix can be constant or not)
+// 2)  left_basis and right_basis: return a vector with the left of right basis,
+//     respectively
+// 3)  n_blocks: returns the size of the basis vector
+// 4)  description: prints info about block matrices
+// 5)  has_block: for a given couple of two simmetries, returns True if the block involving
+//     those two symmetries is present
+// 6)  find_block: returns the position of a given block (takes in input two irr. repr.)
+// 7)  with (i,j), where i and j are couples of (symm,int), retrieve the value of the
+//     block_matrix
+// 8)  *= and /= can be used to multiply or divide the whole tensor for the same scalars
+// 9)  trace and norm can be computed (and other matrix operations)
+// 10) match_and_add_block allows to add a matrix to a selected block (or create it if it
+//     does not exist) reshaping the matrix, if necessary
+// 11) resize block do the reshaping (see above)
+
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
 {
@@ -142,7 +180,6 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     Matrix* block = new Matrix(mtx);
     data_.insert(data_.begin() + i1, block);
     size_index.insert(i1, (data_.size()-1));
-    
     return i1;
 }
 
@@ -398,7 +435,8 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
             
             (*this)[match] += cpy;
         }
-    } else
+    }
+    else
         insert_block(mtx, c1, c2);
 }
 

@@ -33,7 +33,6 @@
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 
 namespace SU2 {
-
     struct su2gemm
     {
         template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>

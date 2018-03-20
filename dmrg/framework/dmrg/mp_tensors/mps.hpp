@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -30,6 +31,27 @@
 #include "dmrg/utils/archive.h"
 
 #include <limits>
+
+//
+// MPS CLASS
+// ---------
+//
+// The MPS class is an extension of MPSTensor. The main difference is the fact that the
+// MPSTensor is the matrix of one site, whereas the MPS represent the whole MPS.
+// The class has two private attributes:
+// 1) data, which is a vector of L MPSTensor objects (so include all the info
+//    necessary for retrieving the MPS)
+// 2) canonized_i, which is the index wrt to which the MPS has been put in a
+//    canonical form.
+
+// CONSTRUCTOR
+// -----------
+//
+// Three constructors are provided
+// 1) no input data
+// 2) the length of the chain provided as input
+// 3) the length of the chain and the initializer (which is a structure that has the () operator
+//    to generate a MPS) are provided as input
 
 template<class Matrix, class SymmGroup>
 std::string MPS<Matrix, SymmGroup>::description() const
@@ -75,6 +97,13 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
     this->normalize_left();
 }
 
+//
+// OPERATORS
+// ---------
+//
+// With the square brackets it's possible to extract the MPSTensor of a specific type
+//
+
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::value_type const & MPS<Matrix, SymmGroup>::operator[](size_t i) const
 { return data_[i]; }
@@ -87,11 +116,24 @@ typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](
     return data_[i];
 }
 
+// RELEVANT METHODS
+// ----------------
+//
+// NOTE: length is a function defined in mps.h that returns the length L of the chain
+// 1) resize: change the length L of the chain
+// 2) normalize_left and normalize_right: normalize the MPS
+// 3) move_normalization_l2r and move_normalization_r2l shifts the point wrt to which
+//    the MPS is normalized
+// 4) grow_l2r_sweep and grow_r2l_sweep. Truncate the MPS though a SVD (during the
+//    sweep optimization)
+// 5) left_bountary and right_boundary create boundaries matrix from the MPS
+//
+
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::resize(size_t L)
 {
     // if canonized_i < L and L < current L, we could conserve canonized_i
-    canonized_i=std::numeric_limits<size_t>::max();
+    canonized_i = std::numeric_limits<size_t>::max();
     data_.resize(L);
 }
 
@@ -224,26 +266,36 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
         canonized_i = std::numeric_limits<size_t>::max();
 }
 
+// -- GROW_L2R_SWEEP --
+// Method to update the MPS after a sweep of the optimization cycles
+// In input the boundaries, the MPO (for adding noise) and the cutoff
+// are provided, returns a truncation_results object, that collects
+// the relevant data of the truncation (e.g. the error)
+
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 truncation_results
 MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+                                       std::size_t l,
+                                       double alpha,
+                                       double cutoff,
+                                       std::size_t Mmax,
+                                       std::size_t Mval )
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
-    
-    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
-                                                    (*this)[l], new_mps);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, Mval);
+    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
+
+// -- GROW_R2L_SWEEP --
+// Method to update the MPS after a sweep of the optimization cycles
+// See grow_l2r_sweep for additional details
 
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
@@ -251,15 +303,16 @@ truncation_results
 MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+                                       std::size_t l,
+                                       double alpha,
+                                       double cutoff,
+                                       std::size_t Mmax,
+                                       std::size_t Mval )
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
-    
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, Mval);
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;

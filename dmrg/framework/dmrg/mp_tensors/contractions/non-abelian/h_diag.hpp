@@ -33,10 +33,30 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 
 namespace contraction {
-namespace SU2 {
-
+//namespace SU2 {
+//
+//// Function template for the calculation of the T matrix by assuming a diagonal MPO (see JCP 2015 for additional
+//// details). The quantity which is computed is:
+////
+////  -----  -----   -----          o_l o_l'      |    b_{l-1}          |\/| o_l'
+////  \      \       \       \    /               |                     |  |
+////  /      /       /        \/\/  b_{l-1} b_l   |___ a_{l-1} a_{l-1}' |  | a_{l-1}' a_l'
+////  -----  -----   -----
+////   o_l' a_{l-1}' b_{l-1}  |                                        |
+////                          +----------------------------------------+
+////                                   |
+////                                   +--------------->    This is T (summed over b). In principle has 5
+////                                                        indexes, but only 3 in this case due to symmetry.
+////
+//// where W is the matrix involved in the definition of the MPO, L is the left boundary and M is the matrix
+//// involved in the definition of the MPS.
+//// We have < a_{l-1} a_l o_l | H | o_l' a_{l-1}' a_l' > . Taking the diagonal part means that we are
+//// taking o_l = o_l' , a_l = a_l' and a_{l-1} = a_{l-1}'. The only sum surviving is the one over b_{l-1}
+//// NOTE: the index b_l (column) is given as input and is fixed throughout the routine
+////
+//
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, block_matrix<Matrix, SymmGroup> >::type
     lbtm_diag_kernel(size_t b2,
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -53,13 +73,15 @@ namespace SU2 {
         typedef typename Matrix::value_type value_type;
 
         block_matrix<Matrix, SymmGroup> ret;
+        // Loop over the columns of the MPO (which is the dimension of the data of ref, i.e. the output matrix).
+        // We sum over this dimension. The symmetry has no impact on the b indexes
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-
+        // Loop over a_l' (right dimension of ret). Pay attention to the symmetry
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
         {
             typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
@@ -69,13 +91,15 @@ namespace SU2 {
             for (size_t block = 0; block < right_i.size(); ++block)
             {
                 charge in_charge = right_i[block].first;
-
+                // Insert block with the same symmetry of the right index
                 size_t o = ret.find_block(in_charge, in_charge);
                 if ( o == ret.n_blocks() )
                     o = ret.insert_block(Matrix(out_left_i[block].second, right_i[block].second), in_charge, in_charge);
-
+                // Loop over the physical indexes
                 for (size_t s = 0; s < phys_i.size(); ++s)
                 {
+                    // Symmetry requirement : o_l*a_{l-1} == a_l'. In this way we determine a_{l-1}, which is also
+                    // the index of the left boundary to be extracted.
                     charge phys_charge = phys_i[s].first;
                     size_t l = left_i.position(SymmGroup::fuse(in_charge, -phys_charge));
                     if(l == left_i.size()) continue;
@@ -86,10 +110,13 @@ namespace SU2 {
 
                     // copy the diagonal elements of the boundary into a vector
                     std::vector<value_type> left_diagonal(left_i[l].second);
+                    // Diagonal is a method of the alps matrix class that gives two iterators, for the
+                    // beginning and the end of the diagonal.
                     std::copy(left[b1][l_block].diagonal().first, left[b1][l_block].diagonal().second, left_diagonal.begin()); 
-
+                    // The overall size of (o_l*a_{l-1}) is given by the product
                     size_t left_offset = left_pb(phys_charge, lc);
-
+                    // Loop over the basis of the MPO. Both the basis have to have the
+                    // qn phys_charge                    
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
                         charge phys_in = W.basis().left_charge(w_block);
@@ -134,13 +161,37 @@ namespace SU2 {
         return ret;
     }
 
+//
+//// Function template to contract T with the right boundaries.
+////
+////  -----     -----  o_l o_l      +--+  b_l       -+
+////  \           |                 +--+             |-> this is has three index (one of which is sigma)
+////  /           |    b_l a_{l-1}  |  \ a_l a_l    -+   as any other MPSTensor.
+////  -----
+////   a_l'
+////
+////
+//// where W is the matrix involved in the definition of the MPO, L is the left boundary and M is the matrix
+//// involved in the definition of the MPS.
+//// We have < a_{l-1} a_l o_l | H | o_l' a_{l-1}' a_l' > . Taking the diagonal part means that we are
+//// taking o_l = o_l' , a_l = a_l' and a_{l-1} = a_{l-1}'. The only sum surviving is the one over b_{l-1}
+//// NOTE: the index b_l (column) is given as input and is fixed throughout the routine
+////
+////
+//
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, block_matrix<Matrix, SymmGroup> >::type
     diagonal_hamiltonian(Boundary<OtherMatrix, SymmGroup> const & left,
                          Boundary<OtherMatrix, SymmGroup> const & right,
                          MPOTensor<Matrix, SymmGroup> const & mpo,                         
                          MPSTensor<Matrix, SymmGroup> const & x)
     {
+        //
+        //
+        // Initialization
+        // --------------
+        // Note that the phys index and the row are grouped together
+        //                                
         typedef typename SymmGroup::charge charge;
 
         Index<SymmGroup> const & physical_i = x.site_dim();
@@ -151,6 +202,7 @@ namespace SU2 {
         ProductBasis<SymmGroup> out_left_pb(physical_i, x.row_dim());
 
         block_matrix<Matrix, SymmGroup> ret;
+        // Loop over the b2 index, which is the "higher" index of the T tensor
         for (size_t b2 = 0; b2 < right.aux_dim(); ++b2)
         {
             block_matrix<Matrix, SymmGroup> lb2 = lbtm_diag_kernel(b2, left, mpo, out_left_i,
@@ -161,6 +213,7 @@ namespace SU2 {
             {
                 charge in_r_charge = lb2.basis().right_charge(block);
                 size_t rblock = right[b2].find_block(in_r_charge, in_r_charge);
+                // Final contraction by
                 if (rblock != right[b2].n_blocks())
                 {
                     for (size_t c = 0; c < num_cols(lb2[block]); ++c)
@@ -173,7 +226,7 @@ namespace SU2 {
         return ret;
     }
 
-} // namespace SU2
+//} // namespace SU2
 } // namespace contraction
 
 #endif

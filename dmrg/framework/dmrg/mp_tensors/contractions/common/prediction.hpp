@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -35,14 +36,21 @@
 
 namespace contraction {
     namespace common {
-
+        //
+        // PREDICT_NEW_STATE_L2R_SWEEP
+        // ---------------------------
+        // Move the sweep procedure one step to the right in the optimization and
+        // generates the new MPS.
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
                                     Boundary<OtherMatrix, SymmGroup> const & right,
-                                    double alpha, double cutoff, std::size_t Mmax)
+                                    double alpha,
+                                    double cutoff,
+                                    std::size_t Mmax,
+                                    std::size_t Mval)
         {
             mps.make_left_paired();
             block_matrix<Matrix, SymmGroup> dm;
@@ -56,7 +64,6 @@ namespace contraction {
             {
                 block_matrix<Matrix, SymmGroup> tdm;
                 typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
-                
                 
                 tdm *= alpha;
                 for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -72,44 +79,39 @@ namespace contraction {
             
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
-          
+            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, Mval);
+            // Prepares results
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_left_paired(U);
             return std::make_pair(ret, trunc);
         }
         
-        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-        static MPSTensor<Matrix, SymmGroup>
-        predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
-                                  MPSTensor<Matrix, SymmGroup> const & psi,
-                                  MPSTensor<Matrix, SymmGroup> const & A)
-        {
-            psi.make_left_paired();
-            A.make_left_paired();
-            
-            block_matrix<Matrix, SymmGroup> tmp;
-            typename Gemm::gemm()(transpose(conjugate(A.data())), psi.data(), tmp);
-            B.multiply_from_left(tmp);
-            
-            return B;
-        }
-        
+                
+        //
+        // PREDICT_NEW_STATE_R2L_SWEEP
+        // ---------------------------
+        // Move the sweep procedure one step to the left in the optimization and
+        // generates the new MPS. The overall structure is taken from a similar method,
+        // predict_new_state_l2r_sweep
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                         MPOTensor<Matrix, SymmGroup> const & mpo,
                                         Boundary<OtherMatrix, SymmGroup> const & left,
                                         Boundary<OtherMatrix, SymmGroup> const & right,
-                                        double alpha, double cutoff, std::size_t Mmax)
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax,
+                                        std::size_t Mval)
         {
+            // Initialization
             mps.make_right_paired();
             block_matrix<Matrix, SymmGroup> dm;
+            // Compute "real" density matrix
             typename Gemm::gemm()(transpose(conjugate(mps.data())), mps.data(), dm);
-                
+            // Add noise
             Boundary<Matrix, SymmGroup> half_dm
                 = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, right, mpo);
-            
             mps.make_right_paired();
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
             {
@@ -124,19 +126,34 @@ namespace contraction {
                                                tdm.basis().right_charge(k));
                 }
             }
-            
+            // Truncate based on the SVD results
             mps.make_right_paired();
             assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
-            
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
-            
+            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, Mval);
+            // Prepare output results
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_right_paired(adjoint(U));
             return std::make_pair(ret, trunc);
         }
-        
+
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A)
+        {
+            psi.make_left_paired();
+            A.make_left_paired();
+
+            block_matrix<Matrix, SymmGroup> tmp;
+            typename Gemm::gemm()(transpose(conjugate(A.data())), psi.data(), tmp);
+            B.multiply_from_left(tmp);
+
+            return B;
+        }
+
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
         static MPSTensor<Matrix, SymmGroup>
         predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
@@ -153,6 +170,7 @@ namespace contraction {
             
             return B;
         }
+
     } // namespace common
 } // namespace contraction
 

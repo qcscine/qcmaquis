@@ -38,13 +38,16 @@ enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
 enum Indicator { Unorm, Lnorm, Rnorm };
-enum DecompMethod {QR, SVD}; 
+enum DecompMethod {QR, SVD};
 
 static DecompMethod DefaultSolver() {return QR;} // QR or SVD
 
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor;
 
+// MPS Tensor object
+//
+//
 template<class Matrix, class SymmGroup>
 class MPSTensor
 {
@@ -52,6 +55,7 @@ public:
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef typename maquis::traits::real_type<Matrix>::type real_type;
     typedef typename Matrix::value_type value_type;
+    typedef typename block_matrix<Matrix, SymmGroup>::block_matrix bm_type ;
     typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
     typedef std::size_t size_type;
     

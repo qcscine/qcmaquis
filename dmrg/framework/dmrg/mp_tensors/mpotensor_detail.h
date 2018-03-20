@@ -202,6 +202,7 @@ namespace MPOTensor_detail
         else
         return mpo.right_spin(k).get();
     }
+
 }
 
 #endif

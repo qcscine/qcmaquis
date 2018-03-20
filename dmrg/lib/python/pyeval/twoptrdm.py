@@ -135,4 +135,3 @@ if __name__ == '__main__':
         rdm = load_2rdm(inputfile)
         print_2rdm(rdm)
 
-

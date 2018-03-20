@@ -39,6 +39,14 @@
 #include "simulation.h"
 #include "dmrg/sim/symmetry_factory.h"
 
+/**************************************
+ * Main routine for DMRG calculations
+ **************************************/
+//
+// Initial routine, just do some preliminary operation
+// and then generates a simulation object
+//
+
 int main(int argc, char ** argv)
 {
     std::cout << "  QCMaquis - Quantum Chemical Density Matrix Renormalization group\n"
@@ -53,13 +61,12 @@ int main(int argc, char ** argv)
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
         maquis::cout.precision(10);
-        
+        // Preliminary settings
         DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"]+1)
         DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"]+1)
-        
         timeval now, then, snow, sthen;
         gettimeofday(&now, NULL);
-        
+        // Actual simulation
         try {
             simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
             sim->run(opt.parms);
@@ -68,13 +75,11 @@ int main(int argc, char ** argv)
             maquis::cerr << e.what() << std::endl;
             exit(1);
         }
-        
+        // Final operations
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-        
         DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
         DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
-        
         maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
 }

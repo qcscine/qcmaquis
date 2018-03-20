@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -41,6 +42,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
+#include "dmrg/mp_tensors/mps_sa_initializers.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/generate_mpo.hpp"
 
@@ -69,37 +71,35 @@ public:
 template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
+    // Public attributes
     sim(DmrgParameters const &);
     virtual ~sim();
-    
     virtual void run() =0;
-    
 protected:
+    // Protected attributes
     typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
     typedef std::map<std::string, int> status_type;
-    
     virtual std::string results_archive_path(status_type const&) const;
-    
     measurements_type iteration_measurements(int sweep);
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
-    
-    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
-    
+    // This virtual function is used to store results
+    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, std::vector< MPS<Matrix, SymmGroup> > const& state_vec,
+                                       status_type const&);
 protected:
-    DmrgParameters parms;
-    
-    int init_sweep, init_site;
+    DmrgParameters parms ;
+    int init_sweep, init_site, n_states ;
     bool restore;
     bool dns;
     std::string chkpfile;
+    std::vector< std::string > chkpfile_sa ;
     std::string rfile;
-    
     time_stopper stop_callback;
-    
+    // Model objects
     Lattice lat;
     Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;
+    std::vector< MPS<Matrix, SymmGroup > > mps_sa ;
     MPO<Matrix, SymmGroup> mpo, mpoc;
     measurements_type all_measurements, sweep_measurements;
 };

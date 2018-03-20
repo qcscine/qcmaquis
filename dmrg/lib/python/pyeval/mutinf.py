@@ -79,7 +79,6 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
 
 
     for i in range(N):
-      #plt.annotate(int(labels[i]),xy=(theta[i],(r[i]+0.2)),size='xx-large',)
       plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='xx-large',ha='center',va='center')
       
       if(pics): # generate pictures.

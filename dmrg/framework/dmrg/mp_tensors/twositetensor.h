@@ -74,17 +74,17 @@ public:
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_l2r(std::size_t Mmax, double cutoff) const;
+    split_mps_l2r(std::size_t Mmax, double cutoff, std::size_t Mval=0) const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_r2l(std::size_t Mmax, double cutoff) const;
+    split_mps_r2l(std::size_t Mmax, double cutoff, std::size_t Mval=0) const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
-                      MPOTensor<Matrix, SymmGroup> const& mpo);
+                      MPOTensor<Matrix, SymmGroup> const& mpo, std::size_t Mval=0);
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
-                      MPOTensor<Matrix, SymmGroup> const& mpo);
+                      MPOTensor<Matrix, SymmGroup> const& mpo, std::size_t Mval=0);
     
     void clear();
     void swap_with(TwoSiteTensor & b);

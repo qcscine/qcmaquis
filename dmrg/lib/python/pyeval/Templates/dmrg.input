@@ -1,0 +1,32 @@
+nsweeps                     = {{nsweeps}}
+max_bond_dimension         = {{max_bond_dimension}}
+
+truncation_final           = 1e-9
+ietl_jcd_tol               = 1e-9
+
+resultfile                 = {{resultfile}}
+chkpfile                   = {{chkpfile}}
+
+optimization               = twosite
+symmetry                   = none
+
+model_library              = coded
+lattice_library            = coded
+LATTICE                    = "open chain lattice"
+L                          = {{L}}
+
+MODEL                     = Watson
+Nmax                      = {{Nmax}}
+k1                        = 0
+a                         = 0
+
+integral_file             = {{integral_file}}
+integral_cutoff           = 1e-40
+
+MEASURE[Density] = 1
+MEASURE[Local density] = 1
+MEASURE[Onebody density matrix] = 1
+
+n_ortho_states = {{n_ortho_states}}
+ortho_states = {{ortho_states}}
+

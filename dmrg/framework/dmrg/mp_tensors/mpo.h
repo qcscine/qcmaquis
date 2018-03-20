@@ -74,11 +74,16 @@ public:
 
     void setCoreEnergy(double e) { core_energy = e; }
     double getCoreEnergy() const { return core_energy; }
-    
+    //// in Alberto's branch
+    /*void setCoreEnergy(typename Matrix::value_type e) { core_energy = e; } 
+    typename Matrix::value_type getCoreEnergy() const { return core_energy; }*/
+    ////    
 private:
     std::vector<std::map<std::size_t, typename SymmGroup::charge> > bond_index_charges;
     std::vector<Index<SymmGroup> > bond_indices;
     double core_energy;
+    //// in Alberto's branch
+    /*typename Matrix::value_type core_energy;*/
     
     void calc_charges()
     {
@@ -426,6 +431,13 @@ public:
 
 private:
     double core_energy;
+    //// Alberto's branch
+    /*void setCoreEnergy(typename Matrix::value_type e) { core_energy = e; }
+    typename Matrix::value_type getCoreEnergy() const { return core_energy; }
+
+private:
+    typename Matrix::value_type core_energy;
+*/
 };
 
 #endif
