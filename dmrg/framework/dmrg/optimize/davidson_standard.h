@@ -110,7 +110,7 @@ namespace ietl {
             vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
             for (size_t j = 0 ; j < ortho_space_.size() ; j++)
                 tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
-            if (ietl::two_norm(tmp) > 1.0E-20) {
+            if (ietl::two_norm(tmp) > 1.0E-10) {
                 tmp /= ietl::two_norm(tmp);
                 std::vector< vector_type > junk ;
                 junk.push_back(tmp) ;

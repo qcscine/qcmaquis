@@ -199,7 +199,7 @@ public:
                 alpha = parms.template get<double>("alpha_final");
             // Update of the MPS
             double cutoff = this->get_cutoff(sweep);
-            std::size_t Mmax = this->get_Mmax(sweep), Mval;
+            std::size_t Mmax = this->get_Mmax(sweep);
             std::vector<truncation_results> trunc(n_bound_);
             // +---------------------+
             //  Truncation of the MPS
@@ -214,12 +214,12 @@ public:
                                                                                        (*(boundaries_database_.get_boundaries_left(0)))[site],
                                                                                        (*(boundaries_database_.get_boundaries_right(0)))[site+1],
                                                                                        site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension;
+                        std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
                                                                                                (*(boundaries_database_.get_boundaries_left(idx)))[site],
                                                                                                (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                               site, alpha, cutoff, Mmax, Mval);
+                                                                                               site, alpha, cutoff, Mmax, keeps);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
@@ -233,13 +233,13 @@ public:
                                                                                                (*(boundaries_database_.get_boundaries_left(idx)))[site],
                                                                                                (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
                                                                                                site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension;
+                        std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t k = 0; k < n_root_; k++) {
                             if (k != sa_alg_)
                                 trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site],
                                                                              (*(boundaries_database_.get_boundaries_left(k)))[site],
                                                                              (*(boundaries_database_.get_boundaries_right(k)))[site+1],
-                                                                             site, alpha, cutoff, Mmax, Mval));
+                                                                             site, alpha, cutoff, Mmax, keeps));
                         }
                     }
                 } else {
@@ -258,12 +258,12 @@ public:
                                                                                        (*(boundaries_database_.get_boundaries_left(0)))[site],
                                                                                        (*(boundaries_database_.get_boundaries_right(0)))[site+1],
                                                                                        site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension;
+                        std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
                                                                                                (*(boundaries_database_.get_boundaries_left(idx)))[site],
                                                                                                (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
-                                                                                               site, alpha, cutoff, Mmax, Mval);
+                                                                                               site, alpha, cutoff, Mmax, keeps);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
@@ -276,13 +276,13 @@ public:
                                                                                                (*(boundaries_database_.get_boundaries_left(idx)))[site],
                                                                                                (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
                                                                                                site, alpha, cutoff, Mmax);
-                        Mval = trunc[0].bond_dimension;
+                        std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t k = 0; k < n_root_; k++)
                             if (k != sa_alg_) {
                                 trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site],
                                                                              (*(boundaries_database_.get_boundaries_left(k)))[site],
                                                                              (*(boundaries_database_.get_boundaries_right(k)))[site+1],
-                                                                             site, alpha, cutoff, Mmax, Mval));
+                                                                             site, alpha, cutoff, Mmax, keeps));
                             }
                     }
                 } else {

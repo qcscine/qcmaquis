@@ -282,12 +282,12 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        double alpha,
                                        double cutoff,
                                        std::size_t Mmax,
-                                       std::size_t Mval )
+                                       const std::vector<size_t>& keeps)
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, Mval);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, keeps);
     (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
@@ -307,12 +307,12 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        double alpha,
                                        double cutoff,
                                        std::size_t Mmax,
-                                       std::size_t Mval )
+                                       const std::vector<size_t>& keeps)
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, Mval);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, keeps);
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;

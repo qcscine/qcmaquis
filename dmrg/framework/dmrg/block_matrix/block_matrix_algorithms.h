@@ -64,14 +64,16 @@ struct truncation_results {
     double      truncated_weight;   // sum of discarded eigenvalues (square of singuler values)
     double      truncated_fraction; // sum of discarded singular values
     double      smallest_ev;        // smallest eigenvalue kept
+    std::vector<size_t> keeps;      // number of eigenvalues to keep for the truncation for each block.
 
     truncation_results() { }
     
-    truncation_results(std::size_t m, double tw, double tf, double se)
+    truncation_results(std::size_t m, double tw, double tf, double se, std::vector<size_t> k)
     : bond_dimension(m)
     , truncated_weight(tw)
     , truncated_fraction(tf)
     , smallest_ev(se)
+    , keeps(k)
     { }
 };
 
@@ -311,11 +313,10 @@ typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
 // Estimate the error associated with the truncation in the DMRG algorithm
 //
 template<class DiagMatrix, class SymmGroup>
-void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals, 
+void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
                          size_t Mmax,
-                         size_t Mval,
                          double cutoff,
-                         size_t* keeps,
+                         std::vector<size_t> & keeps,
                          double & truncated_fraction,
                          double & truncated_weight,
                          double & smallest_ev)
@@ -328,7 +329,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         length += num_rows(evals[k]);
     }
-    
+
     typedef std::vector<real_type> real_vector_t;
     real_vector_t allevals(length);
     {
@@ -348,16 +349,14 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     // Decides the threshold where to cut (expressed as relative value with respect to allevals[0])
     double evalscut = cutoff * allevals[0];
     // Compute the smallest discarded eigenvalue
-    if (Mval > 0)
-        evalscut = allevals[Mval-1] ;
-    else if (allevals.size() > Mmax)
+    if (allevals.size() > Mmax)
         evalscut = std::max(evalscut, allevals[Mmax]);
     smallest_ev = evalscut / allevals[0];
     // Compute the relative error
     truncated_fraction = 0.0; truncated_weight = 0.0;
     for (typename real_vector_t::const_iterator it = std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut);
          it != allevals.end(); ++it) {
-        truncated_fraction += *it;        
+        truncated_fraction += *it;
         truncated_weight += (*it)*(*it);
     }
     truncated_fraction /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
@@ -371,20 +370,89 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
 }
 
 //
+// ESTIMATE_TRUNCATION_KEEPS
+// -------------------
+// Estimate the error associated with the truncation in the DMRG algorithm,
+// but with a given number of kept eigenvalues per block (e.g. obtained from a previous truncation)
+//
+template<class DiagMatrix, class SymmGroup>
+void estimate_truncation_keeps(block_matrix<DiagMatrix, SymmGroup> const & evals,
+                         const std::vector<size_t> & keeps,
+                         double & truncated_fraction,
+                         double & truncated_weight,
+                         double & smallest_ev)
+{
+    // Types declaration
+    typedef typename DiagMatrix::value_type value_type;
+    typedef typename maquis::traits::real_type<value_type>::type real_type;
+
+    typedef std::vector<real_type> real_vector_t;
+
+    // Compute the overall number of eigenvalues and extract them inside allevals
+    size_t length = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        length += num_rows(evals[k]);
+    }
+
+    typedef std::vector<real_type> real_vector_t;
+    real_vector_t allevals(length);
+    {
+        parallel::guard::serial guard;
+        storage::migrate(evals);
+    }
+
+    std::size_t position = 0;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        std::transform(evals[k].diagonal().first, evals[k].diagonal().second, allevals.begin()+position, gather_real_pred<value_type>);
+        position += num_rows(evals[k]);
+    }
+
+    assert( allevals.size() > 0 );
+
+    // Vector that contains smallest eigenvalues per block
+    real_vector_t smallest_evs(evals.n_blocks());
+
+    // Loop through all blocks of evals and accumulate all eigenvalues
+
+    truncated_fraction = 0.0; truncated_weight = 0.0;
+
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k)
+    {
+        // Calculate truncated_fraction and truncated_weight
+        for (std::size_t l = 0; l < keeps[k]; ++l)
+        {
+            real_type eval = *(evals[k].diagonal().first + l);
+            truncated_fraction += eval;
+            truncated_weight += eval * eval;
+        }
+
+        // Get smallest eigenvalue per block
+        smallest_evs[k] = *std::max_element(evals[k].diagonal().first, evals[k].diagonal().second);
+    }
+
+    truncated_fraction /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
+    truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0,  boost::lambda::_1 + boost::lambda::_2 *boost::lambda::_2);
+
+    // Calculate the smallest eigenvalue
+    smallest_ev = *std::max_element(smallest_evs.begin(),smallest_evs.end());
+
+}
+
+//
 // SVD_TRUNCATE
 // ------------
 // Function that diagonalizes a block_matrix and removes the columns based on a given threshold.
 // Same as HEEV_TRUNCATE (see below), but employs SVD instead of standard diagonalization
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                                block_matrix<Matrix, SymmGroup> & U,
-                                block_matrix<Matrix, SymmGroup> & V,
-                                block_matrix<DiagMatrix, SymmGroup> & S,
+truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const &M,
+                                block_matrix<Matrix, SymmGroup> &U,
+                                block_matrix<Matrix, SymmGroup> &V,
+                                block_matrix<DiagMatrix, SymmGroup> &S,
                                 double rel_tol,
                                 std::size_t Mmax,
                                 bool verbose = true,
-                                std::size_t Mval = 0)
+                                const std::vector<size_t> &ext_keeps = std::vector<size_t>())
 {
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     #ifdef USE_AMBIENT
@@ -393,13 +461,21 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     svd(M, U, V, S);
     #endif
     Index<SymmGroup> old_basis = S.left_basis();
-    size_t* keeps = new size_t[S.n_blocks()];
+
+    // If we provide the number of eigenvalues per block (in ext_keeps) use it for the truncation,
+    // otherwise call estimate_truncation()
+    std::vector<size_t> keeps(S.n_blocks(), 0);
+    if (!ext_keeps.empty())
+        keeps = ext_keeps;
     double truncated_fraction, truncated_weight, smallest_ev;
     //  Given the full SVD in each block (above), remove all singular values and corresponding rows/cols
     //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
     //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
     //  (remove_rows/remove_cols methods for that)
-    estimate_truncation(S, Mmax, Mval, rel_tol, keeps, truncated_fraction, truncated_weight, smallest_ev);
+    if (!ext_keeps.empty())
+        estimate_truncation_keeps(S, ext_keeps, truncated_fraction, truncated_weight, smallest_ev);
+    else
+        estimate_truncation(S, Mmax, rel_tol, keeps, truncated_fraction, truncated_weight, smallest_ev);
     for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
        size_t keep = keeps[k];
@@ -435,7 +511,6 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
         }
     }
 
-    delete[] keeps;
 
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
     if(verbose){
@@ -444,7 +519,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
-    return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
+    return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev, keeps);
 }
 
 // TODO: not yet working properly.
@@ -505,12 +580,12 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  block_matrix<DiagMatrix, SymmGroup> & evals,
                                  double cutoff,
                                  std::size_t Mmax,
-                                 std::size_t Mval = 0,
-                                 bool verbose = true)
+                                 bool verbose = true,
+                                 const std::vector<size_t>& ext_keeps = std::vector<size_t>()
+)
 {
     // Simple checks
     assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    assert(Mval >= 0) ;
     // Diagonalization of the input matrix
     #ifdef USE_AMBIENT
     heev_merged(M, evecs, evals);
@@ -518,9 +593,18 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     heev(M, evecs, evals);
     #endif
     Index<SymmGroup> old_basis = evals.left_basis();
-    size_t* keeps = new size_t[evals.n_blocks()];
+
+    // If we provide the number of eigenvalues per block (in ext_keeps) use it for the truncation,
+    // otherwise call estimate_truncation()
+    std::vector<size_t> keeps(evals.n_blocks(), 0);
+    if (!ext_keeps.empty())
+        keeps = ext_keeps;
     double truncated_fraction, truncated_weight, smallest_ev;
-    estimate_truncation(evals, Mmax, Mval, cutoff, keeps, truncated_fraction, truncated_weight, smallest_ev);
+    if (!ext_keeps.empty())
+        estimate_truncation_keeps(evals, ext_keeps, truncated_fraction, truncated_weight, smallest_ev);
+    else
+        estimate_truncation(evals, Mmax, cutoff, keeps, truncated_fraction, truncated_weight, smallest_ev);
+
     // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     // Removes the eigenvectors that are no longer needed
     for ( int k = evals.n_blocks() - 1; k >= 0; --k)
@@ -550,7 +634,6 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                keep);
         }
     }
-    delete[] keeps;
 
     std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
     if(verbose){
@@ -558,7 +641,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     
     // MD: for eigenvalues we care about summing the discraded
-    return truncation_results(bond_dimension, truncated_fraction, truncated_fraction, smallest_ev);
+    return truncation_results(bond_dimension, truncated_fraction, truncated_fraction, smallest_ev, keeps);
 }
 
 template<class Matrix, class SymmGroup>

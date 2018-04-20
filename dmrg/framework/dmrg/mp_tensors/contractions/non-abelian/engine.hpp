@@ -163,11 +163,11 @@ namespace contraction {
                                     double alpha,
                                     double cutoff,
                                     std::size_t Mmax,
-                                    std::size_t Mval
+                                    const std::vector<size_t>& keeps = std::vector<size_t>()
                                    )
         {
             return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
-                   (mps, mpo, left, right, alpha, cutoff, Mmax, Mval);
+                   (mps, mpo, left, right, alpha, cutoff, Mmax, keeps);
         }
 
         static MPSTensor<Matrix, SymmGroup>
@@ -186,10 +186,11 @@ namespace contraction {
                                     double alpha,
                                     double cutoff,
                                     std::size_t Mmax,
-                                    std::size_t Mval)
+                                    const std::vector<size_t>& keeps = std::vector<size_t>()
+        )
         {
             return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
-                   (mps, mpo, left, right, alpha, cutoff, Mmax, Mval);
+                   (mps, mpo, left, right, alpha, cutoff, Mmax, keeps);
         }
 
         static MPSTensor<Matrix, SymmGroup>

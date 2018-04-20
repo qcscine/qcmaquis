@@ -92,7 +92,7 @@ public:
                                       double alpha,
                                       double cutoff,
                                       std::size_t Mmax,
-                                      std::size_t Mval=0);
+                                      const std::vector<size_t>& keeps = std::vector<size_t>());
     template<class OtherMatrix>
     truncation_results grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
@@ -101,7 +101,7 @@ public:
                                       double alpha,
                                       double cutoff,
                                       std::size_t Mmax,
-                                      std::size_t Mval=0) ;
+                                      const std::vector<size_t>& keeps = std::vector<size_t>());
     
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;

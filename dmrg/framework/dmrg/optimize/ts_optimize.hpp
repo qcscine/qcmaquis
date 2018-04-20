@@ -242,7 +242,7 @@ public:
             //  Truncation of the MPS
             // +---------------------+
             double cutoff = this->get_cutoff(sweep) ;
-            std::size_t Mmax = this->get_Mmax(sweep) , Mval ;
+            std::size_t Mmax = this->get_Mmax(sweep) ;
             std::vector<truncation_results> trunc(n_root_) ;
             // +-------------+
             //  Forward sweep
@@ -259,22 +259,22 @@ public:
                         boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
                     two_vec[0].clear();
-                    Mval = trunc[0].bond_dimension ;
-                    block_matrix<Matrix, SymmGroup> t;
-                    t = mps_vector[0][site2].normalize_left(DefaultSolver());
+
+                    //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
+                    std::vector<size_t>& keeps = trunc[0].keeps;
+                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site2].normalize_left(DefaultSolver());
                     if (site2 < L_-1)
                         mps_vector[0][site2+1].multiply_from_left(t);
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, Mval);
+                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, keeps);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1], Mval);
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1], keeps);
                         two_vec[idx].clear();
-                        block_matrix<Matrix, SymmGroup> t;
-                        t = mps_vector[idx][site2].normalize_left(DefaultSolver());
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
                             mps_vector[idx][site2+1].multiply_from_left(t);
                     }
@@ -287,12 +287,13 @@ public:
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1]);
                         two_vec[idx].clear();
-                        block_matrix<Matrix, SymmGroup> t;
-                        t = mps_vector[idx][site2].normalize_left(DefaultSolver());
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
                             mps_vector[idx][site2+1].multiply_from_left(t);
                     }
                 } else if (sa_alg_ > -1) {
+                    // TODO: Leon to ALB: Shouldn't this use state # sa_alg_ as the reference state for the truncation and NOT the ground state?
+                    // TODO: yes it should, see ss_optimize.hpp
                     // Truncation of the reference state
                     if (parms["twosite_truncation"] == "svd")
                         boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
@@ -301,22 +302,21 @@ public:
                         boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
                     two_vec[0].clear();
-                    Mval = trunc[0].bond_dimension ;
-                    block_matrix<Matrix, SymmGroup> t;
-                    t = mps_vector[0][site2].normalize_left(DefaultSolver());
+                    //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
+                    std::vector<size_t>& keeps = trunc[0].keeps;
+                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site2].normalize_left(DefaultSolver());
                     if (site2 < L_-1)
                         mps_vector[0][site2+1].multiply_from_left(t);
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, Mval);
+                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, keeps);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1], Mval);
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1], keeps);
                         two_vec[idx].clear();
-                        block_matrix<Matrix, SymmGroup> t;
-                        t = mps_vector[idx][site2].normalize_left(DefaultSolver());
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
                             mps_vector[idx][site2+1].multiply_from_left(t);
                     }
@@ -337,22 +337,22 @@ public:
                         boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
                     two_vec[0].clear();
-                    Mval = trunc[0].bond_dimension ;
-                    block_matrix<Matrix, SymmGroup> t;
-                    t = mps_vector[0][site1].normalize_right(DefaultSolver());
+                    //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
+                    std::vector<size_t>& keeps = trunc[0].keeps;
+
+                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site1].normalize_right(DefaultSolver());
                     if (site1 > 0)
                         mps_vector[0][site1-1].multiply_from_right(t);
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mval);
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, keeps);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], Mval);
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], keeps);
                         two_vec[idx].clear();
-                        block_matrix<Matrix, SymmGroup> t;
-                        t = mps_vector[idx][site1].normalize_right(DefaultSolver());
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 0)
                             mps_vector[idx][site1-1].multiply_from_right(t);
                     }
@@ -379,22 +379,23 @@ public:
                         boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
                     two_vec[0].clear();
-                    Mval = trunc[0].bond_dimension ;
-                    block_matrix<Matrix, SymmGroup> t;
-                    t = mps_vector[0][site1].normalize_right(DefaultSolver());
+
+                    //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
+                    std::vector<size_t>& keeps = trunc[0].keeps;
+
+                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site1].normalize_right(DefaultSolver());
                     if (site2 < L_-1)
                         mps_vector[0][site1-1].multiply_from_right(t);
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, Mmax);
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, keeps);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site1], Mval);
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site1], keeps);
                         two_vec[idx].clear();
-                        block_matrix<Matrix, SymmGroup> t;
-                        t = mps_vector[idx][site1].normalize_right(DefaultSolver());
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 0)
                             mps_vector[idx][site1-1].multiply_from_right(t);
                     }

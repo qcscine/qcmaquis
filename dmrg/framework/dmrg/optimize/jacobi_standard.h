@@ -161,10 +161,6 @@ namespace ietl
                 V[i] = new_vector(vecspace_, i) ;
                 for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                    V[i] -= ietl::dot((*it)[0], V[i]) * (*it)[0]  ;
-                if (site1_ == 3) {
-                  std::cout << V[0] << std::endl ;
-                  std::cout << V[1] << std::endl ;
-                }
                 for (size_t j = 0; j < i; j++)
                     V[i] -= ietl::dot(V[i],V[j]) * V[j] ;
                 if (ietl::two_norm(V[i]) > 1.0E-10)

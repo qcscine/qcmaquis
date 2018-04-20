@@ -46,8 +46,7 @@ struct compression {
         
         block_matrix<dmt, SymmGroup> s;
         
-        truncation_results trunc = svd_truncate(t, u, v, s,
-                                                cutoff, Mmax, true);
+        truncation_results trunc = svd_truncate(t, u, v, s, cutoff, Mmax, false);
         
         mps[p].replace_left_paired(u, Lnorm);
         
@@ -70,8 +69,7 @@ struct compression {
         
         block_matrix<dmt, SymmGroup> s;
         
-        truncation_results trunc = svd_truncate(t, u, v, s,
-                                                cutoff, Mmax, true);
+        truncation_results trunc = svd_truncate(t, u, v, s, cutoff, Mmax, false);
         
         mps[p+1].replace_right_paired(v, Rnorm);
         

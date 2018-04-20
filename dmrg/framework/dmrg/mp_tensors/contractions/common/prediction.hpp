@@ -50,7 +50,7 @@ namespace contraction {
                                     double alpha,
                                     double cutoff,
                                     std::size_t Mmax,
-                                    std::size_t Mval)
+                                    const std::vector<size_t>& keeps = std::vector<size_t>())
         {
             mps.make_left_paired();
             block_matrix<Matrix, SymmGroup> dm;
@@ -79,7 +79,7 @@ namespace contraction {
             
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, Mval);
+            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true, keeps);
             // Prepares results
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_left_paired(U);
@@ -102,7 +102,7 @@ namespace contraction {
                                         double alpha,
                                         double cutoff,
                                         std::size_t Mmax,
-                                        std::size_t Mval)
+                                        const std::vector<size_t>& keeps = std::vector<size_t>())
         {
             // Initialization
             mps.make_right_paired();
@@ -131,7 +131,7 @@ namespace contraction {
             assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, Mval);
+            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true, keeps);
             // Prepare output results
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_right_paired(adjoint(U));
