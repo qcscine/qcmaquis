@@ -403,6 +403,7 @@ void estimate_truncation_keeps(block_matrix<DiagMatrix, SymmGroup> const & evals
 
     std::size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        // remove very small eigenvalues
         std::transform(evals[k].diagonal().first, evals[k].diagonal().second, allevals.begin()+position, gather_real_pred<value_type>);
         position += num_rows(evals[k]);
     }
@@ -430,6 +431,7 @@ void estimate_truncation_keeps(block_matrix<DiagMatrix, SymmGroup> const & evals
         smallest_evs[k] = *std::max_element(evals[k].diagonal().first, evals[k].diagonal().second);
     }
 
+    // Calculate truncated fraction and truncated weight
     truncated_fraction /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0,  boost::lambda::_1 + boost::lambda::_2 *boost::lambda::_2);
 
@@ -479,7 +481,20 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const &M,
     for ( int k = S.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
        size_t keep = keeps[k];
-  
+
+//        // Debug info
+//        std::cout << "SVD truncation info:" << std::endl;
+//        std::cout << "Block " << k << ":" << std::endl;
+//        std::cout << "Keeping " << keep << " eigenvalues out of "  <<  num_rows(S[k]) << std::endl;
+//        if (keep > 0)
+//        {
+//            for (auto it = S[k].diagonal().first; it != S[k].diagonal().second; ++it)
+//            {
+//                std::cout << (std::distance(S[k].diagonal().first, it) ? "Kept: " : "Discarded: ");
+//                std::cout << *it << std::endl;
+//            }
+//        }
+//        // End debug info
         if (keep == 0) {
             S.remove_block(S.basis().left_charge(k),
                            S.basis().right_charge(k));
