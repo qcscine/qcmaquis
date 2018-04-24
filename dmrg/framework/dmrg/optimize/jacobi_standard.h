@@ -226,8 +226,12 @@ namespace ietl
         if (idx == 0)
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                t -= ietl::dot((*it)[0], t) * (*it)[0]  ;
+        scalar_type norm_prev = ietl::two_norm(t) ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
+        if (maquis::real(ietl::two_norm(t)/norm_prev) < 0.25)
+            for (int i = 1; i <= idx; i++)
+                t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
         V[idx] = t ;
         VA[idx] = apply_operator(t) ;
@@ -249,7 +253,7 @@ namespace ietl
         r -= theta*u;
         // Deflates the error vector
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-            if (maquis::real(ietl::dot((*it)[0], (*it)[0])) > 1.0E-15)
+            if (maquis::real(ietl::dot((*it)[0], (*it)[0])) > 1.0E-10)
                 r -= ietl::dot((*it)[0],r) * (*it)[0] ;
         return r ;
     }
