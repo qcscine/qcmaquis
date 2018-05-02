@@ -251,28 +251,46 @@ public:
     	    if (lr == +1) {
         		// Write back result from optimization
                 if (sa_alg_ == -1) {
-                    // Truncation of the reference state
-                    if (parms["twosite_truncation"] == "svd")
-                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
-                                = two_vec[0].split_mps_l2r(Mmax, cutoff);
-                    else
-                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
-                                = two_vec[0].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
-                    two_vec[0].clear();
+                    // Truncation of the average DM
 
-                    //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
-                    std::vector<size_t>& keeps = trunc[0].keeps;
-                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site2].normalize_left(DefaultSolver());
-                    if (site2 < L_-1)
-                        mps_vector[0][site2+1].multiply_from_left(t);
-                    // Truncation of the other states
-                    for (size_t idx = 1; idx < n_bound_; idx++) {
+                    // Construct the two-site tensor averaged over all states
+
+                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site1 = mps_vector[0][site1];
+                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site2 = mps_vector[0][site2];
+
+
+                    for (size_t idx = 1; idx < n_root_; idx++)
+                    {
+                        mpstensor_avg_site1 += mps_vector[idx][site1];
+                        mpstensor_avg_site2 += mps_vector[idx][site2];
+                    }
+
+                    mpstensor_avg_site1 /= n_root_;
+                    mpstensor_avg_site2 /= n_root_;
+
+
+                    TwoSiteTensor<Matrix, SymmGroup> avg_tst(mpstensor_avg_site1, mpstensor_avg_site2);
+                    truncation_results avg_truncation;
+
+                    // If the line below is removed, the TwoSiteTensor.data() will have wrong dimensions (incompatible with the other states)
+                    MPSTensor<Matrix,SymmGroup> avg_tst_mps = avg_tst.make_mps();
+
+                    if (parms["twosite_truncation"] == "svd")
+                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
+                                = avg_tst.split_mps_l2r(Mmax, cutoff);
+                    else // TODO: Leon: This doesn't work
+                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
+                                = avg_tst.predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
+                    avg_tst.clear();
+
+                    // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
+                    for (size_t idx = 0; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, keeps);
+                                    = two_vec[idx].split_mps_l2r(Mmax, cutoff, avg_truncation.keeps);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1], keeps);
+                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx)))[site1], mpo[site1], avg_truncation.keeps);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
@@ -329,28 +347,45 @@ public:
     	    if (lr == -1){
                 // Write back result from optimization
                 if (sa_alg_ == -1) {
-                    // Truncation of the reference state
-                    if (parms["twosite_truncation"] == "svd")
-                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
-                                = two_vec[0].split_mps_r2l(Mmax, cutoff);
-                    else
-                        boost::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
-                                = two_vec[0].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
-                    two_vec[0].clear();
-                    //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
-                    std::vector<size_t>& keeps = trunc[0].keeps;
 
-                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site1].normalize_right(DefaultSolver());
-                    if (site1 > 0)
-                        mps_vector[0][site1-1].multiply_from_right(t);
-                    // Truncation of the other states
-                    for (size_t idx = 1; idx < n_bound_; idx++) {
+                    // Truncation of the average DM
+
+                    // Construct the two-site tensor averaged over all states
+                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site1 = mps_vector[0][site1];
+                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site2 = mps_vector[0][site2];
+
+                    for (size_t idx = 1; idx < n_root_; idx++)
+                    {
+                        mpstensor_avg_site1 += mps_vector[idx][site1];
+                        mpstensor_avg_site2 += mps_vector[idx][site2];
+                    }
+
+                    mpstensor_avg_site1 /= n_root_;
+                    mpstensor_avg_site2 /= n_root_;
+
+                    TwoSiteTensor<Matrix, SymmGroup> avg_tst(mpstensor_avg_site1, mpstensor_avg_site2);
+                    truncation_results avg_truncation;
+
+                    // If the line below is removed, the TwoSiteTensor.data() will have wrong dimensions (incompatible with the other states)
+                    MPSTensor<Matrix,SymmGroup> avg_tst_mps = avg_tst.make_mps();
+
+                    // Truncation of the average two-site tensor
+                    if (parms["twosite_truncation"] == "svd")
+                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
+                                = avg_tst.split_mps_r2l(Mmax, cutoff);
+                    else // TODO: Leon: This doesn't work
+                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
+                                = avg_tst.predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
+                    avg_tst.clear();
+
+                    // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
+                    for (size_t idx = 0; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, keeps);
+                                    = two_vec[idx].split_mps_r2l(Mmax, cutoff, avg_truncation.keeps);
                         else
                             boost::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], keeps);
+                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx)))[site2+1], mpo[site2], avg_truncation.keeps);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 0)

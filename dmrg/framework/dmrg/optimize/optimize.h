@@ -138,7 +138,7 @@ public:
         do_stateaverage_ = parms_["n_states_sa"].as<int>() > 0 ;
         for (size_t k = 0; k < n_root_; k++)
             order.push_back(k) ;
-        if (sa_alg_ == 1) {
+        if (sa_alg_ == -1) {
             mps_average = mps_vector[0];
             for (size_t k = 0; k < L_; k++) {
                 for (int i = 1; i < n_root_; i++)

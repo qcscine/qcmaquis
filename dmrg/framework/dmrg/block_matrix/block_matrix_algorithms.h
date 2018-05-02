@@ -474,6 +474,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const &M,
     //  where the singular value is < rel_tol*max(S), where the maximum is taken over all blocks.
     //  Be careful to update the Index descriptions in the matrices to reflect the reduced block sizes
     //  (remove_rows/remove_cols methods for that)
+
     if (!ext_keeps.empty())
         estimate_truncation_keeps(S, ext_keeps, truncated_fraction, truncated_weight, smallest_ev);
     else

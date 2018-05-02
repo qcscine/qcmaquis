@@ -52,7 +52,6 @@ public:
     TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                   MPSTensor<Matrix, SymmGroup> const & mps2);
 
-    TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & twin_mps);
 
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;

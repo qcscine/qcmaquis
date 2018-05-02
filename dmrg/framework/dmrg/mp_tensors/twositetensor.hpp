@@ -58,7 +58,6 @@ TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> con
 
 }
 
-
 template<class Matrix, class SymmGroup>
 Index<SymmGroup> const & TwoSiteTensor<Matrix, SymmGroup>::site_dim() const
 {
