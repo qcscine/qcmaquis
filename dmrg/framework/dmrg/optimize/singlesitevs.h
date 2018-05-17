@@ -101,7 +101,7 @@ public:
         ortho_vecs_add_.resize(0) ;
         MPSTensor<Matrix, SymmGroup> tmp ;
         for (int i = 0; i < idx; i++) {
-            tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[idx][i][site], vec_sa_right_[i][idx][site+1]);
+            tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[i][idx][site], vec_sa_right_[i][idx][site+1]);
             ortho_vecs_add_.push_back(tmp) ;
         }
     }
@@ -113,7 +113,7 @@ public:
                                                  const std::size_t& site2)
     {
         MPSTensor<Matrix, SymmGroup> tmp ;
-        tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[i_2ortho][idx][site1], vec_sa_right_[i_2ortho][idx][site2+1]);
+        tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[idx][i_2ortho][site1], vec_sa_right_[idx][i_2ortho][site2+1]);
         return tmp ;
     };
 private:
