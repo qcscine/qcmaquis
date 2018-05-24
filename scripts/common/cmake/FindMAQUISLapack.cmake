@@ -62,7 +62,12 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
     message(FATAL_ERROR "VecLib available only on Mac.")
   endif(APPLE)
   
-  
+elseif(${BLAS_LAPACK_SELECTOR} MATCHES "openblas")
+  set(MAQUISLapack_LIBRARIES -lopenblas)
+  set(MAQUISLapack_LIB_DIRS ${OPENBLASROOT}/lib)
+  set(MAQUISLapack_INCLUDE_DIRS ${OPENBLASROOT}/include)  
+
+   
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
   # variables set manually
   
