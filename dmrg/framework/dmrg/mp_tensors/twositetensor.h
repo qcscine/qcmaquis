@@ -48,6 +48,8 @@ public:
     typedef std::size_t size_type;
     typedef typename MultiIndex<SymmGroup>::index_id index_id;
     typedef typename MultiIndex<SymmGroup>::set_id set_id;
+    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    typedef block_matrix<dmt, SymmGroup> block_diag_matrix;
     
     TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                   MPSTensor<Matrix, SymmGroup> const & mps2);
@@ -71,12 +73,30 @@ public:
     void make_right_paired() const;
     
     MPSTensor<Matrix, SymmGroup> make_mps() const;
-    
+
+    // get_S performs an SVD, truncates the S matrix and returns the truncated S
+
+    boost::tuple<block_diag_matrix, truncation_results> get_S(std::size_t Mmax, double cutoff);
+
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     split_mps_l2r(std::size_t Mmax, double cutoff, const std::vector<size_t>& keeps = std::vector<size_t>()) const;
-    
+
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     split_mps_r2l(std::size_t Mmax, double cutoff, const std::vector<size_t>& keeps = std::vector<size_t>()) const;
+
+
+    // split_mps_r2l & l2r versions which use an externally supplied S for renormalisation
+    // Input: s_truncated: truncated S
+    //        keeps: vector of the number of eigenvalues to keep per symmetry block
+
+    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> >
+    split_mps_l2r(const block_diag_matrix& s_truncated,
+                  const std::vector<size_t>& keeps) const;
+
+    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> >
+    split_mps_r2l(const block_diag_matrix& s_truncated,
+                  const std::vector<size_t>& keeps) const;
+
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,

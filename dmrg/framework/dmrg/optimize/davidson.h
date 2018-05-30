@@ -97,6 +97,8 @@ namespace ietl
         // Public method to compute eigenvalue
         template <class ITER>
         vector_pairs calculate_eigenvalue(ITER& iter);
+
+        const double NUM_ZERO = 1.0E-10;
     protected:
         // Virtual Methods, defined in the derived classes
         virtual magnitude_type return_final(const magnitude_type& eigval) {} ;

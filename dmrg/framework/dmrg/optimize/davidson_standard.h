@@ -63,6 +63,7 @@ namespace ietl {
         using base::site2_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
+        using base::NUM_ZERO;
         // New constructors
         davidson_standard(const MATRIX &matrix, VS &vec, const int& nmin, const int& nmax,
                           const int& nsites, const int& site1, const int& site2,
@@ -110,7 +111,7 @@ namespace ietl {
             vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
             for (size_t j = 0 ; j < ortho_space_.size() ; j++)
                 tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
-            if (ietl::two_norm(tmp) > 1.0E-10) {
+            if (ietl::two_norm(tmp) > NUM_ZERO) {
                 tmp /= ietl::two_norm(tmp);
                 std::vector< vector_type > junk ;
                 junk.push_back(tmp) ;
@@ -144,7 +145,7 @@ namespace ietl {
         r -= theta*u;
         // Deflates the error vector
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-            if (maquis::real(ietl::dot((*it)[0], (*it)[0])) > 1.0E-15)
+            if (maquis::real(ietl::dot((*it)[0], (*it)[0])) > NUM_ZERO)
                 r -= ietl::dot((*it)[0],r) * (*it)[0] ;
         return r ;
     }

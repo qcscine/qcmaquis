@@ -173,9 +173,8 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff,
 {
     make_both_paired();
 
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     block_matrix<Matrix, SymmGroup> u, v;
-    block_matrix<dmt, SymmGroup> s;
+    block_diag_matrix s;
 
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true, keeps);
 
@@ -188,15 +187,43 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff,
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
+
+// split_mps_l2r version which uses an externally supplied S for renormalisation
+// Input: s_truncated: truncated S
+//        s_full: S before truncation
+//        keeps: vector of the number of eigenvalues to keep per symmetry block
+
+
+template<class Matrix, class SymmGroup>
+boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> >
+TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(const block_diag_matrix& s_truncated,
+                                                const std::vector<size_t>& keeps) const
+{
+    make_both_paired();
+
+    block_matrix<Matrix, SymmGroup> u, v;
+
+    external_truncate(data_, u, v, keeps);
+
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), u, LeftPaired);
+    assert( mps_tensor1.reasonable() );
+    // Use s_truncated for the renormalisation
+    gemm(s_truncated, v, u);
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, u.left_basis(), right_i, u, RightPaired);
+    assert( mps_tensor2.reasonable() );
+
+    return boost::make_tuple(mps_tensor1, mps_tensor2);
+}
+
+
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff, const std::vector<size_t>& keeps) const
 {
     make_both_paired();
 
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     block_matrix<Matrix, SymmGroup> u, v;
-    block_matrix<dmt, SymmGroup> s;
+    block_diag_matrix s;
 
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true, keeps);
 
@@ -207,6 +234,31 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff,
 
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
+
+// split_mps_r2l version which uses an externally supplied S for renormalisation
+// Input: s_truncated: truncated S
+//        keeps: vector of the number of eigenvalues to keep per symmetry block
+
+
+template<class Matrix, class SymmGroup>
+boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> >
+TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(const block_diag_matrix& s_truncated,
+                                                const std::vector<size_t>& keeps) const
+{
+    make_both_paired();
+
+    block_matrix<Matrix, SymmGroup> u, v;
+
+    external_truncate(data_, u, v, keeps);
+
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, v.left_basis(), right_i, v, RightPaired);
+
+    // Use s_truncated for the renormalisation
+    gemm(u, s_truncated, v);
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
+
+    return boost::make_tuple(mps_tensor1, mps_tensor2);
+};
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
@@ -262,7 +314,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax,
 
     /// truncation
     block_matrix<Matrix, SymmGroup> U;
-    block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+    block_diag_matrix S;
     truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true, keeps);
     dm = block_matrix<Matrix, SymmGroup>();
 
@@ -336,7 +388,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax,
 
     // truncation
     block_matrix<Matrix, SymmGroup> U;
-    block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+    block_diag_matrix S;
     truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true, keeps);
     dm = block_matrix<Matrix, SymmGroup>();
 
@@ -446,4 +498,20 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_sh
     this->data() = tmp;
 
     return *this;
+}
+
+template<class Matrix, class SymmGroup>
+//boost::tuple<block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>,
+//                                                                                        truncation_results>
+boost::tuple<typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix, truncation_results>
+TwoSiteTensor<Matrix, SymmGroup>::get_S(std::size_t Mmax, double cutoff)
+{
+    make_both_paired();
+
+    block_matrix<Matrix, SymmGroup> u, v;
+    block_diag_matrix s;
+
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+
+    return boost::make_tuple(s, trunc);
 }

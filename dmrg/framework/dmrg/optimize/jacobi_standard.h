@@ -38,6 +38,7 @@
 #include "dmrg/optimize/partial_overlap.h"
 #include "dmrg/optimize/gmres_alb.h"
 
+
 // +---------------------------+
 //  JACOBI-DAVIDSON EIGENSOLVER
 // +---------------------------+
@@ -82,6 +83,7 @@ namespace ietl
         using base::site2_ ;
         using base::u_and_uA_ ;
         using base::vecspace_ ;
+        using base::NUM_ZERO;
         //
         jacobi_davidson_standard(const MATRIX& matrix, VS& vec, const int& nmin, const int& nmax, const int& max_iter,
                                  const int& nsites, const int& site1, const int& site2, const double& ietl_atol,
@@ -145,13 +147,19 @@ namespace ietl
     {
         // Variable declaration
         size_t res = n_sa_ ;
+        magnitude_type kappa = 0.25;
         // Orthogonalization
         if (sa_alg_ == -2) {
             res = 1 ;
             V[0]  = new_vector(vecspace_, i_state_) ;
+            scalar_type prev_norm = ietl::two_norm(V[0]);
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                    V[0] -= ietl::dot((*it)[0], V[0]) * (*it)[0]  ;
-            V[0]  /= ietl::two_norm(V[0]) ;
+            if (maquis::real(ietl::two_norm(V[0])) < maquis::real(kappa * prev_norm))
+                for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
+                   V[0] -= ietl::dot((*it)[0], V[0]) * (*it)[0]  ;
+            if (ietl::two_norm(V[0]) > NUM_ZERO)
+                V[0]  /= ietl::two_norm(V[0]) ;
             VA[0] = apply_operator(V[0]) ;
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                    VA[0] -= ietl::dot((*it)[0], VA[0]) * (*it)[0]  ;
@@ -163,7 +171,7 @@ namespace ietl
                    V[i] -= ietl::dot((*it)[0], V[i]) * (*it)[0]  ;
                 for (size_t j = 0; j < i; j++)
                     V[i] -= ietl::dot(V[i],V[j]) * V[j] ;
-                if (ietl::two_norm(V[i]) > 1.0E-10)
+                if (ietl::two_norm(V[i]) > NUM_ZERO)
                     V[i] /= ietl::two_norm(V[i]) ;
                 VA[i] = apply_operator(V[i]) ;
                 for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
@@ -171,7 +179,7 @@ namespace ietl
             }
             // Remove the elements with null norm
             for (size_t i = 0; i < n_sa_; i++)
-                if (ietl::two_norm(V[i]) < 1.0E-10)
+                if (ietl::two_norm(V[i]) < NUM_ZERO)
                     lst_toerase.push_back(i) ;
             for (typename std::vector<size_t>::iterator it = lst_toerase.begin() ; it != lst_toerase.end() ; it++) {
                 V.erase(V.begin() + *it) ;
@@ -210,7 +218,7 @@ namespace ietl
             vector_type tmp = vecspace_.return_orthovec(u_and_uA_[jcont][0], order_[n_root_found_], order_[jcont], site1_, site2_) ;
             for (size_t j = 0 ; j < ortho_space_.size() ; j++)
                 tmp -= ietl::dot(ortho_space_[j][0], tmp) * ortho_space_[j][0] ;
-            if (ietl::two_norm(tmp) > 1.0E-10) {
+            if (ietl::two_norm(tmp) > NUM_ZERO) {
                 tmp /= ietl::two_norm(tmp);
                 std::vector< vector_type > junk ;
                 junk.push_back(tmp) ;
@@ -223,13 +231,14 @@ namespace ietl
     void jacobi_davidson_standard<Matrix, VS, ITER>::update_vecspace(vector_space& V, vector_space& VA, const int idx, vector_pairs& res)
     {
         vector_type t = V[idx] ;
+        magnitude_type kappa = 0.25;
         if (idx == 0)
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                t -= ietl::dot((*it)[0], t) * (*it)[0]  ;
         scalar_type norm_prev = ietl::two_norm(t) ;
         for (int i = 1; i <= idx; i++)
             t -= ietl::dot(V[i-1], t) * V[i-1];
-        if (maquis::real(ietl::two_norm(t)/norm_prev) < 0.25)
+        if (maquis::real(ietl::two_norm(t)) < maquis::real(kappa * norm_prev))
             for (int i = 1; i <= idx; i++)
                 t -= ietl::dot(V[i-1], t) * V[i-1];
         t /= ietl::two_norm(t) ;
@@ -253,7 +262,7 @@ namespace ietl
         r -= theta*u;
         // Deflates the error vector
         for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-            if (maquis::real(ietl::dot((*it)[0], (*it)[0])) > 1.0E-10)
+            if (maquis::real(ietl::dot((*it)[0], (*it)[0])) > NUM_ZERO)
                 r -= ietl::dot((*it)[0],r) * (*it)[0] ;
         return r ;
     }

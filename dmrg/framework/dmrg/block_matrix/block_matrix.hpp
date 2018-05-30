@@ -587,3 +587,9 @@ std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
         ret += num_rows(data_[k])*num_cols(data_[k]);
     return ret;
 }
+
+template<class Matrix, class SymmGroup>
+bool block_matrix<Matrix, SymmGroup>::empty() const
+{
+    return n_blocks() == 0;
+}

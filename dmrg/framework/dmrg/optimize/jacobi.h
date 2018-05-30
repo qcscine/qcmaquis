@@ -94,6 +94,7 @@ namespace ietl
 //         virtual ~jacobi_davidson() {};
         template <class GEN>
         vector_pairs calculate_eigenvalue(const GEN& gen, ITER& iter);
+        const double NUM_ZERO = 1.0E-10;
     protected:
         //
         void get_eigenvalue(std::vector<magnitude_type>& eigval, std::vector<class std::vector<magnitude_type> >& eigvecs,
@@ -309,7 +310,7 @@ namespace ietl
                                                            fortran_int_t dim, fortran_int_t id_min, fortran_int_t id_max)
     {
         // Definition of all the quantities needed by the LAPACK routine
-        double abstol = 1.0E-7;
+        double abstol = ietl_atol_;
         char jobz  = 'V';
         char range = 'I';
         char uplo  = 'U';

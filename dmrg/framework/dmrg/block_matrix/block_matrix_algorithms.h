@@ -342,11 +342,19 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
         std::transform(evals[k].diagonal().first, evals[k].diagonal().second, allevals.begin()+position, gather_real_pred<value_type>);
         position += num_rows(evals[k]);
     }
+    
+    ////// DEBUG
+    maquis::cout << "Eigenvalues: [ " ;
+    std::copy(allevals.begin(), allevals.end(), std::ostream_iterator<real_type>(std::cout, " "));
+    maquis::cout << "]" << std::endl;
+    ////// DEBUG END
+
+    // Decides the threshold where to cut (expressed as relative value with respect to allevals[0])
     // Sort and reverse the eigenvalues
     assert( allevals.size() > 0 );
     std::sort(allevals.begin(), allevals.end());
     std::reverse(allevals.begin(), allevals.end());
-    // Decides the threshold where to cut (expressed as relative value with respect to allevals[0])
+
     double evalscut = cutoff * allevals[0];
     // Compute the smallest discarded eigenvalue
     if (allevals.size() > Mmax)
@@ -457,11 +465,12 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const &M,
                                 const std::vector<size_t> &ext_keeps = std::vector<size_t>())
 {
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef USE_AMBIENT
-    svd_merged(M, U, V, S);
-    #else
-    svd(M, U, V, S);
-    #endif
+
+#ifdef USE_AMBIENT
+        svd_merged(M, U, V, S);
+#else
+        svd(M, U, V, S);
+#endif
     Index<SymmGroup> old_basis = S.left_basis();
 
     // If we provide the number of eigenvalues per block (in ext_keeps) use it for the truncation,
@@ -536,6 +545,61 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const &M,
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
     return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev, keeps);
+}
+
+//  EXTERNAL_TRUNCATE
+//  Perform a truncation based on information obtained from a previous truncation
+// (e.g. from a previous truncation of an average M)
+//  Input: keeps: vector with number of truncated eigenvalues per block
+
+
+
+template<class Matrix, class SymmGroup>
+void external_truncate(block_matrix<Matrix, SymmGroup> const &M,
+                                block_matrix<Matrix, SymmGroup> &U,
+                                block_matrix<Matrix, SymmGroup> &V,
+                                const std::vector<size_t> &keeps)
+{
+    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+
+    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    block_matrix<dmt, SymmGroup> S_svd;
+#ifdef USE_AMBIENT
+    svd_merged(M, U, V, S_svd);
+#else
+    svd(M, U, V, S_svd);
+#endif
+    // S_svd is discarded
+
+
+    for ( int k = keeps.size() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
+    {
+        size_t keep = keeps[k];
+        if (keep == 0) {
+            U.remove_block(U.basis().left_charge(k),
+                           U.basis().right_charge(k));
+            V.remove_block(V.basis().left_charge(k),
+                           V.basis().right_charge(k));
+            // C- idem heev_truncate          --k; // everything gets shifted, to we have to look into the same k again
+        } else {
+#ifdef USE_AMBIENT
+            ambient::numeric::split(U(U.basis().left_charge(k), U.basis().right_charge(k)));
+            ambient::numeric::split(V(V.basis().left_charge(k), V.basis().right_charge(k)));
+#endif
+
+//            if (keep >= num_rows(S[k])) continue; // This should never happen
+
+            U.resize_block(U.basis().left_charge(k),
+                           U.basis().right_charge(k),
+                           U.basis().left_size(k),
+                           keep);
+            V.resize_block(V.basis().left_charge(k),
+                           V.basis().right_charge(k),
+                           keep,
+                           V.basis().right_size(k));
+        }
+    }
+
 }
 
 // TODO: not yet working properly.

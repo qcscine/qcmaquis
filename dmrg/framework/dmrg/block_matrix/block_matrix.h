@@ -176,6 +176,7 @@ public:
     inline void serialize(Archive & ar, const unsigned int version);
     
     bool reasonable() const;
+    bool empty() const;
     
 private:
     DualIndex<SymmGroup> basis_;
