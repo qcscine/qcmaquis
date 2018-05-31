@@ -46,6 +46,9 @@ class TwoSiteTensor
 {
 public:
     typedef std::size_t size_type;
+    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
+    typedef typename maquis::traits::real_type<Matrix>::type real_type;
+    typedef typename Matrix::value_type value_type;
     typedef typename MultiIndex<SymmGroup>::index_id index_id;
     typedef typename MultiIndex<SymmGroup>::set_id set_id;
     typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
@@ -53,7 +56,6 @@ public:
     
     TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                   MPSTensor<Matrix, SymmGroup> const & mps2);
-
 
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
@@ -67,6 +69,12 @@ public:
     friend std::ostream& operator<<(std::ostream&, TwoSiteTensor<Matrix_, SymmGroup_> const &);
 
     TwoSiteTensor<Matrix, SymmGroup> & operator << ( MPSTensor<Matrix, SymmGroup> const & rhs);
+
+    TwoSiteTensor<Matrix, SymmGroup> const & operator*=(const scalar_type&);
+    TwoSiteTensor<Matrix, SymmGroup> const & operator/=(const scalar_type&);
+
+    TwoSiteTensor<Matrix, SymmGroup> const & operator+=(TwoSiteTensor<Matrix, SymmGroup> const &);
+    TwoSiteTensor<Matrix, SymmGroup> const & operator-=(TwoSiteTensor<Matrix, SymmGroup> const &);
     
     void make_left_paired() const;
     void make_both_paired() const;

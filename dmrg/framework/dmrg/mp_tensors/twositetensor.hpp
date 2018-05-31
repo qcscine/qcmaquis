@@ -515,3 +515,61 @@ TwoSiteTensor<Matrix, SymmGroup>::get_S(std::size_t Mmax, double cutoff)
 
     return boost::make_tuple(s, trunc);
 }
+
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> const &TwoSiteTensor<Matrix, SymmGroup>::operator*=(const scalar_type& t)
+{
+    data() *= t;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> const &TwoSiteTensor<Matrix, SymmGroup>::operator/=(const scalar_type& t)
+{
+    data() /= t;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> const &TwoSiteTensor<Matrix, SymmGroup>::operator+=(TwoSiteTensor<Matrix, SymmGroup> const& rhs)
+{
+    assert( weak_equal(left_i, rhs.left_i) );
+    assert( weak_equal(right_i, rhs.right_i) );
+    assert( phys_i == rhs.phys_i );
+    assert( phys_i_left == rhs.phys_i_left );
+    assert( phys_i_right == rhs.phys_i_right );
+
+
+    cur_normalization = Unorm;
+
+    for (std::size_t i = 0; i < data().n_blocks(); ++i)
+    {
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
+        if (rhs.data().has_block(lc,rc))
+            data()[i] += rhs.data()(lc,rc);
+    }
+
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> const &TwoSiteTensor<Matrix, SymmGroup>::operator-=(TwoSiteTensor<Matrix, SymmGroup> const& rhs)
+{
+    assert( weak_equal(left_i, rhs.left_i) );
+    assert( weak_equal(right_i, rhs.right_i) );
+    assert( phys_i == rhs.phys_i );
+    assert( phys_i_left == rhs.phys_i_left );
+    assert( phys_i_right == rhs.phys_i_right );
+
+
+    cur_normalization = Unorm;
+
+    for (std::size_t i = 0; i < data().n_blocks(); ++i)
+    {
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
+        if (rhs.data().has_block(lc,rc))
+            data()[i] -= rhs.data()(lc,rc);
+    }
+
+        return *this;
+}

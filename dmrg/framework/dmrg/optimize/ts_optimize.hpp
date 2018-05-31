@@ -260,37 +260,33 @@ public:
                     // Truncation of the average DM
 
                     // Construct the two-site tensor averaged over all states
-
-                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site1 = mps_vector[0][site1];
-                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site2 = mps_vector[0][site2];
-
+                    TwoSiteTensor<Matrix, SymmGroup> avg_tst = two_vec[0];
 
                     for (size_t idx = 1; idx < n_root_; idx++)
-                    {
-                        mpstensor_avg_site1 += mps_vector[idx][site1];
-                        mpstensor_avg_site2 += mps_vector[idx][site2];
-                    }
+                        avg_tst += two_vec[i];
 
-                    mpstensor_avg_site1 /= n_root_;
-                    mpstensor_avg_site2 /= n_root_;
+                    avg_tst /= n_root_;
 
-
-                    TwoSiteTensor<Matrix, SymmGroup> avg_tst(mpstensor_avg_site1, mpstensor_avg_site2);
+                    // Truncation results for the average MPS tensor
                     truncation_results avg_truncation;
+
                     // S obtained from the truncation
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
 
                     // If the line below is removed, the TwoSiteTensor.data() will have wrong dimensions (incompatible with the other states)
                     MPSTensor<Matrix,SymmGroup> avg_tst_mps = avg_tst.make_mps();
 
+
+                    // Perform truncation of the average TwoSiteTensor and obtain the S (diagonal) matrix
                     if (parms["twosite_truncation"] == "svd")
 //                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
 //                                = avg_tst.split_mps_l2r(Mmax, cutoff);
                           boost::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
 
                     else // TODO: Leon: This doesn't work
-                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
-                                = avg_tst.predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
+                        throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
+//                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
+//                                = avg_tst.predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
                     avg_tst.clear();
 
                     // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
@@ -362,19 +358,13 @@ public:
                     // Truncation of the average DM
 
                     // Construct the two-site tensor averaged over all states
-                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site1 = mps_vector[0][site1];
-                    MPSTensor<Matrix,SymmGroup> mpstensor_avg_site2 = mps_vector[0][site2];
+                    TwoSiteTensor<Matrix, SymmGroup> avg_tst = two_vec[0];
 
                     for (size_t idx = 1; idx < n_root_; idx++)
-                    {
-                        mpstensor_avg_site1 += mps_vector[idx][site1];
-                        mpstensor_avg_site2 += mps_vector[idx][site2];
-                    }
+                        avg_tst += two_vec[i];
 
-                    mpstensor_avg_site1 /= n_root_;
-                    mpstensor_avg_site2 /= n_root_;
+                    avg_tst /= n_root_;
 
-                    TwoSiteTensor<Matrix, SymmGroup> avg_tst(mpstensor_avg_site1, mpstensor_avg_site2);
                     truncation_results avg_truncation;
 
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
@@ -387,8 +377,9 @@ public:
 //                                = avg_tst.split_mps_r2l(Mmax, cutoff);
                         boost::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
                     else // TODO: Leon: This doesn't work
-                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
-                                = avg_tst.predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
+                        throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
+//                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
+//                                = avg_tst.predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
                     avg_tst.clear();
 
                     // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
