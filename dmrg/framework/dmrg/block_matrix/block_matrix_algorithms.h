@@ -342,12 +342,12 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
         std::transform(evals[k].diagonal().first, evals[k].diagonal().second, allevals.begin()+position, gather_real_pred<value_type>);
         position += num_rows(evals[k]);
     }
-    
-    ////// DEBUG
-    maquis::cout << "Eigenvalues: [ " ;
-    std::copy(allevals.begin(), allevals.end(), std::ostream_iterator<real_type>(std::cout, " "));
-    maquis::cout << "]" << std::endl;
-    ////// DEBUG END
+
+//    ////// DEBUG
+//    maquis::cout << "Eigenvalues: [ " ;
+//    std::copy(allevals.begin(), allevals.end(), std::ostream_iterator<real_type>(std::cout, " "));
+//    maquis::cout << "]" << std::endl;
+//    ////// DEBUG END
 
     // Decides the threshold where to cut (expressed as relative value with respect to allevals[0])
     // Sort and reverse the eigenvalues
@@ -492,19 +492,6 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const &M,
     {
        size_t keep = keeps[k];
 
-//        // Debug info
-//        std::cout << "SVD truncation info:" << std::endl;
-//        std::cout << "Block " << k << ":" << std::endl;
-//        std::cout << "Keeping " << keep << " eigenvalues out of "  <<  num_rows(S[k]) << std::endl;
-//        if (keep > 0)
-//        {
-//            for (auto it = S[k].diagonal().first; it != S[k].diagonal().second; ++it)
-//            {
-//                std::cout << (std::distance(S[k].diagonal().first, it) ? "Kept: " : "Discarded: ");
-//                std::cout << *it << std::endl;
-//            }
-//        }
-//        // End debug info
         if (keep == 0) {
             S.remove_block(S.basis().left_charge(k),
                            S.basis().right_charge(k));
