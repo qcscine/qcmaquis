@@ -95,7 +95,7 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
     vec_right_sp_.resize(n_MPS_) ;
     vec_MPS_.resize(n_MPS_) ;
     matrix_coefficients_.resize(n_MPS_) ;
-    // Case 1 - boundaries built from a specific state
+    // boundaries built from a specific state
     if (sa_algorithm >= 0 ) {
         if (sa_algorithm >= n_MPS_) {
             throw std::runtime_error("sa_algorithm parameter must be <= number of SA states") ;
@@ -109,21 +109,9 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
                 matrix_coefficients_[idx].push_back(1.0) ;
             }
         }
-    // Case 2 - Pure state-average algorithm
-    } else if (sa_algorithm == -1) {
-        float factor = 1./n_MPS_ ;
-        for (size_t idx = 0; idx < n_MPS_; idx++) {
-            vec_bound_left_[idx]  = &(bound_left[idx]) ;
-            vec_bound_right_[idx] = &(bound_right[idx]) ;
-            for (size_t k = 0; k < n_MPS_; k++){
-                vec_left_sp_[idx].push_back(&(bound_left[k])) ;
-                vec_right_sp_[idx].push_back(&(bound_right[k])) ;
-                matrix_coefficients_[idx].push_back(factor) ;
-            }
-            vec_MPS_[idx] = &(MPSVec[idx]) ;
-        }
-    // Case 3 - Advanced state-average calculation
-    } else if (sa_algorithm == -2) {
+    // State-specific boundaries for sa_algorithm =-2 (full state-specific optimisation)
+    // and sa_algorithm =-1 (in this version, state-specific optimisation with truncation based on average MPStensors)
+    } else if (sa_algorithm == -2 || sa_algorithm == -1) {
         for (size_t idx = 0; idx < n_MPS_; idx++) {
             vec_bound_left_[idx]  = &(bound_left[idx]) ;
             vec_bound_right_[idx] = &(bound_right[idx]) ;

@@ -202,10 +202,6 @@ public:
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
                 }
-                // Correct the energies
-                if (sa_alg_ == -1)
-                    for (size_t k = 0; k < n_root_; k++)
-                        res[k].first = ietl::get_energy(sp, res[k].second, k) ;
 
                 // Collects the results
                 two_vec[0] << res[0].second ;
@@ -273,10 +269,6 @@ public:
                     // S obtained from the truncation
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
 
-                    // If the line below is removed, the TwoSiteTensor.data() will have wrong dimensions (incompatible with the other states)
-                    MPSTensor<Matrix,SymmGroup> avg_tst_mps = avg_tst.make_mps();
-
-
                     // Perform truncation of the average TwoSiteTensor and obtain the S (diagonal) matrix
                     if (parms["twosite_truncation"] == "svd")
 //                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
@@ -287,7 +279,6 @@ public:
                         throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
 //                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
 //                                = avg_tst.predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0)))[site1], mpo[site1]);
-                    avg_tst.clear();
 
                     // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
                     for (size_t idx = 0; idx < n_bound_; idx++) {
@@ -368,8 +359,7 @@ public:
                     truncation_results avg_truncation;
 
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
-                    // If the line below is removed, the TwoSiteTensor.data() will have wrong dimensions (incompatible with the other states)
-                    MPSTensor<Matrix,SymmGroup> avg_tst_mps = avg_tst.make_mps();
+
 
                     // Truncation of the average two-site tensor
                     if (parms["twosite_truncation"] == "svd")
@@ -380,7 +370,6 @@ public:
                         throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
 //                        boost::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
 //                                = avg_tst.predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0)))[site2+1], mpo[site2]);
-                    avg_tst.clear();
 
                     // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
                     for (size_t idx = 0; idx < n_bound_; idx++) {

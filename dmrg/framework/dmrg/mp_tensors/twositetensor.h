@@ -147,7 +147,50 @@ private:
     mutable TwoSiteStorageLayout cur_storage;
     Indicator cur_normalization;
 };
+// this is also required by IETL
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> operator*(const typename TwoSiteTensor<Matrix, SymmGroup>::scalar_type& t,
+                                       TwoSiteTensor<Matrix, SymmGroup> m)
+{
+    m *= t;
+    return m;
+}
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> operator*(TwoSiteTensor<Matrix, SymmGroup> m,
+                                       const typename TwoSiteTensor<Matrix, SymmGroup>::scalar_type& t)
+{
+    m *= t;
+    return m;
+}
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> operator/(TwoSiteTensor<Matrix, SymmGroup> m,
+                                       const typename TwoSiteTensor<Matrix, SymmGroup>::scalar_type& t)
+{
+    m /= t;
+    return m;
+}
 
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> operator-(TwoSiteTensor<Matrix, SymmGroup> m,
+                                       TwoSiteTensor<Matrix, SymmGroup> const & m2)
+{
+    m -= m2;
+    return m;
+}
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> operator+(TwoSiteTensor<Matrix, SymmGroup> m,
+                                       TwoSiteTensor<Matrix, SymmGroup> const & m2)
+{
+    m += m2;
+    return m;
+}
+
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> operator-(TwoSiteTensor<Matrix, SymmGroup> m)
+{
+    m *= typename TwoSiteTensor<Matrix, SymmGroup>::scalar_type(-1.0);
+    return m;
+}
 #include "twositetensor.hpp"
 
 #include "ts_ops.h"

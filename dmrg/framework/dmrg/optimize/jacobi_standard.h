@@ -149,7 +149,6 @@ namespace ietl
         size_t res = n_sa_ ;
         magnitude_type kappa = 0.25;
         // Orthogonalization
-        if (sa_alg_ == -2) {
             res = 1 ;
             V[0]  = new_vector(vecspace_, i_state_) ;
             scalar_type prev_norm = ietl::two_norm(V[0]);
@@ -163,33 +162,6 @@ namespace ietl
             VA[0] = apply_operator(V[0]) ;
             for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
                    VA[0] -= ietl::dot((*it)[0], VA[0]) * (*it)[0]  ;
-        } else {
-            std::vector<size_t> lst_toerase ;
-            for (size_t i = 0; i < n_sa_; i++) {
-                V[i] = new_vector(vecspace_, i) ;
-                for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-                   V[i] -= ietl::dot((*it)[0], V[i]) * (*it)[0]  ;
-                for (size_t j = 0; j < i; j++)
-                    V[i] -= ietl::dot(V[i],V[j]) * V[j] ;
-                if (ietl::two_norm(V[i]) > NUM_ZERO)
-                    V[i] /= ietl::two_norm(V[i]) ;
-                VA[i] = apply_operator(V[i]) ;
-                for (typename vector_ortho_vec::iterator it = ortho_space_.begin(); it != ortho_space_.end(); it++)
-                   VA[i] -= ietl::dot((*it)[0], VA[i]) * (*it)[0]  ;
-            }
-            // Remove the elements with null norm
-            for (size_t i = 0; i < n_sa_; i++)
-                if (ietl::two_norm(V[i]) < NUM_ZERO)
-                    lst_toerase.push_back(i) ;
-            for (typename std::vector<size_t>::iterator it = lst_toerase.begin() ; it != lst_toerase.end() ; it++) {
-                V.erase(V.begin() + *it) ;
-                // cazzata
-                V.push_back(0* V[0]);
-                VA.erase(VA.begin() + *it) ;
-                VA.push_back(0* VA[0]);
-                res -= 1 ;
-            }
-        }
         return res-1 ;
     };
     // Computes the action of an operator
