@@ -92,16 +92,19 @@ protected:
     bool restore;
     bool dns;
     std::string chkpfile;
-    std::vector< std::string > chkpfile_sa ;
     std::string rfile;
     time_stopper stop_callback;
     // Model objects
     Lattice lat;
     Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;
-    std::vector< MPS<Matrix, SymmGroup > > mps_sa ;
     MPO<Matrix, SymmGroup> mpo, mpoc;
     measurements_type all_measurements, sweep_measurements;
+
+    // Objects associated with SA calculations
+    std::vector<MPS<Matrix, SymmGroup > > mps_sa ;
+    std::vector<std::string > chkpfile_sa ;
+    std::vector<std::string > rfile_sa ;
 };
 
 #include "sim.hpp"

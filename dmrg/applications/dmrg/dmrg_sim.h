@@ -41,12 +41,12 @@
 
 template <class Matrix, class SymmGroup>
 class dmrg_sim : public sim<Matrix, SymmGroup> {
-    
+
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     typedef typename base::status_type status_type;
     typedef typename base::measurements_type measurements_type;
-    
+
     using base::mps;
     using base::mps_sa;
     using base::mpo;
@@ -56,13 +56,15 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     using base::init_sweep;
     using base::init_site;
     using base::rfile;
-    
+    using base::n_states;
+    using base::rfile_sa;
+
 public:
-    
+
     dmrg_sim (DmrgParameters & parms_)
     : base(parms_)
     { }
-    
+
     void run()
     {
         int meas_each = parms["measure_each"];
@@ -95,35 +97,43 @@ public:
                 storage::disk::sync();
                 // Check convergence and see if he has to write something
                 bool converged = false;
-                if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"]) {
-                    {
-                        storage::archive ar(rfile, "w");
-                        ar[results_archive_path(sweep) + "/parameters"] << parms;
-                        ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
-                        // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                typedef typename maquis::traits::real_type<Matrix>::type real_type;
+                // Energies for the convergence check, array of the size [n_states][sweeps]
+                std::vector<real_type> ediff_for_convergence_check(n_states);
 
-                        // stop simulation if an energy threshold has been specified
-                        // FIXME: this does not work for complex numbers - stknecht feb 2016 
-                        int prev_sweep = sweep - meas_each;
-                        if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
+                for (std::size_t state = 0; state < n_states; state++) {
+                    if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"]) {
                         {
-                            typedef typename maquis::traits::real_type<Matrix>::type real_type;
-                            std::vector<real_type> energies;
+                            storage::archive ar(rfile_sa[state], "w");
+                            ar[results_archive_path(sweep) + "/parameters"] << parms;
+                            ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results()[state];
 
-                            ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
-                            real_type emin = *std::min_element(energies.begin(), energies.end());
-                            ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
-                            real_type emin_prev = *std::min_element(energies.begin(), energies.end());
-                            real_type e_diff = std::abs(emin - emin_prev);
+                            // stop simulation if an energy threshold has been specified
+                            // FIXME: this does not work for complex numbers - stknecht feb 2016
+                            int prev_sweep = sweep - meas_each;
+                            if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
+                            {
+                                std::vector<real_type> energies;
 
-                            if (e_diff < parms["conv_thresh"])
-                                converged = true;
+                                ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
+                                real_type emin = *std::min_element(energies.begin(), energies.end());
+                                ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
+                                real_type emin_prev = *std::min_element(energies.begin(), energies.end());
+
+                                ediff_for_convergence_check[state] = std::abs(emin - emin_prev);
+
+
+                            }
                         }
+                        // measure observables specified in 'always_measure'
+                        if (always_measurements.size() > 0)
+                            this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                     }
-                    // measure observables specified in 'always_measure'
-                    if (always_measurements.size() > 0)
-                        this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                 }
+                // the sweep converged only if the largest energy difference of all states is below the convergence threshold
+                real_type e_diff_all = *std::max_element(ediff_for_convergence_check.begin(), ediff_for_convergence_check.end());
+                if (e_diff_all < parms["conv_thresh"])
+                    converged = true;
                 // write checkpoint
                 bool stopped = stop_callback() || converged;
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
@@ -134,16 +144,15 @@ public:
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
             checkpoint_simulation(mps, mps_sa, e.sweep(), e.site());
-            
+            for (std::size_t state = 0; state < n_states; state++)
             {
-                storage::archive ar(rfile, "w");
+                storage::archive ar(rfile_sa[state], "w");
                 ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
-                ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
-                // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results()[state];
             }
         }
     }
-    
+
     ~dmrg_sim()
     {
         storage::disk::sync();
@@ -156,7 +165,7 @@ private:
         status["sweep"] = sweep;
         return base::results_archive_path(status);
     }
-    
+
     void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state,
                                std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
                                int sweep,

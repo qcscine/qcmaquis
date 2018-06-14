@@ -5,7 +5,8 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- *                    2017 by Alberto Baiardi <alberto.baiardi@sns.it>             
+ *                    2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *                    2018 by Leon Freitag <lefreita@ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -27,6 +28,7 @@
  *****************************************************************************/
 
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 #include "dmrg/version.h"
 
 // +-----------+
@@ -53,12 +55,39 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     n_states = parms["n_states_sa"] ;
     if (n_states == 0)
         n_states = 1;
+
+    // Initialise checkpoint names for an SA calculation
+    // Construct file names for checkpoints for each state
+    // First, check if we have a state name in the provided chkpfile
+    // (i.e. if checkpoint and/or resultfile match the pattern "something.X.something.h5" where X is the state #
+    // if yes, replace it with the correct state number
+    // if not, append an underscore and the state number to the state.
+    boost::regex chkpfile_expr("(.+?)\\.[0-9]+(.*\\.h5)$");
+    boost::smatch what;
+
+    bool match = boost::regex_match(chkpfile,what,chkpfile_expr);
+
     for (std::size_t i = 0; i < n_states; i++) {
         ss.str("") ;
         ss << i ;
-        std::string str = chkpfile + '_' + ss.str() ;
+        std::string replacement = "$1."+ss.str()+"$2";
+        std::string str = match ? boost::regex_replace(chkpfile, chkpfile_expr, replacement) : chkpfile + '_' + ss.str();
         chkpfile_sa.push_back(str) ;
     }
+
+    ss.clear();
+
+    // Initialise result file names for an SA calculation, similarly to the checkpoint name initialisation
+    match = boost::regex_match(rfile,what,chkpfile_expr);
+
+    for (std::size_t i = 0; i < n_states; i++) {
+        ss.str("") ;
+        ss << i ;
+        std::string replacement = "$1."+ss.str()+".h5";
+        std::string str = match ? boost::regex_replace(rfile, chkpfile_expr, replacement) : rfile + '_' + ss.str();
+        rfile_sa.push_back(str);
+    }
+
     // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
@@ -139,11 +168,11 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             }
         }
     }
-    for (size_t i = 0 ; i < n_states ; i++ )
-        assert(mps_sa[i].length() == lat.size());
     // Update parameters - after checks have passed
+    for (size_t i = 0 ; i < n_states ; i++ )
     {
-        storage::archive ar(rfile, "w");
+        assert(mps_sa[i].length() == lat.size());
+        storage::archive ar(rfile_sa[i], "w");
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
@@ -226,6 +255,7 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
+    // WARNING: This does not use checkpoints for different states
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
 
     // TODO: move into special measurement

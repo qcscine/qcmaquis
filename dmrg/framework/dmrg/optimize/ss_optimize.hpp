@@ -72,6 +72,7 @@ public:
     using base::update_order ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
+
     // Constructor declaration
     ss_optimize(MPS<Matrix, SymmGroup> & mps_, 
                 std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
@@ -81,7 +82,9 @@ public:
                 int initial_site_ = 0)
     : base(mps_, mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
-    { };
+    {
+        iteration_results_.resize(n_root_);
+    };
     // Inline function to get the site index modulo 2
     inline int to_site(const int L, const int i) const
     {
@@ -94,7 +97,8 @@ public:
     void sweep(int sweep, OptimizeDirection d = Both) {
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-        iteration_results_.clear();
+        for (results_collector it : iteration_results_)
+            it.clear();
         std::size_t L = mps_vector[0].length();
         for (size_t i = 1; i < n_root_; i++)
             assert(mps_vector[i].length() == L);
@@ -182,12 +186,15 @@ public:
             //  Collection of results
             // +---------------------+
             int prec = maquis::cout.precision();
-            maquis::cout.precision(15);
             for (size_t k = 0; k < n_root_; k++)
+            {
+                maquis::cout.precision(15);
                 maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy()
-                             << std::endl;
-            maquis::cout.precision(prec);
-            iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
+                        << std::endl;
+                maquis::cout.precision(prec);
+                iteration_results_[k]["Energy"] << res[k].first + mpo.getCoreEnergy();
+
+            }
             // Loads the alpha parameter
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
@@ -312,9 +319,12 @@ public:
                     poverlap_vec_[k].update(mps_vector[k], site, lr);*/
             END_TIMING("FINAL OPERATIONS")
             //
-            iteration_results_["BondDimension"] << trunc[0].bond_dimension;
-            iteration_results_["TruncatedWeight"] << trunc[0].truncated_weight;
-            iteration_results_["SmallestEV"] << trunc[0].smallest_ev;
+            for (size_t k = 0; k < n_root_; k++)
+            {
+                iteration_results_[k]["BondDimension"] << trunc[k].bond_dimension;
+                iteration_results_[k]["TruncatedWeight"] << trunc[k].truncated_weight;
+                iteration_results_[k]["SmallestEV"] << trunc[k].smallest_ev;
+            }
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;

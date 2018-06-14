@@ -254,7 +254,7 @@ public:
     //
     virtual ~optimizer_base() {}
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
-    results_collector const& iteration_results() const { return iteration_results_; }
+    std::vector<results_collector> const& iteration_results() const { return iteration_results_; }
     //
 protected:
     // +---------------+
@@ -427,7 +427,7 @@ protected:
     // +----------+
     //  ATTRIBUTES
     // +----------+
-    results_collector iteration_results_;
+    std::vector<results_collector> iteration_results_;
     MPS<Matrix, SymmGroup> & mps, mps_average;
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms;
