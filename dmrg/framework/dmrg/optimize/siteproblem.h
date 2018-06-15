@@ -64,59 +64,68 @@ struct SiteProblem
         size = 1 ;
     }
     // Constructor with a vector of boundaries
-    SiteProblem(
-                std::vector<MPSTensor<Matrix, SymmGroup> >const & initial,
+    SiteProblem(MPOTensor<Matrix, SymmGroup> const & mpo_,
+                MPOTensor<Matrix, SymmGroup> const & mpo_squared_,
                 std::size_t const & idx1,
                 std::size_t const & idx2,
-                MPOTensor<Matrix, SymmGroup> const & mpo_,
-                bound_database & database)
-            : mpo(mpo_)
+                bound_database & database,
+                const bool& add_squared)
+            : mpo(mpo_), mpo_squared(mpo_squared_), is_squared_(add_squared)
     {
         size = 0 ;
         std::size_t ov_dim = database.n_MPS_ ;
         left.resize(ov_dim) ;
+        left_squared.resize(ov_dim) ;
         right.resize(ov_dim) ;
+        right_squared.resize(ov_dim) ;
         vector_coefficients.resize(ov_dim) ;
         for (std::size_t i = 0; i < database.n_MPS_; i++) {
             size_t dim = database.get_num_bound(i) ;
-//             left[i].push_back(&(*(database.get_boundaries_left_sp(i,0)))[idx1]);
-//             right[i].push_back(&(*(database.get_boundaries_right_sp(i,0)))[idx2]);
-            //initialise the boundary with right dimension but all values set to 0. TODO: how to do it better?
             boundary_type avg_boundary = 0.0 * (*(&(*(database.get_boundaries_right_sp(0,0)))[idx2]));
-            //average the boundaries
             for (std::size_t j = 0; j < dim; j++) {
-                left[i].push_back(&(*(database.get_boundaries_left_sp(i,j)))[idx1]);
-                right[i].push_back(&(*(database.get_boundaries_right_sp(i,j)))[idx2]);
+                // Normal operator
+                left[i].push_back(&(*(database.get_boundaries_left_sp(i,j, false)))[idx1]);
+                right[i].push_back(&(*(database.get_boundaries_right_sp(i,j, false)))[idx2]);
+                // Squared operator
+                if (is_squared_) {
+                    left_squared[i].push_back(&(*(database.get_boundaries_left_sp(i,j, true)))[idx1]);
+                    right_squared[i].push_back(&(*(database.get_boundaries_right_sp(i,j, true)))[idx2]);
+                }
+                // Coefficients
                 vector_coefficients[i].push_back(database.get_coefficients(i,j)) ;
                 boundary_type add_boundary = ((scalar_type)( database.get_coefficients(i,j)*(1/dim)) ) * *((&(*(database.get_boundaries_right_sp(i,j)))[idx2]));
                 avg_boundary += add_boundary;
             }
-//             vector_coefficients[i].push_back(database.get_coefficients(i,0)) ;
-//             boundary_type avg_boundary = *(&(*(database.get_boundaries_right_sp(0,0)))[idx2]);
             size += 1;
-            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(initial[i], avg_boundary, mpo));
-
+            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(database.get_mps(i,idx1), avg_boundary, mpo));
         }
     }
     // Methods
-    float get_coefficient(const std::size_t& idx, const std::size_t& k) const
+    double get_coefficient(const std::size_t& idx,
+                           const std::size_t& k) const
     {
         return vector_coefficients[idx][k] ;
     }
     //
-    inline size_t get_size(void) const
+    inline size_t get_size() const
     {
         return this->size ;
     }
+    //
+    inline bool is_squared() const
+    {
+        return this->is_squared_ ;
+    }
 public:
     // Attributes (public)
-    boundary_matrix_ptr left ;
-    boundary_matrix_ptr right ;
+    boundary_matrix_ptr left, left_squared ;
+    boundary_matrix_ptr right, right_squared ;
     std::size_t size ;
-    MPOTensor<Matrix, SymmGroup> const & mpo ;
+    MPOTensor<Matrix, SymmGroup> const & mpo, mpo_squared ;
     contraction_schedule_vec contraction_schedules;
 private:
-    std::vector< std::vector <float> > vector_coefficients ;
+    std::vector< std::vector <double> > vector_coefficients ;
+    bool is_squared_ ;
 };
 
 namespace ietl {
@@ -128,15 +137,38 @@ namespace ietl {
     void mult(SiteProblem<Matrix, SymmGroup> const &H,
               MPSTensor <Matrix, SymmGroup> const &x,
               MPSTensor <Matrix, SymmGroup> &y,
-              std::size_t const& idx = 0)
+              std::size_t const& idx = 0,
+              bool const& do_squared = false)
     {
         assert( idx < H.get_size() && H.left[idx].size() == H.right[idx].size() ) ;
         std::size_t dimension = H.left[idx].size() ;
-        float coeff = H.get_coefficient(idx,0) ;
-        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][0]), *(H.right[idx][0]), H.mpo, H.contraction_schedules[idx]) * coeff ;
+        double coeff = H.get_coefficient(idx,0) ;
+        if (do_squared) {
+            y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left_squared[idx][0]),
+                                                                               *(H.right_squared[idx][0]),
+                                                                                 H.mpo_squared,
+                                                                                 H.contraction_schedules[idx]) * coeff ;
+        } else{
+            y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][0]),
+                                                                               *(H.right[idx][0]),
+                                                                                 H.mpo,
+                                                                                 H.contraction_schedules[idx]) * coeff ;
+        }
         for (std::size_t k = 1; k < dimension; k++) {
             coeff = H.get_coefficient(idx,k) ;
-            y += contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][k]), *(H.right[idx][k]), H.mpo, H.contraction_schedules[idx]) * coeff ;
+            if (do_squared)
+                if (H.is_squared())
+                    y += contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left_squared[idx][k]),
+                                                                                        *(H.right_squared[idx][k]),
+                                                                                          H.mpo_squared,
+                                                                                          H.contraction_schedules[idx]) * coeff ;
+                else
+                    throw std::runtime_error("Squared boundaries not available") ;
+            else
+                y += contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][k]),
+                                                                                    *(H.right[idx][k]),
+                                                                                      H.mpo,
+                                                                                      H.contraction_schedules[idx]) * coeff ;
         }
         x.make_left_paired() ;
     }
@@ -146,10 +178,12 @@ namespace ietl {
     template<class Matrix, class SymmGroup>
     typename maquis::traits::real_type<typename Matrix::value_type>::type get_energy(SiteProblem<Matrix, SymmGroup> const &H,
                      MPSTensor<Matrix, SymmGroup> const &x,
-                     std::size_t const& idx)
+                     std::size_t const& idx,
+                     const bool& do_squared)
     {
-        MPSTensor<Matrix, SymmGroup> y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][idx]), *(H.right[idx][idx]), H.mpo, H.contraction_schedules[idx]) ;
-        typename MPS<Matrix, SymmGroup>::scalar_type res = ietl::dot(x,y) ;
+        MPSTensor<Matrix, SymmGroup> y ;
+        ietl::mult(H, x, y, idx, do_squared) ;
+        double res = ietl::dot(x,y) ;
         assert(check_real(res));
         typename maquis::traits::real_type<typename Matrix::value_type>::type res_dbl = maquis::real(res);
         x.make_left_paired() ;

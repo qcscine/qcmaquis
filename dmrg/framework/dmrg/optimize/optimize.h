@@ -41,7 +41,6 @@
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
-#include "ietl_davidson.h"
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/results_collector.h"
@@ -49,8 +48,12 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
-//Leon: root_homing_type != 0 not supported
-//#include "dmrg/optimize/partial_overlap.h"
+#include "dmrg/optimize/CorrectionEquation/correctionequation.h"
+#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
+#include "dmrg/optimize/Finalizer/finalizer.h"
+#include "dmrg/optimize/Orthogonalizer/orthogonalizer.h"
+
+#include "dmrg/optimize/POverlap/partial_overlap.h"
 #include "dmrg/optimize/siteproblem.h"
 #include "dmrg/optimize/singlesitevs.h"
 #include "dmrg/optimize/utils/bound_database.h"
@@ -88,31 +91,52 @@ class optimizer_base
     typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup>                      boundary ;
     typedef std::vector< boundary >                                                               boundaries_type ;
     typedef std::vector< boundaries_type >                                                        boundaries_vector ;
-// Leon: root_homing_type != 0 not supported
-//    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap                           partial_overlap ;
+    typedef typename partial_overlap<Matrix,SymmGroup>::partial_overlap                           partial_overlap ;
     typedef typename bound_database< MPS<Matrix, SymmGroup>, boundaries_type>::bound_database     bound_database ;
-    typedef typename std::vector< std::pair<float,int> >                                          sorter_type ;
+    typedef typename std::vector< std::pair<float, size_t> >                                      sorter_type ;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
+                   std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_ ,
+                   std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_ ,
                    MPO<Matrix, SymmGroup> const & mpo_,
+                   MPO<Matrix, SymmGroup> const & mpo_squared_,
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
+    , mps_guess(mps_guess_)
     , mps_vector(mps_vector_)
     , mpo(mpo_)
+    , mpo_squared(mpo_squared_)
     , n_root_(mps_vector.size())
+    , omega_shift_(0.)
     , parms(parms_)
     , stop_callback(stop_callback_)
     , omega_vec(0)
     , do_root_homing_(false)
+    , do_stateaverage_ (false)
     , do_shiftandinvert_(false)
     , update_omega(false)
+    , update_each_omega(false)
+    , i_activate_last_overlap_(parms["activate_last_overlap"])
+    , i_activate_constant_omega_(parms["activate_constant_omega"])
+	, is_folded_(false)
+    , chebyshev_shift_(parms["chebyshev_shift"])
+    , reshuffle_variance_(false)
+    , track_variance_(false)
     {
+        // Corrector
+        init_algorithm(mps_vector_, parms_) ;
         // Standard options
-        L_ = mps_vector[0].length() ;
         sorter_.resize(n_root_) ;
+        // Chebyshev projection
+        if (parms_["chebyshev_filter"] == "yes")
+            do_chebyshev_ = true ;
+        else if (parms_["chebyshev_filter"] == "no")
+            do_chebyshev_ = false ;
+        else
+            throw std::runtime_error("Parameter chebyshev_filter not recognized") ;
         //
         // Shift-and-invert paramters
         // --------------------------
@@ -138,15 +162,6 @@ public:
         do_stateaverage_ = parms_["n_states_sa"].as<int>() > 0 ;
         for (size_t k = 0; k < n_root_; k++)
             order.push_back(k) ;
-        if (sa_alg_ == -1) {
-            mps_average = mps_vector[0];
-            for (size_t k = 0; k < L_; k++) {
-                for (int i = 1; i < n_root_; i++)
-                    mps_average[k] += mps_vector[i][k];
-                mps_average[k] /= n_root_;
-            }
-            mps_average.canonize(site);
-        }
         for (int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
         for (int i = 0 ; i < n_root_; ++i ) {
@@ -154,63 +169,42 @@ public:
             for (int j = 0; j < mps_vector[i].length(); ++j)
                 Storage::evict(mps_vector[i][j]);
         }
+        // Variance tracking
+        if (parms["track_variance"] == "yes")
+            track_variance_ = true ;
+        if (parms["reshuffle_variance"] == "yes")
+            reshuffle_variance_ = true ;
+        do_H_squared_ = do_H_squared_ || track_variance_ || reshuffle_variance_ ;
+        //TODO ALB Hardcoded for the moment
+        if (do_H_squared_)
+            throw std::runtime_error("Variance tracking for ES calculations not implemented") ;
         //
         // Root-homing criteria
         // --------------------
-        //Leon: root_homing_type != 0 not supported
-        //poverlap_vec_.resize(0) ;
+        poverlap_vec_.resize(0) ;
         if (parms_["ietl_diag_homing_criterion"] == "") {
             do_root_homing_   = false ;
             root_homing_type_ = 0 ;
-            mps2follow.resize(1) ;
-            mps2follow[0].resize(0) ;
         } else if (parms_["ietl_diag_homing_criterion"] == "input" || parms_["ietl_diag_homing_criterion"] == "both") {
             do_root_homing_   = true ;
             if (parms_["ietl_diag_homing_criterion"] == "input")
                 root_homing_type_ = 1 ;
             else
                 root_homing_type_ = 3 ;
-            if (do_stateaverage_) {
-                // Extract the list of states to be followed
-                std::vector<std::string> list_sa;
-                std::string input_str = parms_["follow_mps_stateaverage"].str();
-                boost::split(list_sa, input_str, boost::is_any_of("|"));
-                if (list_sa.size() != n_root_ )
-                    throw std::runtime_error("Number of states to track != from number of SA MPS");
-                for (int i = 0; i < list_sa.size(); i++) {
-                    std::stringstream ss(list_sa[i]);
-                    int ichar;
-                    std::vector<int> tmp_vec;
-                    while (ss >> ichar) {
-                        tmp_vec.push_back(ichar);
-                        ss.ignore(1);
-                    }
-                    if (tmp_vec.size() != L_)
-                        throw std::runtime_error("ONV to follow has a wrong length");
-                    mps2follow.push_back(tmp_vec);
-                }
-            } else {
-                mps2follow.push_back(parms_["follow_basis_state"].as<std::vector<int> >());
-                if (mps2follow[0].size() != L_)
-                    throw std::runtime_error("ONV to follow has a wrong length");
-            }
             // Once the states to be followed have been initialized, builds the vector of
             // the partial overlap objects
-            //
-            //Leon: root_homing_type != 0 not supported
-         /*   if (do_stateaverage_) {
-                for (size_t i = 0 ; i < n_root_ ; i++){
-                    partial_overlap poverlap(mps_vector[i],mps2follow[i]) ;
-                    poverlap_vec_.push_back(poverlap) ;
-                }
-            } else {
-                partial_overlap poverlap(mps,mps2follow[0]) ;
+            assert (mps_vector.size() == mps_partial_overlap_.size()) ;
+            for (size_t i = 0 ; i < n_root_ ; i++) {
+                partial_overlap poverlap(mps_vector[i], mps_partial_overlap_[i]) ;
                 poverlap_vec_.push_back(poverlap) ;
             }
-         */
         } else if (parms_["ietl_diag_homing_criterion"] == "last") {
             do_root_homing_   = true ;
             root_homing_type_ = 2 ;
+        } else if (parms_["ietl_diag_homing_criterion"] == "variance") {
+            throw std::runtime_error("Variance tracking NYI") ;
+            //do_root_homing_   = true ;
+            //root_homing_type_ = 4 ;
         } else {
             throw std::runtime_error("Root homing criterion not recognized") ;
         }
@@ -243,11 +237,20 @@ public:
         init_bound() ;
         left_sa_.resize(n_bound_) ;
         right_sa_.resize(n_bound_) ;
+        if (do_H_squared_) {
+            left_squared_sa_.resize(n_bound_) ;
+            right_squared_sa_.resize(n_bound_) ;
+        }
         for (int i = 0 ; i < n_bound_ ; i++) {
             left_sa_[i].resize(mpo.length()+1) ;
             right_sa_[i].resize(mpo.length()+1) ;
+            if (do_H_squared_) {
+                left_squared_sa_[i].resize(mpo.length()+1) ;
+                right_squared_sa_[i].resize(mpo.length()+1) ;
+            }
         }
-        boundaries_database_ = bound_database(mps_vector, mps_average, left_sa_, right_sa_, sa_alg_) ;
+        boundaries_database_ = bound_database(mps_vector, left_sa_, right_sa_, left_squared_sa_, 
+                                              right_squared_sa_, sa_alg_, do_H_squared_) ;
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
@@ -257,6 +260,137 @@ public:
     results_collector const& iteration_results() const { return iteration_results_; }
     //
 protected:
+    // +--------------+
+    //  INIT_ALGORITHM
+    // +--------------+
+    // Routine used to initialize the parameters of the optimizer
+    void init_algorithm(std::vector< MPS<Matrix, SymmGroup> > & mps_vector,
+                        BaseParameters & parms)
+    {
+        // Initialize "empty" objects
+        correction_equation = new CorrectionEquation< SiteProblem<Matrix, SymmGroup> ,
+                                                      SingleSiteVS<Matrix, SymmGroup> >() ;
+        finalizer_ = new Finalizer< SiteProblem<Matrix, SymmGroup>,
+                                    SingleSiteVS<Matrix, SymmGroup> >() ;
+        maquis::cout << "\n" ;
+        maquis::cout << " Parameters of the simulation\n" ;
+        maquis::cout << " ----------------------------\n\n" ;
+        // Extract number of sites
+        L_ = mps_vector[0].length() ;
+        maquis::cout << " Number of sites - " << L_ << "\n" ;
+        // S&I parameters
+        if (parms["ietl_si_operator"] == "no") {
+            // -- Standard simualtion --
+            do_shiftandinvert_ = false ;
+            maquis::cout << " S&I formulation - deactivated\n" ;
+            finalizer_->set_energy_standard() ;
+            finalizer_->set_error_standard() ;
+            maquis::cout << " Corrector op.   - standard\n" ;
+            orthogonalizer_ = new GS_ortho< SingleSiteVS<Matrix, SymmGroup> >() ;
+            if (parms["ietl_ortho_refine"] == "yes")
+                orthogonalizer_->activate_refinement(0.25) ;
+            else if (parms["ietl_ortho_refine"] != "no")
+                throw std::runtime_error("Refinement parameter not recognized") ;
+            maquis::cout << " Orthogonalizer  - Gram-Schmidt\n" ;
+        } else if (parms["ietl_si_operator"] == "yes") {
+            // -- S&I simulation --
+            do_shiftandinvert_ = true ;
+            maquis::cout << " S&I formulation - activated\n" ;
+            double omega = parms["ietl_si_omega"]  - mpo.getCoreEnergy();
+            maquis::cout << " Omega parameter - " << omega << "\n" ;
+            omega_shift_ = parms["si_omega_shift"] ;
+            maquis::cout << " Shift parameter - " << omega_shift_ << "\n" ;
+            omega_vec.resize(n_root_, omega) ;
+            if (parms["si_omega_schedule" ]== "constant") {
+                update_omega = false ;
+                maquis::cout << " Omega update    - NO\n" ;
+            } else if (parms["si_omega_schedule"] == "update") {
+                update_omega = true ;
+                update_each_omega = true ;
+                maquis::cout << " Omega update    - YES\n" ;
+            } else if (parms["si_omega_schedule"] == "updatesweep") {
+                update_omega = true ;
+                maquis::cout << " Omega update    - YES each sweep\n" ;
+            } else {
+                throw std::runtime_error("Scheduler for omega update not recognized") ;
+            }
+            // -- Set corrector --
+            if (parms["ietl_corrector"] == "notSI") {
+                finalizer_->set_energy_si_standard();
+                finalizer_->set_error_si_standard();
+                correction_equation->activate_omega();
+                orthogonalizer_ = new GS_ortho_mod<SingleSiteVS<Matrix, SymmGroup> >();
+                if (parms["ietl_ortho_refine"] == "yes")
+                    orthogonalizer_->activate_refinement(0.25);
+                else if (parms["ietl_ortho_refine"] != "no")
+                    throw std::runtime_error("Refinement parameter not recognized");
+                maquis::cout << " Orthogonalizer  - Gram-Schmidt\n";
+            } else if (parms["ietl_corrector"] == "skew") {
+                finalizer_->set_energy_skew() ;
+                finalizer_->set_error_skew() ;
+                correction_equation->set_skew() ;
+                correction_equation->activate_omega() ;
+                orthogonalizer_ = new BI_ortho< SingleSiteVS<Matrix, SymmGroup> >() ;
+                maquis::cout << " Orthogonalizer  - Biorthogonal\n" ;
+            } else if (parms["ietl_corrector"] == "SI") {
+                finalizer_->set_energy_modified() ;
+                finalizer_->set_error_modified() ;
+                correction_equation->set_modified() ;
+                correction_equation->activate_omega() ;
+                orthogonalizer_ = new GS_ortho< SingleSiteVS<Matrix, SymmGroup> >() ;
+                if (parms["ietl_ortho_refine"] == "yes")
+                    orthogonalizer_->activate_refinement(0.25) ;
+                else if (parms["ietl_ortho_refine"] != "no")
+                    throw std::runtime_error("Refinement parameter not recognized") ;
+                maquis::cout << " Orthogonalizer  - Gram-Schmidt\n" ;
+            } else {
+                throw std::runtime_error("Corrector operator not recognized") ;
+            }
+		} else if (parms["ietl_si_operator"] == "folded") {
+            do_shiftandinvert_ = true ;
+            maquis::cout << " S&I formulation - activated\n" ;
+            double omega = parms["ietl_si_omega"]  - mpo.getCoreEnergy();
+            maquis::cout << " Omega parameter - " << omega << "\n" ;
+            omega_shift_ = parms["si_omega_shift"] ;
+            maquis::cout << " Shift parameter - " << omega_shift_ << "\n" ;
+            omega_vec.resize(n_root_, omega) ;
+            if (parms["si_omega_schedule" ]== "constant") {
+                update_omega = false ;
+                maquis::cout << " Omega update    - NO\n" ;
+            } else if (parms["si_omega_schedule"] == "update") {
+                update_omega = true ;
+                update_each_omega = true ;
+                maquis::cout << " Omega update    - YES\n" ;
+            } else if (parms["si_omega_schedule"] == "updatesweep") {
+                update_omega = true ;
+                maquis::cout << " Omega update    - YES each sweep\n" ;
+            } else {
+                throw std::runtime_error("Scheduler for omega update not recognized") ;
+            }
+			is_folded_ = true ;
+			do_H_squared_ = true ;
+			finalizer_->set_energy_folded() ;
+			finalizer_->set_error_folded() ;
+			correction_equation->set_folded() ;
+            correction_equation->activate_omega();
+			orthogonalizer_ = new GS_ortho< SingleSiteVS<Matrix, SymmGroup> >() ;
+            if (parms["ietl_ortho_refine"] == "yes")
+                orthogonalizer_->activate_refinement(0.25) ;
+        } else {
+            throw std::runtime_error(" S&I modality not recognized\n") ;
+        }
+        // -- Set preconditioning --
+        if (parms["ietl_precondition"] == "yes" || parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
+            correction_equation->activate_preconditioner();
+            maquis::cout << " Preconditioner  - Activated\n";
+        } else if (parms["ietl_precondition"] == "no" ) {
+            maquis::cout << " Preconditioner  - Deactivated\n";
+        } else {
+            throw std::runtime_error("Precondition parameter not recognized");
+        }
+        set_microoptimizer() ;
+        maquis::cout << "\n" ;
+    }
     // +---------------+
     //  INIT_LEFT_RIGHT
     // +---------------+
@@ -290,16 +424,26 @@ protected:
             }
         }
         // Complete initialization and builds all the boundaries objects
-        for (size_t i = 0; i < n_bound_; i++)
-            (*(boundaries_database_.get_boundaries_left(i)))[0] = (*(boundaries_database_.get_mps(i))).left_boundary();
-        for (int i = 0; i < site; ++i) {
+        for (size_t i = 0; i < n_bound_; i++) {
+            (*(boundaries_database_.get_boundaries_left(i, false)))[0] = 
+              (*(boundaries_database_.get_mps(i))).left_boundary();
+            if (do_H_squared_)
+                (*(boundaries_database_.get_boundaries_left(i, true)))[0] = 
+                      (*(boundaries_database_.get_mps(i))).left_boundary();
+        }
+        for (size_t i = 0; i < site; ++i) {
             boundary_left_step(mpo, i);
-            parallel::sync(); // to scale down memory
+            parallel::sync();
         }
         maquis::cout << "Boundaries are partially initialized...\n";
         //
-        for (size_t i = 0; i < n_bound_; i++)
-            (*(boundaries_database_.get_boundaries_right(i)))[L_] = (*(boundaries_database_.get_mps(i))).right_boundary();
+        for (size_t i = 0; i < n_bound_; i++) {
+            (*(boundaries_database_.get_boundaries_right(i, false)))[L_] = 
+                (*(boundaries_database_.get_mps(i))).right_boundary();
+            if (do_H_squared_)
+                (*(boundaries_database_.get_boundaries_right(i, true)))[L_] = 
+                    (*(boundaries_database_.get_mps(i))).right_boundary();
+        }
         for (int i = L_-1; i >= site; --i) {
             boundary_right_step(mpo, i);
             parallel::sync(); // to scale down memory
@@ -310,11 +454,11 @@ protected:
     // +----------+
     //  INIT_BOUND
     // +----------+
-    void init_bound(void)
+    void init_bound()
     {
         // Decides the number of boundaries to be stored
         if (n_root_ > 0) {
-            if (sa_alg_ >= 0) {
+            if (sa_alg_ >= 0 || sa_alg_ == -3) {
                 n_bound_ = 1 ;
             } else if (sa_alg_ == -1) {
                 n_bound_ = n_root_ ;
@@ -334,21 +478,28 @@ protected:
         // Variables definition
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
-        for (size_t i = 0 ; i < n_bound_ ; i++)
-            (*(boundaries_database_.get_boundaries_left(i)))[site+1] = contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
-                                                                                                    *(boundaries_database_.get_mps(i,site)),
-                                                                                                   (*(boundaries_database_.get_boundaries_left(i)))[site],
-                                                                                                    mpo[site]);
+        for (size_t i = 0 ; i < n_bound_ ; i++) {
+            (*(boundaries_database_.get_boundaries_left(i, false)))[site+1] =
+                    contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
+                                                 *(boundaries_database_.get_mps(i,site)),
+                                                (*(boundaries_database_.get_boundaries_left(i, false)))[site],
+                                                 mpo[site]);
+            if (do_H_squared_)
+                (*(boundaries_database_.get_boundaries_left(i, true)))[site+1] =
+                        contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
+                                                     *(boundaries_database_.get_mps(i,site)),
+                                                    (*(boundaries_database_.get_boundaries_left(i, true)))[site],
+                                                     mpo_squared[site]);
+        }
         // Updates the orthogonal vectors
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
         for (int i = 0; i < n_root_ ; i++)
             for (int j = 0; j < n_root_; j++)
-                if ( i != j ) {
-                    tmp = *(boundaries_database_.get_mps(j,site)) ;
+                if ( i != j )
                     vec_sa_left_[i][j][site+1] = contr::overlap_left_step(*(boundaries_database_.get_mps(i,site)),
-                                                                          tmp, vec_sa_left_[i][j][site]);
-                }
+                                                                          *(boundaries_database_.get_mps(j,site)),
+                                                                          vec_sa_left_[i][j][site]);
     }
     // +-------------------+
     //  BOUNDARY_RIGHT_STEP
@@ -359,21 +510,28 @@ protected:
         // Variables definition
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
-        for (size_t i = 0 ; i < n_bound_ ; i++)
-            (*(boundaries_database_.get_boundaries_right(i)))[site] = contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
-                                                                                                    *(boundaries_database_.get_mps(i,site)),
-                                                                                                   (*(boundaries_database_.get_boundaries_right(i)))[site+1],
-                                                                                                    mpo[site]);
+        for (size_t i = 0 ; i < n_bound_ ; i++) {
+            (*(boundaries_database_.get_boundaries_right(i, false)))[site] =
+                    contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
+                                                  *(boundaries_database_.get_mps(i,site)),
+                                                 (*(boundaries_database_.get_boundaries_right(i, false)))[site+1],
+                                                  mpo[site]);
+            if (do_H_squared_)
+                (*(boundaries_database_.get_boundaries_right(i, true)))[site] =
+                        contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
+                                                      *(boundaries_database_.get_mps(i,site)),
+                                                     (*(boundaries_database_.get_boundaries_right(i, true)))[site+1],
+                                                      mpo_squared[site]);
+        }
         // Updates the orthogonal vectors
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
         for (int i = 0; i < n_root_ ; i++)
             for (int j = 0; j < n_root_; j++)
-                if ( i != j ) {
-                    tmp = *(boundaries_database_.get_mps(j,site)) ;
+                if ( i != j )
                     vec_sa_right_[i][j][site] = contr::overlap_right_step(*(boundaries_database_.get_mps(i,site)),
-                                                                          tmp, vec_sa_right_[i][j][site+1]);
-                }
+                                                                          *(boundaries_database_.get_mps(j,site)),
+                                                                          vec_sa_right_[i][j][site+1]);
     }
     // +----------+
     //  GET_CUTOFF
@@ -386,6 +544,7 @@ protected:
             cutoff = parms.template get<double>("truncation_final");
         else
             cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
+        std::cout << "Cutoff - " << cutoff << std::endl ;
         return cutoff;
     }
 
@@ -406,13 +565,57 @@ protected:
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
         return Mmax;
     }
-    // -- UPDATE THE ENERGY ORDER OF THE STATES --
-    void update_order(const std::vector< std::pair<float,int> >& sorter)
+    // +----------------------+
+    //  SET THE MICROOPTIMIZER
+    // +----------------------+
+    void set_microoptimizer()
+    {
+        micro_optimizer = new MicroOptimizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>,
+                          CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >
+                          (correction_equation, parms["ietl_microopt_abstol"], parms["ietl_microopt_reltol"], parms["ietl_microopt_maxiter"],
+                           parms["ietl_microopt_restart"]) ;
+        if (parms["eigensolver"] == std::string("IETL_JCD")) {
+            if (parms["ietl_microoptimizer"] == "GMRES") {
+                micro_optimizer->set_opt_alg(new GMRES_optimizer<SiteProblem<Matrix, SymmGroup>,
+                        SingleSiteVS<Matrix, SymmGroup>,
+                        CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
+                maquis::cout << " Microoptimizer  - GMRES\n";
+            } else if (parms["ietl_microoptimizer"] == "CG") {
+                micro_optimizer->set_opt_alg(new CG_optimizer<SiteProblem<Matrix, SymmGroup>,
+                        SingleSiteVS<Matrix, SymmGroup>,
+                        CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
+                maquis::cout << " Microoptimizer  - CG\n";
+            } else if (parms["ietl_microoptimizer"] == "BICGS") {
+                micro_optimizer->set_opt_alg(new BICGS_optimizer<SiteProblem<Matrix, SymmGroup>,
+                        SingleSiteVS<Matrix, SymmGroup>,
+                        CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
+                maquis::cout << " Microoptimizer  - BICGS\n";
+            } else {
+                throw std::runtime_error("ietl_microoptimizer parameter not recognized");
+            }
+        } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
+            micro_optimizer->set_opt_alg(new OP_optimizer<SiteProblem<Matrix, SymmGroup>,
+                    SingleSiteVS<Matrix, SymmGroup>,
+                    CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
+            maquis::cout << " Microoptimizer  - Davidson\n";
+        } else {
+            throw std::runtime_error("I don't know this eigensolver.");
+        }
+        // Verbosity options
+        if (parms["ietl_microopt_verbose"] == "yes")
+            micro_optimizer->activate_verbosity() ;
+    }
+    // +----------------------------------------+
+    //   UPDATES THE ENERGY ORDER OF THE STATES
+    // +----------------------------------------+
+    void update_order(const std::vector< std::pair<float,std::size_t> >& sorter)
     {
         for (size_t i = 0; i < n_root_; i++)
             order[i]  = sorter[i].second ;
     }
-    // -- UPDATES THE PARAMETERS --
+    // +------------------------+
+    //   UPDATES THE PARAMETERS
+    // +------------------------+
     void update_parameters(const int& sweep)
     {
         if (sweep == i_activate_constant_omega_) {
@@ -424,37 +627,60 @@ protected:
             root_homing_type_ = 2;
         }
     }
+    // +-----------------------+
+    //   COMPUTES THE VARIANCE
+    // +-----------------------+
+    double compute_variance(MPSTensor<Matrix, SymmGroup> const &input,
+                            std::size_t const& i_state,
+                            std::size_t const& idx)
+    {
+        assert (track_variance_) ;
+        MPSTensor<Matrix, SymmGroup> y;
+        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(input,
+                                                                        left_squared_sa_[i_state][idx],
+                                                                        right_squared_sa_[i_state][idx+1],
+                                                                        mpo_squared[idx]);
+        return ietl::dot(input, y);
+    }
     // +----------+
     //  ATTRIBUTES
     // +----------+
     results_collector iteration_results_;
-    MPS<Matrix, SymmGroup> & mps, mps_average;
-    MPO<Matrix, SymmGroup> const& mpo;
-    BaseParameters & parms;
+    CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* correction_equation ;
+    Orthogonalizer< SingleSiteVS<Matrix, SymmGroup> >* orthogonalizer_ ;
+    MicroOptimizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>,
+             CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >* micro_optimizer ;
+    MPS<Matrix, SymmGroup> & mps ;
+    MPO<Matrix, SymmGroup> const& mpo, mpo_squared ;
+    BaseParameters & parms ;
     boost::function<bool ()> stop_callback;
-    boundaries_vector left_sa_, right_sa_;
+    boundaries_vector left_sa_, right_sa_, left_squared_sa_, right_squared_sa_ ;
     sorter_type sorter_ ;
+    double chebyshev_shift_ ; 
+    Finalizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* finalizer_ ;
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
     std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left_, vec_sa_right_;
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
     // Root-homing procedure
-    bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_ ;
+    bool do_root_homing_ , do_stateaverage_ , do_shiftandinvert_, do_chebyshev_ ;
     int i_activate_last_overlap_, root_homing_type_ ;
-//    std::vector<partial_overlap> poverlap_vec_;
+    std::vector<partial_overlap> poverlap_vec_;
     // Energy-specific diagonalization
-    bool update_omega ;
+    bool update_omega, update_each_omega, is_folded_ ;
     double omega_shift_ ;
     int i_activate_constant_omega_ ;
     std::vector<double> omega_vec ;
+    // Variance tracking
+    bool reshuffle_variance_, track_variance_, do_H_squared_ ;
     // State average
     bound_database boundaries_database_ ;
-    std::vector< std::vector<int> > mps2follow;
-    std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
-    std::vector< int > order ;
-    int n_root_ , sa_alg_ ;
-    size_t n_bound_ , L_ ;
+    std::vector< MPS<Matrix, SymmGroup> > mps_vector ;
+    std::vector< MPSTensor<Matrix, SymmGroup> > mps_guess ;
+    std::vector< std::size_t > order ;
+    int sa_alg_ ;
+    size_t n_bound_ , L_ , n_root_ ;
 };
 
 #include "ss_optimize.hpp"

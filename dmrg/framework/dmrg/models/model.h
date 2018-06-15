@@ -49,6 +49,7 @@ class model_impl {
 public:
     typedef boost::shared_ptr<mps_initializer<Matrix, SymmGroup> >    initializer_ptr;
     typedef boost::shared_ptr<mps_initializer_sa<Matrix, SymmGroup> > initializer_sa_ptr;
+    typedef boost::shared_ptr<mps_initializer_pov<Matrix, SymmGroup> > initializer_pov_ptr;
 
     typedef TagHandler<Matrix, SymmGroup> table_type;
     typedef boost::shared_ptr<table_type> table_ptr;
@@ -74,6 +75,7 @@ public:
     virtual typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const=0;
 
     virtual terms_type const& hamiltonian_terms() const { return terms_; }
+    virtual terms_type const& hamiltonian_squared_terms() const { return terms_squared_; }
     virtual measurements_type measurements() const=0;
     
     virtual op_t const& get_operator(std::string const & name, size_t type) const { return operators_table()->get_op( get_operator_tag(name, type) ); }
@@ -83,11 +85,12 @@ public:
     
     virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
     virtual initializer_sa_ptr initializer_sa(Lattice const& lat, BaseParameters & parms) const;
+    virtual initializer_pov_ptr initializer_pov(Lattice const& lat, BaseParameters & parms) const;
     // optionally delay the assemly of the operator terms until the MPO is actually created
     virtual void create_terms() {};
 
 protected:
-    terms_type terms_;
+    terms_type terms_, terms_squared_ ;
 };
 
 // model factory
@@ -104,6 +107,7 @@ class Model {
 public:
     typedef typename impl_type::initializer_ptr    initializer_ptr    ;
     typedef typename impl_type::initializer_sa_ptr initializer_sa_ptr ;
+    typedef typename impl_type::initializer_pov_ptr initializer_pov_ptr ;
 
     typedef typename impl_type::table_type table_type;
     typedef typename impl_type::table_ptr table_ptr;
@@ -135,6 +139,8 @@ public:
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const { return impl_->total_quantum_numbers(parms); }
     
     terms_type const& hamiltonian_terms() const { return impl_->hamiltonian_terms(); }
+    terms_type const& hamiltonian_squared_terms() const { return impl_->hamiltonian_squared_terms(); }
+
     measurements_type measurements() const { return impl_->measurements(); }
     
     op_t const& get_operator(std::string const & name, size_t type=0) const { return impl_->get_operator(name, type); }
@@ -144,6 +150,7 @@ public:
     
     initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
     initializer_sa_ptr initializer_sa(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer_sa(lat, parms); }
+    initializer_pov_ptr initializer_pov(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer_pov(lat, parms); }
     void create_terms() { impl_->create_terms(); }
 
 private:

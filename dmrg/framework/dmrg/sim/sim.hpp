@@ -37,7 +37,7 @@ template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
      : parms(parms_)
      , init_sweep(0)
-     , init_site(-1)
+     , init_site(parms["init_site"])
      , restore(false)
      , dns( (parms["donotsave"] != 0) )
      , chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
@@ -51,8 +51,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     typename std::stringstream ss;
     // Creates the name for the SA states
     n_states = parms["n_states_sa"] ;
-    if (n_states == 0)
-        n_states = 1;
+    assert(n_states > 0) ;
     for (std::size_t i = 0; i < n_states; i++) {
         ss.str("") ;
         ss << i ;
@@ -63,10 +62,13 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
     mpo = make_mpo(lat, model);
+    mpo_squared = mpo ;
+    if (parms["track_variance"] == "yes" || parms["reshuffle_variance"] == "yes" || parms["ietl_si_operator"] == "folded")
+        mpo_squared = make_mpo_squared(lat, model) ;
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     {
-        if (n_states == 0) {
+        if (n_states == 1) {
             boost::filesystem::path p(chkpfile);
             if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5")) {
                 storage::archive ar_in(chkpfile + "/props.h5");
@@ -107,8 +109,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         }
     }
     // MPS initialization
-    mps_sa.resize(std::max(n_states,1)) ;
-    if (n_states == 0) {
+    mps_sa.resize(n_states,1) ;
+    if (n_states == 1) {
         if (restore) {
             maquis::checks::symmetry_check(parms, chkpfile);
             load(chkpfile, mps_sa[0]);
@@ -131,16 +133,34 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         } else if (!parms["initfile"].empty()) {
             throw std::runtime_error("SA + initialization from input chkp file NYI") ;
         } else {
-            if (n_states > 0) {
-                // Initialize the state-average stuff
-                for (int i = 0; i < mps_sa.size(); i++)
-                    mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
-                (*(model.initializer_sa(lat, parms)))(mps_sa);
-            }
+            // Initialize the state-average stuff
+            for (int i = 0; i < mps_sa.size(); i++)
+                mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
+            (*(model.initializer_sa(lat, parms)))(mps_sa) ;
         }
     }
     for (size_t i = 0 ; i < n_states ; i++ )
         assert(mps_sa[i].length() == lat.size());
+    // Does the average for the case sa_alg_ == -1
+    auto sa_alg = static_cast<int>(parms["sa_algorithm"]) ;
+    if (sa_alg == -3) {
+        MPS<Matrix, SymmGroup> tst_mps = mps_sa[0] ;
+        int init_site_loc = init_site == -1 ? 0 : init_site ;
+        mps_guess.push_back(mps_sa[0][init_site_loc]) ;
+        for (std::size_t idx = 1; idx < mps_sa.size(); idx++) {
+            tst_mps += mps_sa[idx] ;
+            mps_guess.push_back(mps_sa[idx][init_site_loc]) ;
+        }
+        tst_mps /= n_states ;
+        std::fill(mps_sa.begin(), mps_sa.end(), tst_mps) ;
+    }
+    // MPS used as a reference for the overlap tracking
+    if (!parms["ietl_diag_homing_criterion"].empty()) {
+        mps_partial_overlap.reserve(mps_sa.size()) ;
+        for (std::size_t i = 0; i < mps_sa.size(); i++)
+            mps_partial_overlap.push_back(MPS<Matrix, SymmGroup>(lat.size())) ;
+        (*(model.initializer_pov(lat, parms)))(mps_partial_overlap);
+    }
     // Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");

@@ -33,9 +33,9 @@
 #include "dmrg/optimize/vectorset.h"
 #include "dmrg/utils/DmrgParameters.h"
 
-//
-// SS_OPTIMIZE CLASS
-// -----------------
+// +-------------------+
+//   SS_OPTIMIZE CLASS
+// +-------------------+
 // Inherited from the virtual optimizer_base class
 template<class Matrix, class SymmGroup, class Storage>
 class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
@@ -46,28 +46,41 @@ public:
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     //
     using base::boundaries_database_ ;
+    using base::chebyshev_shift_ ;
+    using base::correction_equation ;
+    using base::do_chebyshev_ ;
+    using base::do_H_squared_ ;
     using base::do_root_homing_ ;
     using base::do_shiftandinvert_ ;
     using base::do_stateaverage_ ;
+    using base::finalizer_ ;
+	using base::is_folded_ ;
     using base::iteration_results_ ;
     using base::left_sa_ ;
+    using base::left_squared_sa_ ;
     using base::L_ ;
+    using base::micro_optimizer ;
     using base::mpo ;
-    using base::mps2follow ;
+    using base::mpo_squared ;
+    using base::mps_guess ;
     using base::mps_vector ;
     using base::n_bound_ ;
     using base::n_root_ ;
     using base::omega_shift_ ;
     using base::omega_vec ;
     using base::order ;
+    using base::orthogonalizer_ ; 
     using base::parms ;
-//Leon: root_homing_type != 0 not supported yet
-//    using base::poverlap_vec_ ;
+    using base::poverlap_vec_ ;
     using base::right_sa_ ;
+    using base::right_squared_sa_ ;
     using base::root_homing_type_ ;
     using base::sa_alg_ ;
     using base::sorter_ ;
     using base::stop_callback ;
+    using base::reshuffle_variance_ ;
+    using base::track_variance_ ;
+    using base::update_each_omega ;
     using base::update_omega ;
     using base::update_order ;
     using base::vec_sa_left_ ;
@@ -75,11 +88,15 @@ public:
     // Constructor declaration
     ss_optimize(MPS<Matrix, SymmGroup> & mps_, 
                 std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
+                std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_ ,
+                std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_ ,
                 MPO<Matrix, SymmGroup> const & mpo_,
+                MPO<Matrix, SymmGroup> const & mpo_squared_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_vector_[0].length(), initial_site_))
+    : base(mps_, mps_vector_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_,
+           to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     { };
     // Inline function to get the site index modulo 2
@@ -105,7 +122,7 @@ public:
             site = to_site(L, _site);
         }
         // Main loop
-		this->update_parameters(sweep) ;
+        this->update_parameters(sweep) ;
         for (; _site < 2 * L; ++_site) {
             boost::chrono::high_resolution_clock::time_point now, then;
             BEGIN_TIMING("PRELIMINARY OPERATIONS")
@@ -117,20 +134,31 @@ public:
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
-			// Debug printing
-			if (do_shiftandinvert_) {
-            	std::cout << " -- VALUES OF OMEGA -- " << std::endl ;
-            	for (size_t idx = 0; idx < n_root_; idx++)
-            	    std::cout << omega_vec[idx] << std::endl ;
-			}
-            std::vector<std::pair<typename maquis::traits::real_type<value_type>::type, MPSTensor<Matrix, SymmGroup> > > res;
-            //SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_);
-            std::vector<MPSTensor<Matrix, SymmGroup> > site_vec(n_root_);
-	    for (size_t idx = 0; idx < n_root_; idx++)
-                site_vec[idx] = mps_vector[idx][site]; 
-            SiteProblem<Matrix, SymmGroup> sp(site_vec, site, site+1 ,mpo[site], boundaries_database_);
+            // Storage
+            Storage::fetch(left_sa_[0][site]) ;
+            Storage::fetch(right_sa_[0][site+1]) ;
+            if (lr == +1 && site+2 <= L)
+                Storage::prefetch(right_sa_[0][site+2]);
+            if (lr == -1 && site > 0)
+                Storage::prefetch(left_sa_[0][site-1]);
+            assert( left_sa_[0][site].reasonable() );    // in case something went wrong
+            assert( right_sa_[0][site+1].reasonable() ); // in case something went wrong
+            // Debug printing
+            if (do_shiftandinvert_) {
+                std::cout << " -- VALUES OF OMEGA -- " << std::endl ;
+                for (size_t idx = 0; idx < n_root_; idx++)
+                    std::cout << omega_vec[idx] << std::endl ;
+            }
+            std::vector< std::pair<typename maquis::traits::real_type<value_type>::type, MPSTensor<Matrix, SymmGroup> > > res;
+            SiteProblem<Matrix, SymmGroup> sp(mpo[site], mpo_squared[site], site, site+1, boundaries_database_,
+                                              do_H_squared_);
+            if (sa_alg_ != -3) {
+                mps_guess.clear() ;
+                for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
+                    mps_guess.push_back(mps_vector[idx][site]) ;
+            }
             // Generates the vectorset object
-            VectorSet<Matrix, SymmGroup> vector_set(mps_vector, site);
+            VectorSet<Matrix, SymmGroup> vector_set(mps_guess);
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
@@ -144,38 +172,20 @@ public:
             //  MAIN PART: performs the sweep
             // +-----------------------------+
             if (d == Both || (d == LeftOnly && lr == -1) || (d == RightOnly && lr == +1)) {
-                if (parms["eigensolver"] == std::string("IETL")) {
-                    BEGIN_TIMING("IETL")
-                    //res = solve_ietl_lanczos(sp, mps[site], parms);
-                    END_TIMING("IETL")
-                } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
-                    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, vector_set, parms, 
-//                          poverlap_vec_, //Leon: root_homing_type != 0 not supported yet
-                           1, site, site, root_homing_type_,
-                                         do_shiftandinvert_, vec_sa_left_, vec_sa_right_, order, boundaries_database_,
-                                         sa_alg_, omega_vec, ortho_vecs);
-                    END_TIMING("JCD")
-                } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
-                    BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, vector_set, parms,
-//                     poverlap_vec_,
-                     1, site, site, root_homing_type_,
-                                              vec_sa_left_, vec_sa_right_, order, boundaries_database_, sa_alg_,
-                                              ortho_vecs);
-                    END_TIMING("DAVIDSON")
-                } else {
-                    throw std::runtime_error("I don't know this eigensolver.");
-                }
+                BEGIN_TIMING("LOCAL DIAGONALIZATION")
+                res = solve_ietl_jcd(sp, vector_set, correction_equation, micro_optimizer, finalizer_,
+                                     orthogonalizer_, parms, poverlap_vec_, site, site, root_homing_type_, do_root_homing_,
+                                     do_shiftandinvert_, do_chebyshev_, chebyshev_shift_, do_H_squared_, reshuffle_variance_,
+                                     track_variance_, is_folded_, vec_sa_left_, vec_sa_right_, order, boundaries_database_,
+									 sa_alg_, omega_vec, ortho_vecs) ;
+                END_TIMING("LOCAL DIAGONALIZATION")
                 BEGIN_TIMING("MPS UPDATE")
-                // Collects the results
-                mps_vector[0][site] = res[0].second;
-                for (size_t k = 1; k < n_root_; k++)
-                    mps_vector[k][site] = res[k].second;
                 // Correct the energies
-                if (sa_alg_ == -1)
-                    for (size_t k = 0; k < n_root_; k++)
-                        res[k].first = ietl::get_energy(sp, res[k].second, k);
+                for (size_t k = 0; k < n_root_; k++) {
+                    res[k].first = ietl::get_energy(sp, res[k].second, k, false);
+                    mps_vector[k][site] = res[k].second;
+                    mps_guess[k] = res[k].second ;
+                }
                 END_TIMING("MPS UPDATE")
             }
             // +---------------------+
@@ -199,96 +209,130 @@ public:
                 alpha = parms.template get<double>("alpha_final");
             // Update of the MPS
             double cutoff = this->get_cutoff(sweep);
-            std::size_t Mmax = this->get_Mmax(sweep);
+            std::size_t Mmax = this->get_Mmax(sweep), Mval;
             std::vector<truncation_results> trunc(n_bound_);
             // +---------------------+
-            //  Truncation of the MPS
+            //  TRUNCATION OF THE MPS
             // +---------------------+
-            // Forward sweep
+            // -- FORWARD SWEEP --
             BEGIN_TIMING("MPS TRUNCATION")
             if (lr == +1) {
                 if (site < L - 1) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
-                    if (sa_alg_ == -1) {
+                    if (sa_alg_ == -3) {
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep_vec(mps_guess, mpo[site],
+                                                  (*(boundaries_database_.get_boundaries_left(0, false)))[site],
+                                                  (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
+                                                  site, alpha, cutoff, Mmax);
+                        for (std::size_t idx = 1; idx < n_root_; idx++) {
+                            (*(boundaries_database_.get_mps(idx)))[site + 1] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site] = (*(boundaries_database_.get_mps(0)))[site] ;
+                        }
+
+                    } else if (sa_alg_ == -1) {
                         trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep(mpo[site],
-                                                                                       (*(boundaries_database_.get_boundaries_left(0)))[site],
-                                                                                       (*(boundaries_database_.get_boundaries_right(0)))[site+1],
+                                                                                       (*(boundaries_database_.get_boundaries_left(0, false)))[site],
+                                                                                       (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
                                                                                        site, alpha, cutoff, Mmax);
                         std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx, false)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx, false)))[site+1],
                                                                                                site, alpha, cutoff, Mmax, keeps);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx, false)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx, false)))[site+1],
                                                                                                site, alpha, cutoff, Mmax);
-                    }
-                    if (sa_alg_ > -1) {
+                    // -- SINGLE STATE TAKEN AS REFERENCE FOR BOUNDARY CALCULATION --
+                    } else if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_l2r_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx, false)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx, false)))[site+1],
                                                                                                site, alpha, cutoff, Mmax);
                         std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t k = 0; k < n_root_; k++) {
                             if (k != sa_alg_)
                                 trunc.push_back(mps_vector[k].grow_l2r_sweep(mpo[site],
-                                                                             (*(boundaries_database_.get_boundaries_left(k)))[site],
-                                                                             (*(boundaries_database_.get_boundaries_right(k)))[site+1],
+                                                                             (*(boundaries_database_.get_boundaries_left(k, false)))[site],
+                                                                             (*(boundaries_database_.get_boundaries_right(k,false)))[site+1],
                                                                              site, alpha, cutoff, Mmax, keeps));
                         }
                     }
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_left(DefaultSolver());
-                    for (size_t k = 1; k < n_root_; k++)
-                        t = mps_vector[k][site].normalize_left(DefaultSolver());
+                    if (sa_alg_ == -3) {
+                        for (std::size_t idx = 0; idx < n_root_; idx++) {
+                            (*(boundaries_database_.get_mps(idx)))[site] = mps_guess[idx];
+                            block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site].normalize_left(DefaultSolver());
+                        }
+                    } else {
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_left(DefaultSolver());
+                        for (size_t k = 1; k < n_root_; k++)
+                            t = mps_vector[k][site].normalize_left(DefaultSolver());
+                    }
                 }
                 // Update the left boundary
                 this->boundary_left_step(mpo, site);
-                // Backward sweep
+            // -- BACKWARD SWEEP --
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
-                    if (sa_alg_ == -1) {
+                    if (sa_alg_ == -3) {
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep_vec(mps_guess, mpo[site],
+                                                                                           (*(boundaries_database_.get_boundaries_left(0, false)))[site],
+                                                                                           (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
+                                                                                           site, alpha, cutoff, Mmax);
+                        for (std::size_t idx = 1; idx < n_root_; idx++) {
+                            (*(boundaries_database_.get_mps(idx)))[site-1] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site] = (*(boundaries_database_.get_mps(0)))[site] ;
+                        }
+                    } else if (sa_alg_ == -1) {
                         trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep(mpo[site],
-                                                                                       (*(boundaries_database_.get_boundaries_left(0)))[site],
-                                                                                       (*(boundaries_database_.get_boundaries_right(0)))[site+1],
+                                                                                       (*(boundaries_database_.get_boundaries_left(0, false)))[site],
+                                                                                       (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
                                                                                        site, alpha, cutoff, Mmax);
                         std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t idx = 1; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx, false)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx, false)))[site+1],
                                                                                                site, alpha, cutoff, Mmax, keeps);
                     } else if (sa_alg_ == -2) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx, false)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx, false)))[site+1],
                                                                                                site, alpha, cutoff, Mmax);
                     } else if (sa_alg_ > -1) {
                         for (size_t idx = 0; idx < n_bound_; idx++)
                             trunc[idx] = (*(boundaries_database_.get_mps(idx))).grow_r2l_sweep(mpo[site],
-                                                                                               (*(boundaries_database_.get_boundaries_left(idx)))[site],
-                                                                                               (*(boundaries_database_.get_boundaries_right(idx)))[site+1],
+                                                                                               (*(boundaries_database_.get_boundaries_left(idx, false)))[site],
+                                                                                               (*(boundaries_database_.get_boundaries_right(idx, false)))[site+1],
                                                                                                site, alpha, cutoff, Mmax);
                         std::vector<size_t>& keeps = trunc[0].keeps;
                         for (size_t k = 0; k < n_root_; k++)
                             if (k != sa_alg_) {
                                 trunc.push_back(mps_vector[k].grow_r2l_sweep(mpo[site],
-                                                                             (*(boundaries_database_.get_boundaries_left(k)))[site],
-                                                                             (*(boundaries_database_.get_boundaries_right(k)))[site+1],
+                                                                             (*(boundaries_database_.get_boundaries_left(k, false)))[site],
+                                                                             (*(boundaries_database_.get_boundaries_right(k, false)))[site+1],
                                                                              site, alpha, cutoff, Mmax, keeps));
                             }
                     }
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_right(DefaultSolver());
-                    for (size_t k = 1; k < n_root_; k++)
-                        t = mps_vector[k][site].normalize_right(DefaultSolver());
+                    // -- TERMINAL SITE OF THE DMRG CHAIN --
+                    if (sa_alg_ == -3) {
+                        for (std::size_t idx = 0; idx < n_root_; idx++) {
+                            (*(boundaries_database_.get_mps(idx)))[site] = mps_guess[idx];
+                            block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site].normalize_right(DefaultSolver());
+                        }
+                    } else {
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_left(DefaultSolver());
+                        for (size_t k = 1; k < n_root_; k++)
+                            t = mps_vector[k][site].normalize_right(DefaultSolver());
+                    }
                 }
                 // Update the right boundary
                 this->boundary_right_step(mpo, site);
@@ -301,19 +345,26 @@ public:
             for (size_t i = 0; i < n_root_; i++) {
                 sorter_[i].first = res[i].first;
                 sorter_[i].second = i;
-                if (update_omega)
+                if ( (update_each_omega || update_omega && _site == 0) )
                     omega_vec[i] = res[i].first - omega_shift_ ;
             }
             std::sort(sorter_.begin(), sorter_.end());
             this->update_order(sorter_);
-            //Leon: root_homing_type != 0 not supported yet
-/*            if (root_homing_type_ == 1 || root_homing_type_ == 3)
-                for (size_t k = 0; k < n_root_; k++)
-                    poverlap_vec_[k].update(mps_vector[k], site, lr);*/
+            //
+            if (root_homing_type_ == 1 || root_homing_type_ == 3) {
+                for (size_t k = 0; k < n_root_; k++) {
+                    for (size_t k1 = 0; k1 < L_; k1++) {
+                        poverlap_vec_[k].update(mps_vector[k], k1, 1);
+                        poverlap_vec_[k].update(mps_vector[k], L_-k1-1, -1);
+                    }
+                }
+            }
             END_TIMING("FINAL OPERATIONS")
             //
             iteration_results_["BondDimension"] << trunc[0].bond_dimension;
+            std::cout << " Bond dimension - " << trunc[0].bond_dimension << std::endl ;
             iteration_results_["TruncatedWeight"] << trunc[0].truncated_weight;
+            std::cout << " Truncated weight - " << trunc[0].truncated_weight << std::endl ;
             iteration_results_["SmallestEV"] << trunc[0].smallest_ev;
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();

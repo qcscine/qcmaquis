@@ -32,6 +32,7 @@
 #include "dmrg/models/generate_mpo/corr_maker.hpp"
 #include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
 
+// -- Generates the MPO --
 
 template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> & model)
@@ -40,6 +41,16 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> & m
     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
     MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
 
+    return mpo;
+}
+
+// -- Generates the squared value of an MPO --
+
+template<class Matrix, class SymmGroup>
+MPO<Matrix, SymmGroup> make_mpo_squared(Lattice const& lat, Model<Matrix, SymmGroup> const& model)
+{
+    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model, true);
+    MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
     return mpo;
 }
 

@@ -460,6 +460,60 @@ void block_matrix<Matrix, SymmGroup>::resize_block(size_type pos,
     basis_[pos].rs = new_c;
 }
 
+// +----------------+
+//  ADD_BLOCK_TO_ROW
+// +----------------+
+// "Merges" a given symmetry block of a block_matrix given in input with the corresponding block
+// of the object
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::add_block_to_row(block_matrix & rhs, charge r, charge c)
+{
+    // Check coherence in the dimensions of the rows (the columns might be, in principle, different
+    size_type match = this->find_block(r, c);
+    if (match < this->n_blocks()) {
+        //
+        assert (num_cols(rhs(r, c)) == num_cols((*this)(r, c))) ;
+        size_t num_row_toadd    = num_rows(rhs(r, c)) ;
+        size_t num_row_original = num_rows((*this)(r, c)) ;
+        size_t num_cols_common  = num_cols((*this)(r, c)) ;
+        //
+        this->resize_block(r, c, num_row_original+num_row_toadd, num_cols_common, false);
+        for (std::size_t idx1 = 0; idx1 < num_row_toadd; idx1++)
+            for (std::size_t idx2 = 0; idx2 < num_cols_common; idx2++)
+                (*this)(r, c)(idx1 + num_row_original, idx2) = rhs(r, c)(idx1, idx2);
+    } else {
+        insert_block(rhs(r,c), r, c);
+    }
+}
+
+// +-------------------+
+//  ADD_BLOCK_TO_COLUMN
+// +-------------------+
+// "Merges" a given symmetry block of a block_matrix given in input with the corresponding block
+// of the object. If the requested symmetry block is not present,
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::add_block_to_column(block_matrix & rhs, charge r, charge c)
+{
+    // Check coherence in the dimensions of the rows (the columns might be, in principle, different
+    size_type match = this->find_block(r, c);
+    if (match < this->n_blocks()) {
+        //
+        assert (num_rows(rhs(r, c)) == num_rows((*this)(r, c))) ;
+        size_t num_col_toadd    = num_cols(rhs(r, c)) ;
+        size_t num_col_original = num_cols((*this)(r, c)) ;
+        size_t num_rows_common  = num_rows((*this)(r, c));
+        //
+        this->resize_block(r, c, num_rows((*this)(r, c)), num_col_toadd+num_col_original, false);
+        for (std::size_t idx1 = 0; idx1 < num_rows_common; idx1++)
+            for (std::size_t idx2 = 0; idx2 < num_col_toadd; idx2++)
+                (*this)(r, c)(idx1, idx2 + num_col_original) = rhs(r, c)(idx1, idx2);
+    } else {
+        insert_block(rhs(r,c), r, c);
+    }
+}
+
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {

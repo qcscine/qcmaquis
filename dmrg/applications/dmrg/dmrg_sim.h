@@ -48,8 +48,11 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     typedef typename base::measurements_type measurements_type;
     
     using base::mps;
+    using base::mps_guess;
     using base::mps_sa;
+    using base::mps_partial_overlap;
     using base::mpo;
+    using base::mpo_squared;
     using base::parms;
     using base::all_measurements;
     using base::stop_callback;
@@ -77,10 +80,10 @@ public:
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite") {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
+                            (mps, mps_sa, mps_guess, mps_partial_overlap, mpoc, mpo_squared, parms, stop_callback, init_site) );
         } else if(parms["optimization"] == "twosite") {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
+                            (mps, mps_sa, mps_guess, mps_partial_overlap, mpoc, mpo_squared, parms, stop_callback, init_site) );
         } else {
             throw std::runtime_error("Don't know this optimizer");
         }

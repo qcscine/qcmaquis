@@ -144,6 +144,8 @@ public:
     void resize_block(size_type pos,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
+    void add_block_to_row(block_matrix & rhs, charge r, charge c) ;
+    void add_block_to_column(block_matrix & rhs, charge r, charge c) ;
     
     friend void swap(block_matrix & x, block_matrix & y)
     {

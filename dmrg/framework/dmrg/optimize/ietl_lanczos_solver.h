@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *
+ * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- *
+ * 
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -28,7 +28,6 @@
 #define IETL_LANCZOS_SOLVER_H
 
 #include "dmrg/utils/BaseParameters.h"
-
 #include "dmrg/optimize/vectorset.h"
 
 namespace ietl
@@ -37,17 +36,17 @@ namespace ietl
     {
         m.data().generate(g);
     }
-
+    
     template<class Matrix, class SymmGroup> void generate(MPSTensor<Matrix, SymmGroup> & m, MPSTensor<Matrix, SymmGroup> const & m2)
     {
         m = m2;
     }
-
+    
     template<class Matrix, class SymmGroup> void swap(MPSTensor<Matrix, SymmGroup> & x, MPSTensor<Matrix, SymmGroup> & y)
     {
         x.swap_with(y);
     }
-
+    
     template<class Matrix, class SymmGroup>
     typename MPSTensor<Matrix, SymmGroup>::scalar_type
     dot(MPSTensor<Matrix, SymmGroup> const & x, MPSTensor<Matrix, SymmGroup> const & y)
@@ -90,12 +89,12 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
                    BaseParameters & params)
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
-
+    
     SingleSiteVS<Matrix, SymmGroup> vs(initial, std::vector<MPSTensor<Matrix, SymmGroup> >());
-
+    
     typedef ietl::vectorspace<Vector> Vecspace;
     typedef boost::lagged_fibonacci607 Gen;
-
+    
     ietl::lanczos<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > lanczos(sp, vs);
 
     //            Vector test;
@@ -107,12 +106,12 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
     double rel_tol = sqrt(std::numeric_limits<double>::epsilon());
     double abs_tol = rel_tol;
     int n_evals = 1;
-    ietl::lanczos_iteration_nlowest<double>
+    ietl::lanczos_iteration_nlowest<double> 
     iter(100, n_evals, rel_tol, abs_tol);
-
+    
     std::vector<double> eigen, err;
-    std::vector<int> multiplicity;
-
+    std::vector<int> multiplicity;  
+    
     try{
         lanczos.calculate_eigenvalues(iter, initial);
         eigen = lanczos.eigenvalues();
@@ -131,12 +130,11 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
 //    maquis::cout << std::endl;
     //            maquis::cout << "Energy: " << eigen[0] << std::endl;
 
-
     std::vector<double>::iterator start = eigen.begin();
     std::vector<double>::iterator end = eigen.begin()+1;
-    std::vector<Vector> eigenvectors; // for storing the eigenvectors.
+    std::vector<Vector> eigenvectors; // for storing the eigenvectors. 
     ietl::Info<double> info; // (m1, m2, ma, eigenvalue, residualm, status).
-
+    
     try {
         lanczos.eigenvectors(start, end, std::back_inserter(eigenvectors), info, initial, 100);
     }

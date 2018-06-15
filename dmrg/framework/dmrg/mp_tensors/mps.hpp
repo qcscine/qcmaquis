@@ -293,7 +293,40 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     return trunc;
 }
 
-// -- GROW_R2L_SWEEP --
+// +------------------+
+//  GROW_L2R_SWEEP_VEC
+// +-------------------+
+// Same as before, but for vectors
+
+template<class Matrix, class SymmGroup>
+template<class OtherMatrix>
+truncation_results
+MPS<Matrix, SymmGroup>::grow_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                           MPOTensor<Matrix, SymmGroup> const & mpo,
+                                           Boundary<OtherMatrix, SymmGroup> const & left,
+                                           Boundary<OtherMatrix, SymmGroup> const & right,
+                                           std::size_t l,
+                                           double alpha,
+                                           double cutoff,
+                                           std::size_t Mmax,
+                                           std::size_t Mval)
+{
+    MPSTensor<Matrix, SymmGroup> new_mps;
+    truncation_results trunc ;
+    boost::tie(new_mps, trunc) =
+            contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax, Mval);
+    for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l+1] ;
+        mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
+    }
+    (*this)[l]   = new_mps;
+    (*this)[l+1] = mps_vector[0] ;
+    return trunc;
+}
+
+// +--------------+
+//  GROW_R2L_SWEEP
+// +--------------+
 // Method to update the MPS after a sweep of the optimization cycles
 // See grow_l2r_sweep for additional details
 
@@ -316,6 +349,37 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
+    return trunc;
+}
+
+// +------------------+
+//  GROW_R2L_SWEEP_VEC
+// +------------------+
+// Same as before, but for vectors
+
+template<class Matrix, class SymmGroup>
+template<class OtherMatrix>
+truncation_results
+MPS<Matrix, SymmGroup>::grow_r2l_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                           MPOTensor<Matrix, SymmGroup> const & mpo,
+                                           Boundary<OtherMatrix, SymmGroup> const & left,
+                                           Boundary<OtherMatrix, SymmGroup> const & right,
+                                           std::size_t l,
+                                           double alpha,
+                                           double cutoff,
+                                           std::size_t Mmax,
+                                           std::size_t Mval)
+{
+    MPSTensor<Matrix, SymmGroup> new_mps;
+    truncation_results trunc ;
+    boost::tie(new_mps, trunc) =
+            contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax, Mval);
+    for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l-1] ;
+        mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep(tmp_mps, mps_vector[idx], new_mps);
+    }
+    (*this)[l]   = new_mps;
+    (*this)[l-1] = mps_vector[0] ;
     return trunc;
 }
 
@@ -345,6 +409,27 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 
     ret[0].index_sizes();
     return ret;
+}
+
+// +---------+
+//  OPERATORS
+// +---------+
+
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> const & MPS<Matrix, SymmGroup>::operator/=(const scalar_type& t)
+{
+    for (std::size_t idx = 0; idx < (*this).length(); idx++)
+        (*this)[idx] /= t;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> const & MPS<Matrix, SymmGroup>::operator+=(MPS<Matrix, SymmGroup> const & rhs)
+{
+    assert( (*this).length() == rhs.length() );
+    for (std::size_t idx = 0; idx < (*this).length(); idx++)
+        (*this)[idx] += rhs[idx] ;
+    return *this;
 }
 
 template<class Matrix, class SymmGroup>

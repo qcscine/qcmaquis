@@ -44,14 +44,14 @@ public:
     typedef typename std::vector<MPS>          MPS_vector ;
     typedef typename MPS::data_t::value_type   MPSTensor ;
     // Constructors
-    bound_database(void) ;
-    bound_database(MPS_vector& MPSVec, MPS& MPSAverage, Bound_vector& bound_left, Bound_vector& bound_right,
-                   const int& sa_algorithm);
+    bound_database() ;
+    bound_database(MPS_vector& MPSVec, Bound_vector& bound_left, Bound_vector& bound_right, Bound_vector& bound_squared_left,
+                   Bound_vector& bound_squared_right, const int& sa_algorithm, const bool& do_squared);
     // Public methods
-    Bound*     get_boundaries_left(const size_t& idx) ;
-    Bound*     get_boundaries_right(const size_t& idx) ;
-    Bound*     get_boundaries_left_sp(const size_t& idx, const size_t& k) ;
-    Bound*     get_boundaries_right_sp(const size_t& idx, const size_t& k) ;
+    Bound*     get_boundaries_left(const size_t& idx, const bool& is_squared) ;
+    Bound*     get_boundaries_right(const size_t& idx, const bool& is_squared) ;
+    Bound*     get_boundaries_left_sp(const size_t& idx, const size_t& k, const bool& is_squared) ;
+    Bound*     get_boundaries_right_sp(const size_t& idx, const size_t& k, const bool& is_squared) ;
     float      get_coefficients(const size_t& idx, const size_t& k) ;
     MPS*       get_mps(const size_t& idx) ;
     MPSTensor* get_mps(const size_t& idx, const size_t& site) ;
@@ -62,12 +62,15 @@ public:
 // ------------------
 private:
     // Main attribures
-    std::vector< Bound* >                vec_bound_left_, vec_bound_right_  ;
+    std::vector< Bound* >                vec_bound_left_, vec_bound_squared_left_ ;
+    std::vector< Bound* >                vec_bound_right_, vec_bound_squared_right_  ;
     std::vector< std::vector< Bound*> >  vec_left_sp_, vec_right_sp_ ;
+    std::vector< std::vector< Bound*> >  vec_left_squared_sp_, vec_right_squared_sp_ ;
     std::vector< MPS* >                  vec_MPS_ ;
     std::vector< std::vector<float> >    matrix_coefficients_ ;
-    // Dimensions
+    bool do_squared_ ;
 public:
+    // Dimensions
     int n_MPS_ ;
 } ;
 
@@ -75,28 +78,33 @@ public:
 //  Constructor
 // +-----------+
 template<class MPS, class Bound>
-bound_database<MPS, Bound>::bound_database(void)
-{
-    n_MPS_ = 0 ;
-}
+bound_database<MPS, Bound>::bound_database() : n_MPS_(0), do_squared_(false) { }
 
 template<class MPS, class Bound>
 bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
-                                           MPS& MPSAverage,
                                            Bound_vector& bound_left,
-                                           Bound_vector& bound_right,
-                                           const int& sa_algorithm)
+                                           Bound_vector& bound_right, 
+                                           Bound_vector& bound_squared_left,
+                                           Bound_vector& bound_squared_right, 
+                                           const int& sa_algorithm,
+                                           const bool& do_squared) : do_squared_(do_squared)
 {
     // The initialization depends on the value of the sa_algorithm parameter
     n_MPS_ = MPSVec.size() ;
     vec_bound_left_.resize(n_MPS_) ;
     vec_bound_right_.resize(n_MPS_) ;
+    vec_bound_squared_left_.resize(0) ;
+    vec_bound_squared_right_.resize(0) ;
+    //
     vec_left_sp_.resize(n_MPS_) ;
     vec_right_sp_.resize(n_MPS_) ;
+    vec_left_squared_sp_.resize(0) ;
+    vec_right_squared_sp_.resize(0) ;
+    //
     vec_MPS_.resize(n_MPS_) ;
     matrix_coefficients_.resize(n_MPS_) ;
     // boundaries built from a specific state
-    if (sa_algorithm >= 0 ) {
+    if (sa_algorithm >= 0  || sa_algorithm == -3) {
         if (sa_algorithm >= n_MPS_) {
             throw std::runtime_error("sa_algorithm parameter must be <= number of SA states") ;
         } else {
@@ -105,6 +113,17 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
                 vec_bound_right_[idx] = &(bound_right[0]);
                 vec_left_sp_[idx].push_back(&(bound_left[0])) ;
                 vec_right_sp_[idx].push_back(&(bound_right[0])) ;
+                // Squared operator
+                if (do_squared_) {
+                    vec_left_squared_sp_.resize(n_MPS_) ;
+                    vec_right_squared_sp_.resize(n_MPS_) ;
+                    vec_bound_squared_left_.resize(n_MPS_) ;
+                    vec_bound_squared_right_.resize(n_MPS_) ;
+                    vec_bound_squared_left_[idx] = &(bound_squared_left[0]) ;
+                    vec_bound_squared_right_[idx] = &(bound_squared_right[0]) ;
+                    vec_left_squared_sp_[idx].push_back(&(bound_squared_left[0])) ;
+                    vec_right_squared_sp_[idx].push_back(&(bound_squared_right[0])) ;
+                }    
                 vec_MPS_[idx] = &(MPSVec[idx]) ;
                 matrix_coefficients_[idx].push_back(1.0) ;
             }
@@ -117,6 +136,18 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
             vec_bound_right_[idx] = &(bound_right[idx]) ;
             vec_left_sp_[idx].push_back(&(bound_left[idx])) ;
             vec_right_sp_[idx].push_back(&(bound_right[idx])) ;
+            //TODO ALB To check if the squared holds also for sa_alg == -1
+            // Squared operator
+            if (do_squared_) {
+                vec_left_squared_sp_.resize(n_MPS_) ;
+                vec_right_squared_sp_.resize(n_MPS_) ;
+                vec_bound_squared_left_.resize(n_MPS_) ;
+                vec_bound_squared_right_.resize(n_MPS_) ;
+                vec_bound_squared_left_[idx]  = &(bound_squared_left[idx]) ;
+                vec_bound_squared_right_[idx] = &(bound_squared_right[idx]) ;
+                vec_left_squared_sp_[idx].push_back(&(bound_squared_left[idx])) ;
+                vec_right_squared_sp_[idx].push_back(&(bound_squared_right[idx])) ;
+            }
             vec_MPS_[idx] = &(MPSVec[idx]) ;
             matrix_coefficients_[idx].push_back(1.0) ;
         }
@@ -129,46 +160,75 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
 // Public methods
 // --------------
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_left(const size_t& idx)
+Bound* bound_database<MPS, Bound>::get_boundaries_left(const size_t& idx, 
+                                                       const bool& is_squared)
 {
-    return vec_bound_left_[idx] ;
+    if (is_squared) {
+        if ( !do_squared_ ) {
+            throw std::runtime_error("Squared Hamiltonian not available - 1") ;
+        } else {
+            return vec_bound_squared_left_[idx] ;
+        }
+    } else {
+        return vec_bound_left_[idx] ;
+    }
 }
 
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_left_sp(const size_t& idx, const size_t& k)
+Bound* bound_database<MPS, Bound>::get_boundaries_left_sp(const size_t& idx, 
+                                                          const size_t& k,
+                                                          const bool& is_squared)
 {
     Bound* res ;
-    if (idx >= n_MPS_) {
+    if (idx >= n_MPS_)
         throw std::runtime_error("error in the idx index");
-    } else {
-        if (k >= vec_left_sp_[idx].size()) {
+    else
+        if (k >= vec_left_sp_[idx].size())
             throw std::runtime_error("error in the k index");
-        } else {
-            res = vec_left_sp_[idx][k] ;
-        }
-    }
+        else
+            if (is_squared)
+                if ( !do_squared_ )
+                    throw std::runtime_error("Squared Hamiltonian not available - 2") ;
+                else
+                    res = vec_left_squared_sp_[idx][k] ;
+            else
+                res = vec_left_sp_[idx][k] ;
     return res ;
 }
 
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_right(const size_t& idx)
+Bound* bound_database<MPS, Bound>::get_boundaries_right(const size_t& idx, 
+                                                        const bool& is_squared)
 {
-    return vec_bound_right_[idx] ;
+    if (is_squared) {
+        if ( !do_squared_ )
+            throw std::runtime_error("squared hamiltonian not available - 3") ;
+        else
+            return vec_bound_squared_right_[idx] ;
+    } else {
+         return vec_bound_right_[idx] ;
+    }
 }
 
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_right_sp(const size_t& idx, const size_t& k)
+Bound* bound_database<MPS, Bound>::get_boundaries_right_sp(const size_t& idx,
+                                                           const size_t& k,
+                                                           const bool& is_squared)
 {
     Bound* res ;
-    if (idx >= n_MPS_) {
+    if (idx >= n_MPS_)
         throw std::runtime_error("error in the idx index");
-    } else {
-        if (k >= vec_right_sp_[idx].size()) {
+    else
+        if (k >= vec_right_sp_[idx].size())
             throw std::runtime_error("error in the k index");
-        } else {
-            res = vec_right_sp_[idx][k] ;
-        }
-    }
+        else
+            if (is_squared)
+                if ( !do_squared_ )
+                    throw std::runtime_error("Squared Hamiltonian not available - 4") ;
+                else
+                    res = vec_right_squared_sp_[idx][k] ;
+            else
+                res = vec_right_sp_[idx][k] ;
     return res ;
 }
 
@@ -176,15 +236,13 @@ template<class MPS, class Bound>
 float bound_database<MPS, Bound>::get_coefficients(const size_t &idx, const size_t &k)
 {
     float res ;
-    if (idx >= n_MPS_) {
+    if (idx >= n_MPS_)
         throw std::runtime_error("error in the idx index");
-    } else {
-        if (k >= vec_right_sp_[idx].size()) {
+    else
+        if (k >= vec_right_sp_[idx].size())
             throw std::runtime_error("error in the k index");
-        } else {
+        else
             res = matrix_coefficients_[idx][k] ;
-        }
-    }
     return res ;
 }
 

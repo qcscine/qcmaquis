@@ -52,17 +52,17 @@ namespace generate_mpo
         struct prempo_key {
             typedef std::pair<pos_t, tag_type> pos_op_type;
             enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
-            
-            kind_type kind;
-            std::vector<pos_op_type> pos_op;
-            index_type offset;
+            // Attributes
+            kind_type                kind;     // Most important possibilities are trivial_left, trivial_right and bulk
+            std::vector<pos_op_type> pos_op;   // Vector of couples of position/tag
+            index_type               offset;   // site_t, is an offset
             // Constructors
             // - first one, the kind type is given in input, together with the offset. The operators
             //   are not set
-            // - second one, give explicitly a vector of operators and the offsett, the kind is set to bulk
+            // - second one, give explicitly a vector of operators and the offset, the kind is set to bulk
             prempo_key(kind_type k_=bulk, index_type o_=0) : kind(k_), offset(o_) { }
             prempo_key(std::vector<pos_op_type> const& po_, index_type o_=0) : kind(bulk), pos_op(po_), offset(o_) { }
-            
+            // Equivalence between two prempo objects
             bool operator==(prempo_key const& lhs) const
             {
                 if (kind != lhs.kind)
@@ -74,7 +74,7 @@ namespace generate_mpo
                 
                 return (pos_op == lhs.pos_op) && (offset == lhs.offset);
             }
-            
+            // Greater between two prempo_key objects
             bool operator<(prempo_key const& lhs) const
             {
                 if (kind != lhs.kind) return kind < lhs.kind;
@@ -99,30 +99,29 @@ namespace generate_mpo
     {
         return std::make_pair( boost::get<0>(t), boost::get<1>(t) );
     }
-
-
-
+    // +--------------------+
+    //  CLASS TAGGEDMPOMAKER
+    // +--------------------+
     //
-    // CLASS TAGGEDMPOMAKER
-    // --------------------
-    // Attributes:
-    // 1)  lat             : the lattice of the model
-    // 2)  identities      : vector with the tag associated to the identity operator for each
-    //                       site of the lattice
-    // 3)  identities_full : same as identities, but with the "full" identities (??)
-    // 4)  fillings        : vector with the tags associated to the filling operators
-    // 5)  length          : size of the lattice
-    // 6)  tag_handler     : TagHandler object associated to the Hamiltonian
-    // 7)  prempo          : check later
-    // 8)  trivial_left    :
-    // 9)  trivial_right   :
-    // 10) site_terms      : a map that takes in input the number of the lattice site and returns
-    //                       in output the operator on this site
-    // 11) leftmost_right  : position of the first "interesting" site
-    // 12) rightmost_left  : position of the last "interesting" site
-    // 13) finalized       : if the generation of the MPO has been finished
-    // 14) verbose         : controls the level of printing
-    // 15) core_energy     : float with the constant core energy
+    // ATTRIBUTES
+    // ----------
+    // lat              --->  lattice of the calculation of interest
+    // identities       -+
+    // identities_full   |->  tags of the operators used to complete the strings of SQ operators
+    // fillings         -+
+    // length           --->  length of the lattice
+    // tag_handler      --->  register in which all the operators are stored
+    // prempo           --->  vector of prempo_map_type objects, which are dictionaries (in a python language)
+    //                        which associate pairs of prempo_key objects to values (i.e., coefficients of the
+    //                        Hamiltonian). The pair of objects, which are the keyword for the dictionary, are the
+    //                        labels which are associated to the MPO bond, i.e. the operators which have been
+    //                        applied before and/or after the current site
+    // trivial_left     -+-> operators to be put on the left/right of each strings of SQ operators
+    // trivial_right    -+
+    // site_terms       --->  map which links position to operators acting ONLY on the site (one-body operators)
+    // leftmost_right   -+-> last and first site where there are no trivial operators
+    // rightmost_left   -+
+    // core_energy      ---> coefficient of the full identity operator
     //
     template<class Matrix, class SymmGroup>
     class TaggedMPOMaker
@@ -147,7 +146,8 @@ namespace generate_mpo
         enum merge_kind {attach, detach};
         
     public:
-        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model)
+        //TODO ALB The construction of the squared Hamiltonian is hacked for the moment
+        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model, bool const& do_squared = false)
         : lat(lat_)
         , length(lat.size())
         , tag_handler(model.operators_table())
@@ -169,8 +169,14 @@ namespace generate_mpo
                 catch (std::runtime_error const & e) {}
             }
 
-            typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            if (do_squared) {
+                typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_squared_terms();
+                std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            } else {
+                typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
+                for (std::size_t idx = 0; idx < terms.size(); idx++)
+                    this->add_term(terms[idx]) ;
+            }
         }
 
         TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & i_f_, tag_vec const & f_,

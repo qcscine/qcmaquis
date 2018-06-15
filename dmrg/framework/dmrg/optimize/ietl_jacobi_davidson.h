@@ -31,34 +31,39 @@
 #include "ietl_lanczos_solver.h"
 #include "ietl/jd.h"
 
+#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
 #include "dmrg/optimize/utils/iter_jacobi.h"
-#include "dmrg/optimize/jacobi.h"
-#include "dmrg/optimize/jacobi_standard.h"
-#include "dmrg/optimize/jacobi_modified.h"
-//Leon: Comment partial_overlap because it doesn't support SU2U1 yet
-//#include "dmrg/optimize/jacobi_standard_mo.h"
-//#include "dmrg/optimize/jacobi_modified_mo.h"
-//#include "dmrg/optimize/partial_overlap.h"
+#include "dmrg/optimize/JacobiDavidson/jacobi.h"
+#include "dmrg/optimize/POverlap/partial_overlap.h"
 #include "dmrg/optimize/vectorset.h"
+#include "dmrg/optimize/CorrectionEquation/correctionequation.h"
+#include "dmrg/optimize/Finalizer/finalizer.h"
+#include "dmrg/optimize/Orthogonalizer/orthogonalizer.h"
+#include "dmrg/optimize/utils/orthogonalizer_collector.h"
 
 //
 // Jacobi-Davidson diagonalization
 // -------------------------------
 
-template<class Matrix, class SymmGroup, class BoundDatabase>
+template<class Matrix, class SymmGroup, class BoundDatabase, class MicroOptimizer>
 std::vector< std::pair<typename maquis::traits::real_type<typename Matrix::value_type>::type, class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                VectorSet<Matrix, SymmGroup> & initial,
+               CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* correction_equation ,
+               MicroOptimizer* micro_optimizer,
+               Finalizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* finalizer ,
+               Orthogonalizer< SingleSiteVS<Matrix, SymmGroup> >* orthogonalizer,
                BaseParameters & params ,
-//               std::vector< partial_overlap<Matrix, SymmGroup> >  poverlap_vec,
-               int nsites,
+               std::vector< partial_overlap<Matrix, SymmGroup> > poverlap_vec,
                int site1,
                int site2,
                int root_homing_type,
-               bool do_shiftandinvert,
+               bool do_root_homing, bool do_shiftandinvert, bool do_chebyshev,
+               double chebyshev_shift,
+               bool do_H_squared, bool reshuffle_variance, bool track_variance, bool is_folded_,
                std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_left,
                std::vector< std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > > vec_sa_right,
-               std::vector< int > const & order,
+               std::vector< std::size_t > const & order,
                BoundDatabase bound_database,
                int sa_alg,
                std::vector< double > omega_vec,
@@ -66,14 +71,11 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
 {
     // -- Initialization --
     typedef MPSTensor<Matrix, SymmGroup> Vector;
-
-    double rtol  = params["ietl_diag_rtol"] ;
-    double atol  = params["ietl_diag_atol"] ;
     int n_tofollow = params["maximum_overlap_nstates"] ;
-    int n_restart  = params["ietl_diag_restart"] ;
     int side_tofollow = params["maximum_overlap_side"] ;
     std::vector < std::pair<double, Vector> > r0 ;
-    ietl::jcd_iterator<double> iter(params["ietl_diag_maxiter"], rtol, atol);
+    ietl::jcd_iterator<double> iter(params["ietl_diag_maxiter"], params["ietl_diag_rtol"], params["ietl_diag_atol"]);
+    int n_lanczos = params["lanczos_max_iterations"] ;
     // -- Orthogonalization --
     if (initial.MPSTns_SA[0].num_elements() <= ortho_vecs.size())
         ortho_vecs.resize(initial.MPSTns_SA[0].num_elements()-1);
@@ -81,49 +83,62 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
     // --  JD ALGORITHM --
-    for (int n = 0; n < ortho_vecs.size(); ++n) {
+    for (int n = 0; n < ortho_vecs.size(); ++n)
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_SA[0], ortho_vecs[n]) << std::endl ;
-    }
-    // -- GMRES STARTING GUESS --
-    size_t i_gmres_guess ;
-    if (params["ietl_gmres_guess"] == "error")
-        i_gmres_guess = 0 ;
-    else if (params["ietl_gmres_guess"] == "zero")
-        i_gmres_guess = 1 ;
-    else
-        throw std::runtime_error("Guess for the GMRES procedure not recognized") ;
+    // -- CORRECTOR SETUP --
+    orthogonalizer_collector< MPSTensor<Matrix, SymmGroup> > ortho_collector(ortho_vecs) ;
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, vec_sa_left, vec_sa_right, bound_database, ortho_collector) ;
+    finalizer->set_Hamiltonian(sp) ;
     // +----------------------+
     //  EIGENVALUE CALCULATION
     // +----------------------+
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs, vec_sa_left, vec_sa_right, bound_database);
     if ( !do_shiftandinvert ) {
-        if ( root_homing_type == 0) {
-            ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> >
-                jd(sp, vs, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg) ;
-            r0 = jd.calculate_eigenvalue(initial, iter) ;
+        if ( !do_root_homing ) {
+            ietl::jacobi_davidson_standard<SiteProblem<Matrix, SymmGroup>,
+                                           SingleSiteVS<Matrix, SymmGroup>,
+                                           SymmGroup,
+                                           ietl::jcd_iterator<double> >
+            jd(sp, vs, correction_equation, micro_optimizer, finalizer, orthogonalizer, params["ietl_diag_restart_nmin"],
+               params["ietl_diag_restart_nmax"], params["ietl_diag_block"], params["ietl_block_thresh"], site1,
+               site2, order, sa_alg, n_lanczos, do_chebyshev, chebyshev_shift, do_H_squared, reshuffle_variance,
+               track_variance, is_folded_, params["homing_energy_threshold"]) ;
+            r0 = jd.calculate_eigenvalue(iter) ;
         } else {
-/*
-			    ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> , Matrix, SymmGroup >
-                jd(sp, vs, poverlap_vec, n_tofollow, side_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, root_homing_type) ;
-            r0 = jd.calculate_eigenvalue(initial, iter);*/
-            throw std::runtime_error("root homing type!=0/partial overlap not implemented for SU2U1");
+            ietl::jacobi_davidson_standard_mo<SiteProblem<Matrix, SymmGroup>,
+                                              SingleSiteVS<Matrix, SymmGroup>,
+                                              ietl::jcd_iterator<double>,
+                                              Matrix,
+                                              SymmGroup >
+            jd(sp, vs, correction_equation, micro_optimizer, finalizer, orthogonalizer, poverlap_vec, n_tofollow,
+               side_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_diag_block"],
+               params["ietl_block_thresh"], site1, site2, order, sa_alg, n_lanczos, do_chebyshev, chebyshev_shift,
+               do_H_squared, reshuffle_variance, track_variance, is_folded_, params["homing_energy_threshold"], root_homing_type,
+               params["uA_homing_ratio"]) ;
+            r0 = jd.calculate_eigenvalue(iter);
         }
     } else {
-        if ( root_homing_type == 0 ) {
-            ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> >
-                jd(sp, vs, omega_vec, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                   nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, params["ietl_gmres_init_atol"],
-                   params["ietl_gmres_init_rtol"], params["ietl_gmres_init_maxiter"] );
-            r0 = jd.calculate_eigenvalue(initial, iter) ;
+        if ( !do_root_homing ) {
+            ietl::jacobi_davidson_modified<SiteProblem<Matrix, SymmGroup>,
+                                           SingleSiteVS<Matrix, SymmGroup>,
+                                           SymmGroup,
+                                           ietl::jcd_iterator<double> >
+            jd(sp, vs, correction_equation, micro_optimizer, finalizer, orthogonalizer, omega_vec, params["ietl_diag_restart_nmin"],
+               params["ietl_diag_restart_nmax"], params["ietl_diag_block"], params["ietl_block_thresh"], site1, site2,
+               order, sa_alg, n_lanczos, do_chebyshev, chebyshev_shift, do_H_squared, reshuffle_variance, track_variance,
+               is_folded_, params["homing_energy_threshold"]);
+            r0 = jd.calculate_eigenvalue(iter) ;
         } else {
-          /*  ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>, ietl::jcd_iterator<double> , Matrix, SymmGroup>
-                    jd(sp, vs, omega_vec, poverlap_vec, n_tofollow, side_tofollow, params["ietl_diag_restart_nmin"], params["ietl_diag_restart_nmax"], params["ietl_gmres_maxiter"],
-                       nsites, site1, site2, params["ietl_gmres_abstol"], params["ietl_gmres_reltol"], i_gmres_guess, order, sa_alg, params["ietl_gmres_init_atol"],
-                       params["ietl_gmres_init_rtol"], params["ietl_gmres_init_maxiter"], root_homing_type);
-            r0 = jd.calculate_eigenvalue(initial, iter);*/
-            throw std::runtime_error("root homing type!=0/partial overlap not implemented for SU2U1");
+            ietl::jacobi_davidson_modified_mo<SiteProblem<Matrix, SymmGroup>,
+                                              SingleSiteVS<Matrix, SymmGroup>,
+                                              ietl::jcd_iterator<double> ,
+                                              Matrix,
+                                              SymmGroup>
+            jd(sp, vs, correction_equation, micro_optimizer, finalizer, orthogonalizer, omega_vec,
+               poverlap_vec, n_tofollow, side_tofollow, params["ietl_diag_restart_nmin"],
+               params["ietl_diag_restart_nmax"], params["ietl_diag_block"], params["ietl_block_thresh"],
+               site1, site2, order, sa_alg, n_lanczos, do_chebyshev, chebyshev_shift, do_H_squared, reshuffle_variance,
+               track_variance, is_folded_, params["homing_energy_threshold"], root_homing_type, params["uA_homing_ratio"]);
+            r0 = jd.calculate_eigenvalue(iter);
         }
     }
     // Prints final header

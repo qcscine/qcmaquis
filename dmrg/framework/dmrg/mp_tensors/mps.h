@@ -102,13 +102,41 @@ public:
                                       double cutoff,
                                       std::size_t Mmax,
                                       const std::vector<size_t>& keeps = std::vector<size_t>());
-    
+    // +-------------------------------------+
+    //  Truncation result for a vector of MPS
+    // +-------------------------------------+
+    // Left sweep case
+    template<class OtherMatrix>
+    truncation_results grow_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                          MPOTensor<Matrix, SymmGroup> const & mpo,
+                                          Boundary<OtherMatrix, SymmGroup> const & left,
+                                          Boundary<OtherMatrix, SymmGroup> const & right,
+                                          std::size_t l,
+                                          double alpha,
+                                          double cutoff,
+                                          std::size_t Mmax,
+                                          std::size_t Mval=0) ;
+    // Right sweep case
+    template<class OtherMatrix>
+    truncation_results grow_r2l_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                          MPOTensor<Matrix, SymmGroup> const & mpo,
+                                          Boundary<OtherMatrix, SymmGroup> const & left,
+                                          Boundary<OtherMatrix, SymmGroup> const & right,
+                                          std::size_t l,
+                                          double alpha,
+                                          double cutoff,
+                                          std::size_t Mmax,
+                                          std::size_t Mval=0) ;
+    // Boundaries getter
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
     
     void apply(typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
     void apply(typename operator_selector<Matrix, SymmGroup>::type const&,
                typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
+    // -- Standard operators --
+    MPS const & operator/=(const scalar_type&);
+    MPS const & operator+=(MPS const &);
     
     friend void swap(MPS& a, MPS& b)
     {
@@ -148,6 +176,12 @@ struct mps_initializer_sa
     virtual void operator()(std::vector< MPS<Matrix, SymmGroup> > & mps_vector) = 0;
 };
 
+template<class Matrix, class SymmGroup>
+struct mps_initializer_pov
+{
+    virtual ~mps_initializer_pov() {}
+    virtual void operator()(std::vector< MPS<Matrix, SymmGroup> > & mps_vector) = 0;
+};
 //
 // Function to join two MPSs
 // -------------------------

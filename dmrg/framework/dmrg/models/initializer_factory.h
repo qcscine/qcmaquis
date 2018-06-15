@@ -31,6 +31,7 @@
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/models/chem/mps_init_hf.hpp"
 #include "dmrg/mp_tensors/mps_sa_initializers.h"
+#include "dmrg/mp_tensors/mps_pov_initializers.h"
 
 namespace detail {
 //    template <class Matrix, class SymmGroup>
@@ -172,6 +173,37 @@ model_impl<Matrix,SymmGroup>::initializer_sa(Lattice const& lat, BaseParameters 
         return initializer_sa_ptr(new default_mps_init_sa<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_state"] == "const")
         return initializer_sa_ptr(new const_mps_init_sa<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
+    else
+        throw std::runtime_error("Don't know this initial state.");
+}
+// +------------------------------------------------------+
+//  Routine providing the initialization for the MaxOv MPS
+// +------------------------------------------------------+
+
+template <class Matrix, class SymmGroup>
+typename model_impl<Matrix,SymmGroup>::initializer_pov_ptr
+model_impl<Matrix,SymmGroup>::initializer_pov(Lattice const& lat, BaseParameters & parms) const
+{
+    typename SymmGroup::charge initc = this->total_quantum_numbers(parms);
+    int max_site_type = 0;
+    std::vector<int> site_types(lat.size(), 0);
+    for (int p = 0; p < lat.size(); ++p) {
+        site_types[p] = lat.get_prop<int>("type", p);
+        max_site_type = std::max(site_types[p], max_site_type);
+    }
+    std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
+    for (int type = 0; type < site_bases.size(); ++type) {
+        site_bases[type] = this->phys_dim(type);
+    }
+    //
+    // List of initializers
+    // --------------------
+    if (parms["init_pov_state"] == "basis_state_generic")
+        return initializer_pov_ptr(new basis_mps_init_generic_pov<Matrix, SymmGroup>(parms, site_bases, initc, site_types)) ; 
+    else if (parms["init_pov_state"] == "default")
+        return initializer_pov_ptr(new default_mps_init_pov<Matrix, SymmGroup>(parms, site_bases, initc, site_types)) ;
+    else if (parms["init_pov_state"] == "chk")
+        return initializer_pov_ptr(new chk_mps_init_pov<Matrix, SymmGroup>(parms)) ;
     else
         throw std::runtime_error("Don't know this initial state.");
 }
