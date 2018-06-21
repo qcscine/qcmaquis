@@ -93,14 +93,12 @@ class optimizer_base
     typedef typename bound_database< MPS<Matrix, SymmGroup>, boundaries_type>::bound_database     bound_database ;
     typedef typename std::vector< std::pair<float,int> >                                          sorter_type ;
 public:
-    optimizer_base(MPS<Matrix, SymmGroup> & mps_,
-                   std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
+    optimizer_base(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
-    : mps(mps_)
-    , mps_vector(mps_vector_)
+    : mps_vector(mps_vector_)
     , mpo(mpo_)
     , n_root_(mps_vector.size())
     , parms(parms_)
@@ -110,8 +108,9 @@ public:
     , do_shiftandinvert_(false)
     , update_omega(false)
     {
+        MPS<Matrix,SymmGroup> & mps = mps_vector[0];
         // Standard options
-        L_ = mps_vector[0].length() ;
+        L_ = mps.length() ;
         sorter_.resize(n_root_) ;
         //
         // Shift-and-invert paramters
@@ -263,6 +262,7 @@ protected:
     // Routine used to initialize the boundaries
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        const MPS<Matrix,SymmGroup> & mps = mps_vector[0];
         parallel::construct_placements(mpo);
         // -- Initialization of the various vectors --
         // Allocate and parially initialize the space for the left/right orthogonalization vectors
@@ -332,6 +332,8 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         // Variables definition
+        const MPS<Matrix,SymmGroup> & mps = mps_vector[0];
+
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++)
@@ -356,6 +358,7 @@ protected:
     // Shifts the boundary one site to the right
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        const MPS<Matrix,SymmGroup> & mps = mps_vector[0];
         // Variables definition
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
@@ -428,7 +431,7 @@ protected:
     //  ATTRIBUTES
     // +----------+
     std::vector<results_collector> iteration_results_;
-    MPS<Matrix, SymmGroup> & mps, mps_average;
+    MPS<Matrix, SymmGroup> mps_average;
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;

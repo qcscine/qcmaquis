@@ -56,7 +56,6 @@ public:
     using base::L_ ;
     using base::left_sa_;
     using base::mpo;
-    using base::mps;
     using base::mps2follow ;
     using base::mps_vector ;
     using base::n_bound_ ;
@@ -75,13 +74,12 @@ public:
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
     // Constructor
-    ts_optimize(MPS<Matrix, SymmGroup> & mps_,
-                std::vector< MPS<Matrix, SymmGroup> > & mps_sa_,
+    ts_optimize(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mps_sa_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
+    : base(mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;

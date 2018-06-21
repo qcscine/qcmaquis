@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -74,13 +74,12 @@ public:
     using base::vec_sa_right_ ;
 
     // Constructor declaration
-    ss_optimize(MPS<Matrix, SymmGroup> & mps_, 
-                std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
+    ss_optimize(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_vector_[0].length(), initial_site_))
+    : base(mps_vector_, mpo_, parms_, stop_callback_, to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         iteration_results_.resize(n_root_);
@@ -131,7 +130,7 @@ public:
             //SiteProblem<Matrix, SymmGroup> sp(mpo[site], site, site+1, boundaries_database_);
             std::vector<MPSTensor<Matrix, SymmGroup> > site_vec(n_root_);
 	    for (size_t idx = 0; idx < n_root_; idx++)
-                site_vec[idx] = mps_vector[idx][site]; 
+                site_vec[idx] = mps_vector[idx][site];
             SiteProblem<Matrix, SymmGroup> sp(site_vec, site, site+1 ,mpo[site], boundaries_database_);
             // Generates the vectorset object
             VectorSet<Matrix, SymmGroup> vector_set(mps_vector, site);
@@ -154,7 +153,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, vector_set, parms, 
+                    res = solve_ietl_jcd(sp, vector_set, parms,
 //                          poverlap_vec_, //Leon: root_homing_type != 0 not supported yet
                            1, site, site, root_homing_type_,
                                          do_shiftandinvert_, vec_sa_left_, vec_sa_right_, order, boundaries_database_,

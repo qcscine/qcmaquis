@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -47,7 +47,6 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     typedef typename base::status_type status_type;
     typedef typename base::measurements_type measurements_type;
 
-    using base::mps;
     using base::mps_sa;
     using base::mpo;
     using base::parms;
@@ -78,11 +77,11 @@ public:
         // ------------------------
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite") {
-            optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
+            optimizer.reset(new ss_optimize<Matrix, SymmGroup, storage::disk>
+                            (mps_sa, mpoc, parms, stop_callback, init_site) );
         } else if(parms["optimization"] == "twosite") {
-            optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mps_sa, mpoc, parms, stop_callback, init_site) );
+            optimizer.reset(new ts_optimize<Matrix, SymmGroup, storage::disk>
+                            (mps_sa, mpoc, parms, stop_callback, init_site) );
         } else {
             throw std::runtime_error("Don't know this optimizer");
         }
@@ -137,13 +136,13 @@ public:
                 // write checkpoint
                 bool stopped = stop_callback() || converged;
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
-                    checkpoint_simulation(mps, mps_sa, sweep, -1);
+                    checkpoint_simulation(mps_sa, sweep, -1);
                 // Exit condition
                 if (stopped) break;
             }
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
-            checkpoint_simulation(mps, mps_sa, e.sweep(), e.site());
+            checkpoint_simulation(mps_sa, e.sweep(), e.site());
             for (std::size_t state = 0; state < n_states; state++)
             {
                 storage::archive ar(rfile_sa[state], "w");
@@ -166,15 +165,14 @@ private:
         return base::results_archive_path(status);
     }
 
-    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state,
-                               std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
+    void checkpoint_simulation(std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
                                int sweep,
                                int site)
     {
         status_type status;
         status["sweep"] = sweep;
         status["site"]  = site;
-        return base::checkpoint_simulation(state, state_vec, status);
+        return base::checkpoint_simulation(state_vec, status);
     }
 
 };

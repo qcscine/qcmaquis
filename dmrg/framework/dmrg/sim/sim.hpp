@@ -7,22 +7,22 @@
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *                    2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *                    2018 by Leon Freitag <lefreita@ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -201,11 +201,11 @@ sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
 {
     measurements_type mymeas(all_measurements);
     mymeas << overlap_measurements<Matrix, SymmGroup>(parms, sweep);
-    
+
     measurements_type sweep_measurements;
     if (!parms["ALWAYS_MEASURE"].empty())
         sweep_measurements = meas_sublist(mymeas, parms["ALWAYS_MEASURE"]);
-    
+
     return sweep_measurements;
 }
 
@@ -218,13 +218,12 @@ sim<Matrix, SymmGroup>::~sim() { }
 // the last sweep
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state,
-                                                   std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
+void sim<Matrix, SymmGroup>::checkpoint_simulation(std::vector< class MPS<Matrix, SymmGroup> > const& state_vec,
                                                    status_type const& status)
 {
     if (!dns) {
         // save state to chkp dir
-        save(chkpfile, state);
+        save(chkpfile, state_vec[0]);
         for (size_t i = 0; i < n_states; i++)
             save(chkpfile_sa[i], state_vec[i]) ;
         // save status
@@ -256,7 +255,7 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
     // WARNING: This does not use checkpoints for different states
-    std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
+    std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps_sa[0]));
 
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
@@ -269,11 +268,11 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     std::vector<double> entropies, renyi2;
     if (parms["MEASURE[Entropy]"]) {
         maquis::cout << "Calculating vN entropy." << std::endl;
-        entropies = calculate_bond_entropies(mps);
+        entropies = calculate_bond_entropies(mps_sa[0]);
     }
     if (parms["MEASURE[Renyi2]"]) {
         maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
-        renyi2 = calculate_bond_renyi_entropies(mps, 2, measure_es_where, spectra);
+        renyi2 = calculate_bond_renyi_entropies(mps_sa[0], 2, measure_es_where, spectra);
     }
 
     {
