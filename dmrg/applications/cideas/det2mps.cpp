@@ -4,24 +4,24 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
- * 
+ *
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
 
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -73,7 +73,7 @@ Determinant<SymmGroup> str_from_det(std::vector<typename SymmGroup::charge> cons
    for (int i = 0; i < charge_vec.size(); ++i)
    {
        if (charge_vec[i] == phys_dims[site_types[i]][0].first)
-       {   
+       {
            det[i] = 4;
        }else if (charge_vec[i] == phys_dims[site_types[i]][1].first)
        {
@@ -86,7 +86,7 @@ Determinant<SymmGroup> str_from_det(std::vector<typename SymmGroup::charge> cons
            det[i] = 1;
        }
    }
-   return det; 
+   return det;
 }
 
 template<class SymmGroup>
@@ -119,18 +119,18 @@ get_charge_determinants(std::vector<Determinant<SymmGroup> > const & det_list,
                 int times = single_det.size();
                 for (int k = 0; k < times; k++)
                     single_det.push_back(single_det[k]);
-                
+
                 for (int k = 0; k < single_det.size(); ++k)
                 {
                     if (k < single_det.size()/2) //works only if there are two options, like (1,1) and (1,-1)
                         single_det[k].push_back(dummy_dets[i][j][0]);
                     else
                         single_det[k].push_back(dummy_dets[i][j][1]);
-                }        
+                }
             }
             else{
                 for (int k = 0; k < single_det.size(); ++k)
-                    single_det[k].push_back(dummy_dets[i][j][0]); 
+                    single_det[k].push_back(dummy_dets[i][j][0]);
             }
         }
         for (int m = 0; m < single_det.size(); ++m)
@@ -174,6 +174,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     typedef std::vector<typename SymmGroup::subcharge> site_vec;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::real_type<value_type>::type real_type;
+    typedef typename mps_initializer<Matrix, SymmGroup>::MPSVector MPSVector;
 
     deas_mps_init(DmrgParameters parms_,
                   EntanglementData<Matrix> em_,
@@ -255,7 +256,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         if (hf_occ.size() != L)
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        // initialize objects required 
+        // initialize objects required
         //idea: include current charges in rows_to_fill, should not affect 2U1
         std::vector<std::vector< int > > rows_to_fill;
         std::vector<std::map<charge, std::map<std::string, int> > > str_to_col_map(L);
@@ -268,7 +269,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         int num_runs = std::min(L,15);
         //main loop
         for(int run = 0; run < num_runs; ++run)
-        { 
+        {
             std::vector<std::vector<charge> >  determinants;
             std::vector<Determinant<SymmGroup> > new_det_list;
 
@@ -300,10 +301,10 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                     {
                         std::string str = det_string(s, det_list_new[det_nr]);
                         std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
-         
+
                         if (str_map[str])
                             rows_to_fill[det_nr][s] = str_map[str] - 1;
-         
+
                         else
                         {
                            //get largest element in map
@@ -333,7 +334,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             std::cout << sum_size[i] << " ";
         std::cout << std::endl;
 
-        init_sect(mps, str_to_col_map, true, 0); 
+        init_sect(mps, str_to_col_map, true, 0);
 
         //this here is absolutely necessary
         for(pos_t i = 0; i < L; ++i)
@@ -354,9 +355,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                     //get current matrix
                     size_t max_pos = mps[s].data().left_basis().position(accumulated_charge);
                     Matrix & m_insert = mps[s].data()[max_pos];
-                  
+
                     int nrows = m_insert.num_rows(), off = 0;
-                  
+
                     //get additional offsets for subsectors
                     if(site_charge == phys_dims[site_types[s]][1].first)
                     {
@@ -367,9 +368,9 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                     {
                         if(mps[s].row_dim().has(accumulated_charge))
                             off = nrows - nrows_fill - mps[s].row_dim().size_of_block(accumulated_charge);
-                        else 
+                        else
                             off = nrows - nrows_fill;
-                    }  
+                    }
                     else if(site_charge == phys_dims[site_types[s]][3].first){
                         off = nrows - nrows_fill;
                     }
@@ -393,7 +394,15 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
           }
        }
 
-    }//end of main initialization function 
+    }//end of main initialization function
+
+    void operator() (MPSVector & mps_vector)
+    {
+      if (mps_vector.size() != 1)
+        throw std::runtime_error("CI-DEAS not implemented yet for more than one state.");
+      else
+        operator() (mps_vector[0]);
+    }
 
 
     //function to get string of left or right part from det
@@ -418,8 +427,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     //function to initalize sectors -> copied from mps-initializers
 
     void init_sect(MPS<Matrix, SymmGroup> & mps,
-                   const std::vector<std::map<charge, std::map<std::string, int> > > & str_to_col_map, 
-                   bool fillrand = true, 
+                   const std::vector<std::map<charge, std::map<std::string, int> > > & str_to_col_map,
+                   bool fillrand = true,
                    typename Matrix::value_type val = 0)
     {
         parallel::scheduler_balanced scheduler(mps.length());
@@ -491,7 +500,7 @@ std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
                     tmp.push_back(3); // up
                     break;
                 case 2:
-                    tmp.push_back(2); // down 
+                    tmp.push_back(2); // down
                     break;
                 case 1:
                     tmp.push_back(1); // empty
@@ -519,7 +528,7 @@ int main(int argc, char ** argv){
 
         std::string rfile(parms.get<std::string>("resultfile"));
         EntanglementData<matrix> em(rfile);
-       
+
         Lattice lat(parms);
         Model<matrix,grp> model(lat,parms);
 
@@ -534,7 +543,7 @@ int main(int argc, char ** argv){
 
         std::cout <<"site_types: ";
         for(int i = 0; i < site_types.size(); i++)
-           std::cout << site_types[i] <<", "; 
+           std::cout << site_types[i] <<", ";
 
         std::cout << std::endl;
 
@@ -544,16 +553,16 @@ int main(int argc, char ** argv){
             phys_dims.push_back(model.phys_dim(i));
 
         for (int i = 0; i < phys_dims.size(); i++)
-            std::cout << "phys_dims["<<i<<"] = " << phys_dims[i] << std::endl; 
+            std::cout << "phys_dims["<<i<<"] = " << phys_dims[i] << std::endl;
 
         //get right end charge
         grp::charge right_end = chem_detail::qn_helper<grp>().total_qn(parms);
         maquis::cout << "Right end: " << right_end <<std::endl;
-  
+
         //create MPS
         MPS<matrix, grp> mps(lat.size());
         deas_mps_init<matrix, grp> deas_creator(parms, em, phys_dims, right_end, site_types);
-        deas_creator(mps); 
+        deas_creator(mps);
         maquis::cout << "MPS created" << std::endl;
 
         std::string chkp = parms["chkpfile"].str();
@@ -564,9 +573,9 @@ int main(int argc, char ** argv){
         //ar2["/version"] << DMRG_VERSION_STRING;
         ar2["/status/sweep"] << -1;
         ar2["/status/site"] << -1;
-        
-        maquis::cout << "MPS saved" << std::endl; 
-  
+
+        maquis::cout << "MPS saved" << std::endl;
+
         } catch (std::exception& e) {
             std::cerr << "Error:" << std::endl << e.what() << std::endl;
             return 1;

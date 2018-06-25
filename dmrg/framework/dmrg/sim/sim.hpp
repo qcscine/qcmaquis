@@ -164,7 +164,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
                 // Initialize the state-average stuff
                 for (int i = 0; i < mps_sa.size(); i++)
                     mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
-                (*(model.initializer_sa(lat, parms)))(mps_sa);
+                (*(model.initializer(lat, parms)))(mps_sa);
             }
         }
     }

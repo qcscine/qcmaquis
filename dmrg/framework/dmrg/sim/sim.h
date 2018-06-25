@@ -42,7 +42,6 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
-#include "dmrg/mp_tensors/mps_sa_initializers.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/generate_mpo.hpp"
 

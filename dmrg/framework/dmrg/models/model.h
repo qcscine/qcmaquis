@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -48,7 +48,6 @@ template <class Matrix, class SymmGroup>
 class model_impl {
 public:
     typedef boost::shared_ptr<mps_initializer<Matrix, SymmGroup> >    initializer_ptr;
-    typedef boost::shared_ptr<mps_initializer_sa<Matrix, SymmGroup> > initializer_sa_ptr;
 
     typedef TagHandler<Matrix, SymmGroup> table_type;
     typedef boost::shared_ptr<table_type> table_ptr;
@@ -58,11 +57,11 @@ public:
     typedef typename std::vector<term_descriptor> terms_type;
     typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     typedef boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements_type;
-    
+
     typedef std::size_t size_t;
-    
+
     virtual ~model_impl() {}
-    
+
     virtual void update(BaseParameters const& p) =0;
 
     virtual Index<SymmGroup> const& phys_dim(size_t type) const=0;
@@ -75,14 +74,13 @@ public:
 
     virtual terms_type const& hamiltonian_terms() const { return terms_; }
     virtual measurements_type measurements() const=0;
-    
+
     virtual op_t const& get_operator(std::string const & name, size_t type) const { return operators_table()->get_op( get_operator_tag(name, type) ); }
     virtual tag_type get_operator_tag(std::string const & name, size_t type) const=0;
-    
+
     virtual table_ptr operators_table() const=0;
-    
+
     virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
-    virtual initializer_sa_ptr initializer_sa(Lattice const& lat, BaseParameters & parms) const;
     // optionally delay the assemly of the operator terms until the MPO is actually created
     virtual void create_terms() {};
 
@@ -102,48 +100,47 @@ class Model {
     typedef model_impl<Matrix, SymmGroup> impl_type;
     typedef boost::shared_ptr<impl_type> impl_ptr;
 public:
-    typedef typename impl_type::initializer_ptr    initializer_ptr    ;
-    typedef typename impl_type::initializer_sa_ptr initializer_sa_ptr ;
+    typedef typename impl_type::initializer_ptr    initializer_ptr;
 
     typedef typename impl_type::table_type table_type;
     typedef typename impl_type::table_ptr table_ptr;
     typedef typename impl_type::tag_type tag_type;
-    
+
     typedef typename impl_type::term_descriptor term_descriptor;
     typedef typename impl_type::terms_type terms_type;
     typedef typename impl_type::op_t op_t;
     typedef typename impl_type::measurements_type measurements_type;
-    
+
     typedef typename impl_type::size_t size_t;
-    
+
     Model() { }
-    
+
     Model(Lattice const& lattice, BaseParameters & parms)
     : impl_(model_factory<Matrix, SymmGroup>(lattice, parms))
     { }
-    
+
     Model(impl_ptr impl) : impl_(impl) { }
-    
+
     void update(BaseParameters const& p) { return impl_->update(p); }
-    
+
     Index<SymmGroup> const& phys_dim(size_t type=0) const { return impl_->phys_dim(type); }
     op_t const& identity_matrix(size_t type=0) const { return impl_->identity_matrix(type); }
     tag_type identity_matrix_tag(size_t type=0) const { return impl_->identity_matrix_tag(type); }
     op_t const& filling_matrix(size_t type=0) const { return impl_->filling_matrix(type); }
     tag_type filling_matrix_tag(size_t type=0) const { return impl_->filling_matrix_tag(type); }
-    
+
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const { return impl_->total_quantum_numbers(parms); }
-    
+
     terms_type const& hamiltonian_terms() const { return impl_->hamiltonian_terms(); }
     measurements_type measurements() const { return impl_->measurements(); }
-    
+
     op_t const& get_operator(std::string const & name, size_t type=0) const { return impl_->get_operator(name, type); }
     tag_type get_operator_tag(std::string const & name, size_t type=0) const { return impl_->get_operator_tag(name, type); }
-    
+
     table_ptr operators_table() const { return impl_->operators_table(); }
-    
+
     initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
-    initializer_sa_ptr initializer_sa(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer_sa(lat, parms); }
+
     void create_terms() { impl_->create_terms(); }
 
 private:
