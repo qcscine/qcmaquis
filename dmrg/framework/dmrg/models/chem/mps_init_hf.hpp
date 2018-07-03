@@ -87,7 +87,7 @@ public:
         di.init_sectors(*it, 5, false, 1.);
 
         maquis::cout << "Initializing state " << std::distance(mps_vector.begin(), it) << " with HF occupation vector ";
-        std::copy(hf_init.begin(), hf_init.end(), std::ostream_iterator<std::size_t>(std::cout, ","));
+        std::copy(hf_init.begin(), hf_init.end(), std::ostream_iterator<std::size_t>(maquis::cout, ""));
         maquis::cout << std::endl;
 
         init_hf_mps(*it, hf_init, symm_traits::HasSU2<SymmGroup>());
