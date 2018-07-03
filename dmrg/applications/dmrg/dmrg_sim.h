@@ -54,14 +54,15 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     using base::stop_callback;
     using base::init_sweep;
     using base::init_site;
-    using base::rfile;
     using base::n_states;
     using base::rfile_sa;
 
 public:
 
-    dmrg_sim (DmrgParameters & parms_)
-    : base(parms_)
+    dmrg_sim (DmrgParameters & parms_) :
+
+    base(parms_, parms_["n_states_sa"], fill_checkpoint_result_name(parms_, parms_["n_states_sa"]))
+
     { }
 
     void run()
@@ -173,6 +174,50 @@ private:
         status["sweep"] = sweep;
         status["site"]  = site;
         return base::checkpoint_simulation(state_vec, status);
+    }
+
+    std::pair<std::vector<std::string>, std::vector<std::string> > fill_checkpoint_result_name(BaseParameters& p, int n_states_)
+    {
+
+//     Initialise checkpoint names for an SA calculation
+//     Construct file names for checkpoints for each state
+//     First, check if we have a state name in the provided chkpfile
+//     (i.e. if checkpoint and/or resultfile match the pattern "something.X.something.h5" where X is the state #
+//     if yes, replace it with the correct state number
+//     if not, append an underscore and the state number to the state.
+      typename std::stringstream ss;
+      std::vector<std::string> chkpfile_sa_, rfile_sa_;
+
+      std::string chkpfile = boost::trim_right_copy_if(p["chkpfile"].str(), boost::is_any_of("/ "));
+      std::string rfile = p["resultfile"].str();
+
+      boost::regex chkpfile_expr("(.+?)\\.[0-9]+(.*\\.h5)$");
+      boost::smatch what;
+
+      bool match = boost::regex_match(chkpfile,what,chkpfile_expr);
+
+      for (std::size_t i = 0; i < n_states_; i++) {
+          ss.str("") ;
+          ss << i ;
+          std::string replacement = "$1."+ss.str()+"$2";
+          std::string str = match ? boost::regex_replace(chkpfile, chkpfile_expr, replacement) : chkpfile + '_' + ss.str();
+          chkpfile_sa_.push_back(str) ;
+      }
+
+      ss.clear();
+
+      // Initialise result file names for an SA calculation, similarly to the checkpoint name initialisation
+      match = boost::regex_match(rfile,what,chkpfile_expr);
+
+      for (std::size_t i = 0; i < n_states_; i++) {
+          ss.str("") ;
+          ss << i ;
+          std::string replacement = "$1."+ss.str()+".h5";
+          std::string str = match ? boost::regex_replace(rfile, chkpfile_expr, replacement) : rfile + '_' + ss.str();
+          rfile_sa_.push_back(str);
+      }
+
+      return std::make_pair(chkpfile_sa_, rfile_sa_);
     }
 
 };

@@ -6,6 +6,7 @@
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *               2018 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -71,9 +72,19 @@ template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
     // Public attributes
-    sim(DmrgParameters const &);
+
+    sim(DmrgParameters const &,
+        int n_states_ = 1,
+        std::pair<std::vector<std::string>, std::vector<std::string> > filenames_sa =
+        std::make_pair(std::vector<std::string>(), std::vector<std::string>())
+       );
     virtual ~sim();
     virtual void run() =0;
+
+    // shortcuts for chkpfile and rfile for one-state calculations
+    const std::string& chkpfile() { return chkpfile_sa[0]; };
+    const std::string& rfile() { return rfile_sa[0]; };
+
 protected:
     // Protected attributes
     typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
@@ -85,13 +96,11 @@ protected:
     // This virtual function is used to store results
     virtual void checkpoint_simulation(std::vector< MPS<Matrix, SymmGroup> > const& state_vec,
                                        status_type const&);
-protected:
+
     DmrgParameters parms ;
     int init_sweep, init_site, n_states ;
     bool restore;
     bool dns;
-    std::string chkpfile;
-    std::string rfile;
     time_stopper stop_callback;
     // Model objects
     Lattice lat;

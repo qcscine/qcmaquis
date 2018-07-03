@@ -75,7 +75,7 @@ public:
             energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
             maquis::cout << "Energy: " << energy << std::endl;
             {
-                storage::archive ar(rfile, "w");
+                storage::archive ar(rfile(), "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
             }
         }
@@ -91,7 +91,7 @@ public:
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
 
             {
-                storage::archive ar(rfile, "w");
+                storage::archive ar(rfile(), "w");
                 ar["/spectrum/results/Energy^2/mean/value"] << std::vector<double>(1, energy2);
                 ar["/spectrum/results/EnergyVariance/mean/value"] << std::vector<double>(1, energy2 - energy*energy);
             }
@@ -99,7 +99,7 @@ public:
 
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
         if (parms.is_set("MEASURE[ChemEntropy]"))
-            measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
+            measure_transform<Matrix, SymmGroup>()(rfile(), "/spectrum/results", base::lat, mps);
         #endif
     }
 };
