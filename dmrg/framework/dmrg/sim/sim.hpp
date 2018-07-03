@@ -45,6 +45,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
      , init_sweep(0)
      , init_site(-1)
      , restore(false)
+     , dns( (parms["donotsave"] != 0) )
      , stop_callback(static_cast<double>(parms["run_seconds"]))
 {
     // Preliminary operations
