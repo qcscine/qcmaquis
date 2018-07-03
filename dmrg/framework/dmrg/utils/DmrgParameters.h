@@ -74,7 +74,7 @@ private:
 
         add_option("ietl_diag_atol", "", value(1e-8));
         add_option("ietl_diag_rtol", "", value(1e-8));
-        add_option("ietl_diag_maxiter", "", value(8));
+        add_option("ietl_diag_maxiter", "", value(15));
         add_option("ietl_diag_restart_nmin", "", value(1));
         add_option("ietl_diag_restart_nmax", "", value(100));
         add_option("ietl_diag_homing_criterion", "", value(""));
