@@ -87,7 +87,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         maquis::cout << "Input <MPS|O[" << n << "]> : " << ietl::dot(initial.MPSTns_SA[0], ortho_vecs[n]) << std::endl ;
     // -- CORRECTOR SETUP --
     orthogonalizer_collector< MPSTensor<Matrix, SymmGroup> > ortho_collector(ortho_vecs) ;
-    SingleSiteVS<Matrix, SymmGroup> vs(initial, vec_sa_left, vec_sa_right, bound_database, ortho_collector) ;
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, vec_sa_left, vec_sa_right, ortho_collector) ;
     finalizer->set_Hamiltonian(sp) ;
     // +----------------------+
     //  EIGENVALUE CALCULATION

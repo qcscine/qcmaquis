@@ -67,19 +67,6 @@ template<class Matrix, class SymmGroup> struct SiteProblem;
 #include <ietl/vectorspace.h>
 #include "dmrg/optimize/singlesitevs.h"
 #include "dmrg/optimize/siteproblem.h"
-
-namespace ietl
-{
-    template<class Matrix, class SymmGroup>
-    struct vectorspace_traits<SingleSiteVS<Matrix, SymmGroup> >
-    {
-        typedef MPSTensor<Matrix, SymmGroup> vector_type;
-        typedef typename MPSTensor<Matrix, SymmGroup>::value_type scalar_type;
-        typedef typename MPSTensor<Matrix, SymmGroup>::magnitude_type magnitude_type;
-        typedef std::size_t size_type;
-    };
-}
-
 #include <ietl/lanczos.h>
 
 template<class Matrix, class SymmGroup>

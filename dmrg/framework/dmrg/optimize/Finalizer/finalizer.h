@@ -37,6 +37,7 @@ template<class MATRIX, class VecSpace>
 class Finalizer {
 public:
     // Types declaraton
+    typedef typename ietl::vectorspace_traits<VecSpace>::real_type        real_type ;
     typedef typename ietl::vectorspace_traits<VecSpace>::scalar_type      scalar_type ;
     typedef typename ietl::vectorspace_traits<VecSpace>::vector_type      vector_type ;
     typedef typename ietl::state_prop<VecSpace>                           state_prop ;
@@ -46,7 +47,7 @@ public:
     ~Finalizer() {} ;
     // Setter
     void set_Hamiltonian(MATRIX& ham) ;
-    void set_omega(scalar_type omega) ;
+    void set_omega(real_type omega) ;
     void set_candidate(vec_prop const& candidates) ;
     // Set the energy calculator
     void set_energy_standard() ;
@@ -62,9 +63,9 @@ public:
 	void set_error_folded() ;
     // Getter
     bool get_is_si() ;
-    scalar_type theta_converter(scalar_type const& theta) ;
+    real_type get_omega() ;
+    real_type theta_converter(real_type const& theta) ;
     scalar_type get_eigen(size_t const& idx) ;
-    scalar_type get_omega() ;
     vector_type get_u(size_t const& idx) ;
     vector_type get_uA(size_t const& idx) ;
     MATRIX* get_Hamiltonian() ;
@@ -74,9 +75,9 @@ public:
 private:
     // Attributes
     MATRIX* Hamiltonian_ ;
-    const vec_prop* candidates_ ;
-    scalar_type omega_ ;
     bool is_si_ ;
+    const vec_prop* candidates_ ;
+    real_type omega_ ;
     EnergyComputer<MATRIX, VecSpace>* energy_computer_ ;
     ErrorComputer<MATRIX, VecSpace>* error_computer_ ;
 } ;

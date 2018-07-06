@@ -37,9 +37,9 @@ template<class MATRIX, class VecSpace>
 class FoldedError : public ErrorComputer<MATRIX, VecSpace> {
 public:
     // Types definition
-    typedef ErrorComputer<MATRIX, VecSpace> base ;
-    typedef typename base::scalar_type scalar_type ;
-    typedef typename base::vector_type vector_type ;
+    typedef ErrorComputer<MATRIX, VecSpace>      base ;
+    typedef typename base::scalar_type           scalar_type ;
+    typedef typename base::vector_type           vector_type ;
     // Destructor
     FoldedError() {} ;
     ~FoldedError() {} ;

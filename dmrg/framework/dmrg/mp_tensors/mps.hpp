@@ -308,277 +308,275 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGr
                                            std::size_t l,
                                            double alpha,
                                            double cutoff,
-                                           std::size_t Mmax,
-                                           std::size_t Mval)
+                                           std::size_t Mmax)
 {
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc ;
     boost::tie(new_mps, trunc) =
-            contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax, Mval);
+            contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax);
     for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
         MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l+1] ;
-        mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
-    }
-    (*this)[l]   = new_mps;
-    (*this)[l+1] = mps_vector[0] ;
-    return trunc;
-}
-
-// +--------------+
-//  GROW_R2L_SWEEP
-// +--------------+
-// Method to update the MPS after a sweep of the optimization cycles
-// See grow_l2r_sweep for additional details
-
-template<class Matrix, class SymmGroup>
-template<class OtherMatrix>
-truncation_results
-MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                       Boundary<OtherMatrix, SymmGroup> const & left,
-                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l,
-                                       double alpha,
-                                       double cutoff,
-                                       std::size_t Mmax,
-                                       const std::vector<size_t>& keeps)
-{ // canonized_i invalided through (*this)[]
-    MPSTensor<Matrix, SymmGroup> new_mps;
-    truncation_results trunc;
-    boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, keeps);
-    (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
-                                                          (*this)[l], new_mps);
-    (*this)[l] = new_mps;
-    return trunc;
-}
-
-// +------------------+
-//  GROW_R2L_SWEEP_VEC
-// +------------------+
-// Same as before, but for vectors
-
-template<class Matrix, class SymmGroup>
-template<class OtherMatrix>
-truncation_results
-MPS<Matrix, SymmGroup>::grow_r2l_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
-                                           MPOTensor<Matrix, SymmGroup> const & mpo,
-                                           Boundary<OtherMatrix, SymmGroup> const & left,
-                                           Boundary<OtherMatrix, SymmGroup> const & right,
-                                           std::size_t l,
-                                           double alpha,
-                                           double cutoff,
-                                           std::size_t Mmax,
-                                           std::size_t Mval)
-{
-    MPSTensor<Matrix, SymmGroup> new_mps;
-    truncation_results trunc ;
-    boost::tie(new_mps, trunc) =
-            contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax, Mval);
-    for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
-        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l-1] ;
-        mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep(tmp_mps, mps_vector[idx], new_mps);
-    }
-    (*this)[l]   = new_mps;
-    (*this)[l-1] = mps_vector[0] ;
-    return trunc;
-}
-
-template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
-MPS<Matrix, SymmGroup>::left_boundary() const
-{
-    Index<SymmGroup> i = (*this)[0].row_dim();
-    Boundary<Matrix, SymmGroup> ret(i, i, 1);
-
-    for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
-       maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
-
-    ret[0].index_sizes();
-    return ret;
-}
-
-template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
-MPS<Matrix, SymmGroup>::right_boundary() const
-{
-    Index<SymmGroup> i = (*this)[length()-1].col_dim();
-    Boundary<Matrix, SymmGroup> ret(i, i, 1);
-
-    for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
-        maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
-
-    ret[0].index_sizes();
-    return ret;
-}
-
-// +---------+
-//  OPERATORS
-// +---------+
-
-template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup> const & MPS<Matrix, SymmGroup>::operator/=(const scalar_type& t)
-{
-    for (std::size_t idx = 0; idx < (*this).length(); idx++)
-        (*this)[idx] /= t;
-    return *this;
-}
-
-template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup> const & MPS<Matrix, SymmGroup>::operator+=(MPS<Matrix, SymmGroup> const & rhs)
-{
-    assert( (*this).length() == rhs.length() );
-    for (std::size_t idx = 0; idx < (*this).length(); idx++)
-        (*this)[idx] += rhs[idx] ;
-    return *this;
-}
-
-template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
-{
-    typedef typename SymmGroup::charge charge;
-    using std::size_t;
-    
-    /// Compute (and check) charge difference
-    charge diff = SymmGroup::IdentityCharge;
-    if (op.n_blocks() > 0)
-        diff = SymmGroup::fuse(op.basis().right_charge(0), -op.basis().left_charge(0));
-    for (size_t n=0; n< op.n_blocks(); ++n) {
-        if ( SymmGroup::fuse(op.basis().right_charge(n), -op.basis().left_charge(n)) != diff )
-            throw std::runtime_error("Operator not allowed. All non-zero blocks have to provide same `diff`.");
-    }
-    
-    /// Apply operator
-    (*this)[p] = contraction::multiply_with_op((*this)[p], op);
-    
-    /// Propagate charge difference
-    for (size_t i=p+1; i<length(); ++i) {
-        (*this)[i].shift_aux_charges(diff);
-    }
-}
-
-template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& fill,
-                                   typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
-{
-    for (size_t i=0; i<p; ++i) {
-        (*this)[i] = contraction::multiply_with_op((*this)[i], fill);
-    }
-    apply(op, p);
-}
-
-template<class Matrix, class SymmGroup>
-template <class Archive>
-void MPS<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
-{
-    ar & canonized_i & data_;
-}
-
-template<class Matrix, class SymmGroup>
-void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
-{
-    /// get size of MPS
-    std::size_t L = 0;
-    while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
-    
-    /// load tensors
-    MPS<Matrix, SymmGroup> tmp(L);
-    size_t loop_max = tmp.length();
-    parallel::scheduler_balanced scheduler(loop_max);
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(k));
-        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
-        storage::archive ar(fname);
-        ar["/tensor"] >> tmp[k];
-    }
-    swap(mps, tmp);
-}
-
-template<class Matrix, class SymmGroup>
-void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
-{
-    /// create chkp dir
-    if(parallel::master() && !boost::filesystem::exists(dirname))
-        boost::filesystem::create_directory(dirname);
-    
-    parallel::scheduler_balanced scheduler(mps.length());
-    size_t loop_max = mps.length();
-
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(k));
-        mps[k].make_left_paired();
-        storage::migrate(mps[k]);
-    }
-    parallel::sync();
-
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(k));
-        if(!parallel::local()) continue;
-        const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
-        storage::archive ar(fname, "w");
-        ar["/tensor"] << mps[k];
-    }
-    
-    parallel::sync(); // be sure that chkp is in valid state before overwriting the old one.
-    
-    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
-        parallel::guard proc(scheduler(k));
-        if(!parallel::local()) continue;
-        const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
-        boost::filesystem::rename(fname+".new", fname);
-    });
-}
-
-template <class Matrix, class SymmGroup>
-void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup> const & mps2)
-{
-    // Length
-    if (mps1.length() != mps2.length())
-        throw std::runtime_error("Length doesn't match.");
-    
-    for (int i=0; i<mps1.length(); ++i)
-        try {
-            mps1[i].check_equal(mps2[i]);
-        } catch (std::exception & e) {
-            maquis::cerr << "Problem on site " << i << ":" << e.what() << std::endl;
-            exit(1);
+                mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
+            }
+            (*this)[l]   = new_mps;
+            (*this)[l+1] = mps_vector[0] ;
+            return trunc;
         }
-}
 
-template <class Matrix, class SymmGroup>
-void clean_mps(MPS<Matrix, SymmGroup> & mps)
-{
-    // ensure consistent indices across bonds by removing blocks without connection across bonds
+        // +--------------+
+        //  GROW_R2L_SWEEP
+        // +--------------+
+        // Method to update the MPS after a sweep of the optimization cycles
+        // See grow_l2r_sweep for additional details
 
-    bool again;
-    do {
-        again = false;
-        for (size_t p = 0; p < mps.length()-1; ++p)
+        template<class Matrix, class SymmGroup>
+        template<class OtherMatrix>
+        truncation_results
+        MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                               Boundary<OtherMatrix, SymmGroup> const & left,
+                                               Boundary<OtherMatrix, SymmGroup> const & right,
+                                               std::size_t l,
+                                               double alpha,
+                                               double cutoff,
+                                               std::size_t Mmax,
+                                               const std::vector<size_t>& keeps)
+        { // canonized_i invalided through (*this)[]
+            MPSTensor<Matrix, SymmGroup> new_mps;
+            truncation_results trunc;
+            boost::tie(new_mps, trunc) =
+            contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, keeps);
+            (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
+                                                                  (*this)[l], new_mps);
+            (*this)[l] = new_mps;
+            return trunc;
+        }
+
+        // +------------------+
+        //  GROW_R2L_SWEEP_VEC
+        // +------------------+
+        // Same as before, but for vectors
+
+        template<class Matrix, class SymmGroup>
+        template<class OtherMatrix>
+        truncation_results
+        MPS<Matrix, SymmGroup>::grow_r2l_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                                   MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                   Boundary<OtherMatrix, SymmGroup> const & left,
+                                                   Boundary<OtherMatrix, SymmGroup> const & right,
+                                                   std::size_t l,
+                                                   double alpha,
+                                                   double cutoff,
+                                                   std::size_t Mmax)
         {
-            mps[p].make_left_paired();
-            mps[p+1].make_right_paired();
-            block_matrix<Matrix, SymmGroup> bm1 = mps[p].data(), bm2 = mps[p+1].data();
-
-            for (size_t b = 0; b < bm1.n_blocks(); ++b)
-            {
-                typename SymmGroup::charge c = bm1.basis().right_charge(b);
-                if (! bm2.basis().has(c, c)) {
-                    bm1.remove_block(b--);
-                    again = true;
-                }
+            MPSTensor<Matrix, SymmGroup> new_mps;
+            truncation_results trunc ;
+            boost::tie(new_mps, trunc) =
+                    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax);
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+                MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l-1] ;
+                mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep(tmp_mps, mps_vector[idx], new_mps);
             }
-            for (size_t b = 0; b < bm2.n_blocks(); ++b)
-            {
-                typename SymmGroup::charge c = bm2.basis().left_charge(b);
-                if (! bm1.basis().has(c, c)) {
-                    bm2.remove_block(b--);
-                    again = true;
-                }
-            }
-
-            assert(bm1.right_basis() == bm2.left_basis());
-
-            mps[p].replace_left_paired(bm1);
-            mps[p+1].replace_right_paired(bm2);
+            (*this)[l]   = new_mps;
+            (*this)[l-1] = mps_vector[0] ;
+            return trunc;
         }
-    } while (again);
-}
+
+        template<class Matrix, class SymmGroup>
+        Boundary<Matrix, SymmGroup>
+        MPS<Matrix, SymmGroup>::left_boundary() const
+        {
+            Index<SymmGroup> i = (*this)[0].row_dim();
+            Boundary<Matrix, SymmGroup> ret(i, i, 1);
+
+            for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
+               maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
+
+            ret[0].index_sizes();
+            return ret;
+        }
+
+        template<class Matrix, class SymmGroup>
+        Boundary<Matrix, SymmGroup>
+        MPS<Matrix, SymmGroup>::right_boundary() const
+        {
+            Index<SymmGroup> i = (*this)[length()-1].col_dim();
+            Boundary<Matrix, SymmGroup> ret(i, i, 1);
+
+            for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
+                maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
+
+            ret[0].index_sizes();
+            return ret;
+        }
+
+        // +---------+
+        //  OPERATORS
+        // +---------+
+
+        template<class Matrix, class SymmGroup>
+        MPS<Matrix, SymmGroup> const & MPS<Matrix, SymmGroup>::operator/=(const scalar_type& t)
+        {
+            for (std::size_t idx = 0; idx < (*this).length(); idx++)
+                (*this)[idx] /= t;
+            return *this;
+        }
+
+        template<class Matrix, class SymmGroup>
+        MPS<Matrix, SymmGroup> const & MPS<Matrix, SymmGroup>::operator+=(MPS<Matrix, SymmGroup> const & rhs)
+        {
+            assert( (*this).length() == rhs.length() );
+            for (std::size_t idx = 0; idx < (*this).length(); idx++)
+                (*this)[idx] += rhs[idx] ;
+            return *this;
+        }
+
+        template<class Matrix, class SymmGroup>
+        void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
+        {
+            typedef typename SymmGroup::charge charge;
+            using std::size_t;
+            
+            /// Compute (and check) charge difference
+            charge diff = SymmGroup::IdentityCharge;
+            if (op.n_blocks() > 0)
+                diff = SymmGroup::fuse(op.basis().right_charge(0), -op.basis().left_charge(0));
+            for (size_t n=0; n< op.n_blocks(); ++n) {
+                if ( SymmGroup::fuse(op.basis().right_charge(n), -op.basis().left_charge(n)) != diff )
+                    throw std::runtime_error("Operator not allowed. All non-zero blocks have to provide same `diff`.");
+            }
+            
+            /// Apply operator
+            (*this)[p] = contraction::multiply_with_op((*this)[p], op);
+            
+            /// Propagate charge difference
+            for (size_t i=p+1; i<length(); ++i) {
+                (*this)[i].shift_aux_charges(diff);
+            }
+        }
+
+        template<class Matrix, class SymmGroup>
+        void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& fill,
+                                           typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
+        {
+            for (size_t i=0; i<p; ++i) {
+                (*this)[i] = contraction::multiply_with_op((*this)[i], fill);
+            }
+            apply(op, p);
+        }
+
+        template<class Matrix, class SymmGroup>
+        template <class Archive>
+        void MPS<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
+        {
+            ar & canonized_i & data_;
+        }
+
+        template<class Matrix, class SymmGroup>
+        void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
+        {
+            /// get size of MPS
+            std::size_t L = 0;
+            while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
+            
+            /// load tensors
+            MPS<Matrix, SymmGroup> tmp(L);
+            size_t loop_max = tmp.length();
+            parallel::scheduler_balanced scheduler(loop_max);
+            for(size_t k = 0; k < loop_max; ++k){
+                parallel::guard proc(scheduler(k));
+                std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+                storage::archive ar(fname);
+                ar["/tensor"] >> tmp[k];
+            }
+            swap(mps, tmp);
+        }
+
+        template<class Matrix, class SymmGroup>
+        void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
+        {
+            /// create chkp dir
+            if(parallel::master() && !boost::filesystem::exists(dirname))
+                boost::filesystem::create_directory(dirname);
+            
+            parallel::scheduler_balanced scheduler(mps.length());
+            size_t loop_max = mps.length();
+
+            for(size_t k = 0; k < loop_max; ++k){
+                parallel::guard proc(scheduler(k));
+                mps[k].make_left_paired();
+                storage::migrate(mps[k]);
+            }
+            parallel::sync();
+
+            for(size_t k = 0; k < loop_max; ++k){
+                parallel::guard proc(scheduler(k));
+                if(!parallel::local()) continue;
+                const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
+                storage::archive ar(fname, "w");
+                ar["/tensor"] << mps[k];
+            }
+            
+            parallel::sync(); // be sure that chkp is in valid state before overwriting the old one.
+            
+            omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+                parallel::guard proc(scheduler(k));
+                if(!parallel::local()) continue;
+                const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+                boost::filesystem::rename(fname+".new", fname);
+            });
+        }
+
+        template <class Matrix, class SymmGroup>
+        void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup> const & mps2)
+        {
+            // Length
+            if (mps1.length() != mps2.length())
+                throw std::runtime_error("Length doesn't match.");
+            
+            for (int i=0; i<mps1.length(); ++i)
+                try {
+                    mps1[i].check_equal(mps2[i]);
+                } catch (std::exception & e) {
+                    maquis::cerr << "Problem on site " << i << ":" << e.what() << std::endl;
+                    exit(1);
+                }
+        }
+
+        template <class Matrix, class SymmGroup>
+        void clean_mps(MPS<Matrix, SymmGroup> & mps)
+        {
+            // ensure consistent indices across bonds by removing blocks without connection across bonds
+
+            bool again;
+            do {
+                again = false;
+                for (size_t p = 0; p < mps.length()-1; ++p)
+                {
+                    mps[p].make_left_paired();
+                    mps[p+1].make_right_paired();
+                    block_matrix<Matrix, SymmGroup> bm1 = mps[p].data(), bm2 = mps[p+1].data();
+
+                    for (size_t b = 0; b < bm1.n_blocks(); ++b)
+                    {
+                        typename SymmGroup::charge c = bm1.basis().right_charge(b);
+                        if (! bm2.basis().has(c, c)) {
+                            bm1.remove_block(b--);
+                            again = true;
+                        }
+                    }
+                    for (size_t b = 0; b < bm2.n_blocks(); ++b)
+                    {
+                        typename SymmGroup::charge c = bm2.basis().left_charge(b);
+                        if (! bm1.basis().has(c, c)) {
+                            bm2.remove_block(b--);
+                            again = true;
+                        }
+                    }
+
+                    assert(bm1.right_basis() == bm2.left_basis());
+
+                    mps[p].replace_left_paired(bm1);
+                    mps[p+1].replace_right_paired(bm2);
+                }
+            } while (again);
+        }

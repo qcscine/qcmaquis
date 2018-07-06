@@ -55,6 +55,7 @@ namespace ietl
         typedef typename base::magnitude_type         magnitude_type;
         typedef typename base::MicroOptimizer         MicroOptimizer;
         typedef typename base::Orthogonalizer         Orthogonalizer;
+        typedef typename base::real_type              real_type ;
         typedef typename base::scalar_type            scalar_type ;
         typedef typename base::size_t                 size_t ;
         typedef typename base::vector_double          vector_double ;
@@ -107,8 +108,8 @@ namespace ietl
         vector_double generate_property() ;
         void print_endline() ;
         void print_header_table() ;
-        void print_newline_table(const size_t& i, const double& error, const magnitude_type& en, const size_t& idx,
-                                 const bool& converged) ;
+        void print_newline_table(const size_t& i, const real_type& error, const scalar_type& en, 
+                                 const size_t& idx, const bool& converged) ;
         void set_interval(const std::size_t& dim) ;
         void sort_prop(couple_vec& vector_values) ;
         // Private attributes
@@ -216,7 +217,7 @@ namespace ietl
     //
     template<class MATRIX, class VS, class ITER, class OtherMatrix, class SymmGroup>
     void jacobi_davidson_standard_mo<MATRIX, VS, ITER, OtherMatrix, SymmGroup>::print_newline_table
-            (const size_t& i, const double& error, const magnitude_type& en, const size_t& idx, const bool& converged)
+            (const size_t& i, const real_type& error, const scalar_type& en, const size_t& idx, const bool& converged)
     {
         char buf[100] ;
         int a = i, n;

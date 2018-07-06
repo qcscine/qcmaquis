@@ -31,6 +31,7 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/boundary.h"
+#include "contractions.h"
 
 #include <limits>
 
@@ -114,8 +115,7 @@ public:
                                           std::size_t l,
                                           double alpha,
                                           double cutoff,
-                                          std::size_t Mmax,
-                                          std::size_t Mval=0) ;
+                                          std::size_t Mmax) ;
     // Right sweep case
     template<class OtherMatrix>
     truncation_results grow_r2l_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
@@ -125,8 +125,7 @@ public:
                                           std::size_t l,
                                           double alpha,
                                           double cutoff,
-                                          std::size_t Mmax,
-                                          std::size_t Mval=0) ;
+                                          std::size_t Mmax) ;
     // Boundaries getter
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;

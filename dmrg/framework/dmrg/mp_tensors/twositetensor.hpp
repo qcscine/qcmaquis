@@ -342,7 +342,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax,
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, V.left_basis(), right_i, V, RightPaired);
     assert( mps_tensor2.reasonable() );
         
-    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 

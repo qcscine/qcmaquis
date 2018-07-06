@@ -63,7 +63,7 @@ namespace contraction {
             index_type b1 = col_it.index();
 
             DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, ket_basis, b1);
-            if (T_basis.size() == 0) continue;
+            if (T_basis.size() == 0) continue ; 
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
         for (size_t oi = 0; oi < access.size(); ++oi)

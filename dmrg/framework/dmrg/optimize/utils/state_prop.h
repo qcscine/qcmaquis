@@ -40,17 +40,19 @@ namespace ietl {
     template<class VS>
     struct state_prop {
         // Types definition
+        typedef typename vectorspace_traits<VS>::real_type       real_type;
         typedef typename vectorspace_traits<VS>::scalar_type     scalar_type;
         typedef typename vectorspace_traits<VS>::vector_type     vector_type;
         // Attributes
         vector_type u_, uA_;
-        scalar_type theta_, property_ ;
+        double property_ ;
+        real_type theta_ ;
         bool has_property_ ;
         // +------------+
         //  CONSTRUCTORS
         // +------------+
         state_prop() = default ;
-        state_prop(vector_type &u, vector_type &uA, scalar_type &theta) :
+        state_prop(vector_type &u, vector_type &uA, real_type &theta) :
                 u_(u),
                 uA_(uA),
                 theta_(theta),
@@ -80,7 +82,7 @@ namespace ietl {
         // +-------+
         //  METHODS
         // +-------+
-        void add_property(scalar_type const& prop_toadd)
+        void add_property(double const& prop_toadd)
         {
             if (this->has_property_) {
                 throw std::runtime_error("Property already present");

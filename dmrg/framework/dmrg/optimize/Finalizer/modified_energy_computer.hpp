@@ -37,9 +37,10 @@ template<class MATRIX, class VecSpace>
 class ModifiedEnergy : public EnergyComputer<MATRIX, VecSpace> {
 public:
     // Types definition
-    typedef EnergyComputer<MATRIX, VecSpace> base ;
-    typedef typename base::scalar_type scalar_type ;
-    typedef typename base::vector_type vector_type ;
+    typedef EnergyComputer<MATRIX, VecSpace>     base ;
+    typedef typename base::real_type             real_type ;
+    typedef typename base::scalar_type           scalar_type ;
+    typedef typename base::vector_type           vector_type ;
     // Destructor
     ModifiedEnergy() {} ;
     ~ModifiedEnergy() {} ;
@@ -51,7 +52,7 @@ public:
         return finalizer->get_omega() - 1./finalizer->get_eigen(idx) ;
     }
     //
-    scalar_type theta_converter(scalar_type const& theta)
+    real_type theta_converter(real_type const& theta)
     {
         return std::fabs(1./theta) ;
     }

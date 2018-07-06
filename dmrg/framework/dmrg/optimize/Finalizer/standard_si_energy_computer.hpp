@@ -38,27 +38,26 @@ class StandardSIEnergy : public EnergyComputer<MATRIX, VecSpace> {
 public:
     // Types definition
     typedef EnergyComputer<MATRIX, VecSpace>    base;
+    typedef typename base::real_type            real_type;
     typedef typename base::scalar_type          scalar_type;
     typedef typename base::vector_type          vector_type;
-
     // Destructor
     StandardSIEnergy() = default ;
     ~StandardSIEnergy() = default ;
     // Routine used to apply the correction equation
     scalar_type compute_energy(Finalizer <MATRIX, VecSpace> *finalizer,
-                               size_t const &i_state,
-                               size_t const &idx)
+                             size_t const &i_state,
+                             size_t const &idx)
     {
         scalar_type res;
         vector_type jnk;
         ietl::mult(*(finalizer->get_Hamiltonian()), (finalizer->get_u(idx)), jnk, i_state);
-        res = ietl::dot((finalizer->get_u(idx)), jnk);
+        res  = ietl::dot((finalizer->get_u(idx)), jnk);
         res /= ietl::dot((finalizer->get_u(idx)), (finalizer->get_u(idx)));
         return res;
     }
-
     //
-    scalar_type theta_converter(scalar_type const &theta)
+    real_type theta_converter(real_type const &theta)
     {
         return std::fabs(1./theta) ;
     }

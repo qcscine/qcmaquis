@@ -171,6 +171,21 @@ namespace contraction {
             return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, lbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax, keeps);
         }
+        
+        // -- PREDICT_NEW_STATE_L2R_SWEEP_VEC --
+        // Simple interface to the corresponding routine isnide ./common/predict
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_l2r_sweep_vec(std::vector<MPSTensor<Matrix, SymmGroup> > & mps_vec,
+                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                        Boundary<OtherMatrix, SymmGroup> const & left,
+                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax)
+        {
+            return common::predict_new_state_l2r_sweep_vec<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, lbtm_functor>
+                   (mps_vec, mpo, left, right, alpha, cutoff, Mmax);
+        }
 
         static MPSTensor<Matrix, SymmGroup>
         predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
@@ -194,6 +209,21 @@ namespace contraction {
         {
             return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, rbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax, keeps);
+        }
+
+        // -- PREDICT_NEW_STATE_R2L_SWEEP_VEC --
+        // Simple interface to the corresponding routine isnide ./common/predict
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_r2l_sweep_vec(std::vector<MPSTensor<Matrix, SymmGroup> > & mps_vec,
+                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                        Boundary<OtherMatrix, SymmGroup> const & left,
+                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax)
+        {
+            return common::predict_new_state_r2l_sweep_vec<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, rbtm_functor>
+                   (mps_vec, mpo, left, right, alpha, cutoff, Mmax);
         }
 
         static MPSTensor<Matrix, SymmGroup>

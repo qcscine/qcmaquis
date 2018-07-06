@@ -43,16 +43,17 @@ template<class MATRIX, class VecSpace>
 class EnergyComputer {
 public:
     // Types definition
-    typedef Finalizer<MATRIX, VecSpace> base ;
-    typedef typename base::scalar_type scalar_type ;
-    typedef typename base::vector_type vector_type ;
+    typedef Finalizer<MATRIX, VecSpace>       base ;
+    typedef typename base::real_type          real_type ;
+    typedef typename base::scalar_type        scalar_type ;
+    typedef typename base::vector_type        vector_type ;
     // Constructor and desctructor
     virtual ~EnergyComputer() {} ;
     // Actual method
     virtual scalar_type compute_energy(Finalizer<MATRIX, VecSpace>* finalizer,
                                        size_t const& i_state,
                                        size_t const& idx ) = 0 ;
-    virtual scalar_type theta_converter(scalar_type const& theta) = 0  ;
+    virtual real_type theta_converter(real_type const& theta) = 0  ;
 } ;
 
 #include "dmrg/optimize/Finalizer/standard_energy_computer.hpp"

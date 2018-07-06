@@ -27,102 +27,76 @@
 #ifndef SINGLESITEVS_H
 #define SINGLESITEVS_H
 
-#include "dmrg/optimize/utils/bound_database.h"
+#include <dmrg/mp_tensors/contractions/abelian/special.hpp>
+#include "dmrg/optimize/utils/orthogonalizer_collector.h"
 
 template<class Matrix, class SymmGroup>
 class SingleSiteVS
 {
-    typedef typename std::vector< class std::vector< std::vector< class block_matrix< typename storage::constrained<Matrix>::type, SymmGroup> > > > vector_ortho_type ;
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup>                      boundary ;
-    typedef std::vector< boundary >                                                               boundaries_type ;
-    typedef typename bound_database< MPS<Matrix, SymmGroup>, boundaries_type>::bound_database     bound_database ;
+    typedef typename block_matrix< typename storage::constrained<Matrix>::type, SymmGroup>::block_matrix block_matrix ;
+    typedef typename std::vector< class std::vector< std::vector< block_matrix > > >                     vector_ortho_type ;
+    typedef typename MPS<Matrix, SymmGroup>::MPS                                                         MPS ;
+    typedef typename MPSTensor<Matrix, SymmGroup>::MPSTensor                                             MPSTensor ;
+    typedef typename VectorSet<Matrix, SymmGroup>::VectorSet                                             VectorSet ;
+    typedef typename orthogonalizer_collector< MPSTensor >::orthogonalizer_collector                     orthogonalizer_collector ;
 public:
-    // Initializer from a single MPSTns
-    SingleSiteVS(MPSTensor<Matrix, SymmGroup> & m,
-                 std::vector< class MPSTensor<Matrix, SymmGroup> > const & ortho_vecs)
-            : ortho_vecs_(ortho_vecs)
-    {
-        N_root  = 1 ;
-        N_ortho = 0 ;
-        for (std::size_t k = 0; k < m.data().n_blocks(); ++k)
-            N_ortho += num_rows(m.data()[k]) * num_cols(m.data()[k]) ;
-        MPSTns_vec.push_back(&m) ;
-    }
-    // Initializer from a VectorSet object
     // Note that here two possibilities are present:
-    SingleSiteVS(VectorSet<Matrix, SymmGroup> & vs,
-                 std::vector< class MPSTensor<Matrix, SymmGroup> > const & ortho_vecs,
-                 vector_ortho_type vec_sa_left,
-                 vector_ortho_type vec_sa_right,
-                 bound_database database)
-            : ortho_vecs_(ortho_vecs)
-            , vec_sa_left_(vec_sa_left)
+    SingleSiteVS(VectorSet & vs, vector_ortho_type & vec_sa_left, vector_ortho_type & vec_sa_right,
+                 orthogonalizer_collector& ortho_vectors) :
+              vec_sa_left_(vec_sa_left)
             , vec_sa_right_(vec_sa_right)
-            , database_(database)
+            , ortho_vec_(ortho_vectors)
     {
         // Loads basis vectors
         N_root = vs.n_vec;
         for (std::size_t k = 0 ; k < N_root ;  k++)
             MPSTns_vec.push_back(&(vs.MPSTns_SA[k])) ;
-        // Loads orthogonal vectors
-        N_ortho = 0 ;
-        for (std::size_t k = 0; k < vs.MPSTns_SA[0].data().n_blocks(); ++k)
-            N_ortho += num_rows(vs.MPSTns_SA[0].data()[k]) * num_cols(vs.MPSTns_SA[0].data()[k]) ;
-        ortho_vecs_add_.resize(0) ;
     }
     // Function to access data
     friend std::size_t n_root(SingleSiteVS const & vs) { return vs.N_root ; }
-    friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS & vs) { return *(vs.MPSTns_vec[0]) ; }
-    friend MPSTensor<Matrix, SymmGroup> new_vector(SingleSiteVS & vs, const std::size_t & k) { return *(vs.MPSTns_vec[k]) ; }
-    // Function to perform orthogonalization
-    void project(MPSTensor<Matrix, SymmGroup> & t) const
-    {
-        // Orthogonalization vs excited states
-        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_.begin(); it != ortho_vecs_.end(); ++it)
-            t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
-        // Orthogonalization vs already converged roots
-        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it) {
-            t -= ietl::dot(*it, t)/ietl::dot(*it,*it) *(*it);
-        }
-    }
+    MPSTensor new_vector(const std::size_t & k) { return *(this->MPSTns_vec[k]) ; }
+    // Function to perform orthogonalization and to modify orthogonal vectors
+    void project(MPSTensor & t) const { ortho_vec_.orthogonalize(t) ; } ;
+    void add_within_vec(const MPSTensor & t) { ortho_vec_.add_within_vec(t) ; } ;
+    void add_other_vec(const MPSTensor & t) { ortho_vec_.add_other_vec(t) ; } ;
+    void clear_projector() { ortho_vec_.clear_local() ; } ;
     //
-    std::vector<double> coeff(const MPSTensor<Matrix, SymmGroup> & t)
+    // -- RETURN_ORTHOVEC --
+    // Computes the vector to be used in the constrained optimization
+    MPSTensor return_orthovec(const MPSTensor & t, const std::size_t& idx, const std::size_t& i_2ortho,
+                              const std::size_t& site1, const std::size_t& site2)
     {
-        std::vector<double> res ;
-        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs_add_.begin(); it != ortho_vecs_add_.end(); ++it)
-            res.push_back(ietl::dot(*it,t));
-        return res ;
-    }
-    //
-    void add_orthovec(const MPSTensor<Matrix, SymmGroup> & t,
-                      const std::size_t& idx,
-                      const std::size_t& site)
-    {
-        ortho_vecs_add_.resize(0) ;
-        MPSTensor<Matrix, SymmGroup> tmp ;
-        for (int i = 0; i < idx; i++) {
-            tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[i][idx][site], vec_sa_right_[i][idx][site+1]);
-            ortho_vecs_add_.push_back(tmp) ;
-        }
-    }
-    //
-    MPSTensor<Matrix, SymmGroup> return_orthovec(const MPSTensor<Matrix, SymmGroup> & t,
-                                                 const std::size_t& idx,
-                                                 const std::size_t& i_2ortho,
-                                                 const std::size_t& site1,
-                                                 const std::size_t& site2)
-    {
-        MPSTensor<Matrix, SymmGroup> tmp ;
-        tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[idx][i_2ortho][site1], vec_sa_right_[idx][i_2ortho][site2+1]);
+        MPSTensor tmp ;
+        tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[idx][i_2ortho][site1],
+                                                 vec_sa_right_[idx][i_2ortho][site2+1]);
         return tmp ;
     };
 private:
-    bound_database database_ ;
-    std::vector<MPSTensor<Matrix, SymmGroup>* > MPSTns_vec ;
-    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_ ;
-    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs_add_ ;
+    // +----------+
+    //  ATTRIBUTES
+    // +----------+
+    orthogonalizer_collector ortho_vec_ ;
+    std::vector<MPSTensor* > MPSTns_vec ;
     vector_ortho_type vec_sa_left_, vec_sa_right_ ;
-    std::size_t N_ortho, N_root ;
+    std::size_t N_root ;
 };
+
+// +------------------+
+//  VECTORSPACE_TRAITS
+// +------------------+
+// Structure for getting types given by a MPSTensor
+
+namespace ietl
+{
+    template<class Matrix, class SymmGroup>
+    struct vectorspace_traits<SingleSiteVS<Matrix, SymmGroup> >
+    {
+        typedef MPSTensor<Matrix, SymmGroup>                             vector_type;
+        typedef typename MPSTensor<Matrix, SymmGroup>::value_type        scalar_type;
+        typedef typename MPSTensor<Matrix, SymmGroup>::magnitude_type    magnitude_type;
+        typedef typename MPSTensor<Matrix, SymmGroup>::real_type         real_type ;
+        typedef std::size_t size_type;
+    };
+}
 
 #endif

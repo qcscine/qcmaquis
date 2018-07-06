@@ -85,6 +85,65 @@ namespace contraction {
             ret.replace_left_paired(U);
             return std::make_pair(ret, trunc);
         }
+        // =================================
+        //  PREDICT_NEW_STATE_L2R_SWEEP_VEC
+        // =================================
+        // Do the same work as before, but works for the multistate case.
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                        Boundary<OtherMatrix, SymmGroup> const & left,
+                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax)
+        {
+            // Variable declaration
+            block_matrix<Matrix, SymmGroup> dm, mps_overall ;
+            // +---------------------------------------------------+
+            //  STANDARD CONTRIBUTION TO THE REDUCED DENSITY MATRIX
+            // +---------------------------------------------------+
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+                mps_vector[idx].make_left_paired();
+                for (std::size_t k = 0; k < mps_vector[idx].data().n_blocks(); ++k)
+                    mps_overall.add_block_to_column(mps_vector[idx].data(),
+                                                    mps_vector[idx].data().basis().left_charge(k),
+                                                    mps_vector[idx].data().basis().right_charge(k));
+            }
+            typename Gemm::gemm()(mps_overall, transpose(conjugate(mps_overall)), dm);
+            dm /= dm.norm() ;
+            // +----------+
+            //  NOISE TERM
+            // +----------+
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+                Boundary<Matrix, SymmGroup> half_dm =
+                        left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps_vector[idx], left, mpo);
+                mps_vector[idx].make_left_paired();
+                for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
+                {
+                    block_matrix<Matrix, SymmGroup> tdm;
+                    typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
+                    tdm *= alpha;
+                    for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
+                        if (mps_vector[idx].data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                            dm.match_and_add_block(tdm[k],
+                                                   tdm.basis().left_charge(k),
+                                                   tdm.basis().right_charge(k));
+                    }
+                }
+                mps_vector[idx].make_left_paired();
+            }
+            // Actual diagonalization of the reduced density matrix
+            block_matrix<Matrix, SymmGroup> U, V;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            truncation_results trunc ;
+            trunc = svd_truncate(dm, U, V, S, cutoff, Mmax, true) ;
+            // Prepares results
+            MPSTensor<Matrix, SymmGroup> ret = mps_vector[0];
+            ret.replace_left_paired(U);
+            return std::make_pair(ret, trunc);
+        }
         
                 
         //
@@ -135,6 +194,67 @@ namespace contraction {
             // Prepare output results
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_right_paired(adjoint(U));
+            return std::make_pair(ret, trunc);
+        }
+        
+        // =================================
+        //  PREDICT_NEW_STATE_R2L_SWEEP_VEC
+        // =================================
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_r2l_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                        Boundary<OtherMatrix, SymmGroup> const & left,
+                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax)
+        {
+            // Variables definition
+            block_matrix<Matrix, SymmGroup> dm, mps_overall  ;
+            // +---------------------------------------------------+
+            //  STANDARD CONTRIBUTION TO THE REDUCED DENSITY MATRIX
+            // +---------------------------------------------------+
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+                // Standard reduced density matrix
+                mps_vector[idx].make_right_paired();
+                for (std::size_t k = 0; k < mps_vector[idx].data().n_blocks(); ++k)
+                    mps_overall.add_block_to_row(mps_vector[idx].data(),
+                                                 mps_vector[idx].data().basis().left_charge(k),
+                                                 mps_vector[idx].data().basis().right_charge(k));
+                mps_vector[idx].make_right_paired();
+            }
+            typename Gemm::gemm()(transpose(conjugate(mps_overall)), mps_overall, dm);
+            dm /= dm.norm() ;
+            // +----------+
+            //  NOISE TERM
+            // +----------+
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+                // Contracts with right boundary
+                Boundary<Matrix, SymmGroup> half_dm
+                        = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps_vector[idx], right, mpo);
+                mps_vector[idx].make_right_paired();
+                for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
+                {
+                    block_matrix<Matrix, SymmGroup> tdm;
+                    typename Gemm::gemm()(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
+                    tdm *= alpha;
+                    for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
+                        if (mps_vector[idx].data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                            dm.match_and_add_block(tdm[k],
+                                                   tdm.basis().left_charge(k),
+                                                   tdm.basis().right_charge(k));
+                    }
+                }
+            }
+            // Actual diagonalization of the reduced density matrix
+            block_matrix<Matrix, SymmGroup> U, V;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            truncation_results trunc ;
+            trunc = svd_truncate(dm, U, V, S, cutoff, Mmax, true) ;
+            // Prepares results
+            MPSTensor<Matrix, SymmGroup> ret = mps_vector[0];
+            ret.replace_right_paired(V);
             return std::make_pair(ret, trunc);
         }
 

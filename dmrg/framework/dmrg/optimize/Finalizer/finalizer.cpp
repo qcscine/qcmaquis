@@ -44,7 +44,7 @@ void Finalizer<MATRIX, VecSpace>::set_candidate(vec_prop const& candidates)
 } ;
 
 template<class MATRIX, class VecSpace>
-void Finalizer<MATRIX, VecSpace>::set_omega(scalar_type omega)
+void Finalizer<MATRIX, VecSpace>::set_omega(real_type omega)
 {
     omega_ = omega ;
 } ;
@@ -141,7 +141,7 @@ typename Finalizer<MATRIX, VecSpace>::scalar_type
 }
 
 template<class MATRIX, class VecSpace>
-typename Finalizer<MATRIX, VecSpace>::scalar_type
+typename Finalizer<MATRIX, VecSpace>::real_type
          Finalizer<MATRIX, VecSpace>::get_omega()
 {
     return omega_ ;
@@ -168,9 +168,8 @@ MATRIX* Finalizer<MATRIX, VecSpace>::get_Hamiltonian()
 }
 
 template<class MATRIX, class VecSpace>
-typename Finalizer<MATRIX, VecSpace>::scalar_type
-         Finalizer<MATRIX, VecSpace>::theta_converter
-        (scalar_type const& theta)
+typename Finalizer<MATRIX, VecSpace>::real_type
+         Finalizer<MATRIX, VecSpace>::theta_converter(real_type const& theta)
 {
     return energy_computer_->theta_converter(theta) ;
 };
@@ -182,8 +181,7 @@ typename Finalizer<MATRIX, VecSpace>::scalar_type
          Finalizer<MATRIX, VecSpace>::compute_energy(size_t const& i_state,
                                                      size_t const& idx)
 {
-    scalar_type res ;
-    res = energy_computer_->compute_energy(this, i_state, idx) ;
+    scalar_type res = energy_computer_->compute_energy(this, i_state, idx) ;
     return res ;
 }
 

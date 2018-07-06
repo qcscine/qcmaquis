@@ -81,7 +81,7 @@ struct SiteProblem
         vector_coefficients.resize(ov_dim) ;
         for (std::size_t i = 0; i < database.n_MPS_; i++) {
             size_t dim = database.get_num_bound(i) ;
-            boundary_type avg_boundary = 0.0 * (*(&(*(database.get_boundaries_right_sp(0,0)))[idx2]));
+            boundary_type avg_boundary = 0.0 * (*(&(*(database.get_boundaries_right_sp(0,0, false)))[idx2]));
             for (std::size_t j = 0; j < dim; j++) {
                 // Normal operator
                 left[i].push_back(&(*(database.get_boundaries_left_sp(i,j, false)))[idx1]);
@@ -93,11 +93,11 @@ struct SiteProblem
                 }
                 // Coefficients
                 vector_coefficients[i].push_back(database.get_coefficients(i,j)) ;
-                boundary_type add_boundary = ((scalar_type)( database.get_coefficients(i,j)*(1/dim)) ) * *((&(*(database.get_boundaries_right_sp(i,j)))[idx2]));
+                boundary_type add_boundary = ((scalar_type)( database.get_coefficients(i,j)*(1/dim)) ) * *((&(*(database.get_boundaries_right_sp(i,j, false)))[idx2]));
                 avg_boundary += add_boundary;
             }
             size += 1;
-            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(database.get_mps(i,idx1), avg_boundary, mpo));
+            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(*(database.get_mps(i,idx1)), avg_boundary, mpo));
         }
     }
     // Methods
@@ -183,9 +183,7 @@ namespace ietl {
     {
         MPSTensor<Matrix, SymmGroup> y ;
         ietl::mult(H, x, y, idx, do_squared) ;
-        double res = ietl::dot(x,y) ;
-        assert(check_real(res));
-        typename maquis::traits::real_type<typename Matrix::value_type>::type res_dbl = maquis::real(res);
+        typename maquis::traits::real_type<typename Matrix::value_type>::type res_dbl = maquis::real(ietl::dot(x,y));
         x.make_left_paired() ;
         return res_dbl ;
     }

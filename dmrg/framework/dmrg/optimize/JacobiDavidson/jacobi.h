@@ -86,6 +86,9 @@ namespace ietl
         typedef typename MicroOptimizer<MATRIX, VS, CorrectionEquation>::MicroOptimizer      MicroOptimizer ;
         typedef typename vectorspace_traits<VS>::scalar_type                                 scalar_type;
         typedef typename vectorspace_traits<VS>::vector_type                                 vector_type;
+        typedef typename vectorspace_traits<VS>::real_type                                   real_type;
+        typedef typename std::vector<real_type>                                              vector_real ;
+        typedef typename std::vector<vector_real>                                            real_space ;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type                    magnitude_type;
         typedef typename std::size_t                                                         size_t ;
         typedef typename std::pair<size_t, float>                                            couple_val ;
@@ -115,7 +118,7 @@ namespace ietl
         int get_dim(const vector_space& V) ;
         void estimate_extremes(vector_type& t) ;
         pair_results generate_eigenpair(const size_t& idx) ;
-        scalar_type compute_variance(const vector_type& eigen, const bool& print) ;
+        real_type compute_variance(const vector_type& eigen, const bool& print) ;
         size_t select_among_converged() ;
         vector_type filter_chebyshev(vector_type& x) ;
         vector_type generate_eigenvector(const size_t& idx) ;
@@ -131,7 +134,7 @@ namespace ietl
         virtual void initialize_orthogonalizer() {} ;
         virtual void print_endline() {} ;
         virtual void print_header_table() {} ;
-        virtual void print_newline_table(const size_t& i, const double& er, const magnitude_type& ener,
+        virtual void print_newline_table(const size_t& i, const real_type& er, const scalar_type& ener,
                                          const size_t& idx, const bool& converged) {} ;
         virtual void set_interval(const std::size_t& dim) {} ;
         virtual void solver(vector_type& r, vector_space& t) {} ;
@@ -255,7 +258,7 @@ namespace ietl
         matrix_double   eigvecs1, eigvecs2 ;
         vector_double   eigvals1, eigvals2 ;
         vector_pairs    res ;
-        vector_space    v_toadd, r ;
+        vector_space    v_toadd , r ;
         vector_type     eigvec, error ;
         // Initialization
         corrector_->update_vecspace(vecspace_) ;
@@ -305,7 +308,8 @@ namespace ietl
                     vecspace_.project(r[i]);
                     converged_loc = check_convergence(i, iter);
                     converged = converged && converged_loc;
-                    print_newline_table(n_iter_, ietl::two_norm(r[i]), finalizer_->compute_energy(i_state_, i), i, converged_loc);
+                    real_type error = ietl::two_norm(r[i]) ;
+                    print_newline_table(n_iter_, error, finalizer_->compute_energy(i_state_, i), i, converged_loc);
                     if (converged_loc) {
                         converged_collector_.push_back(eigen_collector_[i]);
                         vecspace_.add_within_vec(generate_eigenvector(converged_collector_.size() - 1));
@@ -394,8 +398,8 @@ namespace ietl
         // Finalization
         for (int i = 0; i < n_block_local; i++) {
             size_t idx2 = vector_values_[i].first ;
-            scalar_type ratio  = std::fabs(vector_values_[i].second/vector_values_[0].second) ;
-            scalar_type ratio2 = std::fabs(finalizer_->theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
+            double ratio  = std::fabs(vector_values_[i].second/vector_values_[0].second) ;
+            double ratio2 = std::fabs(finalizer_->theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
             if ( (ratio > thresh_block_ && ratio2 < energy_thresh_) ) {
                 if (eigen_collector_.size() < n_block_local)
                     eigen_collector_.push_back(candidates_collector_[idx2]);
@@ -446,10 +450,10 @@ namespace ietl
     //  Computes the variance
     // +---------------------+
     template <class MATRIX, class VS, class SymmGroup, class ITER>
-    typename jacobi_davidson<MATRIX, VS, SymmGroup, ITER>::scalar_type
+    typename jacobi_davidson<MATRIX, VS, SymmGroup, ITER>::real_type
              jacobi_davidson<MATRIX, VS, SymmGroup, ITER>::compute_variance(const vector_type& eigen, const bool& print)
     {
-        scalar_type variance, jnk ;
+        real_type variance, jnk ;
         jnk      = get_energy(matrix_, eigen, i_state_, false) ;
         variance = get_energy(matrix_, eigen, i_state_, true) ;
         variance -= jnk*jnk ;
@@ -543,10 +547,10 @@ namespace ietl
                 jnk1 /= ietl::two_norm(jnk1) ;
                 jnk2 /= ietl::two_norm(jnk2) ;
                 ietl::mult(matrix_, jnk1, jnk, i_state_, false);
-                H(idx1, idx2) = ietl::dot(jnk2, jnk);
+                H(idx1, idx2) = std::abs(ietl::dot(jnk2, jnk)) ;
                 // H^2 matrix
                 ietl::mult(matrix_, jnk1, jnk, i_state_, true);
-                H_squared(idx1, idx2) = ietl::dot(jnk2, jnk);
+                H_squared(idx1, idx2) = std::abs(ietl::dot(jnk2, jnk)) ;
             }
         }
         variance_optimizer var_opt(H, H_squared) ;
@@ -560,7 +564,7 @@ namespace ietl
             jnk2 += coeff[idx1] * converged_collector_[idx1].uA_;
         }
         // Here we normalized just for safety
-        scalar_type theta_loc = converged_collector_[0].theta_ ;
+        real_type theta_loc = converged_collector_[0].theta_ ;
         converged_collector_.resize(0) ;
         converged_collector_.push_back(state_prop<VS>(jnk, jnk2, theta_loc)) ;
     }
@@ -609,18 +613,18 @@ namespace ietl
     {
         size_t i_selected = 0 ;
         if (do_H_squared_) {
-            scalar_type variance_ref = compute_variance(converged_collector_[i_selected].u_, false) ;
+            real_type variance_ref = compute_variance(converged_collector_[i_selected].u_, false) ;
             for (size_t idx = 0; idx < converged_collector_.size(); idx++) {
-                scalar_type variance = compute_variance(converged_collector_[idx].u_, false) ;
+                real_type variance = compute_variance(converged_collector_[idx].u_, false) ;
                 if (variance < variance_ref) {
                     i_selected = idx;
                     variance_ref = variance ;
                 }
             }
         } else {
-            scalar_type property_ref = converged_collector_[i_selected].property_ ;
+            real_type property_ref = converged_collector_[i_selected].property_ ;
             for (size_t idx = 0; idx < converged_collector_.size(); idx++) {
-                scalar_type property = converged_collector_[idx].property_ ;
+                real_type property = converged_collector_[idx].property_ ;
                 if (property > property_ref) {
                     i_selected = idx;
                     property_ref = property ;
