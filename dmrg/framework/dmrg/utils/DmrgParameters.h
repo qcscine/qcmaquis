@@ -89,7 +89,10 @@ private:
         add_option("ietl_si_operator", "if yes, activate S&I calculations, otherwise performs standard calculations", value("no")) ;
         add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
         add_option("si_omega_schedule", "algorithm to update omega at each iteration", value("constant")) ;
-        add_option("si_omega_shift", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
+        add_option("si_omega_shift", "parameter omega for the shift-and-inverse algorithm (to compute uses the squared, folded operator instead of the standard oneinterior eigenvalues", value(0.)) ;
+        add_option("activate_constant_omega", "number of sweeps after which the constant omega is activated", value(-2)) ;
+        // Homing options
+        add_option("uA_homing_ratio", "weight of the overlap of uA in the root-homing criterion", value(0.)) ;
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         add_option("maximum_overlap_side", "side where to take the eigenvalue", value(0)) ;
@@ -106,6 +109,9 @@ private:
         add_option("chebyshev_shift", "width of the window in the chebyshev filter", value(100.)) ;
         // Lanczos options
         add_option("lanczos_max_iterations", "maximum number of iterations for the initial lanczos", value(0)) ;
+        // Variance calculation along the optimization
+        add_option("track_variance", "if == yes, compute the variance along the optimization", value("no")) ;
+        add_option("reshuffle_variance", "if == yes, compute the variance along the optimization", value("no")) ;
         // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

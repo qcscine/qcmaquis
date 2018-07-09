@@ -219,7 +219,7 @@ namespace ietl
         orthogonalizer_(ortho),
         i_homing_selected_(0),
         i_state_(0),
-		is_folded_(is_folded),
+		    is_folded_(is_folded),
         sa_alg_(sa_alg),
         corrector_(corrector),
         finalizer_(finalizer),
