@@ -96,7 +96,7 @@ public:
                              Finalizer* finalizer, Orthogonalizer* ortho, const std::vector<real_type>& omega_vec,
                              const size_t& nmin, const size_t& nmax, const size_t& n_block, const double& block_thresh,
                              const int& site1, const int& site2, const std::vector<std::size_t>& order, const int& sa_alg,
-                             const int& n_lanczos, const bool& do_chebychev, const scalar_type& chebyshev_shift, const bool& do_H_squared,
+                             const int& n_lanczos, const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
                              const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded, const double& energy_thresh)
             : base::jacobi_davidson(matrix, vec, corrector, micro_iterator, finalizer, ortho, nmin, nmax, n_block,
                                     block_thresh, site1, site2, order, sa_alg, n_lanczos, do_chebychev, chebyshev_shift,
@@ -200,17 +200,17 @@ protected:
     bool jacobi_davidson_modified<Matrix, VS, SymmGroup, ITER>::check_convergence(size_t const& idx, ITER& iter)
     {
         // Compute the error vector
-        bool           converged ;
-        vector_type    buf ;
-        scalar_type    ref ;
-        vector_type    r ;
+        bool            converged ;
+        vector_type     buf ;
+        magnitude_type  ref ;
+        vector_type     r ;
         if (finalizer_->get_is_si()) {
             r        = finalizer_->compute_error(i_state_, idx) ;
             ref      = finalizer_->get_eigen(idx) ;
         } else {
             vector_type jnk = eigen_collector_[idx].u_ / ietl::two_norm(eigen_collector_[idx].u_) ;
             ietl::mult(this->matrix_, jnk, buf, i_state_, false) ;
-            ref = ietl::dot(jnk, buf) ;
+            ref = std::real(ietl::dot(jnk, buf)) ;
             r   = buf - ref*jnk ;
         }
         // Projects out orthogonal subspace

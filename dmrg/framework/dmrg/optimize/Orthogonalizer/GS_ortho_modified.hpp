@@ -35,10 +35,11 @@ class GS_ortho_mod : public Orthogonalizer<VecSpace>
 {
 public:
     // Types definition
-    typedef Orthogonalizer<VecSpace>       base ;
-    typedef typename base::scalar_type     scalar_type ;
-    typedef typename base::vector_type     vector_type ;
-    typedef typename base::vector_space    vector_space ;
+    typedef Orthogonalizer<VecSpace>          base ;
+    typedef typename base::magnitude_type     magnitude_type ;
+    typedef typename base::scalar_type        scalar_type ;
+    typedef typename base::vector_type        vector_type ;
+    typedef typename base::vector_space       vector_space ;
     // Inheritance
     using base::diagonal_elements_ ;
     using base::has_additional_ ;
@@ -50,8 +51,8 @@ public:
     // Constructor
     GS_ortho_mod() : base::Orthogonalizer() {} ;
     // Implementation of virtual functions
-    scalar_type get_hamiltonian(const vector_space& t, const vector_space& tA, const std::size_t& i,
-                                const std::size_t& j) ;
+    magnitude_type get_hamiltonian(const vector_space& t, const vector_space& tA, const std::size_t& i,
+                                   const std::size_t& j) ;
     void normalize(vector_type& t, vector_type& tA) ;
     void update_diagonal(vector_type& t, vector_type& tA) ;
     void orthogonalize(vector_type& t, vector_type& tA) ;
@@ -88,13 +89,13 @@ void GS_ortho_mod<VecSpace>::normalize(vector_type& t, vector_type& tA)
 }
 
 template<class VecSpace>
-typename GS_ortho_mod<VecSpace>::scalar_type
+typename GS_ortho_mod<VecSpace>::magnitude_type
          GS_ortho_mod<VecSpace>::get_hamiltonian(const vector_space& t,
-                                             const vector_space& tA,
-                                             const std::size_t& i,
-                                             const std::size_t& j)
+                                                 const vector_space& tA,
+                                                 const std::size_t& i,
+                                                 const std::size_t& j)
 {
-    return ietl::dot(t[i], tA[j]) ;
+    return std::real(ietl::dot(t[i], tA[j])) ;
 }
 
 

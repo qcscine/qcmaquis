@@ -94,7 +94,7 @@ namespace ietl
                                  Finalizer* finalizer, Orthogonalizer* ortho, const size_t& nmin, const size_t& nmax,
                                  const size_t& n_block, const double& block_thresh, const int& site1, const int& site2,
                                  const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
-                                 const bool& do_chebychev, const scalar_type& chebyshev_shift, const bool& do_H_squared,
+                                 const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
                                  const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded, 
 								 const double& energy_thresh)
                 : base::jacobi_davidson(matrix, vec, corrector, micro_iterator, finalizer, ortho, nmin, nmax, n_block,
@@ -127,7 +127,7 @@ namespace ietl
     template <class Matrix, class VS, class SymmGroup, class ITER>
     void  jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::update_parameters()
     {
-        energy_ref_ = ietl::dot(V_[0], VA_[0]) / ietl::dot(V_[0], V_[0]) ;
+        energy_ref_ = std::real(ietl::dot(V_[0], VA_[0]) / ietl::dot(V_[0], V_[0])) ;
         corrector_->update_u(V_[0]) ;
     };
     // Initialization of the orthogonalizer
@@ -180,8 +180,8 @@ namespace ietl
         bool converged ;
         vector_type jnk ;
         ietl::mult(this->matrix_, eigen_collector_[idx].u_, jnk, i_state_, false) ;
-        scalar_type energy = ietl::dot(eigen_collector_[idx].u_, jnk) / ietl::dot(eigen_collector_[idx].u_,
-                                                                                  eigen_collector_[idx].u_) ;
+        magnitude_type energy = std::real(ietl::dot(eigen_collector_[idx].u_, jnk) / ietl::dot(eigen_collector_[idx].u_,
+                                                                                     eigen_collector_[idx].u_) ) ;
         vector_type r = jnk - energy*eigen_collector_[idx].u_ ;
         vecspace_.project(r) ;
         if(iter.finished(ietl::two_norm(r),energy)) {

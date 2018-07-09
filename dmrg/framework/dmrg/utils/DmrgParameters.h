@@ -79,23 +79,33 @@ private:
         add_option("ietl_diag_restart_nmax", "", value(100));
         add_option("ietl_diag_homing_criterion", "", value(""));
         add_option("ietl_diag_restart", "Number of iterations before restarting", value(10));
-    	add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
+        add_option("ietl_diag_block", "Number of blocks to use at each iteration", value(1));
+        add_option("ietl_block_thresh", "Threshold on the property to add new states", value(0.5)) ;
+        add_option("ietl_microoptimizer", "Algorithm used to solve correction equation", value("GMRES")) ;
+        add_option("ietl_corrector", "Operator to be used in the correction equation", value("notSI")) ;
+        add_option("ietl_precondition", "Activate preconditioning in the inner optimizer", value("no")) ;
+        add_option("ietl_ortho_refine", "Activate refinement in orthogonalizer", value("yes")) ;
+        // S&I DMRG Options
+        add_option("ietl_si_operator", "if yes, activate S&I calculations, otherwise performs standard calculations", value("no")) ;
+        add_option("ietl_si_omega", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
         add_option("si_omega_schedule", "algorithm to update omega at each iteration", value("constant")) ;
         add_option("si_omega_shift", "parameter omega for the shift-and-inverse algorithm (to compute interior eigenvalues", value(0.)) ;
         add_option("follow_basis_state", "apply Maximum Overlap Method to follow root during diagonalization", value("")) ;
         add_option("maximum_overlap_nstates", "number of roots to compute at each iteration in MO-DMRG calculations", value(0)) ;
         add_option("maximum_overlap_side", "side where to take the eigenvalue", value(0)) ;
-        add_option("activate_constant_omega", "number of sweeps after which the constant omega is activated", value(-1)) ;
         add_option("activate_last_overlap", "number of sweeps after which the constant overlap is activated", value(-1)) ;
+        add_option("homing_energy_threshold", "maximum energy difference in the root homing procedure", value(1000.)) ;
         // GMRES-related parameters
-        //ALB The guess option is kept for backward compatibility, 'zero' should be always used
-        add_option("ietl_gmres_maxiter", "", value(0));
-        add_option("ietl_gmres_abstol", "absolute convergence threshold for the GMRES algorithm", value(1.0e-10)) ;
-        add_option("ietl_gmres_reltol", "convergence threshold for the GMRES algorithm", value(1.0e-3)) ;
-        add_option("ietl_gmres_guess", "guess for the iterative GMRES solver", value("error")) ;
-        add_option("ietl_gmres_init_atol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-5)) ;
-        add_option("ietl_gmres_init_rtol","tolerance for the GMRES cycle at the beginning of the procedure", value(1.0e-5)) ;
-        add_option("ietl_gmres_init_maxiter","maximum number of iterations for the initial GMRES cycle", value(20)) ;
+        add_option("ietl_microopt_maxiter", "", value(20));
+        add_option("ietl_microopt_abstol", "absolute convergence threshold for the GMRES algorithm", value(1.0e-10)) ;
+        add_option("ietl_microopt_reltol", "convergence threshold for the GMRES algorithm", value(1.0e-3)) ;
+        add_option("ietl_microopt_verbose", "verbosity for the printings related to the micro-optimizer", value("no")) ;
+        add_option("ietl_microopt_restart", "number of iterations for restarting of GMRES", value(0)) ;
+        // Chebyshev filtering
+        add_option("chebyshev_filter", "use a chebyshev filter for the expansion step", value("no")) ;
+        add_option("chebyshev_shift", "width of the window in the chebyshev filter", value(100.)) ;
+        // Lanczos options
+        add_option("lanczos_max_iterations", "maximum number of iterations for the initial lanczos", value(0)) ;
         // Options related to the number of sweeps
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);
@@ -104,7 +114,7 @@ private:
         add_option("resultfile", "");
         add_option("chkpfile", "");
         add_option("initfile", "", value(""));
-
+        add_option("init_site", "", value(-1));
         add_option("donotsave", "", value(0));
         add_option("run_seconds", "", value(0));
         add_option("storagedir", "", value(""));

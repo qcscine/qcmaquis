@@ -134,14 +134,14 @@ bool Finalizer<MATRIX, VecSpace>::get_is_si()
     return is_si_ ;
 }
 template<class MATRIX, class VecSpace>
-typename Finalizer<MATRIX, VecSpace>::scalar_type
+typename Finalizer<MATRIX, VecSpace>::magnitude_type
          Finalizer<MATRIX, VecSpace>::get_eigen(size_t const& idx)
 {
     return (*candidates_)[idx].theta_ ;
 }
 
 template<class MATRIX, class VecSpace>
-typename Finalizer<MATRIX, VecSpace>::real_type
+typename Finalizer<MATRIX, VecSpace>::magnitude_type
          Finalizer<MATRIX, VecSpace>::get_omega()
 {
     return omega_ ;
@@ -168,8 +168,8 @@ MATRIX* Finalizer<MATRIX, VecSpace>::get_Hamiltonian()
 }
 
 template<class MATRIX, class VecSpace>
-typename Finalizer<MATRIX, VecSpace>::real_type
-         Finalizer<MATRIX, VecSpace>::theta_converter(real_type const& theta)
+typename Finalizer<MATRIX, VecSpace>::magnitude_type
+         Finalizer<MATRIX, VecSpace>::theta_converter(magnitude_type const& theta)
 {
     return energy_computer_->theta_converter(theta) ;
 };
@@ -177,11 +177,11 @@ typename Finalizer<MATRIX, VecSpace>::real_type
 // Methods
 
 template<class MATRIX, class VecSpace>
-typename Finalizer<MATRIX, VecSpace>::scalar_type
+typename Finalizer<MATRIX, VecSpace>::magnitude_type
          Finalizer<MATRIX, VecSpace>::compute_energy(size_t const& i_state,
                                                      size_t const& idx)
 {
-    scalar_type res = energy_computer_->compute_energy(this, i_state, idx) ;
+    magnitude_type res = energy_computer_->compute_energy(this, i_state, idx) ;
     return res ;
 }
 

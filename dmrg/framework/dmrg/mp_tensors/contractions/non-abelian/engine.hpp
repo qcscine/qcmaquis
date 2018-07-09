@@ -180,7 +180,7 @@ namespace contraction {
                                         double cutoff,
                                         std::size_t Mmax)
         {
-            return common::predict_new_state_l2r_sweep_vec<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, lbtm_functor>
+            return common::predict_new_state_l2r_sweep_vec<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (mps_vec, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -218,7 +218,7 @@ namespace contraction {
                                         double cutoff,
                                         std::size_t Mmax)
         {
-            return common::predict_new_state_r2l_sweep_vec<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, rbtm_functor>
+            return common::predict_new_state_r2l_sweep_vec<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (mps_vec, mpo, left, right, alpha, cutoff, Mmax);
         }
 

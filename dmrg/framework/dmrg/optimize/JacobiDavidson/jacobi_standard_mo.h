@@ -76,7 +76,7 @@ namespace ietl
                                     Finalizer* finalizer, Orthogonalizer* ortho, const pov_vec_type& pov, const int& n,
                                     const int& side_tofollow, const size_t& nmin, const size_t& nmax, const size_t& n_block,
                                     const double& block_thresh, const int& site1, const int& site2, const std::vector<std::size_t>& order,
-                                    const int& sa_alg, const int& n_lanczos, const bool& do_chebychev, const scalar_type& chebyshev_shift,
+                                    const int& sa_alg, const int& n_lanczos, const bool& do_chebychev, const magnitude_type& chebyshev_shift,
                                     const bool& do_H_squared, const bool& reshuffle_variance, const bool& track_variance,
                                     const bool& is_folded, const double& energy_thresh, const int& root_homing_type,
 									const float& homing_ratio)

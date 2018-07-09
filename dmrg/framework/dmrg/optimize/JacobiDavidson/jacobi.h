@@ -96,6 +96,7 @@ namespace ietl
         typedef typename std::vector<couple_val>                                             couple_vec ;
         typedef typename std::vector<double>                                                 vector_double ;
         typedef typename std::vector<scalar_type>                                            vector_scalar ;
+        typedef typename std::vector<magnitude_type>                                         vector_magnitude ;
         typedef typename std::vector<vector_double>                                          matrix_double ;
         typedef typename std::vector<vector_type>                                            vector_space ;
         typedef typename std::pair<magnitude_type, vector_type >                             pair_results ;
@@ -108,7 +109,7 @@ namespace ietl
                         Finalizer* finalizer, Orthogonalizer* ortho, const size_t& n_min, const size_t& n_max,
                         const size_t& n_block, const double& thresh_block, const int& site1, const int& site2,
                         const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
-                        const bool& do_chebychev, const scalar_type& chebyshev_shift, const bool& do_H_squared,
+                        const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
                         const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded, 
 						const double& energy_thresh);
         virtual ~jacobi_davidson() {};
@@ -165,26 +166,26 @@ namespace ietl
                            upper_bounds(std::make_pair(0,0)) {} ;
         } ;
         // Protected attributes
-        bool                         do_chebychev_, do_H_squared_, is_folded_, reshuffle_variance_, track_variance_ ;
-        struct diag_bound            bounds ;
-        double                       energy_ref_, energy_thresh_, thresh_block_ ;
-        int                          n_lanczos_, sa_alg_, site1_, site2_ ;
-        Finalizer*                   finalizer_ ;
-        Orthogonalizer*              orthogonalizer_ ;
-        FortranMatrix<scalar_type>   M ;
-        std::vector<scalar_type>     diagonal_elements_ ;
-        CorrectionEquation*          corrector_ ;
-        MATRIX&                      matrix_ ;
-        MicroOptimizer*              micro_iterator_ ;
-        result_collector             u_and_uA_ ;
-        std::vector<couple_val>      vector_values_ ;
-        std::vector<std::size_t>     order_ ;
-        scalar_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_ ; 
-        size_t                       i_homing_selected_, i_state_, n_block_, n_iter_, n_restart_min_, n_restart_max_,
-                                     n_root_found_, n_sa_ ;
-        vector_prop                  eigen_collector_, candidates_collector_, converged_collector_, not_converged_collector_ ;
-        vector_space                 v_guess_, V_, VA_ ;
-        VS                           vecspace_ ;
+        bool                            do_chebychev_, do_H_squared_, is_folded_, reshuffle_variance_, track_variance_ ;
+        struct diag_bound               bounds ;
+        double                          energy_thresh_, thresh_block_ ;
+        int                             n_lanczos_, sa_alg_, site1_, site2_ ;
+        Finalizer*                      finalizer_ ;
+        Orthogonalizer*                 orthogonalizer_ ;
+        FortranMatrix<magnitude_type>   M ;
+        std::vector<scalar_type>        diagonal_elements_ ;
+        CorrectionEquation*             corrector_ ;
+        magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_ ; 
+        MATRIX&                         matrix_ ;
+        MicroOptimizer*                 micro_iterator_ ;
+        result_collector                u_and_uA_ ;
+        std::vector<couple_val>         vector_values_ ;
+        std::vector<std::size_t>        order_ ;
+        size_t                          i_homing_selected_, i_state_, n_block_, n_iter_, n_restart_min_, n_restart_max_,
+                                        n_root_found_, n_sa_ ;
+        vector_prop                     eigen_collector_, candidates_collector_, converged_collector_, not_converged_collector_ ;
+        vector_space                    v_guess_, V_, VA_ ;
+        VS                              vecspace_ ;
     private:
         // Restarting routine
         void diagonalize(const bool& is_low) ;
@@ -198,7 +199,7 @@ namespace ietl
             (MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator, Finalizer* finalizer,
              Orthogonalizer* ortho, const size_t& n_min, const size_t& n_max, const size_t& n_block, const double& thresh_block,
              const int& site1, const int& site2, const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
-             const bool& do_chebychev, const scalar_type& chebyshev_shift, const bool& do_H_squared, const bool& reshuffle_variance,
+             const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared, const bool& reshuffle_variance,
              const bool& track_variance, const bool& is_folded, const double& energy_thresh) :
         bounds(),
         chebyshev_shift_(chebyshev_shift),
@@ -398,8 +399,8 @@ namespace ietl
         // Finalization
         for (int i = 0; i < n_block_local; i++) {
             size_t idx2 = vector_values_[i].first ;
-            double ratio  = std::fabs(vector_values_[i].second/vector_values_[0].second) ;
-            double ratio2 = std::fabs(finalizer_->theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
+            magnitude_type ratio  = std::fabs(vector_values_[i].second/vector_values_[0].second) ;
+            magnitude_type ratio2 = std::fabs(finalizer_->theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
             if ( (ratio > thresh_block_ && ratio2 < energy_thresh_) ) {
                 if (eigen_collector_.size() < n_block_local)
                     eigen_collector_.push_back(candidates_collector_[idx2]);
@@ -564,7 +565,7 @@ namespace ietl
             jnk2 += coeff[idx1] * converged_collector_[idx1].uA_;
         }
         // Here we normalized just for safety
-        real_type theta_loc = converged_collector_[0].theta_ ;
+        magnitude_type theta_loc = converged_collector_[0].theta_ ;
         converged_collector_.resize(0) ;
         converged_collector_.push_back(state_prop<VS>(jnk, jnk2, theta_loc)) ;
     }
@@ -645,19 +646,19 @@ namespace ietl
         vector_type jnk, jnk2 ;
         vector_space v, w ;
         v.push_back(t/ietl::two_norm(t)) ;
-        vector_scalar alpha_vec, beta_vec ;
+        vector_magnitude alpha_vec, beta_vec ;
         // +-----------------+
         //  LANCZOS ALGORITHM
         // +-----------------+
         // First iteration
         jnk = multiply_by_operator(v[0]) ;
         w.push_back(jnk) ;
-        alpha_vec.push_back(ietl::dot(w[0], v[0])) ;
+        alpha_vec.push_back(std::real(ietl::dot(w[0], v[0]))) ;
         w[0] -= alpha_vec[0]*v[0] ;
         // Main loop
         std::size_t index = 1 ;
         do {
-            scalar_type norm = ietl::two_norm(w[index-1]) ;
+            magnitude_type norm = ietl::two_norm(w[index-1]) ;
             if (norm < 1.0E-5)
                 break ;
             else
@@ -665,7 +666,7 @@ namespace ietl
             v.push_back( w[index-1] / beta_vec[index-1] ) ;
             jnk = multiply_by_operator(v[index]) ;
             w.push_back(jnk) ;
-            alpha_vec.push_back(ietl::dot(w[index], v[index])) ;
+            alpha_vec.push_back(std::real(ietl::dot(w[index], v[index]))) ;
             w[index] -= alpha_vec[index]*v[index] + beta_vec[index-1]*v[index-1] ;
             index++ ;
         } while(index < max_iter) ;
@@ -677,8 +678,8 @@ namespace ietl
         int nfound, lwork = 20*actual_size, liwork = 10*actual_size ;
         double  VL = 0., VU = 0. ;
         double tol = 1.0E-10 ;
-        auto *eigval       = new double[actual_size] ;
-        auto *eigvec       = new double[actual_size*actual_size] ;
+        auto *eigval       = new magnitude_type[actual_size] ;
+        auto *eigvec       = new magnitude_type[actual_size*actual_size] ;
         auto *supp_vec     = new int[2*actual_size] ;
         auto *work         = new double[lwork] ;
         auto *iwork        = new int[liwork] ;
@@ -692,13 +693,13 @@ namespace ietl
         lowest_eigen_  = eigval[0] ;
         highest_eigen_ = eigval[actual_size-1] ;
         // Select the most similar eigenvalue
-        scalar_type reference_overlap = 0. ;
+        magnitude_type reference_overlap = 0. ;
         vector_type vector_selected, v_tst ;
         for (std::size_t idx = 0; idx < v.size(); idx++) {
             v_tst = eigvec[idx*actual_size] * v[0] ;
             for (std::size_t idx2 = 1; idx2 < v.size(); idx2++)
                 v_tst += eigvec[actual_size*idx + idx2] * v[idx2];
-            scalar_type overlap = std::fabs(ietl::dot(t / ietl::two_norm(t), v_tst / ietl::two_norm(v_tst))) ;
+            magnitude_type overlap = std::real(ietl::dot(t / ietl::two_norm(t), v_tst / ietl::two_norm(v_tst))) ;
             if (overlap > reference_overlap) {
                 vector_selected = v_tst ;
                 reference_overlap = overlap ;
@@ -740,9 +741,9 @@ namespace ietl
     {
         // Compute the error vector
         vector_type buf , eigvec = generate_eigenvector(idx);
-        scalar_type eigval ;
+        magnitude_type eigval ;
         ietl::mult(this->matrix_ , eigvec , buf, i_state_, false) ;
-        eigval   = ietl::dot(eigvec, buf) ;
+        eigval   = std::real(ietl::dot(eigvec, buf)) ;
         return std::make_pair(eigval, eigvec) ;
     };
     // +---------------------------------------------------------------------+
@@ -755,10 +756,13 @@ namespace ietl
         // -- VARIABLES DECLARATION --
         vector_type x1, x2, res, x0 = x/ietl::two_norm(x) ;
         scalar_type coeff ;
-        scalar_type a = lowest_eigen_ , b = highest_eigen_ ;
-        scalar_type alpha = 2./(b-a), beta = (b+a)/(a-b) ;
         x1 = multiply_by_operator(x0) ;
-        scalar_type lower_bound = ietl::dot(x1, x0)-chebyshev_shift_, upper_bound = ietl::dot(x1, x0)+chebyshev_shift_ ;
+        magnitude_type lower_bound = std::real(ietl::dot(x1, x0))-chebyshev_shift_;
+        magnitude_type upper_bound = std::real(ietl::dot(x1, x0))+chebyshev_shift_ ;
+        magnitude_type a = lowest_eigen_ ;
+        magnitude_type b = highest_eigen_ ;
+        magnitude_type alpha = 2./(b-a) ;
+        magnitude_type beta = (b+a)/(a-b) ;
         // Check if the parameters make sense
         if (lower_bound < lowest_eigen_)
             lower_bound = lowest_eigen_ ;
@@ -820,13 +824,13 @@ namespace ietl
         fortran_int_t info;
         auto *iwork = new fortran_int_t[5*n];
         auto *ifail = new fortran_int_t[n];
-        auto *w1 = new double[n];
-        auto *w2 = new double[n];
-        auto *z1 = new double[n*n];
-        auto *z2 = new double[n*n];
-        auto *work = new double[lwork];
+        auto *w1 = new magnitude_type[n];
+        auto *w2 = new magnitude_type[n];
+        auto *z1 = new magnitude_type[n*n];
+        auto *z2 = new magnitude_type[n*n];
+        auto *work = new magnitude_type[lwork];
         // Convert the matrix from general MATRIX class to a FortranMatrix object
-        FortranMatrix<double> M_(dim,dim);
+        FortranMatrix<magnitude_type> M_(dim,dim);
         for (std::size_t i = 0 ; i<dim ; i++)
             for (std::size_t j = 0 ; j<dim ; j++)
                 M_(j, i) = M(j, i);

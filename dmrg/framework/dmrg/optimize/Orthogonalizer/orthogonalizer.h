@@ -31,10 +31,11 @@ template<class VecSpace>
 class Orthogonalizer {
 protected:
     // Types declaraton
-    typedef typename ietl::vectorspace_traits< VecSpace >::scalar_type  scalar_type ;
-    typedef typename ietl::vectorspace_traits< VecSpace >::vector_type  vector_type ;
-    typedef typename std::vector< vector_type >                         vector_space ;
-    typedef typename std::vector< scalar_type >                         vector_scalar ;
+    typedef typename ietl::vectorspace_traits< VecSpace >::scalar_type    scalar_type ;
+    typedef typename ietl::vectorspace_traits< VecSpace >::vector_type    vector_type ;
+    typedef typename ietl::number_traits<scalar_type>::magnitude_type     magnitude_type;
+    typedef typename std::vector< vector_type >                           vector_space ;
+    typedef typename std::vector< scalar_type >                           vector_scalar ;
 public:
     // Constructor
     Orthogonalizer() ;
@@ -51,8 +52,8 @@ public:
     // Standard orthonormalizer
     void normalize(vector_type& t) ;
     // Actual routines
-    virtual scalar_type get_hamiltonian(const vector_space& t, const vector_space& tA, const std::size_t& i,
-                                        const std::size_t& j) = 0 ;
+    virtual magnitude_type get_hamiltonian(const vector_space& t, const vector_space& tA, const std::size_t& i,
+                                           const std::size_t& j) = 0 ;
     virtual void normalize(vector_type& t, vector_type& tA) = 0 ;
     virtual void update_diagonal(vector_type& t, vector_type& tA) = 0 ;
     virtual void orthogonalize(vector_type& t, vector_type& tA) = 0 ;

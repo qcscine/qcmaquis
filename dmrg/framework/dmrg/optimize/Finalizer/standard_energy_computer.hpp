@@ -38,21 +38,21 @@ class StandardEnergy : public EnergyComputer<MATRIX, VecSpace> {
 public:
     // Types definition
     typedef EnergyComputer<MATRIX, VecSpace>       base ;
-    typedef typename base::real_type               real_type ;
+    typedef typename base::magnitude_type          magnitude_type ;
     typedef typename base::scalar_type             scalar_type ;
     typedef typename base::vector_type             vector_type ;
     // Destructor
     StandardEnergy() {} ;
     ~StandardEnergy() {} ;
     // Routine used to apply the correction equation
-    scalar_type compute_energy(Finalizer<MATRIX, VecSpace>* finalizer,
-                               size_t const& i_state,
-                               size_t const& idx)
+    magnitude_type compute_energy(Finalizer<MATRIX, VecSpace>* finalizer,
+                                  size_t const& i_state,
+                                  size_t const& idx)
     {
         return finalizer->get_eigen(idx) ;
     }
     //
-    real_type theta_converter(real_type const& theta)
+    magnitude_type theta_converter(magnitude_type const& theta)
     {
         return theta ;
     }

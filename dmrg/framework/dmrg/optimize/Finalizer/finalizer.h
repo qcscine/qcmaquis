@@ -40,6 +40,7 @@ public:
     typedef typename ietl::vectorspace_traits<VecSpace>::real_type        real_type ;
     typedef typename ietl::vectorspace_traits<VecSpace>::scalar_type      scalar_type ;
     typedef typename ietl::vectorspace_traits<VecSpace>::vector_type      vector_type ;
+    typedef typename ietl::number_traits<scalar_type>::magnitude_type     magnitude_type;
     typedef typename ietl::state_prop<VecSpace>                           state_prop ;
     typedef typename std::vector< state_prop >                            vec_prop ;
     // Constructor
@@ -63,21 +64,21 @@ public:
 	void set_error_folded() ;
     // Getter
     bool get_is_si() ;
-    real_type get_omega() ;
-    real_type theta_converter(real_type const& theta) ;
-    scalar_type get_eigen(size_t const& idx) ;
+    magnitude_type get_omega() ;
+    magnitude_type theta_converter(magnitude_type const& theta) ;
+    magnitude_type get_eigen(size_t const& idx) ;
     vector_type get_u(size_t const& idx) ;
     vector_type get_uA(size_t const& idx) ;
     MATRIX* get_Hamiltonian() ;
     // Interfaces to the call
-    scalar_type compute_energy(size_t const& i_state, size_t const& idx) ;
+    magnitude_type compute_energy(size_t const& i_state, size_t const& idx) ;
     vector_type compute_error(size_t const& i_state, size_t const& idx) ;
 private:
     // Attributes
     MATRIX* Hamiltonian_ ;
     bool is_si_ ;
     const vec_prop* candidates_ ;
-    real_type omega_ ;
+    magnitude_type omega_ ;
     EnergyComputer<MATRIX, VecSpace>* energy_computer_ ;
     ErrorComputer<MATRIX, VecSpace>* error_computer_ ;
 } ;
