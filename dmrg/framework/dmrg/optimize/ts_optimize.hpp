@@ -404,10 +404,10 @@ public:
                 } else if (sa_alg_ == -2) {
                     for (size_t idx = 0; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
-                            std::make_tuple(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].split_mps_r2l(Mmax, cutoff);
                         else
-                            std::make_tuple(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx, false)))[site2+1], mpo[site2]);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t;
