@@ -43,9 +43,8 @@ struct SiteProblem
 {
     //TODO ALB the constructor with only one boundary is kept only for back-compatibility
     // Types definition
-    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename Matrix::value_type value_type;
-
+    typedef typename maquis::traits::scalar_type<Matrix>::type                                    scalar_type;
+    typedef typename Matrix::value_type                                                           value_type;
     typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup>                      boundary_type ;
     typedef std::vector<boundary_type>                                                            boundary_vector ;
     typedef typename bound_database< MPS<Matrix, SymmGroup>, boundary_vector>::bound_database     bound_database ;
@@ -64,7 +63,8 @@ struct SiteProblem
         size = 1 ;
     }
     // Constructor with a vector of boundaries
-    SiteProblem(MPOTensor<Matrix, SymmGroup> const & mpo_,
+    SiteProblem(std::vector<MPSTensor<Matrix, SymmGroup> > const & initial,
+                MPOTensor<Matrix, SymmGroup> const & mpo_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_squared_,
                 std::size_t const & idx1,
                 std::size_t const & idx2,
@@ -79,7 +79,7 @@ struct SiteProblem
         right.resize(ov_dim) ;
         right_squared.resize(ov_dim) ;
         vector_coefficients.resize(ov_dim) ;
-        for (std::size_t i = 0; i < database.n_MPS_; i++) {
+        for (std::size_t i = 0; i < initial.size(); i++) {
             size_t dim = database.get_num_bound(i) ;
             boundary_type avg_boundary = 0.0 * (*(&(*(database.get_boundaries_right_sp(0,0, false)))[idx2]));
             for (std::size_t j = 0; j < dim; j++) {
@@ -97,7 +97,7 @@ struct SiteProblem
                 avg_boundary += add_boundary;
             }
             size += 1;
-            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(*(database.get_mps(i,idx1)), avg_boundary, mpo));
+            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(initial[i], avg_boundary, mpo));
         }
     }
     // Methods

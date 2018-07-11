@@ -132,7 +132,6 @@ namespace ietl
         virtual bool check_convergence(size_t const& idx, ITER& iter) {};
         virtual vector_double generate_property() {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
-        virtual void initialize_orthogonalizer() {} ;
         virtual void print_endline() {} ;
         virtual void print_header_table() {} ;
         virtual void print_newline_table(const size_t& i, const real_type& er, const scalar_type& ener,
@@ -261,12 +260,14 @@ namespace ietl
         vector_pairs    res ;
         vector_space    v_toadd , r ;
         vector_type     eigvec, error ;
-        // Initialization
+        // Initializatin
         corrector_->update_vecspace(vecspace_) ;
         M.resize(iter.max_iterations()*n_block_, iter.max_iterations()*n_block_) ;
         res.resize(n_sa_) ;
         print_header_table() ;
-        initialize_orthogonalizer() ;
+        orthogonalizer_->set_vecspace(V_) ;
+        orthogonalizer_->set_addspace(VA_) ;
+        orthogonalizer_->set_diagonal(diagonal_elements_) ;
         // +--------------------------+
         //  Main loop of the algorithm
         // +--------------------------+
@@ -505,7 +506,7 @@ namespace ietl
             // -- Finalization -- 
             couple_vec selector ;
             for (size_t i = 0; i < dim; i++)
-                selector.push_back(std::make_pair(i, std::fabs(eigvals[i]))) ;
+                selector.push_back(std::make_pair(i, eigvals[i])) ;
             //
             std::sort(selector.begin(), selector.end(), lt_couple()) ;
             candidates_collector_.clear() ;
@@ -671,7 +672,7 @@ namespace ietl
             index++ ;
         } while(index < max_iter) ;
         //
-        int actual_size = (int)v.size() ;
+        auto actual_size = (int)v.size() ;
         // Actual diagonalization
         char jobz = 'V', range = 'A' ;
         int IL = 0, IU = 0, LDZ = actual_size, info;

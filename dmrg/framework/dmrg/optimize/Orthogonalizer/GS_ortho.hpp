@@ -95,7 +95,7 @@ typename GS_ortho<VecSpace>::magnitude_type
                                              const std::size_t& i,
                                              const std::size_t& j)
 {
-    return std::fabs(ietl::dot(t[i], tA[j])) ;
+    return std::real(ietl::dot(t[i], tA[j])) ;
 }
 
 

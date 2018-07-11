@@ -70,7 +70,7 @@ namespace ietl
         using base::finalizer_ ;
         using base::highest_eigen_ ;
         using base::i_state_ ;
-		using base::is_folded_ ;
+		    using base::is_folded_ ;
         using base::lowest_eigen_ ;
         using base::M ;
         using base::matrix_ ;
@@ -107,8 +107,6 @@ namespace ietl
         ~jacobi_davidson_standard() {} ;
     protected:
         vector_type apply_operator (const vector_type& x);
-        void initialize_orthogonalizer() ;
-        void initialize_vecspace() ;
         void update_finalizer() ;
         void update_parameters() ;
         void update_vecspace(vector_space& to_add);
@@ -130,13 +128,6 @@ namespace ietl
         energy_ref_ = std::real(ietl::dot(V_[0], VA_[0]) / ietl::dot(V_[0], V_[0])) ;
         corrector_->update_u(V_[0]) ;
     };
-    // Initialization of the orthogonalizer
-    template <class Matrix, class VS, class SymmGroup, class ITER>
-    void jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::initialize_orthogonalizer()
-    {
-        orthogonalizer_->set_vecspace(V_) ;
-        orthogonalizer_->set_diagonal(diagonal_elements_) ;
-    }
     // Computes the action of an operator
     template <class Matrix, class VS, class SymmGroup, class ITER>
     typename jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::vector_type
@@ -172,9 +163,8 @@ namespace ietl
     };
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class SymmGroup, class ITER>
-    bool jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::check_convergence
-            (size_t const& idx,
-             ITER& iter)
+    bool jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::check_convergence(size_t const& idx,
+                                                                                  ITER& iter)
     {
         // Compute the error vector
         bool converged ;
@@ -184,7 +174,7 @@ namespace ietl
                                                                                      eigen_collector_[idx].u_) ) ;
         vector_type r = jnk - energy*eigen_collector_[idx].u_ ;
         vecspace_.project(r) ;
-        if(iter.finished(ietl::two_norm(r),energy)) {
+        if(iter.finished(ietl::two_norm(r),std::fabs(energy))) {
             converged = true;
             return converged;
         } else {
@@ -211,7 +201,7 @@ namespace ietl
         vector_double vector_values(dim) ;
         // Property calculation
         for (size_t i = 0; i < dim ; i++)
-            vector_values[i]  = fabs(candidates_collector_[i].theta_) ;
+            vector_values[i]  = candidates_collector_[i].theta_ ;
         return vector_values ;
     } ;
     //

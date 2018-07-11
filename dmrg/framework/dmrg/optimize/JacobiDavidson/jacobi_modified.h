@@ -72,7 +72,7 @@ public:
     using base::finalizer_ ;
     using base::highest_eigen_ ;
     using base::i_state_ ;
-	using base::is_folded_ ;
+   	using base::is_folded_ ;
     using base::lowest_eigen_ ;
     using base::M ;
     using base::matrix_ ;
@@ -122,8 +122,6 @@ protected:
     // Methods
     bool check_convergence(size_t const& idx, ITER& iter);
     vector_type apply_operator (const vector_type& x);
-    void initialize_orthogonalizer() ;
-    void initialize_vecspace() ;
     void sort_prop(couple_vec& vector_values) ;
     void update_finalizer() ;
     void update_parameters() ;
@@ -139,14 +137,6 @@ protected:
     {
         corrector_->update_omega(omega_vec_[i_state_]) ;
         corrector_->update_u(V_[0]) ;
-    }
-    // Initialization of the orthogonalizer
-    template <class Matrix, class VS, class SymmGroup, class ITER>
-    void jacobi_davidson_modified<Matrix, VS, SymmGroup, ITER>::initialize_orthogonalizer()
-    {
-        orthogonalizer_->set_vecspace(V_) ;
-        orthogonalizer_->set_addspace(VA_) ;
-        orthogonalizer_->set_diagonal(diagonal_elements_) ;
     }
     // Compute the action of an operator
     template <class Matrix, class VS, class SymmGroup, class ITER>

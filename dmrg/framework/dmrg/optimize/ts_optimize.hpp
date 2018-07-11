@@ -55,7 +55,7 @@ public:
     using base::do_root_homing_ ;
     using base::do_shiftandinvert_ ;
     using base::finalizer_ ;
-	using base::is_folded_ ;
+   	using base::is_folded_ ;
     using base::iteration_results_;
     using base::L_ ;
     using base::left_sa_;
@@ -158,7 +158,7 @@ public:
             // Printing
             print_header(sweep, site1, site2, lr) ;
             boost::chrono::high_resolution_clock::time_point now, then;
-    	    // Create TwoSite objects. For SA calculations, creates a vector
+       	    // Create TwoSite objects. For SA calculations, creates a vector
             MPSTensor<Matrix, SymmGroup> twin_mps ;
             std::vector< MPSTensor<Matrix, SymmGroup> > tst_vec ;
             std::vector< TwoSiteTensor<Matrix, SymmGroup> > two_vec ;
@@ -171,7 +171,7 @@ public:
                 tst_tmp.clear();
             }
             END_TIMING("TWO SITE TENSOR DEFINITION")
-            SiteProblem<Matrix, SymmGroup> sp(ts_cache_mpo[site1], ts_cache_mpo_squared[site1], site1, site2+1,
+            SiteProblem<Matrix, SymmGroup> sp(tst_vec, ts_cache_mpo[site1], ts_cache_mpo_squared[site1], site1, site2+1,
                                               boundaries_database_, do_H_squared_);
             VectorSet<Matrix,SymmGroup> vector_set(tst_vec) ;
             // Compute orthogonal vectors
@@ -198,7 +198,7 @@ public:
                                      orthogonalizer_, parms, poverlap_vec_, site1, site2, root_homing_type_, do_root_homing_,
                                      do_shiftandinvert_, do_chebyshev_, chebyshev_shift_, do_H_squared_, reshuffle_variance_,
                                      track_variance_, is_folded_, vec_sa_left_, vec_sa_right_, order, boundaries_database_, 
-									 sa_alg_, omega_vec, ortho_vecs);
+                                     sa_alg_, omega_vec, ortho_vecs);
                 END_TIMING("LOCAL DIAGONALIZATION")
                 // Correct the energies
                 if (sa_alg_ == -1)
@@ -347,11 +347,11 @@ public:
                     }
                 }
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
-    	    }
+    	      }
             // +--------------+
             //  Backward sweep
             // +--------------+
-    	    if (lr == -1){
+       	    if (lr == -1){
                 // Write back result from optimization
                 if (sa_alg_ == -3) {
                     std::vector< MPSTensor<Matrix,SymmGroup> > vec_mps ;

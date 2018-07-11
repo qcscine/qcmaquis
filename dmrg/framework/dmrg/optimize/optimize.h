@@ -77,9 +77,9 @@ inline double log_interpolate(double y0, double y1, int N, int i)
 
 enum OptimizeDirection { Both, LeftOnly, RightOnly };
 
-//
-// OPTIMIZER_BASE CLASS
-// --------------------
+// +--------------------+
+//  OPTIMIZER_BASE CLASS
+// +--------------------+
 //
 // Virtual class to be used to inherit classess whose scope is optimizing an MPS.
 // From here, the ss_optimizer and ts_optimizer are inherited
@@ -121,7 +121,7 @@ public:
     , update_each_omega(false)
     , i_activate_last_overlap_(parms["activate_last_overlap"])
     , i_activate_constant_omega_(parms["activate_constant_omega"])
-	, is_folded_(false)
+   	, is_folded_(false)
     , chebyshev_shift_(parms["chebyshev_shift"])
     , reshuffle_variance_(false)
     , track_variance_(false)
@@ -141,9 +141,9 @@ public:
         // Shift-and-invert paramters
         // --------------------------
         double omega = parms["ietl_si_omega"] ;
-	    omega_shift_ = parms["si_omega_shift"] ;
-		i_activate_last_overlap_   = parms["activate_last_overlap"] ;
-		i_activate_constant_omega_ = parms["activate_constant_omega"] ;
+        omega_shift_ = parms["si_omega_shift"] ;
+	      i_activate_last_overlap_   = parms["activate_last_overlap"] ;
+	      i_activate_constant_omega_ = parms["activate_constant_omega"] ;
         if (std::fabs(omega) > 1.0E-15) {
             do_shiftandinvert_ = true ;
             omega_vec.resize(n_root_, omega) ;
@@ -174,7 +174,7 @@ public:
             track_variance_ = true ;
         if (parms["reshuffle_variance"] == "yes")
             reshuffle_variance_ = true ;
-        do_H_squared_ = do_H_squared_ || track_variance_ || reshuffle_variance_ ;
+            do_H_squared_ = do_H_squared_ || track_variance_ || reshuffle_variance_ ;
         //TODO ALB Hardcoded for the moment
         if (do_H_squared_)
             throw std::runtime_error("Variance tracking for ES calculations not implemented") ;
@@ -249,8 +249,8 @@ public:
                 right_squared_sa_[i].resize(mpo.length()+1) ;
             }
         }
-        boundaries_database_ = bound_database(mps_vector, left_sa_, right_sa_, left_squared_sa_, 
-                                              right_squared_sa_, sa_alg_, do_H_squared_) ;
+        boundaries_database_ = bound_database(mps_vector, left_sa_, right_sa_, left_squared_sa_, right_squared_sa_,
+                                              sa_alg_, do_H_squared_) ;
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
@@ -572,8 +572,8 @@ protected:
     {
         micro_optimizer = new MicroOptimizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>,
                           CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >
-                          (correction_equation, parms["ietl_microopt_abstol"], parms["ietl_microopt_reltol"], parms["ietl_microopt_maxiter"],
-                           parms["ietl_microopt_restart"]) ;
+                          (correction_equation, parms["ietl_microopt_abstol"], parms["ietl_microopt_reltol"],
+                           parms["ietl_microopt_maxiter"], parms["ietl_microopt_restart"]) ;
         if (parms["eigensolver"] == std::string("IETL_JCD")) {
             if (parms["ietl_microoptimizer"] == "GMRES") {
                 micro_optimizer->set_opt_alg(new GMRES_optimizer<SiteProblem<Matrix, SymmGroup>,

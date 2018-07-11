@@ -47,7 +47,7 @@ public:
     vector_type apply(CorrectionEquation<MATRIX, VecSpace>* corr_eq, const vector_type& input)
     {
         // Initialization
-        vector_type t, t2, t3, y;
+        vector_type t, t2, t3, y ;
         // t2 = (1-uu*) x
         scalar_type ust = ietl::dot(corr_eq->get_u(), input) / ietl::dot(corr_eq->get_u(), corr_eq->get_u()) ;
         t2 = input - ust * corr_eq->get_u() ;

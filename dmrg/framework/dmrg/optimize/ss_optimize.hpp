@@ -54,7 +54,7 @@ public:
     using base::do_shiftandinvert_ ;
     using base::do_stateaverage_ ;
     using base::finalizer_ ;
-	using base::is_folded_ ;
+    using base::is_folded_ ;
     using base::iteration_results_ ;
     using base::left_sa_ ;
     using base::left_squared_sa_ ;
@@ -150,7 +150,10 @@ public:
                     std::cout << omega_vec[idx] << std::endl ;
             }
             std::vector< std::pair<typename maquis::traits::real_type<value_type>::type, MPSTensor<Matrix, SymmGroup> > > res;
-            SiteProblem<Matrix, SymmGroup> sp(mpo[site], mpo_squared[site], site, site+1, boundaries_database_,
+            std::vector< MPSTensor<Matrix, SymmGroup> > site_vec(n_root_) ;
+            for (std::size_t idx = 0; idx < n_root_; idx++)
+                site_vec[idx] = mps_vector[idx][site] ;
+            SiteProblem<Matrix, SymmGroup> sp(site_vec, mpo[site], mpo_squared[site], site, site+1, boundaries_database_,
                                               do_H_squared_);
             if (sa_alg_ != -3) {
                 mps_guess.clear() ;
