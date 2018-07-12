@@ -83,7 +83,7 @@ public:
     virtual table_ptr operators_table() const=0;
 
     virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
-    virtual initializer_pov_ptr initializer_pov(Lattice const& lat, BaseParameters & parms) const;
+    virtual initializer_ptr initializer_pov(Lattice const& lat, BaseParameters & parms) const;
     // optionally delay the assemly of the operator terms until the MPO is actually created
     virtual void create_terms() {};
 
@@ -103,7 +103,6 @@ class Model {
     typedef model_impl<Matrix, SymmGroup> impl_type;
     typedef boost::shared_ptr<impl_type> impl_ptr;
 public:
-    typedef typename impl_type::initializer_pov_ptr initializer_pov_ptr ;
     typedef typename impl_type::initializer_ptr    initializer_ptr;
 
     typedef typename impl_type::table_type table_type;
@@ -146,9 +145,10 @@ public:
     table_ptr operators_table() const { return impl_->operators_table(); }
 
     initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
-    initializer_pov_ptr initializer_pov(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer_pov(lat, parms); }
+    initializer_ptr initializer_pov(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer_pov(lat, parms); }
 
-    void create_terms() { impl_->create_terms(); }
+
+  void create_terms() { impl_->create_terms(); }
 
 private:
     impl_ptr impl_;

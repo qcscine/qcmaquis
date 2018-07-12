@@ -49,18 +49,26 @@ public:
     , phys_dims(phys_dims_)
     , site_types(site_type)
     , di(parms, phys_dims_, right_end, site_type)
-    {}
+    {
+      set_name("hf_occ") ;
+    }
 
     BaseParameters parms;
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<int> site_types;
     default_mps_init<Matrix, SymmGroup> di;
+    std::string name_file ;
+
+
+public:
+
+    inline void set_name(std::string input_string) { name_file = input_string ; } ;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
         di.init_sectors(mps, 5, false, 1.);
 
-        std::vector<std::size_t> hf_init = parms["hf_occ"];
+        std::vector<std::size_t> hf_init = parms[name_file];
 
         init_hf_mps(mps, hf_init, symm_traits::HasSU2<SymmGroup>());
     }
@@ -68,7 +76,7 @@ public:
     void operator()(MPSVector & mps_vector)
     {
       // HF guesses for the SA case should be separated with the semicolons
-      std::string hf_init_all = parms["hf_occ"];
+      std::string hf_init_all = parms[name_file];
       std::vector<std::string> hf_init_sa;
 
       boost::split(hf_init_sa, hf_init_all, boost::is_any_of(";"));
@@ -187,7 +195,7 @@ public:
 
             if (sc_input > 4)
                 throw std::runtime_error(
-                    "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
+                    "The file name format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
                 );
             if (phys_dims[site_types[i]].size() != 4) throw std::runtime_error("HF init expects 4 states per orbital\n");
 
@@ -253,5 +261,24 @@ public:
         }
     }
 };
+
+template<class Matrix, class SymmGroup>
+class hf_pov_mps_init : public hf_mps_init<Matrix, SymmGroup>
+{
+public:
+    // Types definition
+    typedef typename hf_mps_init<Matrix, SymmGroup>::hf_mps_init   base ;
+    typedef typename base::charge                                  charge ;
+    // Derivation of the constructor
+    hf_pov_mps_init(BaseParameters parms_,
+                    std::vector<Index<SymmGroup> > const& phys_dims_,
+                    charge right_end,
+                    std::vector<int> const& site_type)
+      : base(parms_, phys_dims_, right_end, site_type)
+    {
+      base::set_name("hf_pov_occ") ;
+    }
+
+} ;
 
 #endif

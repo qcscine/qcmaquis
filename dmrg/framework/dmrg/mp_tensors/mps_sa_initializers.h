@@ -72,16 +72,20 @@ public:
 
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
 
-        omp_for(size_t i, parallel::range<size_t>(0,L), {
+        for (size_t i = 0; i < L; i++) {
             parallel::guard proc(scheduler(i));
+            std::cout << mps[i] << std::endl ;
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
+            std::cout << mps[i] << std::endl ;
             mps[i].divide_by_scalar(mps[i].scalar_norm());
-        });
+            std::cout << mps[i] << std::endl ;
+        }
         mps.normalize_left();
 
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
-        maquis::cout << mps[0] << std::endl;
+        for (size_t i = 0; i < L; i++)
+            maquis::cout << mps[i] << std::endl;
 #endif
     }
 

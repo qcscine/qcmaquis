@@ -30,6 +30,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include "dmrg/version.h"
+#include "sim.h"
 
 // +-----------+
 //  CONSTRUCTOR
@@ -38,8 +39,7 @@
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
                             int n_states_,
-                            std::pair<std::vector<std::string>, std::vector<std::string> > filenames_sa
-                           )
+                            std::pair<std::vector<std::string>, std::vector<std::string> > filenames_sa)
      : parms(parms_)
      , n_states(n_states_ > 0 ? n_states_ : 1)
      , init_sweep(0)
@@ -127,14 +127,14 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
             // Initialize the state-average stuff
             for (int i = 0; i < mps_sa.size(); i++)
                 mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
-            (*(model.initializer(lat, parms)))(mps_sa);
+            (*(model.initializer(lat, parms)))(mps_sa) ;
         }
         else
             mps_sa[0] = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
     }
     for (size_t i = 0 ; i < n_states ; i++ )
         assert(mps_sa[i].length() == lat.size());
-    // Does the average for the case sa_alg_ == -1
+    // Does the average for the case sa_alg_ == -3
     auto sa_alg = static_cast<int>(parms["sa_algorithm"]) ;
     if (sa_alg == -3) {
         MPS<Matrix, SymmGroup> tst_mps = mps_sa[0] ;
@@ -152,8 +152,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
         mps_partial_overlap.reserve(mps_sa.size()) ;
         for (std::size_t i = 0; i < mps_sa.size(); i++)
             mps_partial_overlap.push_back(MPS<Matrix, SymmGroup>(lat.size())) ;
-        //TODO ALB Check if this is ok
-        (*(model.initializer(lat, parms)))(mps_partial_overlap);
+        (*(model.initializer(lat, parms)))(mps_partial_overlap) ;
     }
     // Update parameters - after checks have passed
     for (size_t i = 0 ; i < n_states ; i++ )

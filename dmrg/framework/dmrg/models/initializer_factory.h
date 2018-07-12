@@ -30,7 +30,6 @@
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/models/chem/mps_init_hf.hpp"
-#include "dmrg/mp_tensors/mps_pov_initializers.h"
 
 namespace detail {
 //    template <class Matrix, class SymmGroup>
@@ -70,6 +69,28 @@ namespace detail {
                                                                       std::vector<int> const& site_type)
         {
             return typename Model<Matrix,SymmGroup>::initializer_ptr(new hf_mps_init<Matrix, SymmGroup>(parms, phys_dims, right_end, site_type));
+        }
+    };
+
+    template <class Matrix, class SymmGroup, class = void>
+    struct call_hf_pov_init {
+        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters parms,
+                                                                std::vector<Index<SymmGroup> > const& phys_dims,
+                                                                typename SymmGroup::charge right_end,
+                                                                std::vector<int> const& site_type)
+        {
+            throw std::runtime_error("No HF MPS init available for this symmetry group.");
+        }
+    };
+
+    template <class Matrix, class SymmGroup>
+    struct call_hf_pov_init<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasChemModel<SymmGroup> >::type> {
+        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters parms,
+                                                                      std::vector<Index<SymmGroup> > const& phys_dims,
+                                                                      typename SymmGroup::charge right_end,
+                                                                      std::vector<int> const& site_type)
+        {
+            return typename Model<Matrix,SymmGroup>::initializer_ptr(new hf_pov_mps_init<Matrix, SymmGroup>(parms, phys_dims, right_end, site_type));
         }
     };
 }
@@ -144,16 +165,12 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     }
 }
 
-// +---------------------------------------------------+
-//  Routine providing the initialization for the SA MPS
-// +---------------------------------------------------+
-
 // +------------------------------------------------------+
 //  Routine providing the initialization for the MaxOv MPS
 // +------------------------------------------------------+
 
 template <class Matrix, class SymmGroup>
-typename model_impl<Matrix,SymmGroup>::initializer_pov_ptr
+typename model_impl<Matrix,SymmGroup>::initializer_ptr
 model_impl<Matrix,SymmGroup>::initializer_pov(Lattice const& lat, BaseParameters & parms) const
 {
     typename SymmGroup::charge initc = this->total_quantum_numbers(parms);
@@ -164,18 +181,15 @@ model_impl<Matrix,SymmGroup>::initializer_pov(Lattice const& lat, BaseParameters
         max_site_type = std::max(site_types[p], max_site_type);
     }
     std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
-    for (int type = 0; type < site_bases.size(); ++type) {
+    for (int type = 0; type < site_bases.size(); ++type)
         site_bases[type] = this->phys_dim(type);
-    }
     //
     // List of initializers
     // --------------------
-    if (parms["init_pov_state"] == "basis_state_generic")
-        return initializer_pov_ptr(new basis_mps_init_generic_pov<Matrix, SymmGroup>(parms, site_bases, initc, site_types)) ; 
-    else if (parms["init_pov_state"] == "default")
-        return initializer_pov_ptr(new default_mps_init_pov<Matrix, SymmGroup>(parms, site_bases, initc, site_types)) ;
-    else if (parms["init_pov_state"] == "chk")
-        return initializer_pov_ptr(new chk_mps_init_pov<Matrix, SymmGroup>(parms)) ;
+    if (parms["init_pov_state"] == "default")
+        return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types)) ;
+    else if (parms["init_pov_state"] == "hf")
+      return detail::call_hf_pov_init<Matrix, SymmGroup>::call(parms, site_bases, initc, site_types);
     else
         throw std::runtime_error("Don't know this initial state.");
 }

@@ -143,7 +143,7 @@ public:
         omega_shift_ = parms["si_omega_shift"] ;
 	      i_activate_last_overlap_   = parms["activate_last_overlap"] ;
 	      i_activate_constant_omega_ = parms["activate_constant_omega"] ;
-        if (std::fabs(omega) > 1.0E-15) {
+        if (parms["ietl_si_operator"] == "yes" || parms["ietl_si_operator"] == "folded") {
             do_shiftandinvert_ = true ;
             omega_vec.resize(n_root_, omega) ;
             if (parms["si_omega_schedule" ]== "constant")
@@ -278,7 +278,6 @@ protected:
         // S&I parameters
         if (parms["ietl_si_operator"] == "no") {
             // -- Standard simualtion --
-            do_shiftandinvert_ = false ;
             maquis::cout << " S&I formulation - deactivated\n" ;
             finalizer_->set_energy_standard() ;
             finalizer_->set_error_standard() ;
@@ -291,7 +290,6 @@ protected:
             maquis::cout << " Orthogonalizer  - Gram-Schmidt\n" ;
         } else if (parms["ietl_si_operator"] == "yes") {
             // -- S&I simulation --
-            do_shiftandinvert_ = true ;
             maquis::cout << " S&I formulation - activated\n" ;
             double omega = parms["ietl_si_omega"]  - mpo.getCoreEnergy();
             maquis::cout << " Omega parameter - " << omega << "\n" ;
@@ -343,8 +341,7 @@ protected:
             } else {
                 throw std::runtime_error("Corrector operator not recognized") ;
             }
-		} else if (parms["ietl_si_operator"] == "folded") {
-            do_shiftandinvert_ = true ;
+		    } else if (parms["ietl_si_operator"] == "folded") {
             maquis::cout << " S&I formulation - activated\n" ;
             double omega = parms["ietl_si_omega"]  - mpo.getCoreEnergy();
             maquis::cout << " Omega parameter - " << omega << "\n" ;
@@ -364,13 +361,13 @@ protected:
             } else {
                 throw std::runtime_error("Scheduler for omega update not recognized") ;
             }
-			is_folded_ = true ;
-			do_H_squared_ = true ;
-			finalizer_->set_energy_folded() ;
-			finalizer_->set_error_folded() ;
-			correction_equation->set_folded() ;
+			      is_folded_ = true ;
+			      do_H_squared_ = true ;
+			      finalizer_->set_energy_folded() ;
+			      finalizer_->set_error_folded() ;
+			      correction_equation->set_folded() ;
             correction_equation->activate_omega();
-			orthogonalizer_ = new GS_ortho< SingleSiteVS<Matrix, SymmGroup> >() ;
+			      orthogonalizer_ = new GS_ortho< SingleSiteVS<Matrix, SymmGroup> >() ;
             if (parms["ietl_ortho_refine"] == "yes")
                 orthogonalizer_->activate_refinement(0.25) ;
         } else {
