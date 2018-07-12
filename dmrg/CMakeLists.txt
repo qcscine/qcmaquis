@@ -414,7 +414,7 @@ install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include/framework/dmrg COMPONENT headers)
 
 #TODO: improve using GLOB
-install(DIRECTORY framework/dmrg framework/ietl framework/utils
+install(DIRECTORY framework/dmrg framework/utils
         DESTINATION include
         COMPONENT headers
         PATTERN ".svn" EXCLUDE

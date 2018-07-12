@@ -87,8 +87,7 @@ public:
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
     // Constructor
-    ts_optimize(MPS<Matrix, SymmGroup> & mps_,
-                std::vector< MPS<Matrix, SymmGroup> > & mps_sa_,
+    ts_optimize(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_,
                 std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_,
                 std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -96,13 +95,14 @@ public:
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mps_sa_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_, to_site(mps_.length(),
-           initial_site_))
+    : base(mps_vector_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_,
+           to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps_vector[0]) ;
         make_ts_cache_mpo(mpo_squared, ts_cache_mpo_squared, mps_vector[0]) ;
+        iteration_results_.resize(n_root_);
     }
     // Inline function to convert from 2L to L the index of the site
     inline int to_site(const int L, const int i) const
@@ -116,7 +116,8 @@ public:
     {
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-        iteration_results_.clear();
+        for (results_collector it : iteration_results_)
+            it.clear();
         parallel::scheduler_balanced scheduler_mps(L_);
         // Definition of the initial site
         int _site = 0;
@@ -220,10 +221,12 @@ public:
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
                 for (size_t k = 0 ; k < n_root_ ; k++)
+                {
                     maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy() << std::endl;
+                    iteration_results_[k]["Energy"] << res[k].first + mpo.getCoreEnergy();
+                }
                 maquis::cout.precision(prec);
             }
-            iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
             // +------------------------------------+
             //  Setting up parameters for truncation
             // +------------------------------------+
@@ -467,11 +470,17 @@ public:
                     }
                 }
             }
-            END_TIMING("PARTIAL OVERLAP UPDATE")
-            iteration_results_["BondDimension"]     << trunc[0].bond_dimension;
-            iteration_results_["TruncatedWeight"]   << trunc[0].truncated_weight;
-            iteration_results_["TruncatedFraction"] << trunc[0].truncated_fraction;
-            iteration_results_["SmallestEV"]        << trunc[0].smallest_ev;
+// Leon: root_homing_type != 0 not supported yet, therefore below is commented out
+/*            if (root_homing_type_ == 1 || root_homing_type_ == 3)
+                for (size_t k = 0 ; k < n_root_ ; k++)
+                    poverlap_vec_[k].update(mps_vector[k], site, lr) ;*/
+            for (size_t k = 0 ; k < n_root_ ; k++)
+            {
+                iteration_results_[k]["BondDimension"]     << trunc[k].bond_dimension;
+                iteration_results_[k]["TruncatedWeight"]   << trunc[k].truncated_weight;
+                iteration_results_[k]["TruncatedFraction"] << trunc[k].truncated_fraction;
+                iteration_results_[k]["SmallestEV"]        << trunc[k].smallest_ev;
+            }
             parallel::meminfo();
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();

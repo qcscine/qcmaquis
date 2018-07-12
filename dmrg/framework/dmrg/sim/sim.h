@@ -6,22 +6,23 @@
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- * 
+ *               2018 by Leon Freitag <lefreita@ethz.ch>
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -42,8 +43,6 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
-#include "dmrg/mp_tensors/mps_sa_initializers.h"
-#include "dmrg/mp_tensors/mps_pov_initializers.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/generate_mpo.hpp"
 
@@ -73,9 +72,19 @@ template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
     // Public attributes
-    sim(DmrgParameters const &);
+
+    sim(DmrgParameters const &,
+        int n_states_ = 1,
+        std::pair<std::vector<std::string>, std::vector<std::string> > filenames_sa =
+        std::make_pair(std::vector<std::string>(), std::vector<std::string>())
+       );
     virtual ~sim();
     virtual void run() =0;
+
+    // shortcuts for chkpfile and rfile for one-state calculations
+    const std::string& chkpfile() { return chkpfile_sa[0]; };
+    const std::string& rfile() { return rfile_sa[0]; };
+
 protected:
     // Protected attributes
     typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
@@ -85,25 +94,25 @@ protected:
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
     // This virtual function is used to store results
-    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, std::vector< MPS<Matrix, SymmGroup> > const& state_vec,
+    virtual void checkpoint_simulation(std::vector< MPS<Matrix, SymmGroup> > const& state_vec,
                                        status_type const&);
-protected:
+
     DmrgParameters parms ;
     int init_sweep, init_site, n_states ;
     bool restore;
     bool dns;
-    std::string chkpfile;
-    std::vector< std::string > chkpfile_sa ;
-    std::string rfile;
     time_stopper stop_callback;
     // Model objects
     Lattice lat;
     Model<Matrix, SymmGroup> model;
-    MPS<Matrix, SymmGroup> mps;
-    std::vector< MPS<Matrix, SymmGroup > > mps_sa, mps_partial_overlap ;
-    std::vector< MPSTensor<Matrix, SymmGroup > > mps_guess ;
     MPO<Matrix, SymmGroup> mpo, mpoc, mpo_squared;
     measurements_type all_measurements, sweep_measurements;
+
+    // Objects associated with SA calculations
+    std::vector< MPS<Matrix, SymmGroup > > mps_sa, mps_partial_overlap ;
+    std::vector< MPSTensor<Matrix, SymmGroup > > mps_guess ;
+    std::vector<std::string > chkpfile_sa ;
+    std::vector<std::string > rfile_sa ;
 };
 
 #include "sim.hpp"

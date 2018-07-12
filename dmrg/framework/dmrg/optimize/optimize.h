@@ -95,8 +95,7 @@ class optimizer_base
     typedef typename bound_database< MPS<Matrix, SymmGroup>, boundaries_type>::bound_database     bound_database ;
     typedef typename std::vector< std::pair<float, size_t> >                                      sorter_type ;
 public:
-    optimizer_base(MPS<Matrix, SymmGroup> & mps_,
-                   std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
+    optimizer_base(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                    std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_ ,
                    std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_ ,
                    MPO<Matrix, SymmGroup> const & mpo_,
@@ -104,9 +103,8 @@ public:
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
-    : mps(mps_)
+    : mps_vector(mps_vector_)
     , mps_guess(mps_guess_)
-    , mps_vector(mps_vector_)
     , mpo(mpo_)
     , mpo_squared(mpo_squared_)
     , n_root_(mps_vector.size())
@@ -129,6 +127,7 @@ public:
         // Corrector
         init_algorithm(mps_vector_, parms_) ;
         // Standard options
+        L_ = mps_vector[0].length() ;
         sorter_.resize(n_root_) ;
         // Chebyshev projection
         if (parms_["chebyshev_filter"] == "yes")
@@ -162,8 +161,6 @@ public:
         do_stateaverage_ = parms_["n_states_sa"].as<int>() > 0 ;
         for (size_t k = 0; k < n_root_; k++)
             order.push_back(k) ;
-        for (int i = 0; i < mps.length(); ++i)
-            Storage::evict(mps[i]);
         for (int i = 0 ; i < n_root_; ++i ) {
             mps_vector[i].canonize(site);
             for (int j = 0; j < mps_vector[i].length(); ++j)
@@ -177,7 +174,7 @@ public:
             do_H_squared_ = do_H_squared_ || track_variance_ || reshuffle_variance_ ;
         //TODO ALB Hardcoded for the moment
         if (do_H_squared_)
-            throw std::runtime_error("Variance tracking for ES calculations not implemented") ;
+            throw std::runtime_error("Variance tracking for electronic structure calculations not implemented") ;
         //
         // Root-homing criteria
         // --------------------
@@ -226,8 +223,8 @@ public:
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
             maquis::checks::symmetry_check(parms, files[n]);
             load(files[n], ortho_mps[n]);
-            maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-            maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+            maquis::checks::right_end_check(files[n], ortho_mps[n], mps_vector[0][mps_vector[0].length()-1].col_dim()[0].first);
+            maquis::cout << "Right end: " << ortho_mps[n][mps_vector[0].length()-1].col_dim() << std::endl;
         }
         //
         // Initialization of the boundaries
@@ -257,7 +254,7 @@ public:
     //
     virtual ~optimizer_base() {}
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
-    results_collector const& iteration_results() const { return iteration_results_; }
+    std::vector<results_collector> const& iteration_results() const { return iteration_results_; }
     //
 protected:
     // +--------------+
@@ -397,6 +394,7 @@ protected:
     // Routine used to initialize the boundaries
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        const MPS<Matrix,SymmGroup> & mps = mps_vector[0];
         parallel::construct_placements(mpo);
         // -- Initialization of the various vectors --
         // Allocate and parially initialize the space for the left/right orthogonalization vectors
@@ -476,6 +474,8 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         // Variables definition
+        const MPS<Matrix,SymmGroup> & mps = mps_vector[0];
+
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++) {
@@ -507,6 +507,7 @@ protected:
     // Shifts the boundary one site to the right
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        const MPS<Matrix,SymmGroup> & mps = mps_vector[0];
         // Variables definition
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
@@ -645,12 +646,12 @@ protected:
     // +----------+
     //  ATTRIBUTES
     // +----------+
-    results_collector iteration_results_;
+    std::vector< results_collector > iteration_results_;
     CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* correction_equation ;
     Orthogonalizer< SingleSiteVS<Matrix, SymmGroup> >* orthogonalizer_ ;
     MicroOptimizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>,
              CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >* micro_optimizer ;
-    MPS<Matrix, SymmGroup> & mps ;
+    MPS<Matrix, SymmGroup> mps_average;
     MPO<Matrix, SymmGroup> const& mpo, mpo_squared ;
     BaseParameters & parms ;
     boost::function<bool ()> stop_callback;

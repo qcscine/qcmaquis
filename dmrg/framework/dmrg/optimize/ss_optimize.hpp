@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -85,9 +85,9 @@ public:
     using base::update_order ;
     using base::vec_sa_left_ ;
     using base::vec_sa_right_ ;
+
     // Constructor declaration
-    ss_optimize(MPS<Matrix, SymmGroup> & mps_, 
-                std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
+    ss_optimize(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                 std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_ ,
                 std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_ ,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -95,10 +95,12 @@ public:
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mps_vector_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_,
+    : base(mps_vector_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_,
            to_site(mps_vector_[0].length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
-    { };
+    {
+        iteration_results_.resize(n_root_);
+    };
     // Inline function to get the site index modulo 2
     inline int to_site(const int L, const int i) const
     {
@@ -111,7 +113,8 @@ public:
     void sweep(int sweep, OptimizeDirection d = Both) {
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-        iteration_results_.clear();
+        for (results_collector it : iteration_results_)
+            it.clear();
         std::size_t L = mps_vector[0].length();
         for (size_t i = 1; i < n_root_; i++)
             assert(mps_vector[i].length() == L);
@@ -195,12 +198,15 @@ public:
             //  Collection of results
             // +---------------------+
             int prec = maquis::cout.precision();
-            maquis::cout.precision(15);
             for (size_t k = 0; k < n_root_; k++)
+            {
+                maquis::cout.precision(15);
                 maquis::cout << " Converged energy - state " << k << " = " << res[k].first + mpo.getCoreEnergy()
-                             << std::endl;
-            maquis::cout.precision(prec);
-            iteration_results_["Energy"] << res[0].first + mpo.getCoreEnergy();
+                        << std::endl;
+                maquis::cout.precision(prec);
+                iteration_results_[k]["Energy"] << res[k].first + mpo.getCoreEnergy();
+
+            }
             // Loads the alpha parameter
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
@@ -364,11 +370,12 @@ public:
             }
             END_TIMING("FINAL OPERATIONS")
             //
-            iteration_results_["BondDimension"] << trunc[0].bond_dimension;
-            std::cout << " Bond dimension - " << trunc[0].bond_dimension << std::endl ;
-            iteration_results_["TruncatedWeight"] << trunc[0].truncated_weight;
-            std::cout << " Truncated weight - " << trunc[0].truncated_weight << std::endl ;
-            iteration_results_["SmallestEV"] << trunc[0].smallest_ev;
+            for (size_t k = 0; k < n_root_; k++)
+            {
+                iteration_results_[k]["BondDimension"] << trunc[k].bond_dimension;
+                iteration_results_[k]["TruncatedWeight"] << trunc[k].truncated_weight;
+                iteration_results_[k]["SmallestEV"] << trunc[k].smallest_ev;
+            }
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
