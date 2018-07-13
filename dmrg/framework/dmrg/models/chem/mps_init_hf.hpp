@@ -99,7 +99,6 @@ public:
         maquis::cout << std::endl;
 
         init_hf_mps(*it, hf_init, symm_traits::HasSU2<SymmGroup>());
-
       }
     }
 
@@ -251,7 +250,6 @@ public:
                 // Set current charge sector = all 1
                 mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
             }
-
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
 
 #ifndef NDEBUG
@@ -259,6 +257,7 @@ public:
 #endif
             std::swap(next_bond_charges, bond_charges);
         }
+        mps.normalize_left() ;
     }
 };
 

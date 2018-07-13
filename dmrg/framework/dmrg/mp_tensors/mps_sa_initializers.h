@@ -74,11 +74,8 @@ public:
 
         for (size_t i = 0; i < L; i++) {
             parallel::guard proc(scheduler(i));
-            std::cout << mps[i] << std::endl ;
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
-            std::cout << mps[i] << std::endl ;
             mps[i].divide_by_scalar(mps[i].scalar_norm());
-            std::cout << mps[i] << std::endl ;
         }
         mps.normalize_left();
 
