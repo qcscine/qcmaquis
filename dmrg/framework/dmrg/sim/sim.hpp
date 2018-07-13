@@ -128,9 +128,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
             for (int i = 0; i < mps_sa.size(); i++)
                 mps_sa[i] = MPS<Matrix, SymmGroup>(lat.size());
             (*(model.initializer(lat, parms)))(mps_sa) ;
-        }
-        else
+        } else {
             mps_sa[0] = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+        }
     }
     for (size_t i = 0 ; i < n_states ; i++ )
         assert(mps_sa[i].length() == lat.size());
@@ -152,7 +152,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
         mps_partial_overlap.reserve(mps_sa.size()) ;
         for (std::size_t i = 0; i < mps_sa.size(); i++)
             mps_partial_overlap.push_back(MPS<Matrix, SymmGroup>(lat.size())) ;
-        (*(model.initializer(lat, parms)))(mps_partial_overlap) ;
+        (*(model.initializer_pov(lat, parms)))(mps_partial_overlap) ;
     }
     // Update parameters - after checks have passed
     for (size_t i = 0 ; i < n_states ; i++ )

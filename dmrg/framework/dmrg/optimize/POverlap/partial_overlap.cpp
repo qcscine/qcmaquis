@@ -32,6 +32,8 @@
 
 // -- Empty constroctor --
 
+#include "partial_overlap.h"
+
 template<class Matrix, class SymmGroup>
 partial_overlap<Matrix,SymmGroup>::partial_overlap() :
         lattice_L_(0),
