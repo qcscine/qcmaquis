@@ -526,7 +526,7 @@ TwoSiteTensor<Matrix, SymmGroup>::get_S(std::size_t Mmax, double cutoff)
 
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
 
-    return boost::make_tuple(s, trunc);
+    return std::make_tuple(s, trunc);
 }
 
 template<class Matrix, class SymmGroup>
