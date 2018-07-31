@@ -82,7 +82,7 @@ public:
     
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     // get_S performs an SVD, truncates the S matrix and returns the truncated S
-    boost::tuple<block_diag_matrix, truncation_results> get_S(std::size_t Mmax, double cutoff);
+    std::tuple<block_diag_matrix, truncation_results> get_S(std::size_t Mmax, double cutoff);
     // -- Splitting of the TwoSiteObject with SVD --
     // split_mps_r2l & l2r versions which use an externally supplied S for renormalisation
     // Input: s_truncated: truncated S

@@ -514,9 +514,9 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_sh
 }
 
 template<class Matrix, class SymmGroup>
-//boost::tuple<block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>,
+//std::tuple<block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>,
 //                                                                                        truncation_results>
-boost::tuple<typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix, truncation_results>
+std::tuple<typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::get_S(std::size_t Mmax, double cutoff)
 {
     make_both_paired();
