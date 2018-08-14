@@ -81,7 +81,7 @@ struct SiteProblem
         vector_coefficients.resize(ov_dim) ;
         for (std::size_t i = 0; i < initial.size(); i++) {
             size_t dim = database.get_num_bound(i) ;
-            boundary_type avg_boundary = 0.0 * (*(&(*(database.get_boundaries_right_sp(0,0, false)))[idx2]));
+            boundary_type& right_b = *(&(*(database.get_boundaries_right_sp(i,0, false)))[idx2]);
             for (std::size_t j = 0; j < dim; j++) {
                 // Normal operator
                 left[i].push_back(&(*(database.get_boundaries_left_sp(i,j, false)))[idx1]);
@@ -93,11 +93,9 @@ struct SiteProblem
                 }
                 // Coefficients
                 vector_coefficients[i].push_back(database.get_coefficients(i,j)) ;
-                boundary_type add_boundary = ((scalar_type)( database.get_coefficients(i,j)*(1/dim)) ) * *((&(*(database.get_boundaries_right_sp(i,j, false)))[idx2]));
-                avg_boundary += add_boundary;
             }
             size += 1;
-            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(initial[i], avg_boundary, mpo));
+            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(initial[i], right_b, mpo));
         }
     }
     // Methods
