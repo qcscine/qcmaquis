@@ -674,8 +674,8 @@ protected:
     bool reshuffle_variance_, track_variance_, do_H_squared_ ;
     // State average
     bound_database boundaries_database_ ;
-    std::vector< MPS<Matrix, SymmGroup> > mps_vector ;
-    std::vector< MPSTensor<Matrix, SymmGroup> > mps_guess ;
+    std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
+    std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess ;
     std::vector< std::size_t > order ;
     int sa_alg_ ;
     size_t n_bound_ , L_ , n_root_ ;
