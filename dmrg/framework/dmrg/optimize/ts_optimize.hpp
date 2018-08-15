@@ -285,13 +285,9 @@ public:
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
                     // Perform truncation of the average TwoSiteTensor and obtain the S (diagonal) matrix
                     if (parms["twosite_truncation"] == "svd")
-//                        std::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
-//                                = avg_tst.split_mps_l2r(Mmax, cutoff);
                           std::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
                     else // TODO: Leon: This doesn't work
                         throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
-//                        std::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
-//                                = avg_tst.predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0, false)))[site1], mpo[site1]);
                     // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
                     for (size_t idx = 0; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
@@ -299,8 +295,10 @@ public:
                             std::tie(mps_vector[idx][site1], mps_vector[idx][site2])
                                     = two_vec[idx].split_mps_l2r(s_avg, avg_truncation.keeps);
                         else
-                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx, false)))[site1], mpo[site1], avg_truncation.keeps);
+                            // TODO: Leon: This doesn't work
+                            throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
+//                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+//                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx, false)))[site1], mpo[site1], avg_truncation.keeps);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
@@ -325,9 +323,9 @@ public:
                     // TODO: yes it should, see ss_optimize.hpp
                     // Truncation of the reference state
                     if (parms["twosite_truncation"] == "svd")
-                        std::make_tuple(mps_vector[0][site1], mps_vector[0][site2], trunc[0]) = two_vec[0].split_mps_l2r(Mmax, cutoff);
+                        std::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0]) = two_vec[0].split_mps_l2r(Mmax, cutoff);
                     else
-                        std::make_tuple(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                        std::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0, false)))[site1], mpo[site1]);
                     two_vec[0].clear();
                     //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
@@ -338,10 +336,10 @@ public:
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
-                            std::make_tuple(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].split_mps_l2r(Mmax, cutoff, keeps);
                         else
-                            std::make_tuple(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(0, false)))[site1], mpo[site1], keeps);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
@@ -384,21 +382,17 @@ public:
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
                     // Truncation of the average two-site tensor
                     if (parms["twosite_truncation"] == "svd")
-//                        std::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
-//                                = avg_tst.split_mps_r2l(Mmax, cutoff);
                         std::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
                     else // TODO: Leon: This doesn't work
                         throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
-//                        std::tie(mpstensor_avg_site1, mpstensor_avg_site2, avg_truncation)
-//                                = avg_tst.predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0, false)))[site2+1], mpo[site2]);
-
                     // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
                     for (size_t idx = 0; idx < n_bound_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             std::tie(mps_vector[idx][site1], mps_vector[idx][site2]) = two_vec[idx].split_mps_r2l(s_avg, avg_truncation.keeps);
                         else
-                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx, false)))[site2+1], mpo[site2], avg_truncation.keeps);
+                            throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
+//                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+//                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx, false)))[site2+1], mpo[site2], avg_truncation.keeps);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 0)
@@ -421,10 +415,10 @@ public:
                 } else if (sa_alg_ > -1) {
                     // Truncation of the reference state
                     if (parms["twosite_truncation"] == "svd")
-                        std::make_tuple(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                        std::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].split_mps_r2l(Mmax, cutoff);
                     else
-                        std::make_tuple(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
+                        std::tie(mps_vector[0][site1], mps_vector[0][site2], trunc[0])
                                 = two_vec[0].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(0, false)))[site2+1], mpo[site2]);
                     two_vec[0].clear();
                     //Get # of eigenvalues to keep per block from state 0 and use the same number to truncate the other states
@@ -435,10 +429,10 @@ public:
                     // Truncation of the other states
                     for (size_t idx = 1; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
-                            std::make_tuple(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].split_mps_r2l(Mmax, cutoff, keeps);
                         else
-                            std::make_tuple(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
+                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx, false)))[site2+1], mpo[site1], keeps);
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site1].normalize_right(DefaultSolver());
