@@ -273,39 +273,86 @@ public:
                     }
                 // Standard, state-average model
                 } else if (sa_alg_ == -1) {
-                    // Truncation of the average DM
-                    // Construct the two-site tensor averaged over all states
 
+                    if (parms["twosite_truncation"] != "svd") throw std::runtime_error("twosite_truncation != svd with SA optimization not supported yet!");
+
+                    // Construct the two-site tensor averaged over all states
                     TwoSiteTensor<Matrix, SymmGroup> avg_tst = std::accumulate(std::next(two_vec.begin()), two_vec.end(), *two_vec.begin());
                     avg_tst /= n_root_;
 
-                    // Truncation results for the average MPS tensor
+                    // Truncation results for the average two-site tensor
                     truncation_results avg_truncation;
-                    // S obtained from the truncation
-                    typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
+
+                    // sa_alg=-1 can be carried out in several variants:
+                    // - the average TwoSiteTensor is split into two sites with the SVD [ P = U.S.V ]
+                    // - U becomes the new MPSTensor at site 1 and S.V at site 2 for _all states_ [ for the left sweep, for the right sweep it is U.S and V, accordingly ]
+                    // We call this variant "USV" and it can be enabled by uncommenting the following define:
+// #define _SAALG_VAR_USV_
+                    // Additionally, we may perform a state-specific TwoSiteTensor splitting and take either U from the state-specific TST [ or V for the right sweep ]
+                    // leading to the "SV" variant, enabled by uncommenting the followind define:
+#define _SAALG_VAR_SV_
+                    // or both U and V from the state-specific TST, where only S remains from the state-average TST:
+// #define _SAALG_VAR_S_
+                    // We enforce the truncation with the same number of retained eigenvalues in each state-specific truncated SVD
+                    // by taking the number of eigenvalues retained in the SVD of the average TST
+                    // The following table illustrates from which splitting the matrices are used in the optimization (A -- state-averaged, S -- state-specific)
+                    //
+                    //         Forward sweep           Backward sweep
+                    //
+                    //      Variant | U | S | V      Variant | U | S | V
+                    //     ----------------------   ---------------------
+                    //        USV   | A | A | A        USV   | A | A | A
+                    //        SV    | S | A | A        SV    | A | A | S
+                    //        S     | S | A | S        S     | S | A | S
+#if ( defined(_SAALG_VAR_S_) && defined(_SAALG_VAR_SV_) ) || ( defined(_SAALG_VAR_SV_) && defined(_SAALG_VAR_USV_) ) || ( defined(_SAALG_VAR_S_) && defined(_SAALG_VAR_USV_) )
+#error Only one of _SAALG_VAR_S_, _SAALG_VAR_SV_ or _SAALG_VAR_USV_ may be defined!
+#endif
+
+#ifdef _SAALG_VAR_S_
+                    // sa_alg=-1 variant S ////////////
                     // Perform truncation of the average TwoSiteTensor and obtain the S (diagonal) matrix
-                    if (parms["twosite_truncation"] == "svd")
-                          std::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
-                    else // TODO: Leon: This doesn't work
-                        throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
-                    // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
-                    for (size_t idx = 0; idx < n_bound_; idx++) {
-                        if (parms["twosite_truncation"] == "svd")
-                            // for an external S split_mps_l2r is overloaded and doesn't return truncation_results
-                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2])
-                                    = two_vec[idx].split_mps_l2r(s_avg, avg_truncation.keeps);
-                        else
-                            // TODO: Leon: This doesn't work
-                            throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
-//                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-//                                    = two_vec[idx].predict_split_l2r(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_left(idx, false)))[site1], mpo[site1], avg_truncation.keeps);
+
+                    typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
+                    std::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
+#endif
+
+#if defined(_SAALG_VAR_SV_) || defined (_SAALG_VAR_USV_)
+                    // sa_alg=-1 variants SV and USV
+                    // Simple splitting of the average MPS tensor, to be applied to all states
+                    // Get U,S,V from the average
+                    MPSTensor<Matrix, SymmGroup> split_site1, split_site2;
+                    std::tie(split_site1, split_site2, avg_truncation) = avg_tst.split_mps_l2r(Mmax, cutoff);
+
+#endif
+                    for (size_t idx = 0; idx < n_root_; idx++) {
+#ifdef _SAALG_VAR_S_
+                        // sa_alg=-1 variant S
+                        // for an external S split_mps_l2r is overloaded and doesn't return truncation_results
+                        std::tie(mps_vector[idx][site1], mps_vector[idx][site2]) = two_vec[idx].split_mps_l2r(s_avg, avg_truncation.keeps);
+#endif
+
+#ifdef _SAALG_VAR_USV_
+                        // sa_alg=-1 variant USV
+                        // Simple splitting of the average MPS tensor, to be applied to all states
+                        mps_vector[idx][site1] = split_site1;
+                        mps_vector[idx][site2] = split_site2;
+#endif
+
+#ifdef _SAALG_VAR_SV_
+                        // sa_alg=-1 variant SV
+                        // U is obtained from the state-specific TST but S*V from the state-average TST
+                        MPSTensor<Matrix, SymmGroup> jnk;
+                        std::tie(mps_vector[idx][site1], jnk, trunc[idx]) = two_vec[idx].split_mps_l2r(Mmax, cutoff, avg_truncation.keeps);
+                        mps_vector[idx][site2] = split_site2;
+#endif
+
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site2].normalize_left(DefaultSolver());
                         if (site2 < L_-1)
                             mps_vector[idx][site2+1].multiply_from_left(t);
                     }
                 } else if (sa_alg_ == -2) {
-                    for (size_t idx = 0; idx < n_bound_; idx++) {
+                    for (size_t idx = 0; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].split_mps_l2r(Mmax, cutoff);
@@ -372,34 +419,60 @@ public:
                     }
 
                 } else if (sa_alg_ == -1) {
-                    // Truncation of the average DM
-                    // Construct the two-site tensor averaged over all states
 
+                    // Construct the two-site tensor averaged over all states
                     TwoSiteTensor<Matrix, SymmGroup> avg_tst = std::accumulate(std::next(two_vec.begin()), two_vec.end(), *two_vec.begin());
                     avg_tst /= n_root_;
 
                     truncation_results avg_truncation;
+
+                    // See the comment in the forward sweep for the explanation of the defines
+#ifdef _SAALG_VAR_S_
+                    // sa_alg=-1 variant S
+                    // Perform truncation of the average TwoSiteTensor and obtain the S (diagonal) matrix
+
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
-                    // Truncation of the average two-site tensor
-                    if (parms["twosite_truncation"] == "svd")
-                        std::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
-                    else // TODO: Leon: This doesn't work
-                        throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
-                    // Truncation of all states using # of eigenvalues to keep per block obtained from the truncation of the average TST
-                    for (size_t idx = 0; idx < n_bound_; idx++) {
-                        if (parms["twosite_truncation"] == "svd")
-                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2]) = two_vec[idx].split_mps_r2l(s_avg, avg_truncation.keeps);
-                        else
-                            throw std::runtime_error("twosite_truncation != svd + state average solver not implemented yet!");
-//                            std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
-//                                    = two_vec[idx].predict_split_r2l(Mmax, cutoff, alpha, (*(boundaries_database_.get_boundaries_right(idx, false)))[site2+1], mpo[site2], avg_truncation.keeps);
+                    std::tie(s_avg, avg_truncation) = avg_tst.get_S(Mmax, cutoff);
+#endif
+
+#if defined(_SAALG_VAR_SV_) || defined (_SAALG_VAR_USV_)
+                    // sa_alg=-1 variants SV and USV
+                    // Simple splitting of the average MPS tensor, to be applied to all states
+                    // Get U,S,V from the average
+                    MPSTensor<Matrix, SymmGroup> split_site1, split_site2;
+                    std::tie(split_site1, split_site2, avg_truncation) = avg_tst.split_mps_r2l(Mmax, cutoff);
+
+#endif
+
+                    for (size_t idx = 0; idx < n_root_; idx++) {
+#ifdef _SAALG_VAR_S_
+                        // sa_alg=-1 variant S
+                        // for an external S split_mps_l2r is overloaded and doesn't return truncation_results
+                        std::tie(mps_vector[idx][site1], mps_vector[idx][site2]) = two_vec[idx].split_mps_r2l(s_avg, avg_truncation.keeps);
+#endif
+
+#ifdef _SAALG_VAR_USV_
+                        // sa_alg=-1 variant USV
+                        // Simple splitting of the average MPS tensor, to be applied to all states
+                        mps_vector[idx][site1] = split_site1;
+                        mps_vector[idx][site2] = split_site2;
+#endif
+
+#ifdef _SAALG_VAR_SV_
+                        //sa_alg=-1 variant SV
+                        // V is obtained from the state-specific TST but U*S from the state-average TST
+                        MPSTensor<Matrix, SymmGroup> jnk;
+                        std::tie(jnk, mps_vector[idx][site2], trunc[idx]) = two_vec[idx].split_mps_r2l(Mmax, cutoff, avg_truncation.keeps);
+                        mps_vector[idx][site1] = split_site1;
+#endif
+
                         two_vec[idx].clear();
                         block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site1].normalize_right(DefaultSolver());
                         if (site1 > 0)
                             mps_vector[idx][site1-1].multiply_from_right(t);
                     }
                 } else if (sa_alg_ == -2) {
-                    for (size_t idx = 0; idx < n_bound_; idx++) {
+                    for (size_t idx = 0; idx < n_root_; idx++) {
                         if (parms["twosite_truncation"] == "svd")
                             std::tie(mps_vector[idx][site1], mps_vector[idx][site2], trunc[idx])
                                     = two_vec[idx].split_mps_r2l(Mmax, cutoff);
