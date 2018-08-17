@@ -14,17 +14,17 @@
  * Library License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Library License along with
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -110,7 +110,7 @@ namespace ietl
                         const size_t& n_block, const double& thresh_block, const int& site1, const int& site2,
                         const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
                         const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
-                        const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded, 
+                        const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded,
 						const double& energy_thresh);
         virtual ~jacobi_davidson() {};
         vector_pairs calculate_eigenvalue(ITER& iter);
@@ -174,7 +174,7 @@ namespace ietl
         FortranMatrix<magnitude_type>   M ;
         std::vector<scalar_type>        diagonal_elements_ ;
         CorrectionEquation*             corrector_ ;
-        magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_ ; 
+        magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_ ;
         MATRIX&                         matrix_ ;
         MicroOptimizer*                 micro_iterator_ ;
         result_collector                u_and_uA_ ;
@@ -412,7 +412,7 @@ namespace ietl
             eigen_collector_.push_back(candidates_collector_[i_homing_selected_]) ;
     }
     // +---------------------------+
-    //  Vector space initialization 
+    //  Vector space initialization
     // +---------------------------+
     template <class Matrix, class VS, class SymmGroup, class ITER>
     void jacobi_davidson<Matrix, VS, SymmGroup, ITER>::initialize_vecspace()
@@ -420,7 +420,9 @@ namespace ietl
         // Variables declaration
         vector_type t, tA ;
         // Orthogonalization
-        if (sa_alg_ != -1) {
+        // Leon: Commented the sa_alg_ == -1 orthogonalisation for now because of crashes/wrong results in some cases
+        // Need to check with ALB
+        // if (sa_alg_ != -1) {
             t  = vecspace_.new_vector(i_state_) ;
             if (n_lanczos_ > 0)
                 estimate_extremes(t) ;
@@ -431,22 +433,22 @@ namespace ietl
             orthogonalizer_->update_diagonal(t, tA);
             V_.push_back(t) ;
             VA_.push_back(tA) ;
-        } else {
-            //
-            for (size_t i = 0; i < n_sa_; i++) {
-                t = vecspace_.new_vector(i) ;
-                vecspace_.project(t) ;
-                tA = apply_operator(t) ;
-                vecspace_.project(tA) ;
-                orthogonalizer_->orthogonalize(t, tA) ;
-                if (ietl::two_norm(tA) > 1.0E-10 && ietl::two_norm(t) > 1.0E-10 ) {
-                    orthogonalizer_->normalize(t, tA);
-                    orthogonalizer_->update_diagonal(t, tA);
-                    V_.push_back(t) ;
-                    VA_.push_back(tA) ;
-                }
-            }
-        }
+        // } else {
+        //     //
+        //     for (size_t i = 0; i < n_sa_; i++) {
+        //         t = vecspace_.new_vector(i) ;
+        //         vecspace_.project(t) ;
+        //         tA = apply_operator(t) ;
+        //         vecspace_.project(tA) ;
+        //         orthogonalizer_->orthogonalize(t, tA) ;
+        //         if (ietl::two_norm(tA) > 1.0E-10 && ietl::two_norm(t) > 1.0E-10 ) {
+        //             orthogonalizer_->normalize(t, tA);
+        //             orthogonalizer_->update_diagonal(t, tA);
+        //             V_.push_back(t) ;
+        //             VA_.push_back(tA) ;
+        //         }
+        //     }
+        // }
     };
     // +---------------------+
     //  Computes the variance
@@ -503,7 +505,7 @@ namespace ietl
                 eigvecs[i].resize(dim);
             // -- Diagonalization --
             get_eigenvalue(eigvals, eigvecs, dim);
-            // -- Finalization -- 
+            // -- Finalization --
             couple_vec selector ;
             for (size_t i = 0; i < dim; i++)
                 selector.push_back(std::make_pair(i, eigvals[i])) ;
@@ -530,7 +532,7 @@ namespace ietl
     template <class MATRIX, class VS, class SymmGroup, class ITER>
     void jacobi_davidson<MATRIX, VS, SymmGroup, ITER>::reshuffle_variance()
     {
-        // Initial dimensions 
+        // Initial dimensions
         std::size_t dim = converged_collector_.size() ;
         if (dim == 1)
             return ;
@@ -777,7 +779,7 @@ namespace ietl
         res += 2. * (sin( acos(alpha*upper_bound + beta) ) - sin( acos(alpha*lower_bound + beta) ) ) * x1 / M_PI ;
         // -- Main loop --
         for (std::size_t idx = 2; idx < 20; idx++) {
-            // Variable setting 
+            // Variable setting
             coeff = 2. * (sin( idx * acos(alpha*upper_bound + beta) )
                         - sin( idx * acos(alpha*lower_bound + beta) ) ) / (M_PI*idx) ;
             // T_{n+1}(alpha*x+beta) = 2*x*T_n(alpha*x+b)
@@ -850,7 +852,7 @@ namespace ietl
     };
 }
 
-// -- Derived classes -- 
+// -- Derived classes --
 
 #include "dmrg/optimize/JacobiDavidson/jacobi_standard.h"
 #include "dmrg/optimize/JacobiDavidson/jacobi_modified.h"
