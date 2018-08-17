@@ -70,7 +70,7 @@ public:
     using base::omega_shift_ ;
     using base::omega_vec ;
     using base::order ;
-    using base::orthogonalizer_ ; 
+    using base::orthogonalizer_ ;
     using base::parms ;
     using base::poverlap_vec_ ;
     using base::right_sa_ ;
@@ -198,7 +198,7 @@ public:
                 res = solve_ietl_jcd(sp, vector_set, correction_equation, micro_optimizer, finalizer_,
                                      orthogonalizer_, parms, poverlap_vec_, site1, site2, root_homing_type_, do_root_homing_,
                                      do_shiftandinvert_, do_chebyshev_, chebyshev_shift_, do_H_squared_, reshuffle_variance_,
-                                     track_variance_, is_folded_, vec_sa_left_, vec_sa_right_, order, boundaries_database_, 
+                                     track_variance_, is_folded_, vec_sa_left_, vec_sa_right_, order, boundaries_database_,
                                      sa_alg_, omega_vec, ortho_vecs);
                 END_TIMING("LOCAL DIAGONALIZATION")
                 // Correct the energies
@@ -275,10 +275,10 @@ public:
                 } else if (sa_alg_ == -1) {
                     // Truncation of the average DM
                     // Construct the two-site tensor averaged over all states
-                    TwoSiteTensor<Matrix, SymmGroup> avg_tst = two_vec[0];
-                    for (size_t idx = 1; idx < n_root_; idx++)
-                        avg_tst += two_vec[i];
+
+                    TwoSiteTensor<Matrix, SymmGroup> avg_tst = std::accumulate(std::next(two_vec.begin()), two_vec.end(), *two_vec.begin());
                     avg_tst /= n_root_;
+
                     // Truncation results for the average MPS tensor
                     truncation_results avg_truncation;
                     // S obtained from the truncation
@@ -374,10 +374,10 @@ public:
                 } else if (sa_alg_ == -1) {
                     // Truncation of the average DM
                     // Construct the two-site tensor averaged over all states
-                    TwoSiteTensor<Matrix, SymmGroup> avg_tst = two_vec[0];
-                    for (size_t idx = 1; idx < n_root_; idx++)
-                        avg_tst += two_vec[i];
+
+                    TwoSiteTensor<Matrix, SymmGroup> avg_tst = std::accumulate(std::next(two_vec.begin()), two_vec.end(), *two_vec.begin());
                     avg_tst /= n_root_;
+
                     truncation_results avg_truncation;
                     typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix s_avg;
                     // Truncation of the average two-site tensor
