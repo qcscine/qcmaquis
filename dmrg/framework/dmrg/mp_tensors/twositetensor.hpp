@@ -192,9 +192,8 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff,
     gemm(s, v, u);
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, u.left_basis(), right_i, u, RightPaired);
     assert( mps_tensor2.reasonable() );
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results> res ;
-    res = std::tie(mps_tensor1, mps_tensor2, trunc);
-    return res;
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
+
 }
 
 
@@ -221,9 +220,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(const block_diag_matrix& s_trunc
     gemm(s_truncated, v, u);
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, u.left_basis(), right_i, u, RightPaired);
     assert( mps_tensor2.reasonable() );
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> > res ;
-    res = std::tie(mps_tensor1, mps_tensor2) ;
-    return res;
+    return std::make_tuple(mps_tensor1, mps_tensor2) ;
 }
 
 // -- Right sweep --
@@ -240,12 +237,12 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff,
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true, 0, keeps);
 
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, v.left_basis(), right_i, v, RightPaired);
-
+    assert( mps_tensor2.reasonable() );
     gemm(u, s, v);
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results> res ;
-    res = std::tie(mps_tensor1, mps_tensor2, trunc);
-    return res ;
+    assert( mps_tensor1.reasonable() );
+    return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
+    
 }
 
 // split_mps_r2l version which uses an externally supplied S for renormalisation
@@ -268,9 +265,9 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(const block_diag_matrix& s_trunc
     // Use s_truncated for the renormalisation
     gemm(u, s_truncated, v);
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
-    std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> > res ;
-    res = std::tie(mps_tensor1, mps_tensor2) ;
-    return res;
+    
+    return std::make_tuple(mps_tensor1, mps_tensor2) ;
+    
 };
 
 template<class Matrix, class SymmGroup>
@@ -514,8 +511,6 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_sh
 }
 
 template<class Matrix, class SymmGroup>
-//std::tuple<block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>,
-//                                                                                        truncation_results>
 std::tuple<typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::get_S(std::size_t Mmax, double cutoff)
 {
