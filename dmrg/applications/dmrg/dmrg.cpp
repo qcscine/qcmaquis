@@ -32,12 +32,10 @@
 #include <sys/time.h>
 
 #include "utils/data_collector.hpp"
-#include "dmrg/utils/DmrgOptions.h"
-#include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
 #include "maquis_dmrg.h"
-#include "dmrg/sim/symmetry_factory.h"
+
 
 int main(int argc, char ** argv)
 {

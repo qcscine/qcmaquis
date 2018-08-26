@@ -27,6 +27,10 @@
 #ifndef MAQUIS_DMRG_H
 #define MAQUIS_DMRG_H
 
+#include "dmrg/utils/DmrgOptions.h"
+#include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/sim/symmetry_factory.h"
+
 #include <boost/shared_ptr.hpp>
 
 namespace maquis

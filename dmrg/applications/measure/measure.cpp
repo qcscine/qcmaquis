@@ -25,9 +25,9 @@
  *****************************************************************************/
 
 #include "utils/io.hpp" // has to be first include because of impi
-#include "dmrg/utils/DmrgOptions.h"
+
 #include "maquis_dmrg.h"
-#include "dmrg/sim/symmetry_factory.h"
+
 
 #include <iostream>
 #include <sys/time.h>
