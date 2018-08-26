@@ -24,28 +24,41 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_SIM_RUN_H
-#define MAQUIS_SIM_RUN_H
+#ifndef MAQUIS_DMRG_H
+#define MAQUIS_DMRG_H
 
 #include <boost/shared_ptr.hpp>
 
-#include "dmrg/utils/DmrgParameters.h"
-
-struct simulation_base {
-    virtual ~simulation_base() {}
-    virtual void run(DmrgParameters & parms) =0;
-};
-
-template <class SymmGroup>
-struct simulation : public simulation_base {
-    void run(DmrgParameters & parms);
-};
-
-struct simulation_traits {
-    typedef boost::shared_ptr<simulation_base> shared_ptr;
-    template <class SymmGroup> struct F {
-        typedef simulation<SymmGroup> type;
+namespace maquis
+{
+    struct simulation_base {
+        virtual ~simulation_base() {}
+        virtual void run(DmrgParameters & parms) =0;
     };
-};
 
+    template <class SymmGroup>
+    struct dmrg_simulation : public simulation_base {
+        void run(DmrgParameters & parms);
+    };
+
+    template <class SymmGroup>
+    struct measure_simulation : public simulation_base {
+        void run(DmrgParameters & parms);
+    };
+
+    struct dmrg_simulation_traits {
+        typedef boost::shared_ptr<simulation_base> shared_ptr;
+        template <class SymmGroup> struct F {
+            typedef dmrg_simulation<SymmGroup> type;
+        };
+    };
+
+    struct measure_simulation_traits {
+        typedef boost::shared_ptr<simulation_base> shared_ptr;
+        template <class SymmGroup> struct F {
+            typedef measure_simulation<SymmGroup> type;
+        };
+    };
+
+} // maquis
 #endif

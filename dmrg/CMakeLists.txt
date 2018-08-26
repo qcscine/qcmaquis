@@ -20,7 +20,7 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 # Project START
 ######################################################################
-project (MAQUIS_DMRG) 
+project (MAQUIS_DMRG)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 
@@ -222,14 +222,14 @@ set(DMRG_VERSION_MAJOR 2)
 set(DMRG_VERSION_MINOR 0)
 set(DMRG_VERSION_BUILD "")
 
-if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
-  FIND_PACKAGE(Subversion) 
-  IF(Subversion_FOUND) 
-    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} DMRG) 
+if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
+  FIND_PACKAGE(Subversion)
+  IF(Subversion_FOUND)
+    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} DMRG)
     string(REPLACE ${DMRG_WC_ROOT} "" DMRG_BRANCH ${DMRG_WC_URL})
     set(DMRG_VERSION_BUILD "r${DMRG_WC_REVISION} (${DMRG_BRANCH})")
-  ENDIF(Subversion_FOUND) 
-endif(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
+  ENDIF(Subversion_FOUND)
+endif(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
     find_package(Git)
@@ -266,7 +266,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
         endif()
 
         set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH}) ${SVN_REV}")
-    endif() 
+    endif()
 endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 
 if(DMRG_VERSION_BUILD)
@@ -275,7 +275,7 @@ else(DMRG_VERSION_BUILD)
   set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}")
 endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
-MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}") 
+MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 
 
 ######################################################################
@@ -321,7 +321,7 @@ if(NOT USE_AMBIENT)
   list(APPEND DMRG_LIBRARY_DIRS ${MAQUISLapack_LIB_DIRS})
 endif(NOT USE_AMBIENT)
 
-include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${PROJECT_SOURCE_DIR}/lib/maquis_dmrg ${PROJECT_BINARY_DIR}/lib/maquis_dmrg ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})
 add_definitions(${DMRG_DEFINITIONS})
 
@@ -359,6 +359,9 @@ endif(USE_IMGTE_ONLY)
 
 # *** libraries / utilities
 add_subdirectory(framework/dmrg)
+
+# *** shared library
+add_subdirectory(lib/maquis_dmrg)
 
 # *** applications
 add_subdirectory(applications)

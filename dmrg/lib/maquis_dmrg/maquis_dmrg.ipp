@@ -27,16 +27,32 @@
 #include "dmrg/sim/matrix_types.h"
 
 #include "dmrg_sim.h"
-#include "simulation.h"
+#include "measure_sim.h"
+#include "maquis_dmrg.h"
 
-template <class SymmGroup>
-void simulation<SymmGroup>::run(DmrgParameters & parms)
+namespace maquis
 {
-    if (parms["COMPLEX"]) {
-        dmrg_sim<cmatrix, SymmGroup> sim(parms);
-        sim.run();
-    } else {
-        dmrg_sim<matrix, SymmGroup> sim(parms);
-        sim.run();
+    template <class SymmGroup>
+    void dmrg_simulation<SymmGroup>::run(DmrgParameters & parms)
+    {
+        if (parms["COMPLEX"]) {
+            dmrg_sim<cmatrix, SymmGroup> sim(parms);
+            sim.run();
+        } else {
+            dmrg_sim<matrix, SymmGroup> sim(parms);
+            sim.run();
+        }
+    }
+
+    template <class SymmGroup>
+    void measure_simulation<SymmGroup>::run(DmrgParameters & parms)
+    {
+        if (parms["COMPLEX"]) {
+            measure_sim<cmatrix, SymmGroup> sim(parms);
+            sim.run();
+        } else {
+            measure_sim<matrix, SymmGroup> sim(parms);
+            sim.run();
+        }
     }
 }
