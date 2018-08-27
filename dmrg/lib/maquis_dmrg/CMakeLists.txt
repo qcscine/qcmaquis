@@ -20,4 +20,5 @@ set_property(TARGET maquis_dmrg PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES})
 
 # *** Install
-install(TARGETS maquis_dmrg ARCHIVE DESTINATION lib LIBRARY DESTINATION lib COMPONENT runtime)
+install(TARGETS maquis_dmrg EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
+export(TARGETS maquis_dmrg APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
