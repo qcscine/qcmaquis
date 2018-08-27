@@ -54,8 +54,8 @@ int main(int argc, char ** argv)
 
 
         try {
-            maquis::measure_simulation_traits::shared_ptr sim = dmrg::symmetry_factory<maquis::measure_simulation_traits>(opt.parms);
-            sim->run(opt.parms);
+            simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
+            sim->measure(opt.parms);
         } catch (std::exception & e) {
             maquis::cerr << "Exception thrown!" << std::endl;
             maquis::cerr << e.what() << std::endl;

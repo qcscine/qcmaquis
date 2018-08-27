@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
         gettimeofday(&now, NULL);
 
         try {
-            maquis::dmrg_simulation_traits::shared_ptr sim = dmrg::symmetry_factory<maquis::dmrg_simulation_traits>(opt.parms);
+            simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
             sim->run(opt.parms);
         } catch (std::exception & e) {
             maquis::cerr << "Exception thrown!" << std::endl;

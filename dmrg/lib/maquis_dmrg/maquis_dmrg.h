@@ -33,36 +33,23 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace maquis
-{
-    struct simulation_base {
-        virtual ~simulation_base() {}
-        virtual void run(DmrgParameters & parms) =0;
-    };
+struct simulation_base {
+    virtual ~simulation_base() {}
+    virtual void run(DmrgParameters & parms) =0;
+    virtual void measure(DmrgParameters & parms) =0;
+};
 
-    template <class SymmGroup>
-    struct dmrg_simulation : public simulation_base {
-        void run(DmrgParameters & parms);
-    };
+template <class SymmGroup>
+struct simulation : public simulation_base {
+    void run(DmrgParameters & parms);
+    void measure(DmrgParameters & parms);
+};
 
-    template <class SymmGroup>
-    struct measure_simulation : public simulation_base {
-        void run(DmrgParameters & parms);
+struct simulation_traits {
+    typedef boost::shared_ptr<simulation_base> shared_ptr;
+    template <class SymmGroup> struct F {
+        typedef simulation<SymmGroup> type;
     };
+};
 
-    struct dmrg_simulation_traits {
-        typedef boost::shared_ptr<simulation_base> shared_ptr;
-        template <class SymmGroup> struct F {
-            typedef dmrg_simulation<SymmGroup> type;
-        };
-    };
-
-    struct measure_simulation_traits {
-        typedef boost::shared_ptr<simulation_base> shared_ptr;
-        template <class SymmGroup> struct F {
-            typedef measure_simulation<SymmGroup> type;
-        };
-    };
-
-} // maquis
 #endif
