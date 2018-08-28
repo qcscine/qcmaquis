@@ -649,7 +649,7 @@ struct multigrid {
                     if (p == 0)
                         left_[0] = mps_large.left_boundary();
                     
-                    SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p], left_[2*p], right, mpos_mix[p+1][2*p]);
+                    SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p]);
                     
                     
                     // solver
@@ -706,7 +706,7 @@ struct multigrid {
                     left_[2*p+1] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
                                                                                                          left_[2*p], mpos_mix[L][2*p]);
                     
-                    SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p+1], left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                    SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
                     
                     // solver
                     if (parms["finegrain_optim"])
