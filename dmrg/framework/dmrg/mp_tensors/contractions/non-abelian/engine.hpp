@@ -31,19 +31,18 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
-#include "dmrg/mp_tensors/contractions/common/common.h"
-
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op_rp.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/h_diag.hpp"
 
+#include "dmrg/mp_tensors/contractions/common/common.h"
+
 namespace contraction {
 
     using ::contraction::common::BoundaryMPSProduct;
     using ::contraction::common::MPSBoundaryProduct;
-    using ::contraction::common::MPSBoundaryProductIndices;
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
     class Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
@@ -83,8 +82,6 @@ namespace contraction {
         };
 
     public:
-
-        typedef typename contraction::common::Schedule<Matrix, SymmGroup>::schedule_t schedule_t;
 
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
@@ -144,14 +141,6 @@ namespace contraction {
         {
             return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
-        }
-
-        static schedule_t
-        right_contraction_schedule(MPSTensor<Matrix, SymmGroup> const & mps,
-                                   Boundary<OtherMatrix, SymmGroup> const & right,
-                                   MPOTensor<Matrix, SymmGroup> const & mpo)
-        {
-            return common::create_contraction_schedule(mps, right, mpo, SU2::rbtm_tasks<Matrix, OtherMatrix, SymmGroup>);
         }
 
         // Single-site prediction
@@ -234,8 +223,7 @@ namespace contraction {
         site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo,
-                    std::vector<SU2::task_capsule<Matrix, SymmGroup> > const & tasks);
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
     };
 
 } // namespace contraction

@@ -69,7 +69,7 @@ public:
     using base::omega_shift_ ;
     using base::omega_vec ;
     using base::order ;
-    using base::orthogonalizer_ ; 
+    using base::orthogonalizer_ ;
     using base::parms ;
     using base::poverlap_vec_ ;
     using base::right_sa_ ;

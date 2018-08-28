@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -53,7 +53,7 @@ namespace contraction {
             value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>
                                  (bm.basis().left_charge(b), bm.basis().right_charge(b), S);
             if (forward)
-                scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k)) 
+                scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k))
                                     : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
             else
                 scale *= (left) ? mpo.herm_info.left_phase(k)
@@ -113,7 +113,7 @@ namespace contraction {
 
                 // exploit hermiticity if available
                 if (mpo.herm_info.left_skip(b1))
-                {   
+                {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
 
                     std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
@@ -131,18 +131,20 @@ namespace contraction {
         }
 
         void resize(size_t n){
-            if(n < data_.size()) 
+            if(n < data_.size())
                 return data_.resize(n);
             data_.reserve(n);
             for(int i = data_.size(); i < n; ++i)
                 data_.push_back(block_matrix<Matrix, SymmGroup>());
         }
 
-        block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; } 
+        void multiply (index_type b1);
+
+        block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
         block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
 
         block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
-        { 
+        {
             if (mpo.num_row_non_zeros(k) == 1)
             {
                 if (mpo.herm_info.left_skip(k))
@@ -156,9 +158,9 @@ namespace contraction {
                     //parallel::guard group(scheduler(b1), parallel::groups_granularity);
                     typename Gemm::gemm_trim_left()(transpose(left[k]), mps.data(), storage);
                 }
- 
+
                 return storage;
-            } 
+            }
 
             else
                 return data_[k];
@@ -166,46 +168,17 @@ namespace contraction {
 
     private:
         std::vector<block_matrix<Matrix, SymmGroup> > data_;
-        
+
         MPSTensor<Matrix, SymmGroup> const & mps;
         Boundary<OtherMatrix, SymmGroup> const & left;
         MPOTensor<Matrix, SymmGroup> const & mpo;
     };
 
-    template<class Matrix, class OtherMatrix, class SymmGroup>
-    class MPSBoundaryProductIndices : public std::vector<DualIndex<SymmGroup> >
+
+    template <class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    void BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b1)
     {
-        typedef std::vector<DualIndex<SymmGroup> > base;
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-
-    public:
-
-        MPSBoundaryProductIndices() {}
-
-        MPSBoundaryProductIndices(DualIndex<SymmGroup> const & mps_basis,
-                                  Boundary<OtherMatrix, SymmGroup> const & right,
-                                  MPOTensor<Matrix, SymmGroup> const & mpo) : base(right.aux_dim())
-        {
-            parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
-
-            index_type loop_max = right.aux_dim();
-            omp_for(index_type b2, parallel::range(index_type(0),loop_max), {
-
-                // exploit hermiticity if available
-                if (mpo.herm_info.right_skip(b2))
-                {
-                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
-
-                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(b2)]);
-                    (*this)[b2] = SU2::gemm_trim_right_pretend(mps_basis, trv);
-                }
-                else {
-                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    (*this)[b2] = SU2::gemm_trim_right_pretend(mps_basis, right[b2]);
-                }
-            });
-        }
-    };
+    }
 
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     class MPSBoundaryProduct
@@ -222,9 +195,9 @@ namespace contraction {
         {
             parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
 
-            index_type loop_max = right.aux_dim();
+            int loop_max = right.aux_dim();
             mps.make_left_paired();
-            omp_for(index_type b2, parallel::range(index_type(0),loop_max), {
+            omp_for(int b2, parallel::range(0,loop_max), {
 
                 // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_col_non_zeros(b2) == 1) continue;
@@ -245,7 +218,7 @@ namespace contraction {
             });
         }
 
-        index_type aux_dim() const {
+        std::size_t aux_dim() const {
             return data_.size();
         }
 
@@ -261,6 +234,27 @@ namespace contraction {
 
         block_matrix<Matrix, SymmGroup> & operator[](index_type k) { return data_[k]; }
         block_matrix<Matrix, SymmGroup> const & operator[](index_type k) const { return data_[k]; }
+
+        DualIndex<SymmGroup> basis_at(index_type k) const
+        {
+            if (mpo.num_col_non_zeros(k) == 1)
+            {
+                if (mpo.herm_info.right_skip(k))
+                {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
+                    //return typename Gemm::gemm_trim_right()(mps.data(), trv);
+                    return SU2::gemm_trim_right_pretend(mps.data(), trv);
+                }
+                else {
+                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
+                    //return typename Gemm::gemm_trim_right_pretend()(mps.data(), right[k]);
+                    return SU2::gemm_trim_right_pretend(mps.data(), right[k]);
+                }
+            }
+            else
+                return data_[k].basis();
+        }
 
         //block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
         block_matrix<Matrix, SymmGroup> const & at(index_type k) const
@@ -302,8 +296,6 @@ namespace contraction {
                         break;
                     }
         }
-
-        MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> indices;
 
     private:
         mutable std::vector<block_matrix<Matrix, SymmGroup> > data_;

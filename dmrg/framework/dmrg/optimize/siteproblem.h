@@ -51,15 +51,12 @@ struct SiteProblem
     typedef std::vector<boundary_vector>                                                          boundaries ;
     typedef std::vector<boundary_type*>                                                           boundary_vector_ptr ;
     typedef std::vector<boundary_vector_ptr>                                                      boundary_matrix_ptr ;
-    typedef std::vector<typename contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::schedule_t > contraction_schedule_vec;
     // Constructor with only one element
-    SiteProblem(MPSTensor<Matrix, SymmGroup> const & initial,boundary_type & left_, boundary_type & right_, MPOTensor<Matrix, SymmGroup> const & mpo_)
+    SiteProblem(boundary_type & left_, boundary_type & right_, MPOTensor<Matrix, SymmGroup> const & mpo_)
             : mpo(mpo_)
     {
         left.push_back(&left_)   ;
         right.push_back(&right_) ;
-        contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::
-                           right_contraction_schedule(initial, right, mpo));
         size = 1 ;
     }
     // Constructor with a vector of boundaries
@@ -95,7 +92,6 @@ struct SiteProblem
                 vector_coefficients[i].push_back(database.get_coefficients(i,j)) ;
             }
             size += 1;
-            contraction_schedules.push_back(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type,SymmGroup>::right_contraction_schedule(initial[i], right_b, mpo));
         }
     }
     // Methods
@@ -120,7 +116,6 @@ public:
     boundary_matrix_ptr right, right_squared ;
     std::size_t size ;
     MPOTensor<Matrix, SymmGroup> const & mpo, mpo_squared ;
-    contraction_schedule_vec contraction_schedules;
 private:
     std::vector< std::vector <double> > vector_coefficients ;
     bool is_squared_ ;
@@ -144,13 +139,11 @@ namespace ietl {
         if (do_squared) {
             y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left_squared[idx][0]),
                                                                                *(H.right_squared[idx][0]),
-                                                                                 H.mpo_squared,
-                                                                                 H.contraction_schedules[idx]) * coeff ;
+                                                                                 H.mpo_squared) * coeff ;
         } else{
             y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][0]),
                                                                                *(H.right[idx][0]),
-                                                                                 H.mpo,
-                                                                                 H.contraction_schedules[idx]) * coeff ;
+                                                                                 H.mpo) * coeff ;
         }
         for (std::size_t k = 1; k < dimension; k++) {
             coeff = H.get_coefficient(idx,k) ;
@@ -158,15 +151,13 @@ namespace ietl {
                 if (H.is_squared())
                     y += contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left_squared[idx][k]),
                                                                                         *(H.right_squared[idx][k]),
-                                                                                          H.mpo_squared,
-                                                                                          H.contraction_schedules[idx]) * coeff ;
+                                                                                          H.mpo_squared) * coeff ;
                 else
                     throw std::runtime_error("Squared boundaries not available") ;
             else
                 y += contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, *(H.left[idx][k]),
                                                                                     *(H.right[idx][k]),
-                                                                                      H.mpo,
-                                                                                      H.contraction_schedules[idx]) * coeff ;
+                                                                                      H.mpo) * coeff ;
         }
         x.make_left_paired() ;
     }

@@ -53,10 +53,12 @@
 #include "dmrg/optimize/Finalizer/finalizer.h"
 #include "dmrg/optimize/Orthogonalizer/orthogonalizer.h"
 
+
 #include "dmrg/optimize/POverlap/partial_overlap.h"
 #include "dmrg/optimize/siteproblem.h"
 #include "dmrg/optimize/singlesitevs.h"
 #include "dmrg/optimize/utils/bound_database.h"
+
 
 #define BEGIN_TIMING(name) \
 now = boost::chrono::high_resolution_clock::now();
@@ -420,10 +422,10 @@ protected:
         }
         // Complete initialization and builds all the boundaries objects
         for (size_t i = 0; i < n_bound_; i++) {
-            (*(boundaries_database_.get_boundaries_left(i, false)))[0] = 
+            (*(boundaries_database_.get_boundaries_left(i, false)))[0] =
               (*(boundaries_database_.get_mps(i))).left_boundary();
             if (do_H_squared_)
-                (*(boundaries_database_.get_boundaries_left(i, true)))[0] = 
+                (*(boundaries_database_.get_boundaries_left(i, true)))[0] =
                       (*(boundaries_database_.get_mps(i))).left_boundary();
         }
         for (size_t i = 0; i < site; ++i) {
@@ -433,10 +435,10 @@ protected:
         maquis::cout << "Boundaries are partially initialized...\n";
         //
         for (size_t i = 0; i < n_bound_; i++) {
-            (*(boundaries_database_.get_boundaries_right(i, false)))[L_] = 
+            (*(boundaries_database_.get_boundaries_right(i, false)))[L_] =
                 (*(boundaries_database_.get_mps(i))).right_boundary();
             if (do_H_squared_)
-                (*(boundaries_database_.get_boundaries_right(i, true)))[L_] = 
+                (*(boundaries_database_.get_boundaries_right(i, true)))[L_] =
                     (*(boundaries_database_.get_mps(i))).right_boundary();
         }
         for (int i = L_-1; i >= site; --i) {
@@ -654,7 +656,7 @@ protected:
     boost::function<bool ()> stop_callback;
     boundaries_vector left_sa_, right_sa_, left_squared_sa_, right_squared_sa_ ;
     sorter_type sorter_ ;
-    double chebyshev_shift_ ; 
+    double chebyshev_shift_ ;
     Finalizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* finalizer_ ;
     /* This is used for multi-state targeting */
     unsigned int northo;
