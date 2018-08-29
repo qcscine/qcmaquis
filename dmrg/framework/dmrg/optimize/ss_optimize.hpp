@@ -338,7 +338,7 @@ public:
                             block_matrix<Matrix, SymmGroup> t = mps_vector[idx][site].normalize_right(DefaultSolver());
                         }
                     } else {
-                        block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_left(DefaultSolver());
+                        block_matrix<Matrix, SymmGroup> t = mps_vector[0][site].normalize_right(DefaultSolver());
                         for (size_t k = 1; k < n_root_; k++)
                             t = mps_vector[k][site].normalize_right(DefaultSolver());
                     }
