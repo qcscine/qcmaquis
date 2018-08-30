@@ -6,22 +6,22 @@
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -36,6 +36,71 @@
 
 namespace contraction {
     namespace common {
+
+        // ADD_NOISE_{L2R,R2L}
+        // ---------------------------------
+        // Adds noise to the DM to improve convergence
+        // ---------------------------------
+        // NOTE: add_noise_l2r and _r2l cannot be combined into one function taking the sweep direction as a parameter!
+        // because Kernel() takes different parameters for l2r and r2l sweeps
+        // this must be corrected!
+
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+        static void add_noise_l2r(block_matrix<Matrix, SymmGroup> & dm,
+                       MPSTensor<Matrix, SymmGroup> const & mps,
+                       MPOTensor<Matrix, SymmGroup> const & mpo,
+                       Boundary<OtherMatrix, SymmGroup> const & boundary, // left or right depending on the direction
+                       double alpha
+                      )
+        {
+
+            Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, boundary, mpo);
+            mps.make_left_paired();
+
+            for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
+            {
+                block_matrix<Matrix, SymmGroup> tdm;
+
+                typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
+
+                tdm *= alpha;
+                for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
+                    if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                        dm.match_and_add_block(tdm[k],
+                                               tdm.basis().left_charge(k),
+                                               tdm.basis().right_charge(k));
+                }
+            }
+        }
+
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+        static void add_noise_r2l(block_matrix<Matrix, SymmGroup> & dm,
+                       MPSTensor<Matrix, SymmGroup> const & mps,
+                       MPOTensor<Matrix, SymmGroup> const & mpo,
+                       Boundary<OtherMatrix, SymmGroup> const & boundary, // left or right depending on the direction
+                       double alpha
+                      )
+        {
+
+            Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, boundary, mpo);
+            mps.make_right_paired();
+
+            for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
+            {
+                block_matrix<Matrix, SymmGroup> tdm;
+
+                typename Gemm::gemm()(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
+
+                tdm *= alpha;
+                for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
+                    if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                        dm.match_and_add_block(tdm[k],
+                                               tdm.basis().left_charge(k),
+                                               tdm.basis().right_charge(k));
+                }
+            }
+        }
+
         //
         // PREDICT_NEW_STATE_L2R_SWEEP
         // ---------------------------
@@ -55,28 +120,10 @@ namespace contraction {
             mps.make_left_paired();
             block_matrix<Matrix, SymmGroup> dm;
             typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
-            
-            Boundary<Matrix, SymmGroup> half_dm
-                = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, left, mpo);
-            
-            mps.make_left_paired();
-            for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
-            {
-                block_matrix<Matrix, SymmGroup> tdm;
-                typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
-                
-                tdm *= alpha;
-                for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                    if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
-                        dm.match_and_add_block(tdm[k],
-                                               tdm.basis().left_charge(k),
-                                               tdm.basis().right_charge(k));
-                }
-            }
 
-            mps.make_left_paired();
+            add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, left, alpha);
             assert( weak_equal(dm.left_basis(), mps.data().left_basis()) );
-            
+
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true, keeps);
@@ -116,24 +163,9 @@ namespace contraction {
             // +----------+
             //  NOISE TERM
             // +----------+
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
-                Boundary<Matrix, SymmGroup> half_dm =
-                        left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps_vector[idx], left, mpo);
-                mps_vector[idx].make_left_paired();
-                for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
-                {
-                    block_matrix<Matrix, SymmGroup> tdm;
-                    typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
-                    tdm *= alpha;
-                    for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                        if (mps_vector[idx].data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
-                            dm.match_and_add_block(tdm[k],
-                                                   tdm.basis().left_charge(k),
-                                                   tdm.basis().right_charge(k));
-                    }
-                }
-                mps_vector[idx].make_left_paired();
-            }
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
+                add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, left, alpha);
+
             // Actual diagonalization of the reduced density matrix
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -144,8 +176,8 @@ namespace contraction {
             ret.replace_left_paired(U);
             return std::make_pair(ret, trunc);
         }
-        
-                
+
+
         //
         // PREDICT_NEW_STATE_R2L_SWEEP
         // ---------------------------
@@ -168,25 +200,10 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> dm;
             // Compute "real" density matrix
             typename Gemm::gemm()(transpose(conjugate(mps.data())), mps.data(), dm);
+
             // Add noise
-            Boundary<Matrix, SymmGroup> half_dm
-                = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, right, mpo);
-            mps.make_right_paired();
-            for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
-            {
-                block_matrix<Matrix, SymmGroup> tdm;
-                typename Gemm::gemm()(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
-                
-                tdm *= alpha;
-                for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                    if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
-                        dm.match_and_add_block(tdm[k],
-                                               tdm.basis().left_charge(k),
-                                               tdm.basis().right_charge(k));
-                }
-            }
-            // Truncate based on the SVD results
-            mps.make_right_paired();
+            add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, right, alpha);
+
             assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -196,7 +213,7 @@ namespace contraction {
             ret.replace_right_paired(adjoint(U));
             return std::make_pair(ret, trunc);
         }
-        
+
         // =================================
         //  PREDICT_NEW_STATE_R2L_SWEEP_VEC
         // =================================
@@ -229,24 +246,9 @@ namespace contraction {
             // +----------+
             //  NOISE TERM
             // +----------+
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
-                // Contracts with right boundary
-                Boundary<Matrix, SymmGroup> half_dm
-                        = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps_vector[idx], right, mpo);
-                mps_vector[idx].make_right_paired();
-                for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
-                {
-                    block_matrix<Matrix, SymmGroup> tdm;
-                    typename Gemm::gemm()(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
-                    tdm *= alpha;
-                    for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                        if (mps_vector[idx].data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
-                            dm.match_and_add_block(tdm[k],
-                                                   tdm.basis().left_charge(k),
-                                                   tdm.basis().right_charge(k));
-                    }
-                }
-            }
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
+                add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, right, alpha);
+
             // Actual diagonalization of the reduced density matrix
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -282,12 +284,12 @@ namespace contraction {
         {
             psi.make_right_paired();
             A.make_right_paired();
-            
+
             block_matrix<Matrix, SymmGroup> tmp;
             typename Gemm::gemm()(psi.data(), transpose(conjugate(A.data())), tmp);
-            
+
             B.multiply_from_right(tmp);
-            
+
             return B;
         }
 
