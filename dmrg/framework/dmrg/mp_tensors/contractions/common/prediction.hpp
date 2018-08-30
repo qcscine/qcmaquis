@@ -117,21 +117,27 @@ namespace contraction {
                                     std::size_t Mmax,
                                     const std::vector<size_t>& keeps = std::vector<size_t>())
         {
+            // Form the density matrix
             mps.make_left_paired();
             block_matrix<Matrix, SymmGroup> dm;
             typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
 
+            // Add noise
             add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, left, alpha);
             assert( weak_equal(dm.left_basis(), mps.data().left_basis()) );
 
+            // Truncate
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true, keeps);
-            // Prepares results
+            // Prepare results
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_left_paired(U);
             return std::make_pair(ret, trunc);
         }
+
+
+
         // =================================
         //  PREDICT_NEW_STATE_L2R_SWEEP_VEC
         // =================================
@@ -204,6 +210,7 @@ namespace contraction {
             // Add noise
             add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, right, alpha);
 
+            // Truncate
             assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
             block_matrix<Matrix, SymmGroup> U;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -249,7 +256,7 @@ namespace contraction {
             for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
                 add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, right, alpha);
 
-            // Actual diagonalization of the reduced density matrix
+            // Truncate
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             truncation_results trunc ;
