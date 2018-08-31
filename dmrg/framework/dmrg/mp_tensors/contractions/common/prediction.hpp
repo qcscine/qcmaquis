@@ -50,8 +50,7 @@ namespace contraction {
                        MPSTensor<Matrix, SymmGroup> const & mps,
                        MPOTensor<Matrix, SymmGroup> const & mpo,
                        Boundary<OtherMatrix, SymmGroup> const & boundary, // left or right depending on the direction
-                       double alpha
-                      )
+                       double alpha)
         {
 
             Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, boundary, mpo);
@@ -78,8 +77,7 @@ namespace contraction {
                        MPSTensor<Matrix, SymmGroup> const & mps,
                        MPOTensor<Matrix, SymmGroup> const & mpo,
                        Boundary<OtherMatrix, SymmGroup> const & boundary, // left or right depending on the direction
-                       double alpha
-                      )
+                       double alpha)
         {
 
             Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, boundary, mpo);
@@ -136,12 +134,58 @@ namespace contraction {
             return std::make_pair(ret, trunc);
         }
 
+        // =================================
+        //  PREDICT_NEW_STATE_L2R_SWEEP_AVG
+        // =================================
+        // Do the same work as before, for sa_alg=-1 (truncation of an average DM of multiple states)
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_l2r_sweep_avg(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                        Boundary<OtherMatrix, SymmGroup> const & left,
+                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax)
+        {
+            for (auto&& mps : mps_vector)
+                mps.make_left_paired();
 
+            // Form an average density matrix
+
+            auto AxAT = [ & ] (MPSTensor<Matrix, SymmGroup> a)
+            {
+                 block_matrix<Matrix, SymmGroup> c;
+                 typename Gemm::gemm()(a.data(), transpose(conjugate(a.data())), c);
+                 return c;
+            };
+
+            auto AxATsum = [ & ] (block_matrix<Matrix, SymmGroup> a, MPSTensor<Matrix, SymmGroup> b) { return a + AxAT(b); };
+
+            block_matrix<Matrix, SymmGroup> dm = std::accumulate(std::next(mps_vector.begin()), mps_vector.end(), AxAT(*mps_vector.begin()), AxATsum);
+            dm /= mps_vector.size();
+
+
+
+            // Add noise (state specific)
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
+                add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, left, alpha);
+
+
+            // Truncate
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true);
+            // Prepare results
+            MPSTensor<Matrix, SymmGroup> ret = mps_vector[0];
+            ret.replace_left_paired(U);
+            return std::make_pair(ret, trunc);
+        }
 
         // =================================
         //  PREDICT_NEW_STATE_L2R_SWEEP_VEC
         // =================================
-        // Do the same work as before, but works for the multistate case.
+        // Do the same work as before, for sa_alg=-3 (truncation for a super-DM of multiple states)
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
@@ -219,6 +263,52 @@ namespace contraction {
             MPSTensor<Matrix, SymmGroup> ret = mps;
             ret.replace_right_paired(adjoint(U));
             return std::make_pair(ret, trunc);
+        }
+
+        // =================================
+        //  PREDICT_NEW_STATE_R2L_SWEEP_AVG
+        // =================================
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_r2l_sweep_avg(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                                        Boundary<OtherMatrix, SymmGroup> const & left,
+                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                        double alpha,
+                                        double cutoff,
+                                        std::size_t Mmax)
+        {
+            // Average density matrix
+
+            for (auto&& mps : mps_vector)
+                mps.make_right_paired();
+
+            auto ATxA = [ & ] (MPSTensor<Matrix, SymmGroup> a)
+            {
+                 block_matrix<Matrix, SymmGroup> c;
+                 typename Gemm::gemm()(transpose(conjugate(a.data())), a.data(), c);
+                 return c;
+            };
+
+            auto ATxAsum = [ & ] (block_matrix<Matrix, SymmGroup> a, MPSTensor<Matrix, SymmGroup> b) { return a + ATxA(b); };
+
+            block_matrix<Matrix, SymmGroup> dm = std::accumulate(std::next(mps_vector.begin()), mps_vector.end(), ATxA(*mps_vector.begin()), ATxAsum);
+            dm /= mps_vector.size();
+
+            //  Noise term
+            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
+                add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, right, alpha);
+
+            // Truncate
+            // assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+            truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax, true);
+            // Prepare output results
+            MPSTensor<Matrix, SymmGroup> ret = mps_vector[0];
+            ret.replace_right_paired(adjoint(U));
+            return std::make_pair(ret, trunc);
+
         }
 
         // =================================

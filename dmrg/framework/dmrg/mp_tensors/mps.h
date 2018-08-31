@@ -103,9 +103,32 @@ public:
                                       double cutoff,
                                       std::size_t Mmax,
                                       const std::vector<size_t>& keeps = std::vector<size_t>());
-    // +-------------------------------------+
-    //  Truncation result for a vector of MPS
-    // +-------------------------------------+
+
+    //  Truncation result for a vector of MPS, truncation of the average DM
+
+    // Left sweep case
+    template<class OtherMatrix>
+    truncation_results grow_l2r_sweep_avg(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                          MPOTensor<Matrix, SymmGroup> const & mpo,
+                                          Boundary<OtherMatrix, SymmGroup> const & left,
+                                          Boundary<OtherMatrix, SymmGroup> const & right,
+                                          std::size_t l,
+                                          double alpha,
+                                          double cutoff,
+                                          std::size_t Mmax) ;
+    // Right sweep case
+    template<class OtherMatrix>
+    truncation_results grow_r2l_sweep_avg(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
+                                          MPOTensor<Matrix, SymmGroup> const & mpo,
+                                          Boundary<OtherMatrix, SymmGroup> const & left,
+                                          Boundary<OtherMatrix, SymmGroup> const & right,
+                                          std::size_t l,
+                                          double alpha,
+                                          double cutoff,
+                                          std::size_t Mmax) ;
+
+    //  Truncation result for a vector of MPS, truncation of the super-DM
+
     // Left sweep case
     template<class OtherMatrix>
     truncation_results grow_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGroup> > & mps_vector,
