@@ -113,7 +113,7 @@ public:
     void sweep(int sweep, OptimizeDirection d = Both) {
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-        for (results_collector it : iteration_results_)
+        for (auto&& it : iteration_results_)
             it.clear();
         std::size_t L = mps_vector[0].length();
         for (size_t i = 1; i < n_root_; i++)

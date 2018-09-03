@@ -117,7 +117,7 @@ public:
         // Initialization
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
 
-        for (results_collector it : iteration_results_)
+        for (auto&& it : iteration_results_)
             it.clear();
         parallel::scheduler_balanced scheduler_mps(L_);
         // Definition of the initial site
