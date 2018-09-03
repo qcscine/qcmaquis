@@ -117,6 +117,7 @@ public:
     , do_root_homing_(false)
     , do_stateaverage_ (false)
     , do_shiftandinvert_(false)
+    , do_H_squared_(false)
     , update_omega(false)
     , update_each_omega(false)
     , i_activate_last_overlap_(parms["activate_last_overlap"])
@@ -173,7 +174,7 @@ public:
             track_variance_ = true ;
         if (parms["reshuffle_variance"] == "yes")
             reshuffle_variance_ = true ;
-            do_H_squared_ = do_H_squared_ || track_variance_ || reshuffle_variance_ ;
+            do_H_squared_ = track_variance_ || reshuffle_variance_ ;
         //TODO ALB Hardcoded for the moment
         if (do_H_squared_)
             throw std::runtime_error("Variance tracking for electronic structure calculations not implemented") ;
