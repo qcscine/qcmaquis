@@ -168,8 +168,8 @@ namespace contraction {
 
 
             // Add noise (state specific)
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
-                add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, left, alpha);
+            for (auto&& mps : mps_vector)
+                add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, left, alpha);
 
 
             // Truncate
@@ -201,20 +201,20 @@ namespace contraction {
             // +---------------------------------------------------+
             //  STANDARD CONTRIBUTION TO THE REDUCED DENSITY MATRIX
             // +---------------------------------------------------+
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
-                mps_vector[idx].make_left_paired();
-                for (std::size_t k = 0; k < mps_vector[idx].data().n_blocks(); ++k)
-                    mps_overall.add_block_to_column(mps_vector[idx].data(),
-                                                    mps_vector[idx].data().basis().left_charge(k),
-                                                    mps_vector[idx].data().basis().right_charge(k));
+            for (auto&& mps : mps_vector) {
+                mps.make_left_paired();
+                for (std::size_t k = 0; k < mps.data().n_blocks(); ++k)
+                    mps_overall.add_block_to_column(mps.data(),
+                                                    mps.data().basis().left_charge(k),
+                                                    mps.data().basis().right_charge(k));
             }
             typename Gemm::gemm()(mps_overall, transpose(conjugate(mps_overall)), dm);
             dm /= dm.norm() ;
             // +----------+
             //  NOISE TERM
             // +----------+
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
-                add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, left, alpha);
+            for (auto&& mps : mps_vector)
+                add_noise_l2r<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, left, alpha);
 
             // Actual diagonalization of the reduced density matrix
             block_matrix<Matrix, SymmGroup> U, V;
@@ -296,8 +296,8 @@ namespace contraction {
             dm /= mps_vector.size();
 
             //  Noise term
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
-                add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, right, alpha);
+            for (auto&& mps : mps_vector)
+                add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, right, alpha);
 
             // Truncate
             // assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
@@ -329,22 +329,22 @@ namespace contraction {
             // +---------------------------------------------------+
             //  STANDARD CONTRIBUTION TO THE REDUCED DENSITY MATRIX
             // +---------------------------------------------------+
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
+            for (auto&& mps : mps_vector) {
                 // Standard reduced density matrix
-                mps_vector[idx].make_right_paired();
-                for (std::size_t k = 0; k < mps_vector[idx].data().n_blocks(); ++k)
-                    mps_overall.add_block_to_row(mps_vector[idx].data(),
-                                                 mps_vector[idx].data().basis().left_charge(k),
-                                                 mps_vector[idx].data().basis().right_charge(k));
-                mps_vector[idx].make_right_paired();
+                mps.make_right_paired();
+                for (std::size_t k = 0; k < mps.data().n_blocks(); ++k)
+                    mps_overall.add_block_to_row(mps.data(),
+                                                 mps.data().basis().left_charge(k),
+                                                 mps.data().basis().right_charge(k));
+                mps.make_right_paired();
             }
             typename Gemm::gemm()(transpose(conjugate(mps_overall)), mps_overall, dm);
             dm /= dm.norm() ;
             // +----------+
             //  NOISE TERM
             // +----------+
-            for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
-                add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps_vector[idx], mpo, right, alpha);
+            for (auto&& mps : mps_vector)
+                add_noise_r2l<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(dm, mps, mpo, right, alpha);
 
             // Truncate
             block_matrix<Matrix, SymmGroup> U, V;
