@@ -5,22 +5,22 @@
  * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -50,11 +50,11 @@ template<class Matrix, class SymmGroup>
 class qc_su2 : public model_impl<Matrix, SymmGroup>
 {
     typedef model_impl<Matrix, SymmGroup> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
@@ -65,9 +65,9 @@ class qc_su2 : public model_impl<Matrix, SymmGroup>
     typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
 
 public:
-    
+
     qc_su2(Lattice const & lat_, BaseParameters & parms_);
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
@@ -76,7 +76,7 @@ public:
     }
 
     void create_terms();
-    
+
     // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
@@ -147,33 +147,50 @@ public:
 
         boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
         boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
 
-            std::string name, value;
-            if (boost::regex_match(lhs, what, expression_twoptdm) ||
-                boost::regex_match(lhs, what, expression_transition_twoptdm)) {
-
-                name = "twoptdm";
-
-                std::string bra_ckp("");
-                std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
-                                name, lat, tag_handler, op_collection, positions, bra_ckp));
-            }
+            std::string name;
+            std::string bra_ckp("");
+            bool expr_matched = false;
+            std::vector<pos_t> positions;
+            // Measure 1-RDM, 2-RDM, 1-TDM or 2-TDM
+            // for TDMs the measurement is <bra_ckp| (operators) | this>
 
             if (boost::regex_match(lhs, what, expression_oneptdm)) {
 
                 name = "oneptdm";
+                expr_matched = true;
+            }
 
-                std::string bra_ckp("");
-                std::vector<pos_t> positions;
+            if (boost::regex_match(lhs, what, expression_twoptdm)) {
+
+                name = "twoptdm";
+                expr_matched = true;
+
+            }
+
+            if (boost::regex_match(lhs, what, expression_transition_oneptdm)) {
+
+                name = "transition_oneptdm";
+                bra_ckp = it->value();
+                expr_matched = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+
+                name = "transition_twoptdm";
+                bra_ckp = it->value();
+                expr_matched = true;
+            }
+
+            if (expr_matched)
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
                                 name, lat, tag_handler, op_collection, positions, bra_ckp));
-            }
         }
 
         return meas;
