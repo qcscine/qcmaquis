@@ -149,6 +149,7 @@ public:
         boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
         boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        boost::regex expression_onerdm_derivative("^MEASURE\\[1rdm-derivative\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -156,7 +157,7 @@ public:
 
             std::string name;
             std::string bra_ckp("");
-            bool expr_matched = false;
+            bool expr_rdm = false, expr_rdm_derivative = false;
             std::vector<pos_t> positions;
             // Measure 1-RDM, 2-RDM, 1-TDM or 2-TDM
             // for TDMs the measurement is <bra_ckp| (operators) | this>
@@ -164,13 +165,13 @@ public:
             if (boost::regex_match(lhs, what, expression_oneptdm)) {
 
                 name = "oneptdm";
-                expr_matched = true;
+                expr_rdm = true;
             }
 
             if (boost::regex_match(lhs, what, expression_twoptdm)) {
 
                 name = "twoptdm";
-                expr_matched = true;
+                expr_rdm = true;
 
             }
 
@@ -178,19 +179,31 @@ public:
 
                 name = "transition_oneptdm";
                 bra_ckp = it->value();
-                expr_matched = true;
+                expr_rdm = true;
             }
 
             if (boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 name = "transition_twoptdm";
                 bra_ckp = it->value();
-                expr_matched = true;
+                expr_rdm = true;
             }
 
-            if (expr_matched)
+            // Measure RDM derivatives
+            if (boost::regex_match(lhs, what, expression_onerdm_derivative)) {
+
+                name = "onerdmderiv";
+                expr_rdm_derivative = true;
+            }
+
+            if (expr_rdm)
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
                                 name, lat, tag_handler, op_collection, positions, bra_ckp));
+
+            if (expr_rdm_derivative)
+                meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
+                                symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
+                                name, lat, tag_handler, op_collection, positions));
         }
 
         return meas;
