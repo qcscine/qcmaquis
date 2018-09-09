@@ -93,33 +93,34 @@
 
                     // Prepare the two-site tensor from two sites of the MPS
                     TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
-                    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+                    // MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
 
                     // Zero all elements
-                    twin_mps.multiply_by_scalar(0.);
+                    tst.data()*= 0.0;
 
                     // Loop over all elements. Use three indices in the same way Yingjin does:
                     // i runs over the number of blocks
                     // j and k over the rows and column of each block
 
-                    for (int i = 0; i < twin_mps.data().n_blocks(); i++)
-                    for (int j = 0; j < twin_mps.data()[i].num_rows(); j++)
-                    for (int k = 0; k < twin_mps.data()[i].num_cols(); k++)
+                    for (int i = 0; i < tst.data().n_blocks(); i++)
+                    for (int j = 0; j < tst.data()[i].num_rows(); j++)
+                    for (int k = 0; k < tst.data()[i].num_cols(); k++)
                     {
                         // write indices into ext_indices so that they get picked up during measurements
                         this->ext_labels = { i, j, k };
 
                         // Prepare the auxiliary state: set the corresponding element to 1 in the TwoSiteTensor
-                        twin_mps.data()[i](j,k) = 1.0;
+                        tst.data()[i](j,k) = 1.0;
 
                         // Incorporate the modified TwoSiteTensor back into the MPS to form auxiliary state
                         // Note that we provide a m value as large as possible (maxint) and a negative cutoff in order to prevent truncation.
 
                         truncation_results trunc;
                         boost::tie(mps_aux[site], mps_aux[site+1], trunc) = tst.split_mps_l2r(std::numeric_limits<int>::max(), -1.0);
+
+                        // Fix the left pairing since manipulation of the MPS messes it up
                         mps_aux[site].make_left_paired();
                         mps_aux[site+1].make_left_paired();
-                        // TODO: Check if the resulting aux_mps is correct!
 
                         // measure the transition 1-RDM <mps_aux|c+c|mps>
                         // TODO: Note that we will need both <mps_aux|c+c|mps> and <mps|c+c|mps_aux> for symmetrised derivatives.
@@ -127,7 +128,7 @@
                         this->measure_correlation(mps_aux, mps);
 
                         // reset the current element back to 0
-                        twin_mps.data()[i](j,k) = 0.0;
+                        tst.data()[i](j,k) = 0.0;
                     }
                 }
             }
