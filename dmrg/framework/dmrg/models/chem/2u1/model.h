@@ -233,6 +233,7 @@ public:
         boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
 
         boost::regex expression_onerdm_derivative("^MEASURE\\[1rdm-derivative\\]");
+        boost::regex expression_twordm_derivative("^MEASURE\\[2rdm-derivative\\]");
 
         boost::smatch what;
 
@@ -852,8 +853,10 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_onerdm_derivative))
-                throw std::runtime_error("1-RDM derivatives for 2u1 not implemented yet!");
+            else if (boost::regex_match(lhs, what, expression_onerdm_derivative) ||
+                     boost::regex_match(lhs, what, expression_onerdm_derivative))
+                throw std::runtime_error("RDM derivatives for 2u1 not implemented yet!");
+
 
             else if (!name.empty()) {
 

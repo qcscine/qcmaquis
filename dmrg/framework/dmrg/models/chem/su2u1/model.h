@@ -150,6 +150,7 @@ public:
         boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         boost::regex expression_onerdm_derivative("^MEASURE\\[1rdm-derivative\\]");
+        boost::regex expression_twordm_derivative("^MEASURE\\[2rdm-derivative\\]");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -193,6 +194,12 @@ public:
             if (boost::regex_match(lhs, what, expression_onerdm_derivative)) {
 
                 name = "onerdmderiv";
+                expr_rdm_derivative = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_derivative)) {
+
+                name = "twordmderiv";
                 expr_rdm_derivative = true;
             }
 

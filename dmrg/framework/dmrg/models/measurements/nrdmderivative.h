@@ -73,7 +73,10 @@
                 if (this->name() == "onerdmderiv")
                     RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_correlation, this, std::placeholders::_1, std::placeholders::_2);
 
-                measure_derivative(ket_mps,RDMEvaluator);
+                if (this->name() == "twordmderiv")
+                    RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_1, std::placeholders::_2);
+
+                measure_derivative(ket_mps, RDMEvaluator);
             }
         protected:
             measurement<Matrix, SymmGroup>* do_clone() const
@@ -134,8 +137,8 @@
                         mps_aux[site].make_left_paired();
                         mps_aux[site+1].make_left_paired();
 
-                        // measure the transition 1-RDM <mps_aux|c+c|mps>
-                        // TODO: Note that we will need both <mps_aux|c+c|mps> and <mps|c+c|mps_aux> for symmetrised derivatives.
+                        // measure the transition RDM <mps_aux|c+...c...|mps>
+                        // TODO: Note that we will need both <mps_aux|c+...c...|mps> and <mps|c+...c...|mps_aux> for symmetrised derivatives.
                         // The symmetrisation will be taken care for later
                         RDMEvaluator(mps_aux, mps);
 
