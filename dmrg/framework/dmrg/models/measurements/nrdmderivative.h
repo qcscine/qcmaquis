@@ -66,8 +66,14 @@
 
             virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
             {
+                // Wrapper for the TDM evaluation function
+                std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator;
+
+                // Assign the appropriate TDM evaluation function to RDMEvaluator based on which derivative should be calculated
                 if (this->name() == "onerdmderiv")
-                    measure_1rdm_derivative(ket_mps);
+                    RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_correlation, this, std::placeholders::_1, std::placeholders::_2);
+
+                measure_derivative(ket_mps,RDMEvaluator);
             }
         protected:
             measurement<Matrix, SymmGroup>* do_clone() const
@@ -75,12 +81,19 @@
                 return new NRDMDerivative(*this);
             }
 
-            // Calculates RDM derivatives with respect to MPS parameters
-            // If twosite is not set, MPS parameters are calculated only from MPSTensor at site [site]
+            // MEASURE_DERIVATIVE
+            //
+            // Generic function to calculate RDM derivatives with respect to MPS parameters
+            // Constructs an auxiliary state from MPS [mps] (as described in doi:10.1021/acs.jctc.6b01118)
+            // and calculates RDM derivatives as TDMs between [mps] and the auxiliary state
+            // If [twosite] is not set, MPS parameters are calculated only from an MPSTensor at site [site],
             // otherwise they are calculated from a TwoSiteTensor at [site] and [site+1]
+            //
+            // The function to calculate RDMs ( for which the derivative should be calculated)
+            // is passed as [RDMevaluator], which allows calculating derivatives for all available RDMs
 
             // TODO: 0 is only temporarily the default argument for site until I figure out how to pass the site reasonably
-            void measure_1rdm_derivative(MPS<Matrix, SymmGroup> mps, int site = 0, bool twosite = true)
+            void measure_derivative(MPS<Matrix, SymmGroup> mps, std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator, int site = 0, bool twosite = true)
             {
 
                 MPS<Matrix, SymmGroup> mps_aux = mps;
@@ -124,7 +137,7 @@
                         // measure the transition 1-RDM <mps_aux|c+c|mps>
                         // TODO: Note that we will need both <mps_aux|c+c|mps> and <mps|c+c|mps_aux> for symmetrised derivatives.
                         // The symmetrisation will be taken care for later
-                        this->measure_correlation(mps_aux, mps);
+                        RDMEvaluator(mps_aux, mps);
 
                         // reset the current element back to 0
                         tst.data()[i](j,k) = 0.0;
