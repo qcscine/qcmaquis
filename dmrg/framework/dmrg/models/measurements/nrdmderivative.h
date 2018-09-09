@@ -93,7 +93,6 @@
 
                     // Prepare the two-site tensor from two sites of the MPS
                     TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
-                    // MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
 
                     // Zero all elements
                     tst.data()*= 0.0;
