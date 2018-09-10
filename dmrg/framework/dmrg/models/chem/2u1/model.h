@@ -232,8 +232,12 @@ public:
         boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
         boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
 
-        boost::regex expression_onerdm_derivative("^MEASURE\\[1rdm-derivative\\]");
-        boost::regex expression_twordm_derivative("^MEASURE\\[2rdm-derivative\\]");
+        boost::regex expression_onerdm_derivativeL("^MEASURE\\[1rdm-derivativeL\\]");
+        boost::regex expression_twordm_derivativeL("^MEASURE\\[2rdm-derivativeL\\]");
+        boost::regex expression_onerdm_derivativeR("^MEASURE\\[1rdm-derivativeR\\]");
+        boost::regex expression_twordm_derivativeR("^MEASURE\\[2rdm-derivativeR\\]");
+        boost::regex expression_onerdm_derivative_both("^MEASURE\\[1rdm-derivative\\]");
+        boost::regex expression_twordm_derivative_both("^MEASURE\\[2rdm-derivative\\]");
 
         boost::smatch what;
 
@@ -853,8 +857,12 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_onerdm_derivative) ||
-                     boost::regex_match(lhs, what, expression_onerdm_derivative))
+            else if (boost::regex_match(lhs, what, expression_onerdm_derivativeL) ||
+                     boost::regex_match(lhs, what, expression_twordm_derivativeL) ||
+                     boost::regex_match(lhs, what, expression_onerdm_derivativeR) ||
+                     boost::regex_match(lhs, what, expression_twordm_derivativeR) ||
+                     boost::regex_match(lhs, what, expression_onerdm_derivative_both) ||
+                     boost::regex_match(lhs, what, expression_twordm_derivative_both))
                 throw std::runtime_error("RDM derivatives for 2u1 not implemented yet!");
 
 

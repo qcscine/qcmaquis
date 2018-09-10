@@ -145,20 +145,32 @@ public:
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_element;
 
+        // Regexps for RDM and TDM measurement
         boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
         boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+
         boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
-        boost::regex expression_onerdm_derivative("^MEASURE\\[1rdm-derivative\\]");
-        boost::regex expression_twordm_derivative("^MEASURE\\[2rdm-derivative\\]");
+
+        // Regexps for RDM derivative measurement
+        boost::regex expression_onerdm_derivativeL("^MEASURE\\[1rdm-derivativeL\\]");
+        boost::regex expression_twordm_derivativeL("^MEASURE\\[2rdm-derivativeL\\]");
+        boost::regex expression_onerdm_derivativeR("^MEASURE\\[1rdm-derivativeR\\]");
+        boost::regex expression_twordm_derivativeR("^MEASURE\\[2rdm-derivativeR\\]");
+
+        // If 'Xrdm-derivative' without a suffix is specified, both left and right derivatives
+        // are calculated
+        boost::regex expression_onerdm_derivative_both("^MEASURE\\[1rdm-derivative\\]");
+        boost::regex expression_twordm_derivative_both("^MEASURE\\[2rdm-derivative\\]");
+
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
 
-            std::string name;
+            std::string name, nameR;
             std::string bra_ckp("");
-            bool expr_rdm = false, expr_rdm_derivative = false;
+            bool expr_rdm = false, expr_rdm_derivative = false, expr_rdm_deriv_both = false;
             std::vector<pos_t> positions;
             // Measure 1-RDM, 2-RDM, 1-TDM or 2-TDM
             // for TDMs the measurement is <bra_ckp| (operators) | this>
@@ -191,16 +203,38 @@ public:
             }
 
             // Measure RDM derivatives
-            if (boost::regex_match(lhs, what, expression_onerdm_derivative)) {
+            if (boost::regex_match(lhs, what, expression_onerdm_derivativeL)) {
 
-                name = "onerdmderiv";
+                name = "onerdmderivL";
                 expr_rdm_derivative = true;
             }
 
-            if (boost::regex_match(lhs, what, expression_twordm_derivative)) {
+            if (boost::regex_match(lhs, what, expression_twordm_derivativeL)) {
 
-                name = "twordmderiv";
+                name = "twordmderivL";
                 expr_rdm_derivative = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_onerdm_derivativeR)) {
+
+                name = "onerdmderivR";
+                expr_rdm_derivative = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_derivativeR)) {
+
+                name = "twordmderivR";
+                expr_rdm_derivative = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_onerdm_derivative_both)) {
+                name = "onerdmderivL"; nameR = "onerdmderivR";
+                expr_rdm_deriv_both = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_derivative_both)) {
+                name = "twordmderivL"; nameR = "twordmderivR";
+                expr_rdm_deriv_both = true;
             }
 
             if (expr_rdm)
@@ -211,6 +245,15 @@ public:
                 meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
                                 symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
                                 name, lat, tag_handler, op_collection, positions));
+
+            if (expr_rdm_deriv_both) {
+                meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
+                                symm_traits::HasSU2<SymmGroup>(),
+                                name, lat, tag_handler, op_collection, positions));
+                meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
+                                symm_traits::HasSU2<SymmGroup>(),
+                                nameR, lat, tag_handler, op_collection, positions));
+            }
         }
 
         return meas;

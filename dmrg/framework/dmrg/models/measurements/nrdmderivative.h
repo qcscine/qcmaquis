@@ -72,11 +72,18 @@
                 std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator;
 
                 // Assign the appropriate TDM evaluation function to RDMEvaluator based on which derivative should be calculated
-                if (this->name() == "onerdmderiv")
+                if (this->name() == "onerdmderivR")
                     RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_correlation, this, std::placeholders::_1, std::placeholders::_2);
 
-                if (this->name() == "twordmderiv")
+                if (this->name() == "twordmderivR")
                     RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_1, std::placeholders::_2);
+
+                // for left RDM derivatives, the bra and ket in the RDM evaluation are swapped
+                if (this->name() == "onerdmderivL")
+                    RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_correlation, this, std::placeholders::_2, std::placeholders::_1);
+
+                if (this->name() == "twordmderivL")
+                    RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_2, std::placeholders::_1);
 
                 measure_derivative(ket_mps, RDMEvaluator);
             }

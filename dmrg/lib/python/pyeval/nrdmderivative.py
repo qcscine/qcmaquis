@@ -43,12 +43,11 @@ import numpy as np
 # dependency on rdmsave_su2_onlyone.py
 
 
-def save_1rdmderiv(rdm):
+def save_1rdmderiv(rdm,filename_prefix):
     fmt = '%14.14e'
 
     L = int(rdm.props["L"])
 
-    filename_def='onerdmderivative'
     # dictionary of files. the file list for each derivative is maintained
     # in a dictionary
 
@@ -58,7 +57,7 @@ def save_1rdmderiv(rdm):
         i = lab[3]
         j = lab[4]
 
-        filename="%s.%i-%i-%i" % (filename_def, lab[0], lab[1], lab[2])
+        filename="%s.%i-%i-%i" % (filename_prefix, lab[0], lab[1], lab[2])
 
         # open the file if f[filename] doesn't exist yet
         # and write L into it
@@ -77,21 +76,20 @@ def save_1rdmderiv(rdm):
 
     return L
 
-def load_1rdmderiv(inputfile):
+def load_1rdmderiv(inputfile,meas):
     # load data from the HDF5 result file
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='onerdmderiv')[0][0]
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas)[0][0]
     return rdm
 
-def load_2rdmderiv(inputfile):
+def load_2rdmderiv(inputfile,meas):
     # load data from the HDF5 result file
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twordmderiv')[0][0]
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas)[0][0]
     rdm.y[0] = 0.5 * rdm.y[0]
     return rdm
 
-def save_2rdmderiv(rdm,L):
+def save_2rdmderiv(rdm,L,filename_prefix):
     fmt = '%14.14e'
 
-    filename_def='twordmderivative'
     # dictionary of files. the file list for each derivative is maintained
     # in a dictionary
 
@@ -103,7 +101,7 @@ def save_2rdmderiv(rdm,L):
         k = lab[5]
         l = lab[6]
 
-        filename="%s.%i-%i-%i" % (filename_def, lab[0], lab[1], lab[2])
+        filename="%s.%i-%i-%i" % (filename_prefix, lab[0], lab[1], lab[2])
 
         if (f.get(filename) == None):
             f[filename] = f.get(filename,open(filename,'w'))
@@ -117,9 +115,10 @@ def save_2rdmderiv(rdm,L):
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    rdm1 =load_1rdmderiv(inputfile)
-    L=save_1rdmderiv(rdm1)
+    for c in ['L','R']:
+      rdm1=load_1rdmderiv(inputfile,'onerdmderiv%s'%c)
+      L=save_1rdmderiv(rdm1,'onerdmderivative%s'%c)
 
-    rdmT = load_2rdmderiv(inputfile)
-    save_2rdmderiv(rdmT,L)
+      rdm2 = load_2rdmderiv(inputfile,'twordmderiv%s'%c)
+      save_2rdmderiv(rdm2,L,'twordmderivative%s'%c)
 
