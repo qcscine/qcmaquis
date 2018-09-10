@@ -41,6 +41,7 @@
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
 #include "ietl_davidson.h"
+#include "siteproblem.h"
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/results_collector.h"
@@ -48,26 +49,6 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
-
-
-template<class Matrix, class SymmGroup>
-
-struct SiteProblem<Matrix, SymmGroup>
-{
-    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : left(left_)
-    , right(right_)
-    , mpo(mpo_)
-    {
-    }
-
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
-    MPOTensor<Matrix, SymmGroup> const & mpo;
-    double ortho_shift;
-};
 
 #define BEGIN_TIMING(name) \
 now = boost::chrono::high_resolution_clock::now();
