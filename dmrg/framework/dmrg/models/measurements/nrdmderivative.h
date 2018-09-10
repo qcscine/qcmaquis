@@ -31,6 +31,8 @@
 
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
 #include "dmrg/mp_tensors/twositetensor.h"
+// Uncomment if overlap sign fixing is enabled
+//#include <boost/math/special_functions/sign.hpp>
 
     namespace measurements
     {
@@ -137,6 +139,11 @@
                         mps_aux[site].make_left_paired();
                         mps_aux[site+1].make_left_paired();
 
+                        // TODO: Check if the sign correction below is really needed
+                        // Correct the sign of the auxiliary state: <mps_aux|mps> must be positive, otherwise the RDM derivatives will have a wrong sign
+                        // mps *= sgn(<mps_aux|mps>)
+                        // mps_aux[site].multiply_by_scalar(boost::math::copysign(1.0, maquis::real(overlap(mps_aux, mps))));
+
                         // measure the transition RDM <mps_aux|c+...c...|mps>
                         // TODO: Note that we will need both <mps_aux|c+...c...|mps> and <mps|c+...c...|mps_aux> for symmetrised derivatives.
                         // The symmetrisation will be taken care for later
@@ -161,6 +168,8 @@
 
                         mpst_mod.data()[i](j,k) = 1.0;
                         mpst_mod.make_left_paired();
+                        // Sign correction commented out
+                        // mpst_mod.multiply_by_scalar(boost::math::copysign(1.0, maquis::real(overlap(mps_aux, mps))));
                         RDMEvaluator(mps_aux, mps);
                         mpst_mod.data()[i](j,k) = 0.0;
                     }
