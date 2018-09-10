@@ -146,6 +146,25 @@
                         tst.data()[i](j,k) = 0.0;
                     }
                 }
+                else // one-site
+                {
+                    // do everything as above but operate on the MPSTensor directly rather than forming a two-site tensor
+                    MPSTensor<Matrix, SymmGroup> & mpst_mod = mps_aux[site];
+
+                    mpst_mod.multiply_by_scalar(0.0);
+
+                    for (int i = 0; i < mpst_mod.data().n_blocks(); i++)
+                    for (int j = 0; j < mpst_mod.data()[i].num_rows(); j++)
+                    for (int k = 0; k < mpst_mod.data()[i].num_cols(); k++)
+                    {
+                        this->ext_labels = { i, j, k };
+
+                        mpst_mod.data()[i](j,k) = 1.0;
+                        mpst_mod.make_left_paired();
+                        RDMEvaluator(mps_aux, mps);
+                        mpst_mod.data()[i](j,k) = 0.0;
+                    }
+                }
             }
         };
     } // measurements
