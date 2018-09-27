@@ -38,10 +38,10 @@
 
 #include "utils/sizeof.h"
 
+#include "siteproblem.h"
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
 #include "ietl_davidson.h"
-#include "siteproblem.h"
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/results_collector.h"
@@ -77,11 +77,13 @@ public:
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
-                   int site=0)
+                   int site = 0,
+                   bool use_ortho = true) // ignore orthogonal states, is used e.g. in derived classes for the local Hamiltonian matrix element measurement
     : mps(mps_)
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
+    , northo(use_ortho ? parms["northo_states"] : 0)
     {
         std::size_t L = mps.length();
 
@@ -89,24 +91,25 @@ public:
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
 
-        northo = parms_["n_ortho_states"];
-        maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
+        if (northo > 0)
+        {
+            maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
+            if (!parms_.is_set("ortho_states"))
+                throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
 
-        if (northo > 0 && !parms_.is_set("ortho_states"))
-            throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
+            ortho_mps.resize(northo);
+            std::string files_ = parms_["ortho_states"].str();
+            std::vector<std::string> files;
+            boost::split(files, files_, boost::is_any_of(", "));
+            for (int n = 0; n < northo; ++n) {
+                maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
 
-        ortho_mps.resize(northo);
-        std::string files_ = parms_["ortho_states"].str();
-        std::vector<std::string> files;
-        boost::split(files, files_, boost::is_any_of(", "));
-        for (int n = 0; n < northo; ++n) {
-            maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
+                maquis::checks::symmetry_check(parms, files[n]);
+                load(files[n], ortho_mps[n]);
+                maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
 
-            maquis::checks::symmetry_check(parms, files[n]);
-            load(files[n], ortho_mps[n]);
-            maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-
-            maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+                maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+            }
         }
 
         init_left_right(mpo, site);

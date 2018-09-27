@@ -105,7 +105,7 @@
             // is passed as [RDMevaluator], which allows calculating derivatives for all available RDMs
 
             // TODO: 0 is only temporarily the default argument for site until I figure out how to pass the site reasonably
-            void measure_derivative(MPS<Matrix, SymmGroup> mps, std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator, int site = 0, bool twosite = true)
+            void measure_derivative(MPS<Matrix, SymmGroup> const& mps, std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator, int site = 0, bool twosite = true)
             {
 
                 MPS<Matrix, SymmGroup> mps_aux = mps;

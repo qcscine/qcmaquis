@@ -30,8 +30,7 @@
 #define SITEPROBLEM_H
 
 template<class Matrix, class SymmGroup>
-
-struct SiteProblem<Matrix, SymmGroup>
+struct SiteProblem
 {
     SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,

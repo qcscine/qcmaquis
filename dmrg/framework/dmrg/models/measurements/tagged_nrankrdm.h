@@ -875,8 +875,10 @@ namespace measurements {
 
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 {
-                    // TODO: This is inconsistent with the 2u1 version, where the p4 loop starts from 0
-                    // in release-2.0 the inconsistency has been fixed
+                    // TODO: p4 should actually always start for p3,
+                    // however there's a bug which leads to wrong order of the indices
+                    // for regular 2-RDMs it is not a problem because of the symmetry, but is exposed for 2-TDMs
+                    // therefore for TDMs we have temporarily disabled the permutational symmetry
                     for (pos_t p4 = (bra_neq_ket ? 0 : p3); p4 < lattice.size(); ++p4)
                     {
                         pos_t pos_[4] = {p1, p2, p3, p4};
@@ -1094,8 +1096,7 @@ namespace measurements {
 
                     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                     std::vector<std::vector<pos_t> > num_labels;
-                    // TODO: This is inconsistent with the su2u1 version, where the p4 loop starts from p3
-                    // in release-2.0 the inconsistency has been fixed (and set to p4=p3). Check this!
+
                     for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
                     {
 		               if(p1 == p4 && p3 > p2)

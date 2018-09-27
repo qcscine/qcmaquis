@@ -28,6 +28,7 @@
 #define MEASUREMENT_H
 
 #include "dmrg/mp_tensors/reduced_mps.h"
+#include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
@@ -62,6 +63,10 @@ public:
     virtual ~measurement() { }
 
     virtual void evaluate(MPS<Matrix, SymmGroup> const&, boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) =0;
+
+    // Some measurements require MPOs, this evaluate overload should implement it
+    // But this implementation is not mandatory, therefore the function is not pure virtual
+    virtual void evaluate(MPS<Matrix, SymmGroup> const&, MPO<Matrix, SymmGroup> const&) {};
     template <class Archive>
     void save(Archive &) const;
     void write_xml(alps::oxstream &) const;
@@ -212,6 +217,17 @@ inline std::vector<std::string> label_strings (const Lattice& lat,
         }
         ret.push_back(oss.str());
     }
+    return ret;
+}
+
+// Just convert labels to a string, no frills.
+inline std::string label_string_simple (const std::vector<Lattice::pos_t> & labels)
+{
+    std::string ret;
+
+    for (auto it = labels.begin(); it != labels.end(); it++)
+        ret += "( " + boost::lexical_cast<std::string>(*it) + (it != std::prev(labels.end()) ? " ) -- " : " )") ;
+
     return ret;
 }
 

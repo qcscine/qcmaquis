@@ -33,6 +33,7 @@
 #include "dmrg/models/measurements/correlations.h"
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
 #include "dmrg/models/measurements/nrdmderivative.h"
+#include "dmrg/models/measurements/local_hamiltonian.h"
 //#include "dmrg/models/measurements/rel_nrankrdm.h"
 #include "dmrg/models/measurements/custom.h"
 #include "dmrg/models/measurements/overlap.h"
@@ -43,19 +44,27 @@ template <class Matrix, class SymmGroup>
 class measure_and_save {
 public:
     measure_and_save(std::string const& rfile_, std::string const& archive_path_,
-                     MPS<Matrix, SymmGroup> const& mps_, int eigenstate_=0)
+                     MPS<Matrix, SymmGroup> const& mps_, int eigenstate_=0, boost::optional<MPO<Matrix, SymmGroup> const&> mpo_ = boost::none)
     : rfile(rfile_)
     , archive_path(archive_path_)
     , eigenstate(eigenstate_)
     , mps(mps_)
     , rmps(mps)
+    , mpo(mpo_)
     { }
 
     void operator()(measurement<Matrix, SymmGroup> & meas) const
     {
         maquis::cout << "Measuring " << meas.name() << std::endl;
         meas.eigenstate_index() = eigenstate;
-        meas.evaluate(mps, rmps);
+
+        // Local Hamiltonian measure requires the MPO, so check if we're measuring it
+        // TODO: This is dirty! Find a better way to implement this
+        // TODO: Make sure that mpo has been actually initialised
+        if (meas.name() == "local_hamiltonian")
+            meas.evaluate(mps, mpo.get());
+        else
+            meas.evaluate(mps, rmps);
         storage::archive ar(rfile, "w");
         ar[archive_path] << meas;
     }
@@ -65,6 +74,7 @@ private:
     int eigenstate;
     MPS<Matrix, SymmGroup> const& mps;
     reduced_mps<Matrix, SymmGroup> rmps;
+    boost::optional<MPO<Matrix, SymmGroup> const&> mpo;
 };
 
 

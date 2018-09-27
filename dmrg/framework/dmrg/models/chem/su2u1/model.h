@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2018 by Leon Freitag <lefreita@ethz.ch>
  *
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -163,6 +164,9 @@ public:
         boost::regex expression_onerdm_derivative_both("^MEASURE\\[1rdm-derivative\\]");
         boost::regex expression_twordm_derivative_both("^MEASURE\\[2rdm-derivative\\]");
 
+        // Regexp for local Hamiltonian matrix elements
+        boost::regex expression_local_hamiltonian("^MEASURE\\[local-hamiltonian\\]");
+
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -253,6 +257,12 @@ public:
                 meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
                                 symm_traits::HasSU2<SymmGroup>(),
                                 nameR, lat, tag_handler, op_collection, positions));
+            }
+
+            if (boost::regex_match(lhs, what, expression_local_hamiltonian)) {
+                name = "local_hamiltonian";
+                meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
+                                name, lat, parms));
             }
         }
 
