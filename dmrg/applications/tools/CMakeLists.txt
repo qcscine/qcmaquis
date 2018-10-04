@@ -65,6 +65,8 @@ create_tools_symm_target("onetdm_diag_2u1pg"  "TWOU1PG"  "onetdm_diag.cpp"  "dmr
 create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+create_tools_symm_target("srcas_2u1pg"           "TWOU1PG"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+
 create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 #create_tools_symm_target("mult_test_2u1pg"   "TWOU1PG" "mult_test.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
