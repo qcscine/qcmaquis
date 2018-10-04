@@ -30,12 +30,12 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 
-set(BUILD_SYMMETRIES "U1;TwoU1;TwoU1PG;NONE" CACHE STRINGS "List of symmetry
+set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRINGS "List of symmetry
 to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
 set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 
-option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
-option(ENABLE_OMP "Enable OpenMP" OFF)
+option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
+option(ENABLE_OMP "Enable OpenMP" ON)
 option(USE_AMBIENT "Enable Ambient" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
@@ -133,10 +133,6 @@ endforeach(SYMM)
 ######################################################################
 # Libraries
 ######################################################################
-# OpenMP
-if(NOT OpenMP_FOUND)
-  find_package(OpenMP)
-endif(NOT OpenMP_FOUND)
 
 # ALPS
 if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
@@ -217,7 +213,7 @@ endif(USE_AMBIENT)
 ######################################################################
 # Version information
 ######################################################################
-set(DMRG_YEAR 2014)
+set(DMRG_YEAR 2018)
 set(DMRG_VERSION_MAJOR 2)
 set(DMRG_VERSION_MINOR 0)
 set(DMRG_VERSION_BUILD "")
@@ -295,20 +291,17 @@ endif(USE_AMBIENT)
 
 # OpenMP
 if(ENABLE_OMP)
+  find_package(OpenMP)
   if(OPENMP_FOUND)
-    macro(enable_omp_if_found)
-      #add_definitions(${OpenMP_C_FLAGS} ${OpenMP_CXX_FLAGS})
-      add_definitions(-DMAQUIS_OPENMP)
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    endmacro(enable_omp_if_found)
+    add_definitions(-DMAQUIS_OPENMP)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
   else(OPENMP_FOUND)
     message("OpenMP not found")
   endif(OPENMP_FOUND)
-else(ENABLE_OMP)
-  macro(enable_omp_if_found)
-  endmacro(enable_omp_if_found)
 endif(ENABLE_OMP)
+
 
 
 ######################################################################
