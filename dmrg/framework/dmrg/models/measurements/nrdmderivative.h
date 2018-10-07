@@ -49,8 +49,8 @@
         public:
             // Specialization to call the correct constructor of the base class
             // TODO: Check if this compiles with disabled SU2U1/SU2U1PG!
-            // SU2U1: symm_traits::HasSU2<SU2U1PG> is equivalent to boost::true_type
-            NRDMDerivative(symm_traits::HasSU2<SU2U1PG>, std::string const& name_, const Lattice & lat,
+            // symm_traits::HasSU2<SU2U1> and symm_traits::HasSU2<SU2U1PG> yields boost::true_type
+            NRDMDerivative(boost::true_type, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection const & op_collection_,
                        positions_type const& positions_ = positions_type())
