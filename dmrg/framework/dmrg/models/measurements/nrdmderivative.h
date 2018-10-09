@@ -119,6 +119,12 @@
                     // Prepare the two-site tensor from two sites of the MPS
                     TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
 
+                    // To keep the consistency with other measurements (local Hamiltonian), or the yingjin-devel branch
+                    // which apparently works with left-paired two site tensors, we introduce left pairing
+                    // Note that for some reason, pairing introduces an additional block with a zero element!
+                    // Note that pairing may introduce additional blocks!
+                    tst.make_left_paired();
+
                     // Zero all elements
                     tst.data()*= 0.0;
 
@@ -132,6 +138,8 @@
                     {
                         // write indices into ext_indices so that they get picked up during measurements
                         this->ext_labels = { i, j, k };
+
+                        // TODO: Check for zero elements in the original MPS to avoid unnecessary calculations
 
                         // Prepare the auxiliary state: set the corresponding element to 1 in the TwoSiteTensor
                         tst.data()[i](j,k) = 1.0;
@@ -164,6 +172,7 @@
                 {
                     // do everything as above but operate on the MPSTensor directly rather than forming a two-site tensor
                     MPSTensor<Matrix, SymmGroup> & mpst_mod = mps_aux[site];
+                    mpst_mod.make_left_paired();
 
                     mpst_mod.multiply_by_scalar(0.0);
 
