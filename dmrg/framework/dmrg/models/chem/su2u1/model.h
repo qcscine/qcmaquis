@@ -167,6 +167,16 @@ public:
         // Regexp for local Hamiltonian matrix elements
         boost::regex expression_local_hamiltonian("^MEASURE\\[local-hamiltonian\\]");
 
+        // Regexp for Lagrange RDM update (MPS contribution to the Lagrange effective RDM in gradient calculations)
+        // as for the RDM derivatives, the name without a L or R suffix means both left and right expectation values
+        // are calculated
+        boost::regex expression_onerdm_lagrangeL("^MEASURE\\[1rdm-lagrangeL\\]");
+        boost::regex expression_twordm_lagrangeL("^MEASURE\\[2rdm-lagrangeL\\]");
+        boost::regex expression_onerdm_lagrangeR("^MEASURE\\[1rdm-lagrangeR\\]");
+        boost::regex expression_twordm_lagrangeR("^MEASURE\\[2rdm-lagrangeR\\]");
+        boost::regex expression_onerdm_lagrange_both("^MEASURE\\[1rdm-lagrange\\]");
+        boost::regex expression_twordm_lagrange_both("^MEASURE\\[2rdm-lagrange\\]");
+
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -174,7 +184,8 @@ public:
 
             std::string name, nameR;
             std::string bra_ckp("");
-            bool expr_rdm = false, expr_rdm_derivative = false, expr_rdm_deriv_both = false;
+            bool expr_rdm = false, expr_rdm_derivative = false, expr_rdm_deriv_both = false,
+                 expr_rdm_lagrange = false, expr_rdm_lagrange_both = false;
             std::vector<pos_t> positions;
             // Measure 1-RDM, 2-RDM, 1-TDM or 2-TDM
             // for TDMs the measurement is <bra_ckp| (operators) | this>
@@ -241,6 +252,41 @@ public:
                 expr_rdm_deriv_both = true;
             }
 
+            // Measure MPS contributions to the effective RDM from Lagrange multipliers in linear response equations
+            if (boost::regex_match(lhs, what, expression_onerdm_lagrangeL)) {
+
+                name = "onerdmlagrangeL";
+                expr_rdm_lagrange = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_lagrangeL)) {
+
+                name = "twordmlagrangeL";
+                expr_rdm_lagrange = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_onerdm_lagrangeR)) {
+
+                name = "onerdmlagrangeR";
+                expr_rdm_lagrange = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_lagrangeR)) {
+
+                name = "twordmlagrangeR";
+                expr_rdm_lagrange = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_onerdm_lagrange_both)) {
+                name = "onerdmlagrangeL"; nameR = "onerdmlagrangeR";
+                expr_rdm_lagrange_both = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_lagrange_both)) {
+                name = "twordmlagrangeL"; nameR = "twordmlagrangeR";
+                expr_rdm_lagrange_both = true;
+            }
+
             if (expr_rdm)
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
                                 name, lat, tag_handler, op_collection, positions, bra_ckp));
@@ -259,6 +305,21 @@ public:
                                 nameR, lat, tag_handler, op_collection, positions));
             }
 
+            if (expr_rdm_lagrange)
+                meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
+                                symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
+                                it->value(), name, lat, tag_handler, op_collection, positions));
+
+            if (expr_rdm_lagrange_both) {
+                meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
+                                symm_traits::HasSU2<SymmGroup>(),
+                                it->value(), name, lat, tag_handler, op_collection, positions));
+                meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
+                                symm_traits::HasSU2<SymmGroup>(),
+                                it->value(), nameR, lat, tag_handler, op_collection, positions));
+            }
+
+            // Measure Local Hamiltonian matrix elements
             if (boost::regex_match(lhs, what, expression_local_hamiltonian)) {
                 name = "local_hamiltonian";
                 meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(

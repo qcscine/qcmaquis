@@ -34,6 +34,7 @@
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
 #include "dmrg/models/measurements/nrdmderivative.h"
 #include "dmrg/models/measurements/local_hamiltonian.h"
+#include "dmrg/models/measurements/nrdm_lr_lagrange.h"
 //#include "dmrg/models/measurements/rel_nrankrdm.h"
 #include "dmrg/models/measurements/custom.h"
 #include "dmrg/models/measurements/overlap.h"
