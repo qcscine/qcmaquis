@@ -117,11 +117,14 @@
                     // Prepare the two-site tensor from two sites of the MPS
                     TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
 
+                    // we need to keep the original elements for the sign correction
+                    TwoSiteTensor<Matrix, SymmGroup> tst_orig = tst;
+
                     // To keep the consistency with other measurements (local Hamiltonian), or the yingjin-devel branch
                     // which apparently works with left-paired two site tensors, we introduce left pairing
-                    // Note that for some reason, pairing introduces an additional block with a zero element!
-                    // Note that pairing may introduce additional blocks!
+                    // Note that for some reason, pairing may introduce an additional block with a zero element!
                     tst.make_left_paired();
+                    tst_orig.make_left_paired();
 
                     // Zero all elements
                     tst.data()*= 0.0;
@@ -140,7 +143,9 @@
                         // TODO: Check for zero elements in the original MPS to avoid unnecessary calculations
 
                         // Prepare the auxiliary state: set the corresponding element to 1 in the TwoSiteTensor
-                        tst.data()[i](j,k) = 1.0;
+                        // Note re sign correction: to maintain the correct sign of the RDM derivatives, the sign of the original TwoSiteTensor element must be retained
+                        // This is much more efficient than calculating the overlap between the MPS and the auxiliary MPS and correcting the derivative signs with the sign of the overlap
+                        tst.data()[i](j,k) = std::copysign(1.0, maquis::real(tst_orig.data()[i](j,k)));
 
                         // Incorporate the modified TwoSiteTensor back into the MPS to form auxiliary state
                         // Note that we provide a m value as large as possible (maxint) and a negative cutoff in order to prevent truncation.
@@ -149,15 +154,15 @@
                         boost::tie(mps_aux[site], mps_aux[site+1], trunc) = tst.split_mps_l2r(std::numeric_limits<int>::max(), -1.0);
 
                         // Fix the left pairing since manipulation of the MPS messes it up
-                        mps_aux[site].make_left_paired();
-                        mps_aux[site+1].make_left_paired();
+                        tst.make_left_paired();
 
-                        // Correct the sign of the auxiliary state: <mps_aux|mps> must be positive, otherwise the RDM derivatives will have a wrong sign
-                        // mps *= sgn(<mps_aux|mps>)
-                        // since only two sites have been changed, we need only to calculate the overlap (scalar product) of the changed sites
-                        // (assuming the correct normalisation of the remaining MPS)
-                        mps_aux[site].multiply_by_scalar(std::copysign(1.0,maquis::real(mps_aux[site].scalar_overlap(mps[site]))));
-                        mps_aux[site+1].multiply_by_scalar(std::copysign(1.0,maquis::real(mps_aux[site+1].scalar_overlap(mps[site+1]))));
+                        // FIXME: !!!there is a horrible race condition wrt pairing somewhere in expval() that needs to be fixed!!!
+                        // Currently, the code doesn't run for OMP_NUM_THREADS > 1 !
+                        // The lines below alleviate the problem, but not always!
+                        // mps_aux[site].make_left_paired();
+                        // mps_aux[site+1].make_left_paired();
+                        // mps[site].make_left_paired();
+                        // mps[site+1].make_left_paired();
 
                         // measure the transition RDM <mps_aux|c+...c...|mps>
                         // TODO: Note that we will need both <mps_aux|c+...c...|mps> and <mps|c+...c...|mps_aux> for symmetrised derivatives.
@@ -182,10 +187,8 @@
                     {
                         this->ext_labels = { i, j, k };
 
-                        mpst_mod.data()[i](j,k) = 1.0;
+                        mpst_mod.data()[i](j,k) = std::copysign(1.0, maquis::real(mps_aux[site].data()[i](j,k)));
                         mpst_mod.make_left_paired();
-
-                        mpst_mod.multiply_by_scalar(std::copysign(1.0,maquis::real(mpst_mod.scalar_overlap(mps[site]))));
                         RDMEvaluator(mps_aux, mps);
                         mpst_mod.data()[i](j,k) = 0.0;
                     }

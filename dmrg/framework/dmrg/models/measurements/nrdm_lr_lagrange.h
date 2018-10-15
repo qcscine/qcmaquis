@@ -157,6 +157,7 @@
                     }
 
                     // Fix the left pairing since manipulation of the MPS messes it up
+                    // FIXME: there is the same race condition as in nrdmderivative.h
                     mps_aux[site].make_left_paired();
                     mps_aux[site+1].make_left_paired();
 
