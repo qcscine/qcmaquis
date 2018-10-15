@@ -36,7 +36,6 @@
 
 import sys
 import pyalps
-import numpy as np
 
 # dependency on pytools
 
