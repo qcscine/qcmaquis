@@ -177,6 +177,9 @@ public:
         boost::regex expression_onerdm_lagrange_both("^MEASURE\\[1rdm-lagrange\\]");
         boost::regex expression_twordm_lagrange_both("^MEASURE\\[2rdm-lagrange\\]");
 
+        // Regexp for dumping a TwoSiteTensor at site X where X is specified as "MEASURE[dump-tst] = X"
+        boost::regex expression_dump_tst("^MEASURE\\[dump-tst\\]");
+
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -324,6 +327,13 @@ public:
                 name = "local_hamiltonian";
                 meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
                                 name, lat, parms));
+            }
+
+            // Dump the two-site tensor at site X where X is specified as "MEASURE[dump-tst] = X"
+            if (boost::regex_match(lhs, what, expression_dump_tst)) {
+                name = "tstdump";
+                meas.push_back( new measurements::DumpTST<Matrix, SymmGroup>(
+                                name, it->value()));
             }
         }
 
