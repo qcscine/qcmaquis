@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -53,7 +53,7 @@ public:
     typedef typename MultiIndex<SymmGroup>::set_id set_id;
     typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     typedef block_matrix<dmt, SymmGroup> block_diag_matrix;
-    
+
     TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                   MPSTensor<Matrix, SymmGroup> const & mps2);
 
@@ -61,10 +61,10 @@ public:
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;
     Index<SymmGroup> const & local_site_dim(short) const;
-    
+
     block_matrix<Matrix, SymmGroup> & data();
     block_matrix<Matrix, SymmGroup> const & data() const;
-    
+
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, TwoSiteTensor<Matrix_, SymmGroup_> const &);
 
@@ -75,11 +75,11 @@ public:
 
     TwoSiteTensor<Matrix, SymmGroup> const & operator+=(TwoSiteTensor<Matrix, SymmGroup> const &);
     TwoSiteTensor<Matrix, SymmGroup> const & operator-=(TwoSiteTensor<Matrix, SymmGroup> const &);
-    
+
     void make_left_paired() const;
     void make_both_paired() const;
     void make_right_paired() const;
-    
+
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     // get_S performs an SVD, truncates the S matrix and returns the truncated S
     std::tuple<block_diag_matrix, truncation_results> get_S(std::size_t Mmax, double cutoff);

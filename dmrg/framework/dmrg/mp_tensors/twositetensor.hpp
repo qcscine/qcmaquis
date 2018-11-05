@@ -167,6 +167,86 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_he
     return MPSTensor<Matrix, SymmGroup>(phys_out, left_i, right_i, tmp, RightPaired);
 }
 
+// ADD_NOISE_{L2R,R2L}
+// ---------------------------------
+// Adds noise to the DM to improve convergence
+// ---------------------------------
+// Note: the functions here are, unlike those in contraction::common:: specifically for TwoSiteTensors
+// TODO: check whether those functions can be made to work with TwoSiteTensors too, then the two functions below may be removed
+
+template<class Matrix, class SymmGroup>
+void add_noise_l2r(block_matrix<Matrix, SymmGroup> & dm,
+                MPSTensor<Matrix, SymmGroup> const & mps,
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                Boundary<Matrix, SymmGroup> const & boundary, // left or right depending on the direction
+                double alpha)
+{
+    maquis::cout << "Growing, alpha = " << alpha << std::endl;
+
+    Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::left_boundary_tensor_mpo(mps, boundary, mpo);
+    omp_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
+        block_matrix<Matrix, SymmGroup> tdm;
+        gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
+        tdm *= alpha;
+        std::swap(tdm, half_dm[b]);
+    });
+
+    for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
+        block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
+        for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
+            if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
+                            num_rows(tdm[k]), num_cols(tdm[k]));
+        }
+    }
+    dm.allocate_blocks();
+
+    omp_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
+        for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
+            std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
+            if (match < half_dm[b].n_blocks())
+                dm[k] += (half_dm[b][match]);
+        }
+    });
+}
+
+template<class Matrix, class SymmGroup>
+void add_noise_r2l(block_matrix<Matrix, SymmGroup> & dm,
+                MPSTensor<Matrix, SymmGroup> const & mps,
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                Boundary<Matrix, SymmGroup> const & boundary, // left or right depending on the direction
+                double alpha)
+{
+    maquis::cout << "Growing, alpha = " << alpha << std::endl;
+
+    Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::right_boundary_tensor_mpo(mps, boundary, mpo);
+
+    omp_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
+        block_matrix<Matrix, SymmGroup> tdm;
+        gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
+        tdm *= alpha;
+        std::swap(tdm, half_dm[b]);
+    });
+
+    for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
+        block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
+        for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
+            if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
+                            num_rows(tdm[k]), num_cols(tdm[k]));
+        }
+    }
+    dm.allocate_blocks();
+
+    omp_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
+        for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
+            std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
+            if (match < half_dm[b].n_blocks())
+                dm[k] += (half_dm[b][match]);
+        }
+    });
+}
+
 // +-----------------+
 //  SPLIT_MPS_L2R/R2L
 // +-----------------+
@@ -242,7 +322,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff,
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
     assert( mps_tensor1.reasonable() );
     return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
-    
+
 }
 
 // split_mps_r2l version which uses an externally supplied S for renormalisation
@@ -265,9 +345,9 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(const block_diag_matrix& s_trunc
     // Use s_truncated for the renormalisation
     gemm(u, s_truncated, v);
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
-    
+
     return std::make_tuple(mps_tensor1, mps_tensor2) ;
-    
+
 };
 
 template<class Matrix, class SymmGroup>
@@ -287,37 +367,10 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax,
 
     /// state prediction
     if (alpha != 0.) {
-        maquis::cout << "Growing, alpha = " << alpha << std::endl;
         Index<SymmGroup> right_phys_i = adjoin(phys_i_right) * right_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_left, left_i, right_phys_i, data_, LeftPaired);
-
-        Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::left_boundary_tensor_mpo(tmp, left, mpo);
-        tmp = MPSTensor<Matrix, SymmGroup>();
-
-        omp_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
-            block_matrix<Matrix, SymmGroup> tdm;
-            gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
-            tdm *= alpha;
-            std::swap(tdm, half_dm[b]);
-        });
-
-        for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-            block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
-            for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (data_.basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
-                    dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
-                               num_rows(tdm[k]), num_cols(tdm[k]));
-            }
-        }
-        dm.allocate_blocks();
-
-        omp_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
-            for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-                std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
-                if (match < half_dm[b].n_blocks())
-                    dm[k] += (half_dm[b][match]);
-            }
-        });
+        add_noise_l2r<Matrix, SymmGroup>(dm, tmp, mpo, left, alpha);
+        tmp = MPSTensor<Matrix, SymmGroup>(); //why?
     }
     assert( weak_equal(dm.left_basis(), data_.left_basis()) );
 
@@ -338,7 +391,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax,
     gemm(transpose(conjugate(U)), data_, V);
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, V.left_basis(), right_i, V, RightPaired);
     assert( mps_tensor2.reasonable() );
-        
+
     return std::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
@@ -361,37 +414,10 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax,
 
     /// state prediction
     if (alpha != 0.) {
-        maquis::cout << "Growing, alpha = " << alpha << std::endl;
         Index<SymmGroup> left_phys_i = phys_i_left * left_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_right, left_phys_i, right_i, data_, RightPaired);
-
-        Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::right_boundary_tensor_mpo(tmp, right, mpo);
-        tmp = MPSTensor<Matrix, SymmGroup>();
-
-        omp_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
-            block_matrix<Matrix, SymmGroup> tdm;
-            gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
-            tdm *= alpha;
-            std::swap(tdm, half_dm[b]);
-        });
-
-        for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-            block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
-            for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (data_.basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
-                    dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
-                               num_rows(tdm[k]), num_cols(tdm[k]));
-            }
-        }
-        dm.allocate_blocks();
-
-        omp_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
-            for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-                std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
-                if (match < half_dm[b].n_blocks())
-                    dm[k] += (half_dm[b][match]);
-            }
-        });
+        add_noise_r2l<Matrix, SymmGroup>(dm, tmp, mpo, right, alpha);
+        tmp = MPSTensor<Matrix, SymmGroup>(); //why?
     }
     assert( weak_equal(dm.right_basis(), data_.right_basis()) );
 

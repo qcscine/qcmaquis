@@ -46,7 +46,7 @@ namespace contraction {
         // this must be corrected!
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
-        static void add_noise_l2r(block_matrix<Matrix, SymmGroup> & dm,
+        void add_noise_l2r(block_matrix<Matrix, SymmGroup> & dm,
                        MPSTensor<Matrix, SymmGroup> const & mps,
                        MPOTensor<Matrix, SymmGroup> const & mpo,
                        Boundary<OtherMatrix, SymmGroup> const & boundary, // left or right depending on the direction
@@ -73,7 +73,7 @@ namespace contraction {
         }
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
-        static void add_noise_r2l(block_matrix<Matrix, SymmGroup> & dm,
+        void add_noise_r2l(block_matrix<Matrix, SymmGroup> & dm,
                        MPSTensor<Matrix, SymmGroup> const & mps,
                        MPOTensor<Matrix, SymmGroup> const & mpo,
                        Boundary<OtherMatrix, SymmGroup> const & boundary, // left or right depending on the direction
