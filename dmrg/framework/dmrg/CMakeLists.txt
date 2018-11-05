@@ -1,6 +1,6 @@
 
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
-enable_omp_if_found()
+
 
 if(USE_AMBIENT)
   compile_with_ambient()
