@@ -350,6 +350,100 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(const block_diag_matrix& s_trunc
 
 };
 
+// +------------------------------+
+//  Splitting of vectors of MPSTensors using SVD (sa_alg=-3)
+// +------------------------------+
+// -- Left sweep --
+template <class Matrix, class SymmGroup>
+std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results>
+split_mps_l2r_vector(std::vector< TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
+                    double cutoff, std::size_t Mval)
+{
+    // Variable definition
+    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    block_matrix<Matrix, SymmGroup> u, v, bm_overall, tmp ;
+    block_matrix<dmt, SymmGroup> s;
+    // Builds the "overall" block matrix
+    for (std::size_t idx = 0; idx < tst_vec.size(); idx++) {
+        tst_vec[idx].make_both_paired();
+        // Does some checks on the coherence of the dimensions
+        if ( idx != 0 ) {
+            assert (tst_vec[idx].phys_i_left  == tst_vec[idx-1].phys_i_left) ;
+            assert (tst_vec[idx].phys_i_right == tst_vec[idx-1].phys_i_right) ;
+            assert (tst_vec[idx].left_i       == tst_vec[idx-1].left_i) ;
+            assert (tst_vec[idx].right_i      == tst_vec[idx-1].right_i) ;
+        }
+        // Adds the block to bm_overall
+        for (std::size_t k = 0; k < tst_vec[idx].data().n_blocks(); ++k)
+            bm_overall.add_block_to_column(tst_vec[idx].data(),
+                                            tst_vec[idx].data().basis().left_charge(k),
+                                            tst_vec[idx].data().basis().right_charge(k));
+    }
+    // Preparation of the left tensor, which is common to all the tensors
+    truncation_results trunc = svd_truncate(bm_overall, u, v, s, cutoff, Mmax, true, Mval);
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(tst_vec[0].phys_i_left, tst_vec[0].left_i, u.right_basis(),
+                                                u, LeftPaired);
+    assert( mps_tensor1.reasonable() );
+    // Vector of MPSTensor for the splitting on the right
+    std::vector< MPSTensor<Matrix,SymmGroup> > vector_results ;
+    for (std::size_t idx = 0; idx < tst_vec.size(); idx++) {
+        tst_vec[idx].make_both_paired() ;
+        gemm(adjoint(u), tst_vec[idx].data(), tmp);
+        MPSTensor<Matrix, SymmGroup> mps_tensor2(tst_vec[0].phys_i_right, tmp.right_basis(), tst_vec[0].right_i, tmp,
+                                                    RightPaired);
+        assert(mps_tensor2.reasonable());
+        vector_results.push_back(mps_tensor2) ;
+    }
+    std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results> res ;
+    res = std::tie(mps_tensor1, vector_results, trunc) ;
+    return res ;
+};
+// -- right sweep --
+template <class Matrix, class SymmGroup>
+std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>, truncation_results>
+split_mps_r2l_vector(std::vector<TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
+                        double cutoff, std::size_t Mval)
+{
+    // Variable definition
+    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    block_matrix<Matrix, SymmGroup> u, v, bm_overall, tmp ;
+    block_matrix<dmt, SymmGroup> s;
+    // Builds the "overall" block matrix
+    for (std::size_t idx = 0; idx < tst_vec.size(); idx++) {
+        tst_vec[idx].make_both_paired();
+        // Does some checks on the coherence of the dimensions
+        if ( idx != 0 ) {
+            assert (tst_vec[idx].phys_i_left  == tst_vec[idx-1].phys_i_left) ;
+            assert (tst_vec[idx].phys_i_right == tst_vec[idx-1].phys_i_right) ;
+            assert (tst_vec[idx].left_i       == tst_vec[idx-1].left_i) ;
+            assert (tst_vec[idx].right_i      == tst_vec[idx-1].right_i) ;
+        }
+        // Adds the block to bm_overall
+        for (std::size_t k = 0; k < tst_vec[idx].data().n_blocks(); ++k)
+            bm_overall.add_block_to_row(tst_vec[idx].data(),
+                                        tst_vec[idx].data().basis().left_charge(k),
+                                        tst_vec[idx].data().basis().right_charge(k));
+    }
+    // Preparation of the left tensor, which is common to all the tensors
+    truncation_results trunc = svd_truncate(bm_overall, u, v, s, cutoff, Mmax, true, Mval);
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(tst_vec[0].phys_i_right, v.left_basis(), tst_vec[0].right_i,
+                                                v, RightPaired);
+    assert( mps_tensor2.reasonable() );
+    // Vector of MPSTensor for the splitting on the right
+    std::vector< MPSTensor<Matrix,SymmGroup> > vector_results ;
+    for (std::size_t idx = 0; idx < tst_vec.size(); idx++) {
+        tst_vec[idx].make_both_paired() ;
+        gemm(tst_vec[idx].data(), adjoint(v), tmp);
+        MPSTensor<Matrix, SymmGroup> mps_tensor1(tst_vec[0].phys_i_left, tst_vec[0].left_i, tmp.right_basis(), tmp,
+                                                    LeftPaired);
+        assert(mps_tensor1.reasonable());
+        vector_results.push_back(mps_tensor1) ;
+    }
+    std::tuple< std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>, truncation_results> res ;
+    res = std::tie(vector_results, mps_tensor2, trunc) ;
+    return res ;
+};
+
 template<class Matrix, class SymmGroup>
 std::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax,
