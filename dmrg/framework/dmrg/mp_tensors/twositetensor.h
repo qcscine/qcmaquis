@@ -45,6 +45,7 @@ enum TwoSiteStorageLayout {TSRightPaired, TSLeftPaired, TSBothPaired};
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor;
 
+// Splitting of vectors of TwoSiteTensors using super-density matrix truncation (sa_alg=-3)
 template<class Matrix, class SymmGroup>
 std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results>
     split_mps_l2r_vector(std::vector< TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
@@ -55,7 +56,20 @@ std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGro
     split_mps_r2l_vector(std::vector< TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
                         double cutoff, std::size_t Mval = 0);
 
-// now follows the actual declaration of the TwoSiteTensor template
+// Splitting of vectors of TwoSiteTensors using average density matrix truncation (sa_alg=-1)
+template<class Matrix, class SymmGroup>
+std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results>
+predict_split_l2r_avg(std::vector<TwoSiteTensor<Matrix, SymmGroup> > tst_vec, std::size_t Mmax,
+                      double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
+                      MPOTensor<Matrix, SymmGroup> const& mpo);
+
+template<class Matrix, class SymmGroup>
+std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>,  truncation_results>
+predict_split_r2l_avg(std::vector<TwoSiteTensor<Matrix, SymmGroup> > tst_vec, std::size_t Mmax,
+                     double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
+                     MPOTensor<Matrix, SymmGroup> const& mpo);
+
+// now the actual declaration of the TwoSiteTensor template
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor
 {
@@ -117,17 +131,23 @@ public:
     std::tuple< MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results> predict_split_r2l
             (std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
              MPOTensor<Matrix, SymmGroup> const& mpo, const std::vector<size_t>& keeps = std::vector<size_t>());
-    // +------------------------------+
-    //  Splitting of vectors of MPSTensors using SVD (sa_alg=-3)
-    // +------------------------------+
-    // -- Left sweep --
+
+    // TwoSiteTensor vector splitting functions must be declared friend to get access to phys_i etc.
     friend std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results>
     split_mps_l2r_vector<>(std::vector<TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
                                 double cutoff, std::size_t Mval);
-    // -- Right  sweep --
-    friend std::tuple< std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    friend std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>, truncation_results>
     split_mps_r2l_vector<>(std::vector<TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
                          double cutoff, std::size_t Mval);
+
+    friend std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results>
+    predict_split_l2r_avg<>(std::vector<TwoSiteTensor<Matrix, SymmGroup> > tst_vec, std::size_t Mmax,
+                      double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
+                      MPOTensor<Matrix, SymmGroup> const& mpo);
+    friend std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>,  truncation_results>
+    predict_split_r2l_avg<>(std::vector<TwoSiteTensor<Matrix, SymmGroup> > tst_vec, std::size_t Mmax,
+                     double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
+                     MPOTensor<Matrix, SymmGroup> const& mpo);
 
     // -- Modification methods --
     void clear();

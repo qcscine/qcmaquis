@@ -456,10 +456,8 @@ protected:
     {
         // Decides the number of boundaries to be stored
         if (n_root_ > 0) {
-            if (sa_alg_ >= 0 || sa_alg_ == -3) {
+            if (sa_alg_ >= 0 || sa_alg_ == -3 || sa_alg_ == -1) {
                 n_bound_ = 1 ;
-            } else if (sa_alg_ == -1) {
-                n_bound_ = n_root_ ;
             } else if (sa_alg_ == -2) {
                 n_bound_ = n_root_ ;
             }

@@ -83,9 +83,9 @@ bound_database<MPS, Bound>::bound_database() : n_MPS_(0), do_squared_(false) { }
 template<class MPS, class Bound>
 bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
                                            Bound_vector& bound_left,
-                                           Bound_vector& bound_right, 
+                                           Bound_vector& bound_right,
                                            Bound_vector& bound_squared_left,
-                                           Bound_vector& bound_squared_right, 
+                                           Bound_vector& bound_squared_right,
                                            const int& sa_algorithm,
                                            const bool& do_squared) : do_squared_(do_squared)
 {
@@ -104,7 +104,8 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
     vec_MPS_.resize(n_MPS_) ;
     matrix_coefficients_.resize(n_MPS_) ;
     // boundaries built from a specific state
-    if (sa_algorithm >= 0  || sa_algorithm == -3) {
+    // also for state-averaged optimization (sa_algorithm == -1 and -3)
+    if (sa_algorithm >= 0  || sa_algorithm == -3 || sa_algorithm == -1) {
         if (sa_algorithm >= n_MPS_) {
             throw std::runtime_error("sa_algorithm parameter must be <= number of SA states") ;
         } else {
@@ -123,14 +124,13 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
                     vec_bound_squared_right_[idx] = &(bound_squared_right[0]) ;
                     vec_left_squared_sp_[idx].push_back(&(bound_squared_left[0])) ;
                     vec_right_squared_sp_[idx].push_back(&(bound_squared_right[0])) ;
-                }    
+                }
                 vec_MPS_[idx] = &(MPSVec[idx]) ;
                 matrix_coefficients_[idx].push_back(1.0) ;
             }
         }
     // State-specific boundaries for sa_algorithm =-2 (full state-specific optimisation)
-    // and sa_algorithm =-1 (in this version, state-specific optimisation with truncation based on average MPStensors)
-    } else if (sa_algorithm == -2 || sa_algorithm == -1) {
+    } else if (sa_algorithm == -2) {
         for (size_t idx = 0; idx < n_MPS_; idx++) {
             vec_bound_left_[idx]  = &(bound_left[idx]) ;
             vec_bound_right_[idx] = &(bound_right[idx]) ;
@@ -160,7 +160,7 @@ bound_database<MPS, Bound>::bound_database(MPS_vector& MPSVec,
 // Public methods
 // --------------
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_left(const size_t& idx, 
+Bound* bound_database<MPS, Bound>::get_boundaries_left(const size_t& idx,
                                                        const bool& is_squared)
 {
     if (is_squared) {
@@ -175,7 +175,7 @@ Bound* bound_database<MPS, Bound>::get_boundaries_left(const size_t& idx,
 }
 
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_left_sp(const size_t& idx, 
+Bound* bound_database<MPS, Bound>::get_boundaries_left_sp(const size_t& idx,
                                                           const size_t& k,
                                                           const bool& is_squared)
 {
@@ -197,7 +197,7 @@ Bound* bound_database<MPS, Bound>::get_boundaries_left_sp(const size_t& idx,
 }
 
 template<class MPS, class Bound>
-Bound* bound_database<MPS, Bound>::get_boundaries_right(const size_t& idx, 
+Bound* bound_database<MPS, Bound>::get_boundaries_right(const size_t& idx,
                                                         const bool& is_squared)
 {
     if (is_squared) {

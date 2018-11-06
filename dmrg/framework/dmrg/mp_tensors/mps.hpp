@@ -315,9 +315,9 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep_avg(std::vector< MPSTensor<Matrix, SymmGr
     std::tie(new_mps, trunc) =
             contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep_avg(mps_vector, mpo, left, right, alpha, cutoff, Mmax);
     for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
-        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l+1] ;
-                mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
-            }
+        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l+1];
+        mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
+    }
     (*this)[l]   = new_mps;
     (*this)[l+1] = mps_vector[0] ;
     return trunc;
@@ -345,12 +345,12 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep_vec(std::vector< MPSTensor<Matrix, SymmGr
     std::tie(new_mps, trunc) =
             contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep_vec(mps_vector, mpo, left, right, alpha, cutoff, Mmax);
     for (std::size_t idx = 0; idx < mps_vector.size(); idx++) {
-        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l+1] ;
-                mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
-            }
-            (*this)[l]   = new_mps;
-            (*this)[l+1] = mps_vector[0] ;
-            return trunc;
+        MPSTensor<Matrix, SymmGroup> tmp_mps = (*this)[l+1];
+        mps_vector[idx] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(tmp_mps, mps_vector[idx], new_mps);
+    }
+    (*this)[l]   = new_mps;
+    (*this)[l+1] = mps_vector[0] ;
+    return trunc;
 }
 
 // +--------------+

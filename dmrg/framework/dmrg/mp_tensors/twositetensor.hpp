@@ -359,10 +359,10 @@ std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup
 split_mps_l2r_vector(std::vector< TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
                     double cutoff, std::size_t Mval)
 {
+    typedef typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix block_diag_matrix;
     // Variable definition
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     block_matrix<Matrix, SymmGroup> u, v, bm_overall, tmp ;
-    block_matrix<dmt, SymmGroup> s;
+    block_diag_matrix s;
     // Builds the "overall" block matrix
     for (std::size_t idx = 0; idx < tst_vec.size(); idx++) {
         tst_vec[idx].make_both_paired();
@@ -404,10 +404,10 @@ std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGro
 split_mps_r2l_vector(std::vector<TwoSiteTensor< Matrix, SymmGroup> > & tst_vec, std::size_t Mmax,
                         double cutoff, std::size_t Mval)
 {
+    typedef typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix block_diag_matrix;
     // Variable definition
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     block_matrix<Matrix, SymmGroup> u, v, bm_overall, tmp ;
-    block_matrix<dmt, SymmGroup> s;
+    block_diag_matrix s;
     // Builds the "overall" block matrix
     for (std::size_t idx = 0; idx < tst_vec.size(); idx++) {
         tst_vec[idx].make_both_paired();
@@ -537,6 +537,152 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax,
     return res ;
 }
 
+// +------------------------------+
+//  Splitting of vectors of TwoSiteTensors using average density matrix truncation (sa_alg=-1)
+// +------------------------------+
+
+template<class Matrix, class SymmGroup>
+std::tuple<MPSTensor<Matrix, SymmGroup>, std::vector<MPSTensor<Matrix, SymmGroup> >, truncation_results>
+predict_split_l2r_avg(std::vector<TwoSiteTensor<Matrix, SymmGroup> > tst_vec,
+                      std::size_t Mmax,
+                      double cutoff,
+                      double alpha,
+                      Boundary<Matrix, SymmGroup> const& left,
+                      MPOTensor<Matrix, SymmGroup> const& mpo)
+{
+    typedef typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix block_diag_matrix;
+
+    for (auto&& tst : tst_vec)
+        tst.make_both_paired();
+
+    /// build reduced density matrix (with left index open) *averaged over all states*
+
+    // use two lambda functions and std::accumulate to construct the average density matrix:
+    // dm_avg = (1/n)sum_i^n (A_i A_i^T)
+
+    // The first lambda function defines A_i A_i^T
+    auto AxAT = [ & ] (TwoSiteTensor<Matrix, SymmGroup> a)
+    {
+            block_matrix<Matrix, SymmGroup> c;
+            // typename Gemm::gemm()(a.data(), transpose(conjugate(a.data())), c);
+            gemm(a.data(), transpose(conjugate(a.data())), c, parallel::scheduler_balanced(a.data()));
+            return c;
+    };
+
+    // The second defines the sum
+    auto AxATsum = [ & ] (block_matrix<Matrix, SymmGroup> a, TwoSiteTensor<Matrix, SymmGroup> b) { return a + AxAT(b); };
+
+    // finally, std::accumulate sums everything up using the lambda functions
+    block_matrix<Matrix, SymmGroup> dm = std::accumulate(std::next(tst_vec.begin()), tst_vec.end(), AxAT(*tst_vec.begin()), AxATsum);
+    dm /= tst_vec.size();
+
+    /// add noise (state specific)
+    if (alpha != 0.)
+        for (auto&& tst: tst_vec)
+        {
+            Index<SymmGroup> right_phys_i = adjoin(tst.phys_i_right) * tst.right_i;
+            MPSTensor<Matrix, SymmGroup> tmp(tst.phys_i_left, tst.left_i, right_phys_i, tst.data(), LeftPaired);
+            add_noise_l2r<Matrix, SymmGroup>(dm, tmp, mpo, left, alpha);
+            tmp = MPSTensor<Matrix, SymmGroup>(); //why?
+            assert( weak_equal(dm.left_basis(), tst.data().left_basis()) );
+        }
+
+    /// truncation
+    block_matrix<Matrix, SymmGroup> U;
+    block_diag_matrix S;
+
+    // Perform eigenvalue-based truncation: TwoSiteTensor M-> MPSTensors A and B
+    truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
+    dm = block_matrix<Matrix, SymmGroup>(); // why?
+
+    // A is the same for all states (see single-site case in contraction::common::predict_new_state_l2r_sweep_avg())
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(tst_vec[0].phys_i_left, tst_vec[0].left_i, U.right_basis(), U, LeftPaired);
+    assert( mps_tensor1.reasonable() );
+
+    // B is state-specific. Prepare a vector of Bs
+    std::vector<MPSTensor<Matrix, SymmGroup> > rhs;
+    rhs.reserve(tst_vec.size());
+    for (auto&& tst: tst_vec)
+    {
+        // Construct Bs
+        block_matrix<Matrix, SymmGroup> V;
+        gemm(transpose(conjugate(U)), tst.data(), V);
+
+        MPSTensor<Matrix, SymmGroup> mps_tensor2(tst.phys_i_right, V.left_basis(), tst.right_i, V, RightPaired);
+        assert( mps_tensor2.reasonable() );
+
+        rhs.push_back(mps_tensor2);
+    }
+
+    return std::make_tuple(mps_tensor1, rhs, trunc);
+}
+
+
+template<class Matrix, class SymmGroup>
+std::tuple<std::vector<MPSTensor<Matrix, SymmGroup> >, MPSTensor<Matrix, SymmGroup>,  truncation_results>
+predict_split_r2l_avg(std::vector<TwoSiteTensor<Matrix, SymmGroup> > tst_vec,
+                                                    std::size_t Mmax,
+                                                    double cutoff,
+                                                    double alpha,
+                                                    Boundary<Matrix, SymmGroup> const& right,
+                                                    MPOTensor<Matrix, SymmGroup> const& mpo)
+{
+    typedef typename TwoSiteTensor<Matrix, SymmGroup>::block_diag_matrix block_diag_matrix;
+
+    // This function follows predict_split_l2r_avg(), with the exception that some procedures are inverted for the right sweep
+    for (auto&& tst : tst_vec)
+        tst.make_both_paired();
+
+    /// build reduced density matrix (with right index open)  *averaged over all states*
+
+    auto ATxA = [ & ] (TwoSiteTensor<Matrix, SymmGroup> a)
+    {
+            block_matrix<Matrix, SymmGroup> c;
+            gemm(transpose(conjugate(a.data())), a.data(), c, parallel::scheduler_balanced(a.data()));
+            return c;
+    };
+
+    auto ATxAsum = [ & ] (block_matrix<Matrix, SymmGroup> a, TwoSiteTensor<Matrix, SymmGroup> b) { return a + ATxA(b); };
+
+    block_matrix<Matrix, SymmGroup> dm = std::accumulate(std::next(tst_vec.begin()), tst_vec.end(), ATxA(*tst_vec.begin()), ATxAsum);
+    dm /= tst_vec.size();
+
+    /// state prediction
+    if (alpha != 0.)
+        for (auto&& tst: tst_vec)
+        {
+            Index<SymmGroup> left_phys_i = tst.phys_i_left * tst.left_i;
+            MPSTensor<Matrix, SymmGroup> tmp(tst.phys_i_right, left_phys_i, tst.right_i, tst.data(), RightPaired);
+            add_noise_r2l<Matrix, SymmGroup>(dm, tmp, mpo, right, alpha);
+            tmp = MPSTensor<Matrix, SymmGroup>(); //why?
+            assert( weak_equal(dm.right_basis(), tst.data().right_basis()) );
+        }
+
+    // truncation
+    block_matrix<Matrix, SymmGroup> U;
+    block_diag_matrix S;
+    truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
+    dm = block_matrix<Matrix, SymmGroup>(); // why?
+
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(tst_vec[0].phys_i_right, U.left_basis(), tst_vec[0].right_i, transpose(conjugate(U)), RightPaired);
+    assert( mps_tensor2.reasonable() );
+
+    std::vector<MPSTensor<Matrix, SymmGroup> > lhs;
+    lhs.reserve(tst_vec.size());
+
+    for (auto&& tst: tst_vec)
+    {
+        block_matrix<Matrix, SymmGroup> V;
+        gemm(tst.data(), U, V);
+
+        MPSTensor<Matrix, SymmGroup> mps_tensor1(tst.phys_i_left, tst.left_i, V.right_basis(), V, LeftPaired);
+        assert( mps_tensor1.reasonable() );
+
+        lhs.push_back(mps_tensor1);
+    }
+    return std::make_tuple(lhs, mps_tensor2, trunc) ;
+
+}
 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, TwoSiteTensor<Matrix, SymmGroup> const & mps)
