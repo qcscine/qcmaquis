@@ -296,28 +296,34 @@ public:
 
             if (expr_rdm_derivative)
                 meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
+                                parms["lrparam_site"], // Site for LR parameters
                                 symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
                                 name, lat, tag_handler, op_collection, positions));
 
             if (expr_rdm_deriv_both) {
                 meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
+                                parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(),
                                 name, lat, tag_handler, op_collection, positions));
                 meas.push_back( new measurements::NRDMDerivative<Matrix, SymmGroup>(
+                                parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(),
                                 nameR, lat, tag_handler, op_collection, positions));
             }
 
             if (expr_rdm_lagrange)
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
+                                parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
                                 it->value(), name, lat, tag_handler, op_collection, positions));
 
             if (expr_rdm_lagrange_both) {
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
+                                parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(),
                                 it->value(), name, lat, tag_handler, op_collection, positions));
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
+                                parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(),
                                 it->value(), nameR, lat, tag_handler, op_collection, positions));
             }
@@ -329,11 +335,11 @@ public:
                                 name, lat, parms));
             }
 
-            // Dump the two-site tensor at site X where X is specified as "MEASURE[dump-tst] = X"
+            // Dump the two-site tensor at site X where X is specified in lrparam_site
             if (boost::regex_match(lhs, what, expression_dump_tst)) {
                 name = "tstdump";
                 meas.push_back( new measurements::DumpTST<Matrix, SymmGroup>(
-                                name, it->value()));
+                                name, parms["lrparam_site"]));
             }
         }
 

@@ -35,6 +35,7 @@
 
 namespace measurements
 {
+    // Class to measure local Hamiltonian matrix elements
     template<class Matrix, class SymmGroup>
     class LocalHamiltonian : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
@@ -49,9 +50,7 @@ namespace measurements
             {
                 this->vector_results.clear();
                 this->labels.clear();
-                // Right now this is hard-coded to local Hamiltonian at sites 0 and 1
-                measure_local_hamiltonian(mps, mpo);
-
+                measure_local_hamiltonian(mps, mpo, parms["lrparam_site"]);
             }
         protected:
             measurement<Matrix, SymmGroup>* do_clone() const
@@ -62,17 +61,15 @@ namespace measurements
             void measure_local_hamiltonian(MPS<Matrix, SymmGroup> const& mps, MPO<Matrix, SymmGroup> const& mpo, int site = 0, bool twosite = true)
             {
                 MPS<Matrix, SymmGroup> mps_aux = mps;
-                Model<Matrix, SymmGroup> model(lat, parms);
-
 
                 // Initialise the boundaries using the LocalHamiltonianInitializer class
                 time_stopper stop_callback = static_cast<double>(parms["run_seconds"]);
                 // Warning: we're casting away the const'ness of mps
-                LocalHamiltonianInitializer<Matrix, SymmGroup, storage::disk> init(const_cast<MPS<Matrix, SymmGroup> &>(mps), mpo, parms, stop_callback, site);
+                LocalHamiltonianInitializer<Matrix, SymmGroup, storage::disk> init(mps_aux, mpo, parms, stop_callback, site);
 
                 if (twosite)
                 {
-                    if (site > mps.length() - 1)
+                    if (site > mps_aux.length() - 1)
                        throw std::runtime_error("site > L-1 not allowed in Local Hamiltonian with two-site tensors");
 
                     int site1 = site, site2 = site+1;
@@ -80,14 +77,14 @@ namespace measurements
                     // Prepare the two-site MPO tensor(s)
 
                     MPO<Matrix, SymmGroup> ts_mpo;
-                    make_ts_cache_mpo(mpo, ts_mpo, mps);
+                    make_ts_cache_mpo(mpo, ts_mpo, mps_aux);
                     ts_mpo[site1].placement_l = mpo[site1].placement_l;
                     ts_mpo[site1].placement_r = parallel::get_right_placement(ts_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
 
                     // Prepare the two-site tensor from two sites of the MPS
                     TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site1], mps_aux[site2]);
                     MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
-
+                    twin_mps.make_left_paired();
 
                     // Fetch the boundaries from disk
                     init.fetch_boundaries(site, twosite);
@@ -117,6 +114,7 @@ namespace measurements
                         block_matrix<Matrix, SymmGroup> & Hij = Hij_mps.data();
 
                         // TODO: Check if dim(i) == dim(ii), dim(j) == dim(jj) and dim(k) == dim(kk) !!!
+                        // TODO: The Hamiltonian matrix is symmetric. Currently, we're not exploiting the symmetry, but one should do it!
                         for (int ii = 0; ii < Hij.n_blocks(); ii++)
                         for (int jj = 0; jj < num_rows(Hij[ii]); jj++)
                         for (int kk = 0; kk < num_cols(Hij[ii]); kk++)

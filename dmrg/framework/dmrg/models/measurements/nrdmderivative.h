@@ -42,27 +42,23 @@
         typedef typename base::scaled_bond_term scaled_bond_term;
         typedef typename base::positions_type positions_type;
 
-
         using base::ext_labels;
         public:
             // Specialization to call the correct constructor of the base class
             // TODO: Check if this compiles with disabled SU2U1/SU2U1PG!
             // symm_traits::HasSU2<SU2U1> and symm_traits::HasSU2<SU2U1PG> yields boost::true_type
-            NRDMDerivative(boost::true_type, std::string const& name_, const Lattice & lat,
+            NRDMDerivative(int lr_site_, boost::true_type, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection const & op_collection_,
                        positions_type const& positions_ = positions_type())
-                       : base(name_, lat, tag_handler_, op_collection_, positions_) {};
+                       : base(name_, lat, tag_handler_, op_collection_, positions_), lr_site(lr_site_) {};
 
             // 2U1 and other symmetry groups
-            NRDMDerivative(boost::false_type, std::string const& name_, const Lattice & lat,
+            NRDMDerivative(int lr_site_, boost::false_type, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<scaled_bond_term> const& ops_,
                        bool half_only_, positions_type const& positions_ = positions_type())
-                        : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_) {};
-
-
-
+                       : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), lr_site(lr_site_) {};
 
             virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
             {
@@ -83,7 +79,7 @@
                 if (this->name() == "twordmderivL")
                     RDMEvaluator = std::bind(&NRDMDerivative<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_2, std::placeholders::_1);
 
-                measure_derivative(ket_mps, RDMEvaluator);
+                measure_derivative(ket_mps, RDMEvaluator, lr_site);
             }
         protected:
             measurement<Matrix, SymmGroup>* do_clone() const
@@ -107,6 +103,9 @@
             {
 
                 MPS<Matrix, SymmGroup> mps_aux = mps;
+                // The MPS needs to be canonized up to the site before the measurement to have the same local basis in all the states
+                // TODO: Canonize the MPS only once for all measurements (outside of this class)
+                mps_aux.canonize(site);
 
                 if (twosite) // MPS parameters from two-site tensors
                 {
@@ -194,6 +193,9 @@
                     }
                 }
             }
+        private:
+            int lr_site;
+
         };
     } // measurements
 

@@ -42,12 +42,17 @@ namespace measurements {
 
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
-
             this->vector_results.clear();
             this->labels.clear();
 
+            MPS<Matrix, SymmGroup> mps_aux = mps;
+
+            // The MPS needs to be canonized up to the site before the measurement to have the same local basis in all the states
+            // TODO: Canonize the MPS only once for all measurements (outside of this class)
+            mps_aux.canonize(site);
+
             // Prepare the two-site tensor from two sites of the MPS
-            TwoSiteTensor<Matrix, SymmGroup> tst(mps[site], mps[site+1]);
+            TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
 
             // To keep the consistency with other measurements (local Hamiltonian), or the yingjin-devel branch
             // which apparently works with left-paired two site tensors, we introduce left pairing

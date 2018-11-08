@@ -50,18 +50,18 @@
             // Specialization to call the correct constructor of the base class
             // TODO: Check if this compiles with disabled SU2U1/SU2U1PG!
             // symm_traits::HasSU2<SU2U1> and symm_traits::HasSU2<SU2U1PG> yields boost::true_type
-            NRDMLRLagrange(boost::true_type, std::string const& filename_, std::string const& name_, const Lattice & lat,
+            NRDMLRLagrange(int lr_site_, boost::true_type, std::string const& filename_, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection const & op_collection_,
                        positions_type const& positions_ = positions_type())
-                       : base(name_, lat, tag_handler_, op_collection_, positions_), filename(filename_) {};
+                       : base(name_, lat, tag_handler_, op_collection_, positions_), filename(filename_), lr_site(lr_site_) {};
 
             // 2U1 and other symmetry groups
-            NRDMLRLagrange(boost::false_type, std::string const& filename_, std::string const& name_, const Lattice & lat,
+            NRDMLRLagrange(int lr_site_, boost::false_type, std::string const& filename_, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<scaled_bond_term> const& ops_,
                        bool half_only_, positions_type const& positions_ = positions_type())
-                        : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), filename(filename_) {};
+                        : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), filename(filename_), lr_site(lr_site_) {};
 
 
             virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
@@ -83,7 +83,7 @@
                 if (this->name() == "twordmlagrangeL")
                     RDMEvaluator = std::bind(&NRDMLRLagrange<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_2, std::placeholders::_1);
 
-                measure_lagrange_rdm(ket_mps, RDMEvaluator);
+                measure_lagrange_rdm(ket_mps, RDMEvaluator, lr_site);
             }
         protected:
             measurement<Matrix, SymmGroup>* do_clone() const
@@ -101,7 +101,9 @@
                 typedef typename Matrix::value_type value_type;
                 MPS<Matrix, SymmGroup> mps_aux = mps;
 
-                mps_aux.canonize(site); // for whatever reason! -- this is to ensure the reproducibility of the results by the yingjin-devel branch
+                // The MPS needs to be canonized up to the site before the measurement to have the same local basis in all the states
+                // TODO: Canonize the MPS only once for all measurements (outside of this class)
+                mps_aux.canonize(site);
 
                 // Read auxiliary MPSTensor elements into a vector aux_elements from file written by Yingjin's LR program
                 std::ifstream infile;
@@ -149,7 +151,6 @@
                     boost::tie(mps_aux[site], mps_aux[site+1], trunc) = tst.split_mps_l2r(std::numeric_limits<int>::max(), -1.0);
 
                     // for whatever reason! -- this is to ensure the reproducibility of the results by the yingjin-devel branch
-                    // mps_aux[site+1].divide_by_scalar(mps_aux[site+1].scalar_norm()); // and apparently this doesn't work
                     if (site < mps_aux.length()-1)
                     {
                         mps_aux[site+2].multiply_from_left(mps_aux[site+1].normalize_left(DefaultSolver()));
@@ -173,6 +174,7 @@
             }
         private:
             const std::string& filename;
+            int lr_site;
         };
     } // measurements
 

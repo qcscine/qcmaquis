@@ -51,28 +51,24 @@ class LocalHamiltonianInitializer : public optimizer_base<Matrix, SymmGroup, Sto
     BoundaryVector const & right() { return this->right_; }
 
     // Fetches left and right boundaries from disk for a given site and one/twosite tensor
-    // Only intended for left->right sweeps, i.e. the boundaries for site L-1 are fetched at site L-2
+    // Only intended for left->right sweeps
     void fetch_boundaries(int site, bool twosite = true) {
 
         std::size_t L = this->mps.length();
 
-        assert(site < L);
+        if (twosite)
+            assert(site < L);
+        else
+            assert(site <= L);
 
         Storage::prefetch(this->left_[site]);
         Storage::fetch(this->left_[site]);
 
-        if (twosite)
-        {
-            int site2 = site < L-1 ? site+2 : site+1;
+        int site2 = twosite ? site+2 : site+1;
 
-            Storage::prefetch(this->right_[site2]);
-            Storage::fetch(this->right_[site2]);
-        }
-        else
-        {
-            Storage::prefetch(this->right_[site+1]);
-            Storage::fetch(this->right_[site+1]);
-        }
+        Storage::prefetch(this->right_[site2]);
+        Storage::fetch(this->right_[site2]);
+
 
     }
 
