@@ -48,7 +48,7 @@ option(REGRESSION_PERFORMANCE_TESTS "Run application benchmarks"            OFF)
 
 mark_as_advanced(ENABLE_COLLECTOR)
 
-set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, alps")
+set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas, alps")
 
 
 ######################################################################
@@ -215,7 +215,7 @@ endif(USE_AMBIENT)
 ######################################################################
 set(DMRG_YEAR 2018)
 set(DMRG_VERSION_MAJOR 2)
-set(DMRG_VERSION_MINOR 0)
+set(DMRG_VERSION_MINOR 1)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 

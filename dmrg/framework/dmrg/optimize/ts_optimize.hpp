@@ -5,7 +5,8 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *	                          Sebastian Keller <sebkelle@phys.ethz.ch>
- *	             2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *	             2017-2018 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *               2018 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under

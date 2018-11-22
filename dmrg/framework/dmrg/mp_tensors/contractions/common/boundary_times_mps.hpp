@@ -222,11 +222,11 @@ namespace contraction {
             return data_.size();
         }
 
-        void resize(index_type n){
+        void resize(size_t n){
             if(n < data_.size())
                 return data_.resize(n);
             data_.reserve(n);
-            for(index_type i = data_.size(); i < n; ++i)
+            for(int i = data_.size(); i < n; ++i)
                 data_.push_back(block_matrix<Matrix, SymmGroup>());
         }
 
