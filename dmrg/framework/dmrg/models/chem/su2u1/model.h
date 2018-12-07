@@ -36,6 +36,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -166,6 +167,8 @@ public:
 
         // Regexp for local Hamiltonian matrix elements
         boost::regex expression_local_hamiltonian("^MEASURE\\[local-hamiltonian\\]");
+        // or sigma vector (contracted local Hamiltonian with one MPS)
+        boost::regex expression_sigma_vector("^MEASURE\\[sigma-vector\\]");
 
         // Regexp for Lagrange RDM update (MPS contribution to the Lagrange effective RDM in gradient calculations)
         // as for the RDM derivatives, the name without a L or R suffix means both left and right expectation values
@@ -333,6 +336,15 @@ public:
                 name = "local_hamiltonian";
                 meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
                                 name, lat, parms));
+            }
+            // or sigma vector
+            // If we provide a valid file name (for the auxiliary MPSTensor contents) as a parameter, pass it to the constructor
+            // If the file does not exist or cannot be opened, silently ignore it (TODO: Maybe this behaviour is not clean!)
+            if (boost::regex_match(lhs, what, expression_sigma_vector)) {
+                name = "sigma_vector";
+                std::string ext_filename = boost::filesystem::exists(it->value()) ? it->value() : "";
+                meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
+                                name, lat, parms, ext_filename));
             }
 
             // Dump the two-site tensor at site X where X is specified in lrparam_site
