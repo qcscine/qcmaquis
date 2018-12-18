@@ -80,6 +80,7 @@ parse_config(std::string file, std::vector<Index<SymmGroup> > const & site_dims)
         }
         configs.push_back(tmp);
     }
+    config_file.close();
     return configs;
 }
 
