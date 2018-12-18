@@ -30,6 +30,7 @@
 #define SAMPLING_HPP
 
 #include <iostream>
+#include <iomanip>
 #include <boost/random.hpp>
 #include <math.h>
 #include <string.h>
@@ -345,7 +346,7 @@ struct Sampling
           fout << i << std::endl;
           for(uint32_t i=0; i<hash.size() ; i++){
             if(CIs_index[hash.size()-i-1]!=0)
-             {fout << CIs_index[hash.size()-i-1] << "  " << CIs_show[hash.size()-i-1] << std::endl;}
+             {fout << CIs_index[hash.size()-i-1] << "  " << std::fixed << std::setprecision(12) << CIs_show[hash.size()-i-1] << std::endl;}
             }
           fout.close();
           quicksort(dets_show, CIs_show,0, hash.size()-1);
