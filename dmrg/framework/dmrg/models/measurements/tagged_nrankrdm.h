@@ -799,7 +799,7 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
+                for (pos_t p2 = (bra_neq_ket ? 0 : p1); p2 < lattice.size(); ++p2)
                 {
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
@@ -875,11 +875,7 @@ namespace measurements {
 
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 {
-                    // TODO: p4 should actually always start for p3,
-                    // however there's a bug which leads to wrong order of the indices
-                    // for regular 2-RDMs it is not a problem because of the symmetry, but is exposed for 2-TDMs
-                    // therefore for TDMs we have temporarily disabled the permutational symmetry
-                    for (pos_t p4 = (bra_neq_ket ? 0 : p3); p4 < lattice.size(); ++p4)
+                    for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
                     {
                         pos_t pos_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positions(pos_, pos_ + 4);
@@ -1032,7 +1028,7 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
+                for (pos_t p2 = (bra_neq_ket ? 0 : p1); p2 < lattice.size(); ++p2)
                 {
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
