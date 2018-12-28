@@ -167,6 +167,8 @@ public:
 
         // Regexp for local Hamiltonian matrix elements
         boost::regex expression_local_hamiltonian("^MEASURE\\[local-hamiltonian\\]");
+        // Regexp for diagonal local Hamiltonian matrix elements
+        boost::regex expression_local_hamiltonian_diag("^MEASURE\\[local-hamiltonian-diag\\]");
         // or sigma vector (contracted local Hamiltonian with one MPS)
         boost::regex expression_sigma_vector("^MEASURE\\[sigma-vector\\]");
 
@@ -334,6 +336,12 @@ public:
             // Measure Local Hamiltonian matrix elements
             if (boost::regex_match(lhs, what, expression_local_hamiltonian)) {
                 name = "local_hamiltonian";
+                meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
+                                name, lat, parms));
+            }
+            // diagonal Local Hamiltonian matrix elements
+            if (boost::regex_match(lhs, what, expression_local_hamiltonian_diag)) {
+                name = "local_hamiltonian_diag";
                 meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
                                 name, lat, parms));
             }

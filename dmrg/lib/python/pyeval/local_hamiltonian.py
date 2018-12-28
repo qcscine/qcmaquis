@@ -43,7 +43,7 @@ def load_meas(inputfile,meas):
     return m
 
 
-def save_hamiltonian(m):
+def save_hamiltonian(m,diag):
     #fmt = '%14.14e'
 
     # get indices
@@ -78,13 +78,18 @@ def save_hamiltonian(m):
     n = max(idxdict.values())+1
 
     # create a numpy array
-    mat = np.zeros((n,n))
+
+    mat = np.zeros((n,n)) if (not diag) else np.zeros(n)
 
     # and fill it with the values
     # the zip expression returns a tuple, with the first element as the list of two original index lists and the second element as the values
 
-    for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
-        mat[idxdict[itm_index(lab[0])],idxdict[itm_index(lab[1])]] = val if abs(val) > 1.0e-14 else 0.0
+    if (not diag):
+        for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
+            mat[idxdict[itm_index(lab[0])],idxdict[itm_index(lab[1])]] = val if abs(val) > 1.0e-14 else 0.0
+    else:
+        for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
+            mat[idxdict[itm_index(lab[0])]] = val if abs(val) > 1.0e-14 else 0.0
 
     # save the array to file
 
@@ -93,7 +98,15 @@ def save_hamiltonian(m):
 
 
 if __name__ == '__main__':
+    # diag indicates if we measured only the diagonal
+    diag = False
+    if (len(sys.argv) > 2):
+        if (sys.argv[2] == "-d"):
+            diag = True
     inputfile = sys.argv[1]
-    save_hamiltonian(load_meas(inputfile,"local_hamiltonian"))
+    if (diag):
+        save_hamiltonian(load_meas(inputfile,"local_hamiltonian_diag"),diag)
+    else:
+        save_hamiltonian(load_meas(inputfile,"local_hamiltonian"),diag)
 
 

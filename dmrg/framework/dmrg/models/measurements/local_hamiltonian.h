@@ -39,7 +39,7 @@ namespace measurements
     template<class Matrix, class SymmGroup>
     class LocalHamiltonian : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        enum H_measurement_type { HamiltonianMatrix, SigmaVector };
+        enum H_measurement_type { HamiltonianMatrix, HamiltonianMatrixDiag, SigmaVector };
         public:
             LocalHamiltonian(std::string name_, Lattice const & lat_, BaseParameters & parms_, const std::string & ext_filename_=std::string(""))
             : base(name_), lat(lat_), parms(parms_), ext_filename(ext_filename_) {}
@@ -54,6 +54,8 @@ namespace measurements
                 this->labels.clear();
                 if (this->name() == "local_hamiltonian")
                     measure(HamiltonianMatrix, mps, mpo, parms["lrparam_site"]);
+                else if (this->name() == "local_hamiltonian_diag")
+                    measure(HamiltonianMatrixDiag, mps, mpo, parms["lrparam_site"]);
                 else if (this->name() == "sigma_vector")
                     measure(SigmaVector, mps, mpo, parms["lrparam_site"]);
                 else
@@ -100,7 +102,7 @@ namespace measurements
                     init.fetch_boundaries(site, twosite);
 
 
-                    if (meas_type == HamiltonianMatrix)
+                    if ((meas_type == HamiltonianMatrix) || (meas_type == HamiltonianMatrixDiag))
                     {
                         // Measure Local Hamiltonian matrix elements
                         // Currently doing it very inefficiently by explicitly calculating each <i|H|j> matrix element
@@ -109,7 +111,10 @@ namespace measurements
                         // Prepare the basis state from twin_mps: set all elements to 0
                         twin_mps.multiply_by_scalar(0.0);
 
-                        maquis::cout << "Measuring local Hamiltonian matrix at site " << site << std::endl;
+                        if (meas_type == HamiltonianMatrix)
+                            maquis::cout << "Measuring local Hamiltonian matrix at site " << site << std::endl;
+                        else if (meas_type == HamiltonianMatrixDiag)
+                            maquis::cout << "Measuring local Hamiltonian diagonal at site " << site << std::endl;
 
                         for (int i = 0; i < twin_mps.data().n_blocks(); i++)
                         for (int j = 0; j < num_rows(twin_mps.data()[i]); j++)
@@ -129,18 +134,24 @@ namespace measurements
 
                             // TODO: Check if dim(i) == dim(ii), dim(j) == dim(jj) and dim(k) == dim(kk) !!!
                             // TODO: The Hamiltonian matrix is symmetric. Currently, we're not exploiting the symmetry, but one should do it!
+
                             for (int ii = 0; ii < Hij.n_blocks(); ii++)
                             for (int jj = 0; jj < num_rows(Hij[ii]); jj++)
                             for (int kk = 0; kk < num_cols(Hij[ii]); kk++)
                             {
-                                // prepare labels
-                                std::vector<Lattice::pos_t> labels = { i, j, k, ii, jj, kk };
-                                std::string label_string = label_string_simple(labels);
+                                // Differentiate between diagonal and non-diagonal measurements
+                                bool cond = ((meas_type == HamiltonianMatrix) || (i == ii) && (j == jj) && (k == kk));
+                                if (cond)
+                                {
+                                    // prepare labels
+                                    std::vector<Lattice::pos_t> labels = { i, j, k, ii, jj, kk };
+                                    std::string label_string = label_string_simple(labels);
 
-                                // TODO: use std::vector::reserve() in a reasonable way
-                                // Write back matrix elements of MPSTensor H|I> which results in <I|H|J>
-                                this->vector_results.push_back(Hij[ii](jj,kk));
-                                this->labels.push_back(label_string);
+                                    // TODO: use std::vector::reserve() in a reasonable way
+                                    // Write back matrix elements of MPSTensor H|I> which results in <I|H|J>
+                                    this->vector_results.push_back(Hij[ii](jj,kk));
+                                    this->labels.push_back(label_string);
+                                }
                             }
                             // set the corresponding element in the basis MPS again to 0
                             twin_mps.data()[i](j,k) = 0.0;

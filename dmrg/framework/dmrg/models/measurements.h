@@ -63,7 +63,7 @@ public:
         // Local Hamiltonian measure requires the MPO, so check if we're measuring it
         // TODO: This is dirty! Find a better way to implement this
         // TODO: Make sure that mpo has been actually initialised
-        if (meas.name() == "local_hamiltonian" || meas.name() == "sigma_vector")
+        if (meas.name() == "local_hamiltonian" || meas.name() == "local_hamiltonian_diag" ||meas.name() == "sigma_vector")
             meas.evaluate(mps, mpo.get());
         else
             meas.evaluate(mps, rmps);
