@@ -27,6 +27,12 @@
 #* DEALINGS IN THE SOFTWARE.
 #*
 #*****************************************************************************
+#
+# This scripts extracts 1- and 2-TDMs or RDM Lagrange updates from QCMaquis
+# HDF5 files and saves them in human-readable ASCII files
+# (one|two)particle.tdm or (one|two)rdmlagrange
+# Invoke it as 'tdmsave_su2.py h5file' to extract TDMs from h5file
+#        or as 'tdmsave_su2.py h5file -l' to extract RDM Lagrange updates
 
 import sys
 import pyalps
@@ -34,9 +40,8 @@ import numpy as np
 
 # dependency on pytools
 
-# dependency on rdmsave_su2_onlyone.py
 
-def save_1rdm(rdm):
+def save_1rdm(rdm,lagrange_update):
     fmt = '%14.14e'
 
     L = int(rdm.props["L"])
@@ -48,7 +53,8 @@ def save_1rdm(rdm):
         mat[i,j] = val;
         #mat[j,i] = val;
 
-    f=open('oneparticle.tdm','w')
+    filename = 'onerdmlagrange' if lagrange_update else 'oneparticle.tdm'
+    f=open(filename,'w')
     f.write(str(L)+'\n')
 
     for i in range(L):
@@ -58,21 +64,24 @@ def save_1rdm(rdm):
 
     return L
 
-def load_1rdm(inputfile):
+def load_1rdm(inputfile,lagrange_update):
     # load data from the HDF5 result file
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='transition_oneptdm')[0][0]
+    meas_str = 'onerdmlagrangeL' if lagrange_update else 'transition_oneptdm'
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
     return rdm
 
-def load_2rdm(inputfile):
+def load_2rdm(inputfile,lagrange_update):
     # load data from the HDF5 result file
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='transition_twoptdm')[0][0]
+    meas_str = 'twordmlagrangeL' if lagrange_update else 'transition_twoptdm'
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
     rdm.y[0] = 0.5 * rdm.y[0]
     return rdm
 
-def save_2rdm(rdm,L):
+def save_2rdm(rdm,L,lagrange_update):
     fmt = '%14.14e'
 
-    f=open('twoparticle.tdm','w')
+    filename = 'twordmlagrange' if lagrange_update else 'twoparticle.tdm'
+    f=open(filename,'w')
     f.write(str(L)+'\n')
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]
@@ -95,9 +104,14 @@ def save_2rdm(rdm,L):
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    rdm1 =load_1rdm(inputfile)
-    L=save_1rdm(rdm1)
+    lagrange_update = False
+    if len(sys.argv) > 2:
+        if sys.argv[2] == '-l':
+            lagrange_update = True
 
-    rdmT = load_2rdm(inputfile)
-    save_2rdm(rdmT,L)
+    rdm1 =load_1rdm(inputfile,lagrange_update)
+    L=save_1rdm(rdm1,lagrange_update)
+
+    rdmT = load_2rdm(inputfile,lagrange_update)
+    save_2rdm(rdmT,L,lagrange_update)
 
