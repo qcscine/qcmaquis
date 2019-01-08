@@ -38,10 +38,22 @@ import sys
 import pyalps
 import numpy as np
 
-# dependency on pytools
+def load_1rdm(inputfile,lagrange_update):
+    # load data from the HDF5 result file
+    meas_str = 'onerdmlagrangeL' if lagrange_update else 'transition_oneptdm'
 
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
+    return rdm
 
-def save_1rdm(rdm,lagrange_update):
+def load_2rdm(inputfile,lagrange_update):
+    # load data from the HDF5 result file
+    meas_str = 'twordmlagrangeL' if lagrange_update else 'transition_twoptdm'
+
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
+    rdm.y[0] = 0.5 * rdm.y[0]
+    return rdm
+
+def save_1rdm(rdm,lagrange_update,tag1=None,tag2=None):
     fmt = '%14.14e'
 
     L = int(rdm.props["L"])
@@ -50,10 +62,16 @@ def save_1rdm(rdm,lagrange_update):
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]
         j = lab[1]
-        mat[i,j] = val;
-        #mat[j,i] = val;
+        mat[i,j] = val
 
     filename = 'onerdmlagrange' if lagrange_update else 'oneparticle.tdm'
+    if not tag1 is None:
+        filename += '.' + tag1
+    if not tag2 is None:
+        filename += '.' + tag2
+
+    print filename
+
     f=open(filename,'w')
     f.write(str(L)+'\n')
 
@@ -62,25 +80,19 @@ def save_1rdm(rdm,lagrange_update):
             f.write(str(i)+' '+str(j)+' '+str(fmt%mat[i,j])+'\n')
     f.close()
 
-    return L
-
-def load_1rdm(inputfile,lagrange_update):
-    # load data from the HDF5 result file
-    meas_str = 'onerdmlagrangeL' if lagrange_update else 'transition_oneptdm'
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
-    return rdm
-
-def load_2rdm(inputfile,lagrange_update):
-    # load data from the HDF5 result file
-    meas_str = 'twordmlagrangeL' if lagrange_update else 'transition_twoptdm'
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
-    rdm.y[0] = 0.5 * rdm.y[0]
-    return rdm
-
-def save_2rdm(rdm,L,lagrange_update):
+def save_2rdm(rdm,lagrange_update,tag1=None,tag2=None):
     fmt = '%14.14e'
+    L = int(rdm.props["L"])
 
     filename = 'twordmlagrange' if lagrange_update else 'twoparticle.tdm'
+
+    if not tag1 is None:
+        filename += '.' + tag1
+    if not tag2 is None:
+        filename += '.' + tag2
+
+    print filename
+
     f=open(filename,'w')
     f.write(str(L)+'\n')
     for lab, val in zip(rdm.x, rdm.y[0]):
@@ -109,9 +121,30 @@ if __name__ == '__main__':
         if sys.argv[2] == '-l':
             lagrange_update = True
 
-    rdm1 =load_1rdm(inputfile,lagrange_update)
-    L=save_1rdm(rdm1,lagrange_update)
+    tag1 = None
+    tag2 = None
 
-    rdmT = load_2rdm(inputfile,lagrange_update)
-    save_2rdm(rdmT,L,lagrange_update)
+    if lagrange_update:
+      if len(sys.argv) > 3:
+        tag1 = sys.argv[3]
+        if len(sys.argv) > 4:
+          tag2 = sys.argv[4]
+    else:
+      if len(sys.argv) > 2:
+        tag1 = sys.argv[2]
+        if len(sys.argv) > 3:
+          tag2 = sys.argv[3]
 
+    try:
+      rdm1 = load_1rdm(inputfile,lagrange_update)
+      save_1rdm(rdm1,lagrange_update,tag1,tag2)
+    except:
+      print "1-TDM not found."
+      pass
+
+    try:
+      rdm2 = load_2rdm(inputfile,lagrange_update)
+      save_2rdm(rdm2,lagrange_update,tag1,tag2)
+    except:
+      print "2-TDM not found."
+      pass
