@@ -43,7 +43,7 @@ def load_meas(inputfile,meas):
     return m
 
 
-def save_hamiltonian(m,diag):
+def save_hamiltonian(m,diag,sigmavec=False):
     #fmt = '%14.14e'
 
     # get indices
@@ -83,13 +83,16 @@ def save_hamiltonian(m,diag):
 
     # and fill it with the values
     # the zip expression returns a tuple, with the first element as the list of two original index lists and the second element as the values
-
-    if (not diag):
-        for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
-            mat[idxdict[itm_index(lab[0])],idxdict[itm_index(lab[1])]] = val if abs(val) > 1.0e-14 else 0.0
+    if (sigmavec):
+        for lab, val in zip([ [ m.x[k][j] for j in range(3) ] for k in range(len(m.x)) ], m.y[0]):
+                mat[idxdict[itm_index(lab)]] = val if abs(val) > 1.0e-14 else 0.0
     else:
-        for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
-            mat[idxdict[itm_index(lab[0])]] = val if abs(val) > 1.0e-14 else 0.0
+        if (not diag):
+            for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
+                mat[idxdict[itm_index(lab[0])],idxdict[itm_index(lab[1])]] = val if abs(val) > 1.0e-14 else 0.0
+        else:
+            for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
+                mat[idxdict[itm_index(lab[0])]] = val if abs(val) > 1.0e-14 else 0.0
 
     # save the array to file
 
@@ -100,11 +103,18 @@ def save_hamiltonian(m,diag):
 if __name__ == '__main__':
     # diag indicates if we measured only the diagonal
     diag = False
+    sigmavec = False
     if (len(sys.argv) > 2):
-        if (sys.argv[2] == "-d"):
+        if (sys.argv[2] == "-d"): # local Hamiltonian diagonal
             diag = True
+        if (sys.argv[2] == "-s"): # sigma vector
+            diag = True
+            sigmavec = True
     inputfile = sys.argv[1]
-    if (diag):
+    if diag:
+      if sigmavec:
+        save_hamiltonian(load_meas(inputfile,"sigma_vector"),diag,sigmavec=True)
+      else:
         save_hamiltonian(load_meas(inputfile,"local_hamiltonian_diag"),diag)
     else:
         save_hamiltonian(load_meas(inputfile,"local_hamiltonian"),diag)
