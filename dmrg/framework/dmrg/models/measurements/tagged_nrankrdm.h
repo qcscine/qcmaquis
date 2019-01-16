@@ -757,9 +757,9 @@ namespace measurements {
 
             maquis::cout << " measuring in su2 version of tagged_nrank " << std::endl;
 
-            if (this->name() == "oneptdm")
+            if (this->name() == "oneptdm" || this->name() == "transition_oneptdm")
                 measure_correlation(bra_mps, ket_mps);
-            else if (this->name() == "twoptdm")
+            else if (this->name() == "twoptdm" || this->name() == "transition_twoptdm")
                 measure_2rdm(bra_mps, ket_mps);
         }
 
@@ -851,11 +851,8 @@ namespace measurements {
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
-                pos_t subref = std::min(p1, p2);
-
                 // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-                if (bra_neq_ket)
-                    pos_t subref = 0;
+                pos_t subref = bra_neq_ket ? 0 : std::min(p1, p2);
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
