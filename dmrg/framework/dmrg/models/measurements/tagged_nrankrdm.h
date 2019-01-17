@@ -518,8 +518,7 @@ namespace measurements {
             pos_t p1_end   = 0;
             pos_t p2_end   = 0;
             pos_t p_max    = lattice.size();
-            pos_t p_size   = positions_first.size();
-            if(p_size == 4){
+            if(positions_first.size() == 4){
                 p4_start = positions_first[0];
                 p3_start = positions_first[1];
                 p1_start = positions_first[2];
@@ -532,12 +531,19 @@ namespace measurements {
             //#ifdef MAQUIS_OPENMP
             //#pragma omp parallel for collapse(4) schedule(dynamic,1)
             //#endif
+            for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
             for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
-            for (pos_t p4 = p4_start ; p4 <= p3; ++p4)
             {
-                 for (pos_t p1 = p1_start; p1 > p4; --p1)
+                 for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
                  {
-                      for (pos_t p2 = ((p_size == 0) ? p1: p2_start); p2 >= ((p_size == 0) ? 0: p2_end); --p2)
+                      if(p4 > p3 || p4 > p1 || p3 > p1) continue;
+
+                      if(positions_first.size() == 0){
+                          p2_start = p1;
+                          p2_end   = 0; 
+                      }
+
+                      for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
                       {
                           if(p3 > p2) continue;
 
