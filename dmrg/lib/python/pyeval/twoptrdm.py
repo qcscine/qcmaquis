@@ -118,7 +118,7 @@ def print_2rdm_dbg(rdm,tag):
 
 def dump_element(f,value,i,j,k,l):
     
-    print i,j,k,l, "\t", (value.real, value.imag)
+    #print i,j,k,l, "\t", (value.real, value.imag)
     fmt  = '% -020.14E'
     f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  '+str(fmt%value.real)+'  '+str(fmt%value.imag)+'\n')
 

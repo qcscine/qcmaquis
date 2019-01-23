@@ -124,8 +124,8 @@ def print_rdm1(inputfile,tag):
     f.close()
 
 def dump_element(f,val_real,val_imag,i,j):
-    
-    print (val_real, val_imag), "\t", i, j
+
+    #print (val_real, val_imag), "\t", i, j
     fmt  = '% -020.14E'
     f.write(str(i)+' '+str(j)+'  '+str(fmt%val_real)+'  '+str(fmt%val_imag)+'\n')
 
