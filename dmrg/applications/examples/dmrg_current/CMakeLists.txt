@@ -1,6 +1,6 @@
 
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
-enable_omp_if_found()
+
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
 set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})

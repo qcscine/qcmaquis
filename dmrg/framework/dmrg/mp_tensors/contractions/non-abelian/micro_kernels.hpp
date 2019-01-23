@@ -5,22 +5,22 @@
  * Copyright (C) 2016 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2016-2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -29,14 +29,11 @@
 #define CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 
 #include "dmrg/block_matrix/block_matrix.h"
-#include "dmrg/mp_tensors/contractions/common/tasks.hpp"
 
 namespace contraction {
 namespace SU2 {
 namespace detail {
 
-    using ::contraction::common::detail::micro_task;
-    using ::contraction::common::task_compare;
 
     template<class Matrix, class SymmGroup>
     void lbtm(Matrix const & iblock, Matrix & oblock, typename operator_selector<Matrix, SymmGroup>::type const & W,
@@ -136,7 +133,7 @@ namespace detail {
                 std::size_t ss2 = it->col;
                 std::size_t rspin = it->row_spin;
                 std::size_t cspin = it->col_spin;
-                std::size_t casenr = 0; 
+                std::size_t casenr = 0;
                 if (rspin == 2 && cspin == 2) casenr = 3;
                 else if (rspin == 2) casenr = 1;
                 else if (cspin == 2) casenr = 2;
@@ -149,6 +146,27 @@ namespace detail {
             }
         }
     }
+
+    template <typename T>
+    struct micro_task
+    {
+        typedef unsigned short IS;
+
+        //T const* source;
+        T scale;
+        IS b2, k;
+        IS l_size, r_size, stripe, out_offset;
+        unsigned in_offset;
+    };
+
+    template <typename T>
+    struct task_compare
+    {
+        bool operator ()(micro_task<T> const & t1, micro_task<T> const & t2)
+        {
+            return t1.out_offset < t2.out_offset;
+        }
+    };
 
     template <class Matrix, class SymmGroup>
     void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block,
@@ -170,7 +188,7 @@ namespace detail {
             std::size_t ss2 = it->col;
             std::size_t rspin = it->row_spin;
             std::size_t cspin = it->col_spin;
-            std::size_t casenr = 0; 
+            std::size_t casenr = 0;
             if (rspin == 2 && cspin == 2) casenr = 3;
             else if (rspin == 2) casenr = 1;
             else if (cspin == 2) casenr = 2;
@@ -187,13 +205,13 @@ namespace detail {
     template<typename T>
     void task_axpy(micro_task<T> const & task, T * oblock, T const * source)
     {
-        std::size_t l_size = task.l_size; 
-        std::size_t r_size = task.r_size; 
+        std::size_t l_size = task.l_size;
+        std::size_t r_size = task.r_size;
         std::size_t stripe = task.stripe;
         std::size_t out_right_offset = task.out_offset;
 
         //if (source2 != task.source) throw std::runtime_error("source mismatch \n");
-        
+
         for(size_t rr = 0; rr < r_size; ++rr) {
             T alfa_t = task.scale;
             maquis::dmrg::detail::iterator_axpy(source + stripe * rr,
