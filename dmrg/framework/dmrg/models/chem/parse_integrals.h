@@ -142,7 +142,7 @@ namespace chem_detail {
         return std::make_pair(idx_, matrix_elements);
     }
 
-    // Template specialization for complex numbersi and U1DG symmetry!!
+    // Template specialization for complex numbers and U1DG symmetry!!
     template <>
     inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<std::complex<double> > >
@@ -208,7 +208,7 @@ namespace chem_detail {
 
             //DEBUG
             //maquis::cout << integral_value.real() << " " << integral_value.imag() << std::endl;
-            
+
             if (std::abs(integral_value) > parms["integral_cutoff"]){
                 matrix_elements.push_back(integral_value);
                 std::vector<int> tmp;

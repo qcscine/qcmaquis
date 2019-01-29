@@ -103,6 +103,7 @@ def print_rdm1(inputfile,tag):
     tag2 = tag
 
     f=open('oneparticle.rdm.%s.%s' % (tag1,tag2),'w')
+    b=open('extDMRG_%s_%s.rdm1' % (tag1,tag2),'w')
 
     # load data from the HDF5 result file
     dm = pyalps.loadEigenstateMeasurements([inputfile], what='oneptdm')[0][0]
@@ -120,8 +121,10 @@ def print_rdm1(inputfile,tag):
     for j in range(spinors):
         for i in range (spinors):
             dump_element(f,dm_real[i,j],dm_imag[i,j],i,j)
+            dump_element(b,dm_real[i,j],dm_imag[i,j],i+1,j+1)
 
     f.close()
+    b.close()
 
 def dump_element(f,val_real,val_imag,i,j):
 

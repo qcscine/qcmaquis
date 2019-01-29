@@ -98,6 +98,7 @@ def print_2rdm_dbg(rdm,tag):
     tag2 = tag
 
     f=open('twoparticle.rdm.%s.%s' % (tag1,tag2),'w')
+    b=open('extDMRG_%s_%s.rdm2' % (tag1,tag2),'w')
 
     for lab, val in zip(rdm.x, rdm.y[0]):
         m = lab[0]
@@ -108,13 +109,19 @@ def print_2rdm_dbg(rdm,tag):
         #print "raw data --> ", m,n,o,p, "\t", (val.real, val.imag)
 
         if abs(val.real) == 0 and abs(val.imag) == 0: continue
- 
+
         dump_element(f, val,m,n,o,p)
         dump_element(f, val,o,p,m,n)
         dump_element(f,-val,m,p,o,n)
         dump_element(f,-val,o,n,m,p)
 
+        dump_element(b, val,m+1,n+1,o+1,p+1)
+        dump_element(b, val,o+1,p+1,m+1,n+1)
+        dump_element(b,-val,m+1,p+1,o+1,n+1)
+        dump_element(b,-val,o+1,n+1,m+1,p+1)
+
     f.close()
+    b.close()
 
 def dump_element(f,value,i,j,k,l):
     
