@@ -151,7 +151,7 @@
                     boost::tie(mps_aux[site], mps_aux[site+1], trunc) = tst.split_mps_l2r(std::numeric_limits<int>::max(), -1.0);
 
                     // for whatever reason! -- this is to ensure the reproducibility of the results by the yingjin-devel branch
-                    if (site < mps_aux.length()-1)
+                    if (site < mps_aux.length()-2)
                     {
                         mps_aux[site+2].multiply_from_left(mps_aux[site+1].normalize_left(DefaultSolver()));
                         mps_aux[site+2].make_left_paired();
