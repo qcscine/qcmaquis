@@ -33,12 +33,14 @@
 namespace measurements {
     // A simple measurement that creates a two-site tensor and dumps it
     // Used in the linear response (state-average gradients) calculation
+    // if twosite == true
+    // if twosite == false, it just dumps the (one-site) MPSTensor in question instead
     template <class Matrix, class SymmGroup>
     class DumpTST : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
     public:
 
-        DumpTST(std::string name_, int site_ = 0) : base(name_), site(site_) {}
+        DumpTST(std::string name_, int site_ = 0, bool twosite_ = true) : base(name_), site(site_), twosite(twosite_) {}
 
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
@@ -51,23 +53,45 @@ namespace measurements {
             // TODO: Canonize the MPS only once for all measurements (outside of this class)
             mps_aux.canonize(site);
 
-            // Prepare the two-site tensor from two sites of the MPS
-            TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
-
-            // To keep the consistency with other measurements (local Hamiltonian), or the yingjin-devel branch
-            // which apparently works with left-paired two site tensors, we introduce left pairing
-            // Note that for some reason, pairing may introduce an additional block with a zero element!
-            tst.make_left_paired();
-
-            // Dump the TST elements along with the labels
-            for (int i = 0; i < tst.data().n_blocks(); i++)
-            for (int j = 0; j < tst.data()[i].num_rows(); j++)
-            for (int k = 0; k < tst.data()[i].num_cols(); k++)
+            if (twosite)
             {
-                this->vector_results.push_back(tst.data()[i](j,k));
-                // Labels are dumped as 'site, i, j, k'
-                this->labels.push_back(label_string_simple({site, i, j, k}));
+                // Prepare the two-site tensor from two sites of the MPS
+                TwoSiteTensor<Matrix, SymmGroup> tst(mps_aux[site], mps_aux[site+1]);
+
+                // To keep the consistency with other measurements (local Hamiltonian), or the yingjin-devel branch
+                // which apparently works with left-paired two site tensors, we introduce left pairing
+                // Note that for some reason, pairing may introduce an additional block with a zero element!
+                tst.make_left_paired();
+
+                maquis::cout << "Dumping the two-site tensor at site " << site << std::endl;
+                // Dump the TST elements along with the labels
+                for (int i = 0; i < tst.data().n_blocks(); i++)
+                for (int j = 0; j < tst.data()[i].num_rows(); j++)
+                for (int k = 0; k < tst.data()[i].num_cols(); k++)
+                {
+                    this->vector_results.push_back(tst.data()[i](j,k));
+                    // Labels are dumped as 'site, i, j, k'
+                    this->labels.push_back(label_string_simple({site, i, j, k}));
+                }
             }
+            else
+            {
+                MPSTensor<Matrix, SymmGroup> & mpst = mps_aux[site];
+                // One-site parameters: just dump the MPSTensor at current site
+                mpst.make_left_paired();
+
+                maquis::cout << "Dumping the one-site tensor at site " << site << std::endl;
+                // Dump the MPSTensor elements along with the labels
+                for (int i = 0; i < mpst.data().n_blocks(); i++)
+                for (int j = 0; j < mpst.data()[i].num_rows(); j++)
+                for (int k = 0; k < mpst.data()[i].num_cols(); k++)
+                {
+                    this->vector_results.push_back(mpst.data()[i](j,k));
+                    // Labels are dumped as 'site, i, j, k'
+                    this->labels.push_back(label_string_simple({site, i, j, k}));
+                }
+            }
+
         }
 
     protected:
@@ -78,6 +102,7 @@ namespace measurements {
 
     private:
         int site; // Site at which the TwoSiteTensor should be constructed
+        bool twosite; // if we should create a twosite tensor
     };
 
 }

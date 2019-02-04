@@ -320,17 +320,17 @@ public:
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
                                 parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
-                                it->value(), name, lat, tag_handler, op_collection, positions));
+                                it->value(), name, lat, tag_handler, op_collection, positions, parms["lrparam_twosite"]));
 
             if (expr_rdm_lagrange_both) {
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
                                 parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(),
-                                it->value(), name, lat, tag_handler, op_collection, positions));
+                                it->value(), name, lat, tag_handler, op_collection, positions, parms["lrparam_twosite"]));
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
                                 parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(),
-                                it->value(), nameR, lat, tag_handler, op_collection, positions));
+                                it->value(), nameR, lat, tag_handler, op_collection, positions, parms["lrparam_twosite"]));
             }
 
             // Measure Local Hamiltonian matrix elements
@@ -356,10 +356,11 @@ public:
             }
 
             // Dump the two-site tensor at site X where X is specified in lrparam_site
+            // (or only the one-site MPSTensor at this site if lrparam_twosite==false)
             if (boost::regex_match(lhs, what, expression_dump_tst)) {
                 name = "tstdump";
                 meas.push_back( new measurements::DumpTST<Matrix, SymmGroup>(
-                                name, parms["lrparam_site"]));
+                                name, parms["lrparam_site"], parms["lrparam_twosite"]));
             }
         }
 

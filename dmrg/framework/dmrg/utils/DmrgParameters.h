@@ -72,6 +72,7 @@ private:
         add_option("ietl_jcd_maxiter", "", value(8));
 
         add_option("lrparam_site", "Site for the calculation of linear response parameters", 0);
+        add_option("lrparam_twosite", "Use two-site tensors as linear response parameters", value(true));
 
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

@@ -53,15 +53,15 @@
             NRDMLRLagrange(int lr_site_, boost::true_type, std::string const& filename_, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection const & op_collection_,
-                       positions_type const& positions_ = positions_type())
-                       : base(name_, lat, tag_handler_, op_collection_, positions_), filename(filename_), lr_site(lr_site_) {};
+                       positions_type const& positions_ = positions_type(), bool twosite_ = true)
+                       : base(name_, lat, tag_handler_, op_collection_, positions_), filename(filename_), lr_site(lr_site_), twosite(twosite_) {};
 
             // 2U1 and other symmetry groups
             NRDMLRLagrange(int lr_site_, boost::false_type, std::string const& filename_, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<scaled_bond_term> const& ops_,
-                       bool half_only_, positions_type const& positions_ = positions_type())
-                        : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), filename(filename_), lr_site(lr_site_) {};
+                       bool half_only_, positions_type const& positions_ = positions_type(), bool twosite_ = true)
+                        : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), filename(filename_), lr_site(lr_site_), twosite(twosite_) {};
 
 
             virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
@@ -95,7 +95,7 @@
             //
             // Calculate lagrange RDM update (MPS contribution to the Lagrange effective RDM for gradient calculations)
 
-            void measure_lagrange_rdm(MPS<Matrix, SymmGroup> const& mps, std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator, int site = 0, bool twosite = true)
+            void measure_lagrange_rdm(MPS<Matrix, SymmGroup> const& mps, std::function<void(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &)> RDMEvaluator, int site = 0)
             {
 
                 typedef typename Matrix::value_type value_type;
@@ -109,7 +109,7 @@
                 std::ifstream infile;
                 std::vector<value_type> aux_elements;
 
-                maquis::cout << "Reading the auxiliary MPSTensor elements from file " << filename << std::endl;
+                maquis::cout << "Reading the auxiliary MPSTensor elements for site " << site << " from file " << filename << std::endl;
                 infile.open(filename);
                 if (!infile)
                     throw std::runtime_error("File " + filename + " could not be opened!");
@@ -150,6 +150,8 @@
                     truncation_results trunc;
                     boost::tie(mps_aux[site], mps_aux[site+1], trunc) = tst.split_mps_l2r(std::numeric_limits<int>::max(), -1.0);
 
+                    // maquis::cout << "Truncated weight in evaluating RDM: " << trunc.truncated_weight << std::endl;
+
                     // for whatever reason! -- this is to ensure the reproducibility of the results by the yingjin-devel branch
                     if (site < mps_aux.length()-2)
                     {
@@ -169,12 +171,31 @@
                 }
                 else // one-site
                 {
-                    throw std::runtime_error("One-site Lagrange RDM not implemented yet! O_o");
+                    MPSTensor<Matrix, SymmGroup> & mpst = mps_aux[site];
+                    mpst.make_left_paired();
+                    assert(mpst.data().num_elements() == aux_elements.size());
+                    size_t fileidx = 0;
+                    for (size_t i = 0; i < mpst.data().n_blocks(); i++)
+                    for (size_t j = 0; j < mpst.data()[i].num_rows(); j++)
+                    for (size_t k = 0; k < mpst.data()[i].num_cols(); k++)
+                        mpst.data()[i](j,k) = aux_elements[fileidx++];
+
+                    // for whatever reason! -- this is to ensure the reproducibility of the results by the yingjin-devel branch
+                    // TODO: Check if this is really needed for one-site MPS parameters!
+                    // if (site < mps_aux.length()-1)
+                    // {
+                    //     mps_aux[site+1].multiply_from_left(mpst.normalize_left(DefaultSolver()));
+                    //     mps_aux[site+1].make_left_paired();
+                    // }
+
+                    mpst.make_left_paired();
+                    RDMEvaluator(mps_aux, mps);
                 }
             }
         private:
             const std::string& filename;
             int lr_site;
+            bool twosite;
         };
     } // measurements
 
