@@ -46,7 +46,7 @@ def load_meas(inputfile,meas):
 def save_tst(m,stateno):
     with open('twositetensordump.%s' % stateno, 'w') as f:
         for lab, val in zip(m.x, m.y[0]):
-            f.write('%020.14E %i %i %i\n' % (val,lab[1],lab[2],lab[3])) # the site information is ignored for now
+            f.write('%023.19E %i %i %i\n' % (val,lab[1],lab[2],lab[3])) # the site information is ignored for now
 
 if __name__ == '__main__':
     if (len(sys.argv) == 3):

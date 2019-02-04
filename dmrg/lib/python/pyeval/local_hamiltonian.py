@@ -81,23 +81,25 @@ def save_hamiltonian(m,diag,sigmavec=False):
 
     mat = np.zeros((n,n)) if (not diag) else np.zeros(n)
 
+    thresh = 1.0e-19
+
     # and fill it with the values
     # the zip expression returns a tuple, with the first element as the list of two original index lists and the second element as the values
     if (sigmavec):
         for lab, val in zip([ [ m.x[k][j] for j in range(3) ] for k in range(len(m.x)) ], m.y[0]):
-                mat[idxdict[itm_index(lab)]] = val if abs(val) > 1.0e-14 else 0.0
+                mat[idxdict[itm_index(lab)]] = val if abs(val) > thresh else 0.0
     else:
         if (not diag):
             for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
-                mat[idxdict[itm_index(lab[0])],idxdict[itm_index(lab[1])]] = val if abs(val) > 1.0e-14 else 0.0
+                mat[idxdict[itm_index(lab[0])],idxdict[itm_index(lab[1])]] = val if abs(val) > thresh else 0.0
         else:
             for lab, val in zip([ [ [ m.x[k][j] for j in range(3) ], [ m.x[k][j] for j in range(3,6) ] ] for k in range(len(m.x)) ], m.y[0]):
-                mat[idxdict[itm_index(lab[0])]] = val if abs(val) > 1.0e-14 else 0.0
+                mat[idxdict[itm_index(lab[0])]] = val if abs(val) > thresh else 0.0
 
     # save the array to file
 
     filename = "local_hamiltonian.txt"
-    np.savetxt(filename, mat)
+    np.savetxt(filename, mat,fmt='%.19e')
 
 
 if __name__ == '__main__':
