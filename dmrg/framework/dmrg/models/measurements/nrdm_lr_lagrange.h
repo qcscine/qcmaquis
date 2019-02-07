@@ -106,18 +106,17 @@
                 mps_aux.canonize(site);
 
                 // Read auxiliary MPSTensor elements into a vector aux_elements from file written by Yingjin's LR program
-                std::ifstream infile;
                 std::vector<value_type> aux_elements;
 
                 maquis::cout << "Reading the auxiliary MPSTensor elements for site " << site << " from file " << filename << std::endl;
-                infile.open(filename);
-                if (!infile)
-                    throw std::runtime_error("File " + filename + " could not be opened!");
 
                 // read and parse the file
-                std::copy(std::istream_iterator<value_type>(infile), std::istream_iterator<value_type>(),
-                    std::back_inserter(aux_elements));
-                infile.close();
+                std::ifstream infile(filename);
+                if (infile)
+                    std::copy(std::istream_iterator<value_type>(infile), std::istream_iterator<value_type>(), std::back_inserter(aux_elements));
+                else
+                    throw std::runtime_error("File " + filename + " could not be opened!");
+
 
                 if (twosite) // two-site
                 {
