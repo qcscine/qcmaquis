@@ -31,9 +31,13 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/boundary.h"
+#include "dmrg/mp_tensors/multi_canonize.h"
 #include "contractions.h"
 
 #include <limits>
+
+template<class Matrix, class SymmGroup>
+class MPS;
 
 template<class Matrix, class SymmGroup>
 struct mps_initializer;
@@ -165,6 +169,11 @@ public:
         swap(a.data_, b.data_);
         swap(a.canonized_i, b.canonized_i);
     }
+
+    // multi-canonization functions
+    friend void multi_move_normalization_l2r<>(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t p1, std::size_t p2, DecompMethod method);
+    friend void multi_move_normalization_r2l<>(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t p1, std::size_t p2, DecompMethod method);
+    friend void multi_canonize<>(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t center, DecompMethod method);
 
     template <class Archive> void serialize(Archive & ar, const unsigned int version);
 

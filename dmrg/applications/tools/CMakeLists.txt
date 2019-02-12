@@ -71,6 +71,13 @@ create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;$
 
 #create_tools_symm_target("mult_test_2u1pg"   "TWOU1PG" "mult_test.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+create_tools_symm_target("mps_multi_canonize_u1"       "U1"     "mps_multi_canonize.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_multi_canonize_2u1"      "TWOU1"  "mps_multi_canonize.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_multi_canonize_2u1pg"    "TWOU1PG"  "mps_multi_canonize.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_multi_canonize_su2u1"    "SU2U1"  "mps_multi_canonize.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_multi_canonize_su2u1pg"  "SU2U1PG"  "mps_multi_canonize.cpp"  "${DMRG_APP_LIBRARIES}")
+# create_tools_symm_target("mps_multi_canonize_none" "NONE"   "mps_multi_canonize.cpp"  "${DMRG_APP_LIBRARIES}")
+
 if(DMRG_HAS_TwoU1)
 create_tools_symm_target("mps_transform"    "SU2U1"   "mps_transform.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 endif(DMRG_HAS_TwoU1)
