@@ -87,7 +87,10 @@ public:
     {
         std::size_t L = mps.length();
 
-        mps.canonize(site);
+        // No need to canonize if we want to calculate the local Hamiltonian matrix elements
+        // since we canonize all MPS simultaneously at the beginning anyway.
+        if (use_ortho)
+            mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
 

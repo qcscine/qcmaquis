@@ -50,8 +50,9 @@ namespace measurements {
             MPS<Matrix, SymmGroup> mps_aux = mps;
 
             // The MPS needs to be canonized up to the site before the measurement to have the same local basis in all the states
-            // TODO: Canonize the MPS only once for all measurements (outside of this class)
-            mps_aux.canonize(site);
+            // However, we canonize all MPS simultaneously, so we don't need to canonize here again.
+
+            // mps_aux.canonize(site);
 
             if (twosite)
             {
