@@ -66,10 +66,14 @@ namespace measurements {
 
                 maquis::cout << "Dumping the two-site tensor at site " << site << std::endl;
                 // Dump the TST elements along with the labels
+
+                parallel::scheduler_balanced_iterative scheduler(tst.data());
+
                 for (int i = 0; i < tst.data().n_blocks(); i++)
                 for (int j = 0; j < tst.data()[i].num_rows(); j++)
                 for (int k = 0; k < tst.data()[i].num_cols(); k++)
                 {
+                    parallel::guard proc(scheduler(i));
                     this->vector_results.push_back(tst.data()[i](j,k));
                     // Labels are dumped as 'site, i, j, k'
                     this->labels.push_back(label_string_simple({site, i, j, k}));
@@ -83,10 +87,14 @@ namespace measurements {
 
                 maquis::cout << "Dumping the one-site tensor at site " << site << std::endl;
                 // Dump the MPSTensor elements along with the labels
+
+                parallel::scheduler_balanced_iterative scheduler(mpst.data());
+
                 for (int i = 0; i < mpst.data().n_blocks(); i++)
                 for (int j = 0; j < mpst.data()[i].num_rows(); j++)
                 for (int k = 0; k < mpst.data()[i].num_cols(); k++)
                 {
+                    parallel::guard proc(scheduler(i));
                     this->vector_results.push_back(mpst.data()[i](j,k));
                     // Labels are dumped as 'site, i, j, k'
                     this->labels.push_back(label_string_simple({site, i, j, k}));

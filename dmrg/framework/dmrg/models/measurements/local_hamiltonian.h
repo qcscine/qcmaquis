@@ -133,10 +133,13 @@ namespace measurements
                     else if (meas_type == HamiltonianMatrixDiag)
                         maquis::cout << "Measuring local Hamiltonian diagonal at site " << site << std::endl;
 
+                    parallel::scheduler_balanced_iterative scheduler(mpst.data());
+
                     for (int i = 0; i < mpst.data().n_blocks(); i++)
                     for (int j = 0; j < num_rows(mpst.data()[i]); j++)
                     for (int k = 0; k < num_cols(mpst.data()[i]); k++)
                     {
+                        parallel::guard proc(scheduler(i));
                         // set the corresponding element in the basis MPS to 1
                         mpst.data()[i](j,k) = 1.0;
 
@@ -199,7 +202,10 @@ namespace measurements
                         for (size_t i = 0; i < mpst.data().n_blocks(); i++)
                         for (size_t j = 0; j < mpst.data()[i].num_rows(); j++)
                         for (size_t k = 0; k < mpst.data()[i].num_cols(); k++)
+                        {
+                            parallel::guard::serial guard;
                             mpst.data()[i](j,k) = aux_elements[fileidx++];
+                        }
                     }
 
                     // Measure the sigma_vector \sum_j H_ijc_j with c_j = M^sigma_l_{a_{l-1}a_l}

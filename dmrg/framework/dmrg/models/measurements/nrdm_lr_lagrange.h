@@ -140,7 +140,10 @@
                     for (size_t i = 0; i < tst.data().n_blocks(); i++)
                     for (size_t j = 0; j < tst.data()[i].num_rows(); j++)
                     for (size_t k = 0; k < tst.data()[i].num_cols(); k++)
+                    {
+                        parallel::guard::serial guard;
                         tst.data()[i](j,k) = aux_elements[fileidx++];
+                    }
 
 
                     // Incorporate the modified TwoSiteTensor back into the MPS to form auxiliary state
@@ -177,7 +180,10 @@
                     for (size_t i = 0; i < mpst.data().n_blocks(); i++)
                     for (size_t j = 0; j < mpst.data()[i].num_rows(); j++)
                     for (size_t k = 0; k < mpst.data()[i].num_cols(); k++)
+                    {
+                        parallel::guard::serial guard;
                         mpst.data()[i](j,k) = aux_elements[fileidx++];
+                    }
 
                     // for whatever reason! -- this is to ensure the reproducibility of the results by the yingjin-devel branch
                     // TODO: Check if this is really needed for one-site MPS parameters!
