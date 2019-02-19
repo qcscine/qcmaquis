@@ -26,21 +26,21 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
-#ifndef DUMP_TST_H
-#define DUMP_TST_H
+#ifndef DUMP_MPSTENSOR_H
+#define DUMP_MPSTENSOR_H
 #include "dmrg/mp_tensors/twositetensor.h"
 
 namespace measurements {
-    // A simple measurement that creates a two-site tensor and dumps it
+    // A simple measurement that dumps MPS tensors
     // Used in the linear response (state-average gradients) calculation
-    // if twosite == true
-    // if twosite == false, it just dumps the (one-site) MPSTensor in question instead
+    // if twosite == true, creates a TwoSiteTensor and dumps it
+    // if twosite == false, dumps the (one-site) MPSTensor in question instead
     template <class Matrix, class SymmGroup>
-    class DumpTST : public measurement<Matrix, SymmGroup> {
+    class DumpMPSTensor : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
     public:
 
-        DumpTST(std::string name_, int site_ = 0, bool twosite_ = true) : base(name_), site(site_), twosite(twosite_) {}
+        DumpMPSTensor(std::string name_, int site_ = 0, bool twosite_ = true) : base(name_), site(site_), twosite(twosite_) {}
 
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
@@ -106,12 +106,12 @@ namespace measurements {
     protected:
         measurement<Matrix, SymmGroup>* do_clone() const
         {
-            return new DumpTST(*this);
+            return new DumpMPSTensor(*this);
         }
 
     private:
-        int site; // Site at which the TwoSiteTensor should be constructed
-        bool twosite; // if we should create a twosite tensor
+        int site; // Site at which the TwoSiteTensor should be constructed/MPSTensor dumped
+        bool twosite; // whether we should create a twosite tensor
     };
 
 }

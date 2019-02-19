@@ -172,6 +172,7 @@ public:
 
         // Regexp for dumping a TwoSiteTensor at site X where X is specified as "MEASURE[dump-tst] = X"
         boost::regex expression_dump_tst("^MEASURE\\[dump-tst\\]");
+        boost::regex expression_dump_mpstensor("^MEASURE\\[dump-mpstensor\\]");
 
         boost::smatch what;
 
@@ -284,9 +285,10 @@ public:
 
             // Dump the two-site tensor at site X where X is specified in lrparam_site
             // (or only the one-site MPSTensor at this site if lrparam_twosite==false)
-            if (boost::regex_match(lhs, what, expression_dump_tst)) {
+            if (boost::regex_match(lhs, what, expression_dump_tst) || // both expressions for backward compatibility
+                boost::regex_match(lhs, what, expression_dump_mpstensor)) {
                 name = "tstdump";
-                meas.push_back( new measurements::DumpTST<Matrix, SymmGroup>(
+                meas.push_back( new measurements::DumpMPSTensor<Matrix, SymmGroup>(
                                 name, parms["lrparam_site"], parms["lrparam_twosite"]));
             }
 
