@@ -232,12 +232,25 @@ public:
         boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
         boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
 
-        boost::regex expression_onerdm_derivativeL("^MEASURE\\[1rdm-derivativeL\\]");
-        boost::regex expression_twordm_derivativeL("^MEASURE\\[2rdm-derivativeL\\]");
-        boost::regex expression_onerdm_derivativeR("^MEASURE\\[1rdm-derivativeR\\]");
-        boost::regex expression_twordm_derivativeR("^MEASURE\\[2rdm-derivativeR\\]");
-        boost::regex expression_onerdm_derivative_both("^MEASURE\\[1rdm-derivative\\]");
-        boost::regex expression_twordm_derivative_both("^MEASURE\\[2rdm-derivative\\]");
+        // Regexp for local Hamiltonian matrix elements
+        boost::regex expression_local_hamiltonian("^MEASURE\\[local-hamiltonian\\]");
+        // Regexp for diagonal local Hamiltonian matrix elements
+        boost::regex expression_local_hamiltonian_diag("^MEASURE\\[local-hamiltonian-diag\\]");
+        // or sigma vector (contracted local Hamiltonian with one MPS)
+        boost::regex expression_sigma_vector("^MEASURE\\[sigma-vector\\]");
+
+        // Regexp for Lagrange RDM update (MPS contribution to the Lagrange effective RDM in gradient calculations)
+        // for backwards compatibility: lagrangeL == lagrange
+        boost::regex expression_onerdm_lagrangeR("^MEASURE\\[1rdm-lagrangeR\\]");
+        boost::regex expression_twordm_lagrangeR("^MEASURE\\[2rdm-lagrangeR\\]");
+        boost::regex expression_onerdm_lagrange("^MEASURE\\[1rdm-lagrange\\]");
+        boost::regex expression_twordm_lagrange("^MEASURE\\[2rdm-lagrange\\]");
+        boost::regex expression_onerdm_lagrangeL("^MEASURE\\[1rdm-lagrangeL\\]");
+        boost::regex expression_twordm_lagrangeL("^MEASURE\\[2rdm-lagrangeL\\]");
+
+        // Regexp for dumping a TwoSiteTensor at site X where X is specified as "MEASURE[dump-tst] = X"
+        boost::regex expression_dump_tst("^MEASURE\\[dump-tst\\]");
+        boost::regex expression_dump_mpstensor("^MEASURE\\[dump-mpstensor\\]");
 
         boost::smatch what;
 
@@ -857,13 +870,18 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_onerdm_derivativeL) ||
-                     boost::regex_match(lhs, what, expression_twordm_derivativeL) ||
-                     boost::regex_match(lhs, what, expression_onerdm_derivativeR) ||
-                     boost::regex_match(lhs, what, expression_twordm_derivativeR) ||
-                     boost::regex_match(lhs, what, expression_onerdm_derivative_both) ||
-                     boost::regex_match(lhs, what, expression_twordm_derivative_both))
-                throw std::runtime_error("RDM derivatives for 2u1 not implemented yet!");
+            else if (boost::regex_match(lhs, what, expression_local_hamiltonian) ||
+                     boost::regex_match(lhs, what, expression_local_hamiltonian_diag) ||
+                     boost::regex_match(lhs, what, expression_sigma_vector) ||
+                     boost::regex_match(lhs, what, expression_onerdm_lagrangeL) ||
+                     boost::regex_match(lhs, what, expression_twordm_lagrangeL) ||
+                     boost::regex_match(lhs, what, expression_onerdm_lagrangeR) ||
+                     boost::regex_match(lhs, what, expression_twordm_lagrangeR) ||
+                     boost::regex_match(lhs, what, expression_onerdm_lagrange) ||
+                     boost::regex_match(lhs, what, expression_twordm_lagrange) ||
+                     boost::regex_match(lhs, what, expression_dump_tst) ||
+                     boost::regex_match(lhs, what, expression_dump_mpstensor))
+                throw std::runtime_error("SA Gradient measures not implemented yet for 2u1 symmetry!");
 
 
             else if (!name.empty()) {
