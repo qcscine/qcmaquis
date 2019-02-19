@@ -121,6 +121,7 @@ namespace measurements
                     // Measure Local Hamiltonian matrix elements
                     // Currently doing it very inefficiently by explicitly calculating each <i|H|j> matrix element
                     // or actually H|j>[i][j] (this is only half-inefficient, as there's one contraction instead of two)
+                    // This is DEPRECATED and will be removed soon
 
                     // Prepare the basis state from mpst: set all elements to 0
                     mpst.multiply_by_scalar(0.0);
@@ -176,12 +177,14 @@ namespace measurements
                     maquis::cout << "Measuring local Hamiltonian diagonal at site " << site << std::endl;
 
                     block_matrix<Matrix, SymmGroup> Hdiag = contraction::SU2::diagonal_hamiltonian(init.left()[site1], init.right()[site2+1], mpo_work[site1], mpst);
+
+                    // dump the Hamiltonian diagonal into the result vector
                     for (int ii = 0; ii < Hdiag.n_blocks(); ii++)
                     for (int jj = 0; jj < num_rows(Hdiag[ii]); jj++)
                     for (int kk = 0; kk < num_cols(Hdiag[ii]); kk++)
                     {
                         // prepare labels: double the labels to ensure compatibility with the old python script
-                        // TODO: this should be removed in the future
+                        // TODO: this should not be needed in the future
                         std::vector<Lattice::pos_t> labels = { ii, jj, kk, ii, jj, kk };
                         std::string label_string = label_string_simple(labels);
 
@@ -198,17 +201,16 @@ namespace measurements
                     if (!ext_filename.empty())
                     {
                         // Read MPSTensor elements into a vector aux_elements from a text file
-                        std::ifstream infile;
+
                         std::vector<value_type> aux_elements;
                         maquis::cout << "Reading the auxiliary MPSTensor elements from file " << ext_filename << std::endl;
-                        infile.open(ext_filename);
-                        if (!infile)
-                            throw std::runtime_error("File " + ext_filename + " could not be opened!");
 
                         // read and parse the file
-                        std::copy(std::istream_iterator<value_type>(infile), std::istream_iterator<value_type>(),
-                            std::back_inserter(aux_elements));
-                        infile.close();
+                        std::ifstream infile(ext_filename);
+                        if (infile)
+                            std::copy(std::istream_iterator<value_type>(infile), std::istream_iterator<value_type>(), std::back_inserter(aux_elements));
+                        else
+                            throw std::runtime_error("File " + ext_filename + " could not be opened!");
 
                         // fill the MPSTensor with elements from file
                         size_t fileidx = 0;

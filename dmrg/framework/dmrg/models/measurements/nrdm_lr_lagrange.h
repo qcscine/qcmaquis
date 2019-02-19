@@ -31,8 +31,6 @@
 
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
 #include "dmrg/mp_tensors/twositetensor.h"
-// Uncomment if overlap sign fixing is enabled
-//#include <boost/math/special_functions/sign.hpp>
 
     namespace measurements
     {
