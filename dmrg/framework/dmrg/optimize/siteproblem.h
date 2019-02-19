@@ -3,6 +3,9 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
  *               2018 by Leon Freitag <lefreita@ethz.ch>
  *
@@ -34,6 +37,7 @@
 // MPO tensor of the site of interest
 
 #include "dmrg/optimize/utils/bound_database.h"
+#include "ietl_lanczos_solver.h"
 
 #ifndef SITE_PROBLEM_H
 #define SITE_PROBLEM_H

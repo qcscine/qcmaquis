@@ -7,6 +7,7 @@
 #* Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
 #*               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
 #*               2014-2015 by Yingjin Ma <yma@ethz.ch>
+#*               2018      by Leon Freitag <lefreita@ethz.ch>
 #*
 #*
 #* This software is part of the ALPS Applications, published under the ALPS
@@ -27,33 +28,33 @@
 #* DEALINGS IN THE SOFTWARE.
 #*
 #*****************************************************************************
-#
-# This scripts extracts 1- and 2-TDMs or RDM Lagrange updates from QCMaquis
-# HDF5 files and saves them in human-readable ASCII files
-# (one|two)particle.tdm or (one|two)rdmlagrange
-# Invoke it as 'tdmsave_su2.py h5file' to extract TDMs from h5file
-#        or as 'tdmsave_su2.py h5file -l' to extract RDM Lagrange updates
+
+# This scripts extracts the RDM Lagrange updates from QCMaquis HDF5 file and
+# saves them in human-readable ASCII files (one|two)rdmlagrange(L|R)
+# Both left and right RDMs, as well as both 1- and 2-RDMs must be calculated
+# prior to the invocation of this script.
+#*****************************************************************************
+# Warning: this file is obsolete and will be removed in one of the next commits
+# use 'tdmsave_su2.py h5file -l' instead
+#*****************************************************************************
 
 import sys
 import pyalps
 import numpy as np
 
-def load_1rdm(inputfile,lagrange_update):
-    # load data from the HDF5 result file
-    meas_str = 'onerdmlagrangeL' if lagrange_update else 'transition_oneptdm'
 
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
+def load_1rdm(inputfile,meas):
+    # load data from the HDF5 result file
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas)[0][0]
     return rdm
 
-def load_2rdm(inputfile,lagrange_update):
+def load_2rdm(inputfile,meas):
     # load data from the HDF5 result file
-    meas_str = 'twordmlagrangeL' if lagrange_update else 'transition_twoptdm'
-
-    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas_str)[0][0]
+    rdm =  pyalps.loadEigenstateMeasurements([inputfile], what=meas)[0][0]
     rdm.y[0] = 0.5 * rdm.y[0]
     return rdm
 
-def save_1rdm(rdm,lagrange_update,tag1=None,tag2=None):
+def save_1rdm(rdm,filename):
     fmt = '%14.14e'
 
     L = int(rdm.props["L"])
@@ -62,15 +63,7 @@ def save_1rdm(rdm,lagrange_update,tag1=None,tag2=None):
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]
         j = lab[1]
-        mat[i,j] = val
-
-    filename = 'onerdmlagrange' if lagrange_update else 'oneparticle.tdm'
-    if not tag1 is None:
-        filename += '.' + tag1
-    if not tag2 is None:
-        filename += '.' + tag2
-
-    print filename
+        mat[i,j] = val;
 
     f=open(filename,'w')
     f.write(str(L)+'\n')
@@ -80,18 +73,10 @@ def save_1rdm(rdm,lagrange_update,tag1=None,tag2=None):
             f.write(str(i)+' '+str(j)+' '+str(fmt%mat[i,j])+'\n')
     f.close()
 
-def save_2rdm(rdm,lagrange_update,tag1=None,tag2=None):
+    return L
+
+def save_2rdm(rdm,L,filename):
     fmt = '%14.14e'
-    L = int(rdm.props["L"])
-
-    filename = 'twordmlagrange' if lagrange_update else 'twoparticle.tdm'
-
-    if not tag1 is None:
-        filename += '.' + tag1
-    if not tag2 is None:
-        filename += '.' + tag2
-
-    print filename
 
     f=open(filename,'w')
     f.write(str(L)+'\n')
@@ -110,41 +95,15 @@ def save_2rdm(rdm,lagrange_update,tag1=None,tag2=None):
             if (l != k):
                 f.write(str(j)+' '+str(i)+' '+str(l)+' '+str(k)+' '+str(fmt%val)+'\n')
 
-
     f.close()
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
 
-    lagrange_update = False
-    if len(sys.argv) > 2:
-        if sys.argv[2] == '-l':
-            lagrange_update = True
+    for c in ['L','R']:
+        rdm1=load_1rdm(inputfile,'onerdmlagrange%s'%c)
+        L=save_1rdm(rdm1,'onerdmlagrange%s'%c)
 
-    tag1 = None
-    tag2 = None
+        rdm2 = load_2rdm(inputfile,'twordmlagrange%s'%c)
+        save_2rdm(rdm2,L,'twordmlagrange%s'%c)
 
-    if lagrange_update:
-      if len(sys.argv) > 3:
-        tag1 = sys.argv[3]
-        if len(sys.argv) > 4:
-          tag2 = sys.argv[4]
-    else:
-      if len(sys.argv) > 2:
-        tag1 = sys.argv[2]
-        if len(sys.argv) > 3:
-          tag2 = sys.argv[3]
-
-    try:
-      rdm1 = load_1rdm(inputfile,lagrange_update)
-      save_1rdm(rdm1,lagrange_update,tag1,tag2)
-    except:
-      print "1-TDM not found."
-      pass
-
-    try:
-      rdm2 = load_2rdm(inputfile,lagrange_update)
-      save_2rdm(rdm2,lagrange_update,tag1,tag2)
-    except:
-      print "2-TDM not found."
-      pass

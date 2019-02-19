@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ *               2018 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -55,7 +56,6 @@ private:
 
         add_option("truncation_initial", "Initial value for the truncation error", value(1e-16));
         add_option("truncation_final", "Final value for the truncation", value(1e-16));
-        // Renormalized bond length
         add_option("init_bond_dimension", "", value(5));
         add_option("max_bond_dimension", "");
         add_option("sweep_bond_dimensions", "");
@@ -121,6 +121,11 @@ private:
         add_option("chkpfile", "");
         add_option("initfile", "", value(""));
         add_option("init_site", "", value(-1));
+
+        // Linear response parameters (for gradients)
+        add_option("lrparam_site", "Site for the calculation of linear response parameters", 0);
+        add_option("lrparam_twosite", "Use two-site tensors as linear response parameters", value(true));
+
         add_option("donotsave", "", value(0));
         add_option("run_seconds", "", value(0));
         add_option("storagedir", "", value(""));

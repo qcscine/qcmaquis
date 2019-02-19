@@ -231,6 +231,14 @@ public:
         boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
         boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
         boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
+
+        boost::regex expression_onerdm_derivativeL("^MEASURE\\[1rdm-derivativeL\\]");
+        boost::regex expression_twordm_derivativeL("^MEASURE\\[2rdm-derivativeL\\]");
+        boost::regex expression_onerdm_derivativeR("^MEASURE\\[1rdm-derivativeR\\]");
+        boost::regex expression_twordm_derivativeR("^MEASURE\\[2rdm-derivativeR\\]");
+        boost::regex expression_onerdm_derivative_both("^MEASURE\\[1rdm-derivative\\]");
+        boost::regex expression_twordm_derivative_both("^MEASURE\\[2rdm-derivative\\]");
+
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -848,6 +856,15 @@ public:
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
+
+            else if (boost::regex_match(lhs, what, expression_onerdm_derivativeL) ||
+                     boost::regex_match(lhs, what, expression_twordm_derivativeL) ||
+                     boost::regex_match(lhs, what, expression_onerdm_derivativeR) ||
+                     boost::regex_match(lhs, what, expression_twordm_derivativeR) ||
+                     boost::regex_match(lhs, what, expression_onerdm_derivative_both) ||
+                     boost::regex_match(lhs, what, expression_twordm_derivative_both))
+                throw std::runtime_error("RDM derivatives for 2u1 not implemented yet!");
+
 
             else if (!name.empty()) {
 

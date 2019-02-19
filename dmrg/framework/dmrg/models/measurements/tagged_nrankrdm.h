@@ -148,7 +148,7 @@ namespace measurements {
     class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
 
         typedef measurement<Matrix, SymmGroup> base;
-
+    protected:
         typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
 
         typedef Lattice::pos_t pos_t;
@@ -177,6 +177,7 @@ namespace measurements {
         , operator_terms(ops_)
         , half_only(half_only_)
         , bra_ckp(ckp_)
+        , ext_labels()
         {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
             // the default setting is only required for "measure_correlation"
@@ -188,7 +189,7 @@ namespace measurements {
             this->cast_to_real = false;
         }
 
-        void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
+        virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
             this->labels.clear();
@@ -218,6 +219,11 @@ namespace measurements {
 
     protected:
 
+        // "External" labels, which, if set, are added to a set of labels in each measurement.
+        // Useful e.g. for RDM derivatives, where these denote the index of an MPS parameter.
+        // It is kept empty by the default constructor so must be initialised elsewhere.
+        positions_type ext_labels;
+
         measurement<Matrix, SymmGroup>* do_clone() const
         {
             return new TaggedNRankRDM(*this);
@@ -226,6 +232,7 @@ namespace measurements {
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                                  MPS<Matrix, SymmGroup> const & ket_mps)
         {
+
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
@@ -288,7 +295,7 @@ namespace measurements {
                     }
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -371,7 +378,7 @@ namespace measurements {
                         }
                     }
 
-                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                    std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP
@@ -485,7 +492,7 @@ namespace measurements {
 
                     }// p6
 
-                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                    std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP
@@ -518,8 +525,7 @@ namespace measurements {
             pos_t p1_end   = 0;
             pos_t p2_end   = 0;
             pos_t p_max    = lattice.size();
-            pos_t p_size   = positions_first.size();
-            if(p_size == 4){
+            if(positions_first.size() == 4){
                 p4_start = positions_first[0];
                 p3_start = positions_first[1];
                 p1_start = positions_first[2];
@@ -532,12 +538,19 @@ namespace measurements {
             //#ifdef MAQUIS_OPENMP
             //#pragma omp parallel for collapse(4) schedule(dynamic,1)
             //#endif
+            for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
             for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
-            for (pos_t p4 = p4_start ; p4 <= p3; ++p4)
             {
-                 for (pos_t p1 = p1_start; p1 > p4; --p1)
+                 for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
                  {
-                      for (pos_t p2 = ((p_size == 0) ? p1: p2_start); p2 >= ((p_size == 0) ? 0: p2_end); --p2)
+                      if(p4 > p3 || p4 > p1 || p3 > p1) continue;
+
+                      if(positions_first.size() == 0){
+                          p2_start = p1;
+                          p2_end   = 0;
+                      }
+
+                      for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
                       {
                           if(p3 > p2) continue;
 
@@ -667,7 +680,7 @@ namespace measurements {
                                   }
                               } // p8 loop
 
-                              std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                              std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
                               // save results and labels
                               #ifdef MAQUIS_OPENMP
                               #pragma omp critical
@@ -702,7 +715,7 @@ namespace measurements {
         : public measurement<Matrix, SymmGroup>
     {
         typedef measurement<Matrix, SymmGroup> base;
-
+    protected:
         typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
 
         typedef Lattice::pos_t pos_t;
@@ -732,6 +745,7 @@ namespace measurements {
         , identities(op_collection.ident.no_couple)
         , fillings(op_collection.fill.no_couple)
         , bra_ckp(ckp_)
+        , ext_labels()
         {
             pos_t extent = lattice.size();
             if (positions_first.size() == 0)
@@ -742,7 +756,7 @@ namespace measurements {
             this->cast_to_real = false;
         }
 
-        void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
+        virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
             this->labels.clear();
@@ -764,6 +778,11 @@ namespace measurements {
         }
 
     protected:
+
+        // "External" labels, which, if set, are added to a set of labels in each measurement.
+        // Useful e.g. for RDM derivatives, where these denote the index of an MPS parameter.
+        // It is kept empty by the default constructor so must be initialised elsewhere.
+        positions_type ext_labels;
 
         measurement<Matrix, SymmGroup>* do_clone() const
         {
@@ -819,7 +838,7 @@ namespace measurements {
                 }
 
                 // the lattice knows the ordering and provides the correct orbital label for each position
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -852,6 +871,7 @@ namespace measurements {
 
                 // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
                 // if bra != ket, pertmutation symmetry is only pqrs == qpsr
+
                 pos_t subref = bra_neq_ket ? 0 : std::min(p1, p2);
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
@@ -881,7 +901,7 @@ namespace measurements {
 
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels,ext_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -914,7 +934,7 @@ namespace measurements {
         : public measurement<Matrix, SymmGroup>
     {
         typedef measurement<Matrix, SymmGroup> base;
-
+    protected:
         typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
 
         typedef Lattice::pos_t pos_t;
@@ -942,6 +962,7 @@ namespace measurements {
         , fillings(fillings_)
         , operator_terms(ops_)
         , bra_ckp(ckp_)
+        , ext_labels()
         {
             pos_t extent = lattice.size();
             if (positions_first.size() == 0)
@@ -955,7 +976,7 @@ namespace measurements {
             this->cast_to_real = false;
         }
 
-        void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
+        virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
             this->labels.clear();
@@ -984,6 +1005,11 @@ namespace measurements {
         }
 
     protected:
+
+        // "External" labels, which, if set, are added to a set of labels in each measurement.
+        // Useful e.g. for RDM derivatives, where these denote the index of an MPS parameter.
+        // It is kept empty by the default constructor so must be initialised elsewhere.
+        positions_type ext_labels;
 
         measurement<Matrix, SymmGroup>* do_clone() const
         {
@@ -1032,7 +1058,7 @@ namespace measurements {
                     //}
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -1129,7 +1155,7 @@ namespace measurements {
                         }
                     }
 
-                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                    std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP

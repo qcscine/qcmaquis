@@ -82,10 +82,10 @@ public:
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite") {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps_sa, mps_guess, mps_partial_overlap, mpoc, mpo_squared, parms, stop_callback, init_site) );
+                            (mps_sa, mpoc, parms, stop_callback, init_site, true, mps_guess, mps_partial_overlap, mpo_squared) );
         } else if(parms["optimization"] == "twosite") {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps_sa, mps_guess, mps_partial_overlap, mpoc, mpo_squared, parms, stop_callback, init_site) );
+                            (mps_sa, mpoc, parms, stop_callback, init_site, true, mps_guess, mps_partial_overlap, mpo_squared) );
         } else {
             throw std::runtime_error("Don't know this optimizer");
         }
