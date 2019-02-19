@@ -94,9 +94,6 @@ namespace measurements
 
                     site1 = site;
                     site2 = site+1;
-
-
-
                     // Prepare the two-site MPO tensor(s)
                     make_ts_cache_mpo(mpo, ts_mpo, mps_aux);
                     ts_mpo[site1].placement_l = mpo[site1].placement_l;
@@ -119,7 +116,7 @@ namespace measurements
                 // Fetch the boundaries from disk
                 init.fetch_boundaries(site, twosite);
 
-                if ((meas_type == HamiltonianMatrix) || (meas_type == HamiltonianMatrixDiag))
+                if (meas_type == HamiltonianMatrix)
                 {
                     // Measure Local Hamiltonian matrix elements
                     // Currently doing it very inefficiently by explicitly calculating each <i|H|j> matrix element
@@ -159,26 +156,42 @@ namespace measurements
                         for (int jj = 0; jj < num_rows(Hij[ii]); jj++)
                         for (int kk = 0; kk < num_cols(Hij[ii]); kk++)
                         {
-                            // Differentiate between diagonal and non-diagonal measurements
-                            bool cond = ((meas_type == HamiltonianMatrix) || (i == ii) && (j == jj) && (k == kk));
-                            if (cond)
-                            {
-                                // prepare labels
-                                std::vector<Lattice::pos_t> labels = { i, j, k, ii, jj, kk };
-                                std::string label_string = label_string_simple(labels);
+                            // prepare labels
+                            std::vector<Lattice::pos_t> labels = { i, j, k, ii, jj, kk };
+                            std::string label_string = label_string_simple(labels);
 
-                                // TODO: use std::vector::reserve() in a reasonable way
-                                // Write back matrix elements of MPSTensor H|I> which results in <I|H|J>
-                                this->vector_results.push_back(Hij[ii](jj,kk));
-                                this->labels.push_back(label_string);
-                            }
-                        }
+                            // TODO: use std::vector::reserve() in a reasonable way
+                            // Write back matrix elements of MPSTensor H|I> which results in <I|H|J>
+                            this->vector_results.push_back(Hij[ii](jj,kk));
+                            this->labels.push_back(label_string);
+                         }
                         // set the corresponding element in the basis MPS again to 0
                         mpst.data()[i](j,k) = 0.0;
                     }
 
                 }
-                else if(meas_type == SigmaVector)
+                else if (meas_type == HamiltonianMatrixDiag)
+                {
+                    // Use contraction::su2::diagonal_hamiltonian() to obtain the Hamiltonian diagonal
+                    maquis::cout << "Measuring local Hamiltonian diagonal at site " << site << std::endl;
+
+                    block_matrix<Matrix, SymmGroup> Hdiag = contraction::SU2::diagonal_hamiltonian(init.left()[site1], init.right()[site2+1], mpo_work[site1], mpst);
+                    for (int ii = 0; ii < Hdiag.n_blocks(); ii++)
+                    for (int jj = 0; jj < num_rows(Hdiag[ii]); jj++)
+                    for (int kk = 0; kk < num_cols(Hdiag[ii]); kk++)
+                    {
+                        // prepare labels: double the labels to ensure compatibility with the old python script
+                        // TODO: this should be removed in the future
+                        std::vector<Lattice::pos_t> labels = { ii, jj, kk, ii, jj, kk };
+                        std::string label_string = label_string_simple(labels);
+
+                        // TODO: use std::vector::reserve() in a reasonable way
+                        // Write the matrix elements
+                        this->vector_results.push_back(Hdiag[ii](jj,kk));
+                        this->labels.push_back(label_string);
+                    }
+                }
+                else if (meas_type == SigmaVector)
                 {
                     // Read the MPSTensor from an external file if requested
                     maquis::cout << "Measuring local Hamiltonian sigma vector at site " << site << std::endl;
