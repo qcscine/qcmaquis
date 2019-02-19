@@ -75,10 +75,10 @@
                     RDMEvaluator = std::bind(&NRDMLRLagrange<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_1, std::placeholders::_2);
 
                 // for left RDM derivatives, the bra and ket in the RDM evaluation are swapped
-                if (this->name() == "onerdmlagrangeL")
+                if ((this->name() == "onerdmlagrangeL") || (this->name() == "onerdmlagrange"))
                     RDMEvaluator = std::bind(&NRDMLRLagrange<Matrix, SymmGroup>::measure_correlation, this, std::placeholders::_2, std::placeholders::_1);
 
-                if (this->name() == "twordmlagrangeL")
+                if ((this->name() == "twordmlagrangeL") || (this->name() == "twordmlagrange"))
                     RDMEvaluator = std::bind(&NRDMLRLagrange<Matrix, SymmGroup>::measure_2rdm, this, std::placeholders::_2, std::placeholders::_1);
 
                 measure_lagrange_rdm(ket_mps, RDMEvaluator, lr_site);
