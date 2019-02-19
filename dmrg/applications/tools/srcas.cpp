@@ -111,7 +111,7 @@ int main(int argc, char ** argv)
 
     if (argc < 3)
     {
-        maquis::cout << "srcas <mps.h5> <determinants_file> <CI_threshold> <CI_completeness> ( <Nsamples> <Nitermax> <determinants_reservoir> )" << std::endl;
+        maquis::cout << argv[0] << " <mps.h5> <determinants_file> <CI_threshold> <CI_completeness> ( <Nsamples> <Nitermax> <determinants_reservoir> )" << std::endl;
         maquis::cout << "See J. Chem. Phys. 134, 224101 (2011) for details" << std::endl;
         exit(1);
     }
