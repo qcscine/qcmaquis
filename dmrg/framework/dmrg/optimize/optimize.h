@@ -116,7 +116,7 @@ public:
     , omega_shift_(0.)
     , parms(parms_)
     , stop_callback(stop_callback_)
-    , northo(use_ortho ? parms["northo_states"] : 0)
+    , northo(use_ortho ? parms["n_ortho_states"] : 0)
     , omega_vec(0)
     , do_root_homing_(false)
     , do_stateaverage_ (false)
