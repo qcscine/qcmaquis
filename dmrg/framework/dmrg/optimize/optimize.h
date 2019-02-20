@@ -109,9 +109,9 @@ public:
                    boost::optional<MPO<Matrix, SymmGroup> const &> mpo_squared_ = boost::none
                    )
     : mps_vector(mps_vector_)
-    , mps_guess(mps_guess_)
+    , mps_guess_o(mps_guess_)
     , mpo(mpo_)
-    , mpo_squared(mpo_squared_)
+    , mpo_squared_o(mpo_squared_)
     , n_root_(mps_vector.size())
     , omega_shift_(0.)
     , parms(parms_)
@@ -251,7 +251,7 @@ public:
         left_sa_.resize(n_bound_) ;
         right_sa_.resize(n_bound_) ;
         if (do_H_squared_) {
-            assert(mpo_squared);
+            assert(mpo_squared_o);
             left_squared_sa_.resize(n_bound_) ;
             right_squared_sa_.resize(n_bound_) ;
         }
@@ -501,7 +501,7 @@ protected:
                         contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
                                                      *(boundaries_database_.get_mps(i,site)),
                                                     (*(boundaries_database_.get_boundaries_left(i, true)))[site],
-                                                     mpo_squared.get()[site]);
+                                                     mpo_squared()[site]);
         }
         // Updates the orthogonal vectors
         for (int n = 0; n < northo; ++n)
@@ -534,7 +534,7 @@ protected:
                         contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
                                                       *(boundaries_database_.get_mps(i,site)),
                                                      (*(boundaries_database_.get_boundaries_right(i, true)))[site+1],
-                                                      mpo_squared.get()[site]);
+                                                      mpo_squared()[site]);
         }
         // Updates the orthogonal vectors
         for (int n = 0; n < northo; ++n)
@@ -652,7 +652,7 @@ protected:
         y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(input,
                                                                         left_squared_sa_[i_state][idx],
                                                                         right_squared_sa_[i_state][idx+1],
-                                                                        mpo_squared.get()[idx]);
+                                                                        mpo_squared()[idx]);
         return ietl::dot(input, y);
     }
     // +----------+
@@ -665,7 +665,6 @@ protected:
              CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >* micro_optimizer ;
     MPS<Matrix, SymmGroup> mps_average;
     MPO<Matrix, SymmGroup> const& mpo;
-    boost::optional<MPO<Matrix, SymmGroup> const&> mpo_squared;
     BaseParameters & parms ;
     boost::function<bool ()> stop_callback;
     boundaries_vector left_sa_, right_sa_, left_squared_sa_, right_squared_sa_ ;
@@ -691,10 +690,15 @@ protected:
     // State average
     bound_database boundaries_database_ ;
     std::vector< MPS<Matrix, SymmGroup> > & mps_vector ;
-    boost::optional<std::vector< MPSTensor<Matrix, SymmGroup> > &> mps_guess ;
     std::vector< std::size_t > order ;
     int sa_alg_ ;
     size_t n_bound_ , L_ , n_root_ ;
+
+    boost::optional<std::vector<MPSTensor<Matrix, SymmGroup> > &> mps_guess_o ;
+    boost::optional<MPO<Matrix, SymmGroup> const&> mpo_squared_o;
+
+    std::vector<MPSTensor<Matrix, SymmGroup> > & mps_guess() { return mps_guess_o.get(); };
+    MPO<Matrix, SymmGroup> const& mpo_squared() { return mpo_squared_o.get(); };
 };
 
 #include "ss_optimize.hpp"

@@ -89,20 +89,21 @@ public:
     using base::vec_sa_right_ ;
     // Constructor
     ts_optimize(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_,
-                std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_,
-                std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_,
                 MPO<Matrix, SymmGroup> const & mpo_,
-                MPO<Matrix, SymmGroup> const & mpo_squared_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
-                int initial_site_ = 0)
-    : base(mps_vector_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_,
-           to_site(mps_vector_[0].length(), initial_site_))
+                int initial_site_,
+                std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_,
+                std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_,
+                MPO<Matrix, SymmGroup> const & mpo_squared_)
+    : base(mps_vector_, mpo_, parms_, stop_callback_,
+          to_site(mps_vector_[0].length(), initial_site_), true,
+           mps_guess_, mps_partial_overlap_, mpo_squared_)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps_vector[0]) ;
-        make_ts_cache_mpo(mpo_squared, ts_cache_mpo_squared, mps_vector[0]) ;
+        make_ts_cache_mpo(mpo_squared_, ts_cache_mpo_squared, mps_vector[0]) ;
         iteration_results_.resize(n_root_);
     }
     // Inline function to convert from 2L to L the index of the site

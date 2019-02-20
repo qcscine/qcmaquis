@@ -89,15 +89,16 @@ public:
 
     // Constructor declaration
     ss_optimize(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
-                std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_ ,
-                std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_ ,
                 MPO<Matrix, SymmGroup> const & mpo_,
-                MPO<Matrix, SymmGroup> const & mpo_squared_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
-                int initial_site_ = 0)
-    : base(mps_vector_, mps_guess_, mps_partial_overlap_, mpo_, mpo_squared_, parms_, stop_callback_,
-           to_site(mps_vector_[0].length(), initial_site_))
+                int initial_site_,
+                std::vector< MPSTensor<Matrix, SymmGroup> > & mps_guess_ ,
+                std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_ ,
+                MPO<Matrix, SymmGroup> const & mpo_squared_)
+    : base(mps_vector_, mpo_, parms_, stop_callback_,
+          to_site(mps_vector_[0].length(), initial_site_), true,
+           mps_guess_, mps_partial_overlap_, mpo_squared_)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         iteration_results_.resize(n_root_);
@@ -157,15 +158,15 @@ public:
             std::vector< MPSTensor<Matrix, SymmGroup> > site_vec(n_root_) ;
             for (std::size_t idx = 0; idx < n_root_; idx++)
                 site_vec[idx] = mps_vector[idx][site] ;
-            SiteProblem<Matrix, SymmGroup> sp(site_vec, mpo[site], mpo_squared[site], site, site+1, boundaries_database_,
+            SiteProblem<Matrix, SymmGroup> sp(site_vec, mpo[site], mpo_squared()[site], site, site+1, boundaries_database_,
                                               do_H_squared_);
             if (sa_alg_ != -3 || sa_alg_ != -1) {
-                mps_guess.clear() ;
+                mps_guess().clear() ;
                 for (std::size_t idx = 0; idx < mps_vector.size(); idx++)
-                    mps_guess.push_back(mps_vector[idx][site]) ;
+                    mps_guess().push_back(mps_vector[idx][site]) ;
             }
             // Generates the vectorset object
-            VectorSet<Matrix, SymmGroup> vector_set(mps_guess);
+            VectorSet<Matrix, SymmGroup> vector_set(mps_guess());
             // Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
             for (int n = 0; n < base::northo; ++n) {
@@ -191,8 +192,8 @@ public:
                 for (size_t k = 0; k < n_root_; k++) {
                     res[k].first = ietl::get_energy(sp, res[k].second, k, false);
                     mps_vector[k][site] = res[k].second;
-                    // TODO: usage of mps_guess is very confusing and most likely also redundant -- get rid of it
-                    mps_guess[k] = res[k].second ;
+                    // TODO: usage of mps_guess() is very confusing and most likely also redundant -- get rid of it
+                    mps_guess()[k] = res[k].second ;
                 }
                 END_TIMING("MPS UPDATE")
             }
@@ -231,25 +232,25 @@ public:
                 if (site < L - 1) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
                     if (sa_alg_ == -3) {
-                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep_vec(mps_guess, mpo[site],
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep_vec(mps_guess(), mpo[site],
                                                   (*(boundaries_database_.get_boundaries_left(0, false)))[site],
                                                   (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
                                                   site, alpha, cutoff, Mmax);
                         for (std::size_t idx = 1; idx < n_root_; idx++) {
                             // after calling grow_l2r_sweep_, mps_guess[idx] contains the correct mpstensor at [site+1]
-                            (*(boundaries_database_.get_mps(idx)))[site + 1] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site + 1] = mps_guess()[idx];
                             (*(boundaries_database_.get_mps(idx)))[site] = (*(boundaries_database_.get_mps(0)))[site] ;
                         }
 
                     } else if (sa_alg_ == -1) {
                         // similar to sa_alg=-3 but use grow_l2r_sweep_avg instead of grow_l2r_sweep_vec
                         // TODO: reduce the level of copy-paste
-                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep_avg(mps_guess, mpo[site],
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_l2r_sweep_avg(mps_guess(), mpo[site],
                                                   (*(boundaries_database_.get_boundaries_left(0, false)))[site],
                                                   (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
                                                   site, alpha, cutoff, Mmax);
                         for (std::size_t idx = 1; idx < n_root_; idx++) {
-                            (*(boundaries_database_.get_mps(idx)))[site + 1] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site + 1] = mps_guess()[idx];
                             (*(boundaries_database_.get_mps(idx)))[site] = (*(boundaries_database_.get_mps(0)))[site] ;
                         }
                     } else if (sa_alg_ == -2) {
@@ -277,7 +278,7 @@ public:
                 } else {
                     if (sa_alg_ == -3 || sa_alg_ == -1) {
                         for (std::size_t idx = 0; idx < n_root_; idx++) {
-                            (*(boundaries_database_.get_mps(idx)))[site] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site] = mps_guess()[idx];
                                 mps_vector[idx][site].normalize_left(DefaultSolver());
                         }
                     } else {
@@ -292,22 +293,22 @@ public:
                 if (site > 0) {
                     maquis::cout << " Alpha = " << alpha << std::endl;
                     if (sa_alg_ == -3) {
-                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep_vec(mps_guess, mpo[site],
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep_vec(mps_guess(), mpo[site],
                                                                                            (*(boundaries_database_.get_boundaries_left(0, false)))[site],
                                                                                            (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
                                                                                            site, alpha, cutoff, Mmax);
                         for (std::size_t idx = 1; idx < n_root_; idx++) {
                             // after calling grow_l2r_sweep_, mps_guess[idx] contains the correct mpstensor at [site+1], not at [site]
-                            (*(boundaries_database_.get_mps(idx)))[site-1] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site-1] = mps_guess()[idx];
                             (*(boundaries_database_.get_mps(idx)))[site] = (*(boundaries_database_.get_mps(0)))[site] ;
                         }
                     } else if (sa_alg_ == -1) {
-                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep_avg(mps_guess, mpo[site],
+                        trunc[0] = (*(boundaries_database_.get_mps(0))).grow_r2l_sweep_avg(mps_guess(), mpo[site],
                                                                                            (*(boundaries_database_.get_boundaries_left(0, false)))[site],
                                                                                            (*(boundaries_database_.get_boundaries_right(0, false)))[site+1],
                                                                                            site, alpha, cutoff, Mmax);
                         for (std::size_t idx = 1; idx < n_root_; idx++) {
-                            (*(boundaries_database_.get_mps(idx)))[site-1] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site-1] = mps_guess()[idx];
                             (*(boundaries_database_.get_mps(idx)))[site] = (*(boundaries_database_.get_mps(0)))[site] ;
                         }
                     } else if (sa_alg_ == -2) {
@@ -336,7 +337,7 @@ public:
                     if (sa_alg_ == -3 || sa_alg_ == -1) {
                         // here mps_guess contains MPSTensor at site [site]
                         for (std::size_t idx = 0; idx < n_root_; idx++) {
-                            (*(boundaries_database_.get_mps(idx)))[site] = mps_guess[idx];
+                            (*(boundaries_database_.get_mps(idx)))[site] = mps_guess()[idx];
                                 mps_vector[idx][site].normalize_right(DefaultSolver());
                         }
                     } else {
