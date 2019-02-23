@@ -66,10 +66,8 @@ public:
     MPSTensor return_orthovec(const MPSTensor & t, const std::size_t& idx, const std::size_t& i_2ortho,
                               const std::size_t& site1, const std::size_t& site2)
     {
-        MPSTensor tmp ;
-        tmp = contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[idx][i_2ortho][site1],
+        return contraction::site_ortho_boundaries(*(MPSTns_vec[idx]), t, vec_sa_left_[idx][i_2ortho][site1],
                                                  vec_sa_right_[idx][i_2ortho][site2+1]);
-        return tmp ;
     };
 private:
     // +----------+

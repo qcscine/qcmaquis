@@ -45,6 +45,7 @@ namespace ietl
     {
     public:
         typedef jacobi_davidson_standard<MATRIX, VS, SymmGroup, ITER> base;
+        typedef jacobi_davidson<MATRIX, VS, SymmGroup, ITER> grandparent;
         typedef typename partial_overlap<OtherMatrix,SymmGroup>::partial_overlap partial_overlap;
         typedef typename std::vector<partial_overlap> pov_vec_type ;
         typedef typename base::CorrectionEquation     CorrectionEquation ;
@@ -57,7 +58,6 @@ namespace ietl
         typedef typename base::Orthogonalizer         Orthogonalizer;
         typedef typename base::real_type              real_type ;
         typedef typename base::scalar_type            scalar_type ;
-        typedef typename base::size_t                 size_t ;
         typedef typename base::vector_double          vector_double ;
         typedef typename base::vector_space           vector_space ;
         typedef typename base::vector_type            vector_type ;
@@ -71,7 +71,11 @@ namespace ietl
         using base::vecspace_ ;
         using base::v_guess_ ;
         using base::V_ ;
-        //
+        using grandparent::get_eigenvalue;
+        // TODO: make sure this is correct and here the grandparent's get_eigenvalue() is really called, and make sure
+        // it's really needed
+        using grandparent::do_diagonalize;
+        // same for do_diagonalize
         jacobi_davidson_standard_mo(MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator,
                                     Finalizer* finalizer, Orthogonalizer* ortho, const pov_vec_type& pov, const int& n,
                                     const int& side_tofollow, const size_t& nmin, const size_t& nmax, const size_t& n_block,
@@ -108,7 +112,7 @@ namespace ietl
         vector_double generate_property() ;
         void print_endline() ;
         void print_header_table() ;
-        void print_newline_table(const size_t& i, const real_type& error, const scalar_type& en, 
+        void print_newline_table(const size_t& i, const real_type& error, const scalar_type& en,
                                  const size_t& idx, const bool& converged) ;
         void set_interval(const std::size_t& dim) ;
         void sort_prop(couple_vec& vector_values) ;
@@ -228,6 +232,7 @@ namespace ietl
             std::cout << " CONVERGED" ;
         std::cout << std::endl ;
     }
+
 }
 
 #endif

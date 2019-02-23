@@ -10,17 +10,17 @@
  * Library License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Library License along with
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHoUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -34,6 +34,7 @@
 #include <ietl/traits.h>
 #include <vector>
 #include "jacobi.h"
+#include <boost/range/adaptor/reversed.hpp>
 
 // +---------------------------+
 //  JACOBI-DAVIDSON EIGENSOLVER
@@ -55,11 +56,11 @@ namespace ietl
         typedef typename base::Orthogonalizer     Orthogonalizer;
         typedef typename base::real_type          real_type ;
         typedef typename base::scalar_type        scalar_type;
-        typedef typename base::size_t             size_t;
         typedef typename base::vector_double      vector_double;
         typedef typename base::vector_space       vector_space;
         typedef typename base::vector_type        vector_type;
         //
+        using base::atol_ ;
         using base::bounds ;
         using base::candidates_collector_ ;
         using base::corrector_ ;
@@ -70,7 +71,7 @@ namespace ietl
         using base::finalizer_ ;
         using base::highest_eigen_ ;
         using base::i_state_ ;
-		    using base::is_folded_ ;
+		using base::is_folded_ ;
         using base::lowest_eigen_ ;
         using base::M ;
         using base::matrix_ ;
@@ -89,13 +90,14 @@ namespace ietl
         using base::vecspace_ ;
         using base::V_ ;
         using base::VA_ ;
+        using base::diagonalize;
         //
         jacobi_davidson_standard(MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator,
                                  Finalizer* finalizer, Orthogonalizer* ortho, const size_t& nmin, const size_t& nmax,
                                  const size_t& n_block, const double& block_thresh, const int& site1, const int& site2,
                                  const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
                                  const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
-                                 const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded, 
+                                 const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded,
 								 const double& energy_thresh)
                 : base::jacobi_davidson(matrix, vec, corrector, micro_iterator, finalizer, ortho, nmin, nmax, n_block,
                                         block_thresh, site1, site2, order, sa_alg, n_lanczos, do_chebychev, chebyshev_shift,
@@ -111,6 +113,13 @@ namespace ietl
         void update_parameters() ;
         void update_vecspace(vector_space& to_add);
         void set_interval(const std::size_t& dim) {} ;
+        virtual void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, size_t dim);
+        virtual void do_diagonalize()
+        {
+            // only diagonalise for the lowest eigenvalues here
+            diagonalize(true);
+        }
+
     private:
         bool check_convergence(const size_t& idx, ITER& iter);
         vector_double generate_property() ;
@@ -147,19 +156,20 @@ namespace ietl
     template <class Matrix, class VS, class SymmGroup, class ITER>
     void jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::update_vecspace(vector_space& to_add)
     {
-        do {
-            vector_type t = to_add.back(), tA ;
+        for (auto&& i : boost::adaptors::reverse(to_add))
+        {
+            vector_type&& t = std::move(i);
             vecspace_.project(t) ;
-            tA = apply_operator(t) ;
+            vector_type&& tA = apply_operator(t) ;
             vecspace_.project(tA) ;
             orthogonalizer_->orthogonalize(t, tA) ;
             if (std::abs(ietl::two_norm(t)) > 1.0E-10) {
                 orthogonalizer_->normalize(t, tA) ;
-                V_.push_back(t) ;
-                VA_.push_back(tA) ;
+                V_.emplace_back(t) ;
+                VA_.emplace_back(tA) ;
             }
-            to_add.pop_back() ;
-        } while (to_add.size() > 0) ;
+        }
+        to_add.clear();
     };
     // Check if the JD iteration is arrived at convergence
     template <class Matrix, class VS, class SymmGroup, class ITER>
@@ -174,13 +184,9 @@ namespace ietl
                                                                                      eigen_collector_[idx].u_) ) ;
         vector_type r = jnk - energy*eigen_collector_[idx].u_ ;
         vecspace_.project(r) ;
-        if(iter.finished(ietl::two_norm(r),std::fabs(energy))) {
-            converged = true;
-            return converged;
-        } else {
-            converged = false ;
-            return converged ;
-        }
+
+        return iter.finished(ietl::two_norm(r),std::fabs(energy));
+
     };
     // -- SOLVER --
     template<class MATRIX, class VS, class SymmGroup, class ITER>
@@ -189,7 +195,7 @@ namespace ietl
         vector_type t2 = 0.*r ;
         micro_iterator_->set_error(r) ;
         t2 = micro_iterator_->PerformOptimization(t2) ;
-        t.push_back(t2 / ietl::two_norm(t2));
+        t.emplace_back(t2 / ietl::two_norm(t2));
     } ;
     // -- GENERATE_PROPERTY --
     template<class MATRIX, class VS, class SymmGroup, class ITER>
@@ -237,6 +243,53 @@ namespace ietl
         if (converged)
             std::cout << " CONVERGED" ;
         std::cout << std::endl;
+    }
+
+    // +-----------------------------------------------+
+    //  Interface to the LAPACK diagonalization routine
+    //  here we use the symmetric diagonalisation
+    //  and calculate only one eigenvalue
+    // +-----------------------------------------------+
+    template <class MATRIX, class VS, class SymmGroup, class ITER>
+    void jacobi_davidson_standard<MATRIX, VS, SymmGroup, ITER>::get_eigenvalue(std::vector<double>& eigval,
+                                                                      std::vector<class std::vector<double> >& eigvecs,
+                                                                      std::size_t dim)
+    {
+        FortranMatrix<magnitude_type> M_(dim,dim);
+        for (int i=0;i<dim;i++)
+        for (int j=0;j<=i;j++)
+            M_(j,i) = M(j,i);
+        double abstol = atol_;
+        char jobz='V';     char range='I';   char uplo='U';
+        fortran_int_t n=dim;
+        fortran_int_t lda=dim;
+        fortran_int_t il=1, iu=1;
+
+        fortran_int_t m;
+        fortran_int_t ldz=n;
+        fortran_int_t lwork=8*n;
+        fortran_int_t info;
+
+        double vl, vu;
+        double *w = new double[n];
+        double *z = new double[n*n];
+        double *work = new double[lwork];
+        fortran_int_t *iwork = new fortran_int_t[5*n];
+        fortran_int_t *ifail = new fortran_int_t[n];
+
+        LAPACK_DSYEVX(&jobz, &range, &uplo, &n, M_.data(), &lda, &vl, &vu, &il, &iu, &abstol, &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
+
+        // use only one eigenvalue
+        eigval[0] = w[0];
+        for (int i = 0; i < n; i++)
+            eigvecs[0][i] = z[i];
+
+
+        delete [] w;
+        delete [] z;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
     }
 }
 

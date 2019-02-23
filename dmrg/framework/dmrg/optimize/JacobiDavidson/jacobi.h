@@ -124,11 +124,14 @@ namespace ietl
         vector_type filter_chebyshev(vector_type& x) ;
         vector_type generate_eigenvector(const size_t& idx) ;
         vector_type multiply_by_operator(const vector_type& input) ;
-        void get_eigenvalue(std::vector<double>& eigval, std::vector<class std::vector<double> >& eigvecs, size_t dim) ;
         void initialize_vecspace() ;
         void reset_vecspace() ;
         void update_orthospace(const vector_type& u) ;
         // -- VIRTUAL METHODS --
+        //  Interface to the LAPACK diagonalization routine
+        //  varies by the used class
+        virtual void get_eigenvalue(std::vector<double>& eigval, std::vector<std::vector<double> >& eigvecs, size_t dim);
+
         virtual bool check_convergence(size_t const& idx, ITER& iter) {};
         virtual vector_double generate_property() {} ;
         virtual vector_type apply_operator (const vector_type& x) {} ;
@@ -142,6 +145,15 @@ namespace ietl
         virtual void update_finalizer() {} ;
         virtual void update_parameters() {} ;
         virtual void update_vecspace(vector_space& to_add) {};
+
+        // Restarting routine
+        void diagonalize(const bool& is_low) ;
+        // diagonalize() wrapper, used in different classes
+        virtual void do_diagonalize()
+        {
+            diagonalize(true);
+            diagonalize(false);
+        }
         // Structure used for restart
         struct lt_couple {
             inline bool operator() (const couple_val& a , const couple_val& b) {
@@ -174,7 +186,7 @@ namespace ietl
         FortranMatrix<magnitude_type>   M ;
         std::vector<scalar_type>        diagonal_elements_ ;
         CorrectionEquation*             corrector_ ;
-        magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_ ;
+        magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_, atol_ ;
         MATRIX&                         matrix_ ;
         MicroOptimizer*                 micro_iterator_ ;
         result_collector                u_and_uA_ ;
@@ -186,8 +198,6 @@ namespace ietl
         vector_space                    v_guess_, V_, VA_ ;
         VS                              vecspace_ ;
     private:
-        // Restarting routine
-        void diagonalize(const bool& is_low) ;
         void select_u_and_uA(const size_t& n_block_local) ;
         void reshuffle_variance() ;
         void restart_jd(vector_space &to_add) ;
@@ -262,9 +272,12 @@ namespace ietl
         vector_type     eigvec, error ;
         // Initializatin
         corrector_->update_vecspace(vecspace_) ;
+        atol_ = iter.absolute_tolerance();
         M.resize(iter.max_iterations()*n_block_, iter.max_iterations()*n_block_) ;
         res.resize(n_sa_) ;
         print_header_table() ;
+        V_.resize(iter.max_iterations());
+        VA_.resize(iter.max_iterations());
         orthogonalizer_->set_vecspace(V_) ;
         orthogonalizer_->set_addspace(VA_) ;
         orthogonalizer_->set_diagonal(diagonal_elements_) ;
@@ -292,13 +305,11 @@ namespace ietl
                 r.clear();
                 n_iter_++;
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
-                for (size_t i = 0; i < V_.size(); i++)
-                    for (size_t j = 0; j < V_.size(); j++)
-                        M(i, j) = orthogonalizer_->get_hamiltonian(V_, VA_, i, j);
+                for (size_t i = 0; i < n_iter_; i++)
+                    M(i, n_iter_-1) = orthogonalizer_->get_hamiltonian(V_, VA_, i , n_iter_-1);
                 // Diagonalization
-                set_interval(V_.size());
-                diagonalize(true);
-                diagonalize(false);
+                set_interval(n_iter_);
+                do_diagonalize();
                 // Check convergence
                 n_block_local = std::min(candidates_collector_.size(), static_cast<size_t>(n_block_)) ;
                 select_u_and_uA(n_block_local) ;
@@ -313,17 +324,17 @@ namespace ietl
                     real_type error = ietl::two_norm(r[i]) ;
                     print_newline_table(n_iter_, error, finalizer_->compute_energy(i_state_, i), i, converged_loc);
                     if (converged_loc) {
-                        converged_collector_.push_back(eigen_collector_[i]);
+                        converged_collector_.emplace_back(std::move(eigen_collector_[i]));
                         vecspace_.add_within_vec(generate_eigenvector(converged_collector_.size() - 1));
                     } else {
-                        not_converged_collector_.push_back(eigen_collector_[i]);
+                        not_converged_collector_.emplace_back(std::move(eigen_collector_[i]));
                     }
                 }
                 // Hack to add at least one vector if the optimization has reached the end
                 if (n_iter_ == iter.max_iterations()) {
                     converged = true ;
                     if (converged_collector_.size() == 0)
-                        converged_collector_.push_back(eigen_collector_[0]) ;
+                        converged_collector_.emplace_back(std::move(eigen_collector_[0])) ;
                 }
                 // -- CHECKS HOW MANY ROOTS ARE CONVERGED --
                 // If converged, all the roots are converged. For SA solver, moves to the next state, otherwise just exit
@@ -364,8 +375,7 @@ namespace ietl
                         corrector_->update_rayleigh();
                         corrector_->update_error(r[i]);
                         if (do_chebychev_ && V_.size() >= 2) {
-                            vector_type result = filter_chebyshev(not_converged_collector_[i].u_) ;
-                            v_toadd.push_back(result) ;
+                            v_toadd.emplace_back(filter_chebyshev(not_converged_collector_[i].u_)) ;
                         } else {
                             solver(r[i], v_toadd) ;
                         }
@@ -397,19 +407,20 @@ namespace ietl
         }
         sort_prop(vector_values_) ;
         i_homing_selected_ = vector_values_[0].first ;
+        eigen_collector_.emplace_back(std::move(candidates_collector_[0]));
         // Finalization
-        for (int i = 0; i < n_block_local; i++) {
+        for (int i = 1; i < n_block_local; i++) {
             size_t idx2 = vector_values_[i].first ;
             magnitude_type ratio  = std::fabs(vector_values_[i].second/vector_values_[0].second) ;
             magnitude_type ratio2 = std::fabs(finalizer_->theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
             if ( (ratio > thresh_block_ && ratio2 < energy_thresh_) ) {
                 if (eigen_collector_.size() < n_block_local)
-                    eigen_collector_.push_back(candidates_collector_[idx2]);
+                    eigen_collector_.emplace_back(std::move(candidates_collector_[idx2]));
             }
         }
         // At least one vector is added
         if (eigen_collector_.size() == 0)
-            eigen_collector_.push_back(candidates_collector_[i_homing_selected_]) ;
+            eigen_collector_.emplace_back(std::move(candidates_collector_[i_homing_selected_])) ;
     }
     // +---------------------------+
     //  Vector space initialization
@@ -423,7 +434,7 @@ namespace ietl
         // Leon: Commented the sa_alg_ == -1 orthogonalisation for now because of crashes/wrong results in some cases
         // Need to check with ALB
         // if (sa_alg_ != -1) {
-            t  = vecspace_.new_vector(i_state_) ;
+            t = vecspace_.new_vector(i_state_) ;
             if (n_lanczos_ > 0)
                 estimate_extremes(t) ;
             vecspace_.project(t) ;
@@ -431,8 +442,8 @@ namespace ietl
             vecspace_.project(tA) ;
             orthogonalizer_->normalize(t, tA) ;
             orthogonalizer_->update_diagonal(t, tA);
-            V_.push_back(t) ;
-            VA_.push_back(tA) ;
+            V_.emplace_back(std::move(t)) ;
+            VA_.emplace_back(std::move(tA)) ;
         // } else {
         //     //
         //     for (size_t i = 0; i < n_sa_; i++) {
@@ -507,7 +518,7 @@ namespace ietl
             get_eigenvalue(eigvals, eigvecs, dim);
             // -- Finalization --
             couple_vec selector ;
-            for (size_t i = 0; i < dim; i++)
+            for (size_t i = 0; i < eigvals.size(); i++)
                 selector.push_back(std::make_pair(i, eigvals[i])) ;
             //
             std::sort(selector.begin(), selector.end(), lt_couple()) ;
@@ -521,7 +532,7 @@ namespace ietl
                     tmp_u  += eigvecs[idx][j] * V_[j];
                     tmp_uA += eigvecs[idx][j] * VA_[j];
                 }
-                tmp_uA = apply_operator(tmp_u) ;
+                // tmp_uA = apply_operator(tmp_u) ;
                 candidates_collector_.push_back(state_prop<VS>(tmp_u, tmp_uA, eigvals[idx])) ;
             }
         }
@@ -835,7 +846,7 @@ namespace ietl
         // Convert the matrix from general MATRIX class to a FortranMatrix object
         FortranMatrix<magnitude_type> M_(dim,dim);
         for (std::size_t i = 0 ; i<dim ; i++)
-            for (std::size_t j = 0 ; j<dim ; j++)
+            for (std::size_t j = 0 ; j<=i ; j++)
                 M_(j, i) = M(j, i);
         LAPACK_DGEEV(&jobvl, &jobvr, &n, M_.data(), &lda, w1, w2, z1, &ldz1, z2, &ldz2, work, &lwork, &info);
         for (int j = 0 ; j < dim ; j++) {
@@ -849,7 +860,8 @@ namespace ietl
         delete [] work  ;
         delete [] iwork ;
         delete [] ifail ;
-    };
+    }
+
 }
 
 // -- Derived classes --
