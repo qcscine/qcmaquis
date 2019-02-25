@@ -48,11 +48,7 @@ public:
                               size_t const& i_state,
                               size_t const& idx)
     {
-        vector_type junk ;
-        ietl::mult(*(finalizer->get_Hamiltonian()), (finalizer->get_u(idx)), junk, i_state) ;
-        junk -= finalizer->compute_energy(i_state, idx) * (finalizer->get_u(idx)) ;
-        junk /= ietl::two_norm((finalizer->get_u(idx))) ;
-        return junk ;
+        return finalizer->get_uA(idx) - finalizer->compute_energy(i_state, idx) * (finalizer->get_u(idx)) ;
     }
 };
 
