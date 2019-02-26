@@ -1093,6 +1093,9 @@ namespace measurements {
 		               if(p1 == p4 && p3 == p2)
                              continue;
 
+                        pos_t pos_[4] = {p1, p3, p4, p2};
+                        std::vector<pos_t> positions(pos_, pos_ + 4);
+
                         pos_t posORD_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positionsORD(posORD_, posORD_ + 4);
 
