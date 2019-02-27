@@ -44,13 +44,16 @@ namespace SU2 {
     {
         return std::abs(a-b) <= c && c <= a+b;
     }
-
+    /*
     // Cache for Wigner-9j symbols
     // Profilers show that over 60% of the time is spent in gsl_sf_coupling_9j
     // therefore we need a class that caches the calls to this function
     // uses std::unordered map as a cache
     // Currently we don't exploit the permutation symmetry of the Wigner 9j symbols yet
     // but this should be done in the future
+    // !!! The cache is disabled for now as it doesn't work in parallel due to race conditions yet
+    // and the read locks are slowing everything down
+    // It must be either filled before the optimization or a parallel map should be used
     class GSLCouplingCache
     {
         private:
@@ -70,6 +73,9 @@ namespace SU2 {
                 gsl_indices idx=std::make_tuple(a,b,c,d,e,f,g,h,i);
                 double ret;
                 // Search for the value in cache
+
+                std::lock_guard<std::mutex> lk(this->m_);
+
                 auto map_idx = map.find(idx);
                 // If value not found in cache, calculate and add it
                 if (map_idx == map.end())
@@ -79,7 +85,6 @@ namespace SU2 {
                                              d, e, f,
                                              g, h, i);
 
-                    std::lock_guard<std::mutex> lk(this->m_);
                     map[idx] = ret;
                     // map.emplace(idx, ret);
 
@@ -138,7 +143,7 @@ namespace SU2 {
         gsl_coupling_cache.set_coupling<T>(a,b,c,d,e,f,g,h,i,init,couplings);
     }
 
-    /*
+    */
     // Non-cache versions
     inline double mod_coupling(int a, int b, int c,
                         int d, int e, int f,
@@ -168,7 +173,7 @@ namespace SU2 {
             couplings[3] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
         }
     }
-    */
+    
 }
 
 #endif
