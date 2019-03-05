@@ -102,7 +102,7 @@ public:
                 bool converged = false;
                 typedef typename maquis::traits::real_type<Matrix>::type real_type;
                 // Energies for the convergence check, array of the size [n_states][sweeps]
-                std::vector<real_type> ediff_for_convergence_check(n_states);
+                std::vector<boost::optional<real_type > > ediff_for_convergence_check(n_states, boost::none);
 
                 for (std::size_t state = 0; state < n_states; state++) {
                     if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"]) {
@@ -134,9 +134,14 @@ public:
                     }
                 }
                 // the sweep converged only if the largest energy difference of all states is below the convergence threshold
-                real_type e_diff_all = *std::max_element(ediff_for_convergence_check.begin(), ediff_for_convergence_check.end());
-                if (e_diff_all < parms["conv_thresh"])
-                    converged = true;
+
+                bool first_sweep = std::all_of(ediff_for_convergence_check.begin(), ediff_for_convergence_check.end(), [](boost::optional<real_type> i){ return i == boost::none; });
+                if (!first_sweep)
+                {
+                    real_type e_diff_all = (*std::max_element(ediff_for_convergence_check.begin(), ediff_for_convergence_check.end())).get();
+                    if (e_diff_all < parms["conv_thresh"] && sweep > init_sweep)
+                        converged = true;
+                }
                 // write checkpoint
                 bool stopped = stop_callback() || converged;
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
