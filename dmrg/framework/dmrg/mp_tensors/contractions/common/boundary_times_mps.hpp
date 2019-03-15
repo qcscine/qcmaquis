@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2018 by Alberto Baiardi <abaiardi@ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -110,14 +111,12 @@ namespace contraction {
 
                 // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_row_non_zeros(b1) == 1) continue;
-
                 // exploit hermiticity if available
                 if (mpo.herm_info.left_skip(b1))
                 {   
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
-
                     std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
-                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(b1)], mps.data(), data_[b1], scales);
+                    typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), mps.data(), data_[b1], scales);
                 }
                 else {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
@@ -152,7 +151,7 @@ namespace contraction {
                     //parallel::guard group(scheduler(b1), parallel::groups_granularity);
                     //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage);
                     std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(k)], mpo, k, true, false);
-                    typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage, scales);
+                    typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(k)]), mps.data(), storage, scales);
                 }
                 else {
                     //parallel::guard group(scheduler(b1), parallel::groups_granularity);
