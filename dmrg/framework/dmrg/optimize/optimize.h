@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -51,23 +51,21 @@
 
 
 template<class Matrix, class SymmGroup>
+
 struct SiteProblem<Matrix, SymmGroup>
 {
-    SiteProblem(MPSTensor<Matrix, SymmGroup> const & initial,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
-    , contraction_schedule(contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::
-                           right_contraction_schedule(initial, right, mpo))
-    { }
-    
+    {
+    }
+
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
-    typename contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::schedule_t contraction_schedule;
     double ortho_shift;
 };
 
@@ -105,7 +103,7 @@ public:
     , stop_callback(stop_callback_)
     {
         std::size_t L = mps.length();
-        
+
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
@@ -129,15 +127,15 @@ public:
 
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
-        
+
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
-    
+
     virtual ~optimizer_base() {}
-    
+
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
-    
+
     results_collector const& iteration_results() const { return iteration_results_; }
 
 protected:
@@ -146,16 +144,16 @@ protected:
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
         Storage::pin(left_[site+1]);
-        
+
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
-    
+
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
         Storage::pin(right_[site]);
-        
+
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
@@ -164,25 +162,25 @@ protected:
     {
         parallel::construct_placements(mpo);
         std::size_t L = mps.length();
-        
+
         left_.resize(mpo.length()+1);
         right_.resize(mpo.length()+1);
-        
+
         ortho_left_.resize(northo);
         ortho_right_.resize(northo);
         for (int n = 0; n < northo; ++n) {
             ortho_left_[n].resize(L+1);
             ortho_right_[n].resize(L+1);
-            
+
             ortho_left_[n][0] = mps.left_boundary()[0];
             ortho_right_[n][L] = mps.right_boundary()[0];
         }
-        
+
         //Timer tlb("Init left boundaries"); tlb.begin();
         Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
         Storage::pin(left_[0]);
-        
+
         for (int i = 0; i < site; ++i) {
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
@@ -193,7 +191,7 @@ protected:
         //tlb.end();
 
         maquis::cout << "Boundaries are partially initialized...\n";
-        
+
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
@@ -210,7 +208,7 @@ protected:
 
         maquis::cout << "Boundaries are fully initialized...\n";
     }
-    
+
     double get_cutoff(int sweep) const
     {
         double cutoff;
@@ -234,18 +232,18 @@ protected:
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
         return Mmax;
     }
-    
-    
+
+
     results_collector iteration_results_;
-    
+
     MPS<Matrix, SymmGroup> & mps;
     MPO<Matrix, SymmGroup> const& mpo;
-    
+
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
 
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
-    
+
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;

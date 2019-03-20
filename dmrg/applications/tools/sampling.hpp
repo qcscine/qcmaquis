@@ -148,7 +148,17 @@ struct Sampling
 
 // template generate_dets 
        template <typename Determinants, typename MPS, typename Hash_value, typename Hash_index, typename SiteSymm, typename Determinant, typename SymmGroup> 
-       void generate_dets(Determinants dets, Determinants dets_mclr, MPS mps, Hash_value hash, Hash_index hash_index, SiteSymm site_dims, int norb, int nsample, double CI_threshold, double COM_threshold)
+       void generate_dets(Determinants dets,
+                          Determinants dets_mclr,
+                          MPS mps,
+                          Hash_value hash,
+                          Hash_index hash_index,
+                          SiteSymm site_dims,
+                          int norb,
+                          int nsample,
+                          int nitermax,
+                          double CI_threshold,
+                          double COM_threshold)
       {
         maquis::cout << "    CI-threshold  : " <<  CI_threshold << std::endl; 
         maquis::cout << "   COM-threshold  : " << COM_threshold << std::endl;
@@ -319,7 +329,7 @@ struct Sampling
           completeness=1.0-sum_ci2;
           maquis::cout << " Current completeness (1-\\sum(ci^2)) : " << completeness << std::endl;
 
-          } while(completeness>COM_threshold &&  nMAX< 100);
+          } while(completeness>COM_threshold &&  nMAX< nitermax);
 
 // Back to "2", "u", "d", "0" type electron representation, and print out
           //Determinants  dets_show;

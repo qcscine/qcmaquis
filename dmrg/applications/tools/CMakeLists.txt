@@ -7,6 +7,7 @@ if(USE_AMBIENT)
 endif(USE_AMBIENT)
 
 
+
 macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
   get_symm_group_name(SYMM_NAME ${SYMM})
   if(DMRG_HAS_${SYMM_NAME})
@@ -63,6 +64,8 @@ create_tools_symm_target("onetdm_diag_2u1pg"  "TWOU1PG"  "onetdm_diag.cpp"  "dmr
 
 create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+
+create_tools_symm_target("srcas_2u1pg"           "TWOU1PG"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 

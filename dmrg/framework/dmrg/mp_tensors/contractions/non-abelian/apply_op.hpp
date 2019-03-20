@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -29,16 +29,16 @@
 #define CONTRACTIONS_SU2_APPLY_OP_HPP
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
+#include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/micro_kernels.hpp"
+
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 
 namespace contraction {
 namespace SU2 {
-
-    using ::contraction::common::task_capsule;
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
@@ -119,9 +119,20 @@ namespace SU2 {
         } // b1
     }
 
+    template <class Matrix, class SymmGroup>
+    struct task_capsule
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename Matrix::value_type value_type;
+        typedef detail::micro_task<value_type> micro_task;
+        typedef std::map<std::pair<charge, charge>, std::vector<micro_task>, compare_pair<std::pair<charge, charge> > > map_t;
+
+        map_t tasks;
+    };
+
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_tasks(size_t b1,
-                    ::contraction::common::MPSBoundaryProductIndices<Matrix, OtherMatrix, SymmGroup> const & right_mult_mps,
+                    MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
                     MPOTensor<Matrix, SymmGroup> const & mpo,
                     DualIndex<SymmGroup> const & ket_basis,
                     Index<SymmGroup> const & left_i,
@@ -143,7 +154,7 @@ namespace SU2 {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            DualIndex<SymmGroup> const & T = right_mult_mps[b2];
+            DualIndex<SymmGroup> T = right_mult_mps.basis_at(b2);
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
@@ -161,7 +172,7 @@ namespace SU2 {
                     charge mc = it->rc;
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
-                    {   
+                    {
                         charge phys_in = W.basis().left_charge(w_block);
                         charge phys_out = W.basis().right_charge(w_block);
 
@@ -173,7 +184,7 @@ namespace SU2 {
                         if (!::SU2::triangle(SymmGroup::spin(out_l_charge), a, SymmGroup::spin(out_r_charge))) continue;
                         if (!left_i.has(out_r_charge)) continue;
 
-                        size_t l_size = left_i[lb].second; 
+                        size_t l_size = left_i[lb].second;
 
                         std::vector<micro_task> & otasks = tasks_cap.tasks[std::make_pair(out_l_charge, out_r_charge)];
 
@@ -194,7 +205,8 @@ namespace SU2 {
                         for (unsigned short slice = 0; slice < r_size/r_size_cache; ++slice)
                         {
                             size_t right_offset_cache = slice * r_size_cache;
-                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl, 
+                            detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl,
+                                                                  //&T[t_block](in_left_offset, right_offset_cache),
                                                                   in_left_offset + tpl.stripe * right_offset_cache,
                                                                   r_size_cache, r_size,
                                                                   out_right_offset + right_offset_cache);
@@ -205,6 +217,7 @@ namespace SU2 {
                         if (r_size_remain == 0) continue;
 
                         detail::op_iterate<Matrix, SymmGroup>(W, w_block, couplings, otasks, tpl,
+                                                              //&T[t_block](in_left_offset, right_offset_remain),
                                                               in_left_offset + tpl.stripe * right_offset_remain,
                                                               r_size_remain, r_size,
                                                               out_right_offset + right_offset_remain);
@@ -227,7 +240,7 @@ namespace SU2 {
         for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
         {
             std::vector<micro_task> & otasks = it->second;
-            std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>()); 
+            std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>());
 
             if (otasks.size() == 0) continue;
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
@@ -242,7 +255,7 @@ namespace SU2 {
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void rbtm_kernel(size_t b1,
                      block_matrix<Matrix, SymmGroup> & ret,
-                     Boundary<OtherMatrix, SymmGroup> const & right,
+                     Boundary<OtherMatrix, SymmGroup> const & left,
                      MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      DualIndex<SymmGroup> const & ket_basis,
@@ -253,7 +266,7 @@ namespace SU2 {
     {
         task_capsule<Matrix, SymmGroup> tasks_cap;
 
-        rbtm_tasks(b1, right_mult_mps.indices, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
+        rbtm_tasks(b1, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
         rbtm_axpy(tasks_cap, ret, out_right_i, right_mult_mps);
 
         right_mult_mps.free(b1);
@@ -268,14 +281,12 @@ namespace SU2 {
         if (c_block == C.n_blocks())
                c_block = C.insert_block(OtherMatrix(num_rows(A), num_cols(B)), rc, rc);
 
-        boost::numeric::bindings::blas::gemm(scale, A, B, typename Matrix::value_type(1), C[c_block]); 
+        boost::numeric::bindings::blas::gemm(scale, A, B, typename Matrix::value_type(1), C[c_block]);
     }
 
     template<class Matrix, class OtherMatrix, class TVMatrix, class SymmGroup>
-    void rbtm_axpy_gemm(size_t b1, task_capsule<Matrix, SymmGroup> const & tasks_cap,
-                        block_matrix<Matrix, SymmGroup> & prod,
-                        Index<SymmGroup> const & out_right_i,
-                        Boundary<OtherMatrix, SymmGroup> const & left,
+    void rbtm_axpy_gemm(size_t b1, task_capsule<Matrix, SymmGroup> & tasks_cap, block_matrix<Matrix, SymmGroup> & prod,
+                        Index<SymmGroup> const & out_right_i, Boundary<OtherMatrix, SymmGroup> const & left,
                         MPOTensor<Matrix, SymmGroup> const & mpo,
                         block_matrix<TVMatrix, SymmGroup> const & left_b1,
                         MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & t)
@@ -287,10 +298,11 @@ namespace SU2 {
 
         std::vector<value_type> phases = (mpo.herm_info.left_skip(b1)) ? ::contraction::common::conjugate_phases(left_b1, mpo, b1, true, false) :
                                                                          std::vector<value_type>(left_b1.n_blocks(),1.);
-        map_t const & tasks = tasks_cap.tasks;
-        for (typename map_t::const_iterator it = tasks.begin(); it != tasks.end(); ++it)
+        map_t & tasks = tasks_cap.tasks;
+        for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
         {
-            std::vector<micro_task> const & otasks = it->second;
+            std::vector<micro_task> & otasks = it->second;
+            std::sort(otasks.begin(), otasks.end(), detail::task_compare<value_type>());
 
             if (otasks.size() == 0) continue;
             Matrix buf(otasks[0].l_size, out_right_i.size_of_block(it->first.second));
