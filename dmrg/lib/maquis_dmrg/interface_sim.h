@@ -40,7 +40,7 @@
 
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
-class interface_sim : public sim<Matrix, SymmGroup> {
+class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_sim {
 
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;

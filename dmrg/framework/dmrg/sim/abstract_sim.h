@@ -33,6 +33,12 @@ class abstract_sim {
 public:
     virtual ~abstract_sim() {}
     virtual void run() =0;
+};
+
+class abstract_interface_sim {
+public:
+    virtual ~abstract_interface_sim() {}
+    virtual void run() =0;
     virtual void run_measure() =0;
 };
 

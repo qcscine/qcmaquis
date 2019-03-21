@@ -66,9 +66,6 @@ public:
     sim(DmrgParameters const &);
     virtual ~sim();
 
-    virtual void run() =0;
-    virtual void run_measure() =0;
-
 protected:
     typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
     typedef std::map<std::string, int> status_type;

@@ -53,7 +53,7 @@ class simulation : public simulation_base {
         void measure();
     private:
         DmrgParameters & parms;
-        std::shared_ptr<abstract_sim> sim_ptr;
+        std::shared_ptr<abstract_interface_sim> sim_ptr;
 
 };
 

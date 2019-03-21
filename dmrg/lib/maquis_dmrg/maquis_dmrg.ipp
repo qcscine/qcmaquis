@@ -33,18 +33,25 @@ template <class SymmGroup>
 simulation<SymmGroup>::simulation(DmrgParameters & parms_) :
     parms(parms_)
 {
-    try {
+    try
+    {
         if (parms["COMPLEX"])
-            sim_ptr.reset(new interface_sim<cmatrix, SymmGroup>(parms));
-        else
-            sim_ptr.reset(new interface_sim<matrix, SymmGroup>(parms));
-        }
-    catch (std::exception & e)
         {
-            maquis::cerr << "Exception thrown!" << std::endl;
-            maquis::cerr << e.what() << std::endl;
-            exit(1);
+            auto ptr = std::make_shared<interface_sim<cmatrix, SymmGroup> >(parms);
+            sim_ptr = std::dynamic_pointer_cast<abstract_interface_sim>(ptr);
         }
+        else
+        {
+            auto ptr = std::make_shared<interface_sim<matrix, SymmGroup> >(parms);
+            sim_ptr = std::dynamic_pointer_cast<abstract_interface_sim>(ptr);
+        }
+    }
+    catch (std::exception & e)
+    {
+        maquis::cerr << "Exception thrown!" << std::endl;
+        maquis::cerr << e.what() << std::endl;
+        exit(1);
+    }
 }
 
 template <class SymmGroup>
