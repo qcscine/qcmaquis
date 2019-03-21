@@ -27,29 +27,18 @@
 #ifndef MAQUIS_DMRG_H
 #define MAQUIS_DMRG_H
 
-#include "dmrg/utils/DmrgOptions.h"
-#include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/sim/symmetry_factory.h"
-
-#include <boost/shared_ptr.hpp>
-
-struct simulation_base {
-    virtual ~simulation_base() {}
-    virtual void run(DmrgParameters & parms) =0;
-    virtual void measure(DmrgParameters & parms) =0;
-};
-
-template <class SymmGroup>
-struct simulation : public simulation_base {
-    void run(DmrgParameters & parms);
-    void measure(DmrgParameters & parms);
-};
-
-struct simulation_traits {
-    typedef boost::shared_ptr<simulation_base> shared_ptr;
-    template <class SymmGroup> struct F {
-        typedef simulation<SymmGroup> type;
+#include "maquis_dmrg_detail.h"
+namespace maquis
+{
+    class DMRGInterface
+    {
+        public:
+            DMRGInterface(DmrgOptions& opts_);
+            void optimize();
+            void measure();
+        private:
+            DmrgOptions& opts;
+            simulation_traits::shared_ptr sim;
     };
-};
-
+}
 #endif

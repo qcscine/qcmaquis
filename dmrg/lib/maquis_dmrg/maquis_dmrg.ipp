@@ -26,30 +26,35 @@
 
 #include "dmrg/sim/matrix_types.h"
 
-#include "dmrg_sim.h"
-#include "measure_sim.h"
+#include "interface_sim.h"
 #include "maquis_dmrg.h"
 
 template <class SymmGroup>
-void simulation<SymmGroup>::run(DmrgParameters & parms)
+simulation<SymmGroup>::simulation(DmrgParameters & parms_) :
+    parms(parms_)
 {
-    if (parms["COMPLEX"]) {
-        dmrg_sim<cmatrix, SymmGroup> sim(parms);
-        sim.run();
-    } else {
-        dmrg_sim<matrix, SymmGroup> sim(parms);
-        sim.run();
-    }
+    try {
+        if (parms["COMPLEX"])
+            sim_ptr.reset(new interface_sim<cmatrix, SymmGroup>(parms));
+        else
+            sim_ptr.reset(new interface_sim<matrix, SymmGroup>(parms));
+        }
+    catch (std::exception & e)
+        {
+            maquis::cerr << "Exception thrown!" << std::endl;
+            maquis::cerr << e.what() << std::endl;
+            exit(1);
+        }
 }
 
 template <class SymmGroup>
-void simulation<SymmGroup>::measure(DmrgParameters & parms)
+void simulation<SymmGroup>::run()
 {
-    if (parms["COMPLEX"]) {
-        measure_sim<cmatrix, SymmGroup> sim(parms);
-        sim.run();
-    } else {
-        measure_sim<matrix, SymmGroup> sim(parms);
-        sim.run();
-    }
+    sim_ptr->run();
+}
+
+template <class SymmGroup>
+void simulation<SymmGroup>::measure()
+{
+    sim_ptr->run_measure();
 }

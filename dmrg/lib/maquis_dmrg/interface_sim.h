@@ -1,46 +1,46 @@
 /*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
- *                            Michele Dolfi <dolfim@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
-
-#ifndef LIB_DMRG_SIM_H
-#define LIB_DMRG_SIM_H
-
+*
+* ALPS MPS DMRG Project
+*
+* Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+*               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+*               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
+*               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
+*               2018         Leon Freitag <lefreita@ethz.ch>
+*
+* This software is part of the ALPS Applications, published under the ALPS
+* Application License; you can use, redistribute it and/or modify it under
+* the terms of the license, either version 1 or (at your option) any later
+* version.
+*
+* You should have received a copy of the ALPS Application License along with
+* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+* available from http://alps.comp-phys.org/.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+* DEALINGS IN THE SOFTWARE.
+*
+*****************************************************************************/
+#ifndef INTERFACE_SIM_H
+#define INTERFACE_SIM_H
 #include <cmath>
 #include <iterator>
 #include <iostream>
 #include <sys/stat.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
+#include "dmrg/models/chem/measure_transform.hpp"
 
 
+// The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
-class dmrg_sim : public sim<Matrix, SymmGroup> {
+class interface_sim : public sim<Matrix, SymmGroup> {
 
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
@@ -58,11 +58,18 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
 
 public:
 
-    dmrg_sim (DmrgParameters & parms_)
+    interface_sim (DmrgParameters & parms_)
     : base(parms_)
     { }
 
     void run()
+    {
+        optimize();
+        // or whatever
+        // throw std::runtime_error("run() shouldn't be called from interface_sim");
+    }
+
+    void optimize()
     {
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
@@ -75,7 +82,7 @@ public:
             mpoc.compress(1e-12);
 
         /// Optimizer initialization
-        boost::shared_ptr<opt_base_t> optimizer;
+        std::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite")
         {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
@@ -154,7 +161,50 @@ public:
         }
     }
 
-    ~dmrg_sim()
+    void run_measure()
+    {
+        this->measure("/spectrum/results/", all_measurements);
+
+        /// MPO creation
+        MPO<Matrix, SymmGroup> mpoc = mpo;
+        if (parms["use_compressed"])
+            mpoc.compress(1e-12);
+
+        double energy;
+
+        if (parms["MEASURE[Energy]"]) {
+            energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
+            maquis::cout << "Energy: " << energy << std::endl;
+            {
+                storage::archive ar(rfile, "w");
+                ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
+            }
+        }
+
+        if (parms["MEASURE[EnergyVariance]"] > 0) {
+            MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
+            mpo2.compress(1e-12);
+
+            if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
+            double energy2 = maquis::real(expval(mps, mpo2, true));
+
+            maquis::cout << "Energy^2: " << energy2 << std::endl;
+            maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
+
+            {
+                storage::archive ar(rfile, "w");
+                ar["/spectrum/results/Energy^2/mean/value"] << std::vector<double>(1, energy2);
+                ar["/spectrum/results/EnergyVariance/mean/value"] << std::vector<double>(1, energy2 - energy*energy);
+            }
+        }
+
+        #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
+        if (parms.is_set("MEASURE[ChemEntropy]"))
+            measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
+        #endif
+    }
+
+    ~interface_sim()
     {
         storage::disk::sync();
     }

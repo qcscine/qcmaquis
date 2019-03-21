@@ -1,5 +1,7 @@
 *.svn*
 *.pyc*
 *.swp*
-build/
+.vscode/
+build*/
 my*
+.vscode

@@ -1,6 +1,5 @@
 
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
-enable_omp_if_found()
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
 set(DMRG_APP_LIBRARIES dmrg_models dmrg_utils ${DMRG_LIBRARIES})
@@ -15,7 +14,7 @@ get_symm_files(APPEND DMRG_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_
 
 
 # *** Targets
-add_library(maquis_dmrg SHARED ${DMRG_SYMM_SOURCES})
+add_library(maquis_dmrg SHARED ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp)
 set_property(TARGET maquis_dmrg PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES})
 

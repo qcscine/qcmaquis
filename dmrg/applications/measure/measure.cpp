@@ -35,7 +35,7 @@
 
 int main(int argc, char ** argv)
 {
-            
+
     std::cout << "  SCINE QCMaquis \n"
               << "  Quantum Chemical Density Matrix Renormalization group\n"
               << "  available from https://scine.ethz.ch/download/qcmaquis\n"
@@ -56,15 +56,8 @@ int main(int argc, char ** argv)
         timeval now, then, snow, sthen;
         gettimeofday(&now, NULL);
 
-
-        try {
-            simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
-            sim->measure(opt.parms);
-        } catch (std::exception & e) {
-            maquis::cerr << "Exception thrown!" << std::endl;
-            maquis::cerr << e.what() << std::endl;
-            exit(1);
-        }
+        maquis::DMRGInterface interface(opt);
+        interface.measure();
 
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
