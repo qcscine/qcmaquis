@@ -380,7 +380,7 @@ public:
             }
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
-            maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
+            maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site + 1);
         }
