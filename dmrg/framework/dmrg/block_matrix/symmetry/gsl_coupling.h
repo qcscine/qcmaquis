@@ -29,7 +29,6 @@
 #define GSL_COUPLING_H
 
 #include <unordered_map>
-#include <mutex>
 #include "hash_tuple.h"
 
 extern "C" {
@@ -44,16 +43,15 @@ namespace SU2 {
     {
         return std::abs(a-b) <= c && c <= a+b;
     }
-    /*
     // Cache for Wigner-9j symbols
     // Profilers show that over 60% of the time is spent in gsl_sf_coupling_9j
     // therefore we need a class that caches the calls to this function
     // uses std::unordered map as a cache
     // Currently we don't exploit the permutation symmetry of the Wigner 9j symbols yet
     // but this should be done in the future
-    // !!! The cache is disabled for now as it doesn't work in parallel due to race conditions yet
-    // and the read locks are slowing everything down
-    // It must be either filled before the optimization or a parallel map should be used
+    // The cache should be filled with fill_cache() as early as possible when the parameters
+    // (spin, L, nelec) are already known. Unfortunately it's not possible to know them
+    // in the constructor already, so we have to use such a kludge.
     class GSLCouplingCache
     {
         private:
@@ -63,47 +61,40 @@ namespace SU2 {
             // The map that stores the values
             std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices> > map;
 
-            // for thread-safety of writing
-            std::mutex m_;
         public:
-            inline double wigner_9j(int a, int b, int c,
+            // Fill the Wigner 9j cache
+            // Ideally this should happen in some constructor, but as a static variable
+            // the cache has no knowledge about the symmetries and the spin
+            // so we need to run fill_cache manually as early as possible in the simulation
+            // TODO: protect it better
+            void fill_cache(int nelec, int L, int spin)
+            {
+                int max_idx = std::max((L - std::abs(nelec - L) + spin)/2, 1);
+                int max_idx_i = std::max(max_idx, 2);
+
+                for (int a = 0; a <= max_idx; a++)
+                for (int b = 0; b <= 2; b++)
+                for (int c = 0; c <= max_idx; c++)
+                for (int d = 0; d <= 2; d++)
+                for (int e = 0; e <= 2; e++)
+                for (int f = 0; f <= 2; f++)
+                for (int g = 0; g <= max_idx; g++)
+                for (int h = 0; h <= 2; h++)
+                for (int i = 0; i <= max_idx_i; i++)
+                {
+                    gsl_indices idx = std::make_tuple(a,b,c,d,e,f,g,h,i);
+                    map[idx] = sqrt( (g+1.) * (h+1.) * (c+1.) * (f+1.) ) *
+                               gsl_sf_coupling_9j(a,b,c,d,e,f,g,h,i);
+                }
+            }
+            inline double mod_coupling(int a, int b, int c,
                                     int d, int e, int f,
                                     int g, int h, int i)
             {
-                gsl_indices idx=std::make_tuple(a,b,c,d,e,f,g,h,i);
-                double ret;
-                // Search for the value in cache
-
-                std::lock_guard<std::mutex> lk(this->m_);
-
-                auto map_idx = map.find(idx);
-                // If value not found in cache, calculate and add it
-                if (map_idx == map.end())
-                {
-                    // ret = sqrt( (g+1.) * (h+1.) * (c+1.) * (f+1.) ) *
-                    ret = gsl_sf_coupling_9j(a, b, c,
-                                             d, e, f,
-                                             g, h, i);
-
-                    map[idx] = ret;
-                    // map.emplace(idx, ret);
-
-                }
-                else // use the cached value
-                {
-                    ret = map_idx->second;
-                }
-                return ret;
-            }
-
-            inline double mod_coupling(int a, int b, int c,
-                        int d, int e, int f,
-                        int g, int h, int i)
-            {
-                return sqrt( (g+1.) * (h+1.) * (c+1.) * (f+1.) ) *
-                    wigner_9j(a, b, c,
-                              d, e, f,
-                              g, h, i);
+                gsl_indices idx = std::make_tuple(a,b,c,d,e,f,g,h,i);
+                return map[idx];
+                // if the map hasn't been initialized this will fail!
+                // But we avoid exception handling for the performance
             }
 
             template <class T>
@@ -143,8 +134,8 @@ namespace SU2 {
         gsl_coupling_cache.set_coupling<T>(a,b,c,d,e,f,g,h,i,init,couplings);
     }
 
-    */
-    // Non-cache versions
+    // No cache
+/*
     inline double mod_coupling(int a, int b, int c,
                         int d, int e, int f,
                         int g, int h, int i)
@@ -173,7 +164,8 @@ namespace SU2 {
             couplings[3] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
         }
     }
-    
+
+*/
 }
 
 #endif
