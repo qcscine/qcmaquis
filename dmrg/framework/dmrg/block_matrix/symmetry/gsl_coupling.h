@@ -29,6 +29,7 @@
 #define GSL_COUPLING_H
 
 #include <unordered_map>
+#include <mutex>
 #include "hash_tuple.h"
 
 extern "C" {
@@ -71,6 +72,7 @@ namespace SU2 {
             {
                 int max_idx = std::max((L - std::abs(nelec - L) + spin)/2, 1);
                 int max_idx_i = std::max(max_idx, 2);
+                std::mutex m_;
 
                 for (int a = 0; a <= max_idx; a++)
                 for (int b = 0; b <= 2; b++)
@@ -83,6 +85,8 @@ namespace SU2 {
                 for (int i = 0; i <= max_idx_i; i++)
                 {
                     gsl_indices idx = std::make_tuple(a,b,c,d,e,f,g,h,i);
+
+                    std::lock_guard<std::mutex> lk(m_);
                     map[idx] = sqrt( (g+1.) * (h+1.) * (c+1.) * (f+1.) ) *
                                gsl_sf_coupling_9j(a,b,c,d,e,f,g,h,i);
                 }
