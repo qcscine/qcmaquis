@@ -44,6 +44,8 @@ namespace SU2 {
     {
         return std::abs(a-b) <= c && c <= a+b;
     }
+    // Unfortunately the cache still doesn't work :/
+    /*
     // Cache for Wigner-9j symbols
     // Profilers show that over 60% of the time is spent in gsl_sf_coupling_9j
     // therefore we need a class that caches the calls to this function
@@ -137,9 +139,9 @@ namespace SU2 {
     {
         gsl_coupling_cache.set_coupling<T>(a,b,c,d,e,f,g,h,i,init,couplings);
     }
-
+*/
     // No cache
-/*
+
     inline double mod_coupling(int a, int b, int c,
                         int d, int e, int f,
                         int g, int h, int i)
@@ -169,7 +171,7 @@ namespace SU2 {
         }
     }
 
-*/
+
 }
 
 #endif

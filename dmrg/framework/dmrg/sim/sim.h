@@ -97,15 +97,6 @@ protected:
     virtual void checkpoint_simulation(std::vector< MPS<Matrix, SymmGroup> > const& state_vec,
                                        status_type const&);
 
-    // For symmetries other than SU2
-    void init_gsl_cache(boost::false_type) {}
-
-    // For SU2 symmetries, GSL cache must be initialised
-    void init_gsl_cache(boost::true_type)
-    {
-        SU2::gsl_coupling_cache.fill_cache(parms["nelec"], parms["L"], parms["spin"]);
-    }
-
     DmrgParameters parms ;
     int init_sweep, init_site, n_states ;
     bool restore;

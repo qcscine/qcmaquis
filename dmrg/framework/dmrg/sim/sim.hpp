@@ -50,7 +50,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_,
 {
     // Preliminary operations
 
-    init_gsl_cache(symm_traits::HasSU2<SymmGroup>());
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
