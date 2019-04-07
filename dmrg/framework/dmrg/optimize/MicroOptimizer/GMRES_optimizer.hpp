@@ -71,18 +71,18 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
 {
     // Types definiton
     double 	      normb = ietl::two_norm(b_) ;
-    vector_type   r, w, init = x0 , jnk ;
+    vector_type   r = x0, w , init, jnk ;
     vector_scalar s(max_iter_+1), cs(max_iter_+1), sn(max_iter_+1) , y ;
     vector_space  v(max_iter_+1) ;
+    matrix_scalar H(max_iter_+1, max_iter_+1);
     // Initialization
+    init = r;
     v[0] = optimizer->get_correction().apply_correction(init) ;
-    r = b_ ;
-    r -= v[0] ;
+    r = b_ - v[0] ;
     s[0] = ietl::two_norm(r);
     if (verbosity_)
         std::cout << "GMRES - initial error " << s[0] << std::endl ;
     v[0] = r / s[0];
-    matrix_scalar H(max_iter_+1, max_iter_+1);
     size_t idx = 0 ;
     for (size_t i = 0 ; i < max_iter_ ; ++i)
     {
@@ -106,7 +106,8 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
         if (verbosity_)
           std::cout << "GMRES iteration " << idx << ", Abs. Err. = " << std::abs(s[idx+1])
                     << ", Rel. Err. = " << std::abs(s[idx+1])/normb << std::endl;
-        if (std::abs(s[idx+1])/normb < rel_tol_ || std::abs(s[idx+1]) < abs_tol_ || i == max_iter_-1 || idx+1 == n_restart_) {
+        bool converged = std::abs(s[idx+1])/normb < rel_tol_ || std::abs(s[idx+1]) < abs_tol_ || i == max_iter_-1;
+        if (converged || idx+1 == n_restart_) {
             y = Update(H, s, idx) ;
             r = init ;
             for (std::size_t k = 0; k <= idx; ++k) {
@@ -114,7 +115,7 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
                 optimizer->get_correction().apply_precondition(jnk) ;
                 r += y[k] * jnk;
             }
-            if (std::abs(s[idx+1])/normb < rel_tol_ || std::abs(s[idx+1]) < abs_tol_ || i == max_iter_-1) {
+            if (converged) {
                 return r ;
             } else {
                 // Clean the matrices
@@ -139,6 +140,7 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
         }
         idx ++ ;
     }
+    return r;
 }
 
 // Auxiliary routines
