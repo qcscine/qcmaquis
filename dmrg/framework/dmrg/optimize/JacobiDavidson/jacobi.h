@@ -305,8 +305,8 @@ namespace ietl
                 r.clear();
                 n_iter_++;
                 // Update of the M matrix and compute the eigenvalues and the eigenvectors
-                for (size_t i = 0; i < n_iter_; i++)
-                    M(i, n_iter_-1) = orthogonalizer_->get_hamiltonian(V_, VA_, i , n_iter_-1);
+                for (size_t i = 0; i < V_.size(); i++)
+                    M(i, n_iter_-1) = orthogonalizer_->get_hamiltonian(V_, VA_, i , V_.size()-1);
                 // Diagonalization
                 set_interval(n_iter_);
                 do_diagonalize();
