@@ -80,14 +80,15 @@ def plot_mutinf(mat_I, vec_s1, order, title = None):
 
     for i in range(N):
       #plt.annotate(int(labels[i]),xy=(theta[i],(r[i]+0.2)),size='xx-large',)
-      plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='xx-large',ha='center',va='center')
+      #plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='xx-small',ha='center',va='center')
+      plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='x-small',ha='center',va='center')
       
       if(pics): # generate pictures.
         from matplotlib.offsetbox import OffsetImage, AnnotationBbox
         from matplotlib.cbook import get_sample_data
         from matplotlib._png import read_png
         
-        img = OffsetImage(read_png(str(int(labels[i]))+".png"),zoom=0.3) # The zoom factor should be ideally adjusted to the size of the images
+        img = OffsetImage(read_png(str(int(labels[i]))+".png"),zoom=0.125) # The zoom factor should be ideally adjusted to the size of the images
         ab = AnnotationBbox(img,[theta[i],r[i]+0.47], frameon=False) # pass Frameon=False to disable the frames around the images
         ax.add_artist(ab)
         
@@ -130,7 +131,14 @@ if __name__ == '__main__':
     print "s1 matrix"
     print guinea_pig.s1()
 
-    order = map(int, props["orbital_order"].split(','))
+    # take orbital order from result file else assume standard order
+    if "orbital_order" in props:
+        order = map(int, props["orbital_order"].split(','))
+    else:
+        ordarray=[]
+        for i in range(len(guinea_pig.I())):
+            ordarray.append(i+1)
+        order = map(int, ordarray)
 
-    plot_mutinf(guinea_pig.I(), guinea_pig.s1(), order) 
+    plot_mutinf(guinea_pig.I(), guinea_pig.s1(), order)
     plt.show()
