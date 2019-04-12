@@ -29,21 +29,27 @@
 // -- Constructor --
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
-OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::OptimizationAlgorithm(const float &abs_tol,
-                                                                                      const float &rel_tol,
-                                                                                      const size_t &max_iter,
+OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::OptimizationAlgorithm(
+                                                                                      CorrectionEquation& correction,
+                                                                                      double abs_tol,
+                                                                                      double rel_tol,
+                                                                                      size_t max_iter,
+                                                                                      size_t n_restart,
                                                                                       const vector_type &r)
-    : abs_tol_(abs_tol) , rel_tol_(rel_tol) , max_iter_(max_iter) , b_(r), verbosity_(false)
-{ } ;
+    : correction_(correction),
+      b_(correction_.do_refinement() ? r*correction_.get_rayleigh() : -r),
+      abs_tol_(abs_tol) , rel_tol_(rel_tol) , max_iter_(max_iter) , n_restart_(n_restart), verbosity_(false) {};
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
-OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::OptimizationAlgorithm(const float &abs_tol,
-                                                                                      const float &rel_tol,
-                                                                                      const size_t &max_iter)
-        : abs_tol_(abs_tol) , rel_tol_(rel_tol) , max_iter_(max_iter), verbosity_(false)
-{
-    b_ = 0 ;
-} ;
+OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::OptimizationAlgorithm(
+                                                                                      CorrectionEquation& correction,
+                                                                                      double abs_tol,
+                                                                                      double rel_tol,
+                                                                                      size_t max_iter,
+                                                                                      size_t n_restart
+                                                                                      )
+    : correction_(correction),  b_(0), abs_tol_(abs_tol) , rel_tol_(rel_tol) , max_iter_(max_iter), n_restart_(n_restart), verbosity_(false) {};
+
 
 // -- Set --
 
@@ -85,9 +91,9 @@ void OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::set_n_resta
 }
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
-void OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::set_error(vector_type &error)
+void OptimizationAlgorithm<MATRIX, VectorSpace, CorrectionEquation>::set_error(const vector_type &error)
 {
-    b_ = error ;
+    b_ = correction_.do_refinement() ? error*correction_.get_rayleigh() : -error;
 }
 
 

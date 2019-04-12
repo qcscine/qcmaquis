@@ -92,8 +92,8 @@ namespace ietl
         using base::VA_ ;
         using base::diagonalize;
         //
-        jacobi_davidson_standard(MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator,
-                                 Finalizer* finalizer, Orthogonalizer* ortho, const size_t& nmin, const size_t& nmax,
+        jacobi_davidson_standard(MATRIX& matrix, VS& vec, CorrectionEquation& corrector,std::shared_ptr<MicroOptimizer>& micro_iterator,
+                                 Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho, const size_t& nmin, const size_t& nmax,
                                  const size_t& n_block, const double& block_thresh, const int& site1, const int& site2,
                                  const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
                                  const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
@@ -127,7 +127,7 @@ namespace ietl
         void print_header_table() ;
         void print_newline_table(const size_t& i, const real_type& error, const scalar_type& en, const size_t& idx,
                                  const bool& converged) ;
-        void solver(vector_type& r, vector_space& t) ;
+        void solver(const vector_type& r, vector_space& t) ;
         void sort_prop(couple_vec& vector_values) ;
     } ;
     // New version for generation of the guess
@@ -135,7 +135,7 @@ namespace ietl
     void  jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::update_parameters()
     {
         energy_ref_ = std::real(ietl::dot(V_[0], VA_[0]) / ietl::dot(V_[0], V_[0])) ;
-        corrector_->update_u(V_[0]) ;
+        corrector_.update_u(V_[0]) ;
     };
     // Computes the action of an operator
     template <class Matrix, class VS, class SymmGroup, class ITER>
@@ -150,7 +150,7 @@ namespace ietl
     template <class Matrix, class VS, class SymmGroup, class ITER>
     void jacobi_davidson_standard<Matrix, VS, SymmGroup, ITER>::update_finalizer()
     {
-        finalizer_->set_candidate(eigen_collector_) ;
+        finalizer_.set_candidate(eigen_collector_) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class SymmGroup, class ITER>
@@ -190,7 +190,7 @@ namespace ietl
     };
     // -- SOLVER --
     template<class MATRIX, class VS, class SymmGroup, class ITER>
-    void jacobi_davidson_standard<MATRIX, VS, SymmGroup, ITER>::solver(vector_type& r, vector_space& t)
+    void jacobi_davidson_standard<MATRIX, VS, SymmGroup, ITER>::solver(const vector_type& r, vector_space& t)
     {
         vector_type t2 = 0.*r ;
         micro_iterator_->set_error(r) ;

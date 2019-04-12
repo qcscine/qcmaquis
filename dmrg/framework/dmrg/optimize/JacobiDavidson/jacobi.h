@@ -48,7 +48,7 @@
 
 #include "dmrg/optimize/Finalizer/finalizer.h"
 #include "dmrg/optimize/CorrectionEquation/correctionequation.h"
-#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
+#include "dmrg/optimize/MicroOptimizer/optimizationalgorithm.h"
 #include "dmrg/optimize/Orthogonalizer/orthogonalizer.h"
 
 namespace ietl
@@ -83,7 +83,7 @@ namespace ietl
         typedef typename CorrectionEquation<MATRIX, VS>::CorrectionEquation                  CorrectionEquation ;
         typedef typename Finalizer<MATRIX, VS>::Finalizer                                    Finalizer ;
         typedef typename Orthogonalizer<VS>::Orthogonalizer                                  Orthogonalizer ;
-        typedef typename MicroOptimizer<MATRIX, VS, CorrectionEquation>::MicroOptimizer      MicroOptimizer ;
+        typedef typename OptimizationAlgorithm<MATRIX, VS, CorrectionEquation>::OptimizationAlgorithm MicroOptimizer ;
         typedef typename vectorspace_traits<VS>::scalar_type                                 scalar_type;
         typedef typename vectorspace_traits<VS>::vector_type                                 vector_type;
         typedef typename vectorspace_traits<VS>::real_type                                   real_type;
@@ -105,8 +105,8 @@ namespace ietl
         typedef typename VarianceOptimizer<SymmGroup>::VarianceOptimizer                     variance_optimizer ;
         typedef typename std::vector< state_prop<VS > >                                      vector_prop ;
         // -- CONSTRUCTOR --
-        jacobi_davidson(MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator,
-                        Finalizer* finalizer, Orthogonalizer* ortho, const size_t& n_min, const size_t& n_max,
+        jacobi_davidson(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator,
+                        Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho, const size_t& n_min, const size_t& n_max,
                         const size_t& n_block, const double& thresh_block, const int& site1, const int& site2,
                         const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
                         const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
@@ -140,7 +140,7 @@ namespace ietl
         virtual void print_newline_table(const size_t& i, const real_type& er, const scalar_type& ener,
                                          const size_t& idx, const bool& converged) {} ;
         virtual void set_interval(const std::size_t& dim) {} ;
-        virtual void solver(vector_type& r, vector_space& t) {} ;
+        virtual void solver(const vector_type& r, vector_space& t) {} ;
         virtual void sort_prop(couple_vec& vector_values) {} ;
         virtual void update_finalizer() {} ;
         virtual void update_parameters() {} ;
@@ -181,14 +181,14 @@ namespace ietl
         struct diag_bound               bounds ;
         double                          energy_thresh_, thresh_block_ ;
         int                             n_lanczos_, sa_alg_, site1_, site2_ ;
-        Finalizer*                      finalizer_ ;
-        Orthogonalizer*                 orthogonalizer_ ;
+        Finalizer&                      finalizer_ ;
+        std::shared_ptr<Orthogonalizer> &                 orthogonalizer_ ;
         FortranMatrix<magnitude_type>   M ;
         std::vector<scalar_type>        diagonal_elements_ ;
-        CorrectionEquation*             corrector_ ;
+        CorrectionEquation &      corrector_ ;
         magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_, atol_ ;
         MATRIX&                         matrix_ ;
-        MicroOptimizer*                 micro_iterator_ ;
+        std::shared_ptr<MicroOptimizer> micro_iterator_ ;
         result_collector                u_and_uA_ ;
         std::vector<couple_val>         vector_values_ ;
         std::vector<std::size_t>        order_ ;
@@ -205,8 +205,8 @@ namespace ietl
     // -- Constructor --
     template <class MATRIX, class VS, class SymmGroup, class ITER>
     jacobi_davidson<MATRIX, VS, SymmGroup, ITER>::jacobi_davidson
-            (MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator, Finalizer* finalizer,
-             Orthogonalizer* ortho, const size_t& n_min, const size_t& n_max, const size_t& n_block, const double& thresh_block,
+            (MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator, Finalizer& finalizer,
+             std::shared_ptr<Orthogonalizer> & ortho, const size_t& n_min, const size_t& n_max, const size_t& n_block, const double& thresh_block,
              const int& site1, const int& site2, const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
              const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared, const bool& reshuffle_variance,
              const bool& track_variance, const bool& is_folded, const double& energy_thresh) :
@@ -271,7 +271,7 @@ namespace ietl
         vector_space    v_toadd , r ;
         vector_type     eigvec, error ;
         // Initializatin
-        corrector_->update_vecspace(vecspace_) ;
+        corrector_.update_vecspace(vecspace_) ;
         atol_ = iter.absolute_tolerance();
         M.resize(iter.max_iterations()*n_block_, iter.max_iterations()*n_block_) ;
         res.resize(n_sa_) ;
@@ -295,8 +295,8 @@ namespace ietl
                     initialize_vecspace();
                     update_parameters() ;
                     if (k == 0)
-                        corrector_->update_hamiltonian(matrix_) ;
-                    corrector_->update_n_root(i_state_) ;
+                        corrector_.update_hamiltonian(matrix_) ;
+                    corrector_.update_n_root(i_state_) ;
                     starting = false;
                 } else {
                     update_vecspace(v_toadd);
@@ -317,12 +317,12 @@ namespace ietl
                 update_finalizer() ;
                 not_converged_collector_.clear() ;
                 for (size_t i = 0; i < eigen_collector_.size(); i++) {
-                    r.push_back(finalizer_->compute_error(i_state_, i));
+                    r.push_back(finalizer_.compute_error(i_state_, i));
                     vecspace_.project(r[i]);
                     converged_loc = check_convergence(i, iter);
                     converged = converged && converged_loc;
                     real_type error = ietl::two_norm(r[i]) ;
-                    print_newline_table(n_iter_, error, finalizer_->compute_energy(i_state_, i), i, converged_loc);
+                    print_newline_table(n_iter_, error, finalizer_.compute_energy(i_state_, i), i, converged_loc);
                     if (converged_loc) {
                         converged_collector_.emplace_back(std::move(eigen_collector_[i]));
                         vecspace_.add_within_vec(generate_eigenvector(converged_collector_.size() - 1));
@@ -349,11 +349,11 @@ namespace ietl
                     n_root_found_ += 1 ;
                     if (k != n_sa_ - 1) {
                         vecspace_.clear_projector() ;
-                        if (finalizer_->get_is_si())
+                        if (finalizer_.get_is_si())
                             update_orthospace(converged_collector_[0].uA_) ;
                         else
                             update_orthospace(converged_collector_[0].u_) ;
-                        corrector_->update_vecspace(vecspace_);
+                        corrector_.update_vecspace(vecspace_);
                         n_iter_ = 0 ;
                     }
                     converged_collector_.clear() ;
@@ -368,12 +368,12 @@ namespace ietl
                 // If no roots are converged, updates corrector object and generates a new vector
                 } else {
                     for (size_t i = 0; i < not_converged_collector_.size(); i++) {
-                        r[i] = finalizer_->compute_error(i_state_, i);
+                        r[i] = finalizer_.compute_error(i_state_, i);
                         vecspace_.project(r[i]);
-                        corrector_->update_u(not_converged_collector_[i].u_);
-                        corrector_->update_Au(not_converged_collector_[i].uA_);
-                        corrector_->update_rayleigh();
-                        corrector_->update_error(r[i]);
+                        corrector_.update_u(not_converged_collector_[i].u_);
+                        corrector_.update_Au(not_converged_collector_[i].uA_);
+                        corrector_.update_rayleigh();
+                        corrector_.update_error(r[i]);
                         if (do_chebychev_ && V_.size() >= 2) {
                             v_toadd.emplace_back(filter_chebyshev(not_converged_collector_[i].u_)) ;
                         } else {
@@ -412,7 +412,7 @@ namespace ietl
         for (int i = 1; i < n_block_local; i++) {
             size_t idx2 = vector_values_[i].first ;
             magnitude_type ratio  = std::fabs(vector_values_[i].second/vector_values_[0].second) ;
-            magnitude_type ratio2 = std::fabs(finalizer_->theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
+            magnitude_type ratio2 = std::fabs(finalizer_.theta_converter(candidates_collector_[idx2].theta_)-energy_ref_) ;
             if ( (ratio > thresh_block_ && ratio2 < energy_thresh_) ) {
                 if (eigen_collector_.size() < n_block_local)
                     eigen_collector_.emplace_back(std::move(candidates_collector_[idx2]));
@@ -552,7 +552,7 @@ namespace ietl
         for (size_t idx1 = 0; idx1 < dim; idx1++) {
             for (size_t idx2 = 0; idx2 < dim; idx2++) {
                 // H matrix
-                if (finalizer_->get_is_si()) {
+                if (finalizer_.get_is_si()) {
                     jnk1 = converged_collector_[idx1].uA_ ;
                     jnk2 = converged_collector_[idx2].uA_ ;
                 } else {
@@ -739,7 +739,7 @@ namespace ietl
     {
         // Compute the error vector
         vector_type eigvec ;
-        if (finalizer_->get_is_si())
+        if (finalizer_.get_is_si())
             eigvec = converged_collector_[idx].uA_;
         else
             eigvec = converged_collector_[idx].u_;

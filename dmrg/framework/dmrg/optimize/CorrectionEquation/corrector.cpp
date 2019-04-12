@@ -46,13 +46,30 @@ public:
     typedef CorrectionEquation<MATRIX, VecSpace>  base ;
     typedef typename base::scalar_type            scalar_type ;
     typedef typename base::vector_type            vector_type ;
+    typedef typename vector_type::bm_type  preconditioner_type ;
     // Constructor and Desctructor
-    virtual ~Corrector() {} ;
+    Corrector(base& corr_eq_) : corr_eq(corr_eq_) {};
+
     // Actual method
-    virtual vector_type apply(CorrectionEquation<MATRIX, VecSpace>* corr_eq, const vector_type& input) = 0 ;
-    virtual void precondition(CorrectionEquation<MATRIX, VecSpace>* corr_eq, vector_type& input) = 0 ;
-private:
-    virtual void multiply_diagonal(CorrectionEquation<MATRIX, VecSpace>* corr_eq, vector_type& input) = 0 ;
+    virtual vector_type apply(const vector_type& input) = 0 ;
+    virtual void precondition(vector_type& input) = 0 ;
+protected:
+    base& corr_eq;
+    void multiply_diagonal(vector_type& input)
+    {
+        scalar_type denom ;
+        preconditioner_type &data = input.data() ;
+        assert(shape_equal(data, corr_eq.get_preconditioner())) ;
+        for (size_t b = 0; b < data.n_blocks(); ++b) {
+            for (size_t i = 0; i < num_rows(data[b]); ++i) {
+                for (size_t j = 0; j < num_cols(data[b]); ++j) {
+                    denom = (corr_eq.get_omega() - (corr_eq.get_preconditioner())[b](i, j)) - corr_eq.get_rayleigh() ;
+                    if (std::abs(denom) > 1.0E-10)
+                        data[b](i, j) /= denom ;
+                }
+            }
+        }
+    }
 } ;
 
 #include "dmrg/optimize/CorrectionEquation/standardcorrection.hpp"

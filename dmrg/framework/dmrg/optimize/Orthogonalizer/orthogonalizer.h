@@ -39,7 +39,6 @@ protected:
 public:
     // Constructor
     Orthogonalizer() ;
-    ~Orthogonalizer() {} ;
     // Setter
     void activate_refinement(const double& thresh) ;
     void set_addspace(vector_space& input_space_additional) ;

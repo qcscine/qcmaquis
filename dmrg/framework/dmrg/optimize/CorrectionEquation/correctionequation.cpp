@@ -32,58 +32,33 @@
 
 template<class MATRIX, class VecSpace>
 CorrectionEquation<MATRIX, VecSpace>::CorrectionEquation() :
-        do_omega_(false),
         do_precondition_(false),
         do_refine_error_(false),
+        omega_(0.0),
         fully_initialized_(false)
-{
-    this->set_standard() ;
-}
+{}
+
 
 template<class MATRIX, class VecSpace>
 CorrectionEquation<MATRIX, VecSpace>::CorrectionEquation(const MATRIX &Hamiltonian,
-                                                         const scalar_type &theta,
-                                                         const std::size_t &n_root,
-                                                         const vector_type &error,
-                                                         const vector_type &u,
-                                                         VecSpace &vs) :
-        Hamiltonian_(&Hamiltonian),
-        theta_(theta),
-        n_root_(n_root),
-        error_(error),
-        u_(u),
-        vs_(&vs),
-        do_omega_(false),
-        do_precondition_(false),
-        do_refine_error_(false),
-        fully_initialized_(false)
-{
-    corrector_ = new StandardCorrection<MATRIX, VecSpace>() ;
-
-}
-
-template<class MATRIX, class VecSpace>
-CorrectionEquation<MATRIX, VecSpace>::CorrectionEquation(const MATRIX &Hamiltonian,
-                                                         const scalar_type &theta,
-                                                         const std::size_t& n_root,
+                                                         scalar_type theta,
+                                                         std::size_t n_root,
                                                          const vector_type &error,
                                                          const vector_type &u,
                                                          VecSpace &vs,
-                                                         const scalar_type &omega) :
-        Hamiltonian_(&Hamiltonian),
+                                                         scalar_type omega) :
+        Hamiltonian_(Hamiltonian),
+        omega_(omega),
         theta_(theta),
         n_root_(n_root),
         error_(error),
         u_(u),
         vs_(&vs),
-        do_omega_(true),
         do_precondition_(false),
         do_refine_error_(false),
-        fully_initialized_(false),
-        omega_(omega)
-{
-    corrector_ = new StandardCorrection<MATRIX, VecSpace>() ;
-}
+        fully_initialized_(false)
+
+{}
 
 // Update the corrector algorithm
 template<class MATRIX, class VecSpace>
@@ -97,7 +72,7 @@ void CorrectionEquation<MATRIX, VecSpace>::update_corrector(Corrector<MATRIX, Ve
 template<class MATRIX, class VecSpace>
 bool CorrectionEquation<MATRIX, VecSpace>::do_omega()
 {
-    return do_omega_ ;
+    return (std::abs(omega_) > 1e-13);
 }
 
 template<class MATRIX, class VecSpace>
@@ -106,13 +81,13 @@ bool CorrectionEquation<MATRIX, VecSpace>::do_refinement()
     return do_refine_error_ ;
 }
 template<class MATRIX, class VecSpace>
-MATRIX CorrectionEquation<MATRIX, VecSpace>::get_hamiltonian()
+const MATRIX& CorrectionEquation<MATRIX, VecSpace>::get_hamiltonian()
 {
     return *Hamiltonian_ ;
 }
 
 template<class MATRIX, class VecSpace>
-typename CorrectionEquation<MATRIX, VecSpace>::preconditioner_type
+const typename CorrectionEquation<MATRIX, VecSpace>::preconditioner_type&
          CorrectionEquation<MATRIX, VecSpace>::get_preconditioner()
 {
     return precond_ ;
@@ -121,7 +96,7 @@ typename CorrectionEquation<MATRIX, VecSpace>::preconditioner_type
 template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::update_hamiltonian(MATRIX &hamiltonian)
 {
-    Hamiltonian_ = &hamiltonian ;
+    Hamiltonian_ = &hamiltonian;
 }
 
 template<class MATRIX, class VecSpace>
@@ -253,25 +228,25 @@ std::size_t CorrectionEquation<MATRIX, VecSpace>::get_n_root()
 template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::set_standard()
 {
-    corrector_ = new StandardCorrection<MATRIX, VecSpace>() ;
+    corrector_ = std::shared_ptr<Corrector<MATRIX, VecSpace> >(std::make_shared<StandardCorrection<MATRIX, VecSpace> >(*this)) ;
 }
 
 template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::set_folded()
 {
-    corrector_ = new FoldedCorrection<MATRIX, VecSpace>() ;
+    corrector_ = std::shared_ptr<Corrector<MATRIX, VecSpace> >(std::make_shared<FoldedCorrection<MATRIX, VecSpace> >(*this)) ;
 }
 
 template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::set_skew()
 {
-    corrector_ = new SkewCorrection<MATRIX, VecSpace>() ;
+    corrector_ = std::shared_ptr<Corrector<MATRIX, VecSpace> >(std::make_shared<SkewCorrection<MATRIX, VecSpace> >(*this)) ;
 }
 
 template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::set_modified()
 {
-    corrector_ = new ModifiedCorrection<MATRIX, VecSpace>() ;
+    corrector_ = std::shared_ptr<Corrector<MATRIX, VecSpace> >(std::make_shared<ModifiedCorrection<MATRIX, VecSpace> >(*this)) ;
     do_refine_error_ = true ;
 }
 
@@ -281,15 +256,6 @@ template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::activate_preconditioner()
 {
     do_precondition_ = true ;
-}
-
-
-// -- Method used to activate omega --
-
-template<class MATRIX, class VecSpace>
-void CorrectionEquation<MATRIX, VecSpace>::activate_omega()
-{
-    do_omega_ = true ;
 }
 
 // -- Actual methods --
@@ -305,7 +271,7 @@ typename CorrectionEquation<MATRIX, VecSpace>::vector_type
          CorrectionEquation<MATRIX, VecSpace>::apply_correction(vector_type &input)
 {
     vector_type result ;
-    result = corrector_->apply(this, input) ;
+    result = corrector_->apply(input) ;
     return result ;
 }
 
@@ -313,5 +279,5 @@ template<class MATRIX, class VecSpace>
 void CorrectionEquation<MATRIX, VecSpace>::apply_precondition(vector_type &input)
 {
     if (do_precondition_)
-        corrector_->precondition(this, input) ;
+        corrector_->precondition(input) ;
 }

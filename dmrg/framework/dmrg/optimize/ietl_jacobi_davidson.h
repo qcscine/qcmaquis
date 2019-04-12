@@ -31,7 +31,6 @@
 #include "ietl_lanczos_solver.h"
 #include "ietl/jd.h"
 
-#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
 #include "dmrg/optimize/utils/iter_jacobi.h"
 #include "dmrg/optimize/JacobiDavidson/jacobi.h"
 #include "dmrg/optimize/POverlap/partial_overlap.h"
@@ -49,10 +48,10 @@ template<class Matrix, class SymmGroup, class BoundDatabase, class MicroOptimize
 std::vector< std::pair<typename maquis::traits::real_type<typename Matrix::value_type>::type, class MPSTensor<Matrix,SymmGroup> > >
 solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                VectorSet<Matrix, SymmGroup> & initial,
-               CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* correction_equation ,
-               MicroOptimizer* micro_optimizer,
-               Finalizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >* finalizer ,
-               Orthogonalizer< SingleSiteVS<Matrix, SymmGroup> >* orthogonalizer,
+               CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >& correction_equation ,
+               std::shared_ptr<MicroOptimizer>& micro_optimizer,
+               Finalizer< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >& finalizer ,
+               std::shared_ptr<Orthogonalizer<SingleSiteVS<Matrix, SymmGroup> > >& orthogonalizer,
                BaseParameters & params ,
                std::vector< partial_overlap<Matrix, SymmGroup> > poverlap_vec,
                int site1,
@@ -88,7 +87,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     // -- CORRECTOR SETUP --
     orthogonalizer_collector< MPSTensor<Matrix, SymmGroup> > ortho_collector(ortho_vecs) ;
     SingleSiteVS<Matrix, SymmGroup> vs(initial, vec_sa_left, vec_sa_right, ortho_collector) ;
-    finalizer->set_Hamiltonian(sp) ;
+    finalizer.set_Hamiltonian(sp) ;
     // +----------------------+
     //  EIGENVALUE CALCULATION
     // +----------------------+

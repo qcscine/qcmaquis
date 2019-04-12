@@ -10,17 +10,17 @@
  * Library License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Library License along with
  * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -30,7 +30,7 @@
 
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
-#include <ietl/ietl2lapack.h> 
+#include <ietl/ietl2lapack.h>
 #include <ietl/cg.h>
 #include <vector>
 #include <cstdio>
@@ -74,8 +74,8 @@ namespace ietl
         using base::v_guess_ ;
         using base::V_ ;
         //
-        jacobi_davidson_modified_mo(MATRIX& matrix, VS& vec, CorrectionEquation* corrector,
-                                    MicroOptimizer* micro_iterator, Finalizer* finalizer, Orthogonalizer* ortho,
+        jacobi_davidson_modified_mo(MATRIX& matrix, VS& vec, CorrectionEquation& corrector,
+                                    std::shared_ptr<MicroOptimizer>& micro_iterator, Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho,
                                     const std::vector<real_type>& omega_vec, const pov_vec_type& pov,
                                     const int& n, const int& side_tofollow, const size_t& nmin, const size_t& nmax,
                                     const size_t& n_block, const double& block_thresh, const int& site1, const int& site2,

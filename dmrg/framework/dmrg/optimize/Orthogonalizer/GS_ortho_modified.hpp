@@ -48,8 +48,9 @@ public:
     using base::thresh_refinement_ ;
     using base::vspace_reference_ ;
     using base::vspace_additional_ ;
+    using base::do_refinement_ ;
     // Constructor
-    GS_ortho_mod() : base::Orthogonalizer() {} ;
+    GS_ortho_mod(bool refinement = false) : base::Orthogonalizer() { do_refinement_ = refinement; } ;
     // Implementation of virtual functions
     magnitude_type get_hamiltonian(const vector_space& t, const vector_space& tA, const std::size_t& i,
                                    const std::size_t& j) ;

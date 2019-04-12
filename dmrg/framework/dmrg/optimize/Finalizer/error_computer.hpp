@@ -44,8 +44,7 @@ public:
     typedef Finalizer<MATRIX, VecSpace> base ;
     typedef typename base::scalar_type scalar_type ;
     typedef typename base::vector_type vector_type ;
-    // Constructor and Desctructor
-    virtual ~ErrorComputer() {} ;
+
     // Actual method
     virtual vector_type compute_error(Finalizer<MATRIX ,VecSpace>* finalizer,
                                       size_t const& i_state,

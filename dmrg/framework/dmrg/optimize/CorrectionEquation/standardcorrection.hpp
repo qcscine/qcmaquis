@@ -42,58 +42,41 @@ class StandardCorrection : public Corrector<MATRIX, VecSpace> {
     typedef typename base::scalar_type     scalar_type ;
     typedef typename base::vector_type     vector_type ;
     typedef typename vector_type::bm_type  preconditioner_type ;
+    using base::base;
+    using base::multiply_diagonal;
+    using base::corr_eq;
 public:
     // Routine used to apply the correction equation
-    vector_type apply(CorrectionEquation<MATRIX, VecSpace>* corr_eq, const vector_type& input)
+    vector_type apply(const vector_type& input)
     {
         // Initialization
         vector_type t, t2, t3, y ;
+
+        scalar_type u_norm = ietl::dot(corr_eq.get_u(), corr_eq.get_u());
         // t2 = (1-uu*) x
-        scalar_type ust = ietl::dot(corr_eq->get_u(), input) / ietl::dot(corr_eq->get_u(), corr_eq->get_u()) ;
-        t2 = input - ust * corr_eq->get_u() ;
-        corr_eq->orthogonalize_simple(t2) ;
+        scalar_type ust = ietl::dot(corr_eq.get_u(), input) / u_norm ;
+        t2 = input - ust * corr_eq.get_u() ;
+        corr_eq.orthogonalize_simple(t2) ;
         // y = (A-theta*1) t2
-        ietl::mult(corr_eq->get_hamiltonian(), t2, t3, corr_eq->get_n_root(), false);
-        if (corr_eq->do_omega())
-            y = t3 - (corr_eq->get_omega() - corr_eq->get_rayleigh()) * t2 ;
+        ietl::mult(corr_eq.get_hamiltonian(), t2, t3, corr_eq.get_n_root(), false);
+        if (corr_eq.do_omega())
+            y = t3 - (corr_eq.get_omega() - corr_eq.get_rayleigh()) * t2 ;
         else
-            y = t3 - corr_eq->get_rayleigh() * t2 ;
-        corr_eq->orthogonalize_simple(y) ;
+            y = t3 - corr_eq.get_rayleigh() * t2 ;
+        corr_eq.orthogonalize_simple(y) ;
         // t = (1-uu*) y
-        ust = ietl::dot(corr_eq->get_u(), y) / ietl::dot(corr_eq->get_u(), corr_eq->get_u()) ;
-        t = y - ust * corr_eq->get_u() ;
-        y = t ;
-        // Finalization
-        return y ;
+        ust = ietl::dot(corr_eq.get_u(), y) / u_norm ;
+        return y - ust * corr_eq.get_u() ;
     }
     // Routine used to do precondition
-    void precondition(CorrectionEquation<MATRIX, VecSpace>* corr_eq, vector_type& input)
+    void precondition(vector_type& input)
     {
-        multiply_diagonal(corr_eq, input);
-        vector_type jnk = corr_eq->get_u() ;
+        multiply_diagonal(input);
+        vector_type jnk = corr_eq.get_u() ;
         jnk /= ietl::two_norm(jnk) ;
-        multiply_diagonal(corr_eq, jnk);
-        scalar_type alpha = ietl::dot(corr_eq->get_u(), input) / ietl::dot(corr_eq->get_u(), jnk);
+        multiply_diagonal(jnk);
+        scalar_type alpha = ietl::dot(corr_eq.get_u(), input) / ietl::dot(corr_eq.get_u(), jnk);
         input -= alpha * jnk ;
-    }
-private:
-    void multiply_diagonal(CorrectionEquation<MATRIX, VecSpace>* corr_eq, vector_type& input)
-    {
-        scalar_type denom ;
-        preconditioner_type &data = input.data() ;
-        assert(shape_equal(data, corr_eq->get_preconditioner())) ;
-        for (size_t b = 0; b < data.n_blocks(); ++b) {
-            for (size_t i = 0; i < num_rows(data[b]); ++i) {
-                for (size_t j = 0; j < num_cols(data[b]); ++j) {
-                    if (corr_eq->do_omega())
-                        denom = (corr_eq->get_preconditioner())[b](i, j) - (corr_eq->get_omega() - corr_eq->get_rayleigh()) ;
-                    else
-                        denom = (corr_eq->get_preconditioner())[b](i, j) - corr_eq->get_rayleigh() ;
-                    if (std::fabs(denom) > 1.0E-10)
-                        data[b](i, j) /= denom ;
-                }
-            }
-        }
     }
 };
 

@@ -76,8 +76,8 @@ namespace ietl
         // it's really needed
         using grandparent::do_diagonalize;
         // same for do_diagonalize
-        jacobi_davidson_standard_mo(MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator,
-                                    Finalizer* finalizer, Orthogonalizer* ortho, const pov_vec_type& pov, const int& n,
+        jacobi_davidson_standard_mo(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator,
+                                    Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho, const pov_vec_type& pov, const int& n,
                                     const int& side_tofollow, const size_t& nmin, const size_t& nmax, const size_t& n_block,
                                     const double& block_thresh, const int& site1, const int& site2, const std::vector<std::size_t>& order,
                                     const int& sa_alg, const int& n_lanczos, const bool& do_chebychev, const magnitude_type& chebyshev_shift,

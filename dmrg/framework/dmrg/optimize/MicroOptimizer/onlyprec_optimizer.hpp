@@ -27,7 +27,6 @@
 #ifndef MAQUIS_DMRG_OP_OPTIMIZER_H
 #define MAQUIS_DMRG_OP_OPTIMIZER_H
 
-#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
 #include "dmrg/optimize/MicroOptimizer/optimizationalgorithm.h"
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
@@ -47,27 +46,20 @@ private:
     using base::max_iter_ ;
     using base::rel_tol_ ;
     using base::verbosity_ ;
+    using base::correction_;
+    using base::base;
 public:
-    // Constructor
-    OP_optimizer() : base::OptimizationAlgorithm() {} ;
-    OP_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter)
-            : base::OptimizationAlgorithm(abs_error, rel_error, max_iter) {} ;
-    OP_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter,
-                 const vector_type& error) : base::OptimizationAlgorithm(abs_error, rel_error, max_iter, error) {} ;
     // Overriding of the perform optimization algorithm
-    vector_type perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                     const vector_type& x0) ;
+   virtual vector_type PerformOptimization(const vector_type& x0) ;
 };
 
 // Routine performing the optimization
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
 typename OP_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
-         OP_optimizer<MATRIX, VectorSpace, CorrectionEquation>::perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                                                                        const vector_type& x0)
+         OP_optimizer<MATRIX, VectorSpace, CorrectionEquation>::PerformOptimization(const vector_type& x0)
 {
-    // Types definition
     vector_type input = b_ ;
-    optimizer->get_correction().apply_precondition(input) ;
+    correction_.apply_precondition(input) ;
     return input ;
 }
 

@@ -27,7 +27,6 @@
 #ifndef MAQUIS_DMRG_CG_OPTIMIZER_H
 #define MAQUIS_DMRG_CG_OPTIMIZER_H
 
-#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
 #include "dmrg/optimize/MicroOptimizer/optimizationalgorithm.h"
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
@@ -49,23 +48,17 @@ private:
     using base::max_iter_ ;
     using base::rel_tol_ ;
     using base::verbosity_ ;
+    using base::correction_;
+    using base::base;
 public:
-    // Constructor
-    CG_optimizer() : base::OptimizationAlgorithm() {} ;
-    CG_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter)
-            : base::OptimizationAlgorithm(abs_error, rel_error, max_iter) {} ;
-    CG_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter,
-                 const vector_type& error) : base::OptimizationAlgorithm(abs_error, rel_error, max_iter, error) {} ;
     // Overriding of the perform optimization algorithm
-    vector_type perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                     const vector_type& x0) ;
+    virtual vector_type PerformOptimization(const vector_type& x0) ;
 };
 
 // Routine performing the optimization
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
 typename CG_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
-         CG_optimizer<MATRIX, VectorSpace, CorrectionEquation>::perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                                                                        const vector_type& x0)
+         CG_optimizer<MATRIX, VectorSpace, CorrectionEquation>::PerformOptimization(const vector_type& x0)
 {
     // Types definiton
     vector_type x = x0 ;     //  Approximation of the solution at the current iteration
@@ -81,12 +74,12 @@ typename CG_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
     double normb = ietl::two_norm(b_) , normr ;
     // Initialization (0-th iteration)
     vector_type init = x0 ;
-    jnk = optimizer->get_correction().apply_correction(init) ;
+    jnk = correction_.apply_correction(init) ;
     r = b_ - jnk ;
     z = r ;
-    optimizer->get_correction().apply_precondition(z) ;
+    correction_.apply_precondition(z) ;
     p = z ;
-    Ap = optimizer->get_correction().apply_correction(p) ;
+    Ap = correction_.apply_correction(p) ;
     for (std::size_t i=0 ; i < max_iter_ ; ++i)
     {
         r_back = r ;
@@ -103,11 +96,11 @@ typename CG_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
             break ;
         } else {
             z = r ;
-            optimizer->get_correction().apply_precondition(z) ;
+            correction_.apply_precondition(z) ;
             beta = ietl::dot(z,(r-r_back)) / sprod ;
             jnk = beta*p ;
             p   = z + jnk ;
-            Ap  = optimizer->get_correction().apply_correction(p) ;
+            Ap  = correction_.apply_correction(p) ;
         }
     }
     return x ;

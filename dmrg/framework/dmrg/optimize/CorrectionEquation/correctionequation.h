@@ -41,15 +41,10 @@ public:
     typedef typename std::size_t                                           size_t ;
     // Methods
     CorrectionEquation() ;
-    CorrectionEquation(const MATRIX& Hamiltonian, const scalar_type& theta, const std::size_t& n_root,
-                       const vector_type& error, const vector_type& u, VecSpace& vs) ;
-    CorrectionEquation(const MATRIX& Hamiltonian, const scalar_type& theta, const std::size_t& n_root,
-                       const vector_type& error, const vector_type& u, VecSpace& vs,
-                       const scalar_type& omega) ;
-    ~CorrectionEquation() {} ;
+    CorrectionEquation(const MATRIX& Hamiltonian, scalar_type theta, std::size_t n_root,
+                       const vector_type& error, const vector_type& u, VecSpace& vs, scalar_type omega = 0.0) ;
     // Updater
     void activate_preconditioner() ;
-    void activate_omega() ;
     void update_corrector(Corrector<MATRIX, VecSpace>* pnt_crr) ;
     void update_error(const vector_type& error) ;
     void update_hamiltonian(MATRIX& hamiltonian) ;
@@ -64,8 +59,8 @@ public:
     // Get elements
     bool do_refinement() ;
     bool do_omega() ;
-    MATRIX get_hamiltonian() ;
-    preconditioner_type get_preconditioner() ;
+    const MATRIX& get_hamiltonian() ;
+    const preconditioner_type& get_preconditioner() ;
     scalar_type get_omega() ;
     scalar_type get_rayleigh() ;
     scalar_type get_theta() ;
@@ -90,7 +85,7 @@ protected:
     bool do_precondition_, do_omega_, do_refine_error_, fully_initialized_ ;
     preconditioner_type precond_ ;
     MATRIX* Hamiltonian_ ;
-    Corrector<MATRIX, VecSpace>* corrector_ ;
+    std::shared_ptr<Corrector<MATRIX, VecSpace> > corrector_ ;
     scalar_type omega_, theta_, rayleigh_ ;
     std::size_t n_root_ ;
     vector_type error_, u_, Au_ ;

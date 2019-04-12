@@ -27,7 +27,6 @@
 #ifndef MAQUIS_DMRG_BICGS_OPTIMIZER_H
 #define MAQUIS_DMRG_BICGS_OPTIMIZER_H
 
-#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
 #include "dmrg/optimize/MicroOptimizer/optimizationalgorithm.h"
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
@@ -49,23 +48,17 @@ private:
     using base::max_iter_ ;
     using base::rel_tol_ ;
     using base::verbosity_ ;
+    using base::correction_;
+    using base::base;
 public:
-    // Constructor
-    BICGS_optimizer() : base::OptimizationAlgorithm() {} ;
-    BICGS_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter)
-            : base::OptimizationAlgorithm(abs_error, rel_error, max_iter) {} ;
-    BICGS_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter,
-                 const vector_type& error) : base::OptimizationAlgorithm(abs_error, rel_error, max_iter, error) {} ;
     // Overriding of the perform optimization algorithm
-    vector_type perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                     const vector_type& x0) ;
+    virtual vector_type PerformOptimization(const vector_type& x0) ;
 };
 
 // Routine performing the optimization
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
 typename BICGS_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
-         BICGS_optimizer<MATRIX, VectorSpace, CorrectionEquation>::perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                                                                        const vector_type& x0)
+         BICGS_optimizer<MATRIX, VectorSpace, CorrectionEquation>::PerformOptimization(const vector_type& x0)
 {
     // Types definiton
     vector_type x = x0 ;        //  Approximation of the solution at the current iteration
@@ -80,7 +73,7 @@ typename BICGS_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
     scalar_type rho_pr = 1. ;
     scalar_type rho_act ;
     // Initialization (0-th iteration)
-    jnk = optimizer->get_correction().apply_correction(x) ;
+    jnk = correction_.apply_correction(x) ;
     r0 = b_ - jnk ;
     r  = r0 ;
     p  = 0.*r ;
@@ -91,8 +84,8 @@ typename BICGS_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
         beta = (rho_act*alpha)/(rho_pr*omega) ;
         p    = r + beta*(p - omega*Ap) ;
         pinv = p ;
-        optimizer->get_correction().apply_precondition(pinv) ;
-        Ap      = optimizer->get_correction().apply_correction(pinv) ;
+        correction_.apply_precondition(pinv) ;
+        Ap      = correction_.apply_correction(pinv) ;
         alpha   = rho_act/ietl::dot(Ap, r0) ;
         s       = r - alpha*Ap ;
         if ( verbosity_ )
@@ -104,10 +97,10 @@ typename BICGS_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
             return x ;
         }
         sinv    = s ;
-        optimizer->get_correction().apply_precondition(sinv) ;
-        As      = optimizer->get_correction().apply_correction(sinv) ;
+        correction_.apply_precondition(sinv) ;
+        As      = correction_.apply_correction(sinv) ;
         Asinv   = As ;
-        optimizer->get_correction().apply_precondition(Asinv) ;
+        correction_.apply_precondition(Asinv) ;
         omega   = ietl::dot(Asinv,sinv) / ietl::dot(Asinv, Asinv) ;
         x      += alpha*pinv + omega*sinv ;
         r       = s - omega * As ;

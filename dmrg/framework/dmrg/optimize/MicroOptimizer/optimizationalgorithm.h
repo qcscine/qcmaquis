@@ -27,11 +27,6 @@
 #ifndef MAQUIS_DMRG_OPTIMIZATIONALGORITHM_H
 #define MAQUIS_DMRG_OPTIMIZATIONALGORITHM_H
 
-// Forward declaration
-
-template<class MATRIX, class VectorSpace, class CorrectionEquation>
-class MicroOptimizer ;
-
 // +------------------------------+
 //  GENERAL OPTIMIZATION ALGORITHM
 // +------------------------------+
@@ -49,9 +44,8 @@ protected:
     typedef typename std::vector< vector_type >                                     vector_space ;
 public:
     // Constructors
-    OptimizationAlgorithm() : verbosity_(false) {} ;
-    OptimizationAlgorithm(const float& abs_tol, const float& rel_tol, const size_t& max_iter) ;
-    OptimizationAlgorithm(const float& abs_tol, const float& rel_tol, const size_t& max_iter, const vector_type& r) ;
+    OptimizationAlgorithm(CorrectionEquation& correction, double abs_tol, double rel_tol, size_t max_iter = 0, size_t n_restart = 0) ;
+    OptimizationAlgorithm(CorrectionEquation& correction, double abs_tol, double rel_tol, size_t max_iter, size_t n_restart, const vector_type& r) ;
     virtual ~OptimizationAlgorithm() {} ;
     // Set
     void activate_verbosity() ;
@@ -60,16 +54,16 @@ public:
     void set_n_restart(const size_t& n_restart) ;
     void set_abs_tol(const float& abs_tol) ;
     void set_rel_tol(const float& rel_tol) ;
-    void set_error(vector_type& error) ;
+    void set_error(const vector_type& error) ;
     // Virtual function, specific for each optimization
-    virtual vector_type perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                             const vector_type& x0) = 0 ;
+    virtual vector_type PerformOptimization(const vector_type& x0) = 0 ;
 protected:
     // Attributes
     bool verbosity_ ;
     vector_type b_ ;
-    float abs_tol_, rel_tol_ ;
+    double abs_tol_, rel_tol_ ;
     std::size_t max_iter_, n_restart_ ;
+    CorrectionEquation& correction_;
 } ;
 
 #include "dmrg/optimize/MicroOptimizer/optimizationalgorithm.cpp"

@@ -27,7 +27,6 @@
 #ifndef MAQUIS_DMRG_GMRES_OPTIMIZER_H
 #define MAQUIS_DMRG_GMRES_OPTIMIZER_H
 
-#include "dmrg/optimize/MicroOptimizer/microoptimizer.h"
 #include "dmrg/optimize/MicroOptimizer/optimizationalgorithm.h"
 
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
@@ -49,14 +48,11 @@ private:
     using base::max_iter_ ;
     using base::n_restart_ ;
     using base::verbosity_ ;
+    using base::correction_;
+    using base::base;
 public:
-    // Constructor
-    GMRES_optimizer() : base::OptimizationAlgorithm() {} ;
-    GMRES_optimizer(const float& abs_error, const float& rel_error, const std::size_t& max_iter, const std::size_t& n_restart)
-            : base::OptimizationAlgorithm(abs_error, rel_error, max_iter, n_restart) {} ;
     // Overriding of the perform optimization algorithm
-    vector_type perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                     const vector_type& x0) ;
+    virtual vector_type PerformOptimization(const vector_type& x0) ;
 private:
     vector_scalar Update(const matrix_scalar& H, const vector_scalar& S, const size_t& k) ;
     void ApplyPlaneRotation(scalar_type& dx, scalar_type& dy, const scalar_type& cs, const scalar_type& sn) ;
@@ -66,8 +62,7 @@ private:
 // Routine performing the optimization
 template<class MATRIX, class VectorSpace, class CorrectionEquation>
 typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
-         GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::perform_optimization(MicroOptimizer<MATRIX, VectorSpace, CorrectionEquation>* optimizer,
-                                                                                        const vector_type& x0)
+         GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::PerformOptimization(const vector_type& x0)
 {
     // Types definiton
     double 	      normb = ietl::two_norm(b_) ;
@@ -77,7 +72,7 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
     matrix_scalar H(max_iter_+1, max_iter_+1);
     // Initialization
     init = r;
-    v[0] = optimizer->get_correction().apply_correction(init) ;
+    v[0] = correction_.apply_correction(init) ;
     r = b_ - v[0] ;
     s[0] = ietl::two_norm(r);
     if (verbosity_)
@@ -88,8 +83,8 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
     {
         jnk = v[idx] ;
         // Right preconditioning
-        optimizer->get_correction().apply_precondition(jnk) ;
-        w = optimizer->get_correction().apply_correction(jnk) ;
+        correction_.apply_precondition(jnk) ;
+        w = correction_.apply_correction(jnk) ;
         // Update of the H matrix (Hessenberg, so nearly upper diagonal)
         for (std::size_t k = 0; k <= idx; ++k) {
             H(k,idx) = ietl::dot(w, v[k]);
@@ -112,7 +107,7 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
             r = init ;
             for (std::size_t k = 0; k <= idx; ++k) {
                 jnk = v[k] ;
-                optimizer->get_correction().apply_precondition(jnk) ;
+                correction_.apply_precondition(jnk) ;
                 r += y[k] * jnk;
             }
             if (converged) {
@@ -129,7 +124,7 @@ typename GMRES_optimizer<MATRIX, VectorSpace, CorrectionEquation>::vector_type
                 // Uses the last approximation of the function as a guess
                 idx = 0 ;
                 init = r ;
-                v[0] = optimizer->get_correction().apply_correction(init) ;
+                v[0] = correction_.apply_correction(init) ;
                 r = b_ - v[0] ;
                 s[0] = ietl::two_norm(r);
                 if (verbosity_)

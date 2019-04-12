@@ -10,17 +10,17 @@
 * Library License; you can use, redistribute it and/or modify it under
 * the terms of the license, either version 1 or (at your option) any later
 * version.
-* 
+*
 * You should have received a copy of the ALPS Library License along with
 * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
 * available from http://alps.comp-phys.org/.
 *
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
@@ -92,20 +92,16 @@ public:
     using base::V_ ;
     using base::VA_ ;
     //
-    jacobi_davidson_modified(MATRIX& matrix, VS& vec, CorrectionEquation* corrector, MicroOptimizer* micro_iterator,
-                             Finalizer* finalizer, Orthogonalizer* ortho, const std::vector<real_type>& omega_vec,
+    jacobi_davidson_modified(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator,
+                             Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho, const std::vector<real_type>& omega_vec,
                              const size_t& nmin, const size_t& nmax, const size_t& n_block, const double& block_thresh,
                              const int& site1, const int& site2, const std::vector<std::size_t>& order, const int& sa_alg,
                              const int& n_lanczos, const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
                              const bool& reshuffle_variance, const bool& track_variance, const bool& is_folded, const double& energy_thresh)
             : base::jacobi_davidson(matrix, vec, corrector, micro_iterator, finalizer, ortho, nmin, nmax, n_block,
                                     block_thresh, site1, site2, order, sa_alg, n_lanczos, do_chebychev, chebyshev_shift,
-                                    do_H_squared, reshuffle_variance, track_variance, is_folded, energy_thresh)
+                                    do_H_squared, reshuffle_variance, track_variance, is_folded, energy_thresh), omega_vec_(omega_vec)
     {
-        // Set omega
-        omega_vec_.resize(0) ;
-        for (size_t idx = 0; idx < n_sa_; idx++)
-            omega_vec_.push_back(omega_vec[idx]) ;
         // Set boundaries
         bounds.do_lower = true ;
         bounds.lower_bounds = std::make_pair(1,1) ;
@@ -127,16 +123,16 @@ protected:
     void update_parameters() ;
     void update_vecspace(vector_space& to_add);
     void set_interval(const std::size_t& dim) {} ;
-    void solver(vector_type& r, vector_space& t) ;
+    void solver(const vector_type& r, vector_space& t) ;
     // Attributes
     std::vector<real_type> omega_vec_ ;
 };
-    // Updates the omega parameter in the corrector object 
+    // Updates the omega parameter in the corrector object
     template <class Matrix, class VS, class SymmGroup, class ITER>
     void jacobi_davidson_modified<Matrix, VS, SymmGroup, ITER>::update_parameters()
     {
-        corrector_->update_omega(omega_vec_[i_state_]) ;
-        corrector_->update_u(V_[0]) ;
+        corrector_.update_omega(omega_vec_[i_state_]) ;
+        corrector_.update_u(V_[0]) ;
     }
     // Compute the action of an operator
     template <class Matrix, class VS, class SymmGroup, class ITER>
@@ -158,8 +154,8 @@ protected:
     template <class Matrix, class VS, class SymmGroup, class ITER>
     void jacobi_davidson_modified<Matrix, VS, SymmGroup, ITER>::update_finalizer()
     {
-        finalizer_->set_candidate(eigen_collector_) ;
-        finalizer_->set_omega(omega_vec_[i_state_]) ;
+        finalizer_.set_candidate(eigen_collector_) ;
+        finalizer_.set_omega(omega_vec_[i_state_]) ;
     }
     // Update the vector space in JCD iteration
     template <class Matrix, class VS, class SymmGroup, class ITER>
@@ -194,9 +190,9 @@ protected:
         vector_type     buf ;
         magnitude_type  ref ;
         vector_type     r ;
-        if (finalizer_->get_is_si()) {
-            r        = finalizer_->compute_error(i_state_, idx) ;
-            ref      = finalizer_->get_eigen(idx) ;
+        if (finalizer_.get_is_si()) {
+            r        = finalizer_.compute_error(i_state_, idx) ;
+            ref      = finalizer_.get_eigen(idx) ;
         } else {
             vector_type jnk = eigen_collector_[idx].u_ / ietl::two_norm(eigen_collector_[idx].u_) ;
             ietl::mult(this->matrix_, jnk, buf, i_state_, false) ;
@@ -216,7 +212,7 @@ protected:
     };
     // Correction part of the JD iteration
     template<class MATRIX, class VS, class SymmGroup, class ITER>
-    void jacobi_davidson_modified<MATRIX, VS, SymmGroup, ITER>::solver(vector_type& r, vector_space& t)
+    void jacobi_davidson_modified<MATRIX, VS, SymmGroup, ITER>::solver(const vector_type& r, vector_space& t)
     {
         vector_type t2 = 0.*r, t3 ;
         micro_iterator_->set_error(r) ;
