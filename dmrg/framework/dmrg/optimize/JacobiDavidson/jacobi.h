@@ -105,8 +105,8 @@ namespace ietl
         typedef typename VarianceOptimizer<SymmGroup>::VarianceOptimizer                     variance_optimizer ;
         typedef typename std::vector< state_prop<VS > >                                      vector_prop ;
         // -- CONSTRUCTOR --
-        jacobi_davidson(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator,
-                        Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho, const size_t& n_min, const size_t& n_max,
+        jacobi_davidson(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::unique_ptr<MicroOptimizer>& micro_iterator,
+                        Finalizer& finalizer, std::unique_ptr<Orthogonalizer> & ortho, const size_t& n_min, const size_t& n_max,
                         const size_t& n_block, const double& thresh_block, const int& site1, const int& site2,
                         const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
                         const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,
@@ -182,13 +182,13 @@ namespace ietl
         double                          energy_thresh_, thresh_block_ ;
         int                             n_lanczos_, sa_alg_, site1_, site2_ ;
         Finalizer&                      finalizer_ ;
-        std::shared_ptr<Orthogonalizer> &                 orthogonalizer_ ;
+        std::unique_ptr<Orthogonalizer>& orthogonalizer_ ;
         FortranMatrix<magnitude_type>   M ;
         std::vector<scalar_type>        diagonal_elements_ ;
         CorrectionEquation &      corrector_ ;
         magnitude_type                  lowest_eigen_, highest_eigen_, chebyshev_shift_, energy_ref_, atol_ ;
         MATRIX&                         matrix_ ;
-        std::shared_ptr<MicroOptimizer> micro_iterator_ ;
+        std::unique_ptr<MicroOptimizer>& micro_iterator_ ;
         result_collector                u_and_uA_ ;
         std::vector<couple_val>         vector_values_ ;
         std::vector<std::size_t>        order_ ;
@@ -205,8 +205,8 @@ namespace ietl
     // -- Constructor --
     template <class MATRIX, class VS, class SymmGroup, class ITER>
     jacobi_davidson<MATRIX, VS, SymmGroup, ITER>::jacobi_davidson
-            (MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator, Finalizer& finalizer,
-             std::shared_ptr<Orthogonalizer> & ortho, const size_t& n_min, const size_t& n_max, const size_t& n_block, const double& thresh_block,
+            (MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::unique_ptr<MicroOptimizer>& micro_iterator, Finalizer& finalizer,
+             std::unique_ptr<Orthogonalizer> & ortho, const size_t& n_min, const size_t& n_max, const size_t& n_block, const double& thresh_block,
              const int& site1, const int& site2, const std::vector<std::size_t>& order, const int& sa_alg, const int& n_lanczos,
              const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared, const bool& reshuffle_variance,
              const bool& track_variance, const bool& is_folded, const double& energy_thresh) :

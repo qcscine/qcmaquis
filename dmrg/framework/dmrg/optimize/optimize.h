@@ -99,6 +99,7 @@ class optimizer_base
     typedef typename OptimizationAlgorithm<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup>,
              CorrectionEquation<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >::OptimizationAlgorithm OptimizationAlgorithm;
     typedef typename Orthogonalizer<SingleSiteVS<Matrix, SymmGroup> >::Orthogonalizer             Orthogonalizer;
+    typedef typename Finalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >::Finalizer Finalizer;
 public:
     optimizer_base(std::vector< MPS<Matrix, SymmGroup> > & mps_vector_ ,
                    MPO<Matrix, SymmGroup> const & mpo_,
@@ -295,11 +296,10 @@ protected:
         if (parms["ietl_si_operator"] == "no") {
             // -- Standard simualtion --
             maquis::cout << " S&I formulation - deactivated\n" ;
-            finalizer_.set_energy_standard() ;
-            finalizer_.set_error_standard() ;
+            finalizer_ = std::unique_ptr<Finalizer>(std::make_unique<StandardFinalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
             correction_equation.set_standard() ;
             maquis::cout << " Corrector op.   - standard\n" ;
-            orthogonalizer_ = std::shared_ptr<Orthogonalizer>(std::make_shared<GS_ortho<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
+            orthogonalizer_ = std::unique_ptr<Orthogonalizer>(std::make_unique<GS_ortho<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
             maquis::cout << " Orthogonalizer  - Gram-Schmidt\n" ;
         } else if (parms["ietl_si_operator"] == "yes") {
             // -- S&I simulation --
@@ -324,21 +324,18 @@ protected:
             }
             // -- Set corrector --
             if (parms["ietl_corrector"] == "notSI") {
-                finalizer_.set_energy_si_standard();
-                finalizer_.set_error_si_standard();
-                orthogonalizer_ = std::shared_ptr<Orthogonalizer>(std::make_shared<GS_ortho_mod<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
+                finalizer_ = std::unique_ptr<Finalizer>(std::make_unique<StandardSIFinalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
+                orthogonalizer_ = std::unique_ptr<Orthogonalizer>(std::make_unique<GS_ortho_mod<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
                 maquis::cout << " Orthogonalizer  - Gram-Schmidt\n";
             } else if (parms["ietl_corrector"] == "skew") {
-                finalizer_.set_energy_skew() ;
-                finalizer_.set_error_skew() ;
+                finalizer_ = std::unique_ptr<Finalizer>(std::make_unique<SkewFinalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
                 correction_equation.set_skew() ;
-                orthogonalizer_ = std::shared_ptr<Orthogonalizer>(std::make_shared<BI_ortho<SingleSiteVS<Matrix, SymmGroup> > >());
+                orthogonalizer_ = std::unique_ptr<Orthogonalizer>(std::make_unique<BI_ortho<SingleSiteVS<Matrix, SymmGroup> > >());
                 maquis::cout << " Orthogonalizer  - Biorthogonal\n" ;
             } else if (parms["ietl_corrector"] == "SI") {
-                finalizer_.set_energy_modified() ;
-                finalizer_.set_error_modified() ;
+                finalizer_ = std::unique_ptr<Finalizer>(std::make_unique<ModifiedFinalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
                 correction_equation.set_modified() ;
-                orthogonalizer_ = std::shared_ptr<Orthogonalizer>(std::make_shared<GS_ortho<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
+                orthogonalizer_ = std::unique_ptr<Orthogonalizer>(std::make_unique<GS_ortho<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
                 maquis::cout << " Orthogonalizer  - Gram-Schmidt\n" ;
             } else {
                 throw std::runtime_error("Corrector operator not recognized") ;
@@ -365,10 +362,9 @@ protected:
             }
 			      is_folded_ = true ;
 			      do_H_squared_ = true ;
-			      finalizer_.set_energy_folded() ;
-			      finalizer_.set_error_folded() ;
+                  finalizer_ = std::unique_ptr<Finalizer>(std::make_unique<FoldedFinalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > >());
 			      correction_equation.set_folded() ;
-			      orthogonalizer_ = std::shared_ptr<Orthogonalizer>(std::make_shared<GS_ortho<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
+			      orthogonalizer_ = std::unique_ptr<Orthogonalizer>(std::make_unique<GS_ortho<SingleSiteVS<Matrix, SymmGroup> > >(parms["ietl_ortho_refine"] == "yes"));
 
         } else {
             throw std::runtime_error(" S&I modality not recognized\n") ;
@@ -387,7 +383,7 @@ protected:
         if (parms["eigensolver"] == std::string("IETL_JCD")) {
             if (parms["ietl_microopt_maxiter"] == 0)
             {
-                micro_optimizer = std::shared_ptr<OptimizationAlgorithm>(std::make_shared<OP_optimizer<SiteProblem<Matrix, SymmGroup>,
+                micro_optimizer = std::unique_ptr<OptimizationAlgorithm>(std::make_unique<OP_optimizer<SiteProblem<Matrix, SymmGroup>,
                                           SingleSiteVS<Matrix, SymmGroup>,
                                           CorrectionEquation<SiteProblem<Matrix, SymmGroup>,
                                           SingleSiteVS<Matrix, SymmGroup> > > >
@@ -399,7 +395,7 @@ protected:
             else
             {
                 if (parms["ietl_microoptimizer"] == "GMRES") {
-                    micro_optimizer = std::shared_ptr<OptimizationAlgorithm>(std::make_shared<GMRES_optimizer<SiteProblem<Matrix, SymmGroup>,
+                    micro_optimizer = std::unique_ptr<OptimizationAlgorithm>(std::make_unique<GMRES_optimizer<SiteProblem<Matrix, SymmGroup>,
                                             SingleSiteVS<Matrix, SymmGroup>,
                                             CorrectionEquation<SiteProblem<Matrix, SymmGroup>,
                                             SingleSiteVS<Matrix, SymmGroup> > > >
@@ -410,7 +406,7 @@ protected:
 
                     maquis::cout << " Microoptimizer  - GMRES\n";
                 } else if (parms["ietl_microoptimizer"] == "CG") {
-                    micro_optimizer = std::shared_ptr<OptimizationAlgorithm>(std::make_shared<CG_optimizer<SiteProblem<Matrix, SymmGroup>,
+                    micro_optimizer = std::unique_ptr<OptimizationAlgorithm>(std::make_unique<CG_optimizer<SiteProblem<Matrix, SymmGroup>,
                                             SingleSiteVS<Matrix, SymmGroup>,
                                             CorrectionEquation<SiteProblem<Matrix, SymmGroup>,
                                             SingleSiteVS<Matrix, SymmGroup> > > >
@@ -420,7 +416,7 @@ protected:
                                             ));
                     maquis::cout << " Microoptimizer  - CG\n";
                 } else if (parms["ietl_microoptimizer"] == "BICGS") {
-                    micro_optimizer = std::shared_ptr<OptimizationAlgorithm>(std::make_shared<BICGS_optimizer<SiteProblem<Matrix, SymmGroup>,
+                    micro_optimizer = std::unique_ptr<OptimizationAlgorithm>(std::make_unique<BICGS_optimizer<SiteProblem<Matrix, SymmGroup>,
                                             SingleSiteVS<Matrix, SymmGroup>,
                                             CorrectionEquation<SiteProblem<Matrix, SymmGroup>,
                                             SingleSiteVS<Matrix, SymmGroup> > > >
@@ -433,7 +429,7 @@ protected:
                     throw std::runtime_error("ietl_microoptimizer parameter not recognized");
             }
         } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
-            micro_optimizer = std::shared_ptr<OptimizationAlgorithm>(std::make_shared<OP_optimizer<SiteProblem<Matrix, SymmGroup>,
+            micro_optimizer = std::unique_ptr<OptimizationAlgorithm>(std::make_unique<OP_optimizer<SiteProblem<Matrix, SymmGroup>,
                                           SingleSiteVS<Matrix, SymmGroup>,
                                           CorrectionEquation<SiteProblem<Matrix, SymmGroup>,
                                           SingleSiteVS<Matrix, SymmGroup> > > >
@@ -667,8 +663,9 @@ protected:
     // +----------+
     std::vector< results_collector > iteration_results_;
     CorrectionEquation< SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > correction_equation ;
-    std::shared_ptr<Orthogonalizer> orthogonalizer_ ;
-    std::shared_ptr<OptimizationAlgorithm> micro_optimizer ;
+    std::unique_ptr<Finalizer> finalizer_ ;
+    std::unique_ptr<Orthogonalizer> orthogonalizer_ ;
+    std::unique_ptr<OptimizationAlgorithm> micro_optimizer ;
     MPS<Matrix, SymmGroup> mps_average;
     MPO<Matrix, SymmGroup> const& mpo;
     BaseParameters & parms ;
@@ -676,7 +673,7 @@ protected:
     boundaries_vector left_sa_, right_sa_, left_squared_sa_, right_squared_sa_ ;
     sorter_type sorter_ ;
     double chebyshev_shift_ ;
-    Finalizer<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > finalizer_ ;
+
     /* This is used for multi-state targeting */
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;

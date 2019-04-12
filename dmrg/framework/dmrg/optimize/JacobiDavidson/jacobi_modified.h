@@ -92,8 +92,8 @@ public:
     using base::V_ ;
     using base::VA_ ;
     //
-    jacobi_davidson_modified(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::shared_ptr<MicroOptimizer>& micro_iterator,
-                             Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho, const std::vector<real_type>& omega_vec,
+    jacobi_davidson_modified(MATRIX& matrix, VS& vec, CorrectionEquation& corrector, std::unique_ptr<MicroOptimizer>& micro_iterator,
+                             Finalizer& finalizer, std::unique_ptr<Orthogonalizer> & ortho, const std::vector<real_type>& omega_vec,
                              const size_t& nmin, const size_t& nmax, const size_t& n_block, const double& block_thresh,
                              const int& site1, const int& site2, const std::vector<std::size_t>& order, const int& sa_alg,
                              const int& n_lanczos, const bool& do_chebychev, const magnitude_type& chebyshev_shift, const bool& do_H_squared,

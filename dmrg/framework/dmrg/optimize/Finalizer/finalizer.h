@@ -28,13 +28,12 @@
 #define MAQUIS_DMRG_FINALIZER_H
 
 #include <dmrg/optimize/JacobiDavidson/jacobi.h>
-#include "dmrg/optimize/Finalizer/energy_computer.hpp"
-#include "dmrg/optimize/Finalizer/error_computer.hpp"
 #include "dmrg/optimize/singlesitevs.h"
 #include "dmrg/optimize/utils/state_prop.h"
 
 template<class MATRIX, class VecSpace>
 class Finalizer {
+    // Computes energy and error
 public:
     // Types declaraton
     typedef typename ietl::vectorspace_traits<VecSpace>::real_type        real_type ;
@@ -43,46 +42,38 @@ public:
     typedef typename ietl::number_traits<scalar_type>::magnitude_type     magnitude_type;
     typedef typename ietl::state_prop<VecSpace>                           state_prop ;
     typedef typename std::vector< state_prop >                            vec_prop ;
-    // Constructor
-    Finalizer() ;
-    ~Finalizer() {} ;
+
+    Finalizer();
     // Setter
     void set_Hamiltonian(MATRIX& ham) ;
     void set_omega(real_type omega) ;
     void set_candidate(vec_prop const& candidates) ;
-    // Set the energy calculator
-    void set_energy_standard() ;
-    void set_energy_si_standard() ;
-    void set_energy_modified() ;
-    void set_energy_skew() ;
-	void set_energy_folded() ;
-    // Set the error calculator
-    void set_error_standard() ;
-    void set_error_si_standard() ;
-    void set_error_modified() ;
-    void set_error_skew() ;
-	void set_error_folded() ;
+
     // Getter
     bool get_is_si() ;
-    magnitude_type get_omega() ;
-    magnitude_type theta_converter(magnitude_type const& theta) ;
-    magnitude_type get_eigen(size_t const& idx) ;
-    vector_type get_u(size_t const& idx) ;
-    vector_type get_uA(size_t const& idx) ;
+    vector_type get_u(size_t idx) ;
+    vector_type get_uA(size_t idx) ;
+    magnitude_type get_eigen(size_t idx);
+    magnitude_type get_omega();
     MATRIX* get_Hamiltonian() ;
-    // Interfaces to the call
-    magnitude_type compute_energy(size_t const& i_state, size_t const& idx) ;
-    vector_type compute_error(size_t const& i_state, size_t const& idx) ;
-private:
+
+    virtual magnitude_type compute_energy(size_t i_state,size_t idx) = 0 ;
+    virtual magnitude_type theta_converter(magnitude_type theta) = 0  ;
+    virtual vector_type compute_error(size_t i_state,size_t idx) = 0 ;
+protected:
     // Attributes
     MATRIX* Hamiltonian_ ;
     bool is_si_ ;
     const vec_prop* candidates_ ;
     magnitude_type omega_ ;
-    EnergyComputer<MATRIX, VecSpace>* energy_computer_ ;
-    ErrorComputer<MATRIX, VecSpace>* error_computer_ ;
 } ;
 
 #include "dmrg/optimize/Finalizer/finalizer.cpp"
+
+#include "dmrg/optimize/Finalizer/standard_finalizer.hpp"
+#include "dmrg/optimize/Finalizer/standard_si_finalizer.hpp"
+#include "dmrg/optimize/Finalizer/modified_finalizer.hpp"
+#include "dmrg/optimize/Finalizer/skew_finalizer.hpp"
+#include "dmrg/optimize/Finalizer/folded_finalizer.hpp"
 
 #endif

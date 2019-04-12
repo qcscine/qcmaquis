@@ -75,7 +75,7 @@ namespace ietl
         using base::V_ ;
         //
         jacobi_davidson_modified_mo(MATRIX& matrix, VS& vec, CorrectionEquation& corrector,
-                                    std::shared_ptr<MicroOptimizer>& micro_iterator, Finalizer& finalizer, std::shared_ptr<Orthogonalizer> & ortho,
+                                    std::unique_ptr<MicroOptimizer>& micro_iterator, Finalizer& finalizer, std::unique_ptr<Orthogonalizer> & ortho,
                                     const std::vector<real_type>& omega_vec, const pov_vec_type& pov,
                                     const int& n, const int& side_tofollow, const size_t& nmin, const size_t& nmax,
                                     const size_t& n_block, const double& block_thresh, const int& site1, const int& site2,

@@ -198,7 +198,7 @@ public:
                 (d == RightOnly && lr == +1))
             {
                 BEGIN_TIMING("LOCAL DIAGONALIZATION")
-                res = solve_ietl_jcd(sp, vector_set, correction_equation, micro_optimizer, finalizer_,
+                res = solve_ietl_jcd(sp, vector_set, correction_equation, micro_optimizer, *finalizer_,
                                      orthogonalizer_, parms, poverlap_vec_, site1, site2, root_homing_type_, do_root_homing_,
                                      do_shiftandinvert_, do_chebyshev_, chebyshev_shift_, do_H_squared_, reshuffle_variance_,
                                      track_variance_, is_folded_, vec_sa_left_, vec_sa_right_, order, boundaries_database_,
