@@ -177,12 +177,8 @@ namespace ietl
                                                                                   ITER& iter)
     {
         // Compute the error vector
-        bool converged ;
-        vector_type jnk ;
-        ietl::mult(this->matrix_, eigen_collector_[idx].u_, jnk, i_state_, false) ;
-        magnitude_type energy = std::real(ietl::dot(eigen_collector_[idx].u_, jnk) / ietl::dot(eigen_collector_[idx].u_,
-                                                                                     eigen_collector_[idx].u_) ) ;
-        vector_type r = jnk - energy*eigen_collector_[idx].u_ ;
+        magnitude_type energy = std::real(ietl::dot(eigen_collector_[idx].u_, eigen_collector_[idx].uA_) / ietl::two_norm(eigen_collector_[idx].u_)) ;
+        vector_type r = eigen_collector_[idx].uA_ - energy*eigen_collector_[idx].u_ ;
         vecspace_.project(r) ;
 
         return iter.finished(ietl::two_norm(r),std::fabs(energy));
