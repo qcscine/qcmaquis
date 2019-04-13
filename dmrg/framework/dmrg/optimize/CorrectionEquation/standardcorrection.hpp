@@ -52,9 +52,9 @@ public:
         // Initialization
         vector_type t, t2, t3, y ;
 
-        scalar_type u_norm = ietl::dot(corr_eq.get_u(), corr_eq.get_u());
+        scalar_type u_norm_inv = 1.0/ietl::two_norm(corr_eq.get_u());
         // t2 = (1-uu*) x
-        scalar_type ust = ietl::dot(corr_eq.get_u(), input) / u_norm ;
+        scalar_type ust = ietl::dot(corr_eq.get_u(), input) * u_norm_inv ;
         t2 = input - ust * corr_eq.get_u() ;
         corr_eq.orthogonalize_simple(t2) ;
         // y = (A-theta*1) t2
@@ -65,7 +65,7 @@ public:
             y = t3 - corr_eq.get_rayleigh() * t2 ;
         corr_eq.orthogonalize_simple(y) ;
         // t = (1-uu*) y
-        ust = ietl::dot(corr_eq.get_u(), y) / u_norm ;
+        ust = ietl::dot(corr_eq.get_u(), y) * u_norm_inv ;
         return y - ust * corr_eq.get_u() ;
     }
     // Routine used to do precondition
