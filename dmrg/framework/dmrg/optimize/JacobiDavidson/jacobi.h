@@ -132,19 +132,19 @@ namespace ietl
         //  varies by the used class
         virtual void get_eigenvalue(std::vector<double>& eigval, std::vector<std::vector<double> >& eigvecs, size_t dim);
 
-        virtual bool check_convergence(size_t const& idx, ITER& iter) {};
-        virtual vector_double generate_property() {} ;
-        virtual vector_type apply_operator (const vector_type& x) {} ;
-        virtual void print_endline() {} ;
-        virtual void print_header_table() {} ;
+        virtual bool check_convergence(size_t const& idx, ITER& iter) = 0;
+        virtual vector_double generate_property() = 0 ;
+        virtual vector_type apply_operator (const vector_type& x) = 0 ;
+        virtual void print_endline() = 0 ;
+        virtual void print_header_table() = 0 ;
         virtual void print_newline_table(const size_t& i, const real_type& er, const scalar_type& ener,
-                                         const size_t& idx, const bool& converged) {} ;
-        virtual void set_interval(const std::size_t& dim) {} ;
-        virtual void solver(const vector_type& r, vector_space& t) {} ;
-        virtual void sort_prop(couple_vec& vector_values) {} ;
-        virtual void update_finalizer() {} ;
-        virtual void update_parameters() {} ;
-        virtual void update_vecspace(vector_space& to_add) {};
+                                         const size_t& idx, const bool& converged) = 0 ;
+        virtual void set_interval(const std::size_t& dim) = 0 ;
+        virtual void solver(const vector_type& r, vector_space& t) = 0 ;
+        virtual void sort_prop(couple_vec& vector_values) = 0 ;
+        virtual void update_finalizer() = 0 ;
+        virtual void update_parameters() = 0 ;
+        virtual void update_vecspace(vector_space& to_add) = 0;
 
         // Restarting routine
         void diagonalize(const bool& is_low) ;
