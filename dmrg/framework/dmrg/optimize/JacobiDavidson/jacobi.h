@@ -296,7 +296,11 @@ namespace ietl
                     update_parameters() ;
                     if (k == 0)
                         corrector_.update_hamiltonian(matrix_) ;
-                    corrector_.update_n_root(i_state_) ;
+                    // update preconditioner for higher roots only if we don't use
+                    // the same boundary for all states
+                    bool update_prec = ((sa_alg_ == -1) || (sa_alg_ == -3)) ? (k == 0) : true;
+                    if (update_prec)
+                        corrector_.update_n_root(i_state_) ;
                     starting = false;
                 } else {
                     update_vecspace(v_toadd);
