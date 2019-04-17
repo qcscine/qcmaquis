@@ -42,8 +42,6 @@ from corrutils import pretty_print
 
 import input as DmrgInput
 
-#from corrutils import assemble_halfcorr_complex
-
 def read_irreps(orbfile):
     of = open(orbfile, 'r')
     orbstring = of.readlines(1000)[1]
@@ -108,14 +106,8 @@ def print_rdm1(inputfile,tag):
     # load data from the HDF5 result file
     dm = pyalps.loadEigenstateMeasurements([inputfile], what='oneptdm')[0][0]
 
-    # old way
-    #n  = pyalps.loadEigenstateMeasurements([inputfile], what='N')[0][0]
-    #dm = pyalps.loadEigenstateMeasurements([inputfile], what='dm')[0][0]
-
     # Create the full matrix from the upper triangle (dm)
     (dm_real, dm_imag) = assemble_complex_dm(dm)
-    # old way
-    #(dm_real, dm_imag) = assemble_halfcorr_complex(n.y[0], dm)
 
     spinors = int(dm.props["L"])
     for j in range(spinors):

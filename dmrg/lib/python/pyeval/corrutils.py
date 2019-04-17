@@ -63,24 +63,21 @@ def assemble_halfcorr_complex(diag, triang):
 
     L = len(diag)
 
-    ret_real = np.zeros((L,L))
-    ret_cplx = np.zeros((L,L))
+    ret = np.zeros((L,L),dtype=np.complex_)
 
     # set the diagonal
     for i in range(L):
-        ret_real[i,i] = diag[i]
+        ret[i,i] = diag[i]
 
     for lab, val in zip(triang.x, triang.y[0]):
         #print val
         i = lab[0]
         j = lab[1]
-        ret_real[i,j] =  val.real
-        ret_cplx[i,j] =  val.imag
+        ret[i,j] =  val
         # dv(j,i) = dv(i,j)*
-        ret_real[j,i] =  val.real
-        ret_cplx[j,i] = -val.imag
+        ret[j,i] =  np.conjugate(val)
 
-    return (ret_real,ret_cplx)
+    return ret
 
 def assemble_vector(dataset):
     """From the diagonal and upper triangle, construct a symmetric matrix

@@ -35,7 +35,7 @@ import scipy.linalg as sl
 
 from copy import deepcopy
 
-from corrutils import assemble_halfcorr as assy_hc
+from corrutils import assemble_halfcorr_complex as assy_hc
 from corrutils import pretty_print
 
 class MaquisMeasurement:
@@ -52,19 +52,11 @@ class MaquisMeasurement:
         self.orb_order = inv_order
         empty_diag = np.zeros(self.norb)
 
-        self.corr_cdag_c = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='dm')[0][0])
-        self.corr_docc   = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='doccdocc')[0][0])
-
-    def one_pt_dm(self):
-        
-        dm = deepcopy(self.corr_cdag_c)
-        for i in range(self.norb):
-            dm[i,i] = self.loc_n[i]
-
-        return dm
+        self.corr_cdag_c   = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='dm')[0][0])
+        self.corr_docc     = assy_hc(empty_diag, pyalps.loadEigenstateMeasurements([inputfile], what='doccdocc')[0][0])
 
     def two_orb_rdm(self, p, q):
-        pq_dm_matrix = np.zeros((4,4))
+        pq_dm_matrix = np.zeros((4,4),dtype=np.complex_)
 
         pq_dm_matrix[0,0] = 1 - self.loc_n[p] - self.loc_n[q] + self.corr_docc[p,q]
         pq_dm_matrix[1,1] = self.loc_n[q] - self.corr_docc[p,q]
@@ -91,7 +83,7 @@ class MaquisMeasurement:
 
             ret[i] = -sum(map(lambda x: x*np.log(x), [m11, m22]))
 
-        return ret[self.orb_order]        
+        return ret[self.orb_order]
 
 
     def s2(self):
@@ -123,16 +115,6 @@ class MaquisMeasurement:
 
         return ret
 
-
-    def corr_func(self, f1,f2):
-        n = self.norb
-        cf = np.zeros((n, n))
-
-        for i in range(n):
-            for j in range(i+1,n):
-                cf[i,j] = self.two_orb_rdm(i,j)[f1,f2]
-
-        return cf
 
     def dump_raw(self):
         for k,v in zip(self.__dict__.keys(), self.__dict__.values()):
