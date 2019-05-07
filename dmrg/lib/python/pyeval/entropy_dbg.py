@@ -63,7 +63,7 @@ class MaquisMeasurement:
         pq_dm_matrix[2,2] = self.loc_n[p] - self.corr_docc[p,q]
         pq_dm_matrix[3,3] = self.corr_docc[p,q]
         pq_dm_matrix[1,2] = self.corr_cdag_c[p,q]
-        pq_dm_matrix[2,1] = pq_dm_matrix[1,2]
+        pq_dm_matrix[2,1] = np.conjugate(pq_dm_matrix[1,2])
         
         #print "pqmatrix[3,3]{0},{1}".format(p,q), "and", "pqmatrix[12,12]{0},{1}".format(p,q), pq_dm_matrix[3,3], pq_dm_matrix[12,12]
         return pq_dm_matrix
