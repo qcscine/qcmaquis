@@ -292,15 +292,6 @@ public:
                                 name, parms["lrparam_site"], parms["lrparam_twosite"]));
             }
 
-            if (boost::regex_match(lhs, what, expression_transition_oneptdm))
-            {
-                name = "transition_oneptdm";
-
-                std::string bra_ckp = it->value();
-                std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
-                                name, lat, tag_handler, op_collection, positions, bra_ckp));
-            }
         }
 
         return meas;
