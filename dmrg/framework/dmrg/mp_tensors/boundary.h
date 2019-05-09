@@ -225,5 +225,45 @@ std::size_t size_of(Boundary<Matrix, SymmGroup> const & m)
     return r;
 }
 
+/*
+// Not working yet and therefore commented.
+// Right now one can take a product of two boundaries left[l] and right[l] using
+// ietl::dot(bra[l], site_hamil2(ket[l],left[l-1], right[l], mpo[l])) [mind the correct indices]
+// as is done in the new expval (see mps_mpo_ops.h).
+//
+// Scalar product of two boundaries
+//  __         b_l      b_l
+//  >__       L        R
+//b_la_la'_l   a'_la_l  a_la'_l
+// the MPO is needed to exploit the hermiticity of the boundaries (otherwise it doesn't work!)
+template<class Matrix, class SymmGroup>
+typename Boundary<Matrix, SymmGroup>::scalar_type
+ product(const Boundary<Matrix, SymmGroup>& left, const Boundary<Matrix, SymmGroup>& right, const MPOTensor<Matrix, SymmGroup>& mpo)
+{
+    typename Boundary<Matrix, SymmGroup>::scalar_type res = 0.0;
+    assert(left.aux_dim() == right.aux_dim());
+
+    for(size_t i = 0; i < left.aux_dim(); i++)
+    {
+        // Exploit Hermiticity for the left boundary
+        const block_matrix<Matrix, SymmGroup> && left_h = !mpo.herm_info.right_skip(i) ? static_cast<block_matrix<Matrix, SymmGroup> >(transpose(left[i])) : conjugate(left[mpo.herm_info.right_conj(i)]);
+        // and for the right boundary
+        const block_matrix<Matrix, SymmGroup> && right_h = !mpo.herm_info.left_skip(i) ? right[i] : adjoint(right[mpo.herm_info.left_conj(i)]);
+        maquis::cout << " Left: " << i << std::endl;
+        maquis::cout << left_h << std::endl;
+        maquis::cout << " Right: " << i << std::endl;
+        maquis::cout << right_h << std::endl;
+
+        // assert(left_h.right_basis() == right_h.left_basis());
+        if(left_h.right_basis() != right_h.left_basis()) continue;
+        block_matrix<Matrix, SymmGroup> prod;
+        gemm(left_h, right_h, prod);
+        res += prod.trace();
+        // it's probably cheaper to just multiply the matrices element-wise and add all the results
+
+    }
+    return res;
+}
+*/
 
 #endif
