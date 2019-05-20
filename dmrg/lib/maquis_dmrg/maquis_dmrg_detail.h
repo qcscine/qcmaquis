@@ -32,35 +32,15 @@
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/sim/symmetry_factory.h"
-#include "dmrg/sim/abstract_sim.h"
+#include "dmrg/sim/matrix_types.h"
 
-// #include <alps/numeric/matrix/matrix.hpp>
-// #include <complex>
-// typedef alps::numeric::matrix<double> matrix;
-// typedef alps::numeric::matrix<std::complex<double> > cmatrix;
+#include "interface_sim.h"
 
-struct simulation_base {
-    virtual ~simulation_base() {}
-    virtual void run() =0;
-    virtual void measure() =0;
-};
-
-template <class SymmGroup>
-class simulation : public simulation_base {
-    public:
-        simulation(DmrgParameters & parms_);
-        void run();
-        void measure();
-    private:
-        DmrgParameters & parms;
-        std::shared_ptr<abstract_interface_sim> sim_ptr;
-
-};
-
+template<class V>
 struct simulation_traits {
-    typedef std::shared_ptr<simulation_base> shared_ptr;
+    typedef std::shared_ptr<abstract_interface_sim<tmatrix<V> > > shared_ptr;
     template <class SymmGroup> struct F {
-        typedef simulation<SymmGroup> type;
+        typedef interface_sim<tmatrix<V>, SymmGroup> type;
     };
 };
 

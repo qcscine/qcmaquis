@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2019 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -23,6 +24,9 @@
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
+
+#ifndef SYMMETRY_FACTORY_H
+#define SYMMETRY_FACTORY_H
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/block_matrix/symmetry.h"
@@ -136,3 +140,5 @@ namespace dmrg {
     }
 
 }
+
+#endif

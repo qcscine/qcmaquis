@@ -40,7 +40,7 @@
 
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
-class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_sim {
+class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_sim<Matrix> {
 
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
@@ -108,37 +108,40 @@ public:
 
                 bool converged = false;
 
-                if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
+                if (!rfile.empty())
                 {
-                    /// write iteration results
+                    if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                     {
-                        storage::archive ar(rfile, "w");
-                        ar[results_archive_path(sweep) + "/parameters"] << parms;
-                        ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
-                        // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
-
-                        // stop simulation if an energy threshold has been specified
-                        // FIXME: this does not work for complex numbers - stknecht feb 2016
-                        int prev_sweep = sweep - meas_each;
-                        if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
+                        /// write iteration results
                         {
-                            typedef typename maquis::traits::real_type<Matrix>::type real_type;
-                            std::vector<real_type> energies;
+                            storage::archive ar(rfile, "w");
+                            ar[results_archive_path(sweep) + "/parameters"] << parms;
+                            ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
+                            // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
 
-                            ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
-                            real_type emin = *std::min_element(energies.begin(), energies.end());
-                            ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
-                            real_type emin_prev = *std::min_element(energies.begin(), energies.end());
-                            real_type e_diff = std::abs(emin - emin_prev);
+                            // stop simulation if an energy threshold has been specified
+                            // FIXME: this does not work for complex numbers - stknecht feb 2016
+                            int prev_sweep = sweep - meas_each;
+                            if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
+                            {
+                                typedef typename maquis::traits::real_type<Matrix>::type real_type;
+                                std::vector<real_type> energies;
 
-                            if (e_diff < parms["conv_thresh"])
-                                converged = true;
+                                ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
+                                real_type emin = *std::min_element(energies.begin(), energies.end());
+                                ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
+                                real_type emin_prev = *std::min_element(energies.begin(), energies.end());
+                                real_type e_diff = std::abs(emin - emin_prev);
+
+                                if (e_diff < parms["conv_thresh"])
+                                    converged = true;
+                            }
                         }
-                    }
 
-                    /// measure observables specified in 'always_measure'
-                    if (always_measurements.size() > 0)
-                        this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
+                        /// measure observables specified in 'always_measure'
+                        if (always_measurements.size() > 0)
+                            this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
+                    }
                 }
 
                 /// write checkpoint
@@ -153,10 +156,13 @@ public:
             checkpoint_simulation(mps, e.sweep(), e.site());
 
             {
-                storage::archive ar(rfile, "w");
-                ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
-                ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
-                // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                if (!rfile.empty())
+                {
+                    storage::archive ar(rfile, "w");
+                    ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
+                    ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
+                    // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                }
             }
         }
     }
@@ -202,6 +208,11 @@ public:
         if (parms.is_set("MEASURE[ChemEntropy]"))
             measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
         #endif
+    }
+
+    typename Matrix::value_type get_energy()
+    {
+        return expval(mps, mpo) + mpo.getCoreEnergy();
     }
 
     ~interface_sim()

@@ -35,11 +35,13 @@ public:
     virtual void run() =0;
 };
 
+template <class Matrix>
 class abstract_interface_sim {
 public:
     virtual ~abstract_interface_sim() {}
     virtual void run() =0;
     virtual void run_measure() =0;
+    virtual typename Matrix::value_type get_energy() = 0;
 };
 
 #endif

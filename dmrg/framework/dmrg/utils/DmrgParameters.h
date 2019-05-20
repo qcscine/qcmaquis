@@ -110,6 +110,12 @@ private:
         add_option("lattice_library", "", value("coded"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
+        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(1.e-300));
+
+        //Default values for lattice, model etc. for quantum chemistry calculations
+        add_option("LATTICE", "", value("orbitals"));
+        add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
+        add_option("MODEL","", value("quantum_chemistry"));
 
         add_option("beta_mode", "", value(0));
 
@@ -210,8 +216,6 @@ private:
 
         add_option("orbital_order", "comma separated list of orbital numbers");
         add_option("hf_occ", "comma separated list of orbital occupancies for Hartree Fock initial state");
-
-        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(1.e-20));
 
         add_option("MEASURE_CONTINUUM[Psi energy]", "", value(false));
         add_option("MEASURE_CONTINUUM[Density]", "", value(true));

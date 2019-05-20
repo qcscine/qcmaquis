@@ -28,12 +28,16 @@
 *****************************************************************************/
 
 #include "maquis_dmrg.h"
+#include <complex>
 
 namespace maquis
 {
-    DMRGInterface::DMRGInterface(DmrgOptions & opts_)
-        : opts(opts_), sim(dmrg::symmetry_factory<simulation_traits>(opts_.parms, opts_.parms)) {};
-    void DMRGInterface::optimize()
+    template <class V>
+    DMRGInterface<V>::DMRGInterface(DmrgParameters & parms_)
+        : parms(parms_), sim(::dmrg::symmetry_factory<simulation_traits<V> >(parms_, parms_)) {};
+
+    template <class V>
+    void DMRGInterface<V>::optimize()
     {
         try
         {
@@ -47,11 +51,12 @@ namespace maquis
         }
     }
 
-    void DMRGInterface::measure()
+    template <class V>
+    void DMRGInterface<V>::measure()
     {
         try
         {
-            sim->measure();
+            sim->run_measure();
         }
         catch (std::exception & e)
         {
@@ -60,4 +65,13 @@ namespace maquis
             exit(1);
         }
     }
+
+    template <class V>
+    V DMRGInterface<V>::energy()
+    {
+        return sim->get_energy();
+    }
+
+    template class DMRGInterface<double>;
+    template class DMRGInterface<std::complex<double> >;
 }

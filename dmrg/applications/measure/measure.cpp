@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2019 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -56,8 +57,17 @@ int main(int argc, char ** argv)
         timeval now, then, snow, sthen;
         gettimeofday(&now, NULL);
 
-        maquis::DMRGInterface interface(opt);
-        interface.measure();
+        if (!opt.parms["COMPLEX"])
+        {
+            maquis::DMRGInterface<double> interface(opt.parms);
+            interface.optimize();
+        }
+        else
+        {
+            maquis::DMRGInterface<std::complex<double> > interface(opt.parms);
+
+            interface.measure();
+        }
 
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);

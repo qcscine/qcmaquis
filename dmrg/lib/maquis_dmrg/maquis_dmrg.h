@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2019 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -28,17 +29,20 @@
 #define MAQUIS_DMRG_H
 
 #include "maquis_dmrg_detail.h"
+
 namespace maquis
 {
+    template <class V> // real or complex
     class DMRGInterface
     {
         public:
-            DMRGInterface(DmrgOptions& opts_);
+            DMRGInterface(DmrgParameters& parms_);
             void optimize();
             void measure();
+            V energy();
         private:
-            DmrgOptions& opts;
-            simulation_traits::shared_ptr sim;
+            DmrgParameters& parms;
+            typename simulation_traits<V>::shared_ptr sim;
     };
 }
 #endif

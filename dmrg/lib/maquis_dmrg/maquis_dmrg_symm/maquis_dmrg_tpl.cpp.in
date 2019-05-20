@@ -24,7 +24,9 @@
  *
  *****************************************************************************/
 
-#include "maquis_dmrg.ipp"
+#include "interface_sim.h"
+#include "dmrg/sim/matrix_types.h"
 
-template class simulation<@CMAKE_SYMM_GROUP@>;
+template class interface_sim<matrix,@CMAKE_SYMM_GROUP@>;
+template class interface_sim<cmatrix,@CMAKE_SYMM_GROUP@>;
 
