@@ -363,6 +363,7 @@ if(TESTS)
   enable_testing()
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
+  add_test(NAME Test2 COMMAND test2)
 endif(TESTS)
 
 
