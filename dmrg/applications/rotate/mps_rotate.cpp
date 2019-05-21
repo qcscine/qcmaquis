@@ -5,24 +5,24 @@
  * Copyright (C) 2016 Laboratory of Physical Chemistry, ETH Zurich
  *               2016 by Stefan Knecht <stknecht@ethz.ch>
  *               2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
- * 
+ *
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
 
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -96,7 +96,7 @@ void dump_MPS(MPS<Matrix, SymmGroup> & mps,
               std::string mps_in_file,
               int file_id)
 {
-    //maquis::cout << "norm of MPS to be dumped: " << norm(mps) << std::endl; 
+    //maquis::cout << "norm of MPS to be dumped: " << norm(mps) << std::endl;
     std::string mps_out_file = mps_in_file;
     if(file_id >= 0){
         /*
@@ -120,14 +120,14 @@ void dump_MPS(MPS<Matrix, SymmGroup> & mps,
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & mps,
                                                 std::vector<MPO<Matrix, SymmGroup> > const & mpo_vec)
-{   
+{
 
     //mpo_times_mps_contractor_ss<Matrix, SymmGroup, storage::nop> sigma_vector_product(mps, mpo, parms);
     //sigma_vector_product.sweep();
 
     assert(sensible(mps));
 
-    MPS<Matrix, SymmGroup> ret; 
+    MPS<Matrix, SymmGroup> ret;
     for (size_t i = 0; i < mpo_vec.size(); ++i)
     {
         //debug::mps_print(mps, "before round " + boost::lexical_cast<std::string>(i));
@@ -157,7 +157,7 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
     typedef typename SymmGroup::subcharge sc_t;
     //maquis::cout << "reading integrals for MPO from file: " << file << std::endl;
 
-    BaseParameters parms = chem_detail::set_2u1_parameters(L, Nup, Ndown);
+    BaseParameters parms = chem::detail::set_2u1_parameters(L, Nup, Ndown);
     parms.set("integral_file", file);
     parms.set("integral_cutoff", 0.);
     parms.set("site_types", site_types);
@@ -172,11 +172,11 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
         fill.push_back(model.filling_matrix_tag(i));
     }
 
-    //chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, model.operators_table());
-    //std::vector<typename Matrix::value_type> & matrix_elements = term_assistant.getMatrixElements(); 
+    //chem::detailchem::detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, model.operators_table());
+    //std::vector<typename Matrix::value_type> & matrix_elements = term_assistant.getMatrixElements();
     std::vector<typename Matrix::value_type> matrix_elements;
     alps::numeric::matrix<pos_t> idx;
-    boost::tie(idx, matrix_elements) = chem_detail::parse_integrals<typename Matrix::value_type, SymmGroup>(parms, lat, false);
+    boost::tie(idx, matrix_elements) = chem::detail::parse_integrals<typename Matrix::value_type, SymmGroup>(parms, lat, false);
 
     std::vector<MPO<Matrix, SymmGroup> > ret;
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
@@ -246,11 +246,11 @@ void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
     typedef typename SymmGroup::charge charge;
 
     mps.make_left_paired();
-    maquis::cout << "scaling factor " << tjj << std::endl; 
+    maquis::cout << "scaling factor " << tjj << std::endl;
 
     Index<SymmGroup> const & physical_i = mps.site_dim();
     Index<SymmGroup> const & left_i     = mps.row_dim();
-    
+
     block_matrix<Matrix, SymmGroup> & m1 = mps.data();
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
 
@@ -309,7 +309,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     pos_t L = mps.length();
     Nup = mps[L-1].col_dim()[0].first[0];
     Ndown = mps[L-1].col_dim()[0].first[1];
-    std::string site_types = chem_detail::infer_site_types(mps);
+    std::string site_types = chem::detail::infer_site_types(mps);
 
     //maquis::cout << "- input MPS - "<<      std::endl;
     //debug::mps_print_ci(mps, "dets.txt");
@@ -328,7 +328,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     {
         maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl;
 
-        // scale the j-th MPS tensor wrt the occupation of the j-th orbital 
+        // scale the j-th MPS tensor wrt the occupation of the j-th orbital
         value_type tjj = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(j+1));
         scale_MPSTensor<Matrix, SymmGroup>(mps[j], tjj);
 
@@ -355,7 +355,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         maquis::cout << "- intermediate correction MPS obtained - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
 
-        // compression of MPS' 
+        // compression of MPS'
         compress_mps<Matrix, SymmGroup>(mps_prime, "MPS prime");
 
         //maquis::cout << "- enter for second correction - "<<      std::endl;
@@ -365,7 +365,7 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
         //debug::mps_print_ci(mps_prime_prime, "dets.txt");
         //debug::mps_print(mps_prime_prime, "Second correction MPS at site ");
 
-        // compression of MPS'' 
+        // compression of MPS''
         //compress_mps<Matrix, SymmGroup>(mps_prime_prime, "MPS prime prime");
 
         // set new MPS := mps + mps' + 1/2 mps''
@@ -395,16 +395,16 @@ int main(int argc, char ** argv)
         typedef Lattice::pos_t pos_t;
 
         //std::string rfile(parms.get<std::string>("resultfile"));
-       
+
         MPS<matrix, grp> mps;
         load(argv[1], mps);
 
         mps.canonize(0);
 
-        //maquis::cout << " Input MPS: " << std::endl; 
+        //maquis::cout << " Input MPS: " << std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
 
-        //maquis::cout << "norm of MPS: " << norm(mps) << std::endl; 
+        //maquis::cout << "norm of MPS: " << norm(mps) << std::endl;
         //debug::mps_print(mps, "Original MPS at site ");
 
         std::string scale_fac_file  = "tjj.tramps.orb";
@@ -413,7 +413,7 @@ int main(int argc, char ** argv)
         rotate_mps(mps, scale_fac_file, fcidump_file);
 
         matrix::value_type final_norm = norm(mps);
-        //maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
+        //maquis::cout << "norm of final MPS: " << norm(mps) << std::endl;
 
         // NOTE: this normalizes the final MPS and may invert signs
         //mps = compression::l2r_compress(mps, 10000, 1e-7);
@@ -423,7 +423,7 @@ int main(int argc, char ** argv)
         //debug::mps_print(mps, " Rotated MPS at site ");
         //debug::mps_print_ci(mps, "dets.txt");
 
-        maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
+        maquis::cout << "norm of final MPS: " << norm(mps) << std::endl;
 
         //dump_MPS<matrix, grp>(mps, parms, mps_in_file, -1);
         dump_MPS<matrix, grp>(mps, argv[1], -1);

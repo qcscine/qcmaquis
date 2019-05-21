@@ -538,7 +538,7 @@ int main(int argc, char ** argv){
             std::cout << "phys_dims["<<i<<"] = " << phys_dims[i] << std::endl; 
 
         //get right end charge
-        grp::charge right_end = chem_detail::qn_helper<grp>().total_qn(parms);
+        grp::charge right_end = chem::detail::qn_helper<grp>().total_qn(parms);
         maquis::cout << "Right end: " << right_end <<std::endl;
   
         //create MPS

@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -30,7 +30,8 @@
 
 #include "dmrg/models/chem/parse_integrals.h"
 
-namespace chem_detail {
+namespace chem {
+namespace detail {
 
     template <typename M, class S>
     class ChemHelperSU2
@@ -40,7 +41,7 @@ namespace chem_detail {
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef Lattice::pos_t pos_t;
 
-        ChemHelperSU2(BaseParameters & parms, Lattice const & lat, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
+        ChemHelperSU2(BaseParameters & parms, Lattice const & lat, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
             : tag_handler(tag_handler_)
         {
             boost::tie(idx_, matrix_elements) = parse_integrals<value_type, S>(parms, lat);
@@ -54,7 +55,7 @@ namespace chem_detail {
 
         std::vector<value_type> const & getMatrixElements() const { return matrix_elements; }
         alps::numeric::matrix<Lattice::pos_t> const & getIdx() const { return idx_; }
-        
+
         int idx(int m, int pos) const {
             return idx_(m,pos);
         }
@@ -81,12 +82,12 @@ namespace chem_detail {
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
-            else 
+            else
                 two_terms[id].coeff += term.coeff;
         }
 
         void add_3term(std::vector<term_descriptor> & tagterms, term_descriptor term)
-        {        
+        {
             SixTuple id(term.position(0), term.position(1), term.position(2),
                         term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
             if (three_terms.count(id) == 0 ) {
@@ -107,7 +108,7 @@ namespace chem_detail {
             else
                 four_terms[id].coeff += term.coeff;
         }
-    
+
     private:
 
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
@@ -122,5 +123,5 @@ namespace chem_detail {
         std::map<EightTuple, term_descriptor> four_terms;
     };
 }
-
+}
 #endif

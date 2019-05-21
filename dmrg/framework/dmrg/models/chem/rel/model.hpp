@@ -7,7 +7,6 @@
  *               2015-2015 by Stefano Battaglia <stefabat@ethz.ch>
  *               2018-2019 by Stefan Knecht     <stknecht@ethz.ch>
  *
- *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
@@ -99,7 +98,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 template <class Matrix, class SymmGroup>
 void rel_qc_model<Matrix, SymmGroup>::create_terms()
 {
-    chem_detail::RelChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
+    chem::detail::RelChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);

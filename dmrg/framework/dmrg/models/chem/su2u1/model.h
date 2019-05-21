@@ -93,7 +93,7 @@ public:
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
     {
-        return chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
+        return chem::detail::qn_helper<SymmGroup>().total_qn(parms_);
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const

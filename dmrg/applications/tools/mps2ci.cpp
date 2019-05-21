@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -49,7 +49,7 @@ using std::endl;
 #include "ci_encode.hpp"
 #include "sampling.hpp"
 
-typedef TwoU1PG grp; 
+typedef TwoU1PG grp;
 
 
 int main(int argc, char ** argv)
@@ -60,7 +60,7 @@ int main(int argc, char ** argv)
         maquis::cout << "See J. Chem. Phys. 126, 244109(2007)" << std::endl;
         exit(1);
     }
-    
+
     maquis::cout.precision(10);
 
     std::ifstream param_file(argv[1]);
@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
         maquis::cerr << "Could not open the mps." << std::endl;
         exit(1);
     }
-    
+
     typedef int pos_t;
 
     // load the MPS
@@ -80,21 +80,21 @@ int main(int argc, char ** argv)
     grp::subcharge Ndown = mps[L-1].col_dim()[0].first[1];
 
     BaseParameters parms;
-    parms.set("site_types", chem_detail::infer_site_types(mps));
-    
+    parms.set("site_types", chem::detail::infer_site_types(mps));
+
     // extract physical basis for every site from MPS
     std::vector<grp::subcharge> irreps = parms["site_types"];
-    std::vector<Index<grp> > per_site, phys_dims = chem_detail::make_2u1_site_basis<matrix, grp>(L, Nup, Ndown, parms["site_types"]);
+    std::vector<Index<grp> > per_site, phys_dims = chem::detail::make_2u1_site_basis<matrix, grp>(L, Nup, Ndown, parms["site_types"]);
     for (pos_t q = 0; q < L; ++q)
         per_site.push_back(phys_dims[irreps[q]]);
-    
+
     // load the determinants
     std::vector<std::vector<grp::charge> > determinants = parse_config<matrix, grp>(std::string(argv[2]), per_site);
     // printout the determinants
     for (pos_t q = 0;q < determinants.size(); ++q){
        for (pos_t p = 0; p < L; ++p){
            std::cout << determinants[q][p];
-       }   
+       }
        std::cout << std::endl;
     }
 

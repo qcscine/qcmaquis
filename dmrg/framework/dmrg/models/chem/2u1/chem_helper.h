@@ -5,22 +5,22 @@
  * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -31,7 +31,8 @@
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
 
-namespace chem_detail {
+namespace chem {
+namespace detail {
 
     template <typename M, class S>
     class ChemHelper
@@ -44,7 +45,7 @@ namespace chem_detail {
 
         ChemHelper(BaseParameters & parms, Lattice const & lat_
                    , std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_
-                   , boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
+                   , boost::shared_ptr<TagHandler<M, S> > tag_handler_)
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
             boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
@@ -57,7 +58,7 @@ namespace chem_detail {
         }
 
         std::vector<value_type> & getMatrixElements() { return matrix_elements; }
-        
+
         int idx(int m, int pos) const {
             return idx_(m,pos);
         }
@@ -82,7 +83,7 @@ namespace chem_detail {
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
-            else 
+            else
                 two_terms[id].coeff += term.coeff;
         }
 
@@ -91,7 +92,7 @@ namespace chem_detail {
                       value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2,
                                                         std::vector<tag_type> const & op_3, std::vector<tag_type> const & op_4)
         {
-            std::pair<tag_type, value_type> ptag1, ptag2; 
+            std::pair<tag_type, value_type> ptag1, ptag2;
             ptag1 = tag_handler->get_product_tag(op_1[lat.get_prop<typename S::subcharge>("type", p1)],
                                                  op_2[lat.get_prop<typename S::subcharge>("type", p1)]);
             ptag2 = tag_handler->get_product_tag(op_3[lat.get_prop<typename S::subcharge>("type", p2)],
@@ -108,7 +109,7 @@ namespace chem_detail {
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
-            else 
+            else
                 two_terms[id].coeff += term.coeff;
         }
 
@@ -144,7 +145,7 @@ namespace chem_detail {
                 if (i<j) twin = IndexTuple(k,j,i,l);
 
                 if (self > twin) {
-                
+
                     term_descriptor
                     term = TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(i,j,k,l)], i,k,l,j,
                                                       op_i, op_k, op_l, op_j, tag_handler, lat);
@@ -164,7 +165,7 @@ namespace chem_detail {
                                    op_i, op_k, op_l, op_j, tag_handler, lat) );
             }
         }
-    
+
     private:
 
         std::vector<tag_type> const & ident;
@@ -182,6 +183,7 @@ namespace chem_detail {
         std::map<SixTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
     };
+}
 }
 
 #endif
