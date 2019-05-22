@@ -29,10 +29,13 @@
 #ifndef INTEGRAL_INTERFACE_H
 #define INTEGRAL_INTERFACE_H
 
+#include <unordered_map>
+#include "dmrg/models/chem/util.h"
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/complex.hpp>
-
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/functional/hash.hpp>
 
 namespace chem {
 
@@ -57,52 +60,71 @@ namespace chem {
     template <class V>
     using integrals = std::vector<integral_tuple<V> >; // TODO: use a map later
 
-    // Class that regulates passing of the integrals between the model and outside world.
-    // The only way to feed integrals to a model is via the parameters, which ultimately
-    // store strings, however if we want to interface it to other applications, we must
-    // provide integrals as a reasonable data structure. This class handles the conversion
-    // of an integral data structure into the string that may be fed into model parameters.
-    template <class V>
-    class integral_proxy
+
+    struct integral_hash
     {
         public:
-
-            integral_proxy() = default;
-            integral_proxy(const integrals<V> & ints) : ints_(ints) {};
-            integral_proxy(integrals<V> && ints) : ints_(std::move(ints)) {};
-
-            const integrals<V> & ints() { return ints_; };
-
-        private:
-            friend class boost::serialization::access;
-
-            // Currently, we store integral indices and values in two separate vectors.
-            // Indexing is done as in the FCIDUMP format, that is:
-            // Orbital indices start from 1 and 2e integrals use all four indices
-            // 1e integrals use the first two indices and 0,0 as the 3rd and the 4th index
-            // Nuclear repulsion energy uses an index 0,0,0,0
-            integrals<V> ints_;
-
-            template <typename Archive>
-            friend void serialize(Archive& ar, integral_proxy &i, const unsigned int version)
+            std::size_t operator()(const index_type& id) const
             {
-                ar & i.ints_;
+                return boost::hash_range(id.begin(), id.end());
             }
     };
 
-
-    // Serialize the structure into a string
+    // Map that maps the four indices to an integral value
+    // and handles index permutations internally.
+    // Indexing is as in the FCIDUMP file, i.e.
+    // Orbital indices start from 1 and 2e integrals use all four indices
+    // 1e integrals use the first two indices and 0,0 as the 3rd and the 4th index
+    // Nuclear repulsion energy uses an index 0,0,0,0
 
     template <class V>
-    std::string serialize(const integrals<V>& ints)
+    class integral_map
     {
-        integral_proxy<V> p(ints);
+        public:
+            typedef std::unordered_map<index_type, V, integral_hash> map_t;
+
+            integral_map() = default;
+            integral_map(const map_t & map) : map_(map) {};
+            integral_map(map_t && map) : map_(map) {};
+
+            // allow initializer lists for construction
+            integral_map(std::initializer_list<typename map_t::value_type> l) : integral_map(map_t(l)) {};
+
+            typedef typename map_t::iterator iterator;
+            typedef typename map_t::const_iterator const_iterator;
+
+            iterator begin() { return map_.begin(); };
+            const_iterator begin() const { return map_.begin(); };
+            iterator end() { return map_.end(); };
+            const_iterator end() const { return map_.end(); };
+
+            V& operator[](const index_type & key) { return map_[detail::align<>(key)]; };
+            V& at(const index_type & key) { return map_.at(detail::align<>(key)); };
+            const V& at(const index_type & key) const { return map_.at(detail::align<>(key)); };
+        private:
+            friend class boost::serialization::access;
+
+            map_t map_;
+
+            template <typename Archive>
+            friend void serialize(Archive& ar, integral_map &i, const unsigned int version)
+            {
+                ar & i.map_;
+            }
+    };
+
+    // Serialize the integral into a string
+
+    template <class V>
+    std::string serialize(const integral_map<V>& ints)
+    {
         std::stringstream ss;
         boost::archive::text_oarchive oa{ss};
-        oa << p;
+        oa << ints;
 
         return ss.str();
     }
+
 }
 
 #endif

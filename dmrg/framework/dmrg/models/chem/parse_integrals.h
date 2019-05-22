@@ -99,13 +99,12 @@ namespace detail {
         else if (parms.is_set("integrals_binary")) // Serialized integral object
         {
             // parse serialized integrals
-            integral_proxy<T> p;
+
+            integral_map<T> ints;
             std::stringstream ss(parms["integrals_binary"].as<std::string>());
 
             boost::archive::text_iarchive ia{ss};
-            ia >> p;
-
-            const integrals<T> & ints = p.ints();
+            ia >> ints;
 
             for (auto&& t: ints)
             {

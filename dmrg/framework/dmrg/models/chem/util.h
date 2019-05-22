@@ -102,19 +102,35 @@ namespace detail {
     class IndexTuple : public NU1Charge<4>
     {
     public:
+        typedef std::array<int, 4> array_type;
+
         IndexTuple() {}
         IndexTuple(int i, int j, int k, int l) {
             (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
         }
+        inline operator array_type() const
+        {
+            array_type ret;
+            for (int i = 0; i < 4; i++)
+            {
+                ret[i] = (*this)[i];
+            }
+            return ret;
+        }
     };
 
-	template <class SymmGroup>
+	template <class SymmGroup=TrivialGroup>
     inline IndexTuple align(int i, int j, int k, int l) {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
         if (i<k) { std::swap(i,k); std::swap(j,l); }
         if (i==k && j<l) { std::swap(j,l); }
         return IndexTuple(i,j,k,l);
+    }
+
+    template <class SymmGroup=TrivialGroup>
+    inline IndexTuple align(const typename IndexTuple::array_type & arr) {
+        return align<SymmGroup>(arr[0], arr[1], arr[2], arr[3]);
     }
 
 	template <>

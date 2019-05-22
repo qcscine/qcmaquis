@@ -55,17 +55,17 @@ BOOST_AUTO_TEST_CASE( Test1 )
     //                             "  0.176392403557             0     0     0     0 \n");
     // p.set("integrals", integrals);
 
-    const chem::integrals<double> integrals = {
-                                                        { { 1, 1, 1, 1 },   0.354237848011       },
+    const chem::integral_map<double> integrals {
+                                                        { { 1, 1, 1, 1 },   0.354237848011       }, // 2e integrals
                                                         { { 1, 1, 2, 1 },  -0.821703816101E-13   },
                                                         { { 2, 1, 2, 1 },  0.185125251547        },
                                                         { { 2, 2, 2, 1 },  0.782984788117E-13    },
                                                         { { 1, 1, 2, 2 },  0.361001163519        },
                                                         { { 2, 2, 2, 2 },  0.371320200119        },
-                                                        { { 1, 1, 0, 0 }, -0.678487901790        },
+                                                        { { 1, 1, 0, 0 }, -0.678487901790        }, // 1e integrals
                                                         { { 2, 1, 0, 0 }, -0.539801158857E-14    },
                                                         { { 2, 2, 0, 0 }, -0.653221638776        },
-                                                        { { 0, 0, 0, 0 },  0.176392403557        }
+                                                        { { 0, 0, 0, 0 },  0.176392403557        }  // Nuclear repulsion energy
                                                         };
 
     p.set("integrals_binary", chem::serialize<double>(integrals));
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( Test1 )
     p.set("L", 2);
     p.set("irrep", 0);
 
-    p.set("nsweeps",4);
+    p.set("nsweeps",2);
     p.set("max_bond_dimension",100);
 
     // for SU2U1
