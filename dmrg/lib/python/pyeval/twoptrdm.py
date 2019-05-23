@@ -6,6 +6,7 @@
 #*
 #* Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
 #*               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+#*               2018-2019 by Stefan Knecht    <stknecht@ethz.ch>
 #*
 #* 
 #* This software is part of the ALPS Applications, published under the ALPS
@@ -98,6 +99,7 @@ def print_2rdm_dbg(rdm,tag):
     tag2 = tag
 
     f=open('twoparticle.rdm.%s.%s' % (tag1,tag2),'w')
+    b=open('extDMRG_%s_%s.rdm2' % (tag1,tag2),'w')
 
     for lab, val in zip(rdm.x, rdm.y[0]):
         m = lab[0]
@@ -108,17 +110,23 @@ def print_2rdm_dbg(rdm,tag):
         #print "raw data --> ", m,n,o,p, "\t", (val.real, val.imag)
 
         if abs(val.real) == 0 and abs(val.imag) == 0: continue
- 
+
+        # dump element (and permutations) for DIRAC
         dump_element(f, val,m,n,o,p)
         dump_element(f, val,o,p,m,n)
         dump_element(f,-val,m,p,o,n)
         dump_element(f,-val,o,n,m,p)
 
+        # dump element for BAGEL as i+ j+ k l --> ikjl
+        # permuattions are taken care of internally in BAGEL
+        dump_element(b, val,m+1,o+1,n+1,p+1)
+
     f.close()
+    b.close()
 
 def dump_element(f,value,i,j,k,l):
     
-    print i,j,k,l, "\t", (value.real, value.imag)
+    #print i,j,k,l, "\t", (value.real, value.imag)
     fmt  = '% -020.14E'
     f.write(str(i)+' '+str(j)+' '+str(k)+' '+str(l)+'  '+str(fmt%value.real)+'  '+str(fmt%value.imag)+'\n')
 

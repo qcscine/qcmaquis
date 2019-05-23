@@ -159,7 +159,7 @@ namespace chem_detail {
         return std::make_pair(idx_, matrix_elements);
     }
 
-    // Template specialization for complex numbersi and U1DG symmetry!!
+    // Template specialization for complex numbers and U1DG symmetry!!
     template <>
     inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<std::complex<double> > >

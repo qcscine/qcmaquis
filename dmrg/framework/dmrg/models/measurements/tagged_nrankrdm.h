@@ -6,6 +6,8 @@
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2018 Institute for Theoretical Chemistry, ETH Zurich
+ *               2018-2019    Stefan Knecht <stknecht@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -1081,18 +1083,14 @@ namespace measurements {
                     std::vector<std::vector<pos_t> > num_labels;
 
                     for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
-                    { 
-		               if(p1 == p4 && p3 > p2)
-                             continue;
-                       if(std::max(p1,p2)  < std::max(p3,p4)  && (p2 > p4 || p4 > p3))
-                             continue;
+                    {
                        if(std::max(p1,p2)  > std::max(p3,p4)  && std::max(p3,p4) > p2)
                              continue;
-                       if(std::max(p1,p2) == std::max(p3,p4)  && p1 > p4)
+                       if(std::max(p1,p2) == std::max(p3,p4) && p1 < p4)
                              continue;
-                       if(std::min(p1,p2) == std::min(p3,p4)  && std::max(p1,p2) <= std::max(p3,p4))
+		               if(p3 > p1 && p2 > p4)
                              continue;
-                       if((p1 == p2 && p4  == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && (p4 == p2 || p4 > p1)))
+		               if(p1 == p4 && p3 == p2)
                              continue;
 
                         pos_t pos_[4] = {p1, p3, p4, p2};
@@ -1101,8 +1099,6 @@ namespace measurements {
                         pos_t posORD_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positionsORD(posORD_, posORD_ + 4);
 
-                        //std::transform(positionsORD.begin(), positionsORD.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-
                         // Loop over operator terms that are measured synchronously and added together
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
                         bool measured = false;
@@ -1110,9 +1106,9 @@ namespace measurements {
 
                             tag_vec operators(4);
                             operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
-                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
-                            operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
-                            operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                            operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
+                            operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
 
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
                             // check if term is allowed by symmetry
