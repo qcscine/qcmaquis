@@ -32,7 +32,7 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 namespace measurements {
-    
+
     template <class Matrix, class SymmGroup>
     class local_at : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
@@ -54,9 +54,10 @@ namespace measurements {
         , ops(ops_)
         {
             this->labels = label_strings(lattice, positions);
+            this->labels_num = positions;
             this->cast_to_real = false;
         }
-        
+
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
@@ -67,22 +68,22 @@ namespace measurements {
                 for (pos_t i=1; i<ops.size(); ++i)
                     if (positions[p][i-1] >= positions[p][i])
                         throw std::runtime_error("measure_local_at requires i1<i2<...<in.");
-                
+
                 generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lattice, identities, fillings);
                 generate_mpo::OperatorTerm<Matrix, SymmGroup> hterm;
-                
+
                 bool with_sign = false;
                 for (std::size_t i=0; i<ops.size(); ++i) {
                     pos_t pos = positions[p][i];
-                    
+
                     op_t const& fill  = fillings[lattice.get_prop<int>("type", pos)];
                     op_t const& op    = ops[i].first[lattice.get_prop<int>("type", pos)];
-                    
+
                     op_t tmp;
                     if (!with_sign && ops[i].second) gemm(fill, op, tmp);
                     else                             tmp = op;
                     hterm.operators.push_back( std::make_pair(pos, tmp) );
-                    
+
                     pos++;
                     with_sign = (ops[i].second) ? !with_sign : with_sign;
                     if (i != ops.size()-1)
@@ -95,7 +96,7 @@ namespace measurements {
                 hterm.with_sign = false; // filling already taken care above
                 mpom.add_term(hterm);
                 MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-                
+
                 if (!this->is_super_meas){
                     typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
                     this->vector_results.push_back(val);
@@ -109,20 +110,20 @@ namespace measurements {
                 }
             }
         }
-        
+
     protected:
         measurement<Matrix, SymmGroup>* do_clone() const
         {
             return new local_at(*this);
         }
-        
+
     private:
         Lattice lattice;
         positions_type positions;
         op_vec identities, fillings;
         std::vector<std::pair<op_vec, bool> > ops;
     };
-    
+
 }
 
 #endif

@@ -197,4 +197,3 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
             ar[archive_path + "Entanglement Spectra/mean/value"] << *spectra;
     }
 }
-

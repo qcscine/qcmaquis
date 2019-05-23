@@ -36,10 +36,16 @@ namespace maquis
     class DMRGInterface
     {
         public:
+
+            // Types for measurement results
+            typedef std::pair<std::vector<std::vector<int> >, std::vector<V> > meas_with_results_type;
+            typedef std::map<std::string, meas_with_results_type> results_map_type;
+
             DMRGInterface(DmrgParameters& parms_);
             void optimize();
-            void measure();
+            void run_measure();
             V energy();
+            results_map_type measure();
         private:
             DmrgParameters& parms;
             typename simulation_traits<V>::shared_ptr sim;

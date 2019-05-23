@@ -43,9 +43,12 @@ template <class Matrix, class SymmGroup>
 class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_sim<Matrix> {
 
     typedef sim<Matrix, SymmGroup> base;
+    typedef abstract_interface_sim<Matrix> interface_base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     typedef typename base::status_type status_type;
     typedef typename base::measurements_type measurements_type;
+    typedef typename interface_base::meas_with_results_type meas_with_results_type;
+    typedef typename interface_base::results_map_type results_map_type;
 
     using base::mps;
     using base::mpo;
@@ -181,6 +184,8 @@ public:
         if (parms["MEASURE[Energy]"]) {
             energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
             maquis::cout << "Energy: " << energy << std::endl;
+
+            if (!rfile.empty())
             {
                 storage::archive ar(rfile, "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
@@ -197,6 +202,7 @@ public:
             maquis::cout << "Energy^2: " << energy2 << std::endl;
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
 
+            if (!rfile.empty())
             {
                 storage::archive ar(rfile, "w");
                 ar["/spectrum/results/Energy^2/mean/value"] << std::vector<double>(1, energy2);
@@ -206,8 +212,21 @@ public:
 
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
         if (parms.is_set("MEASURE[ChemEntropy]"))
-            measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
+            if (!rfile.empty())
+                measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
+            else
+                throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
         #endif
+    }
+
+    results_map_type measure_out()
+    {
+        results_map_type ret;
+
+        for(auto&& meas: all_measurements)
+            ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(mps).meas_out(meas);
+
+        return ret;
     }
 
     typename Matrix::value_type get_energy()
@@ -235,6 +254,7 @@ private:
         status["site"]  = site;
         return base::checkpoint_simulation(state, status);
     }
+
 
 };
 

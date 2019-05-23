@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -54,35 +54,43 @@ class measurement {
 public:
     typedef typename Matrix::value_type value_type;
     typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-    
+
     measurement(std::string const& n="")
     : cast_to_real(true), is_super_meas(false), name_(n), eigenstate(0)
     {}
 
     virtual ~measurement() { }
-    
+
     virtual void evaluate(MPS<Matrix, SymmGroup> const&, boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) =0;
     template <class Archive>
     void save(Archive &) const;
     void write_xml(alps::oxstream &) const;
     virtual void print(std::ostream& os) const;
-    
+
     std::string const& name() const { return name_; }
     int& eigenstate_index() { return eigenstate; }
     int eigenstate_index() const { return eigenstate; }
-    
+
     void set_super_meas(Index<SymmGroup> const& phys_psi_);
-    
+
     measurement* clone() const { return do_clone(); }
-    
+
+    std::vector<std::vector<int> > get_labels_num() { return labels_num; };
+    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> get_vec_results() { return vector_results; };
+
 protected:
     virtual measurement* do_clone() const =0;
-    
+
     bool cast_to_real, is_super_meas;
+
+    // Labels in a string
     std::vector<std::string> labels;
+
+    // Plain indices
+    std::vector<std::vector<int> > labels_num;
     value_type result;
     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vector_results;
-    
+
     Index<SymmGroup> phys_psi;
 
 private:
@@ -135,14 +143,14 @@ void measurement<Matrix, SymmGroup>::write_xml(alps::oxstream & out) const
         for (int i=0; i<labels.size(); ++i) {
             out << alps::start_tag("SCALAR_AVERAGE");
             out << alps::attribute("indexvalue",labels[i]) << alps::no_linebreak;
-            
+
             if (cast_to_real) {
                 out << alps::start_tag("MEAN") << alps::no_linebreak << maquis::real(vector_results[i]) << alps::end_tag("MEAN");
             } else {
                 out << alps::start_tag("MEAN") << alps::no_linebreak << vector_results[i] << alps::end_tag("MEAN");
             }
             out << alps::end_tag("SCALAR_AVERAGE");
-            
+
         }
         out << alps::end_tag("VECTOR_AVERAGE");
     } else {

@@ -60,13 +60,12 @@ int main(int argc, char ** argv)
         if (!opt.parms["COMPLEX"])
         {
             maquis::DMRGInterface<double> interface(opt.parms);
-            interface.optimize();
+            interface.run_measure();
         }
         else
         {
             maquis::DMRGInterface<std::complex<double> > interface(opt.parms);
-
-            interface.measure();
+            interface.run_measure();
         }
 
         gettimeofday(&then, NULL);

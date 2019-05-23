@@ -52,7 +52,7 @@ namespace maquis
     }
 
     template <class V>
-    void DMRGInterface<V>::measure()
+    void DMRGInterface<V>::run_measure()
     {
         try
         {
@@ -70,6 +70,12 @@ namespace maquis
     V DMRGInterface<V>::energy()
     {
         return sim->get_energy();
+    }
+
+    template <class V>
+    typename DMRGInterface<V>::results_map_type DMRGInterface<V>::measure()
+    {
+        return sim->measure_out();
     }
 
     template class DMRGInterface<double>;

@@ -29,6 +29,9 @@
 #ifndef ABSTRACT_SIM_H
 #define ABSTRACT_SIM_H
 
+#include<map>
+#include<vector>
+
 class abstract_sim {
 public:
     virtual ~abstract_sim() {}
@@ -38,10 +41,15 @@ public:
 template <class Matrix>
 class abstract_interface_sim {
 public:
+    // warning, these types are defiled in model_impl already
+    typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
+    typedef std::map<std::string, meas_with_results_type> results_map_type;
+
     virtual ~abstract_interface_sim() {}
     virtual void run() =0;
     virtual void run_measure() =0;
     virtual typename Matrix::value_type get_energy() = 0;
+    virtual results_map_type measure_out() =0;
 };
 
 #endif
