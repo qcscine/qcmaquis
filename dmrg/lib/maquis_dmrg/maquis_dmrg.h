@@ -36,15 +36,26 @@ namespace maquis
     class DMRGInterface
     {
         public:
-
             // Types for measurement results
+            // meas_with_results_type: one measurement = pair of vectors with labels and results
             typedef std::pair<std::vector<std::vector<int> >, std::vector<V> > meas_with_results_type;
+            // All measurements -- a map with measurement names as keys and results as values
             typedef std::map<std::string, meas_with_results_type> results_map_type;
 
             DMRGInterface(DmrgParameters& parms_);
+
+            // Run DMRG optimization
             void optimize();
+
+            // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
             void run_measure();
+
+            // Get energy after the optimization
             V energy();
+
+            // Run all measurements and return them as a map
+            // Currently, all measurements must be added via parameters first, and then measure() may be executed
+            // In the future, we should support single measurements directly from the interface
             results_map_type measure();
         private:
             DmrgParameters& parms;

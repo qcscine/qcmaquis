@@ -223,8 +223,20 @@ public:
     {
         results_map_type ret;
 
+        // Run all measurements and fill the result map
         for(auto&& meas: all_measurements)
             ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(mps).meas_out(meas);
+
+        #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
+        if (parms.is_set("MEASURE[ChemEntropy]"))
+        {
+            // Obtain a map with transformed measurements
+            results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps);
+
+            // Merge transformed measurements with the remaining results
+            ret.insert(transformed_meas.begin(), transformed_meas.end());
+        }
+        #endif
 
         return ret;
     }

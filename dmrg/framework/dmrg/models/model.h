@@ -57,6 +57,7 @@ public:
     typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     typedef boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements_type;
     typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
+    typedef std::map<std::string, meas_with_results_type> results_map_type;
 
     typedef std::size_t size_t;
 
@@ -112,6 +113,7 @@ public:
     typedef typename impl_type::op_t op_t;
     typedef typename impl_type::measurements_type measurements_type;
     typedef typename impl_type::meas_with_results_type meas_with_results_type;
+    typedef typename impl_type::results_map_type results_map_type;
 
     typedef typename impl_type::size_t size_t;
 
