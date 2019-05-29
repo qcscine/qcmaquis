@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2019 by Leon Freitag <lefreita@ethz.ch>
  *
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -37,27 +38,28 @@ namespace detail {
         // read a value from file, either real or complex, needed for integral parsing
         // since complex integrals are read as space-separated real and imaginary part,
         // and operator>> of std::complex doesn't support this
+        // function signature is similar to operator>> to be able to use it in a loop
 
         // need inline as this will be compiled in multiple objects and cause linker errors otherwise
         template<class V>
-        inline V read_value(std::istream& s)
+        inline std::istream& read_value(std::istream& s, V& v)
         {
-            V v;
             s >> v;
-            return v;
+            return s;
         }
         template<>
-        inline std::complex<double> read_value<std::complex<double> >(std::istream& s)
+        inline std::istream& read_value<std::complex<double> >(std::istream& s, std::complex<double>& v)
         {
             double real, imag;
             s >> real >> imag;
-            return std::complex<double>(real,imag);
+            v = { real, imag };
+            return s;
         }
     }
 
     // now the integral parser can both real and complex integrals without specialization
     template <class T, class SymmGroup>
-    inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
+    inline
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
     parse_integrals(BaseParameters & parms, Lattice const & lat, bool do_align = true)
     {
@@ -155,13 +157,13 @@ namespace detail {
         // Otherwise, the pointer is empty,
         // but parms["integrals_binary"] is set and parsing is already completed, so the below can be skipped.
         {
-            while(*(orb_string.get()))
+            T val;
+            // use our specialization to read either real or complex value from the file
+            while(parser_detail::read_value<T>(*(orb_string.get()), val))
             {
                 integral_tuple<T> t;
-
+                t.second = val;
                 try {
-                    // use our specialization to read either real or complex value from the file
-                    t.second = parser_detail::read_value<T>(*(orb_string.get()));
                     // now read the indices
                     *(orb_string.get()) >> t.first[0] >> t.first[1] >> t.first[2] >> t.first[3];
                 }
