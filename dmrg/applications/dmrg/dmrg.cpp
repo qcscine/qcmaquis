@@ -36,6 +36,7 @@
 #include "utils/timings.h"
 
 #include "maquis_dmrg.h"
+#include "dmrg/utils/DmrgOptions.h"
 
 
 int main(int argc, char ** argv)

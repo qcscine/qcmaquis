@@ -32,12 +32,8 @@
 #include "utils/io.hpp" // has to be first include because of impi
 #include <iostream>
 
-#include "dmrg/models/chem/integral_interface.h"
-#include "dmrg/models/chem/util.h"
-#include "dmrg/utils/DmrgParameters.h"
-
 #include "maquis_dmrg.h"
-// Relativistic test: (3e,8o) stknecht: please provide description
+// Relativistic test: N2+, (3e,8o) 3-21G basis: stknecht: please update description
 BOOST_AUTO_TEST_CASE( Test_Relativistic )
 {
     // only enable the test if we compile the support for the U1DG symmetry
@@ -46,7 +42,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
 
     typedef std::complex<double> Complex;
 
-    const chem::integral_map<Complex> integrals {
+    const maquis::integral_map<Complex> integrals {
                                                     { { 1, 1, 1, 1 }, { 2.61972936056406e-01, -5.93576335462699e-17 } },
                                                     { { 3, 1, 1, 1 }, { 1.26743997238509e-09, 9.20431282901706e-12 } },
                                                     { { 1, 1, 3, 1 }, { 1.26743997238509e-09, 9.20431282901706e-12 } },
@@ -996,7 +992,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
                                                     { { 0, 0, 0, 0 }, { -1.02932237633033e+02, 0.00000000000000e+00 } }
                                                 };
 
-    p.set("integrals_binary", chem::serialize<Complex>(integrals));
+    p.set("integrals_binary", maquis::serialize<Complex>(integrals));
     p.set("site_types", "1,1,1,1,1,1,1,1");
     p.set("L", 8);
     p.set("irrep", 1);
@@ -1010,7 +1006,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
     p.set("group_id", 8);
     p.set("type", 0);
 
-    chem::detail::prepare_relativistic(p);
+    maquis::prepare_relativistic(p);
 
     // Measure 1-RDM
     p.set("MEASURE[1rdm]","1");

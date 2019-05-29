@@ -29,12 +29,19 @@
 #ifndef MAQUIS_DMRG_DETAIL_H
 #define MAQUIS_DMRG_DETAIL_H
 
-#include "dmrg/utils/DmrgOptions.h"
-#include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/sim/matrix_types.h"
+#include "dmrg/models/chem/integral_interface.h"
+#include "dmrg/models/chem/util.h"
 
 #include "interface_sim.h"
+
+
+namespace maquis {
+    using chem::integral_map;
+    using chem::serialize;
+    using chem::detail::prepare_relativistic;
+}
 
 template<class V>
 struct simulation_traits {

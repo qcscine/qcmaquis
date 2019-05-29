@@ -28,7 +28,7 @@
 #include "utils/io.hpp" // has to be first include because of impi
 
 #include "maquis_dmrg.h"
-
+#include "dmrg/utils/DmrgOptions.h"
 
 #include <iostream>
 #include <sys/time.h>
