@@ -39,7 +39,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , rfile(parms.is_set("resultfile") ? parms["resultfile"].str() : "")
 , stop_callback(static_cast<double>(parms["run_seconds"]))
 {
-    maquis::cout << DMRG_VERSION_STRING << std::endl;
+    maquis ::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
 

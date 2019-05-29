@@ -220,6 +220,15 @@ namespace detail {
         return ret;
     }
 
+    inline void prepare_relativistic(BaseParameters& parms)
+    {
+        parms.set("symmetry", "u1dg");
+        parms.set("LATTICE", "spinors");
+        parms.set("CONSERVED_QUANTUMNUMBERS", "N");
+        parms.set("MODEL", "relativistic_quantum_chemistry");
+        parms.set("COMPLEX", "1");
+    }
+
     template <class Matrix, class SymmGroup>
     inline
     std::string infer_site_types(MPS<Matrix, SymmGroup> const & mps)

@@ -364,6 +364,7 @@ if(TESTS)
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
   add_test(NAME Test2 COMMAND test2)
+  add_test(NAME Test_Relativistic COMMAND test_rel)
 endif(TESTS)
 
 
