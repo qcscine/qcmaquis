@@ -348,8 +348,6 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
     /**********************************************************************/
 
-    using boost::lambda::_1;
-    using boost::bind;
     using chem::detail::ChemHelperSU2;
     using chem::detail::append;
 
@@ -412,7 +410,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
                     append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), j,kk,kk,i, op_collection, lat));
                 }
 
-                std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
+                for (auto&& term: terms)
+                    ta.add_3term(vec, term);
 
                 terms.clear();
 
@@ -421,7 +420,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), i,j,j,j, op_collection, lat));
                 append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), j,j,j,i, op_collection, lat));
-                std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+
+                for (auto&& term: terms)
+                    ta.add_2term(vec, term);
             }
 
             used_elements[m] += 1;
@@ -454,7 +455,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec terms;
             append(terms, SSUM::two_term(matrix_elements[m], s,s,s,p, op_collection, lat));
             append(terms, SSUM::two_term(matrix_elements[m], s,p,s,s, op_collection, lat));
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+
+            for (auto&& term: terms)
+                ta.add_2term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -468,7 +471,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec & vec = this->terms_;
 
             term_vec terms = SSUM::two_term(matrix_elements[m], i,k,k,i, op_collection, lat);
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+
+            for (auto&& term: terms)
+                ta.add_2term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -486,7 +491,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
             append(terms, SSUM::two_term(matrix_elements[m], i,j,i,j, op_collection, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+            for (auto&& term: terms)
+                ta.add_2term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -514,7 +520,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
                 append(terms, SSUM::three_term(matrix_elements[m], j,k,k,i, op_collection, lat));
             }
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
+            for (auto&& term: terms)
+                ta.add_3term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -540,7 +547,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             append(terms, SSUM::three_term(matrix_elements[m], j,k,l,i, op_collection, lat));
             append(terms, SSUM::three_term(matrix_elements[m], j,l,k,i, op_collection, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
+            for (auto&& term: terms)
+                ta.add_3term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -565,7 +573,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             append(terms, SSUM::four_term(matrix_elements[m], j,k,l,i, op_collection, lat));
             append(terms, SSUM::four_term(matrix_elements[m], j,l,k,i, op_collection, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_4term, &ta, vec, _1));
+            for (auto&& term: terms) ta.add_4term(vec, term);
 
             used_elements[m] += 1;
         }
