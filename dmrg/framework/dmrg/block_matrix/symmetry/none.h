@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -30,7 +30,7 @@
 #include <iostream>
 
 #include <boost/functional/hash.hpp>
- 
+
 #include <alps/hdf5.hpp>
 
 #include <boost/serialization/serialization.hpp>
@@ -47,7 +47,7 @@ public:
     static subcharge particleNumber(charge a) {
         return 0;
     }
-    
+
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
 };
@@ -61,6 +61,7 @@ namespace boost {
             }
     };
 
+    /*
     template <>
     class hash<std::pair<TrivialGroup::charge,TrivialGroup::charge > >{
         public :
@@ -68,6 +69,7 @@ namespace boost {
                 return boost::hash_value(Pair_of_charge);
             }
     };
+    */
 };
 
 inline void save(alps::hdf5::archive & ar
@@ -86,7 +88,7 @@ inline void load(alps::hdf5::archive & ar
                  , TrivialGroup::charge & value
                  , std::vector<std::size_t> chunk = std::vector<std::size_t>()
                  , std::vector<std::size_t> offset = std::vector<std::size_t>())
-{             
+{
     value = TrivialGroup::Plus;
 }
 
