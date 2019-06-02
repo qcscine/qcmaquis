@@ -73,9 +73,31 @@ namespace maquis
     }
 
     template <class V>
-    typename DMRGInterface<V>::results_map_type DMRGInterface<V>::measure()
+    void DMRGInterface<V>::measure()
     {
-        return sim->measure_out();
+        measurements_ = sim->measure_out();
+    }
+
+    template <class V>
+    const typename DMRGInterface<V>::results_map_type& DMRGInterface<V>::measurements()
+    {
+        if (measurements_.empty())
+            measure();
+        return measurements_;
+    };
+
+    // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
+    // Fix the model to recognise it!
+    template <class V>
+    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::onerdm()
+    {
+        return measurements().at("oneptdm");
+    }
+
+    template <class V>
+    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::twordm()
+    {
+        return measurements().at("twoptdm");
     }
 
     template class DMRGInterface<double>;

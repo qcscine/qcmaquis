@@ -46,19 +46,29 @@ namespace maquis
 
             // Run DMRG optimization
             void optimize();
-
-            // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
-            void run_measure();
-
             // Get energy after the optimization
             V energy();
 
-            // Run all measurements and return them as a map
+            // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
+            // Do not store the measurements in a map
+            void run_measure();
+
+            // Run all measurements and save them as a map
             // Currently, all measurements must be added via parameters first, and then measure() may be executed
             // In the future, we should support single measurements directly from the interface
-            results_map_type measure();
+            void measure();
+
+            const results_map_type & measurements();
+
+
+            // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
+            // Fix the model to recognise it!
+            const meas_with_results_type & onerdm();
+            const meas_with_results_type & twordm();
         private:
             DmrgParameters& parms;
+
+            results_map_type measurements_;
             typename simulation_traits<V>::shared_ptr sim;
     };
 }

@@ -1018,8 +1018,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
     // check energy
     BOOST_CHECK_CLOSE(maquis::real(interface.energy()), -1.0780470133e+02 , 1e-7);
 
-    typename maquis::DMRGInterface<Complex>::results_map_type res = interface.measure();
-    const typename maquis::DMRGInterface<Complex>::meas_with_results_type& meas = res["oneptdm"];
+    const typename maquis::DMRGInterface<Complex>::meas_with_results_type& meas = interface.onerdm();
 
     // we don't have a map for the measurements yet, so we'll do it the stupid way
 
@@ -1029,7 +1028,6 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
     for (int i = 0; i < meas.first.size(); i++)
         if (meas.first[i][0] == meas.first[i][1]) // sum up diagonal elements for the trace
             value += meas.second[i];
-
 
     BOOST_CHECK_CLOSE(value.real(), 3.0 , 1e-7);
 
