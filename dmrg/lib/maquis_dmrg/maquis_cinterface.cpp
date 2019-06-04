@@ -39,10 +39,10 @@ std::string pname;
 extern "C"
 {
     typedef double V;
-    void qcmaquis_interface_init(int nel, int L, int spin, int irrep,
+    void qcmaquis_interface_preinit(int nel, int L, int spin, int irrep,
                                  int* site_types, V conv_thresh, int m, int nsweeps,
                                  int* sweep_m, int nsweepm, char* project_name,
-                                 int* integral_indices, V* integral_values, int integral_size, bool meas_2rdm)
+                                 bool meas_2rdm)
     {
         parms.set("symmetry", "su2u1pg");
         parms.set("nelec", nel);
@@ -70,17 +70,6 @@ extern "C"
         // set checkpoint folder
         parms.set("chkpfile", pname + "checkpoint_state.0.h5");
 
-        // set integrals
-        maquis::integral_map<double> integrals;
-
-        for (int i = 0; i < integral_size; i++)
-        {
-            std::array<int, 4> idx {integral_indices[4*i], integral_indices[4*i+1], integral_indices[4*i+2], integral_indices[4*i+3]};
-            V value = integral_values[i];
-            integrals[idx] = value;
-        }
-        parms.set("integrals_binary", maquis::serialize<double>(integrals));
-
         if (site_types != NULL)
         {
             std::string site_types_str;
@@ -98,7 +87,32 @@ extern "C"
 
         parms.set("conv_thresh", conv_thresh);
 
-        qcmaquis_interface_reset();
+    }
+
+    void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size)
+    {
+        if (parms.is_set("integral_file")||parms.is_set("integrals"))
+            throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
+        // set integrals
+        maquis::integral_map<double> integrals;
+
+        for (int i = 0; i < integral_size; i++)
+        {
+            std::array<int, 4> idx {integral_indices[4*i], integral_indices[4*i+1], integral_indices[4*i+2], integral_indices[4*i+3]};
+            V value = integral_values[i];
+            integrals[idx] = value;
+        }
+
+        if (!parms.is_set("integrals_binary")) // if we didn't initialize the integrals yet, initialize the interface
+        {
+            parms.set("integrals_binary", maquis::serialize<double>(integrals));
+            qcmaquis_interface_reset();
+        }
+        else
+        {
+            interface_ptr->update_integrals(integrals);
+        }
+
     }
 
     // Start a new simulation with stored parameters

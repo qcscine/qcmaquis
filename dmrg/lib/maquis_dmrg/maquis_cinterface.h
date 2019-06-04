@@ -49,13 +49,20 @@ extern "C"
     // if NULL, it is ignored, otherwise if it's not NULL, m is ignored
     // nsweepm -- size of sweep_m
     // project_name -- prefix for checkpoint files
+    void qcmaquis_interface_preinit(int nel, int L, int spin, int irrep,
+                                 int* site_types, V conv_thresh, int m, int nsweeps,
+                                 int* sweep_m, int nsweepm, char* project_name,
+                                 bool meas_2rdm);
+
+
+    // Initializes/updates integrals
+    // If integrals were not present before, initializes the interface
+    // Otherwise, updates the integrals and re-initializes the model
+    //
     // integral_indices: indices are as in FCIDUMP, but flattened
     // integral_values: corresponding values of integrals
     // integral_size: size of integral_value and 1/4 of size of integral_indices
-    void qcmaquis_interface_init(int nel, int L, int spin, int irrep,
-                                 int* site_types, V conv_thresh, int m, int nsweeps,
-                                 int* sweep_m, int nsweepm, char* project_name,
-                                 int* integral_indices, V* integral_values, int integral_size, bool meas_2rdm);
+    void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size);
 
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);

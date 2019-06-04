@@ -36,6 +36,7 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/models/chem/measure_transform.hpp"
+#include "dmrg/models/chem/integral_interface.h"
 
 
 // The sim class for interface-based DMRG runs and measurements
@@ -54,10 +55,13 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
     using base::mpo;
     using base::parms;
     using base::all_measurements;
+    using base::sweep_measurements;
     using base::stop_callback;
     using base::init_sweep;
     using base::init_site;
     using base::rfile;
+    using base::lat;
+    using base::model;
 
 public:
 
@@ -244,6 +248,25 @@ public:
     typename Matrix::value_type get_energy()
     {
         return expval(mps, mpo) + mpo.getCoreEnergy();
+    }
+
+    void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
+    {
+        if (parms.is_set("integral_file")||parms.is_set("integrals"))
+            throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
+        parms.set("integrals_binary", chem::serialize<typename Matrix::value_type>(integrals));
+
+        // construct new model and mpo with new integrals
+        // hope this doesn't give any memory leaks
+        model = Model<Matrix, SymmGroup>(lat, parms);
+        mpo = make_mpo(lat, model);
+
+        // check if MPS is still OK
+        maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms));
+
+        all_measurements = model.measurements();
+        all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+
     }
 
     ~interface_sim()

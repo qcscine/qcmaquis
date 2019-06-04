@@ -79,6 +79,12 @@ namespace maquis
     }
 
     template <class V>
+    void DMRGInterface<V>::update_integrals(const integral_map<V> & integrals)
+    {
+        sim->update_integrals(integrals);
+    }
+
+    template <class V>
     const typename DMRGInterface<V>::results_map_type& DMRGInterface<V>::measurements()
     {
         if (measurements_.empty())
