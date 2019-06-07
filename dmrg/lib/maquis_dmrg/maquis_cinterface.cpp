@@ -50,6 +50,7 @@ extern "C"
         parms.set("L", L);
         parms.set("conv_thresh", conv_thresh);
         parms.set("nsweeps", nsweeps);
+        parms.set("irrep", irrep);
 
         // for now, making things easier
         parms.set("MEASURE[1rdm]", 1);
