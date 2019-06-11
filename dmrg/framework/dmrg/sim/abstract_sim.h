@@ -32,6 +32,7 @@
 #include <map>
 #include <vector>
 #include "dmrg/models/chem/integral_interface.h"
+#include "dmrg/utils/results_collector.h"
 
 class abstract_sim {
 public:
@@ -50,6 +51,7 @@ public:
     virtual void run() =0;
     virtual void run_measure() =0;
     virtual typename Matrix::value_type get_energy() = 0;
+    virtual results_collector& get_iteration_results() = 0;
     virtual results_map_type measure_out() =0;
     virtual void update_integrals(const chem::integral_map<typename Matrix::value_type> &)=0;
 };

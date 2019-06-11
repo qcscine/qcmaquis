@@ -62,7 +62,7 @@ extern "C"
         {
             std::string sweep_bond_dim;
             for (int i = 0; i < nsweepm; i++)
-                sweep_bond_dim += std::to_string(sweep_m[i]) + ((i < nsweepm - 2) ? "," : "") ;
+                sweep_bond_dim += std::to_string(sweep_m[i]) + ((i < nsweepm - 1) ? "," : "") ;
             parms.set("sweep_bond_dimension", sweep_bond_dim);
         }
 
@@ -75,14 +75,14 @@ extern "C"
         {
             std::string site_types_str;
             for (int i = 0; i < L; i++)
-                site_types_str += std::to_string(site_types[i]) + ((i < L - 2) ? "," : "") ;
+                site_types_str += std::to_string(site_types[i]) + ((i < L - 1) ? "," : "") ;
             parms.set("site_types", site_types_str);
         }
         else
         {
             std::string site_types_str;
             for (int i = 0; i < L; i++)
-                site_types_str += "1" + (i < L - 2) ? "," : "" ;
+                site_types_str += "1" + (i < L - 1) ? "," : "" ;
             parms.set("site_types", site_types_str);
         }
 
@@ -135,7 +135,7 @@ extern "C"
     {
         std::string str;
         for (int i = 0; i < state-1; i++)
-            str += pname + "checkpoint_state." + std::to_string(state) + ".h5" + ((i < state-2) ? ";" : "") ;
+            str += pname + ".checkpoint_state." + std::to_string(state) + ".h5" + ((i < state-2) ? ";" : "") ;
 
         parms.set("chkpfile", str);
         parms.set("n_ortho_states", state-1);
@@ -172,5 +172,20 @@ extern "C"
             indices[4*i+3] = meas.first[i][3];
 
         }
+    }
+
+    void qcmaquis_interface_get_iteration_results(int* nsweeps, int* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
+    {
+        results_collector& iter = interface_ptr->get_iteration_results();
+        const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
+        const std::vector<boost::any>& tw_vec = iter["TruncatedWeight"].get();
+        const std::vector<boost::any>& tf_vec = iter["TruncatedFraction"].get();
+        const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
+
+        *m = boost::any_cast<int>(m_vec[m_vec.size()-1]);
+        *truncated_weight = boost::any_cast<V>(tw_vec[tw_vec.size()-1]);
+        *truncated_fraction = boost::any_cast<V>(tf_vec[tf_vec.size()-1]);
+        *smallest_ev = boost::any_cast<V>(ev_vec[ev_vec.size()-1]);
+        *nsweeps = m_vec.size(); // TODO: check
     }
 }

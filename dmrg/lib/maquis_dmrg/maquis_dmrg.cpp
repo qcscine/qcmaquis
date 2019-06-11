@@ -73,6 +73,12 @@ namespace maquis
     }
 
     template <class V>
+    results_collector& DMRGInterface<V>::get_iteration_results()
+    {
+        return sim->get_iteration_results();
+    }
+
+    template <class V>
     void DMRGInterface<V>::measure()
     {
         measurements_ = sim->measure_out();

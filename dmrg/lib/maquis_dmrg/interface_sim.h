@@ -37,6 +37,7 @@
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/models/chem/measure_transform.hpp"
 #include "dmrg/models/chem/integral_interface.h"
+#include "dmrg/utils/results_collector.h"
 
 
 // The sim class for interface-based DMRG runs and measurements
@@ -124,6 +125,7 @@ public:
                             storage::archive ar(rfile, "w");
                             ar[results_archive_path(sweep) + "/parameters"] << parms;
                             ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
+                            iteration_results_ = optimizer->iteration_results();
                             // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
 
                             // stop simulation if an energy threshold has been specified
@@ -168,6 +170,7 @@ public:
                     storage::archive ar(rfile, "w");
                     ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
                     ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
+                    iteration_results_ = optimizer->iteration_results();
                     // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
                 }
             }
@@ -269,12 +272,17 @@ public:
 
     }
 
+    results_collector& get_iteration_results() { return iteration_results_; };
+
     ~interface_sim()
     {
         storage::disk::sync();
     }
 
 private:
+
+    results_collector iteration_results_;
+
     std::string results_archive_path(int sweep) const
     {
         status_type status;

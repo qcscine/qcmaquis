@@ -49,6 +49,9 @@ namespace maquis
             // Get energy after the optimization
             V energy();
 
+            // Get sweep statistics
+            results_collector& get_iteration_results();
+
             // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
             // Do not store the measurements in a map
             void run_measure();

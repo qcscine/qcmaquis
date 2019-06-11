@@ -33,6 +33,7 @@
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/chem/integral_interface.h"
 #include "dmrg/models/chem/util.h"
+#include "dmrg/utils/results_collector.h"
 
 #include "interface_sim.h"
 

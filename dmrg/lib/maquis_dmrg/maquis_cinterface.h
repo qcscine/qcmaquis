@@ -75,6 +75,9 @@ extern "C"
 
     double qcmaquis_interface_get_energy();
 
+    // Get sweep statistics for the last sweep
+    void qcmaquis_interface_get_iteration_results(int* nsweeps, int* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev);
+
     // Get 1-RDM
     // size: size of values array, size of indices array = 2*size
     void qcmaquis_interface_get_1rdm(int* indices, V* values, int size);
