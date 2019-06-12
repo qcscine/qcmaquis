@@ -82,7 +82,7 @@ extern "C"
         {
             std::string site_types_str;
             for (int i = 0; i < L; i++)
-                site_types_str += "1" + (i < L - 1) ? "," : "" ;
+                site_types_str += "0" + (i < L - 1) ? "," : "" ;
             parms.set("site_types", site_types_str);
         }
 
