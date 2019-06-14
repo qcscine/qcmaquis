@@ -69,7 +69,7 @@ extern "C"
         pname = project_name;
 
         // set checkpoint folder
-        parms.set("chkpfile", pname + "checkpoint_state.0.h5");
+        parms.set("chkpfile", pname + ".checkpoint_state.0.h5");
 
         if (site_types != NULL)
         {

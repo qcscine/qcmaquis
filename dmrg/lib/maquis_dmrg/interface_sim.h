@@ -152,6 +152,10 @@ public:
                             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                     }
                 }
+                else
+                {
+                    iteration_results_ = optimizer->iteration_results();
+                }
 
                 /// write checkpoint
                 bool stopped = stop_callback() || converged;
@@ -172,6 +176,10 @@ public:
                     ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
                     iteration_results_ = optimizer->iteration_results();
                     // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                }
+                else
+                {
+                    iteration_results_ = optimizer->iteration_results();
                 }
             }
         }
