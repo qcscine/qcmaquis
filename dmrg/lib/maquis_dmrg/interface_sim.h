@@ -280,7 +280,33 @@ public:
 
     }
 
-    results_collector& get_iteration_results() { return iteration_results_; };
+    results_collector& get_iteration_results()
+    {
+        // Iteration results is empty, we didn't perform the sweep, but loaded the MPS from a checkpoint
+        // so we need to load also iteration results
+        if (iteration_results_.empty())
+        {
+            if (!rfile.empty())
+            {
+                int sweep = parms["nsweeps"];
+                try
+                {
+                    storage::archive ar(rfile, "r");
+                    ar[results_archive_path(sweep) + "/results"] >> iteration_results_;
+                }
+                catch (std::exception& e)
+                {
+                    maquis::cerr << e.what() << std::endl;
+                    throw std::runtime_error("Error reading iteration results from checkpoint.");
+                }
+            }
+            else
+                throw std::runtime_error("No checkpoint specified for restart -- cannot read iteration results!");
+
+        }
+
+        return iteration_results_;
+    };
 
     ~interface_sim()
     {

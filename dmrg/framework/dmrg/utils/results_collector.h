@@ -41,6 +41,7 @@ namespace detail {
         virtual ~collector_impl_base() {}
         virtual void collect(boost::any const &) = 0;
         virtual void save(alps::hdf5::archive & ar) const = 0;
+        virtual void load(alps::hdf5::archive & ar) = 0;
         virtual const std::vector<boost::any>& get() const = 0;
         // TODO: fixed storage type because templated virtual function are not allowed
     };
@@ -63,6 +64,19 @@ namespace detail {
             for(auto&& val : vals)
                 allvalues.push_back(boost::any_cast<T>(val));
             ar["mean/value"] << allvalues;
+        }
+
+        void load(alps::hdf5::archive & ar)
+        {
+            // overwrite the current vector
+            vals.clear();
+            // read from file
+            std::vector<T> allvalues;
+            if (ar.is_data("mean/value"))
+                ar["mean/value"] >> allvalues;
+            vals.reserve(allvalues.size());
+            for(auto&& val : allvalues)
+                vals.push_back(val);
         }
 
         // TODO: Copying is inefficient!
@@ -120,6 +134,18 @@ public:
             ar[it->first] << *it->second;
         }
     }
+
+    template <class Archive>
+    void load(Archive & ar)
+    {
+        for (std::map<std::string, boost::shared_ptr< ::detail::collector_impl_base> >::const_iterator
+             it = collection.begin(); it != collection.end(); ++it)
+        {
+            ar[it->first] >> *it->second;
+        }
+    }
+
+    bool empty() const { return collection.empty(); };
 
 private:
     std::map<std::string, boost::shared_ptr< ::detail::collector_impl_base> > collection;
