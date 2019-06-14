@@ -45,6 +45,7 @@ option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(ENABLE_OMP "Enable OpenMP" ON)
 option(USE_AMBIENT "Enable Ambient" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
+option(LAPACK_64_BIT "Build for 64-bit LAPACK library" OFF)
 
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 
