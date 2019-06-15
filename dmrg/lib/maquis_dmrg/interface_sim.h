@@ -301,7 +301,7 @@ public:
                 }
             }
             else
-                throw std::runtime_error("No checkpoint specified for restart -- cannot read iteration results!");
+                throw std::runtime_error("No result file specified for restart -- cannot read iteration results!");
 
         }
 

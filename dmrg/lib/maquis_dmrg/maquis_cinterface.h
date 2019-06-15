@@ -31,6 +31,7 @@
 // C/Fortran compatible Maquis DMRG interface
 // For now, only real matrices and SU2U1PG symmgroup is supported
 
+#include <cstddef>
 
 extern "C"
 {
@@ -76,7 +77,7 @@ extern "C"
     double qcmaquis_interface_get_energy();
 
     // Get sweep statistics for the last sweep
-    void qcmaquis_interface_get_iteration_results(int* nsweeps, int* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev);
+    void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev);
 
     // Get 1-RDM
     // size: size of values array, size of indices array = 2*size

@@ -70,6 +70,7 @@ extern "C"
 
         // set checkpoint folder
         parms.set("chkpfile", pname + ".checkpoint_state.0.h5");
+        parms.set("resultfile", pname + ".results_state.0.h5");
 
         if (site_types != NULL)
         {
@@ -134,11 +135,14 @@ extern "C"
     void qcmaquis_interface_set_state(int state)
     {
         std::string str;
-        for (int i = 0; i < state-1; i++)
-            str += pname + ".checkpoint_state." + std::to_string(state) + ".h5" + ((i < state-2) ? ";" : "") ;
+        for (int i = 0; i < state; i++)
+            str += pname + ".checkpoint_state." + std::to_string(state-1) + ".h5" + ((i < state-1) ? ";" : "") ;
 
-        parms.set("chkpfile", str);
+
+        parms.set("ortho_states", str);
         parms.set("n_ortho_states", state-1);
+        parms.set("chkpfile", pname + ".checkpoint_state." + std::to_string(state) + ".h5");
+        parms.set("resultfile", pname + ".results_state." + std::to_string(state) + ".h5");
 
         qcmaquis_interface_reset();
     }
@@ -174,7 +178,7 @@ extern "C"
         }
     }
 
-    void qcmaquis_interface_get_iteration_results(int* nsweeps, int* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
+    void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
     {
         results_collector& iter = interface_ptr->get_iteration_results();
         const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
@@ -182,7 +186,7 @@ extern "C"
         const std::vector<boost::any>& tf_vec = iter["TruncatedFraction"].get();
         const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
 
-        *m = boost::any_cast<int>(m_vec[m_vec.size()-1]);
+        *m = boost::any_cast<std::size_t>(m_vec[m_vec.size()-1]);
         *truncated_weight = boost::any_cast<V>(tw_vec[tw_vec.size()-1]);
         *truncated_fraction = boost::any_cast<V>(tf_vec[tf_vec.size()-1]);
         *smallest_ev = boost::any_cast<V>(ev_vec[ev_vec.size()-1]);
