@@ -152,7 +152,8 @@ extern "C"
         const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface_ptr->onerdm();
         // the size attribute is pretty much useless if we allocate the output arrays outside of the interface
         // we'll just use it to check if the size matches the size of the measurement
-        assert(size == meas.first.size() == meas.second.size());
+        assert(size == meas.first.size());
+        assert(size == meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
         {
             values[i] = meas.second[i];
@@ -166,7 +167,8 @@ extern "C"
     {
         const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface_ptr->twordm();
 
-        assert(size == meas.first.size() == meas.second.size());
+        assert(size == meas.first.size());
+        assert(size == meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
         {
             values[i] = meas.second[i];
