@@ -878,8 +878,7 @@ namespace measurements {
                 pos_t subref = std::min(p1, p2);
 
                 // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-                if (bra_neq_ket)
-                    pos_t subref = 0;
+                if (bra_neq_ket) subref = 0;
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
