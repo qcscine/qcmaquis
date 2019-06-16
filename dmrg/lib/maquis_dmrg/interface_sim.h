@@ -288,11 +288,23 @@ public:
         {
             if (!rfile.empty())
             {
-                int sweep = parms["nsweeps"];
                 try
                 {
                     storage::archive ar(rfile, "r");
-                    ar[results_archive_path(sweep) + "/results"] >> iteration_results_;
+
+                    // check how many sweeps we've done. is there a better way?
+
+                    results_collector results_tmp;
+                    int last_sweep = 0;
+                    do {
+                       ar[results_archive_path(last_sweep++) + "/results"] >> results_tmp;
+                    }
+                    while (!results_tmp.empty());
+
+                    if (last_sweep > 0)
+                        ar[results_archive_path(last_sweep-1) + "/results"] >> iteration_results_;
+                    else
+                        throw std::runtime_error("Error reading iteration results from checkpoint.");
                 }
                 catch (std::exception& e)
                 {

@@ -140,7 +140,7 @@ extern "C"
 
 
         parms.set("ortho_states", str);
-        parms.set("n_ortho_states", state-1);
+        parms.set("n_ortho_states", state);
         parms.set("chkpfile", pname + ".checkpoint_state." + std::to_string(state) + ".h5");
         parms.set("resultfile", pname + ".results_state." + std::to_string(state) + ".h5");
 
