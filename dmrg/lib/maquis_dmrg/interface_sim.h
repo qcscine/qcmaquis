@@ -288,23 +288,16 @@ public:
         {
             if (!rfile.empty())
             {
-                try
+                try // Load the iteration results from the last sweep
                 {
                     storage::archive ar(rfile, "r");
 
-                    // check how many sweeps we've done. is there a better way?
+                    std::vector<std::string> sweeps_str = ar.list_children("/spectrum/iteration/");
+                    std::vector<int> sweeps;
 
-                    results_collector results_tmp;
-                    int last_sweep = 0;
-                    do {
-                       ar[results_archive_path(last_sweep++) + "/results"] >> results_tmp;
-                    }
-                    while (!results_tmp.empty());
+                    std::transform(sweeps_str.begin(), sweeps_str.end(), std::back_inserter(sweeps), [&](const std::string& s){return std::stoi(s);});
 
-                    if (last_sweep > 0)
-                        ar[results_archive_path(last_sweep-1) + "/results"] >> iteration_results_;
-                    else
-                        throw std::runtime_error("Error reading iteration results from checkpoint.");
+                    ar[results_archive_path(*std::max_element(sweeps.begin(), sweeps.end())) + "/results"] >> iteration_results_;
                 }
                 catch (std::exception& e)
                 {

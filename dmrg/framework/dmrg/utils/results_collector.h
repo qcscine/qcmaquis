@@ -102,6 +102,21 @@ public:
         collector->collect(val);
     }
 
+    // Needed for a dirty hack for loading iteration_results
+    template<class T>
+    void new_collector()
+    {
+        collector.reset(new detail::collector_impl<T>());
+    }
+
+    template<class T>
+    void operator>>(T const& val)
+    {
+        if (!collector)
+            collector.reset(new detail::collector_impl<T>());
+
+    }
+
     const std::vector<boost::any>& get() const
     {
         return collector->get();
@@ -138,11 +153,27 @@ public:
     template <class Archive>
     void load(Archive & ar)
     {
-        for (std::map<std::string, boost::shared_ptr< ::detail::collector_impl_base> >::const_iterator
-             it = collection.begin(); it != collection.end(); ++it)
+
+        // TODO: This is dirty as hell
+        // TODO: We must check the types of what comes out of the archive with the operator>>. Is there a way to do that?
+        // For now, we check it manually
+        std::vector<std::string> st = ar.list_children("");
+        for (auto&& s: st)
         {
-            ar[it->first] >> *it->second;
+            // Create collectors beforehand
+            if (s == "BondDimension") // for BondDimension use std::size_t
+            {
+                (*this)[s].new_collector<std::size_t>();
+            }
+            else // double
+            {
+                (*this)[s].new_collector<double>();
+            }
+
+            ar[s] >> *(collection[s].get());
         }
+
+
     }
 
     bool empty() const { return collection.empty(); };
