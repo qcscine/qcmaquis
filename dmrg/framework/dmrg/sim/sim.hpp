@@ -43,6 +43,17 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
     
+    // check possible orbital order in existing MPS before(!) model initialization
+    {
+        boost::filesystem::path p(chkpfile);
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
+            maquis::checks::orbital_order_check(parms, chkpfile);
+        }
+        else if (!parms["initfile"].empty()){
+            maquis::checks::orbital_order_check(parms, parms["initfile"].str());
+        }
+    }
+
     /// Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
@@ -78,7 +89,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     if (restore) {
 
         maquis::checks::symmetry_check(parms, chkpfile);
-        maquis::checks::orbital_order_check(parms, chkpfile);
         load(chkpfile, mps);
         maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
 
@@ -86,7 +96,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
 
         maquis::checks::symmetry_check(parms, parms["initfile"].str());
-        maquis::checks::orbital_order_check(parms, parms["initfile"].str());
         load(parms["initfile"].str(), mps);
         maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
 
