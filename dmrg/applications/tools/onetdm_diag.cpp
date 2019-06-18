@@ -76,6 +76,9 @@ typedef U1 symm;
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
+#include "dmrg/utils/checks.h"
+
+
 int main(int argc, char ** argv)
 {
     try {
@@ -98,6 +101,11 @@ int main(int argc, char ** argv)
         std::vector<MPS<matrix, symm>::scalar_type> vector_results;
         std::vector<std::string> labels;
 
+        // Check orbital order of ket MPS
+        maquis::checks::orbital_order_check(parms, parms["chkpfile"].str());
+        // Check orbital order of bra MPS
+        maquis::checks::orbital_order_check(parms, parms["chkp_lhs"].str());
+
         /// Parsing model
         Lattice lattice = Lattice(parms);
         Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
@@ -112,8 +120,8 @@ int main(int argc, char ** argv)
 
         // load bra (chkp_lhs) and ket (chkpfile) MPS
         MPS<matrix, symm> mps1, mps2;
-        load(parms["chkp_lhs"].str(),mps2);
         load(parms["chkpfile"].str(),mps1);
+        load(parms["chkp_lhs"].str(),mps2);
 
         /// identities and fillings
         std::vector<op_t> identities(ntypes), fillings(ntypes);

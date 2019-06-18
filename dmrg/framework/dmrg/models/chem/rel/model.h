@@ -46,6 +46,7 @@
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
 #include "dmrg/models/chem/rel/chem_helper.h"
+#include "dmrg/utils/checks.h"
 
 template<class Matrix, class SymmGroup>
 class rel_qc_model : public model_impl<Matrix, SymmGroup>
@@ -230,6 +231,7 @@ public:
                 if(lhs == "MEASURE[trans1rdm]"){
                     name = "transition_oneptdm";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                 }
                 else
                     name = "oneptdm";
@@ -259,6 +261,7 @@ public:
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                 }
                 else
                     name = "twoptdm";
