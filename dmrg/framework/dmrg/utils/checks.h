@@ -79,7 +79,9 @@ namespace checks {
             if (parms.is_set("orbital_order")) {
                 parm_order = parms["orbital_order"].str();
                 if (chkp_order != parm_order)
-                    throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong orbital order " + chkp_order + "\n");
+                    // make sure we apply the orbital order previously used for this MPS
+                    parms.set("orbital_order",chkp_order);
+                    //throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong orbital order " + chkp_order + "\n");
             }
             else{
                 // make sure we apply the orbital order previously used for this MPS
