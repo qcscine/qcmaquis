@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelleb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -153,7 +153,7 @@ OutOp op_exp_hermitian(Index<SymmGroup> const & phys,
 }
 
 namespace detail {
-    
+
     template <class Matrix>
     typename boost::enable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
     exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
@@ -183,7 +183,7 @@ template <class Matrix, class SymmGroup, class A> SiteOperator<Matrix, SymmGroup
     return M;
 }
 
-template<class Matrix1, class Matrix2, class SymmGroup>
+template<class Matrix1, class Matrix2, class SymmGroup, class=typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type>
 void op_kron(Index<SymmGroup> const & phys_A,
              Index<SymmGroup> const & phys_B,
              SiteOperator<Matrix1, SymmGroup> const & A,
@@ -230,7 +230,7 @@ namespace ts_ops_detail
     std::vector<Integer> allowed_spins(Integer left, Integer right, Integer k1, Integer k2);
 }
 
-template<class Matrix1, class Matrix2, class SymmGroup>
+template<class Matrix1, class Matrix2, class SymmGroup, class=typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
 void op_kron(Index<SymmGroup> const & phys_A,
              Index<SymmGroup> const & phys_B,
              SiteOperator<Matrix1, SymmGroup> const & Ao,
@@ -353,12 +353,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
 //{
 //    assert( midx.size() == 2*(dist+1) );
 //    C = SiteOperator<Matrix, SymmGroup>();
-//    
+//
 //    for (size_t run=0; run<2; ++run) {
-//        
+//
 //        if (run == 1)
 //            C.allocate_blocks();
-//        
+//
 //        for (index_product_iterator<SymmGroup> it = midx.begin();
 //             it != midx.end(); ++it)
 //        {
@@ -366,14 +366,14 @@ void op_kron(Index<SymmGroup> const & phys_A,
 //            has_block = has_block && B.has_block((*it)[2*dist].first, (*it)[2*dist+1].first);
 //            for (size_t i=1; has_block && i<dist; ++i)
 //                has_block = F.has_block((*it)[2*i].first, (*it)[2*i+1].first);
-//            
+//
 //            if (!has_block)
 //                continue;
-//            
+//
 //            typename Matrix::value_type val = A((*it)[0], (*it)[1]) * B((*it)[2*dist], (*it)[2*dist+1]);
 //            for (size_t i=1; i<dist; ++i)
 //                val *= F((*it)[2*i], (*it)[2*i+1]);
-//            
+//
 //            if (val != 0.) {
 //                typename MultiIndex<SymmGroup>::coord_t coord_l, coord_r;
 //                boost::tie(coord_l, coord_r) = midx.get_coords(s, *it);
@@ -382,12 +382,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
 //                              midx.left_size(s, coord_l.first), midx.right_size(s, coord_r.first));
 //                else
 //                    C(coord_l, coord_r) += val;
-//                
+//
 //            }
 //        }
-//        
+//
 //    }
-//    
+//
 //}
 
 #endif
