@@ -122,6 +122,7 @@ public:
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
 
             maquis::checks::symmetry_check(parms, files[n]);
+            maquis::checks::orbital_order_check(parms, files[n]);
             load(files[n], ortho_mps[n]);
             maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
 

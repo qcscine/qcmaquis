@@ -45,6 +45,8 @@
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
 #include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/utils/checks.h"
+
 
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
@@ -270,6 +272,7 @@ public:
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                 }
                 else
                     name = "twoptdm";
@@ -319,6 +322,7 @@ public:
 
                 std::string bra_ckp("");
                 bra_ckp = it->value();
+                maquis::checks::orbital_order_check(parms, bra_ckp);
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 if(lhs == "MEASURE[trans2rdm_aaaa]"){
 
@@ -384,6 +388,7 @@ public:
                     	bra_ckp = value_split[0];
                     else
                     	bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                 }
                 else
                     name = "threeptdm";
@@ -748,6 +753,7 @@ public:
                 if(lhs == "MEASURE[trans1rdm_aa]"){
                     name = "transition_oneptdm_aa";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                     half_only = false;
                 }
                 else{
@@ -775,6 +781,7 @@ public:
                 if(lhs == "MEASURE[trans1rdm_bb]"){
                     name = "transition_oneptdm_bb";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                     half_only = false;
                 }
                 else{
@@ -802,6 +809,7 @@ public:
                 if(lhs == "MEASURE[trans1rdm_ab]"){
                     name = "transition_oneptdm_ab";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                     half_only = false;
                 }
                 else{
@@ -829,6 +837,7 @@ public:
                 if(lhs == "MEASURE[trans1rdm_ba]"){
                     name = "transition_oneptdm_ba";
                     bra_ckp = it->value();
+                    maquis::checks::orbital_order_check(parms, bra_ckp);
                     half_only = false;
                 }
                 else{

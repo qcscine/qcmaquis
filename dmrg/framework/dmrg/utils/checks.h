@@ -67,6 +67,27 @@ namespace checks {
         }
     }
 
+    inline void orbital_order_check(BaseParameters & parms, std::string chkpfile)
+    {
+        storage::archive ar_in(chkpfile+"/props.h5");
+        BaseParameters chkp_parms;
+        ar_in["/parameters"] >> chkp_parms;
+
+        std::string chkp_order, parm_order;
+        if (chkp_parms.defined("orbital_order")) {
+            chkp_order = chkp_parms["orbital_order"].str();
+            if (parms.is_set("orbital_order")) {
+                parm_order = parms["orbital_order"].str();
+                if (chkp_order != parm_order)
+                    throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong orbital order " + chkp_order + "\n");
+            }
+            else{
+                // make sure we apply the orbital order previously used for this MPS
+                parms.set("orbital_order",chkp_order);
+            }
+        }
+    }
+
 }
 }
 
