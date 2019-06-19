@@ -114,6 +114,11 @@ extern "C"
 
     }
 
+    void qcmaquis_interface_set_nsweeps(int nsweeps)
+    {
+        parms.set("nsweeps", nsweeps);
+    }
+
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset()
     {

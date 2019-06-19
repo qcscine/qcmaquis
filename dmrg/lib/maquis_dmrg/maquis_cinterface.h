@@ -55,7 +55,6 @@ extern "C"
                                  int* sweep_m, int nsweepm, char* project_name,
                                  bool meas_2rdm);
 
-
     // Initializes/updates integrals
     // If integrals were not present before, initializes the interface
     // Otherwise, updates the integrals and re-initializes the model
@@ -67,6 +66,9 @@ extern "C"
 
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);
+
+    // Sets the number of sweeps
+    void qcmaquis_interface_set_nsweeps(int nsweeps);
 
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset();
