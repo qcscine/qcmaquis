@@ -291,10 +291,9 @@ public:
                 try // Load the iteration results from the last sweep
                 {
                     storage::archive ar(rfile, "r");
-
+                    // Obtain the last sweep -- it will be the largest number in the HDF5 path /spectrum/iteration/X
                     std::vector<std::string> sweeps_str = ar.list_children("/spectrum/iteration/");
                     std::vector<int> sweeps;
-
                     std::transform(sweeps_str.begin(), sweeps_str.end(), std::back_inserter(sweeps), [&](const std::string& s){return std::stoi(s);});
 
                     ar[results_archive_path(*std::max_element(sweeps.begin(), sweeps.end())) + "/results"] >> iteration_results_;

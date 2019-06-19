@@ -105,15 +105,12 @@ extern "C"
             integrals[idx] = value;
         }
 
-        if (!parms.is_set("integrals_binary")) // if we didn't initialize the integrals yet, initialize the interface
-        {
+        if (!parms.is_set("integrals_binary"))
             parms.set("integrals_binary", maquis::serialize<double>(integrals));
-            qcmaquis_interface_reset();
-        }
-        else
-        {
+
+        // Call an integral update only if the interface has been initialised
+        if (interface_ptr)
             interface_ptr->update_integrals(integrals);
-        }
 
     }
 
