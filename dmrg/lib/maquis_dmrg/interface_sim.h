@@ -67,7 +67,7 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
 public:
 
     interface_sim (DmrgParameters & parms_)
-    : base(parms_)
+    : base(parms_), last_sweep_(init_sweep > 0 ? init_sweep-1 : init_sweep)
     { }
 
     void run()
@@ -156,6 +156,7 @@ public:
                 {
                     iteration_results_ = optimizer->iteration_results();
                 }
+                last_sweep_ = sweep;
 
                 /// write checkpoint
                 bool stopped = stop_callback() || converged;
@@ -291,12 +292,7 @@ public:
                 try // Load the iteration results from the last sweep
                 {
                     storage::archive ar(rfile, "r");
-                    // Obtain the last sweep -- it will be the largest number in the HDF5 path /spectrum/iteration/X
-                    std::vector<std::string> sweeps_str = ar.list_children("/spectrum/iteration/");
-                    std::vector<int> sweeps;
-                    std::transform(sweeps_str.begin(), sweeps_str.end(), std::back_inserter(sweeps), [&](const std::string& s){return std::stoi(s);});
-
-                    ar[results_archive_path(*std::max_element(sweeps.begin(), sweeps.end())) + "/results"] >> iteration_results_;
+                    ar[results_archive_path(last_sweep_) + "/results"] >> iteration_results_;
                 }
                 catch (std::exception& e)
                 {
@@ -312,6 +308,8 @@ public:
         return iteration_results_;
     };
 
+    int get_last_sweep() { return last_sweep_; };
+
     ~interface_sim()
     {
         storage::disk::sync();
@@ -320,6 +318,7 @@ public:
 private:
 
     results_collector iteration_results_;
+    int last_sweep_;
 
     std::string results_archive_path(int sweep) const
     {

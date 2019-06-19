@@ -79,6 +79,12 @@ namespace maquis
     }
 
     template <class V>
+    int DMRGInterface<V>::get_last_sweep()
+    {
+        return sim->get_last_sweep();
+    }
+
+    template <class V>
     void DMRGInterface<V>::measure()
     {
         measurements_ = sim->measure_out();

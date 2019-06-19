@@ -52,6 +52,7 @@ public:
     virtual void run_measure() =0;
     virtual typename Matrix::value_type get_energy() = 0;
     virtual results_collector& get_iteration_results() = 0;
+    virtual int get_last_sweep() = 0;
     virtual results_map_type measure_out() =0;
     virtual void update_integrals(const chem::integral_map<typename Matrix::value_type> &)=0;
 };

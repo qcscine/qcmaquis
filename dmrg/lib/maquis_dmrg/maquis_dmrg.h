@@ -51,6 +51,7 @@ namespace maquis
 
             // Get sweep statistics
             results_collector& get_iteration_results();
+            int get_last_sweep();
 
             // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
             // Do not store the measurements in a map

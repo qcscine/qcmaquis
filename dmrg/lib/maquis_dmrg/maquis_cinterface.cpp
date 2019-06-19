@@ -184,16 +184,22 @@ extern "C"
 
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
     {
+        // Get iteration results from the last sweep
         results_collector& iter = interface_ptr->get_iteration_results();
+
+        // iter contains results, one element per microiteration
         const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
         const std::vector<boost::any>& tw_vec = iter["TruncatedWeight"].get();
         const std::vector<boost::any>& tf_vec = iter["TruncatedFraction"].get();
         const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
 
-        *m = boost::any_cast<std::size_t>(m_vec[m_vec.size()-1]);
-        *truncated_weight = boost::any_cast<V>(tw_vec[tw_vec.size()-1]);
-        *truncated_fraction = boost::any_cast<V>(tf_vec[tf_vec.size()-1]);
-        *smallest_ev = boost::any_cast<V>(ev_vec[ev_vec.size()-1]);
-        *nsweeps = m_vec.size(); // TODO: check
+        // We return the sum of these values for the last sweep
+        // this should be done with transform_reduce
+
+        *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
+        *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
+        *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
+        *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
+        *nsweeps = interface_ptr->get_last_sweep();
     }
 }
