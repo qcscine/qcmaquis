@@ -56,7 +56,7 @@ namespace chem_detail {
                 order[p] = p+1;
                 s += (std::to_string(p+1)+ (p < (lat.size()-1) ? "," : ""));
             }
-            std::cout << "orbital order string " << s << std::endl;
+            //std::cout << "orbital order string " << s << std::endl;
             parms.set("orbital_order", s);
         }
         else
@@ -178,7 +178,7 @@ namespace chem_detail {
                 s += (std::to_string(p+1)+ (p < (lat.size()-1) ? "," : ""));
             }
             parms.set("orbital_order", s);
-            std::cout << "orbital order string " << s << std::endl;
+            //std::cout << "orbital order string " << s << std::endl;
         }
         else
             order = parms["orbital_order"].as<std::vector<pos_t> >();

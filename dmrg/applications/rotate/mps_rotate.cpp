@@ -77,6 +77,30 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
+std::vector<std::size_t> orbital_order(std::string chkp, size_t L)
+{
+    // load MPS props
+    storage::archive ar_in((chkp + "/props.h5"));
+    BaseParameters chkp_parms;
+    ar_in["/parameters"] >> chkp_parms;
+
+    std::vector<std::size_t> ret( L );
+
+    // if ordering not set, assume standard order
+    if (!chkp_parms.is_set("orbital_order")){
+       for (std::size_t p = 0; p < L; ++p){
+           ret[p] = p+1;
+       }
+    }
+    else
+       ret = chkp_parms["orbital_order"].as<std::vector<std::size_t> >();
+
+    //std::cout << "orbital order string " << chkp_parms["orbital_order"].str() << std::endl;
+
+    return ret;
+}
+
+
 template<class Matrix, class SymmGroup>
 bool sensible(MPS<Matrix, SymmGroup> const & mps)
 {
@@ -113,6 +137,7 @@ void dump_MPS(MPS<Matrix, SymmGroup> & mps,
         ar_out["/parameters"] << parms;
         */
     }
+    // save option does not overwrite props.h5 of existing MPS!
     else save(mps_out_file, mps);
 }
 
@@ -150,7 +175,7 @@ MPS<Matrix, SymmGroup> MPS_sigma_vector_product(MPS<Matrix, SymmGroup> const & m
 
 // function to set a new MPO with elements defined by an input integral file
 template<class Matrix, class SymmGroup>
-std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t Nup, size_t Ndown, std::string site_types)
+std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t Nup, size_t Ndown, std::string site_types, std::vector<std::size_t> order)
 {
     typedef Lattice::pos_t pos_t;
     typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
@@ -161,6 +186,10 @@ std::vector<MPO<Matrix, SymmGroup> > setupMPO(std::string file, size_t L, size_t
     parms.set("integral_file", file);
     parms.set("integral_cutoff", 0.);
     parms.set("site_types", site_types);
+    std::string s;
+    for (pos_t p = 0; p < L; ++p)
+        s += (std::to_string(order[p])+ (p < (L-1) ? "," : ""));
+    parms.set("orbital_order", s);
 
     Lattice lat(parms);
     Model<Matrix,SymmGroup> model = Model<Matrix, SymmGroup>(lat, parms);
@@ -300,7 +329,7 @@ void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text)
 }
 
 template <class Matrix, class SymmGroup>
-void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::string fcidump_file)
+void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::string fcidump_file, std::vector<std::size_t> order)
 {
     typedef Lattice::pos_t pos_t;
     typedef typename Matrix::value_type value_type;
@@ -326,19 +355,21 @@ void rotate_mps(MPS<Matrix, SymmGroup> & mps, std::string scale_fac_file, std::s
     // step 2: scale MPS wrt rotations among active orbitals
     for (pos_t j = 0; j < L; ++j)
     {
-        maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl;
+        pos_t jj = order[j];
 
-        // scale the j-th MPS tensor wrt the occupation of the j-th orbital 
-        value_type tjj = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(j+1));
-        scale_MPSTensor<Matrix, SymmGroup>(mps[j], tjj);
+        maquis::cout << "ROTATION of site "<< jj << std::endl << "---------------- "<<      std::endl;
+
+        // scale the jj-th MPS tensor wrt the occupation of the jj-th orbital 
+        value_type tjj = get_scaling<Matrix, SymmGroup>(scale_fac_file + "." + boost::lexical_cast<std::string>(jj));
+        scale_MPSTensor<Matrix, SymmGroup>(mps[jj-1], tjj);
 
         //maquis::cout << "- scaled MPS (local sites) - "<<      std::endl;
         //debug::mps_print_ci(mps, "dets.txt");
-        //debug::mps_print(mps[j], "\nScaled MPS at site " + boost::lexical_cast<std::string>(j));
+        //debug::mps_print(mps[jj-1], "\nScaled MPS at site " + boost::lexical_cast<std::string>(jj));
 
         // get MPO
         std::vector<MPO<Matrix, SymmGroup> > MPO_vec
-            = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(j+1), L, Nup, Ndown, site_types);
+            = setupMPO<Matrix, SymmGroup>(fcidump_file + "." + boost::lexical_cast<std::string>(jj), L, Nup, Ndown, site_types, order);
 
         // check for non-zero MPO vector
         if(MPO_vec.size() == 0) continue;
@@ -394,10 +425,12 @@ int main(int argc, char ** argv)
 
         typedef Lattice::pos_t pos_t;
 
-        //std::string rfile(parms.get<std::string>("resultfile"));
-       
+
+
         MPS<matrix, grp> mps;
         load(argv[1], mps);
+
+        std::vector<std::size_t> order = orbital_order(argv[1],  mps.length());
 
         mps.canonize(0);
 
@@ -410,7 +443,7 @@ int main(int argc, char ** argv)
         std::string scale_fac_file  = "tjj.tramps.orb";
         std::string fcidump_file    = "FCIDUMP.tramps.orb";
 
-        rotate_mps(mps, scale_fac_file, fcidump_file);
+        rotate_mps(mps, scale_fac_file, fcidump_file, order);
 
         matrix::value_type final_norm = norm(mps);
         //maquis::cout << "norm of final MPS: " << norm(mps) << std::endl; 
