@@ -16,7 +16,11 @@ get_symm_files(APPEND DMRG_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_
 # *** Targets
 add_library(maquis_dmrg SHARED ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp maquis_cinterface.cpp)
 set_property(TARGET maquis_dmrg PROPERTY POSITION_INDEPENDENT_CODE TRUE)
-target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES})
+if(APPLE)
+  target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES} "-framework Accelerate")
+else()
+  target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES} )
+endif()
 
 # *** Install
 install(FILES maquis_dmrg_detail.h interface_sim.h DESTINATION include/lib/maquis_dmrg COMPONENT headers)
