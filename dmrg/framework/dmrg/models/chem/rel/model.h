@@ -6,22 +6,22 @@
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2015-2015 by Stefano Battaglia <stefabat@ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -52,11 +52,11 @@ template<class Matrix, class SymmGroup>
 class rel_qc_model : public model_impl<Matrix, SymmGroup>
 {
     typedef model_impl<Matrix, SymmGroup> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
@@ -67,18 +67,18 @@ class rel_qc_model : public model_impl<Matrix, SymmGroup>
     typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
 
 public:
-    
+
     rel_qc_model(Lattice const & lat_, BaseParameters & parms_);
 
     void create_terms();
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
         // type == site for lattice = spinors
@@ -113,7 +113,7 @@ public:
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
     {
-        return chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
+        return chem::detail::qn_helper<SymmGroup>().total_qn(parms_);
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -156,7 +156,7 @@ public:
         GENERATE_SITE_SPECIFIC(count_op)
 
         #undef GENERATE_SITE_SPECIFIC
-        
+
         measurements_type meas;
 
         typedef std::vector<op_t> op_vec;
@@ -245,8 +245,8 @@ public:
                 }
                 half_only = true;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, 
-		                                                                            synchronous_meas_operators,half_only, 
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill,
+		                                                                            synchronous_meas_operators,half_only,
 										                                            positions, bra_ckp));
             }
 
@@ -277,11 +277,11 @@ public:
                 }
                 half_only = true;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, 
-		                                                                            synchronous_meas_operators,half_only, 
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill,
+		                                                                            synchronous_meas_operators,half_only,
 										                                            positions, bra_ckp));
             }
-            
+
             else if (!name.empty()) {
                 typedef std::vector<tag_type> tag_vec;
                 typedef std::vector<tag_vec> bond_tag_element;
@@ -289,7 +289,7 @@ public:
 
                 int f_ops = 0;
                 bond_tag_element meas_operators;
-                
+
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
                 boost::split( value_split, value, boost::is_any_of("@"));
@@ -317,7 +317,7 @@ public:
                         meas_operators.push_back(ident);
                     }
                     else
-                        throw std::runtime_error("Unrecognized operator in correlation measurement: " 
+                        throw std::runtime_error("Unrecognized operator in correlation measurement: "
                                                     + boost::lexical_cast<std::string>(*it2) + "\n");
                 }
 

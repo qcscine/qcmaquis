@@ -50,7 +50,7 @@ namespace measurements_details {
 
         template <class matrix>
         bool operator()(term_descriptor<typename matrix::value_type> const & term,
-                        boost::shared_ptr<TagHandler<matrix, symm> > tag_handler, Lattice const & lat) 
+                        boost::shared_ptr<TagHandler<matrix, symm> > tag_handler, Lattice const & lat)
         {
             return true;
         }
@@ -66,7 +66,7 @@ namespace measurements_details {
         template <class matrix>
         bool operator()(term_descriptor<typename matrix::value_type> const & term,
 				boost::shared_ptr<TagHandler<matrix, symm> > tag_handler,
-				Lattice const & lat) 
+				Lattice const & lat)
         {
             typedef typename TagHandler<matrix, symm>::op_t op_t;
 
@@ -83,11 +83,11 @@ namespace measurements_details {
                     else
     		            symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
 
-                    //maquis::cout << " index " << p << " --> accumulated charge (before) " << acc << " local charge " << local << std::endl;          
+                    //maquis::cout << " index " << p << " --> accumulated charge (before) " << acc << " local charge " << local << std::endl;
 		    acc = symm::fuse(acc, local);
-            //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;          
+            //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;
             }
-         
+
 		if (acc == symm::IdentityCharge)
             	return true;
 
@@ -116,10 +116,10 @@ namespace measurements_details {
             std::vector<T> positions_rhs;
 
             // set positions:
-            for (int i=0; i<4; ++i) positions_lhs.push_back(positions[i]); 
-            for (int i=4; i<8; ++i) positions_rhs.push_back(positions[i]); 
+            for (int i=0; i<4; ++i) positions_lhs.push_back(positions[i]);
+            for (int i=4; i<8; ++i) positions_rhs.push_back(positions[i]);
 
-            // reverse sorting to ensure maximum norm 
+            // reverse sorting to ensure maximum norm
             std::sort(positions_lhs.begin(), positions_lhs.end(), std::greater<T>());
             std::sort(positions_rhs.begin(), positions_rhs.end(), std::greater<T>());
 
@@ -133,7 +133,7 @@ namespace measurements_details {
                    +((positions_rhs[2]+1-1)*(positions_rhs[2]+1))/2
                    +  positions_rhs[3]+1
                    );
-         
+
             //maquis::cout << "lhs norm "  << norm_lhs << " <--> rhs norm " << norm_rhs << std::endl;
 
             if(norm_rhs > norm_lhs)
@@ -145,7 +145,7 @@ namespace measurements_details {
 }
 
 namespace measurements {
-    
+
     template <class Matrix, class SymmGroup, class = void>
     class TaggedNRankRDM : public measurement<Matrix, SymmGroup> {
 
@@ -163,7 +163,7 @@ namespace measurements {
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_term;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_term;
-    
+
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
@@ -185,11 +185,11 @@ namespace measurements {
             if (positions_first.size() == 0 && operator_terms[0].first.size() == 2)
                 std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
                           back_inserter(positions_first));
-            
+
             //this->cast_to_real = is_hermitian_meas(ops[0]);
             this->cast_to_real = false;
         }
-        
+
         void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
@@ -217,14 +217,14 @@ namespace measurements {
                 throw std::runtime_error("correlation measurements at the moment supported with 2, 4, 6 and 8 operators, size is "
                                           + boost::lexical_cast<std::string>(operator_terms[0].first.size()));
         }
-        
+
     protected:
 
         measurement<Matrix, SymmGroup>* do_clone() const
         {
             return new TaggedNRankRDM(*this);
         }
-        
+
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                                  MPS<Matrix, SymmGroup> const & ket_mps)
         {
@@ -242,7 +242,7 @@ namespace measurements {
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
                 for (pos_t p2 = p1+1; p2 < lattice.size(); ++p2)
-                { 
+                {
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
 
@@ -302,6 +302,9 @@ namespace measurements {
 
                     this->labels.reserve(this->labels.size() + dct.size());
                     std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                    this->labels_num.reserve(this->labels_num.size() + dct.size());
+                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                 }
             }
         }
@@ -330,12 +333,12 @@ namespace measurements {
                     subref = std::min(p1, p2);
 
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
-                { 
+                {
                     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                     std::vector<std::vector<pos_t> > num_labels;
 
                     for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
-                    { 
+                    {
                         pos_t pos_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positions(pos_, pos_ + 4);
 
@@ -385,6 +388,9 @@ namespace measurements {
 
                         this->labels.reserve(this->labels.size() + dct.size());
                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                        this->labels_num.reserve(this->labels_num.size() + dct.size());
+                        std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                     }
                 }
             }
@@ -412,10 +418,10 @@ namespace measurements {
                 p1_end   = positions_first[0]+1;
                 p2_end   = positions_first[1]+1;
             }
-            
+
             // Leon: allow both 2-index and 3-index 3-RDM measurement splitting
             // warning: if two indices are used, the order in the input file is p1,p2; but for three it's p2,p1,p3 !
-            
+
             if(positions_first.size() == 3){
                 p1_start = positions_first[0];
                 p2_start = positions_first[1];
@@ -454,13 +460,13 @@ namespace measurements {
                         // defines position vector for spin-free 3-RDM element
                         pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
                         std::vector<pos_t> positions(pos_, pos_ + 6);
-    
+
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the spin combos of the 3-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
                         bool measured = false;
                         for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
-    
+
                             tag_vec operators(6);
                             operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
                             operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
@@ -468,13 +474,13 @@ namespace measurements {
                             operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
                             operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
                             operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-    
+
                             // check if term is allowed by symmetry
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
                             if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                                 continue;
                             measured = true;
-    
+
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                             value += operator_terms[synop].second * expval(bra_mps_local, ket_mps_local, mpo);
 
@@ -486,7 +492,7 @@ namespace measurements {
                         }
 
                     }// p6
-    
+
                     std::vector<std::string> lbt = label_strings(lattice,  num_labels);
 
                     // save results and labels
@@ -499,6 +505,9 @@ namespace measurements {
 
                         this->labels.reserve(this->labels.size() + dct.size());
                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                        this->labels_num.reserve(this->labels_num.size() + dct.size());
+                        std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                     }
             }// p1, p2, p3, p4, p5
         }
@@ -542,7 +551,7 @@ namespace measurements {
 
                       if(positions_first.size() == 0){
                           p2_start = p1;
-                          p2_end   = 0; 
+                          p2_end   = 0;
                       }
 
                       for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
@@ -625,7 +634,7 @@ namespace measurements {
                                   if(none_equal){
                                       if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) continue;
                                   }
-     
+
                                   // defines position vector for spin-free 4-RDM element
                                   pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
                                   std::vector<pos_t> positions(pos_, pos_ + 8);
@@ -638,7 +647,7 @@ namespace measurements {
                                   typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
                                   bool measured = false;
                                   for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
-     
+
                                       tag_vec operators(8);
                                       operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
                                       operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
@@ -648,13 +657,13 @@ namespace measurements {
                                       operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
                                       operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
                                       operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
-     
+
                                       // check if term is allowed by symmetry
                                       term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
                                       if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                                            continue;
                                       measured = true;
-     
+
                                       MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                                       typename MPS<Matrix, SymmGroup>::scalar_type local_value = expval(ket_mps_local, ket_mps_local, mpo);
                                       //maquis::cout << "synop term " << synop+1 << "--> local value: " << local_value << std::endl;
@@ -686,6 +695,9 @@ namespace measurements {
 
                                   this->labels.reserve(this->labels.size() + dct.size());
                                   std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                                  this->labels_num.reserve(this->labels_num.size() + dct.size());
+                                  std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                               }
                           } // p5,p6,p7
                       } // p1
@@ -704,7 +716,7 @@ namespace measurements {
         std::string bra_ckp;
     };
 
-    
+
     template <class Matrix, class SymmGroup>
     class TaggedNRankRDM<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type >
         : public measurement<Matrix, SymmGroup>
@@ -725,7 +737,7 @@ namespace measurements {
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_term;
 
         typedef TermMakerSU2<Matrix, SymmGroup> TM;
-    
+
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
@@ -745,15 +757,16 @@ namespace measurements {
             if (positions_first.size() == 0)
                 std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
                           back_inserter(positions_first));
-            
+
             //this->cast_to_real = is_hermitian_meas(ops[0]);
             this->cast_to_real = false;
         }
-        
+
         void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
             this->labels.clear();
+            this->labels_num.clear();
 
             MPS<Matrix, SymmGroup> bra_mps;
             if (bra_ckp != "") {
@@ -770,14 +783,14 @@ namespace measurements {
             else if (this->name() == "twoptdm")
                 measure_2rdm(bra_mps, ket_mps);
         }
-        
+
     protected:
 
         measurement<Matrix, SymmGroup>* do_clone() const
         {
             return new TaggedNRankRDM(*this);
         }
-        
+
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                                  MPS<Matrix, SymmGroup> const & ket_mps)
         {
@@ -795,12 +808,12 @@ namespace measurements {
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
                 for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
-                { 
+                {
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
 
                     std::vector<term_descriptor> terms;
-                    if (p1 != p2) 
+                    if (p1 != p2)
                         // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                         terms.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
                             true, op_collection.ident.no_couple, std::sqrt(2.), p1, p2, op_collection.create.couple_down, op_collection.create.fill_couple_up,
@@ -816,7 +829,7 @@ namespace measurements {
                     // check if term is allowed by symmetry
                     if(not measurements_details::checkpg<SymmGroup>()(terms[0], tag_handler_local, lattice))
                            continue;
-                    
+
                     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
                                                                           op_collection.fill.no_couple, tag_handler_local, terms);
                     MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
@@ -839,6 +852,9 @@ namespace measurements {
 
                     this->labels.reserve(this->labels.size() + dct.size());
                     std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                    this->labels_num.reserve(this->labels_num.size() + dct.size());
+                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                 }
             }
         }
@@ -862,16 +878,15 @@ namespace measurements {
                 pos_t subref = std::min(p1, p2);
 
                 // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-                if (bra_neq_ket)
-                    pos_t subref = 0;
+                if (bra_neq_ket) subref = 0;
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
 
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
-                { 
+                {
                     for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
-                    { 
+                    {
                         pos_t pos_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positions(pos_, pos_ + 4);
 
@@ -880,7 +895,7 @@ namespace measurements {
                         // check if term is allowed by symmetry
                         if(not measurements_details::checkpg<SymmGroup>()(terms[0], tag_handler_local, lattice))
                                continue;
-                        
+
                         generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
                                                                               op_collection.fill.no_couple, tag_handler_local, terms);
                         MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
@@ -904,6 +919,9 @@ namespace measurements {
 
                     this->labels.reserve(this->labels.size() + dct.size());
                     std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                    this->labels_num.reserve(this->labels_num.size() + dct.size());
+                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                 }
             }
         }
@@ -938,7 +956,7 @@ namespace measurements {
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_term;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_term;
-    
+
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
@@ -962,14 +980,15 @@ namespace measurements {
             //if (positions_first.size() == 0 && operator_terms[0].first.size() == 2)
             //    std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
             //              back_inserter(positions_first));
-            
+
             this->cast_to_real = false;
         }
-        
+
         void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
             this->labels.clear();
+            this->labels_num.clear();
 
             MPS<Matrix, SymmGroup> bra_mps;
             if (bra_ckp != "") {
@@ -993,14 +1012,14 @@ namespace measurements {
                 throw std::runtime_error("relativistic correlation measurements at the moment supported with 2 and 4 operators, size is "
                                           + boost::lexical_cast<std::string>(operator_terms[0].first.size()));
         }
-        
+
     protected:
 
         measurement<Matrix, SymmGroup>* do_clone() const
         {
             return new TaggedNRankRDM(*this);
         }
-        
+
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                                  MPS<Matrix, SymmGroup> const & ket_mps)
         {
@@ -1018,7 +1037,7 @@ namespace measurements {
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
                 for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
-                { 
+                {
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
 
@@ -1055,6 +1074,9 @@ namespace measurements {
 
                     this->labels.reserve(this->labels.size() + dct.size());
                     std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                    this->labels_num.reserve(this->labels_num.size() + dct.size());
+                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                 }
             }
         }
@@ -1075,7 +1097,7 @@ namespace measurements {
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
 		    for (pos_t p3 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p3 < lattice.size(); ++p3)
-                { 
+                {
 		            if(p1 == p2 && p1 == p3)
                         continue;
 
@@ -1146,6 +1168,9 @@ namespace measurements {
 
                         this->labels.reserve(this->labels.size() + dct.size());
                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                        this->labels_num.reserve(this->labels_num.size() + dct.size());
+                        std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                     }
                 }
             }

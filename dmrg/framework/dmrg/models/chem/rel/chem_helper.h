@@ -5,22 +5,22 @@
  * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -30,8 +30,9 @@
 
 #include "dmrg/models/chem/parse_integrals.h"
 
-namespace chem_detail {
-    
+namespace chem {
+namespace detail {
+
     template <typename M, class S>
     class RelChemHelper
     {
@@ -56,7 +57,7 @@ namespace chem_detail {
         }
 
         std::vector<value_type> & getMatrixElements() { return matrix_elements; }
-        
+
         int idx(int m, int pos) const {
             return idx_(m,pos);
         }
@@ -85,14 +86,14 @@ namespace chem_detail {
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
-            else 
+            else
                 two_terms[id].coeff += term.coeff;
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int s, int p1, int p2, 
+                      value_type scale, int s, int p1, int p2,
                       std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
-                      std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j) 
+                      std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
         {
             term_descriptor
             term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
@@ -101,11 +102,11 @@ namespace chem_detail {
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
             }
-            else 
+            else
                 three_terms[id].coeff += term.coeff;
         }
 
-        void add_term(std::vector<term_descriptor> & tagterms, value_type scale, 
+        void add_term(std::vector<term_descriptor> & tagterms, value_type scale,
                       int i, int k, int l, int j,
                       std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
                       std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
@@ -121,7 +122,7 @@ namespace chem_detail {
 			if (four_terms.count(id) == 0) {
 				four_terms[id] = term;
 			}
-			else 
+			else
 				four_terms[id].coeff += term.coeff;
         }
 
@@ -142,5 +143,5 @@ namespace chem_detail {
         std::map<IndexTuple, term_descriptor> two_terms;
     };
 }
-
+}
 #endif

@@ -5,22 +5,22 @@
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -34,7 +34,8 @@
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice.h"
 
-namespace chem_detail {
+namespace chem {
+namespace detail {
 
     template <class SymmGroup>
     struct qn_helper
@@ -101,13 +102,24 @@ namespace chem_detail {
     class IndexTuple : public NU1Charge<4>
     {
     public:
+        typedef std::array<int, 4> array_type;
+
         IndexTuple() {}
         IndexTuple(int i, int j, int k, int l) {
             (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
         }
+        inline operator array_type() const
+        {
+            array_type ret;
+            for (int i = 0; i < 4; i++)
+            {
+                ret[i] = (*this)[i];
+            }
+            return ret;
+        }
     };
 
-	template <class SymmGroup>
+	template <class SymmGroup=TrivialGroup>
     inline IndexTuple align(int i, int j, int k, int l) {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
@@ -115,12 +127,17 @@ namespace chem_detail {
         if (i==k && j<l) { std::swap(j,l); }
         return IndexTuple(i,j,k,l);
     }
-    
+
+    template <class SymmGroup=TrivialGroup>
+    inline IndexTuple align(const typename IndexTuple::array_type & arr) {
+        return align<SymmGroup>(arr[0], arr[1], arr[2], arr[3]);
+    }
+
 	template <>
     inline IndexTuple align<U1DG>(int i, int j, int k, int l) {
         return IndexTuple(i,j,k,l);
     }
-    
+
 	template <class SymmGroup>
     inline IndexTuple align(IndexTuple const & rhs) {
         return align<SymmGroup>(rhs[0], rhs[1], rhs[2], rhs[3]);
@@ -131,7 +148,7 @@ namespace chem_detail {
         int inv_count=0, n=4;
         for(int c1 = 0; c1 < n - 1; c1++)
             for(int c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;  
+                if(idx[c1] > idx[c2]) inv_count++;
 
         return 1 - 2 * (inv_count % 2);
     }
@@ -203,6 +220,15 @@ namespace chem_detail {
         return ret;
     }
 
+    inline void prepare_relativistic(BaseParameters& parms)
+    {
+        parms.set("symmetry", "u1dg");
+        parms.set("LATTICE", "spinors");
+        parms.set("CONSERVED_QUANTUMNUMBERS", "N");
+        parms.set("MODEL", "relativistic_quantum_chemistry");
+        parms.set("COMPLEX", "1");
+    }
+
     template <class Matrix, class SymmGroup>
     inline
     std::string infer_site_types(MPS<Matrix, SymmGroup> const & mps)
@@ -252,6 +278,7 @@ namespace chem_detail {
 
         return site_bases;
     }
+}
 }
 
 #endif

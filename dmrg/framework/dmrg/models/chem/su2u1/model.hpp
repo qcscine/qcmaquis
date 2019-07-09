@@ -5,22 +5,22 @@
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -36,7 +36,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 , tag_handler(new table_type())
 {
     typedef typename SymmGroup::subcharge subcharge;
-    // find the highest irreducible representation number 
+    // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
     max_irrep = 0;
     for (pos_t p=0; p < lat.size(); ++p)
@@ -325,8 +325,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
     op_collection.count     .no_couple = count;
     op_collection.count     .fill_no_couple = count_fill;
 
-    op_collection.create_count         = create_count_pkg;       
-    op_collection.destroy_count        = destroy_count_pkg;       
+    op_collection.create_count         = create_count_pkg;
+    op_collection.destroy_count        = destroy_count_pkg;
 
     op_collection.e2d       .no_couple = e2d;
     op_collection.d2e       .no_couple = d2e;
@@ -338,7 +338,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
     /**********************************************************************/
 
-    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
+    chem::detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
     alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
     std::vector<value_type> matrix_elements = ta.getMatrixElements();
 
@@ -348,11 +348,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
     /**********************************************************************/
 
-    using boost::lambda::_1;
-    using boost::bind;
-    using chem_detail::ChemHelperSU2;
-    using chem_detail::append;
- 
+    using chem::detail::ChemHelperSU2;
+    using chem::detail::append;
+
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = idx_(m, 0);
         int j = idx_(m, 1);
@@ -366,7 +364,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term.coeff = matrix_elements[m];
             term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
-            
+
             used_elements[m] += 1;
         }
 
@@ -382,7 +380,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             continue;
         }
 
-        // Hopping term t_ij 
+        // Hopping term t_ij
         else if (k == -1 && l == -1) {
 
             // one-electron problems need special attention
@@ -406,13 +404,14 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 term_vec terms;
                 for (pos_t kk = 0; kk < lat.size(); ++kk)
-                {   
+                {
                     if (kk == j || kk == i) continue;
                     append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), i,kk,kk,j, op_collection, lat));
                     append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), j,kk,kk,i, op_collection, lat));
                 }
 
-                std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
+                for (auto&& term: terms)
+                    ta.add_3term(vec, term);
 
                 terms.clear();
 
@@ -421,7 +420,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), i,j,j,j, op_collection, lat));
                 append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), j,j,j,i, op_collection, lat));
-                std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+
+                for (auto&& term: terms)
+                    ta.add_2term(vec, term);
             }
 
             used_elements[m] += 1;
@@ -454,7 +455,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec terms;
             append(terms, SSUM::two_term(matrix_elements[m], s,s,s,p, op_collection, lat));
             append(terms, SSUM::two_term(matrix_elements[m], s,p,s,s, op_collection, lat));
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+
+            for (auto&& term: terms)
+                ta.add_2term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -468,7 +471,9 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec & vec = this->terms_;
 
             term_vec terms = SSUM::two_term(matrix_elements[m], i,k,k,i, op_collection, lat);
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+
+            for (auto&& term: terms)
+                ta.add_2term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -486,7 +491,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
             append(terms, SSUM::two_term(matrix_elements[m], i,j,i,j, op_collection, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
+            for (auto&& term: terms)
+                ta.add_2term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -514,7 +520,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
                 append(terms, SSUM::three_term(matrix_elements[m], j,k,k,i, op_collection, lat));
             }
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
+            for (auto&& term: terms)
+                ta.add_3term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -540,7 +547,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             append(terms, SSUM::three_term(matrix_elements[m], j,k,l,i, op_collection, lat));
             append(terms, SSUM::three_term(matrix_elements[m], j,l,k,i, op_collection, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
+            for (auto&& term: terms)
+                ta.add_3term(vec, term);
 
             used_elements[m] += 1;
         }
@@ -565,7 +573,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             append(terms, SSUM::four_term(matrix_elements[m], j,k,l,i, op_collection, lat));
             append(terms, SSUM::four_term(matrix_elements[m], j,l,k,i, op_collection, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_4term, &ta, vec, _1));
+            for (auto&& term: terms) ta.add_4term(vec, term);
 
             used_elements[m] += 1;
         }

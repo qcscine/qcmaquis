@@ -5,22 +5,22 @@
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -35,7 +35,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 , tag_handler(new table_type())
 {
     typedef typename SymmGroup::subcharge subcharge;
-    // find the highest irreducible representation number 
+    // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
     max_irrep = 0;
     for (pos_t p=0; p < lat.size(); ++p)
@@ -195,11 +195,11 @@ template <class Matrix, class SymmGroup>
 void qc_model<Matrix, SymmGroup>::create_terms()
 {
 
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
+    chem::detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
- 
+
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
         int j = term_assistant.idx(m, 1);
@@ -213,7 +213,7 @@ void qc_model<Matrix, SymmGroup>::create_terms()
             term.coeff = matrix_elements[m];
             term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
             this->terms_.push_back(term);
-            
+
             used_elements[m] += 1;
         }
 
@@ -236,7 +236,7 @@ void qc_model<Matrix, SymmGroup>::create_terms()
             continue;
         }
 
-        // Hopping term t_ij 
+        // Hopping term t_ij
         else if (k == -1 && l == -1) {
 
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
@@ -342,7 +342,7 @@ void qc_model<Matrix, SymmGroup>::create_terms()
                 //this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
                 this->terms_, -matrix_elements[m], i, j, destroy_up, create_down, destroy_down, create_up
             );
-            
+
             used_elements[m] += 1;
         }
 
@@ -433,9 +433,9 @@ void qc_model<Matrix, SymmGroup>::create_terms()
 
         // 32 (8x4)-fold degenerate V_ijkl = V_jikl = V_ijlk = V_jilk = V_klij = V_lkij = V_klji = V_lkji * spin
         // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
-        // coded: 4 index permutations x 4 spin combinations 
+        // coded: 4 index permutations x 4 spin combinations
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
-            
+
             // 1
             term_assistant.add_term(this->terms_, i,k,l,j, create_up, create_up, destroy_up, destroy_up);
             term_assistant.add_term(this->terms_, i,k,l,j, create_up, create_down, destroy_down, destroy_up);
@@ -459,7 +459,7 @@ void qc_model<Matrix, SymmGroup>::create_terms()
             term_assistant.add_term(this->terms_, j,l,k,i, create_up, create_down, destroy_down, destroy_up);
             term_assistant.add_term(this->terms_, j,l,k,i, create_down, create_up, destroy_up, destroy_down);
             term_assistant.add_term(this->terms_, j,l,k,i, create_down, create_down, destroy_down, destroy_down);
-        
+
             used_elements[m] += 1;
         }
     } // matrix_elements for
@@ -472,5 +472,5 @@ void qc_model<Matrix, SymmGroup>::create_terms()
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
-    
+
 #endif

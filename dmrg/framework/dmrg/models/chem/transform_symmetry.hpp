@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2015 Laboratory of Physical Chemistry, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -101,7 +101,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                 new_right_i.insert(std::make_pair(it->first, (it->second).sum_of_sizes()));
 
             mps_out = MPSTensor<Matrix, SymmOut>(physical_i_out, new_left_i, new_right_i, false, 0.);
-        }    
+        }
 
         ProductBasis<SymmOut> out_left_pb(physical_i_out, new_left_i);
 
@@ -209,14 +209,14 @@ struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::H
     {
         BaseParameters parms;
         parms.set("init_bond_dimension", 1000);
-        parms.set("site_types", chem_detail::infer_site_types(mps_in));
+        parms.set("site_types", chem::detail::infer_site_types(mps_in));
 
         Lattice::pos_t L = mps_in.size();
         typename SymmOut::subcharge irrep = getPG<SymmGroup>()(mps_in[mps_in.size()-1].col_dim()[0].first);
 
         const_mps_init<Matrix, SymmOut> mpsinit(parms,
-                                                chem_detail::make_2u1_site_basis<Matrix, SymmOut>(L, Nup, Ndown, parms["site_types"]),
-                                                chem_detail::make_2u1_initc<SymmOut>(Nup, Ndown, irrep), parms["site_types"]);
+                                                chem::detail::make_2u1_site_basis<Matrix, SymmOut>(L, Nup, Ndown, parms["site_types"]),
+                                                chem::detail::make_2u1_initc<SymmOut>(Nup, Ndown, irrep), parms["site_types"]);
         MPS<Matrix, SymmOut> mps_out(mps_in.size(), mpsinit);
 
         clean_mps(mps_in);

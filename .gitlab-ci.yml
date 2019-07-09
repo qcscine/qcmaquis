@@ -1,0 +1,25 @@
+image: gitlab.chab.ethz.ch:4567/reiher/docker/qcmaquis-gcc:latest
+
+build:
+  stage: build
+  tags:
+    - default_docker
+  script:
+    - mkdir build && cd build
+    - cmake -DTESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" -DBLAS_LAPACK_SELECTOR=manual -DMAQUISLapack_LIBRARIES="-lblas -llapack" -DALPS_DIR=/devel/alps/share/alps ../dmrg
+    - make -j4
+  artifacts:
+    paths:
+      - build/
+    expire_in: 6h
+    when: always
+
+
+test:
+  stage: test
+  tags:
+    - default_docker
+  script:
+    - cd build
+    - make test
+

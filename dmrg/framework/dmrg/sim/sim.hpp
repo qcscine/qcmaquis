@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -34,15 +34,14 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , init_sweep(0)
 , init_site(-1)
 , restore(false)
-, dns( (parms["donotsave"] != 0) )
-, chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
-, rfile(parms["resultfile"].str())
+, dns( (parms["donotsave"] != 0) || !parms.is_set("chkpfile") )
+, chkpfile(parms.is_set("chkpfile") ? boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")) : "")
+, rfile(parms.is_set("resultfile") ? parms["resultfile"].str() : "")
 , stop_callback(static_cast<double>(parms["run_seconds"]))
-{ 
-    maquis::cout << DMRG_VERSION_STRING << std::endl;
+{
+    maquis ::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
-    
     // check possible orbital order in existing MPS before(!) model initialization
     {
         boost::filesystem::path p(chkpfile);
@@ -60,7 +59,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    
+
+    if (!chkpfile.empty())
     {
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
@@ -69,10 +69,10 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
-                
+
                 if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
                     ar_in["/status/site"] >> init_site;
-                
+
                 if (init_site == -1)
                     ++init_sweep;
 
@@ -104,24 +104,25 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     }
 
     assert(mps.length() == lat.size());
-    
+
     /// Update parameters - after checks have passed
+    if (!rfile.empty())
     {
         storage::archive ar(rfile, "w");
-        
+
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    if (!dns)
+    if (!dns && !chkpfile.empty())
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
         storage::archive ar(chkpfile+"/props.h5", "w");
-        
+
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    
+
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
 }
 
@@ -131,11 +132,11 @@ sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
 {
     measurements_type mymeas(all_measurements);
     mymeas << overlap_measurements<Matrix, SymmGroup>(parms, sweep);
-    
+
     measurements_type sweep_measurements;
     if (!parms["ALWAYS_MEASURE"].empty())
         sweep_measurements = meas_sublist(mymeas, parms["ALWAYS_MEASURE"]);
-    
+
     return sweep_measurements;
 }
 
@@ -151,7 +152,7 @@ void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const&
     if (!dns) {
         /// save state to chkp dir
         save(chkpfile, state);
-        
+
         /// save status
         if(!parallel::master()) return;
         storage::archive ar(chkpfile+"/props.h5", "w");
@@ -206,4 +207,3 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
             ar[archive_path + "Entanglement Spectra/mean/value"] << *spectra;
     }
 }
-

@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -89,7 +89,7 @@ struct TermMakerSU2 {
         for(I c1 = 0; c1 < n - 1; c1++)
             for(I c2 = c1+1; c2 < n; c2++)
                 if(idx[c1] > idx[c2]) inv_count++;
-    
+
         return (inv_count % 2 != 0);
     }
 
@@ -214,7 +214,7 @@ public:
     typedef typename TM::OperatorBundle OperatorBundle;
     typedef typename TM::OperatorCollection OperatorCollection;
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     V_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
          OperatorCollection const & ops, Lattice const & lat)
     {
@@ -234,7 +234,7 @@ public:
                 return two_term(matrix_element, i, k, l, j, ops, lat);
             case 1:
                 term_descriptor term;
-                term.coeff = value_type(2.)*matrix_element; // 2 spin combinations are non-zero 
+                term.coeff = value_type(2.)*matrix_element; // 2 spin combinations are non-zero
                 term.push_back(boost::make_tuple(i, ops.docc.no_couple[lat.get_prop<typename S::subcharge>("type", i)]));
                 return std::vector<term_descriptor>(1, term);
         }
@@ -242,7 +242,7 @@ public:
         return std::vector<term_descriptor>();
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     two_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
              OperatorCollection const & ops, Lattice const & lat)
     {
@@ -256,7 +256,7 @@ public:
         else { throw std::runtime_error("Unexpected index arrangement for V_ijjj term\n"); }
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     three_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
     {
@@ -264,7 +264,7 @@ public:
         else return three_termB(matrix_element, i, k, l, j, ops, lat);
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     four_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
@@ -273,7 +273,7 @@ public:
         // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
         // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
 
-        chem_detail::IndexTuple key = chem_detail::align<S>(i,j,k,l);
+        chem::detail::IndexTuple key = chem::detail::align<S>(i,j,k,l);
         pos_t i_ = key[0], j_ = key[1], k_ = key[2], l_ = key[3];
 
         if (k_ > l_ && l_ > j_) // eg V_4132
@@ -303,7 +303,7 @@ public:
 
 private:
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     two_termA(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
@@ -313,7 +313,7 @@ private:
         return ret;
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     two_termB1(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
@@ -323,7 +323,7 @@ private:
         return ret;
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     two_termB2(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
@@ -341,7 +341,7 @@ private:
         return ret;
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     two_termC(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
@@ -369,7 +369,7 @@ private:
         return ret;
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     three_termA(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
     {
@@ -385,7 +385,7 @@ private:
         return ret;
     }
 
-    static std::vector<term_descriptor> 
+    static std::vector<term_descriptor>
     three_termB(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                 OperatorCollection const & ops, Lattice const & lat)
     {

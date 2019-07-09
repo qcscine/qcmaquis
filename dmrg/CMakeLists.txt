@@ -20,9 +20,16 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 # Project START
 ######################################################################
-project (MAQUIS_DMRG) 
+project (MAQUIS_DMRG)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
+
+# set proper rpath for installed binaries
+# @stknecht: make sure this works also for OS X with MACOS_RPATH
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
@@ -38,13 +45,13 @@ option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(ENABLE_OMP "Enable OpenMP" ON)
 option(USE_AMBIENT "Enable Ambient" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
+option(LAPACK_64_BIT "Build for 64-bit LAPACK library" OFF)
 
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
-option(REGRESSION_UNIT_TESTING      "Build and run regression unit testing" OFF)
-option(REGRESSION_APPLICATION_TESTS "Run application tests"                 OFF)
-option(REGRESSION_PERFORMANCE_TESTS "Run application benchmarks"            OFF)
+option(TESTS      "Build and run tests" OFF)
+
 
 mark_as_advanced(ENABLE_COLLECTOR)
 
@@ -218,14 +225,14 @@ set(DMRG_VERSION_MAJOR 2)
 set(DMRG_VERSION_MINOR 1)
 set(DMRG_VERSION_BUILD "")
 
-if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
-  FIND_PACKAGE(Subversion) 
-  IF(Subversion_FOUND) 
-    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} DMRG) 
+if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
+  FIND_PACKAGE(Subversion)
+  IF(Subversion_FOUND)
+    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} DMRG)
     string(REPLACE ${DMRG_WC_ROOT} "" DMRG_BRANCH ${DMRG_WC_URL})
     set(DMRG_VERSION_BUILD "r${DMRG_WC_REVISION} (${DMRG_BRANCH})")
-  ENDIF(Subversion_FOUND) 
-endif(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
+  ENDIF(Subversion_FOUND)
+endif(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
     find_package(Git)
@@ -262,7 +269,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
         endif()
 
         set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH}) ${SVN_REV}")
-    endif() 
+    endif()
 endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 
 if(DMRG_VERSION_BUILD)
@@ -271,7 +278,7 @@ else(DMRG_VERSION_BUILD)
   set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}")
 endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
-MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}") 
+MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 
 
 ######################################################################
@@ -314,7 +321,7 @@ if(NOT USE_AMBIENT)
   list(APPEND DMRG_LIBRARY_DIRS ${MAQUISLapack_LIB_DIRS})
 endif(NOT USE_AMBIENT)
 
-include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${PROJECT_SOURCE_DIR}/lib/maquis_dmrg ${PROJECT_BINARY_DIR}/lib/maquis_dmrg ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})
 add_definitions(${DMRG_DEFINITIONS})
 
@@ -353,34 +360,22 @@ endif(USE_IMGTE_ONLY)
 # *** libraries / utilities
 add_subdirectory(framework/dmrg)
 
+# *** shared library
+add_subdirectory(lib/maquis_dmrg)
+
 # *** applications
 add_subdirectory(applications)
 
-# *** regression tests
-if(REGRESSION_UNIT_TESTING)
-  #add_subdirectory(tests)
+# *** tests
+if(TESTS)
   enable_testing()
-  if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-      message(WARNING "Tests should be checked in Debug mode!")
-  endif()
-  add_subdirectory(regression/tests)
-  # add_subdirectory(regression/block_matrix)
-  # add_subdirectory(regression/mp_tensors)
-  # add_subdirectory(regression/dmrg)
-  # add_subdirectory(regression/te)
-endif(REGRESSION_UNIT_TESTING)
+  add_subdirectory(tests)
+  add_test(NAME Test1 COMMAND test1)
+  add_test(NAME Test2 COMMAND test2)
+  add_test(NAME Test_Relativistic COMMAND test_rel)
+endif(TESTS)
 
-if(REGRESSION_APPLICATION_TESTS)
-  enable_testing()
-  add_subdirectory(regression/applications)
-endif(REGRESSION_APPLICATION_TESTS)
 
-if(REGRESSION_PERFORMANCE_TESTS)
-# *** benchmark applications
-  add_subdirectory(regression/benchmarks)
-  #enable_testing()
-  #add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
-endif(REGRESSION_PERFORMANCE_TESTS)
 
 
 ######################################################################

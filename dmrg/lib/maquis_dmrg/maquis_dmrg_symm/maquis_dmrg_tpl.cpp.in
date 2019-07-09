@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,19 +24,9 @@
  *
  *****************************************************************************/
 
+#include "interface_sim.h"
 #include "dmrg/sim/matrix_types.h"
 
-#include "dmrg_sim.h"
-#include "simulation.h"
+template class interface_sim<matrix,@CMAKE_SYMM_GROUP@>;
+template class interface_sim<cmatrix,@CMAKE_SYMM_GROUP@>;
 
-template <class SymmGroup>
-void simulation<SymmGroup>::run(DmrgParameters & parms)
-{
-    if (parms["COMPLEX"]) {
-        dmrg_sim<cmatrix, SymmGroup> sim(parms);
-        sim.run();
-    } else {
-        dmrg_sim<matrix, SymmGroup> sim(parms);
-        sim.run();
-    }
-}
