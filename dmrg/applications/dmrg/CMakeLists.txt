@@ -3,7 +3,7 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
-set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
+set(DMRG_APP_LIBRARIES maquis_dmrg-shared dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 
 if(USE_AMBIENT)
   compile_with_ambient()
