@@ -32,6 +32,7 @@
 // CPP/CPP compatible relativistic QCMaquis DMRG interface
 
 #include <complex>
+#include <vector>
 typedef std::complex<double> V;
 
     typedef std::complex<double> V;
@@ -64,7 +65,7 @@ typedef std::complex<double> V;
     // integral_indices: indices are as in FCIDUMP, but flattened
     // integral_values: corresponding values of integrals
     // integral_size: size of integral_value and 1/4 of size of integral_indices
-    void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size);
+    void qcmaquis_interface_update_integrals(std::vector<std::vector<int>> integral_indices, std::vector<V> integral_values, int integral_size);
 
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);

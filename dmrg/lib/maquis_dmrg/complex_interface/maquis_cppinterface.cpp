@@ -96,19 +96,16 @@ DmrgParameters cpp_parms;
         // site types
         if (site_types_ != nullptr)
         {
-            std::string site_types_str;
+            std::string s;
             for (int i = 0; i < L_; i++)
-                site_types_str += std::to_string(site_types_[i]) + ((i < L_ - 1) ? "," : "") ;
-            cpp_parms.set("site_types", site_types_str);
+                s += (std::to_string(site_types_[i])+ (i < (L_-1) ? "," : ""));
+            cpp_parms.set("site_types", s);
         }
         else
         {
-            std::cout << " site_types # 2 -> " << std::endl;
             std::string s;
             for (int i = 0; i < L_; i++)
                 s += (std::to_string(1)+ (i < (L_-1) ? "," : ""));
-            std::cout << L_ << std::endl;
-            std::cout << s << std::endl;
             cpp_parms.set("site_types", s);
         }
 
@@ -116,7 +113,7 @@ DmrgParameters cpp_parms;
         std::cout << cpp_parms << std::endl;
     }
 
-    void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size)
+    void qcmaquis_interface_update_integrals(std::vector<std::vector<int>> integral_indices, std::vector<V> integral_values, int integral_size)
     {
         if (cpp_parms.is_set("integral_file")||cpp_parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
@@ -125,8 +122,11 @@ DmrgParameters cpp_parms;
 
         for (int i = 0; i < integral_size; i++)
         {
-            std::array<int, 4> idx {integral_indices[4*i], integral_indices[4*i+1], integral_indices[4*i+2], integral_indices[4*i+3]};
-            V value = integral_values[i];
+            std::array<int, 4> idx {integral_indices[i][0], integral_indices[i][1], integral_indices[i][2],
+integral_indices[i][3]};
+            V value = integral_values.at(i);
+            std::cout << "element " << i<< " is      " << value << std::endl;
+            std::cout << "element " << i<< " indices " <<  integral_indices[i][0] << " " << integral_indices[i][1] << " " << integral_indices[i][2] << " " <<  integral_indices[i][3] << std::endl;
             integrals[idx] = value;
         }
 
