@@ -266,7 +266,7 @@ public:
     {
         if (parms.is_set("integral_file")||parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
-        parms.set("integrals_binary", chem::serialize<typename Matrix::value_type>(integrals));
+        parms.set("integrals_binary", chem::serialize(integrals));
 
         // construct new model and mpo with new integrals
         // hope this doesn't give any memory leaks

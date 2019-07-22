@@ -60,6 +60,12 @@ namespace chem {
     template <class V>
     using integrals = std::vector<integral_tuple<V> >; // TODO: use a map later
 
+    // structs needed for distinguishing whether we have a complex type or not
+    // required for proper integral permutation rules in the integral_map
+    template<typename T>
+    struct is_complex_t : public std::false_type {};
+    template<typename T>
+    struct is_complex_t<std::complex<T> > : public std::true_type {};
 
     struct integral_hash
     {
@@ -83,8 +89,20 @@ namespace chem {
         public:
             typedef std::unordered_map<index_type, V, integral_hash> map_t;
 
+            // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation
+            // Maybe these two properties should be decoupled in the future
+            typedef typename std::conditional<is_complex_t<V>::value, U1DG, TrivialGroup>::type relativistic_t;
+
             integral_map() = default;
-            integral_map(const map_t & map) : map_(map) {};
+
+            // Explicit copy using this->operator[]() to avoid potential doubling due to symmetry permutation
+            // Not implementing it in the move constructor yet
+            integral_map(const map_t & map)
+            {
+                for (auto&& it: map)
+                    (*this)[it->first] = it->second;
+            }
+
             integral_map(map_t && map) : map_(map) {};
 
             // allow initializer lists for construction
@@ -98,9 +116,9 @@ namespace chem {
             iterator end() { return map_.end(); };
             const_iterator end() const { return map_.end(); };
 
-            V& operator[](const index_type & key) { return map_[detail::align<>(key)]; };
-            V& at(const index_type & key) { return map_.at(detail::align<>(key)); };
-            const V& at(const index_type & key) const { return map_.at(detail::align<>(key)); };
+            V& operator[](const index_type & key) { return map_[detail::align<relativistic_t>(key)]; };
+            V& at(const index_type & key) { return map_.at(detail::align<relativistic_t>(key)); };
+            const V& at(const index_type & key) const { return map_.at(detail::align<relativistic_t>(key)); };
         private:
             friend class boost::serialization::access;
 
