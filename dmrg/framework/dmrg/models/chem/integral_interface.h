@@ -83,7 +83,7 @@ namespace chem {
     // 1e integrals use the first two indices and 0,0 as the 3rd and the 4th index
     // Nuclear repulsion energy uses an index 0,0,0,0
 
-    template <class V, bool Relativistic = false>
+    template <class V>
     class integral_map
     {
         public:
