@@ -42,6 +42,11 @@ namespace maquis {
     using chem::integral_map;
     using chem::serialize;
     using chem::detail::prepare_relativistic;
+    // Constants for integral_map template specialisation, whether one should use relativistic or nonrelativistic integrals
+    namespace integrals {
+        const bool relativistic = true;
+        const bool nonrelativistic = false;
+    }
 }
 
 template<class V>
