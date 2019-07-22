@@ -118,7 +118,8 @@ DmrgParameters cpp_parms;
         if (cpp_parms.is_set("integral_file")||cpp_parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
         // set integrals
-        maquis::integral_map<std::complex<double>> integrals;
+//      maquis::integral_map<std::complex<double>> integrals;
+        maquis::integral_map<std::complex<double>, maquis::integrals::relativistic> integrals;
 
         for (int i = 0; i < integral_size; i++)
         {
@@ -137,7 +138,7 @@ integral_indices[i][3]};
             std::cout << "element " << t.first[0] << t.first[1] << t.first[2] << t.first[3] << " is " << t.second << std::endl;
         }
 
-        maquis::integral_map<std::complex<double>> integrals2{
+        maquis::integral_map<std::complex<double>, maquis::integrals::relativistic> integrals2{
  { {1  ,1  ,1  ,1},{  0.43604913033777 ,-1.31352163875892e-17   }},
  { {3  ,3  ,1  ,1},{ 0.220879790916985 ,3.56833577884087e-17    }},
  { {1  ,3  ,3  ,1},{ 0.000451512611023166, 6.15109985306372e-20 }},
