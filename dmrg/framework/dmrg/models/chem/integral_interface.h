@@ -60,6 +60,12 @@ namespace chem {
     template <class V>
     using integrals = std::vector<integral_tuple<V> >; // TODO: use a map later
 
+    // structs needed for distinguishing whether we have a complex type or not
+    // required for proper integral permutation rules in the integral_map
+    template<typename T>
+    struct is_complex_t : public std::false_type {};
+    template<typename T>
+    struct is_complex_t<std::complex<T> > : public std::true_type {};
 
     struct integral_hash
     {
@@ -83,16 +89,20 @@ namespace chem {
         public:
             typedef std::unordered_map<index_type, V, integral_hash> map_t;
 
-            // Parameter to distinguish relativistic from nonrelativistic permutations
-            // to pass as a template parameter to align<>()
-            typedef typename std::conditional<Relativistic, U1DG, TrivialGroup>::type relativistic_t;
+            // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation
+            // Maybe these two properties should be decoupled in the future
+            typedef typename std::conditional<is_complex_t<V>::value, U1DG, TrivialGroup>::type relativistic_t;
 
             integral_map() = default;
-            // explicit copy to account for potential duplicates due to symmetry
-            integral_map(const map_t & map) {
+
+            // Explicit copy using this->operator[]() to avoid potential doubling due to symmetry permutation
+            // Not implementing it in the move constructor yet
+            integral_map(const map_t & map)
+            {
                 for (auto&& it: map)
-                    map_[it->first] = it->second;
-            };
+                    (*this)[it->first] = it->second;
+            }
+
             integral_map(map_t && map) : map_(map) {};
 
             // allow initializer lists for construction
@@ -123,8 +133,8 @@ namespace chem {
 
     // Serialize the integral into a string
 
-    template <class V, bool Relativistic>
-    std::string serialize(const integral_map<V, Relativistic>& ints)
+    template <class V>
+    std::string serialize(const integral_map<V>& ints)
     {
         std::stringstream ss;
         boost::archive::text_oarchive oa{ss};
