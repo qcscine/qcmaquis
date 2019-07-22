@@ -77,14 +77,22 @@ namespace chem {
     // 1e integrals use the first two indices and 0,0 as the 3rd and the 4th index
     // Nuclear repulsion energy uses an index 0,0,0,0
 
-    template <class V>
+    template <class V, bool Relativistic = false>
     class integral_map
     {
         public:
             typedef std::unordered_map<index_type, V, integral_hash> map_t;
 
+            // Parameter to distinguish relativistic from nonrelativistic permutations
+            // to pass as a template parameter to align<>()
+            typedef typename std::conditional<Relativistic, U1DG, TrivialGroup>::type relativistic_t;
+
             integral_map() = default;
-            integral_map(const map_t & map) : map_(map) {};
+            // explicit copy to account for potential duplicates due to symmetry
+            integral_map(const map_t & map) {
+                for (auto&& it: map)
+                    map_[it->first] = it->second;
+            };
             integral_map(map_t && map) : map_(map) {};
 
             // allow initializer lists for construction
@@ -98,9 +106,9 @@ namespace chem {
             iterator end() { return map_.end(); };
             const_iterator end() const { return map_.end(); };
 
-            V& operator[](const index_type & key) { return map_[detail::align<>(key)]; };
-            V& at(const index_type & key) { return map_.at(detail::align<>(key)); };
-            const V& at(const index_type & key) const { return map_.at(detail::align<>(key)); };
+            V& operator[](const index_type & key) { return map_[detail::align<relativistic_t>(key)]; };
+            V& at(const index_type & key) { return map_.at(detail::align<relativistic_t>(key)); };
+            const V& at(const index_type & key) const { return map_.at(detail::align<relativistic_t>(key)); };
         private:
             friend class boost::serialization::access;
 

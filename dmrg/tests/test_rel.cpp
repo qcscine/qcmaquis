@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
 
     typedef std::complex<double> Complex;
 
-    const maquis::integral_map<Complex> integrals {
+    const maquis::integral_map<Complex, maquis::integrals::relativistic> integrals {
                                                     { { 1, 1, 1, 1 }, { 2.61972936056406e-01, -5.93576335462699e-17 } },
                                                     { { 3, 1, 1, 1 }, { 1.26743997238509e-09, 9.20431282901706e-12 } },
                                                     { { 1, 1, 3, 1 }, { 1.26743997238509e-09, 9.20431282901706e-12 } },
@@ -991,6 +991,13 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
                                                     { { 8, 8, 0, 0 }, { -1.68576161450246e+00, -9.10040816524792e-17 } },
                                                     { { 0, 0, 0, 0 }, { -1.02932237633033e+02, 0.00000000000000e+00 } }
                                                 };
+
+    // Uncomment below to test the align function
+    // TODO: This should be tested in a better manner!
+    // maquis::integral_map<Complex, maquis::integrals::relativistic> integrals2;
+
+    // for (auto&& it : integrals)
+    //     integrals2[it->first] = it->second;
 
     p.set("integrals_binary", maquis::serialize<Complex>(integrals));
     p.set("site_types", "1,1,1,1,1,1,1,1");
