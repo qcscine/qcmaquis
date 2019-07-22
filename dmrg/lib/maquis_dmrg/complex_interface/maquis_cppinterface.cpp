@@ -200,7 +200,7 @@ integral_indices[i][3]};
         }
 
         if (!cpp_parms.is_set("integrals_binary"))
-            cpp_parms.set("integrals_binary", maquis::serialize<std::complex<double>>(integrals));
+            cpp_parms.set("integrals_binary", maquis::serialize(integrals));
 
         // Call an integral update only if the interface has been initialised
         if (cpp_interface_ptr){

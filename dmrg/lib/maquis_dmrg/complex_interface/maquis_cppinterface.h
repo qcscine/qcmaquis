@@ -33,7 +33,6 @@
 
 #include <complex>
 #include <vector>
-typedef std::complex<double> V;
 
     typedef std::complex<double> V;
     typedef double V0;

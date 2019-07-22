@@ -32,7 +32,7 @@
 #include <array>
 #include "maquis_dmrg.h"
 
-std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
+std::unique_ptr<maquis::DMRGInterface<double, bool Relativistic =false>> interface_ptr;
 DmrgParameters parms;
 std::string pname;
 
