@@ -999,7 +999,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
     // for (auto&& it : integrals)
     //     integrals2[it->first] = it->second;
 
-    p.set("integrals_binary", maquis::serialize<Complex>(integrals));
+    p.set("integrals_binary", maquis::serialize(integrals));
     p.set("site_types", "1,1,1,1,1,1,1,1");
     p.set("L", 8);
     p.set("irrep", 1);

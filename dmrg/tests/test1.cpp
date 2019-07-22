@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE( Test1 )
                                                         { { 0, 0, 0, 0 },  0.176392403557        }  // Nuclear repulsion energy
                                                         };
 
-    p.set("integrals_binary", maquis::serialize<double>(integrals));
+    p.set("integrals_binary", maquis::serialize(integrals));
     p.set("site_types", "0,0");
     p.set("L", 2);
     p.set("irrep", 0);
