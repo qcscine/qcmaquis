@@ -123,8 +123,8 @@ namespace chem {
 
     // Serialize the integral into a string
 
-    template <class V>
-    std::string serialize(const integral_map<V>& ints)
+    template <class V, bool Relativistic>
+    std::string serialize(const integral_map<V, Relativistic>& ints)
     {
         std::stringstream ss;
         boost::archive::text_oarchive oa{ss};

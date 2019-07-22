@@ -106,7 +106,7 @@ extern "C"
         }
 
         if (!parms.is_set("integrals_binary"))
-            parms.set("integrals_binary", maquis::serialize<double>(integrals));
+            parms.set("integrals_binary", maquis::serialize(integrals));
 
         // Call an integral update only if the interface has been initialised
         if (interface_ptr)

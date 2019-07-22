@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( Test2 )
                                                 { { 0, 0, 0, 0 },   -6.71049529388     }
     };
 
-    p.set("integrals_binary", maquis::serialize<double>(integrals));
+    p.set("integrals_binary", maquis::serialize(integrals));
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);
