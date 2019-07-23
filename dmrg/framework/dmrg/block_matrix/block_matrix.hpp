@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -95,6 +95,28 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
         data_.push_back(new Matrix(rhs[k]));
+}
+
+// Copy constructor from diagonal matrix
+template<class Matrix, class SymmGroup>
+template <class V>
+block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<alps::numeric::diagonal_matrix<V>, SymmGroup> const & rhs)
+: basis_(rhs.basis())
+, size_index(rhs.size_index)
+, iter_index(rhs.iter_index)
+{
+    data_.reserve(rhs.n_blocks());
+    for (size_type k = 0; k < rhs.n_blocks(); ++k)
+    {
+        Matrix* m = new Matrix(rhs[k].num_rows(),rhs[k].num_cols());
+        // Is the release of the object handled by data_?? Otherwise we'll have a memory leak here
+        for (auto it = m->diagonal().first; it != m->diagonal().second; ++it)
+        {
+            auto it2 = rhs[k].diagonal().first + std::distance(m->diagonal().first, it);
+            *it = *it2;
+        }
+        data_.push_back(m);
+    }
 }
 
 // OPERATORS
@@ -190,13 +212,13 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, num_rows(*mtx), num_cols(*mtx)));
     data_.insert(data_.begin() + i1, mtx);
     size_index.insert(i1, (data_.size()-1));
-    
+
     return i1;
 }
 
 template<class Matrix, class SymmGroup>
 Index<SymmGroup> block_matrix<Matrix, SymmGroup>::left_basis() const
-{ 
+{
     Index<SymmGroup> ret(basis_.size());
     for (std::size_t s = 0; s < basis_.size(); ++s)
         ret[s] = std::make_pair(basis_[s].lc, basis_[s].ls);
@@ -274,20 +296,21 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
     return data_[basis_.position(r.first, c.first)](r.second, c.second);
 }
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
-//template<class Matrix, class SymmGroup>
-//void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
-//{ // we should add an assert block < data_.size()
-//    remove_rows(data_[block], r, k);
-//    rows_[block].second -= k;
-//}
+// Readded by Leon 18/7/2019
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
+{ // we should add an assert block < data_.size()
+   remove_rows(data_[block], r, k);
+   basis_[block].ls -= k;
+}
 
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
-//template<class Matrix, class SymmGroup>
-//void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
-//{ // we should add an assert block < data_.size()
-//    remove_cols(data_[block], r, k);
-//    cols_[block].second -= k;
-//}
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::remove_cols_from_block(size_type block, size_type r, size_type k)
+{ // we should add an assert block < data_.size()
+   remove_cols(data_[block], r, k);
+   basis_[block].rs -= k;
+}
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::index_iter(int i, int max) const
@@ -427,12 +450,12 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
                                            num_rows((*this)[match]));
             std::size_t maxcols = std::max(num_cols(mtx),
                                            num_cols((*this)[match]));
-            
+
             Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
-            
+
             resize_block(match, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
-            
+
             (*this)[match] += cpy;
         }
     }
@@ -518,9 +541,9 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    
+
     std::size_t which = basis_.position(r,c);
-    
+
     basis_.erase(basis_.begin() + which);
     data_.erase(data_.begin() + which);
 }
@@ -596,16 +619,16 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         std::size_t pos = basis_.position(c1, c2);
         std::size_t maxrows = std::max(basis_[pos].ls, r);
         std::size_t maxcols = std::max(basis_[pos].rs, c);
-    
+
         basis_[pos].ls = maxrows;
         basis_[pos].rs = maxcols;
     } else {
-        
+
         assert(basis_.size() == data_.size());
-        
+
         size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, r, c));
         Matrix* block = new Matrix(1,1);
-        data_.insert(data_.begin() + i1, block); 
+        data_.insert(data_.begin() + i1, block);
     }
     assert( this->has_block(c1,c2) );
 }
