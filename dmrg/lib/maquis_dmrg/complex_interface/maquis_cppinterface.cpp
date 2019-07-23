@@ -109,98 +109,35 @@ DmrgParameters cpp_parms;
             cpp_parms.set("site_types", s);
         }
 
-        std::cout << " parms are set -> " << std::endl;
-        std::cout << cpp_parms << std::endl;
+        //std::cout << " parms are set -> " << std::endl;
+        //std::cout << cpp_parms << std::endl;
     }
 
     void qcmaquis_interface_update_integrals(std::vector<std::vector<int>> integral_indices, std::vector<V> integral_values, int integral_size)
     {
         if (cpp_parms.is_set("integral_file")||cpp_parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
+
         // set integrals
-//      maquis::integral_map<std::complex<double>> integrals;
-        maquis::integral_map<std::complex<double>, maquis::integrals::relativistic> integrals;
+        maquis::integral_map<V> integrals;
 
         for (int i = 0; i < integral_size; i++)
         {
             std::array<int, 4> idx {integral_indices[i][0], integral_indices[i][1], integral_indices[i][2],
 integral_indices[i][3]};
             V value = integral_values.at(i);
-            // Print indices in Normal order
-            std::cout << "element " ;
-            std::copy(idx.begin(), idx.end(), std::ostream_iterator<int>(std::cout,""));
-            std::cout << " is " << value << std::endl;
             integrals[idx] = value;
         }
 
-        std::cout << " now from map1 ... " <<  std::endl;
+        /*
+        std::cout << " integrals from map1 ... " <<  std::endl;
         for (auto&& t: integrals){
             std::cout << "element " << t.first[0] << t.first[1] << t.first[2] << t.first[3] << " is " << t.second << std::endl;
         }
-
-        maquis::integral_map<std::complex<double>, maquis::integrals::relativistic> integrals2{
- { {1  ,1  ,1  ,1},{  0.43604913033777 ,-1.31352163875892e-17   }},
- { {3  ,3  ,1  ,1},{ 0.220879790916985 ,3.56833577884087e-17    }},
- { {1  ,3  ,3  ,1},{ 0.000451512611023166, 6.15109985306372e-20 }},
- { {3  ,1  ,1  ,3},{ 0.000451512611023166, 6.15109985306372e-20 }},
- { {1  ,1  ,3  ,3},{ 0.220879790916985 ,3.56833577884087e-17    }},
- { {3  ,3  ,3  ,3},{ 0.228201307078244 ,-1.04540924734875e-17   }},
- { {1  ,3  ,3  ,2},{ 0.00072840466362894, 0.00153276774662158   }},
- { {1  ,3  ,1  ,4},{-0.000728404663628938, -0.00153276774662158 }},
- { {3  ,2  ,1  ,3},{ 0.00072840466362894, 0.00153276774662158   }},
- { {1  ,4  ,1  ,3},{-0.000728404663628938, -0.00153276774662158 }},
- { {3  ,1  ,4  ,1},{-0.000728404663628938, 0.00153276774662158  }},
- { {3  ,1  ,2  ,3},{ 0.00072840466362894, -0.00153276774662158  }},
- { {1  ,1  ,2  ,2},{ 0.43604913033777, 1.0696431132045e-17      }},
- { {3  ,1  ,4  ,2},{ 0.000451512611023166, -1.35858035557269e-20}},
- { {3  ,3  ,2  ,2},{ 0.220879790916985, 5.25693153440665e-17    }},
- { {1  ,1  ,4  ,4},{ 0.220879790916985, 1.13059686387213e-17    }},
- { {1  ,3  ,2  ,4},{ 0.000451512611023166, 1.18293035589619e-19 }},
- { {3  ,3  ,4  ,4},{ 0.228201307078244 ,-8.34489724655587e-17   }},
- { {3  ,2  ,4  ,1},{-0.00637911362451499 ,-5.80942808457955e-19 }},
- { {1  ,4  ,4  ,1},{ 0.00637911362451499 ,-2.54899693461451e-18 }},
- { {3  ,2  ,2  ,3},{ 0.00637911362451499 ,-1.00834143850827e-18 }},
- { {1  ,4  ,2  ,3},{-0.00637911362451499 ,4.03250794224186e-18  }},
- { {3  ,2  ,4  ,2},{ 0.00072840466362894 ,0.00153276774662158   }},
- { {1  ,4  ,4  ,2},{-0.000728404663628939, -0.00153276774662158 }},
- { {4  ,1  ,3  ,1},{-0.000728404663628938, 0.00153276774662158  }},
- { {2  ,3  ,3  ,1},{ 0.00072840466362894 ,-0.00153276774662158  }},
- { {4  ,1  ,3  ,2},{-0.00637911362451499 ,5.80942808457955e-19  }},
- { {2  ,3  ,3  ,2},{ 0.00637911362451499 ,2.54899693461451e-18  }},
- { {4  ,1  ,1  ,4},{ 0.00637911362451499 ,1.00834143850827e-18  }},
- { {2  ,3  ,1  ,4},{-0.00637911362451499 ,-4.03250794224186e-18 }},
- { {2  ,2  ,1  ,1},{ 0.43604913033777 ,-1.0696431132045e-17     }},
- { {4  ,2  ,3  ,1},{ 0.000451512611023166, 1.35858035557269e-20 }},
- { {4  ,4  ,1  ,1},{ 0.220879790916985, -5.25693153440665e-17   }},
- { {2  ,2  ,3  ,3},{ 0.220879790916985, -1.13059686387213e-17   }},
- { {2  ,4  ,1  ,3},{ 0.000451512611023166, -1.18293035589619e-19}},
- { {4  ,4  ,3  ,3},{ 0.228201307078244 ,8.34489724655587e-17    }},
- { {4  ,2  ,3  ,2},{ 0.00072840466362894 ,0.00153276774662158   }},
- { {4  ,2  ,1  ,4},{-0.000728404663628939, -0.00153276774662158 }},
- { {4  ,1  ,2  ,4},{-0.000728404663628939, 0.00153276774662158  }},
- { {2  ,3  ,2  ,4},{ 0.00072840466362894 ,-0.00153276774662158  }},
- { {2  ,4  ,4  ,1},{-0.000728404663628939, 0.00153276774662158  }},
- { {2  ,4  ,2  ,3},{ 0.00072840466362894, -0.00153276774662158  }},
- { {2  ,2  ,2  ,2},{ 0.43604913033777 ,3.45280786516792e-17     }},
- { {4  ,4  ,2  ,2},{ 0.220879790916985, 2.81919261943354e-17    }},
- { {2  ,4  ,4  ,2},{ 0.000451512611023166, 4.53071983760033e-20 }},
- { {4  ,2  ,2  ,4},{ 0.000451512611023166, 4.53071983760033e-20 }},
- { {2  ,2  ,4  ,4},{ 0.220879790916985, 2.81919261943354e-17    }},
- { {4  ,4  ,4  ,4},{ 0.228201307078244, -1.5644385245702e-16    }},
- { {1  ,1  ,0  ,0},{-1.47144863954766 ,1.13465992495957e-16     }},
- { {3  ,3  ,0  ,0},{-0.594462058458452, -1.27921644083709e-16   }},
- { {2  ,2  ,0  ,0},{-1.47144863954766 ,-2.51035895744511e-16    }},
- { {4  ,4  ,0  ,0},{-0.594462058458451, -3.80166790074138e-17   }},
- { {0  ,0  ,0  ,0},{-97.4693010120879 ,  0.0                    }}
-        };
-
-        std::cout << " now from map2 ... " <<  std::endl;
-        for (auto&& t: integrals2){
-            std::cout << "element " << t.first[0] << t.first[1] << t.first[2] << t.first[3] << " is " << t.second << std::endl;
-        }
+        */
 
         if (!cpp_parms.is_set("integrals_binary"))
-            cpp_parms.set("integrals_binary", maquis::serialize<std::complex<double>>(integrals));
+            cpp_parms.set("integrals_binary", maquis::serialize(integrals));
 
         // Call an integral update only if the interface has been initialised
         if (cpp_interface_ptr){
@@ -217,7 +154,7 @@ integral_indices[i][3]};
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset()
     {
-        cpp_interface_ptr.reset(new maquis::DMRGInterface<std::complex<double>>(cpp_parms));
+        cpp_interface_ptr.reset(new maquis::DMRGInterface<V>(cpp_parms));
     }
 
     void qcmaquis_interface_optimize()
@@ -243,33 +180,26 @@ integral_indices[i][3]};
         qcmaquis_interface_reset();
     }
 
-    void qcmaquis_interface_get_1rdm(std::vector<std::vector<int>> *indices, std::vector<V> *values)
+    void qcmaquis_interface_get_1rdm(std::vector<std::pair<V,std::array<int,2>>> *rdm1)
     {
-        const typename maquis::DMRGInterface<std::complex<double>>::meas_with_results_type& meas = cpp_interface_ptr->onerdm();
+        const typename maquis::DMRGInterface<V>::meas_with_results_type& meas = cpp_interface_ptr->onerdm();
         for (int i = 0; i < meas.first.size(); i++)
         {
-            int pos_[2] = {meas.first[i][0], meas.first[i][1]};
-            std::vector<int> positions(pos_, pos_ + 2);
-            values->push_back(meas.second[i]);
-            indices->push_back(positions);
+            std::array<int,2> pos_ = {meas.first[i][0], meas.first[i][1]};
+            rdm1->push_back(std::make_pair(meas.second[i], pos_));
         }
     }
 
     // hooray for copy-paste
-    void qcmaquis_interface_get_2rdm(int* indices, V* values, int size)
+    void qcmaquis_interface_get_2rdm(std::vector<std::pair<V,std::array<int,4>>> *rdm2)
     {
-        const typename maquis::DMRGInterface<std::complex<double>>::meas_with_results_type& meas = cpp_interface_ptr->twordm();
+        const typename maquis::DMRGInterface<V>::meas_with_results_type& meas = cpp_interface_ptr->twordm();
 
-        assert(size == meas.first.size());
-        assert(size == meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
         {
-            values[i] = meas.second[i];
-            indices[4*i] = meas.first[i][0];
-            indices[4*i+1] = meas.first[i][1];
-            indices[4*i+2] = meas.first[i][2];
-            indices[4*i+3] = meas.first[i][3];
-
+            //std::cout << " 2-rdm from meas ... element " <<  i << " is --> " << meas.second[i] << std::endl;
+            std::array<int,4> pos_ = {meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]};
+            rdm2->push_back(std::make_pair(meas.second[i], pos_));
         }
     }
 

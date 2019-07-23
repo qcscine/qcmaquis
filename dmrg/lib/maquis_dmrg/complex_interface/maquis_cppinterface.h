@@ -33,10 +33,9 @@
 
 #include <complex>
 #include <vector>
-typedef std::complex<double> V;
+#include <array>
 
     typedef std::complex<double> V;
-    typedef double V0;
     // Set basic simulation parameters
     // nel -- number of electrons
     // L -- number of sites
@@ -79,17 +78,15 @@ typedef std::complex<double> V;
     // Run DMRG optimization
     void qcmaquis_interface_optimize();
 
-    std::complex<double> qcmaquis_interface_get_energy();
+    V qcmaquis_interface_get_energy();
 
     // Get sweep statistics for the last sweep
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev);
 
     // Get 1-RDM
-    // size: size of values array, size of indices array = 2*size
-    void qcmaquis_interface_get_1rdm(int* indices, V* values, int size);
+    void qcmaquis_interface_get_1rdm(std::vector<std::pair<V,std::array<int,2>>> *rdm1);
 
     // Get 2-RDM
-    // size: size of values array, size of indices array = 4*size
-    void qcmaquis_interface_get_2rdm(int* indices, V* values, int size);
+    void qcmaquis_interface_get_2rdm(std::vector<std::pair<V,std::array<int,4>>> *rdm2);
 
 #endif

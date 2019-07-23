@@ -1017,6 +1017,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
 
     // Measure 1-RDM
     p.set("MEASURE[1rdm]","1");
+    p.set("MEASURE[2rdm]","1");
 
     maquis::DMRGInterface<Complex> interface(p);
 
@@ -1024,6 +1025,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
 
     // check energy
     BOOST_CHECK_CLOSE(maquis::real(interface.energy()), -1.0780470133e+02 , 1e-7);
+
 
     const typename maquis::DMRGInterface<Complex>::meas_with_results_type& meas = interface.onerdm();
 
@@ -1037,6 +1039,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
             value += meas.second[i];
 
     BOOST_CHECK_CLOSE(value.real(), 3.0 , 1e-7);
+
 
     #endif
 }
