@@ -31,7 +31,7 @@
 #include <memory>
 #include <string>
 #include <array>
-#include "maquis_dmrg.h"
+#include "../maquis_dmrg.h"
 
 std::unique_ptr<maquis::DMRGInterface<std::complex<double>> > cpp_interface_ptr;
 DmrgParameters cpp_parms;
@@ -40,7 +40,6 @@ DmrgParameters cpp_parms;
     void qcmaquis_interface_preinit(int nel_, int L_, int irrep_,
                                     int* site_types_,
                                     double conv_thresh_, int m_,
-                                    int nsweeps_, int ngrowsweeps_, int nmainsweeps_,
                                     bool meas_2rdm_, bool entropy_, bool magnetism_,
                                     const std::string& init_state_, const std::string& optimization_,
                                     int ietl_jcd_maxiter_,
@@ -82,11 +81,6 @@ DmrgParameters cpp_parms;
 
         // bond dimension
         cpp_parms.set("max_bond_dimension", m_);
-
-        // sweeps
-        cpp_parms.set("nsweeps", nsweeps_);
-        cpp_parms.set("ngrowsweeps", ngrowsweeps_);
-        cpp_parms.set("nmainsweeps", nmainsweeps_);
 
         // lattice, #e-, symmetry
         cpp_parms.set("L", L_);
@@ -130,7 +124,7 @@ integral_indices[i][3]};
         }
 
         /*
-        std::cout << " integrals from map1 ... " <<  std::endl;
+        std::cout << " integrals from map1 after ... " <<  std::endl;
         for (auto&& t: integrals){
             std::cout << "element " << t.first[0] << t.first[1] << t.first[2] << t.first[3] << " is " << t.second << std::endl;
         }
@@ -143,12 +137,21 @@ integral_indices[i][3]};
         if (cpp_interface_ptr){
             cpp_interface_ptr->update_integrals(integrals);
         }
+        //qcmaquis_interface_report("BLUBB BLUBB");
 
     }
 
-    void qcmaquis_interface_set_nsweeps(int nsweeps)
+    void qcmaquis_interface_set_nsweeps(int nsweeps_, int ngrowsweeps_, int nmainsweeps_)
     {
-        cpp_parms.set("nsweeps", nsweeps);
+        cpp_parms.set("nsweeps", nsweeps_);
+        cpp_parms.set("ngrowsweeps", ngrowsweeps_);
+        cpp_parms.set("nmainsweeps", nmainsweeps_);
+    }
+
+    void qcmaquis_interface_report(const std::string& reportid_)
+    {
+        std::cout << " reporting parms for -> " << reportid_ << std::endl;
+        std::cout << cpp_parms << std::endl;
     }
 
     // Start a new simulation with stored parameters

@@ -41,6 +41,9 @@ namespace maquis
     {
         try
         {
+            std::cout << "start optimization inside interface --> " <<std::endl;
+            std::cout << " parms are -> " << std::endl;
+            std::cout << parms << std::endl;
             sim->run();
         }
         catch (std::exception & e)
@@ -93,7 +96,7 @@ namespace maquis
     template <class V>
     void DMRGInterface<V>::update_integrals(const integral_map<V> & integrals)
     {
-        sim->update_integrals(integrals);
+        sim->update_integrals(integrals,parms);
     }
 
     template <class V>

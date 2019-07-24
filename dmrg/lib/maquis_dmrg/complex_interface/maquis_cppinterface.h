@@ -48,7 +48,6 @@
     void qcmaquis_interface_preinit(int nel, int L, int irrep,
                                     int* site_types,
                                     double conv_thresh, int m,
-                                    int nsweeps, int ngrowsweeps, int nmainsweeps,
                                     bool meas_2rdm, bool entropy, bool magnetism,
                                     const std::string& init_state, const std::string& optimization,
                                     int ietl_jcd_maxiter,
@@ -70,7 +69,9 @@
     void qcmaquis_interface_set_state(int state);
 
     // Sets the number of sweeps
-    void qcmaquis_interface_set_nsweeps(int nsweeps);
+    void qcmaquis_interface_set_nsweeps(int nsweeps, int ngrowsweeps, int nmainsweeps);
+
+    void qcmaquis_interface_report(const std::string& reportid);
 
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset();

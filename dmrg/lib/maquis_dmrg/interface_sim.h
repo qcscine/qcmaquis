@@ -262,22 +262,25 @@ public:
         return expval(mps, mpo) + mpo.getCoreEnergy();
     }
 
-    void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
+    void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals, DmrgParameters & parms_)
     {
-        if (parms.is_set("integral_file")||parms.is_set("integrals"))
+        if (parms_.is_set("integral_file")||parms_.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
-        parms.set("integrals_binary", chem::serialize(integrals));
+        parms_.set("integrals_binary", chem::serialize(integrals));
+
+        //std::cout << " parms are set (and ints are updated) -> " << std::endl;
+        //std::cout << parms_ << std::endl;
 
         // construct new model and mpo with new integrals
         // hope this doesn't give any memory leaks
-        model = Model<Matrix, SymmGroup>(lat, parms);
+        model = Model<Matrix, SymmGroup>(lat, parms_);
         mpo = make_mpo(lat, model);
 
         // check if MPS is still OK
-        maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms));
+        maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms_));
 
         all_measurements = model.measurements();
-        all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+        all_measurements << overlap_measurements<Matrix, SymmGroup>(parms_);
 
     }
 
