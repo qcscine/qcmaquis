@@ -77,6 +77,14 @@ int main(int argc, char ** argv)
         load(checkpoint, mps);
 
         lr::XVector<matrix, grp> x(mps);
+
+        maquis::cout << "Number of nonredundant MPS parameters: " << std::accumulate(x.begin(), x.end(), 0,
+            [&](std::size_t sum, block_matrix<matrix, grp> m) {
+                    for (int i = 0; i < m.n_blocks(); i++)
+                        sum += m[i].num_cols()*m[i].num_rows();
+                    return sum;
+                }) << std::endl;
+
         MPS<matrix, grp> mps_transformed = x.transformXtoB();
         save(checkpoint_out, mps_transformed);
     } catch (std::exception & e) {

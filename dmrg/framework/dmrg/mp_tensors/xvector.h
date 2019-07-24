@@ -37,7 +37,7 @@ namespace lr {
 
     // Functions required in the calculation of nonredundant MPS parameters for the linear response
 
-    // Class to store MPS parameters.
+    // Class to store nonredundant MPS parameters.
     // Must be a class rather than a simple std::vector of block matrices
     // because we must store the first parameter (M) as an MPSTensor with all its internal properties
     // and also some transformation matrices
@@ -49,66 +49,79 @@ namespace lr {
         // typedef typename boost::mpl::if_<symm_traits::HasSU2<SymmGroup>, SU2::SU2Gemms, contraction::abelian::Gemms>::type::gemm gemm;
 
         typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
+        typedef std::vector<block_matrix<Matrix, SymmGroup> > bm_vector;
+
+        // Iterators for range-based access
+        typedef typename bm_vector::iterator iterator;
+        typedef typename bm_vector::const_iterator const_iterator;
+
+        iterator begin() { return X_.begin(); };
+        const_iterator begin() const { return X_.begin(); };
+        iterator end() { return X_.end(); };
+        const_iterator end() const { return X_.end(); };
 
         // Empty constructor (length is always required!)
-        XVector(int length) : length_(length), X_(length-1), S_(length-1), N_(length-1) {};
+        XVector(int length) : length_(length), X_(length), S_(length-1), N_(length) {};
 
         // Constructor with an implicit conversion from B to X
 
         // From a complete right-canonized MPS, obtain a vector with nonredundant MPS parameters, the
         // MPSTensor for the first site and the X matrices for all remaining sites with
-        //                  3m      m?                          sigma_i          sigma_i
-        // X             = sum     sum     S^(1/2)             B               N+
-        //  a_i-1 a'_i-1   a''_i-1  a''_i         a_i-1 a''_i-1  a''_i-1 a''_i    a''_i a'_i-1
+        //                  3m      m?                                  sigma_i          sigma_i
+        // X             = sum     sum    sum      S^(1/2)             B               N+
+        //  a_i-1 a'_i-1   a''_i-1  a''_i sigma_i        a_i-1 a''_i-1  a''_i-1 a''_i    a''_i a'_i-1
 
         // We need to work with a copy of the MPS, since we will shift canonisation
         XVector(MPS<Matrix, SymmGroup> mps) : XVector(mps.length())
         {
-            // just to make sure the MPS is right-normalised for all sites except 0
-            mps.canonize(0);
+            // just to make sure the MPS is right-normalised
+            mps.normalize_right();
 
-            // For the first site, just copy M
             assert(length_ > 0);
-            this->M_ = mps[0];
 
             // construct X from B
-            if (length_ > 1)
-                for (int i = 1; i < length_; i++)
+            for (int i = 0; i < length_; i++)
                 {
-                    // Build the overlap matrix for the right renormalised states
-                    // i.e. build MM^T from right-paired MPS tensors at site i-1
-                    // dm            = sum              M                    M^T
-                    //   a_i-1 a_i-1'  (a_i sigma_i)     a_i-1 (a_i sigma_i)  (a_i sigma_i) a_i-1'
-
-                    mps.canonize(i);
-                    mps[i].make_right_paired();
-                    block_matrix<Matrix, SymmGroup> dm;
-                    gemm(mps[i].data(), transpose(conjugate(mps[i].data())), dm);
-
-                    // build S=dm^(1/2)
                     block_matrix<Matrix, SymmGroup> U; // eigenvectors
-                    block_matrix<DiagMatrix, SymmGroup> Lambda; // eigenvalues
-                    heev(dm, U, Lambda);
-                    zero_small_values_inplace(Lambda); // set very small negative values to zero because otherwise sqrt does not work
-                    const block_matrix<DiagMatrix, SymmGroup>& sqrtLambda = sqrt(Lambda);
                     block_matrix<Matrix, SymmGroup> tmp;
-                    gemm(U,sqrtLambda,tmp);
-                    gemm(tmp,transpose(conjugate(U)), S_[i-1]);
+
+                    // Build the overlap matrix only for i > 0, for site 0 it should be unity
+                    if (i > 0)
+                    {
+                        // Build the overlap matrix for the right renormalised states
+                        // i.e. build MM^T from right-paired MPS tensors at site i-1
+                        // dm            = sum              M                    M^T
+                        //   a_i-1 a_i-1'  (a_i sigma_i)     a_i-1 (a_i sigma_i)  (a_i sigma_i) a_i-1'
+
+                        mps.canonize(i);
+                        mps[i].make_right_paired();
+                        block_matrix<Matrix, SymmGroup> dm;
+                        gemm(mps[i].data(), transpose(conjugate(mps[i].data())), dm);
+
+                        // build S=dm^(1/2)
+                        block_matrix<DiagMatrix, SymmGroup> Lambda; // eigenvalues
+                        heev(dm, U, Lambda);
+                        // zero_small_values_inplace(Lambda); // set very small negative values to zero because otherwise sqrt does not work // should never be needed because we must be able to invert Lambda
+                        const block_matrix<DiagMatrix, SymmGroup>& sqrtLambda = sqrt(Lambda);
+                        gemm(U,sqrtLambda,tmp);
+                        gemm(tmp,transpose(conjugate(U)), S_[i-1]);
+                    }
 
                     // Build N
-                    N_[i-1] = constructN(mps[i]);
+                    N_[i] = constructN(mps[i]);
 
-                    // Construct N^+ from N with a pseudoinverse using SVD -- TODO: should this be the full SVD?
+                    // Construct N^+ from N with a pseudoinverse using SVD
                     block_matrix<Matrix, SymmGroup> V;
                     block_matrix<DiagMatrix, SymmGroup> sigma;
                     // SVD of N: N=USV
-                    svd(N_[i-1], U, V, sigma);
+                    svd(N_[i], U, V, sigma);
 
                     block_matrix<Matrix, SymmGroup> Ninv;
                     // Build the pseudoinverse: N+=V^T S^(-1) U^T
                     // block_matrix<Matrix, SymmGroup> invSigma = inverse(sigma); // Workaround because SU2 gemm doesn't work with diagonal matrices
                     const block_matrix<DiagMatrix, SymmGroup> & invSigma = inverse(sigma);
-                    gemm(transpose(conjugate(V)),invSigma,tmp);
+                    block_matrix<Matrix, SymmGroup> VT = transpose(conjugate(V));
+                    gemm(VT,invSigma,tmp);
                     gemm(tmp,transpose(conjugate(U)), Ninv);
 
                     // Calculate the pseudoinverse as N^T *(NN^T)^-1 to check if the pseudoinverse with SVD yields the correct result
@@ -128,10 +141,18 @@ namespace lr {
                     // Now that we have N^+ (in Ninv) and S^(1/2) (in S), contract the matrices to obtain X
                     // Multiply B with N^+: B must be right-paired but Ninv (probably?) left-paired
                     mps[i].make_right_paired();
-                    gemm(mps[i].data(), Ninv, tmp);
 
-                    //Premultiply the result with S and store it in X
-                    gemm(S_[i-1], tmp, this->X_[i-1]);
+                    // Premultiply the result with S and store it in X
+                    // For site 0 S is unity so ignore it
+                    if (i == 0)
+                        gemm(mps[i].data(), Ninv, this->X_[i]);
+                    else
+                    {
+                        gemm(mps[i].data(), Ninv, tmp);
+                        gemm(S_[i-1], tmp, this->X_[i]);
+                    }
+
+
                 }
         };
 
@@ -146,38 +167,40 @@ namespace lr {
         {
             assert(length_ > 0);
             MPS<Matrix,SymmGroup> ret(length_);
-            // The first MPSTensor goes unmodified
-            ret[0] = M_;
-            // For other tensors, perform the transformation from X to B above
-            if (length_ > 1)
-                for (int i = 1; i < length_; i++)
-                {
-                    //Build S^(-1/2) from S^1/2
-                    block_matrix<Matrix, SymmGroup> U, tmp, S, B;
-                    block_matrix<DiagMatrix, SymmGroup> Lambda;
-                    heev(S_[i-1], U, Lambda);
 
-                    const block_matrix<DiagMatrix, SymmGroup>& invLambda = inverse(Lambda);
-                    gemm(U, invLambda, tmp);
-                    // S contains S^(-1/2) now
-                    gemm(tmp,transpose(conjugate(U)), S);
+            block_matrix<Matrix, SymmGroup> B;
+            // perform the transformation from X to B above
+            // For the first tensor, do not use S as it is unity
+            gemm(X_[0], N_[0], B);
+            ret[0].replace_right_paired(B);
 
-                    // Contract S with X and N to get B as block_matrix
-                    gemm(X_[i-1], N_[i-1], tmp);
-                    gemm(S,tmp, B);
+            for (int i = 1; i < length_; i++)
+            {
+                //Build S^(-1/2) from S^1/2
+                block_matrix<Matrix, SymmGroup> U, tmp, S;
+                block_matrix<DiagMatrix, SymmGroup> Lambda;
+                heev(S_[i-1], U, Lambda);
 
-                    // form a right-paired MPS tensor from B
-                    ret[i].replace_right_paired(B);
-                }
+                const block_matrix<DiagMatrix, SymmGroup>& invLambda = inverse(Lambda);
+                gemm(U, invLambda, tmp);
+                // S contains S^(-1/2) now
+                gemm(tmp,transpose(conjugate(U)), S);
+
+                // Contract S with X and N to get B as block_matrix
+                gemm(X_[i], N_[i], tmp);
+                gemm(S,tmp, B);
+
+                // form a right-paired MPS tensor from B
+                ret[i].replace_right_paired(B);
+            }
             return ret;
         }
 
         // return either an MPSTensor for site 0 or block_matrix for other sites
         // also include an out of bounds check (slow?)
-        const boost::any& operator[](int i) const
+        const block_matrix<Matrix, SymmGroup>& operator[](int i) const
         {
-            assert(i < length_);
-            return (i == 0) ? M_ : X_[i+1];
+            return X_[i];
         }
 
         int length() const { return length_; };
@@ -185,14 +208,13 @@ namespace lr {
         private:
             // Number of sites
             int length_;
-            // MPS parameters at first site
-            MPSTensor<Matrix, SymmGroup> M_;
-            // MPS parameters at all other sites
-            std::vector<block_matrix<Matrix, SymmGroup> > X_;
+
+            // MPS parameters
+            bm_vector X_;
 
             // Transformation matrices N and S^-1/2 that must be stored for the back transformation
-            std::vector<block_matrix<Matrix, SymmGroup> > S_;
-            std::vector<block_matrix<Matrix, SymmGroup> > N_;
+            bm_vector S_;
+            bm_vector N_;
 
             // For a given MPS constructs the N matrix, which is the transformation matrix of the |a_i-1 sigma_i(R)>
             // basis to the basis COMPLEMENTARY to |a_i(R)> basis. (In contrast, in a regular DMRG sweep we
