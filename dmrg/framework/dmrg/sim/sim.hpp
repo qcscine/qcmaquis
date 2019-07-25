@@ -29,7 +29,7 @@
 #include "dmrg/version.h"
 
 template <class Matrix, class SymmGroup>
-sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
+sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 : parms(parms_)
 , init_sweep(0)
 , init_site(-1)

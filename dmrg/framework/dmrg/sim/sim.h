@@ -63,7 +63,7 @@
 template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
-    sim(DmrgParameters const &);
+    sim(DmrgParameters &);
     virtual ~sim();
 
 protected:
@@ -79,7 +79,7 @@ protected:
     virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
 
 protected:
-    DmrgParameters parms;
+    DmrgParameters& parms;
 
     int init_sweep, init_site;
     bool restore;
