@@ -172,8 +172,9 @@ integral_indices[i][3]};
     void qcmaquis_interface_set_state(int state_)
     {
         std::string str;
-        for (int i = 0; i < state_; i++)
-            str += "chk." + std::to_string(state_-1) + ".h5" + ((i < state_-1) ? ";" : "") ;
+        for (int i = 0; i < state_; i++){
+            str += "chk." + std::to_string(i) + ".h5" + ((i < state_-1) ? " " : "") ;
+        }
 
         cpp_parms.set("ortho_states", str);
         cpp_parms.set("n_ortho_states", state_);
