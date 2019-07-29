@@ -60,7 +60,8 @@ namespace lr {
         iterator end() { return X_.end(); };
         const_iterator end() const { return X_.end(); };
 
-        // Empty constructor (length is always required!)
+        // Empty constructors
+        XVector() : length_(0), X_(), S_(), N_() {};
         XVector(int length) : length_(length), X_(length), S_(length-1), N_(length) {};
 
         // Constructor with an implicit conversion from B to X
@@ -156,30 +157,45 @@ namespace lr {
                 }
         };
 
-        // Get an MPS with MPSTensors B formed from nonredundant MPS parameters X
+        // Move constructor
+        XVector(XVector&& other) : XVector() // initialize via default constructor
+        {
+            swap(*this, other);
+        }
+
+        // Assignment operator
+        XVector& operator=(XVector other)
+        {
+            swap(*this, other);
+            return *this;
+        }
+
+        // Get a right-normalised MPSTensor B formed from nonredundant MPS parameters X at site i
         // Transformation from X to B
         // From a set of non-redundant MPS consisting of an MPSTensor M for the first site and X matrices
         // obtain a right-canonized MPS, i.e. transform all X to right canonised MPS tensors B with
         //  sigma_i      m      3m                                              sigma_i
         // B          = sum     sum     S^(-1/2)               X               N
         //  a_i-1 a_i   a'_i-1  a''_i-1         a_i-1 a'_i-1    a'_i-1 a''_i-1  a''_i-1 a_i
-        MPS<Matrix, SymmGroup> transformXtoB()
+
+        MPSTensor<Matrix,SymmGroup> getB(int site) const
         {
-            assert(length_ > 0);
-            MPS<Matrix,SymmGroup> ret(length_);
-
+            MPSTensor<Matrix, SymmGroup> ret;
             block_matrix<Matrix, SymmGroup> B;
-            // perform the transformation from X to B above
-            // For the first tensor, do not use S as it is unity
-            gemm(X_[0], N_[0], B);
-            ret[0].replace_right_paired(B);
 
-            for (int i = 1; i < length_; i++)
+            if (site == 0)
+            {
+                // perform the transformation from X to B above
+                // For site 0, do not multiply with S as it is unity
+                gemm(X_[0], N_[0], B);
+                ret.replace_right_paired(B);
+            }
+            else
             {
                 //Build S^(-1/2) from S^1/2
                 block_matrix<Matrix, SymmGroup> U, tmp, S;
                 block_matrix<DiagMatrix, SymmGroup> Lambda;
-                heev(S_[i-1], U, Lambda);
+                heev(S_[site-1], U, Lambda);
 
                 const block_matrix<DiagMatrix, SymmGroup>& invLambda = inverse(Lambda);
                 gemm(U, invLambda, tmp);
@@ -187,23 +203,97 @@ namespace lr {
                 gemm(tmp,transpose(conjugate(U)), S);
 
                 // Contract S with X and N to get B as block_matrix
-                gemm(X_[i], N_[i], tmp);
+                gemm(X_[site], N_[site], tmp);
                 gemm(S,tmp, B);
 
                 // form a right-paired MPS tensor from B
-                ret[i].replace_right_paired(B);
+                ret.replace_right_paired(B);
             }
+            return ret;
+        }
+
+        MPS<Matrix, SymmGroup> transformXtoB() const
+        {
+            assert(length_ > 0);
+            MPS<Matrix,SymmGroup> ret(length_);
+
+            for (int i = 0; i < length_; i++)
+                ret[i] = getB(i);
             return ret;
         }
 
         // return either an MPSTensor for site 0 or block_matrix for other sites
         // also include an out of bounds check (slow?)
-        const block_matrix<Matrix, SymmGroup>& operator[](int i) const
+        block_matrix<Matrix, SymmGroup>& operator[](int i)
         {
             return X_[i];
         }
 
+        // loading and saving of XVectors from files
+        // shamelessly copy-pasted from mps.hpp
+
+        void load(std::string const& dirname)
+        {
+            /// get size of MPS
+            std::size_t L = 0;
+            while (boost::filesystem::exists( dirname + "/xvec" + boost::lexical_cast<std::string>(++L) + ".h5" ));
+
+            /// load tensors
+            XVector<Matrix, SymmGroup> tmp(L);
+            size_t loop_max = tmp.length();
+            parallel::scheduler_balanced scheduler(loop_max);
+            for(size_t k = 0; k < loop_max; ++k){
+                parallel::guard proc(scheduler(k));
+                std::string fname = dirname+"/xvec"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+                storage::archive ar(fname);
+                ar["/tensor"] >> tmp[k];
+            }
+            swap(*this, tmp);
+        }
+
+        void save(std::string const& dirname)
+        {
+            /// create chkp dir
+            if(parallel::master() && !boost::filesystem::exists(dirname))
+                boost::filesystem::create_directory(dirname);
+
+            parallel::scheduler_balanced scheduler(length_);
+            size_t loop_max = length_;
+
+            for(size_t k = 0; k < loop_max; ++k){
+                parallel::guard proc(scheduler(k));
+                storage::migrate(X_[k]);
+            }
+            parallel::sync();
+
+            for(size_t k = 0; k < loop_max; ++k){
+                parallel::guard proc(scheduler(k));
+                if(!parallel::local()) continue;
+                const std::string fname = dirname+"/xvec"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
+                storage::archive ar(fname, "w");
+                ar["/tensor"] << X_[k];
+            }
+
+            parallel::sync(); // be sure that chkp is in valid state before overwriting the old one.
+
+            omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+                parallel::guard proc(scheduler(k));
+                if(!parallel::local()) continue;
+                const std::string fname = dirname+"/xvec"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+                boost::filesystem::rename(fname+".new", fname);
+            });
+        }
+
         int length() const { return length_; };
+
+        friend void swap(XVector& a, XVector& b)
+        {
+            using std::swap;
+            swap(a.X_, b.X_);
+            swap(a.S_, b.S_);
+            swap(a.N_, b.N_);
+            swap(a.length_, b.length_);
+        }
 
         private:
             // Number of sites

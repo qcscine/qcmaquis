@@ -170,6 +170,9 @@ public:
         boost::regex expression_onerdm_lagrangeL("^MEASURE\\[1rdm-lagrangeL\\]");
         boost::regex expression_twordm_lagrangeL("^MEASURE\\[2rdm-lagrangeL\\]");
 
+        boost::regex expression_onerdm_xvec("^MEASURE\\[1rdm-xvec\\]");
+        boost::regex expression_twordm_xvec("^MEASURE\\[2rdm-xvec\\]");
+
         // Regexp for dumping a TwoSiteTensor at site X where X is specified as "MEASURE[dump-tst] = X"
         boost::regex expression_dump_tst("^MEASURE\\[dump-tst\\]");
         boost::regex expression_dump_mpstensor("^MEASURE\\[dump-mpstensor\\]");
@@ -181,7 +184,7 @@ public:
 
             std::string name;
             std::string bra_ckp("");
-            bool expr_rdm = false, expr_rdm_lagrange = false;
+            bool expr_rdm = false, expr_rdm_lagrange = false, expr_rdm_xvec = false;
             std::vector<pos_t> positions;
             // Measure 1-RDM, 2-RDM, 1-TDM or 2-TDM
             // for TDMs the measurement is <bra_ckp| (operators) | this>
@@ -249,17 +252,34 @@ public:
                 expr_rdm_lagrange = true;
             }
 
+            // Density response (as above), but using nonredundant MPS parameters (XVector)
+            if (boost::regex_match(lhs, what, expression_onerdm_lagrange)) {
+                name = "onerdmxvector";
+                expr_rdm_xvec = true;
+            }
+
+            if (boost::regex_match(lhs, what, expression_twordm_lagrange)) {
+                name = "twordmxvector";
+                expr_rdm_xvec = true;
+            }
+
             if (expr_rdm)
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
                                 name, lat, tag_handler, op_collection, positions, bra_ckp));
 
             // Measure MPS contributions to the effective RDM from Lagrange multipliers in linear response equations
-            // (RDMs/TDMs with updated LR parameters)
+            // (RDMs/TDMs with updated LR parameters) in the one response-site formalism
             if (expr_rdm_lagrange)
                 meas.push_back( new measurements::NRDMLRLagrange<Matrix, SymmGroup>(
                                 parms["lrparam_site"],
                                 symm_traits::HasSU2<SymmGroup>(), // specialization of the constructor for SU2U1
                                 it->value(), name, lat, tag_handler, op_collection, positions, parms["lrparam_twosite"]));
+
+            // Same as above but using nonredundant MPS parameters (XVector)
+            if (expr_rdm_xvec)
+                meas.push_back( new measurements::NRDMXVector<Matrix, SymmGroup>(
+                    symm_traits::HasSU2<SymmGroup>(), it->value(), name, lat, tag_handler, op_collection, positions));
+
 
             // Measure Local Hamiltonian matrix elements
             if (boost::regex_match(lhs, what, expression_local_hamiltonian)) {

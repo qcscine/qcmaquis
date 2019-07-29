@@ -38,6 +38,7 @@
 #include "dmrg/models/measurement.h"
 
 #include "dmrg/models/chem/su2u1/term_maker.h"
+#include "measurement_map.h"
 
 namespace measurements_details {
 
@@ -716,6 +717,11 @@ namespace measurements {
     {
         typedef measurement<Matrix, SymmGroup> base;
     protected:
+
+        typedef typename base::labels_type labels_type;
+        typedef typename base::results_type results_type;
+        typedef typename MPS<Matrix, SymmGroup>::scalar_type meas_type;
+
         typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
 
         typedef Lattice::pos_t pos_t;
@@ -777,6 +783,25 @@ namespace measurements {
                 measure_2rdm(bra_mps, ket_mps);
         }
 
+        // This function should be protected, but it can't be called from derived classes if it's a template function
+        // utility function
+        // transforms a measurement map obtained in measurements to the old-school results
+        // saved in this->labels and this->vector_results
+        template<class V, std::size_t N>
+        inline void convert_meas_map_to_old_results(const measurement_map<V,N> & rdm_map)
+        {
+            std::vector<std::vector<Lattice::pos_t> > num_labels;
+            num_labels.reserve(rdm_map.size());
+            this->vector_results.reserve(rdm_map.size());
+
+            for (auto&& it : rdm_map)
+            {
+                num_labels.push_back(std::vector<Lattice::pos_t>(it.first.begin(), it.first.end()));
+                this->vector_results.push_back(it.second);
+            }
+
+            this->labels = label_strings(lattice,  num_labels, ext_labels);
+        }
     protected:
 
         // "External" labels, which, if set, are added to a set of labels in each measurement.
@@ -792,8 +817,17 @@ namespace measurements {
         void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                                  MPS<Matrix, SymmGroup> const & ket_mps)
         {
-            // Test if a separate bra state has been specified
+            onerdm_map<meas_type> rdm_map = do_measure_1rdm(dummy_bra_mps, ket_mps);
+
+            // convert the map to the old-school labels and results
+            convert_meas_map_to_old_results(rdm_map);
+        }
+
+        onerdm_map<meas_type> do_measure_1rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps, MPS<Matrix, SymmGroup> const & ket_mps)
+        {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+
+            onerdm_map<meas_type> res_map;
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             #ifdef MAQUIS_OPENMP
@@ -803,12 +837,11 @@ namespace measurements {
                 pos_t p1 = positions_first[i];
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
-                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                std::vector<std::vector<pos_t> > num_labels;
+                std::vector<meas_type> dct;
+                std::vector<std::array<pos_t, 2> > num_labels;
                 for (pos_t p2 = (bra_neq_ket ? 0 : p1); p2 < lattice.size(); ++p2)
                 {
-                    pos_t pos_[2] = {p1, p2};
-                    std::vector<pos_t> positions(pos_, pos_ + 2);
+                    std::array<pos_t, 2> positions{p1, p2};
 
                     std::vector<term_descriptor> terms;
                     if (p1 != p2)
@@ -831,32 +864,47 @@ namespace measurements {
                     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
                                                                           op_collection.fill.no_couple, tag_handler_local, terms);
                     MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
-                    typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
+                    meas_type value = expval(bra_mps, ket_mps, mpo);
 
                     dct.push_back(value);
                     num_labels.push_back(positions);
                 }
 
                 // the lattice knows the ordering and provides the correct orbital label for each position
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
+                // std::vector<std::string> lbt = label_strings(lattice,  num_labels, ext_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
                 #pragma omp critical
                 #endif
                 {
-                    this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                    this->labels.reserve(this->labels.size() + dct.size());
-                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                    // save the measured results into a map
+                    res_map.reserve(res_map.size() + dct.size());
+                    for (auto it = dct.begin(); it != dct.end(); ++it)
+                    {
+                        auto it_label = num_labels.begin() + std::distance(dct.begin(), it);
+                        res_map[*it_label] = *it;
+                    }
                 }
+
             }
+            return res_map;
         }
 
         void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                           MPS<Matrix, SymmGroup> const & ket_mps)
         {
+            twordm_map<meas_type> rdm_map = do_measure_2rdm(dummy_bra_mps, ket_mps);
+
+            // convert the map to the old-school labels and results
+            convert_meas_map_to_old_results(rdm_map);
+        }
+
+        twordm_map<meas_type> do_measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps, MPS<Matrix, SymmGroup> const & ket_mps)
+        {
+
+            twordm_map<meas_type> res_map;
+
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
@@ -874,15 +922,14 @@ namespace measurements {
 
                 pos_t subref = bra_neq_ket ? 0 : std::min(p1, p2);
 
-                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                std::vector<std::vector<pos_t> > num_labels;
+                std::vector<meas_type> dct;
+                std::vector<std::array<pos_t, 4> > num_labels;
 
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 {
                     for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
                     {
-                        pos_t pos_[4] = {p1, p2, p3, p4};
-                        std::vector<pos_t> positions(pos_, pos_ + 4);
+                        std::array<pos_t, 4> positions{p1, p2, p3, p4};
 
                         std::vector<term_descriptor> terms = SpinSumSU2<Matrix, SymmGroup>::V_term(1., p1, p2, p3, p4, op_collection, lattice);
 
@@ -893,7 +940,7 @@ namespace measurements {
                         generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
                                                                               op_collection.fill.no_couple, tag_handler_local, terms);
                         MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
-                        typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
+                        meas_type value = expval(bra_mps, ket_mps, mpo);
 
                         dct.push_back(value);
                         num_labels.push_back(positions);
@@ -901,20 +948,24 @@ namespace measurements {
 
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels,ext_labels);
+                // std::vector<std::string> lbt = label_strings(lattice,  num_labels,ext_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
                 #pragma omp critical
                 #endif
                 {
-                    this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                    this->labels.reserve(this->labels.size() + dct.size());
-                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                    // save the measured results into a map
+                    res_map.reserve(res_map.size() + dct.size());
+                    for (auto it = dct.begin(); it != dct.end(); ++it)
+                    {
+                        auto it_label = num_labels.begin() + std::distance(dct.begin(), it);
+                        res_map[*it_label] = *it;
+                    }
                 }
             }
+
+            return res_map;
         }
 
     private:

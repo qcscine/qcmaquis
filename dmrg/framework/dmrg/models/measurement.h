@@ -55,6 +55,8 @@ class measurement {
 public:
     typedef typename Matrix::value_type value_type;
     typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+    typedef std::vector<std::string> labels_type;
+    typedef std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> results_type;
 
     measurement(std::string const& n="")
     : cast_to_real(true), is_super_meas(false), name_(n), eigenstate(0)
@@ -81,6 +83,7 @@ public:
     measurement* clone() const { return do_clone(); }
 
 protected:
+
     virtual measurement* do_clone() const =0;
 
     bool cast_to_real, is_super_meas;
