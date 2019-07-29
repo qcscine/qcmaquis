@@ -1000,9 +1000,9 @@ namespace measurements {
 
             maquis::cout << " measuring in rel version of tagged_nrank " << std::endl;
 
-            if (this->name() == "oneptdm")
+            if (operator_terms[0].first.size() == 2)
                 measure_correlation(bra_mps, ket_mps);
-            else if (this->name() == "twoptdm")
+            else if (operator_terms[0].first.size() == 4)
                 measure_2rdm(bra_mps, ket_mps);
           //else if (operator_terms[0].first.size() == 6)
           //    measure_3rdm(bra_mps, ket_mps);
