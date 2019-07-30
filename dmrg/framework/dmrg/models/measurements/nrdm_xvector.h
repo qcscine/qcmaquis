@@ -49,6 +49,7 @@
         using base::ext_labels;
         using base::do_measure_1rdm;
         using base::do_measure_2rdm;
+        using base::lattice;
 
         public:
             // Specialization to call the correct constructor of the base class
@@ -112,7 +113,7 @@
                 }
 
                 // Convert the total map to the old-style results with labels and results
-                static_cast<TaggedNRankRDM<Matrix, SymmGroup> >(*this).template convert_meas_map_to_old_results<meas_type, 2>(rdm_full);
+                std::tie(this->labels, this->vector_results) = measurements_details::convert_meas_map_to_old_results(rdm_full, lattice, ext_labels);
             }
 
             // and the same for 2-rdm (unfortunately copy-pasted from 1-rdm, maybe there's an easy way to make it more generic)
@@ -140,7 +141,7 @@
                 }
 
                 // Convert the total map to the old-style results with labels and results
-                static_cast<TaggedNRankRDM<Matrix, SymmGroup> >(*this).template convert_meas_map_to_old_results<meas_type, 4>(rdm_full);
+                std::tie(this->labels, this->vector_results) = measurements_details::convert_meas_map_to_old_results(rdm_full, lattice, ext_labels);
             }
 
             std::string filename_;

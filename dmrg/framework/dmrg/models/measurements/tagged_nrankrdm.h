@@ -141,6 +141,32 @@ namespace measurements_details {
             return false;
         }
     };
+
+    // utility function
+    // transforms a measurement map obtained in measurements to the old-school results
+    // saved in this->labels and this->vector_results
+    template<class V, std::size_t N>
+    inline
+    std::pair<std::vector<std::string>, std::vector<V> > convert_meas_map_to_old_results(const measurements::measurement_map<V,N> & rdm_map,
+     const Lattice& lattice, const std::vector<Lattice::pos_t> & ext_labels)
+    {
+        std::vector<std::string> labels;
+        std::vector<V> vector_results;
+
+        std::vector<std::vector<Lattice::pos_t> > num_labels;
+        num_labels.reserve(rdm_map.size());
+        vector_results.reserve(rdm_map.size());
+
+        for (auto&& it : rdm_map)
+        {
+            num_labels.push_back(std::vector<Lattice::pos_t>(it.first.begin(), it.first.end()));
+            vector_results.push_back(it.second);
+        }
+
+        labels = label_strings(lattice, num_labels, ext_labels);
+
+        return std::make_pair(std::move(labels), std::move(vector_results));
+    }
 }
 
 namespace measurements {
@@ -784,25 +810,8 @@ namespace measurements {
         }
 
         // This function should be protected, but it can't be called from derived classes if it's a template function
-        // utility function
-        // transforms a measurement map obtained in measurements to the old-school results
-        // saved in this->labels and this->vector_results
-        template<class V, std::size_t N>
-        inline void convert_meas_map_to_old_results(const measurement_map<V,N> & rdm_map)
-        {
-            std::vector<std::vector<Lattice::pos_t> > num_labels;
-            num_labels.reserve(rdm_map.size());
-            this->vector_results.reserve(rdm_map.size());
-
-            for (auto&& it : rdm_map)
-            {
-                num_labels.push_back(std::vector<Lattice::pos_t>(it.first.begin(), it.first.end()));
-                this->vector_results.push_back(it.second);
-            }
-
-            this->labels = label_strings(lattice,  num_labels, ext_labels);
-        }
     protected:
+        Lattice lattice;
 
         // "External" labels, which, if set, are added to a set of labels in each measurement.
         // Useful e.g. for RDM derivatives, where these denote the index of an MPS parameter.
@@ -820,7 +829,7 @@ namespace measurements {
             onerdm_map<meas_type> rdm_map = do_measure_1rdm(dummy_bra_mps, ket_mps);
 
             // convert the map to the old-school labels and results
-            convert_meas_map_to_old_results(rdm_map);
+            std::tie(this->labels, this->vector_results) = measurements_details::convert_meas_map_to_old_results(rdm_map, lattice, ext_labels);
         }
 
         onerdm_map<meas_type> do_measure_1rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps, MPS<Matrix, SymmGroup> const & ket_mps)
@@ -897,7 +906,7 @@ namespace measurements {
             twordm_map<meas_type> rdm_map = do_measure_2rdm(dummy_bra_mps, ket_mps);
 
             // convert the map to the old-school labels and results
-            convert_meas_map_to_old_results(rdm_map);
+            std::tie(this->labels, this->vector_results) = measurements_details::convert_meas_map_to_old_results(rdm_map, lattice, ext_labels);
         }
 
         twordm_map<meas_type> do_measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps, MPS<Matrix, SymmGroup> const & ket_mps)
@@ -969,7 +978,6 @@ namespace measurements {
         }
 
     private:
-        Lattice lattice;
         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
 
         typename TM::OperatorCollection op_collection;

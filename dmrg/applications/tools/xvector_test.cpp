@@ -85,8 +85,9 @@ int main(int argc, char ** argv)
                     return sum;
                 }) << std::endl;
 
-        MPS<matrix, grp> mps_transformed = x.transformXtoB();
-        save(checkpoint_out, mps_transformed);
+        x.save(checkpoint_out);
+        // MPS<matrix, grp> mps_transformed = x.transformXtoB();
+        // save(checkpoint_out, mps_transformed);
     } catch (std::exception & e) {
         maquis::cerr << "Exception thrown!" << std::endl;
         maquis::cerr << e.what() << std::endl;

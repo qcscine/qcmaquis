@@ -62,7 +62,7 @@ namespace lr {
 
         // Empty constructors
         XVector() : length_(0), X_(), S_(), N_() {};
-        XVector(int length) : length_(length), X_(length), S_(length-1), N_(length) {};
+        XVector(std::size_t length) : length_(length), X_(length), S_(length-1), N_(length) {};
 
         // Constructor with an implicit conversion from B to X
 
@@ -81,7 +81,7 @@ namespace lr {
             assert(length_ > 0);
 
             // construct X from B
-            for (int i = 0; i < length_; i++)
+            for (std::size_t i = 0; i < length_; i++)
                 {
                     block_matrix<Matrix, SymmGroup> U; // eigenvectors
                     block_matrix<Matrix, SymmGroup> tmp;
@@ -178,7 +178,7 @@ namespace lr {
         // B          = sum     sum     S^(-1/2)               X               N
         //  a_i-1 a_i   a'_i-1  a''_i-1         a_i-1 a'_i-1    a'_i-1 a''_i-1  a''_i-1 a_i
 
-        MPSTensor<Matrix,SymmGroup> getB(int site) const
+        MPSTensor<Matrix,SymmGroup> getB(std::size_t site) const
         {
             MPSTensor<Matrix, SymmGroup> ret;
             block_matrix<Matrix, SymmGroup> B;
@@ -217,14 +217,14 @@ namespace lr {
             assert(length_ > 0);
             MPS<Matrix,SymmGroup> ret(length_);
 
-            for (int i = 0; i < length_; i++)
+            for (std::size_t i = 0; i < length_; i++)
                 ret[i] = getB(i);
             return ret;
         }
 
         // return either an MPSTensor for site 0 or block_matrix for other sites
         // also include an out of bounds check (slow?)
-        block_matrix<Matrix, SymmGroup>& operator[](int i)
+        block_matrix<Matrix, SymmGroup>& operator[](std::size_t i)
         {
             return X_[i];
         }
@@ -284,7 +284,7 @@ namespace lr {
             });
         }
 
-        int length() const { return length_; };
+        std::size_t length() const { return length_; };
 
         friend void swap(XVector& a, XVector& b)
         {
@@ -297,7 +297,7 @@ namespace lr {
 
         private:
             // Number of sites
-            int length_;
+            std::size_t length_;
 
             // MPS parameters
             bm_vector X_;
@@ -329,7 +329,7 @@ namespace lr {
 
                 const std::vector<std::size_t> & left_basis_sizes = M.data().left_basis().sizes();
                 assert(left_basis_sizes.size() == U.n_blocks());
-                for (int i = U.n_blocks()-1; i >= 0; i--)
+                for (std::size_t i = U.n_blocks()-1; i >= 0; i--)
                 {
                     // If the size of the right basis is equal to that of the left basis (which shouldn't happen, right?)
                     if (U.right_basis().sizes()[i] <= left_basis_sizes[i])
