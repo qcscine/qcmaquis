@@ -30,18 +30,40 @@
 #include "maquis_dmrg.h"
 #include <complex>
 
+#include "dmrg/sim/symmetry_factory.h"
+#include "dmrg/sim/matrix_types.h"
+#include "interface_sim.h"
+
 namespace maquis
 {
+    template<class V>
+    struct simulation_traits {
+        typedef std::shared_ptr<abstract_interface_sim<tmatrix<V> > > shared_ptr;
+        template <class SymmGroup> struct F {
+            typedef interface_sim<tmatrix<V>, SymmGroup> type;
+        };
+    };
+
+    template <class V>
+    struct DMRGInterface<V>::Impl
+    {
+        typedef typename simulation_traits<V>::shared_ptr sim_ptr;
+        sim_ptr sim;
+
+        Impl(sim_ptr sim_) : sim(sim_) {};
+        ~Impl() = default;
+    };
+
     template <class V>
     DMRGInterface<V>::DMRGInterface(DmrgParameters & parms_)
-        : parms(parms_), sim(::dmrg::symmetry_factory<simulation_traits<V> >(parms_, parms_)) {};
+        : parms(parms_), impl_(new Impl(::dmrg::symmetry_factory<simulation_traits<V> >(parms_, parms_))) {};
 
     template <class V>
     void DMRGInterface<V>::optimize()
     {
         try
         {
-            sim->run();
+            impl_->sim->run();
         }
         catch (std::exception & e)
         {
@@ -56,7 +78,7 @@ namespace maquis
     {
         try
         {
-            sim->run_measure();
+            impl_->sim->run_measure();
         }
         catch (std::exception & e)
         {
@@ -69,31 +91,31 @@ namespace maquis
     template <class V>
     V DMRGInterface<V>::energy()
     {
-        return sim->get_energy();
+        return impl_->sim->get_energy();
     }
 
     template <class V>
     results_collector& DMRGInterface<V>::get_iteration_results()
     {
-        return sim->get_iteration_results();
+        return impl_->sim->get_iteration_results();
     }
 
     template <class V>
     int DMRGInterface<V>::get_last_sweep()
     {
-        return sim->get_last_sweep();
+        return impl_->sim->get_last_sweep();
     }
 
     template <class V>
     void DMRGInterface<V>::measure()
     {
-        measurements_ = sim->measure_out();
+        measurements_ = impl_->sim->measure_out();
     }
 
     template <class V>
     void DMRGInterface<V>::update_integrals(const integral_map<V> & integrals)
     {
-        sim->update_integrals(integrals);
+        impl_->sim->update_integrals(integrals);
     }
 
     template <class V>
@@ -117,6 +139,9 @@ namespace maquis
     {
         return measurements().at("twoptdm");
     }
+
+    template <class V>
+    DMRGInterface<V>::~DMRGInterface() = default;
 
     template class DMRGInterface<double>;
     template class DMRGInterface<std::complex<double> >;

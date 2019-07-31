@@ -29,14 +29,9 @@
 #ifndef MAQUIS_DMRG_DETAIL_H
 #define MAQUIS_DMRG_DETAIL_H
 
-#include "dmrg/sim/symmetry_factory.h"
-#include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/chem/integral_interface.h"
 #include "dmrg/models/chem/util.h"
 #include "dmrg/utils/results_collector.h"
-
-#include "interface_sim.h"
-
 
 namespace maquis {
     using chem::integral_map;
@@ -49,12 +44,5 @@ namespace maquis {
     }
 }
 
-template<class V>
-struct simulation_traits {
-    typedef std::shared_ptr<abstract_interface_sim<tmatrix<V> > > shared_ptr;
-    template <class SymmGroup> struct F {
-        typedef interface_sim<tmatrix<V>, SymmGroup> type;
-    };
-};
 
 #endif

@@ -30,8 +30,10 @@
 
 #include "maquis_dmrg_detail.h"
 
+
 namespace maquis
 {
+
     template <class V> // real or complex
     class DMRGInterface
     {
@@ -43,6 +45,7 @@ namespace maquis
             typedef std::map<std::string, meas_with_results_type> results_map_type;
 
             DMRGInterface(DmrgParameters& parms_);
+            ~DMRGInterface();
 
             // Run DMRG optimization
             void optimize();
@@ -73,9 +76,10 @@ namespace maquis
             const meas_with_results_type & twordm();
         private:
             DmrgParameters& parms;
-
             results_map_type measurements_;
-            typename simulation_traits<V>::shared_ptr sim;
+
+            struct Impl;
+            std::unique_ptr<Impl> impl_;
     };
 }
 #endif
