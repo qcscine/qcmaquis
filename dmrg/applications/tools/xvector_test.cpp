@@ -86,6 +86,14 @@ int main(int argc, char ** argv)
                 }) << std::endl;
 
         x.save(checkpoint_out);
+        if(parms.is_set("xvec_aux_file"))
+            x.dump_to_textfile(parms["xvec_aux_file"]);
+
+        lr::XVector<matrix, grp> x2;
+        x2.load(checkpoint_out);
+        if(parms.is_set("xvec_aux_file"))
+            x2.update_from_textfile(parms["xvec_aux_file"]);
+
         // MPS<matrix, grp> mps_transformed = x.transformXtoB();
         // save(checkpoint_out, mps_transformed);
     } catch (std::exception & e) {

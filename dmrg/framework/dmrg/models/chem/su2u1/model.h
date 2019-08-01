@@ -276,9 +276,14 @@ public:
                                 it->value(), name, lat, tag_handler, op_collection, positions, parms["lrparam_twosite"]));
 
             // Same as above but using nonredundant MPS parameters (XVector)
+            // For the ease of the exchange with the MOLCAS interface, we require TWO files for loading the checkpoint:
+            // 1) the original xvector checkpoint file -- from where the block matrix structure will be obtained and
+            // 2) the flattened text file which is obtained from MOLCAS, from which the values will be read from.
+            // The first file is passed as a parameter to the MEASURE[Xrdm-xvec] option, the second is specified in
+            // a separate "xvec_aux_file" option
             if (expr_rdm_xvec)
                 meas.push_back( new measurements::NRDMXVector<Matrix, SymmGroup>(
-                    symm_traits::HasSU2<SymmGroup>(), it->value(), name, lat, tag_handler, op_collection, positions));
+                    symm_traits::HasSU2<SymmGroup>(), it->value(), parms["xvec_aux_file"], name, lat, tag_handler, op_collection, positions));
 
 
             // Measure Local Hamiltonian matrix elements

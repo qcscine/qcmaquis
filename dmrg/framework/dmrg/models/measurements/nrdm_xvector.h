@@ -55,23 +55,27 @@
             // Specialization to call the correct constructor of the base class
             // TODO: Check if this compiles with disabled SU2U1/SU2U1PG!
             // symm_traits::HasSU2<SU2U1> and symm_traits::HasSU2<SU2U1PG> yields boost::true_type
-            NRDMXVector(boost::true_type, std::string const& filename, std::string const& name_, const Lattice & lat,
+            NRDMXVector(boost::true_type, std::string const& chkp, std::string const& aux_filename, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection const & op_collection_,
                        positions_type const& positions_ = positions_type(), bool twosite_ = true)
-                       : base(name_, lat, tag_handler_, op_collection_, positions_), filename_(filename) {};
+                       : base(name_, lat, tag_handler_, op_collection_, positions_), chkp_(chkp), aux_filename_(aux_filename) {};
 
             // 2U1 and other symmetry groups
-            NRDMXVector(int lr_site_, boost::false_type, std::string const& filename, std::string const& name_, const Lattice & lat,
+            NRDMXVector(int lr_site_, boost::false_type, std::string const& chkp, std::string const& aux_filename, std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<scaled_bond_term> const& ops_,
                        bool half_only_, positions_type const& positions_ = positions_type(), bool twosite_ = true)
-                       : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), filename_(filename) {};
+                       : base(name_, lat, tag_handler_, identities_, fillings_, ops_, half_only_, positions_), chkp_(chkp), aux_filename_(aux_filename) {};
 
             virtual void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
             {
                 lr::XVector<Matrix, SymmGroup> xvec;
-                xvec.load(this->filename_);
+                xvec.load(this->chkp_);  // Load the block matrix structure
+                xvec.load_mps(ket_mps);  // Specify the underlying MPS for the xvector
+
+                if (!this->aux_filename_.empty()) // If we have an aux filename specified, load the data from the auxiliary text file (used in the MOLCAS interface)
+                    xvec.update_from_textfile(this->aux_filename_);
 
                 if (this->name() == "onerdmxvector")
                     measure_xvector_1rdm(ket_mps, xvec);
@@ -144,7 +148,8 @@
                 std::tie(this->labels, this->vector_results) = measurements_details::convert_meas_map_to_old_results(rdm_full, lattice, ext_labels);
             }
 
-            std::string filename_;
+            std::string chkp_;
+            std::string aux_filename_;
         };
     }
 #endif
