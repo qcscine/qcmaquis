@@ -177,6 +177,9 @@ public:
         boost::regex expression_dump_tst("^MEASURE\\[dump-tst\\]");
         boost::regex expression_dump_mpstensor("^MEASURE\\[dump-mpstensor\\]");
 
+        // Regexp for dumping an XVector (a vector with nonredundant MPS parameters)
+        boost::regex expression_dump_xvec("^MEASURE\\[dump-xvec\\]");
+
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -315,6 +318,14 @@ public:
                 name = "tstdump";
                 meas.push_back( new measurements::DumpMPSTensor<Matrix, SymmGroup>(
                                 name, parms["lrparam_site"], parms["lrparam_twosite"]));
+            }
+
+            // Dump a vector with a variatiion of an MPS, expressed with nonredundant MPS parameters
+            if (boost::regex_match(lhs, what, expression_dump_xvec))
+            {
+                name = "xvec_dump";
+                     meas.push_back( new measurements::DumpXVector<Matrix, SymmGroup>(
+                                name, it->value(), parms["xvec_aux_file"]));
             }
 
         }

@@ -91,7 +91,6 @@ namespace lr {
                     if (i > 0)
                         S = constructS(i);
 
-                    mps_.normalize_right();
                     // Build N
                     N = constructN(mps_[i]);
 
@@ -165,7 +164,7 @@ namespace lr {
 
         MPSTensor<Matrix,SymmGroup> getB(std::size_t site) const
         {
-            if (mps_.empty())
+            if (mps_.length() == 0)
                 throw std::runtime_error("Cannot transform the X vector -- original MPS has not been loaded.");
 
             MPSTensor<Matrix, SymmGroup> ret;
@@ -182,7 +181,7 @@ namespace lr {
             else
             {
                 // Build S^1/2
-                block_matrix<Matrix, SymmGroup> S = constructS(site, mps_);
+                block_matrix<Matrix, SymmGroup> S = constructS(site);
 
                 // Build S^(-1/2) from S^1/2
                 block_matrix<Matrix, SymmGroup> U, tmp, Sinv;
@@ -283,6 +282,11 @@ namespace lr {
         {
             load(filename, mps_);
         }
+        // or from another MPSTensor
+        void assign_mps(const MPS<Matrix, SymmGroup> & mps)
+        {
+            mps_ = mps;
+        }
 
         // Dump the contents to a flat-formatted textfile -- needed for the (crappy) interface with MOLCAS
         void dump_to_textfile(std::string const& filename)
@@ -345,14 +349,16 @@ namespace lr {
 
             // Original MPS, which we will need for the back-transformation
             // We need a copy because we will change the canonisation of the MPS
-            MPS<Matrix, SymmGroup> mps_;
+            // Mutable because the normalisation may change when calculating the overlap matrix
+            // (check if this has any side effects!)
+            mutable MPS<Matrix, SymmGroup> mps_;
 
             // For a given MPS constructs the N matrix, which is the transformation matrix of the |a_i-1 sigma_i(R)>
             // basis to the basis COMPLEMENTARY to |a_i(R)> basis. (In contrast, in a regular DMRG sweep we
             // construct a transformation matrix from the |a_i-1 sigma_i(R)> to the |a_i(R)> basis). Its size is
             // therefore 3m x 4m.
             // It is assumed that all MPSTensors right of M are right-normalised.
-            block_matrix<Matrix, SymmGroup> constructN(const MPSTensor<Matrix, SymmGroup> & M)
+            block_matrix<Matrix, SymmGroup> constructN(const MPSTensor<Matrix, SymmGroup> & M) const
             {
 
                 // Build the density matrix for the right renormalised states
@@ -388,7 +394,7 @@ namespace lr {
             }
 
             // Construct the S^(1/2) matrix
-            block_matrix<Matrix, SymmGroup> constructS(std::size_t site)
+            block_matrix<Matrix, SymmGroup> constructS(std::size_t site) const
             {
                 block_matrix<Matrix, SymmGroup> ret;
 
@@ -411,6 +417,8 @@ namespace lr {
                 block_matrix<Matrix, SymmGroup> tmp;
                 gemm(U,sqrtLambda,tmp);
                 gemm(tmp,transpose(conjugate(U)), ret);
+                // return the canonisation
+                mps_.normalize_right();
                 return ret;
             }
     };

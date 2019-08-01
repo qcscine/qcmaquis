@@ -36,6 +36,7 @@
 #include "dmrg/models/measurements/nrdm_lr_lagrange.h"
 #include "dmrg/models/measurements/dump_mpstensor.h"
 #include "dmrg/models/measurements/nrdm_xvector.h"
+#include "dmrg/models/measurements/dump_xvector.h"
 //#include "dmrg/models/measurements/rel_nrankrdm.h"
 #include "dmrg/models/measurements/custom.h"
 #include "dmrg/models/measurements/overlap.h"

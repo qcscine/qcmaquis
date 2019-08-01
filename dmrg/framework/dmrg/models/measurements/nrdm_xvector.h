@@ -72,7 +72,7 @@
             {
                 lr::XVector<Matrix, SymmGroup> xvec;
                 xvec.load(this->chkp_);  // Load the block matrix structure
-                xvec.load_mps(ket_mps);  // Specify the underlying MPS for the xvector
+                xvec.assign_mps(ket_mps);  // Specify the underlying MPS for the xvector
 
                 if (!this->aux_filename_.empty()) // If we have an aux filename specified, load the data from the auxiliary text file (used in the MOLCAS interface)
                     xvec.update_from_textfile(this->aux_filename_);
