@@ -157,6 +157,13 @@ public:
     template<class Matrix_, class SymmGroup_>
     friend MPSTensor<Matrix_, SymmGroup_> join(MPSTensor<Matrix_, SymmGroup_> const &, MPSTensor<Matrix_, SymmGroup_> const &, boundary_flag_t);
     
+    // for multi-canonization of MPS vectors
+    friend void multi_move_normalization_l2r<>(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t p1, std::size_t p2, DecompMethod method);
+    friend void multi_move_normalization_r2l<>(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t p1, std::size_t p2, DecompMethod method);
+
+    friend std::vector<block_matrix<Matrix, SymmGroup> > multi_normalize_left<>(std::vector<std::reference_wrapper<MPSTensor<Matrix, SymmGroup> > >& mps_vec, DecompMethod method);
+    friend std::vector<block_matrix<Matrix, SymmGroup> > multi_normalize_right<>(std::vector<std::reference_wrapper<MPSTensor<Matrix, SymmGroup> > >& mps_vec, DecompMethod method);
+
     template<class Archive> void load(Archive & ar);
     template<class Archive> void save(Archive & ar) const;
     template <class Archive> void serialize(Archive & ar, const unsigned int version);
