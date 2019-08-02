@@ -39,6 +39,7 @@
 #include "dmrg/utils/storage.h"
 
 #include <boost/ptr_container/ptr_vector.hpp>
+#include "dmrg/block_matrix/detail/alps.hpp"
 
 template<class Matrix, class SymmGroup> class SiteOperator;
 
@@ -80,6 +81,10 @@ public:
 
     template <class OtherMatrix>
     block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
+
+    // Copy constructor from a diagonal matrix
+    template<class V>
+    block_matrix(block_matrix<alps::numeric::diagonal_matrix<V>, SymmGroup> const &);
 
     block_matrix& operator=(block_matrix rhs);
     template<class OtherMatrix>

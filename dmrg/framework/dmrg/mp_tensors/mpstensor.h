@@ -42,8 +42,20 @@ enum DecompMethod {QR, SVD};
 
 static DecompMethod DefaultSolver() {return QR;} // QR or SVD
 
+template<class Matrix, class SymmGroup> class TwoSiteTensor;
+template<class Matrix, class SymmGroup> class MPS;
+
 template<class Matrix, class SymmGroup>
-class TwoSiteTensor;
+void multi_move_normalization_l2r(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t p1, std::size_t p2, DecompMethod method);
+
+template<class Matrix, class SymmGroup>
+void multi_move_normalization_r2l(std::vector<MPS<Matrix, SymmGroup> > & vec, std::size_t p1, std::size_t p2, DecompMethod method);
+
+template<class Matrix, class SymmGroup>
+std::vector<block_matrix<Matrix, SymmGroup> > multi_normalize_left(std::vector<std::reference_wrapper<MPSTensor<Matrix, SymmGroup> > >& mps_vec, DecompMethod method);
+
+template<class Matrix, class SymmGroup>
+std::vector<block_matrix<Matrix, SymmGroup> > multi_normalize_right(std::vector<std::reference_wrapper<MPSTensor<Matrix, SymmGroup> > >& mps_vec, DecompMethod method);
 
 // MPS Tensor object
 //

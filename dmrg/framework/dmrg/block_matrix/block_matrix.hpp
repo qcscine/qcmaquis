@@ -97,6 +97,28 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
         data_.push_back(new Matrix(rhs[k]));
 }
 
+// Copy constructor from diagonal matrix
+template<class Matrix, class SymmGroup>
+template <class V>
+block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<alps::numeric::diagonal_matrix<V>, SymmGroup> const & rhs)
+: basis_(rhs.basis())
+, size_index(rhs.size_index)
+, iter_index(rhs.iter_index)
+{
+    data_.reserve(rhs.n_blocks());
+    for (size_type k = 0; k < rhs.n_blocks(); ++k)
+    {
+        Matrix* m = new Matrix(rhs[k].num_rows(),rhs[k].num_cols());
+        // Is the release of the object handled by data_?? Otherwise we'll have a memory leak here
+        for (auto it = m->diagonal().first; it != m->diagonal().second; ++it)
+        {
+            auto it2 = rhs[k].diagonal().first + std::distance(m->diagonal().first, it);
+            *it = *it2;
+        }
+        data_.push_back(m);
+    }
+}
+
 // OPERATORS
 // 1) assignment (=) : just switch the pointers. The assignment can be done
 //    also from another type of matrix
@@ -302,6 +324,7 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
     return data_[basis_.position(r.first, c.first)](r.second, c.second);
 }
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
+// Readded by Leon 18/7/2019
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_rows_from_block(size_type block, size_type r, size_type k)
 { // we should add an assert block < data_.size()
