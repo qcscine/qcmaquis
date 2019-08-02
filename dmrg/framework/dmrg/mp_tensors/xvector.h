@@ -330,6 +330,24 @@ namespace lr {
             }
         }
 
+        // Constructs the MPS given by the sum of all possible variations for each site.
+        // The output will be an MPS with a bond dimension that is larger than the input one
+
+        MPS<Matrix, SymmGroup> GenerateMPSVariation()
+        {
+            // Variables initialization
+            auto size = mps_.size();
+            MPS<Matrix, SymmGroup> ret(size);
+            // First site
+            ret[0] = MPSJoin::join(mps_[0], this->getB(0), l_boundary_f);
+            // Main loop over all possible intermediate sites.
+            for (int idx = 1; idx < size-1; idx++)
+                ret[idx] = MPSJoin::join(mps_[idx], mps_[idx], this->getB(idx));
+            // Last site
+            ret[size-1] = MPSJoin::join(mps_[size-1], this->getB(size-1), r_boundary_f);
+            return ret;
+        }
+
         std::size_t length() const { return length_; };
 
         friend void swap(XVector& a, XVector& b)

@@ -175,6 +175,77 @@ void MPSTensor<Matrix, SymmGroup>::replace_right_paired(block_matrix<Matrix, Sym
     cur_normalization = normalization;
 }
 
+// MPSTensor parallel of the routine [match_and_add_block]
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::add_block_to_row(block_matrix<Matrix, SymmGroup>& bm)
+{
+    // The modified index is the row one, so the merged index is put into the column
+    make_right_paired() ;
+    // Loop over all the symmetry blocks of the block_matrix object
+    for (std::size_t idx = 0; idx < bm.n_blocks(); idx++) {
+        // Safety checks
+        assert(this->data().get_right_dim(idx) == bm.get_right_dim(idx));
+        auto i_2mod = this->left_i.position(bm.get_left_charge(idx));
+        // Finds the physical index associated to the block I am adding
+        this->left_i[i_2mod].second += bm.get_left_dim(idx);
+        this->data_.add_block_to_row(bm, bm.get_left_charge(idx), bm.get_right_charge(idx));
+    }
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::add_block_to_column(block_matrix<Matrix, SymmGroup>& bm)
+{
+    // The modified index is the column one, so the merged index is put into the row
+    make_left_paired() ;
+    // Loop over all the symmetry blocks of the block_matrix object
+    for (std::size_t idx = 0; idx < bm.n_blocks(); idx++) {
+        // Safety checks
+        assert(this->data().get_left_dim(idx) == bm.get_left_dim(idx));
+        auto i_2mod = this->right_i.position(bm.get_right_charge(idx));
+        // Finds the physical index associated to the block I am adding
+        this->right_i[i_2mod].second += bm.get_right_dim(idx);
+        this->data_.add_block_to_column(bm, bm.get_left_charge(idx), bm.get_right_charge(idx));
+    }
+};
+
+// This is an interface to the resize_block method of the underlying vector of block_matrices
+// data structure.
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::resize_block_lp(size_type n_cols,
+                                                   charge lc,
+                                                   charge rc)
+{
+    // Checks if the block is present and determines its position
+    make_left_paired();
+    assert(this->data().has_block(lc,rc));
+    auto idx = this->data().find_block(lc, rc);
+    auto i_right = this->right_i.position(rc);
+    // Finds the physical index associated to the block I am adding
+    auto n_rows = this->data().get_left_dim(idx);
+    this->right_i[i_right].second += n_cols;
+    this->data_.resize_block(idx, n_rows, this->right_i[i_right].second);
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::resize_block_rp(size_type n_rows,
+                                                   charge lc,
+                                                   charge rc)
+{
+    // Checks if the block is present and determines its position
+    make_right_paired();
+    assert(this->data().has_block(lc,rc));
+    auto idx = this->data().find_block(lc, rc);
+    auto i_left = this->left_i.position(lc);
+    // Finds the physical index associated to the block I am adding
+    auto n_cols = this->data().get_right_dim(idx) ;
+    this->left_i[i_left].second += n_rows;
+    this->data_.resize_block(idx, this->left_i[i_left].second, n_cols);
+}
+
+// Routines to return the dimensions of the MPSTensor object
+
 template<class Matrix, class SymmGroup>
 Index<SymmGroup> const & MPSTensor<Matrix, SymmGroup>::site_dim() const
 {

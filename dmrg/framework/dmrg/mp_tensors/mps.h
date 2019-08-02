@@ -223,10 +223,10 @@ MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
     bright.multiply_by_scalar(beta);
 
     MPS<Matrix, SymmGroup> ret(a.length());
-    ret[0] = join(a[0],b[0],l_boundary_f);
-    ret[a.length()-1] = join(aright,bright,r_boundary_f);
+    ret[0] = MPSJoin::join(a[0],b[0],l_boundary_f);
+    ret[a.length()-1] = MPSJoin::join(aright,bright,r_boundary_f);
     for (std::size_t p = 1; p < a.length()-1; ++p)
-        ret[p] = join(a[p], b[p]);
+        ret[p] = MPSJoin::join(a[p], b[p]);
     return ret;
 }
 
