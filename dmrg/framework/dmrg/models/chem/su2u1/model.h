@@ -154,11 +154,9 @@ public:
         boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
 
-        // Regexp for local Hamiltonian matrix elements
-        boost::regex expression_local_hamiltonian("^MEASURE\\[local-hamiltonian\\]");
         // Regexp for diagonal local Hamiltonian matrix elements
         boost::regex expression_local_hamiltonian_diag("^MEASURE\\[local-hamiltonian-diag\\]");
-        // or sigma vector (contracted local Hamiltonian with one MPS)
+        // or sigma vector (contracted local Hamiltonian with one MPS or its variation)
         boost::regex expression_sigma_vector("^MEASURE\\[sigma-vector\\]");
 
         // Regexp for Lagrange RDM update (MPS contribution to the Lagrange effective RDM in gradient calculations)
@@ -289,27 +287,25 @@ public:
                     symm_traits::HasSU2<SymmGroup>(), it->value(), parms["xvec_aux_file"], name, lat, tag_handler, op_collection, positions));
 
 
-            // Measure Local Hamiltonian matrix elements
-            if (boost::regex_match(lhs, what, expression_local_hamiltonian)) {
-                name = "local_hamiltonian";
-                meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
-                                name, lat, parms));
-            }
             // diagonal Local Hamiltonian matrix elements
             if (boost::regex_match(lhs, what, expression_local_hamiltonian_diag)) {
                 name = "local_hamiltonian_diag";
                 meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
-                                name, lat, parms));
+                                name, lat, parms, it->value(), parms["xvec_aux_file"], std::string()));
             }
-            // or sigma vector
-            // If we provide a valid file name (for the auxiliary MPSTensor contents) as a parameter, pass it to the constructor
-            // If the file does not exist or cannot be opened, silently ignore it (TODO: Maybe this behaviour is not clean!)
+
+            // sigma vector (H |MPS> or (H |deltaMPS>)
+
             if (boost::regex_match(lhs, what, expression_sigma_vector)) {
                 name = "sigma_vector";
-                std::string ext_filename = boost::filesystem::exists(it->value()) ? it->value() : "";
+                // check whether we have an input xvector with the variation
+                // this will be provided (by MOLCAS) in a textfile named in the parameter
+                // "xvec_aux_input"
+                std::string ext_infile = parms.is_set("xvec_aux_input") ? parms["xvec_aux_input"].as<std::string>() : std::string();
                 meas.push_back( new measurements::LocalHamiltonian<Matrix, SymmGroup>(
-                                name, lat, parms, ext_filename));
+                                name, lat, parms, it->value(), parms["xvec_aux_file"], ext_infile));
             }
+
 
             // Dump the two-site tensor at site X where X is specified in lrparam_site
             // (or only the one-site MPSTensor at this site if lrparam_twosite==false)

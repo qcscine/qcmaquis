@@ -97,7 +97,7 @@ public:
                 std::vector< MPS<Matrix, SymmGroup> > & mps_partial_overlap_,
                 MPO<Matrix, SymmGroup> const & mpo_squared_)
     : base(mps_vector_, mpo_, parms_, stop_callback_,
-          to_site(mps_vector_[0].length(), initial_site_), true,
+          to_site(mps_vector_[0].length(), initial_site_), true, boost::none,
            mps_guess_, mps_partial_overlap_, mpo_squared_)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {

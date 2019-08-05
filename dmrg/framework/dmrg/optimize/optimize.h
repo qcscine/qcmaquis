@@ -107,6 +107,7 @@ public:
                    boost::function<bool ()> stop_callback_,
                    int site = 0,
                    bool use_ortho = true, // ignore orthogonal states, is used e.g. in derived classes for the local Hamiltonian matrix element measurement
+                   boost::optional<MPS<Matrix, SymmGroup> const &> aux_mps_ = boost::none, // Not needed for the optimiser, required only in the derived LocalHamiltonianInitialiser class for calculating sigma vectors
                    boost::optional<std::vector< MPSTensor<Matrix, SymmGroup> > &> mps_guess_ = boost::none,
                    boost::optional<std::vector< MPS<Matrix, SymmGroup> > &> mps_partial_overlap_ = boost::none,
                    boost::optional<MPO<Matrix, SymmGroup> const &> mpo_squared_ = boost::none
@@ -115,6 +116,7 @@ public:
     , mps_guess_o(mps_guess_)
     , mpo(mpo_)
     , mpo_squared_o(mpo_squared_)
+    , aux_mps_o(aux_mps_)
     , n_root_(mps_vector.size())
     , omega_shift_(0.)
     , parms(parms_)
@@ -479,32 +481,63 @@ protected:
             }
         }
         // Complete initialization and builds all the boundaries objects
-        for (size_t i = 0; i < n_bound_; i++) {
-            (*(boundaries_database_.get_boundaries_left(i, false)))[0] =
-              (*(boundaries_database_.get_mps(i))).left_boundary();
-            if (do_H_squared_)
-                (*(boundaries_database_.get_boundaries_left(i, true)))[0] =
-                      (*(boundaries_database_.get_mps(i))).left_boundary();
+        if (!aux_mps_o) // if aux_mps is not present, construct boundaries normally
+            for (size_t i = 0; i < n_bound_; i++)
+            {
+                (*(boundaries_database_.get_boundaries_left(i, false)))[0] =
+                    (*(boundaries_database_.get_mps(i))).left_boundary();
+                if (do_H_squared_)
+                    (*(boundaries_database_.get_boundaries_left(i, true)))[0] =
+                        (*(boundaries_database_.get_mps(i))).left_boundary();
+            }
+        else
+        {
+            for (size_t i = 0; i < n_bound_; i++)
+            {
+                (*(boundaries_database_.get_boundaries_left(i, false)))[0] =
+                    make_left_boundary(aux_mps_o.get(), *(boundaries_database_.get_mps(i)));
+
+                // for completeness only
+                if (do_H_squared_)
+                    (*(boundaries_database_.get_boundaries_left(i, true)))[0] =
+                        make_left_boundary(aux_mps_o.get(), *(boundaries_database_.get_mps(i)));
+            }
         }
+
         for (size_t i = 0; i < site; ++i) {
             boundary_left_step(mpo, i);
             parallel::sync();
         }
-        maquis::cout << "Boundaries are partially initialized...\n";
+        maquis::cout << "Initialised left boundaries...\n";
         //
-        for (size_t i = 0; i < n_bound_; i++) {
-            (*(boundaries_database_.get_boundaries_right(i, false)))[L_] =
-                (*(boundaries_database_.get_mps(i))).right_boundary();
-            if (do_H_squared_)
-                (*(boundaries_database_.get_boundaries_right(i, true)))[L_] =
+        if (!aux_mps_o) // if aux_mps is not present, construct boundaries normally
+            for (size_t i = 0; i < n_bound_; i++) {
+                (*(boundaries_database_.get_boundaries_right(i, false)))[L_] =
                     (*(boundaries_database_.get_mps(i))).right_boundary();
+                if (do_H_squared_)
+                    (*(boundaries_database_.get_boundaries_right(i, true)))[L_] =
+                        (*(boundaries_database_.get_mps(i))).right_boundary();
+            }
+        else
+        {
+            for (size_t i = 0; i < n_bound_; i++)
+            {
+                (*(boundaries_database_.get_boundaries_right(i, false)))[L_] =
+                    make_right_boundary(aux_mps_o.get(), *(boundaries_database_.get_mps(i)));
+
+                // for completeness only
+                if (do_H_squared_)
+                    (*(boundaries_database_.get_boundaries_right(i, true)))[L_] =
+                        make_right_boundary(aux_mps_o.get(), *(boundaries_database_.get_mps(i)));
+            }
         }
+
         for (int i = L_-1; i >= site; --i) {
             boundary_right_step(mpo, i);
             parallel::sync(); // to scale down memory
         }
         //trb.end();
-        maquis::cout << "Boundaries are fully initialized...\n";
+        maquis::cout << "Initialised right boundaries...\n";
     }
     // +----------+
     //  INIT_BOUND
@@ -534,14 +567,17 @@ protected:
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++) {
+
+            // use the bra MPS for constructing the boundaries if it is present
+            const MPS<Matrix, SymmGroup> & mps_for_boundary = (aux_mps_o) ? aux_mps_o.get() : *(boundaries_database_.get_mps(i));
             (*(boundaries_database_.get_boundaries_left(i, false)))[site+1] =
-                    contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
-                                                 *(boundaries_database_.get_mps(i,site)),
+                    contr::overlap_mpo_left_step(mps_for_boundary[site],
+                                                *(boundaries_database_.get_mps(i,site)),
                                                 (*(boundaries_database_.get_boundaries_left(i, false)))[site],
                                                  mpo[site]);
             if (do_H_squared_)
                 (*(boundaries_database_.get_boundaries_left(i, true)))[site+1] =
-                        contr::overlap_mpo_left_step(*(boundaries_database_.get_mps(i,site)),
+                        contr::overlap_mpo_left_step(mps_for_boundary[site],
                                                      *(boundaries_database_.get_mps(i,site)),
                                                     (*(boundaries_database_.get_boundaries_left(i, true)))[site],
                                                      mpo_squared()[site]);
@@ -567,14 +603,15 @@ protected:
         MPSTensor<Matrix, SymmGroup> tmp ;
         // Shifts the boundaries
         for (size_t i = 0 ; i < n_bound_ ; i++) {
+            const MPS<Matrix, SymmGroup> & mps_for_boundary = (aux_mps_o) ? aux_mps_o.get() : *(boundaries_database_.get_mps(i));
             (*(boundaries_database_.get_boundaries_right(i, false)))[site] =
-                    contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
+                    contr::overlap_mpo_right_step(mps_for_boundary[site],
                                                   *(boundaries_database_.get_mps(i,site)),
                                                  (*(boundaries_database_.get_boundaries_right(i, false)))[site+1],
                                                   mpo[site]);
             if (do_H_squared_)
                 (*(boundaries_database_.get_boundaries_right(i, true)))[site] =
-                        contr::overlap_mpo_right_step(*(boundaries_database_.get_mps(i,site)),
+                        contr::overlap_mpo_right_step(mps_for_boundary[site],
                                                       *(boundaries_database_.get_mps(i,site)),
                                                      (*(boundaries_database_.get_boundaries_right(i, true)))[site+1],
                                                       mpo_squared()[site]);
@@ -699,6 +736,9 @@ protected:
 
     boost::optional<std::vector<MPSTensor<Matrix, SymmGroup> > &> mps_guess_o ;
     boost::optional<MPO<Matrix, SymmGroup> const&> mpo_squared_o;
+
+    // The bra MPS required in the derived LocalHamiltonianInitialiser class for calculating sigma vectors
+    boost::optional<MPS<Matrix, SymmGroup> const&> aux_mps_o;
 
     std::vector<MPSTensor<Matrix, SymmGroup> > & mps_guess() { return mps_guess_o.get(); };
     MPO<Matrix, SymmGroup> const& mpo_squared() { return mpo_squared_o.get(); };

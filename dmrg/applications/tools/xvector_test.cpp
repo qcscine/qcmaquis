@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
         MPS<matrix, grp> mps;
         load(checkpoint, mps);
 
-        lr::XVector<matrix, grp> x(mps);
+        lr::XVector<matrix, grp> x(mps, mps); // this should yield zeros
 
         maquis::cout << "Number of nonredundant MPS parameters: " << std::accumulate(x.begin(), x.end(), 0,
             [&](std::size_t sum, block_matrix<matrix, grp> m) {

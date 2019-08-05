@@ -33,7 +33,7 @@
 namespace measurements {
     // A simple measurement that dumps a vector with nonredundant MPS parameters
     // for a given MPS
-    // For an optimised MPS, the variation should be zero, so we will be dumping
+    // The variation should be zero for an MPS with itself as a reference, so we will be dumping
     // zeros initially, but we need them to obtain the total number of MPS parameters
     template <class Matrix, class SymmGroup>
     class DumpXVector : public measurement<Matrix, SymmGroup> {
@@ -45,7 +45,7 @@ namespace measurements {
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             // we construct the XVector and dump it into a text file (for Molcas) and a checkpoint
-            lr::XVector<Matrix, SymmGroup> x(mps);
+            lr::XVector<Matrix, SymmGroup> x(mps, mps);
             x.save(chkpname_);
             x.dump_to_textfile(aux_filename_);
         }

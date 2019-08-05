@@ -32,7 +32,7 @@
 #include "dmrg/optimize/optimize.h"
 
 // LocalHamiltonianInitializer
-// Constructs boundaries used in the calculation of the local Hamiltonian matrix elements
+// Constructs boundaries used in the calculation of the local Hamiltonian matrix elements and sigma vectors
 template<class Matrix, class SymmGroup, class Storage>
 class LocalHamiltonianInitializer : public optimizer_base<Matrix, SymmGroup, Storage>
 {
@@ -44,10 +44,16 @@ class LocalHamiltonianInitializer : public optimizer_base<Matrix, SymmGroup, Sto
                                 MPO<Matrix, SymmGroup> const& mpo_,
                                 BaseParameters & parms_,
                                 boost::function<bool ()> stop_callback_,
-                                int site_) // v---- warning, here we're preparing a copy of our mps that could possibly be avoided
-    : base(mps_, mpo_, parms_, stop_callback_, site_, false)
-     {
+                                const MPS<Matrix, SymmGroup>&  bra_mps)
+    : base(mps_, mpo_, parms_, stop_callback_, 0, false, bra_mps) // <---- warning, here we're preparing a copy of our mps that could possibly be avoided
+     {                                     //  ^---- we initialise on site 0 and will move the boundaries accordingly later
         assert(mps_.size() == 1); // we must pass a vector of size 1 to optimizer_base
+        // initialise all left boundaries since we'll need them
+        // unlike in the optimise class where we must initialise boundaries only for one site, here we will need them for all sites
+        for (size_t i = 0; i < mps_[0].length(); ++i) {
+            this->boundary_left_step(mpo_, i);
+            parallel::sync();
+        }
      }
 
     BoundaryVector const & left() {
@@ -61,39 +67,35 @@ class LocalHamiltonianInitializer : public optimizer_base<Matrix, SymmGroup, Sto
         return this->right_sa_[0];
     }
 
-    // Fetches left and right boundaries from disk for a given site and one/twosite tensor
+    // Fetches left and right boundaries from disk for a given site
     // Only intended for left->right sweeps
-    void fetch_boundaries(int site, bool twosite = true) {
+    void fetch_boundaries(int site) {
 
         std::size_t L = this->mps_vector[0].length();
 
         assert(this->left_sa_.size() == 1);
         assert(this->right_sa_.size() == 1);
 
-        if (twosite)
-            assert(site < L);
-        else
-            assert(site <= L);
+        assert(site <= L);
 
         Storage::prefetch(this->left_sa_[0][site]);
         Storage::fetch(this->left_sa_[0][site]);
 
-        int site2 = twosite ? site+2 : site+1;
-
-        Storage::prefetch(this->right_sa_[0][site2]);
-        Storage::fetch(this->right_sa_[0][site2]);
-
-
+        Storage::prefetch(this->right_sa_[0][site+1]);
+        Storage::fetch(this->right_sa_[0][site+1]);
     }
+
+    //
 
     // Removes (unneeded) boundaries from memory
     // TODO: Figure out how to do it properly!
-    void drop_boundaries(int site, bool twosite = true) {
+    void drop_boundaries(int site) {
         throw std::runtime_error("LocalHamiltonianInitializer::drop_boundaries() not implemented yet");
     }
 
     virtual void sweep(int sweep, OptimizeDirection d = Both) {
         throw std::runtime_error("LocalHamiltonianInitializer::sweep() should not be called");
     }
+
 };
 #endif

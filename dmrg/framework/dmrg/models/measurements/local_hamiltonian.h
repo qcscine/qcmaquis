@@ -30,6 +30,7 @@
 #define LOCAL_HAMILTONIAN_H
 
 #include "dmrg/models/measurement.h"
+#include "dmrg/mp_tensors/xvector.h"
 #include "dmrg/models/measurements/local_hamiltonian_initializer.h"
 #include "dmrg/utils/time_stopper.h"
 
@@ -39,10 +40,19 @@ namespace measurements
     template<class Matrix, class SymmGroup>
     class LocalHamiltonian : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        enum H_measurement_type { HamiltonianMatrix, HamiltonianMatrixDiag, SigmaVector };
+        enum H_measurement_type { HamiltonianDiag, SigmaVector };
         public:
-            LocalHamiltonian(std::string name_, Lattice const & lat_, BaseParameters & parms_, const std::string & ext_filename_=std::string(""))
-            : base(name_), lat(lat_), parms(parms_), ext_filename(ext_filename_), twosite(parms["lrparam_twosite"]) {}
+            LocalHamiltonian(std::string name_, Lattice const & lat_, BaseParameters & parms_,
+            // parameters for loading and saving XVectors
+            const std::string& xvec_filename, // path to the xvector H5 file
+            const std::string& xvec_aux_filename, // path to the output text file (for MOLCAS)
+            const std::string& xvec_aux_input // optional -- path to the input text file from MOLCAS
+            )
+            : base(name_), lat(lat_), parms(parms_),
+              xvec_filename_(xvec_filename),
+              xvec_aux_filename_(xvec_aux_filename),
+              xvec_aux_input_(xvec_aux_input)
+            {}
             virtual void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
             {
                 throw std::runtime_error("Local Hamiltonian must be measured with the Hamiltonian provided as an MPO!");
@@ -52,12 +62,10 @@ namespace measurements
             {
                 this->vector_results.clear();
                 this->labels.clear();
-                if (this->name() == "local_hamiltonian")
-                    measure(HamiltonianMatrix, mps, mpo, parms["lrparam_site"]);
-                else if (this->name() == "local_hamiltonian_diag")
-                    measure(HamiltonianMatrixDiag, mps, mpo, parms["lrparam_site"]);
+                if (this->name() == "local_hamiltonian_diag")
+                    measure(HamiltonianDiag, mps, mpo);
                 else if (this->name() == "sigma_vector")
-                    measure(SigmaVector, mps, mpo, parms["lrparam_site"]);
+                    measure(SigmaVector, mps, mpo);
                 else
                     throw std::runtime_error("Don't know this measurement type for Local Hamiltonian.");
             }
@@ -69,187 +77,99 @@ namespace measurements
 
             // Measures local Hamiltonian matrix elements H_{ij} if meas_type = HamiltonianMatrix
             // or \sum_j H_ijc_j with c_j = M^sigma_l_{a_{l-1}a_l} (or its twosite equivalent) if meas_type = SigmaVector
-            void measure(H_measurement_type meas_type, MPS<Matrix, SymmGroup> const& mps, MPO<Matrix, SymmGroup> const& mpo, int site = 0)
+            void measure(H_measurement_type meas_type, MPS<Matrix, SymmGroup> const& mps, MPO<Matrix, SymmGroup> const& mpo)
             {
                 typedef typename Matrix::value_type value_type;
 
-                // MPSTensor that we're going to work with
-                MPSTensor<Matrix, SymmGroup> mpst;
+                // Flag if we should employ the MPS variation in the calculation of the sigma vectors
+                bool use_variation = !xvec_aux_input_.empty();
+
                 // Initialise the boundaries using the LocalHamiltonianInitializer class
                 time_stopper stop_callback = static_cast<double>(parms["run_seconds"]);
 
                 // LocalHamiltonianInitializer (or actually optimizer_base) requires a vector<MPS> reference to initialise
                 // for now, we copy-initialise the vector
-                // TODO: think how can it be initialised with move semantics!
+
                 std::vector<MPS<Matrix, SymmGroup> > mpsv(1, mps);
+                MPS<Matrix, SymmGroup> & mps_ = mpsv[0];
 
-                LocalHamiltonianInitializer<Matrix, SymmGroup, storage::disk> init(mpsv, mpo, parms, stop_callback, site);
-
-                int site1, site2;
-
-                // Two-site MPO tensor
-                MPO<Matrix, SymmGroup> ts_mpo;
-
-                // Prepare either two-site tensor or one-site tensor depending on which kind of MPS parameters we work with
-                if (twosite)
+                // prepare the x vector
+                // small lambda function to construct the X vector and generate the MPS variation -- so that in case we don't need it at all, we avoid the initialisation
+                auto generate_mps_variation = [&](const std::string & xvec_filename, const std::string & xvec_aux_input, MPS<Matrix, SymmGroup>& mps) -> MPS<Matrix,SymmGroup>
                 {
-                    if (site > mps.length() - 1)
-                       throw std::runtime_error("site > L-1 not allowed in Local Hamiltonian with two-site tensors");
+                    lr::XVector<Matrix, SymmGroup> xvec;
+                    xvec.load(xvec_filename);
+                    xvec.assign_mps(mps);
+                    xvec.update_from_textfile(xvec_aux_input);
+                    return xvec.GenerateMPSVariation();
+                };
 
-                    site1 = site;
-                    site2 = site+1;
-                    // Prepare the two-site MPO tensor(s)
-                    make_ts_cache_mpo(mpo, ts_mpo, mps);
-                    ts_mpo[site1].placement_l = mpo[site1].placement_l;
-                    ts_mpo[site1].placement_r = parallel::get_right_placement(ts_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                // prepare the bra MPS. If we don't use the variation, it's identical to ket MPS, otherwise it is the variation
+                // obtained from the x vector
+                const MPS<Matrix, SymmGroup> & bra_mps = (use_variation) ? generate_mps_variation(xvec_filename_, xvec_aux_input_, mps_) : mps_;
 
-                    // Prepare the two-site tensor from two sites of the MPS
-                    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
-                    mpst = tst.make_mps();
-                }
-                else // one-site
+                LocalHamiltonianInitializer<Matrix, SymmGroup, storage::disk> init(mpsv, mpo, parms, stop_callback, mps_);
+
+                mps_.normalize_right();
+
+                // Output sigma vector/ Hamiltonian diagonal in the form of a MPS.
+                // Initialise with the same dimensions/indices as the ket MPS. The easiest way to do this is to copy-initialise and then replace the data
+                MPS<Matrix, SymmGroup> sigma_vector_out = mps_;
+
+                for (std::size_t site = 0; site < mps_.length(); site++)
                 {
-                    mpst = mps[site];
-                    site1 = site2 = site;
-                }
+                    // init.fetch_boundaries(site); // <-- this will be required if we save the boundaries to disk. to be considered later
 
-                const MPO<Matrix, SymmGroup> & mpo_work = twosite ? ts_mpo : mpo;
+                    MPSTensor<Matrix, SymmGroup>& ret_site = sigma_vector_out[site]; // output MPSTensor
 
-                mpst.make_left_paired();
-
-                // Fetch the boundaries from disk
-                init.fetch_boundaries(site, twosite);
-
-                if (meas_type == HamiltonianMatrix)
-                {
-                    // Measure Local Hamiltonian matrix elements
-                    // Currently doing it very inefficiently by explicitly calculating each <i|H|j> matrix element
-                    // or actually H|j>[i][j] (this is only half-inefficient, as there's one contraction instead of two)
-                    // This is DEPRECATED and will be removed soon
-
-                    // Prepare the basis state from mpst: set all elements to 0
-                    mpst.multiply_by_scalar(0.0);
-
-                    if (meas_type == HamiltonianMatrix)
-                        maquis::cout << "Measuring local Hamiltonian matrix at site " << site << std::endl;
-                    else if (meas_type == HamiltonianMatrixDiag)
+                    if (meas_type == HamiltonianDiag)
+                    {
                         maquis::cout << "Measuring local Hamiltonian diagonal at site " << site << std::endl;
+                        block_matrix<Matrix, SymmGroup> && Hdiag = contraction::diagonal_hamiltonian(init.left()[site], init.right()[site+1], mpo[site], mps_[site]);
+                        ret_site.replace_left_paired(Hdiag); // TODO: check the pairing that comes out of diagonal_hamiltonian()
+                        // TODO2: implement move semantics
+                    }
+                    else if (meas_type == SigmaVector)
+                    {
+                        maquis::cout << "Measuring sigma vector at site " << site << std::endl;
+                        ret_site = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mps_[site], init.left()[site], init.right()[site+1], mpo[site]);
+                    }
+                    else
+                        throw std::runtime_error("Don't know this measurement type for Local Hamiltonian.");
 
-                    parallel::scheduler_balanced_iterative scheduler(mpst.data());
+                }
 
-                    for (int i = 0; i < mpst.data().n_blocks(); i++)
-                    for (int j = 0; j < num_rows(mpst.data()[i]); j++)
-                    for (int k = 0; k < num_cols(mpst.data()[i]); k++)
+                // Now we have the sigma vector/diagonal Hamiltonian as the MPSTensor. Now convert it into an XVector
+                lr::XVector<Matrix, SymmGroup> xvec_out(sigma_vector_out, mps_);
+                xvec_out.save(xvec_filename_);
+                xvec_out.dump_to_textfile(xvec_aux_filename_);
+
+                // Test: transforming the xvector to MPS must yield sigma_vector_out
+
+                MPS<Matrix, SymmGroup> && test_sigmavec = xvec_out.transformXtoB();
+
+                // dump to HDF5 to make measurements happy, because labels and vector_results may not be empty
+                for (int site = 0; site < mps_.length(); site++)
+                {
+                    parallel::scheduler_balanced_iterative scheduler(xvec_out[site]);
+
+                    for (int i = 0; i < xvec_out[site].n_blocks(); i++)
+                    for (int j = 0; j < xvec_out[site][i].num_rows(); j++)
+                    for (int k = 0; k < xvec_out[site][i].num_cols(); k++)
                     {
                         parallel::guard proc(scheduler(i));
-                        // set the corresponding element in the basis MPS to 1
-                        mpst.data()[i](j,k) = 1.0;
-
-                        // Calculate H|I>
-                        // TODO: The Hamiltonian should be better calculated by calculating the tensor
-                        // H^{sigma_L sigma'_L}_{a_{l-1}a_la'_{l-1}a'_l} = L_{a_{l-1}a'_{l-1}b_{l-1}} W_{sigma_L sigma'_L}_{b_{l-1}b_l} R_{a_l a'_l b_l}}
-                        // TODO: Look into this!
-                        MPSTensor<Matrix, SymmGroup> Hij_mps = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mpst, init.left()[site1], init.right()[site2+1], mpo_work[site1]);
-                        mpst.make_left_paired(); // Contraction destroys pairing and for some reason there's a race condition somewhere later if we remove this line!
-
-                        block_matrix<Matrix, SymmGroup> & Hij = Hij_mps.data();
-
-                        // TODO: Check if dim(i) == dim(ii), dim(j) == dim(jj) and dim(k) == dim(kk) !!!
-                        // TODO: The Hamiltonian matrix is symmetric. Currently, we're not exploiting the symmetry, but one should do it!
-
-                        for (int ii = 0; ii < Hij.n_blocks(); ii++)
-                        for (int jj = 0; jj < num_rows(Hij[ii]); jj++)
-                        for (int kk = 0; kk < num_cols(Hij[ii]); kk++)
-                        {
-                            // prepare labels
-                            std::vector<Lattice::pos_t> labels = { i, j, k, ii, jj, kk };
-                            std::string label_string = label_string_simple(labels);
-
-                            // TODO: use std::vector::reserve() in a reasonable way
-                            // Write back matrix elements of MPSTensor H|I> which results in <I|H|J>
-                            this->vector_results.push_back(Hij[ii](jj,kk));
-                            this->labels.push_back(label_string);
-                         }
-                        // set the corresponding element in the basis MPS again to 0
-                        mpst.data()[i](j,k) = 0.0;
-                    }
-
-                }
-                else if (meas_type == HamiltonianMatrixDiag)
-                {
-                    // Use contraction::su2::diagonal_hamiltonian() to obtain the Hamiltonian diagonal
-                    maquis::cout << "Measuring local Hamiltonian diagonal at site " << site << std::endl;
-
-                    block_matrix<Matrix, SymmGroup> Hdiag = contraction::diagonal_hamiltonian(init.left()[site1], init.right()[site2+1], mpo_work[site1], mpst);
-
-                    // dump the Hamiltonian diagonal into the result vector
-                    for (int ii = 0; ii < Hdiag.n_blocks(); ii++)
-                    for (int jj = 0; jj < num_rows(Hdiag[ii]); jj++)
-                    for (int kk = 0; kk < num_cols(Hdiag[ii]); kk++)
-                    {
-                        // prepare labels: double the labels to ensure compatibility with the old python script
-                        // TODO: this should not be needed in the future
-                        std::vector<Lattice::pos_t> labels = { ii, jj, kk, ii, jj, kk };
-                        std::string label_string = label_string_simple(labels);
-
-                        // TODO: use std::vector::reserve() in a reasonable way
-                        // Write the matrix elements
-                        this->vector_results.push_back(Hdiag[ii](jj,kk));
-                        this->labels.push_back(label_string);
+                        this->vector_results.push_back(xvec_out[site][i](j,k));
+                        // Labels are dumped as 'site, i, j, k'
+                        this->labels.push_back(label_string_simple({site, i, j, k}));
                     }
                 }
-                else if (meas_type == SigmaVector)
-                {
-                    // Read the MPSTensor from an external file if requested
-                    maquis::cout << "Measuring local Hamiltonian sigma vector at site " << site << std::endl;
-                    if (!ext_filename.empty())
-                    {
-                        // Read MPSTensor elements into a vector aux_elements from a text file
-
-                        std::vector<value_type> aux_elements;
-                        maquis::cout << "Reading the auxiliary MPSTensor elements from file " << ext_filename << std::endl;
-
-                        // read and parse the file
-                        std::ifstream infile(ext_filename);
-                        if (infile)
-                            std::copy(std::istream_iterator<value_type>(infile), std::istream_iterator<value_type>(), std::back_inserter(aux_elements));
-                        else
-                            throw std::runtime_error("File " + ext_filename + " could not be opened!");
-
-                        // fill the MPSTensor with elements from file
-                        size_t fileidx = 0;
-                        for (size_t i = 0; i < mpst.data().n_blocks(); i++)
-                        for (size_t j = 0; j < mpst.data()[i].num_rows(); j++)
-                        for (size_t k = 0; k < mpst.data()[i].num_cols(); k++)
-                        {
-                            parallel::guard::serial guard;
-                            mpst.data()[i](j,k) = aux_elements[fileidx++];
-                        }
-                    }
-
-                    // Measure the sigma_vector \sum_j H_ijc_j with c_j = M^sigma_l_{a_{l-1}a_l}
-                    // i.e. just dump the output of site_hamil2()
-                    MPSTensor<Matrix, SymmGroup> Hij_mps = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mpst, init.left()[site1], init.right()[site2+1], mpo_work[site1]);
-                    mpst.make_left_paired(); // Contraction destroys pairing and for some reason there's a race condition somewhere later if we remove this line!
-
-                    // save the result
-                    for (int i = 0; i < Hij_mps.data().n_blocks(); i++)
-                    for (int j = 0; j < Hij_mps.data()[i].num_rows(); j++)
-                    for (int k = 0; k < Hij_mps.data()[i].num_cols(); k++)
-                    {
-                        this->vector_results.push_back(Hij_mps.data()[i](j,k));
-                        // Labels are dumped as 'i, j, k'
-                        this->labels.push_back(label_string_simple({i, j, k}));
-                    }
-                }
-                else
-                    throw std::runtime_error("Don't know this measurement type for Local Hamiltonian.");
             }
         private:
             Lattice const & lat;
-            std::string ext_filename; // Filename from where the external MPSTensor should be read if a sigma vector with external MPSTensor is requested
             BaseParameters & parms;
-            bool twosite;
+            std::string xvec_filename_; // path to the xvector H5 file
+            std::string xvec_aux_filename_; // path to the output text file (for MOLCAS)
+            std::string xvec_aux_input_; // optional -- path to the input text file from MOLCAS
 
     };
 } // measurements

@@ -64,7 +64,13 @@ namespace lr {
         XVector() : length_(0), X_() {};
         XVector(std::size_t length) : length_(length), X_(length) {};
 
+        // Constructor that initialises the reference MPS (for the description of reference MPS, see the comment at its declaration)
+        XVector(const MPS<Matrix, SymmGroup>& ref_mps) : length_(ref_mps.length()), X_(ref_mps.length()), ref_mps_(ref_mps) {}
+
         // Constructor with an implicit conversion from B to X
+
+        // We need to work with a copy of the MPS, since we will shift canonisation
+        XVector(const MPS<Matrix, SymmGroup>& mps, const MPS<Matrix, SymmGroup>& ref_mps) : length_(ref_mps.length()), X_(ref_mps.length()), ref_mps_(ref_mps) { update(mps); };
 
         // From a complete right-canonized MPS, obtain a vector with nonredundant MPS parameters, the
         // MPSTensor for the first site and the X matrices for all remaining sites with
@@ -72,11 +78,11 @@ namespace lr {
         // X             = sum     sum    sum      S^(1/2)             B               N+
         //  a_i-1 a'_i-1   a''_i-1  a''_i sigma_i        a_i-1 a''_i-1  a''_i-1 a''_i    a''_i a'_i-1
 
-        // We need to work with a copy of the MPS, since we will shift canonisation
-        XVector(const MPS<Matrix, SymmGroup>& mps) : length_(mps.length()), X_(mps.length()), mps_(mps)
+        // The actual conversion from B to X
+        void update(const MPS<Matrix, SymmGroup>& mps)
         {
             // just to make sure the MPS is right-normalised
-            mps_.normalize_right();
+            ref_mps_.normalize_right();
 
             assert(length_ > 0);
 
@@ -92,7 +98,7 @@ namespace lr {
                         S = constructS(i);
 
                     // Build N
-                    N = constructN(mps_[i]);
+                    N = constructN(ref_mps_[i]);
 
                     // Construct the pseudoinverse of N using SVD
                     block_matrix<Matrix, SymmGroup> V;
@@ -125,15 +131,15 @@ namespace lr {
 
                     // Now that we have N^+ (in Ninv) and S^(1/2) (in S), contract the matrices to obtain X
                     // Multiply B with N^+: B must be right-paired but Ninv (probably?) left-paired
+                    ref_mps_[i].make_right_paired();
                     mps[i].make_right_paired();
-
                     // Premultiply the result with S and store it in X
                     // For site 0 S is unity so ignore it
                     if (i == 0)
-                        gemm(mps_[i].data(), Ninv, this->X_[i]);
+                        gemm(mps[i].data(), Ninv, this->X_[i]);
                     else
                     {
-                        gemm(mps_[i].data(), Ninv, tmp);
+                        gemm(mps[i].data(), Ninv, tmp);
                         gemm(S, tmp, this->X_[i]);
                     }
 
@@ -164,8 +170,8 @@ namespace lr {
 
         MPSTensor<Matrix,SymmGroup> getB(std::size_t site) const
         {
-            if (mps_.length() == 0)
-                throw std::runtime_error("Cannot transform the X vector -- original MPS has not been loaded.");
+            if (ref_mps_.length() == 0)
+                throw std::runtime_error("Cannot transform the X vector -- reference MPS has not been loaded.");
 
             MPSTensor<Matrix, SymmGroup> ret;
             block_matrix<Matrix, SymmGroup> B;
@@ -174,7 +180,7 @@ namespace lr {
             {
                 // perform the transformation from X to B above
                 // For site 0, do not multiply with S as it is unity
-                block_matrix<Matrix, SymmGroup> N = constructN(mps_[site]);
+                block_matrix<Matrix, SymmGroup> N = constructN(ref_mps_[site]);
                 gemm(X_[0], N, B);
                 ret.replace_right_paired(B);
             }
@@ -194,7 +200,7 @@ namespace lr {
                 gemm(tmp,transpose(conjugate(U)), Sinv);
 
                 // Contract S with X and N to get B as block_matrix
-                block_matrix<Matrix, SymmGroup> N = constructN(mps_[site]);
+                block_matrix<Matrix, SymmGroup> N = constructN(ref_mps_[site]);
                 gemm(X_[site], N, tmp);
                 gemm(Sinv,tmp, B);
 
@@ -277,16 +283,17 @@ namespace lr {
             });
         }
 
-        // Load the MPS corresponding to the XVector from a checkpoint
+        // Load the reference MPS corresponding to the XVector from a checkpoint
         void load_mps(std::string const& filename)
         {
-            load(filename, mps_);
+            load(filename, ref_mps_);
         }
         // or from another MPSTensor
-        void assign_mps(const MPS<Matrix, SymmGroup> & mps)
+        void assign_mps(const MPS<Matrix, SymmGroup> & ref_mps)
         {
-            mps_ = mps;
+            ref_mps_ = ref_mps;
         }
+        // TODO: move semantics
 
         // Dump the contents to a flat-formatted textfile -- needed for the (crappy) interface with MOLCAS
         void dump_to_textfile(std::string const& filename)
@@ -333,19 +340,24 @@ namespace lr {
         // Constructs the MPS given by the sum of all possible variations for each site.
         // The output will be an MPS with a bond dimension that is larger than the input one
 
-        MPS<Matrix, SymmGroup> GenerateMPSVariation()
+        MPS<Matrix, SymmGroup> GenerateMPSVariation(const MPS<Matrix, SymmGroup> & mps) const
         {
             // Variables initialization
-            auto size = mps_.size();
+            int size = mps.size();
             MPS<Matrix, SymmGroup> ret(size);
             // First site
-            ret[0] = MPSJoin::join(mps_[0], this->getB(0), l_boundary_f);
+            ret[0] = MPSJoin::join(mps[0], this->getB(0), l_boundary_f);
             // Main loop over all possible intermediate sites.
             for (int idx = 1; idx < size-1; idx++)
-                ret[idx] = MPSJoin::join(mps_[idx], mps_[idx], this->getB(idx));
+                ret[idx] = MPSJoin::join(mps[idx], mps[idx], this->getB(idx));
             // Last site
-            ret[size-1] = MPSJoin::join(mps_[size-1], this->getB(size-1), r_boundary_f);
+            ret[size-1] = MPSJoin::join(mps[size-1], this->getB(size-1), r_boundary_f);
             return ret;
+        }
+
+        MPS<Matrix, SymmGroup> GenerateMPSVariation() const
+        {
+            return GenerateMPSVariation(ref_mps_);
         }
 
         std::size_t length() const { return length_; };
@@ -354,7 +366,7 @@ namespace lr {
         {
             using std::swap;
             swap(a.X_, b.X_);
-            swap(a.mps_, b.mps_);
+            swap(a.ref_mps_, b.ref_mps_);
             swap(a.length_, b.length_);
         }
 
@@ -365,11 +377,11 @@ namespace lr {
             // MPS parameters
             bm_vector X_;
 
-            // Original MPS, which we will need for the back-transformation
+            // The MPS to whose tangent space we will project ("reference MPS")
             // We need a copy because we will change the canonisation of the MPS
             // Mutable because the normalisation may change when calculating the overlap matrix
             // (check if this has any side effects!)
-            mutable MPS<Matrix, SymmGroup> mps_;
+            mutable MPS<Matrix, SymmGroup> ref_mps_;
 
             // For a given MPS constructs the N matrix, which is the transformation matrix of the |a_i-1 sigma_i(R)>
             // basis to the basis COMPLEMENTARY to |a_i(R)> basis. (In contrast, in a regular DMRG sweep we
@@ -421,10 +433,10 @@ namespace lr {
                 // dm            = sum              M                    M^T
                 //   a_i-1 a_i-1'  (a_i sigma_i)     a_i-1 (a_i sigma_i)  (a_i sigma_i) a_i-1'
 
-                mps_.canonize(site);
-                mps_[site].make_right_paired();
+                ref_mps_.canonize(site);
+                ref_mps_[site].make_right_paired();
                 block_matrix<Matrix, SymmGroup> dm;
-                gemm(mps_[site].data(), transpose(conjugate(mps_[site].data())), dm);
+                gemm(ref_mps_[site].data(), transpose(conjugate(ref_mps_[site].data())), dm);
 
                 // build S=dm^(1/2)
                 block_matrix<Matrix, SymmGroup> U; // eigenvectors
@@ -436,7 +448,7 @@ namespace lr {
                 gemm(U,sqrtLambda,tmp);
                 gemm(tmp,transpose(conjugate(U)), ret);
                 // return the canonisation
-                mps_.normalize_right();
+                ref_mps_.normalize_right();
                 return ret;
             }
     };
