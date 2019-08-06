@@ -254,12 +254,12 @@ public:
             }
 
             // Density response (as above), but using nonredundant MPS parameters (XVector)
-            if (boost::regex_match(lhs, what, expression_onerdm_lagrange)) {
+            if (boost::regex_match(lhs, what, expression_onerdm_xvec)) {
                 name = "onerdmxvector";
                 expr_rdm_xvec = true;
             }
 
-            if (boost::regex_match(lhs, what, expression_twordm_lagrange)) {
+            if (boost::regex_match(lhs, what, expression_twordm_xvec)) {
                 name = "twordmxvector";
                 expr_rdm_xvec = true;
             }
