@@ -79,7 +79,7 @@ namespace lr {
         //  a_i-1 a'_i-1   a''_i-1  a''_i sigma_i        a_i-1 a''_i-1  a''_i-1 a''_i    a''_i a'_i-1
 
         // The actual conversion from B to X
-        void update(const MPS<Matrix, SymmGroup>& mps)
+        void update(MPS<Matrix, SymmGroup> mps)
         {
             // just to make sure the MPS is right-normalised
             ref_mps_.normalize_right();
@@ -94,6 +94,8 @@ namespace lr {
 
                     block_matrix<Matrix, SymmGroup> S; // Matrix that will hold S^(1/2) for each site but site 0, for which it is unity
                     block_matrix<Matrix, SymmGroup> N; // N matrix for the current site
+                    mps.canonize(i);
+                    ref_mps_.canonize(i);
                     if (i > 0)
                         S = constructS(i);
 
@@ -187,6 +189,7 @@ namespace lr {
             else
             {
                 // Build S^1/2
+                ref_mps_.canonize(site);
                 block_matrix<Matrix, SymmGroup> S = constructS(site);
 
                 // Build S^(-1/2) from S^1/2
@@ -433,7 +436,7 @@ namespace lr {
                 // dm            = sum              M                    M^T
                 //   a_i-1 a_i-1'  (a_i sigma_i)     a_i-1 (a_i sigma_i)  (a_i sigma_i) a_i-1'
 
-                ref_mps_.canonize(site);
+                // ref_mps_.canonize(site); // should be done before. todo: check if the canonization is properly done and if not, canonize
                 ref_mps_[site].make_right_paired();
                 block_matrix<Matrix, SymmGroup> dm;
                 gemm(ref_mps_[site].data(), transpose(conjugate(ref_mps_[site].data())), dm);
@@ -448,7 +451,7 @@ namespace lr {
                 gemm(U,sqrtLambda,tmp);
                 gemm(tmp,transpose(conjugate(U)), ret);
                 // return the canonisation
-                ref_mps_.normalize_right();
+                // ref_mps_.normalize_right();
                 return ret;
             }
     };
