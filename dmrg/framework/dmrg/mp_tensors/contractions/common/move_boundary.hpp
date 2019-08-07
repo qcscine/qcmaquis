@@ -49,7 +49,6 @@ namespace contraction {
 
             assert(ket_tensor.phys_i == bra_tensor.phys_i);
 
-            bra_tensor.make_left_paired();
 
             block_matrix<OtherMatrix, SymmGroup> t1;
             block_matrix<Matrix, SymmGroup> t3;
@@ -58,6 +57,8 @@ namespace contraction {
 
             reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
                                       t1, t3);
+
+            bra_tensor.make_left_paired();
             typename Gemm::gemm()(transpose(conjugate(bra_tensor.data())), t3, t1);
             return t1;
 

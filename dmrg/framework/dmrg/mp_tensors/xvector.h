@@ -48,6 +48,7 @@ namespace lr {
         // choose abelian or SU2 GEMM depending on SymmGroup
         // typedef typename boost::mpl::if_<symm_traits::HasSU2<SymmGroup>, SU2::SU2Gemms, contraction::abelian::Gemms>::type::gemm gemm;
 
+
         typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type DiagMatrix;
         typedef std::vector<block_matrix<Matrix, SymmGroup> > bm_vector;
 
@@ -79,7 +80,7 @@ namespace lr {
         //  a_i-1 a'_i-1   a''_i-1  a''_i sigma_i        a_i-1 a''_i-1  a''_i-1 a''_i    a''_i a'_i-1
 
         // The actual conversion from B to X
-        void update(MPS<Matrix, SymmGroup> mps)
+        void update(const MPS<Matrix, SymmGroup>& mps)
         {
             // just to make sure the MPS is right-normalised
             ref_mps_.normalize_right();
@@ -94,8 +95,8 @@ namespace lr {
 
                     block_matrix<Matrix, SymmGroup> S; // Matrix that will hold S^(1/2) for each site but site 0, for which it is unity
                     block_matrix<Matrix, SymmGroup> N; // N matrix for the current site
-                    mps.canonize(i);
-                    ref_mps_.canonize(i);
+                    // mps.canonize(i);
+                    // ref_mps_.canonize(i);
                     if (i > 0)
                         S = constructS(i);
 
@@ -189,7 +190,7 @@ namespace lr {
             else
             {
                 // Build S^1/2
-                ref_mps_.canonize(site);
+                // ref_mps_.canonize(site);
                 block_matrix<Matrix, SymmGroup> S = constructS(site);
 
                 // Build S^(-1/2) from S^1/2
@@ -429,30 +430,44 @@ namespace lr {
             // Construct the S^(1/2) matrix
             block_matrix<Matrix, SymmGroup> constructS(std::size_t site) const
             {
-                block_matrix<Matrix, SymmGroup> ret;
 
-                // Build the overlap matrix for the right renormalised states
-                // i.e. build MM^T from right-paired MPS tensors at site i-1
-                // dm            = sum              M                    M^T
-                //   a_i-1 a_i-1'  (a_i sigma_i)     a_i-1 (a_i sigma_i)  (a_i sigma_i) a_i-1'
+                // Build S
+                block_matrix<Matrix, SymmGroup> S = ref_mps_.left_boundary()[0];
+                for (std::size_t i = 0; i <= site; i++)
+                    S = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::overlap_left_step(ref_mps_[i], ref_mps_[i], S);
 
-                // ref_mps_.canonize(site); // should be done before. todo: check if the canonization is properly done and if not, canonize
-                ref_mps_[site].make_right_paired();
-                block_matrix<Matrix, SymmGroup> dm;
-                gemm(ref_mps_[site].data(), transpose(conjugate(ref_mps_[site].data())), dm);
-
-                // build S=dm^(1/2)
+                // Build S^1/2
                 block_matrix<Matrix, SymmGroup> U; // eigenvectors
                 block_matrix<DiagMatrix, SymmGroup> Lambda; // eigenvalues
-                heev(dm, U, Lambda);
-                // zero_small_values_inplace(Lambda); // set very small negative values to zero because otherwise sqrt does not work // should never be needed because we must be able to invert Lambda
+                heev(S, U, Lambda);
                 block_matrix<DiagMatrix, SymmGroup>&& sqrtLambda = sqrt(Lambda);
-                block_matrix<Matrix, SymmGroup> tmp;
+                block_matrix<Matrix, SymmGroup> tmp, ret;
                 gemm(U,sqrtLambda,tmp);
                 gemm(tmp,transpose(conjugate(U)), ret);
-                // return the canonisation
-                // ref_mps_.normalize_right();
+
                 return ret;
+                // // Build the overlap matrix for the right renormalised states
+                // // i.e. build MM^T from right-paired MPS tensors at site i-1
+                // // dm            = sum              M                    M^T
+                // //   a_i-1 a_i-1'  (a_i sigma_i)     a_i-1 (a_i sigma_i)  (a_i sigma_i) a_i-1'
+
+                // // ref_mps_.canonize(site); // should be done before. todo: check if the canonization is properly done and if not, canonize
+                // ref_mps_[site].make_right_paired();
+                // block_matrix<Matrix, SymmGroup> dm;
+                // gemm(ref_mps_[site].data(), transpose(conjugate(ref_mps_[site].data())), dm);
+
+                // // build S=dm^(1/2)
+                // heev(dm, U, Lambda);
+                // // zero_small_values_inplace(Lambda); // set very small negative values to zero because otherwise sqrt does not work // should never be needed because we must be able to invert Lambda
+                // block_matrix<DiagMatrix, SymmGroup>&& sqrtLambda = sqrt(Lambda);
+                // block_matrix<Matrix, SymmGroup> tmp;
+                // gemm(U,sqrtLambda,tmp);
+                // gemm(tmp,transpose(conjugate(U)), ret);
+                // // return the canonisation
+                // // ref_mps_.normalize_right();
+                // return ret;
+
+
             }
     };
 
