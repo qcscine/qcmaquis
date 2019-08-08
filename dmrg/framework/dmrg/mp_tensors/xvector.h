@@ -97,8 +97,8 @@ namespace lr {
                     block_matrix<Matrix, SymmGroup> N; // N matrix for the current site
                     // mps.canonize(i);
                     // ref_mps_.canonize(i);
-                    if (i > 0)
-                        S = constructS(i);
+                    // if (i > 0)
+                    S = constructS(i);
 
                     // Build N
                     N = constructN(ref_mps_[i]);
@@ -138,13 +138,13 @@ namespace lr {
                     mps[i].make_right_paired();
                     // Premultiply the result with S and store it in X
                     // For site 0 S is unity so ignore it
-                    if (i == 0)
-                        gemm(mps[i].data(), Ninv, this->X_[i]);
-                    else
-                    {
-                        gemm(mps[i].data(), Ninv, tmp);
-                        gemm(S, tmp, this->X_[i]);
-                    }
+                    // if (i == 0)
+                    //     gemm(mps[i].data(), Ninv, this->X_[i]);
+                    // else
+                    // {
+                    gemm(mps[i].data(), Ninv, tmp);
+                    gemm(S, tmp, this->X_[i]);
+                    // }
 
 
                 }
@@ -433,7 +433,7 @@ namespace lr {
 
                 // Build S
                 block_matrix<Matrix, SymmGroup> S = ref_mps_.left_boundary()[0];
-                for (std::size_t i = 0; i <= site; i++)
+                for (std::size_t i = 0; i < site; i++)
                     S = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::overlap_left_step(ref_mps_[i], ref_mps_[i], S);
 
                 // Build S^1/2
