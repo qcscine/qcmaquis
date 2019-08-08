@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -59,7 +59,7 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
     if (m1.site_dim() != m2.site_dim())
         for (auto it = m2.site_dim().begin(); it != m2.site_dim().end(); ++it)
             if (!phys_i.has(it->first))
-               phys_i.insert(*it);  
+               phys_i.insert(*it);
     // MPS are made left paired before merging them.
     m1.make_left_paired();
     m2.make_left_paired();
@@ -139,16 +139,16 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
     m12.make_left_paired();
     // Now the coherence of the dimensions of the m12 tensor with the other two tensors
     for (auto it = m12.left_i.begin(); it != m12.left_i.end(); it++)
-        if (m2.left_i.has(it->second)) {
-            if (m2.left_i.size_of_block(it->second) != m12.left_i.size_of_block(it->second))
+        if (m1.left_i.has(it->first) && m2.left_i.has(it->first)) { //TODO: check also here for both m1 and m2
+            if (m2.left_i.size_of_block(it->first) != it->second)
                 throw std::runtime_error("Dimension of symmetry blocks not coherent.");
         } else {
             throw std::runtime_error("Symmetry block not found.");
         }
     //
-    for (auto it = m12.left_i.begin(); it != m12.left_i.end(); it++)
-        if (m1.right_i.has(it->second)) {
-            if (m2.right_i.size_of_block(it->second) != m12.right_i.size_of_block(it->second))
+    for (auto it = m12.right_i.begin(); it != m12.right_i.end(); it++)
+        if (m1.right_i.has(it->first) && m2.right_i.has(it->first)) { //TODO: check also here for both m1 and m2
+            if (m2.right_i.size_of_block(it->first) != it->second)
                 throw std::runtime_error("Dimension of symmetry blocks not coherent.");
         } else {
             throw std::runtime_error("Symmetry block not found.");

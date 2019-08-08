@@ -175,7 +175,7 @@ namespace lr {
             if (ref_mps_.length() == 0)
                 throw std::runtime_error("Cannot transform the X vector -- reference MPS has not been loaded.");
 
-            MPSTensor<Matrix, SymmGroup> ret;
+            MPSTensor<Matrix, SymmGroup> ret = ref_mps_[site]; // initialise MPSTensor with the correct dimensions, the data will be replaced later
             block_matrix<Matrix, SymmGroup> B;
 
             if (site == 0)
