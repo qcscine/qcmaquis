@@ -208,7 +208,7 @@ namespace lr {
                 gemm(Sinv,tmp, B);
 
                 // form a right-paired MPS tensor from B
-                ret.replace_right_paired(B);
+                ret.replace_right_paired_Bmatrix(B);
             }
             return ret;
         }
