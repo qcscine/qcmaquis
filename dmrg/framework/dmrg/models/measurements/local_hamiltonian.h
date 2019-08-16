@@ -110,7 +110,7 @@ namespace measurements
 
                 LocalHamiltonianInitializer<Matrix, SymmGroup, storage::disk> init(mpsv, mpo, parms, stop_callback, mps_);
 
-                mps_.normalize_right();
+                // mps_.normalize_right();
 
                 // Output sigma vector/ Hamiltonian diagonal in the form of a MPS.
                 // Initialise with the same dimensions/indices as the ket MPS. The easiest way to do this is to copy-initialise and then replace the data

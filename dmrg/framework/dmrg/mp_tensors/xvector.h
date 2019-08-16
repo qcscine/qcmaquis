@@ -82,7 +82,7 @@ namespace lr {
         void update(MPS<Matrix, SymmGroup> mps)
         {
             // just to make sure the MPS is right-normalised
-            ref_mps_.normalize_right();
+            // ref_mps_.normalize_right();
 
             assert(length_ > 0);
 
@@ -94,10 +94,10 @@ namespace lr {
 
                     block_matrix<Matrix, SymmGroup> S; // Matrix that will hold S^(1/2) for each site but site 0, for which it is unity
                     block_matrix<Matrix, SymmGroup> N; // N matrix for the current site
-                    mps.canonize(i);
-                    ref_mps_.canonize(i);
-                    if (i > 0)
-                        S = constructS(i);
+                    // mps.canonize(i);
+                    // ref_mps_.canonize(i);
+                    // if (i > 0)
+                    //     S = constructS(i);
 
                     // Build N
                     N = constructN(ref_mps_[i]);
@@ -137,13 +137,13 @@ namespace lr {
                     mps[i].make_right_paired();
                     // Premultiply the result with S and store it in X
                     // For site 0 S is unity so ignore it
-                    if (i == 0)
+                    // if (i == 0)
                         gemm(mps[i].data(), Ninv, this->X_[i]);
-                    else
-                    {
-                        gemm(mps[i].data(), Ninv, tmp);
-                        gemm(S, tmp, this->X_[i]);
-                    }
+                    // else
+                    // {
+                    //     gemm(mps[i].data(), Ninv, tmp);
+                    //     gemm(S, tmp, this->X_[i]);
+                    // }
 
 
                 }
@@ -178,38 +178,38 @@ namespace lr {
             MPSTensor<Matrix, SymmGroup> ret = ref_mps_[site]; // initialise MPSTensor with the correct dimensions, the data will be replaced later
             block_matrix<Matrix, SymmGroup> B;
 
-            if (site == 0)
-            {
-                // perform the transformation from X to B above
-                // For site 0, do not multiply with S as it is unity
-                block_matrix<Matrix, SymmGroup> N = constructN(ref_mps_[site]);
-                gemm(X_[0], N, B);
-                ret.replace_right_paired(B);
-            }
-            else
-            {
+            // if (site == 0)
+            // {
+            //     // perform the transformation from X to B above
+            //     // For site 0, do not multiply with S as it is unity
+            //     block_matrix<Matrix, SymmGroup> N = constructN(ref_mps_[site]);
+            //     gemm(X_[0], N, B);
+            //     ret.replace_right_paired(B);
+            // }
+            // else
+            // {
                 // Build S^1/2
-                ref_mps_.canonize(site);
-                block_matrix<Matrix, SymmGroup> S = constructS(site);
+                // ref_mps_.canonize(site);
+                // block_matrix<Matrix, SymmGroup> S = constructS(site);
 
                 // Build S^(-1/2) from S^1/2
-                block_matrix<Matrix, SymmGroup> U, tmp, Sinv;
-                block_matrix<DiagMatrix, SymmGroup> Lambda;
-                heev(S, U, Lambda);
+                // block_matrix<Matrix, SymmGroup> U, tmp, Sinv;
+                // block_matrix<DiagMatrix, SymmGroup> Lambda;
+                // heev(S, U, Lambda);
 
-                const block_matrix<DiagMatrix, SymmGroup>& invLambda = inverse(Lambda);
-                gemm(U, invLambda, tmp);
+                // const block_matrix<DiagMatrix, SymmGroup>& invLambda = inverse(Lambda);
+                // gemm(U, invLambda, tmp);
                 // Sinv contains S^(-1/2) now
-                gemm(tmp,transpose(conjugate(U)), Sinv);
+                // gemm(tmp,transpose(conjugate(U)), Sinv);
 
                 // Contract S with X and N to get B as block_matrix
                 block_matrix<Matrix, SymmGroup> N = constructN(ref_mps_[site]);
-                gemm(X_[site], N, tmp);
-                gemm(Sinv,tmp, B);
+                gemm(X_[site], N, B);
+                // gemm(Sinv,tmp, B);
 
                 // form a right-paired MPS tensor from B
                 ret.replace_right_paired_Bmatrix(B);
-            }
+            // }
             return ret;
         }
 
