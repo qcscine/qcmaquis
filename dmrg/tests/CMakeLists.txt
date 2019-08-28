@@ -11,5 +11,8 @@ target_link_libraries(test1 ${DMRG_APP_LIBRARIES})
 add_executable(test2 test2.cpp)
 target_link_libraries(test2 ${DMRG_APP_LIBRARIES})
 
+add_executable(test_integral_map test_integral_map.cpp)
+target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
+
 add_executable(test_rel test_rel.cpp)
 target_link_libraries(test_rel ${DMRG_APP_LIBRARIES})

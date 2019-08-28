@@ -88,6 +88,7 @@ namespace chem {
     {
         public:
             typedef std::unordered_map<index_type, V, integral_hash> map_t;
+            typedef typename map_t::size_type size_type;
 
             // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation
             // Maybe these two properties should be decoupled in the future
@@ -119,6 +120,8 @@ namespace chem {
             V& operator[](const index_type & key) { return map_[detail::align<relativistic_t>(key)]; };
             V& at(const index_type & key) { return map_.at(detail::align<relativistic_t>(key)); };
             const V& at(const index_type & key) const { return map_.at(detail::align<relativistic_t>(key)); };
+
+            size_type size() const { return map_.size(); }
         private:
             friend class boost::serialization::access;
 
