@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -74,24 +74,41 @@ namespace chem_detail {
         // *** Parse orbital data *********************************************
         // ********************************************************************
 
-        std::string integral_file = parms["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
-            throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+        // Distinguish between integral files and string buffers
 
-        std::ifstream orb_file;
-        orb_file.open(integral_file.c_str());
-        for (int i = 0; i < 4; ++i)
-            orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+        std::unique_ptr<std::istream> orb_string;
+
+        if (parms.is_set("integrals"))
+        {
+            // if we provide parameters inline, we expect it to be in FCIDUMP format without the header
+            std::string integrals = parms["integrals"];
+            orb_string = std::unique_ptr<std::istringstream>(new std::istringstream(integrals));
+        }
+        else if (parms.is_set("integral_file"))
+        {
+            std::string integral_file = parms["integral_file"];
+            if (!boost::filesystem::exists(integral_file))
+                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+
+            orb_string = std::unique_ptr<std::ifstream>(new std::ifstream(integral_file.c_str()));
+
+            // ignore the FCIDUMP header -- 1st four lines
+            for (int i = 0; i < 4; ++i)
+                orb_string.get()->ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+        }
+        else
+            throw std::runtime_error("Integrals are not defined in the input.");
 
         std::vector<double> raw;
-        std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
+        std::copy(std::istream_iterator<double>(*(orb_string.get())), std::istream_iterator<double>(),
                     std::back_inserter(raw));
 
         idx_.resize(raw.size()/5, 4);
         std::vector<double>::iterator it = raw.begin();
         int row = 0;
         while (it != raw.end()) {
-            
+
             if (std::abs(*it) > parms["integral_cutoff"]){
                 matrix_elements.push_back(*it++);
                 std::vector<int> tmp;
@@ -121,7 +138,7 @@ namespace chem_detail {
         }
 
         // dump the integrals into the result file for reproducibility
-        if (parms.is_set("donotsave") && parms["donotsave"] == 0)
+        if (parms.is_set("resultfile") && parms.is_set("donotsave") && parms["donotsave"] == 0)
         {
             std::vector<double> m_;
             std::vector<Lattice::pos_t> i_;
@@ -144,7 +161,7 @@ namespace chem_detail {
             assert( *std::max_element(idx_.elements().first, idx_.elements().second) <= lat.size() );
         }
         #endif
-        
+
         return std::make_pair(idx_, matrix_elements);
     }
 
@@ -220,7 +237,7 @@ namespace chem_detail {
 
             //DEBUG
             //maquis::cout << integral_value.real() << " " << integral_value.imag() << std::endl;
-            
+
             if (std::abs(integral_value) > parms["integral_cutoff"]){
                 matrix_elements.push_back(integral_value);
                 std::vector<int> tmp;

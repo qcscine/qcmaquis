@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -35,15 +35,23 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , init_site(-1)
 , restore(false)
 , dns( (parms["donotsave"] != 0) )
-, chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
-, rfile(parms["resultfile"].str())
 , stop_callback(static_cast<double>(parms["run_seconds"]))
-{ 
+{
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
-    
+
+    // chkpfile and resultfile may be empty
+    chkpfile = "";
+    if (parms.is_set("chkpfile"))
+        chkpfile = boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ "));
+
+    rfile = "";
+    if (parms.is_set("resultfile"))
+        rfile = parms["resultfile"].str();
+
     // check possible orbital order in existing MPS before(!) model initialization
+    if (!chkpfile.empty())
     {
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
@@ -60,7 +68,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    
+
+    if (!chkpfile.empty())
     {
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
@@ -69,10 +78,10 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
-                
+
                 if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
                     ar_in["/status/site"] >> init_site;
-                
+
                 if (init_site == -1)
                     ++init_sweep;
 
@@ -104,24 +113,25 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     }
 
     assert(mps.length() == lat.size());
-    
+
+    if (!rfile.empty())
     /// Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
-        
+
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    if (!dns)
+    if (!dns && !chkpfile.empty())
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
         storage::archive ar(chkpfile+"/props.h5", "w");
-        
+
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    
+
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
 }
 
@@ -131,11 +141,11 @@ sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
 {
     measurements_type mymeas(all_measurements);
     mymeas << overlap_measurements<Matrix, SymmGroup>(parms, sweep);
-    
+
     measurements_type sweep_measurements;
     if (!parms["ALWAYS_MEASURE"].empty())
         sweep_measurements = meas_sublist(mymeas, parms["ALWAYS_MEASURE"]);
-    
+
     return sweep_measurements;
 }
 
@@ -148,10 +158,10 @@ sim<Matrix, SymmGroup>::~sim()
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
-    if (!dns) {
+    if (!dns && !chkpfile.empty()) {
         /// save state to chkp dir
         save(chkpfile, state);
-        
+
         /// save status
         if(!parallel::master()) return;
         storage::archive ar(chkpfile+"/props.h5", "w");
@@ -176,7 +186,9 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
-    std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
+    // no measurements without result files (for now)
+    if (!rfile.empty())
+        std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
 
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
@@ -196,6 +208,7 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
         renyi2 = calculate_bond_renyi_entropies(mps, 2, measure_es_where, spectra);
     }
 
+    if (!rfile.empty())
     {
         storage::archive ar(rfile, "w");
         if (entropies.size() > 0)
