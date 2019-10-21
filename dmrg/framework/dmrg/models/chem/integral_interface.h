@@ -94,20 +94,23 @@ namespace chem {
             // Maybe these two properties should be decoupled in the future
             typedef typename std::conditional<is_complex_t<V>::value, U1DG, TrivialGroup>::type relativistic_t;
 
+            // Type which returns std::abs(V), for the integral cutoff
+            typedef typename std::conditional<is_complex_t<V>::value, typename V::value_type, V>::type value_type;
+
             integral_map() = default;
 
             // Explicit copy using this->operator[]() to avoid potential doubling due to symmetry permutation
             // Not implementing it in the move constructor yet
-            integral_map(const map_t & map)
+            integral_map(const map_t & map, value_type cutoff=0.0) : cutoff_(cutoff)
             {
                 for (auto&& it: map)
                     (*this)[it->first] = it->second;
             }
 
-            integral_map(map_t && map) : map_(map) {};
+            integral_map(map_t && map, value_type cutoff=0.0) : map_(map), cutoff_(cutoff) {};
 
             // allow initializer lists for construction
-            integral_map(std::initializer_list<typename map_t::value_type> l) : integral_map(map_t(l)) {};
+            integral_map(std::initializer_list<typename map_t::value_type> l, value_type cutoff=0.0) : integral_map(map_t(l), cutoff) {};
 
             typedef typename map_t::iterator iterator;
             typedef typename map_t::const_iterator const_iterator;
@@ -118,6 +121,7 @@ namespace chem {
             const_iterator end() const { return map_.end(); };
 
             V& operator[](const index_type & key) { return map_[detail::align<relativistic_t>(key)]; };
+            const V& operator[](const index_type & key) const { return map_[detail::align<relativistic_t>(key)]; };
             V& at(const index_type & key) { return map_.at(detail::align<relativistic_t>(key)); };
             const V& at(const index_type & key) const { return map_.at(detail::align<relativistic_t>(key)); };
 
@@ -126,6 +130,9 @@ namespace chem {
             friend class boost::serialization::access;
 
             map_t map_;
+
+            // Integral cutoff
+            value_type cutoff_;
 
             template <typename Archive>
             friend void serialize(Archive& ar, integral_map &i, const unsigned int version)
