@@ -95,7 +95,8 @@ namespace chem {
             typedef typename std::conditional<is_complex_t<V>::value, U1DG, TrivialGroup>::type relativistic_t;
 
             // Type which returns std::abs(V), for the integral cutoff
-            typedef typename std::conditional<is_complex_t<V>::value, typename V::value_type, V>::type value_type;
+            // Not very clean but std::conditional seems not to work here
+            typedef typename std::complex<V>::value_type value_type;
 
             integral_map() = default;
 
