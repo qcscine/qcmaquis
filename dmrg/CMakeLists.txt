@@ -313,7 +313,7 @@ if(NOT USE_AMBIENT)
   list(APPEND DMRG_LIBRARY_DIRS ${MAQUISLapack_LIB_DIRS})
 endif(NOT USE_AMBIENT)
 
-include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${PROJECT_SOURCE_DIR}/mpi ${PROJECT_BINARY_DIR}/mpi ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})
 add_definitions(${DMRG_DEFINITIONS})
 
@@ -351,6 +351,9 @@ endif(USE_IMGTE_ONLY)
 
 # *** libraries / utilities
 add_subdirectory(framework/dmrg)
+
+# *** MPI interface
+add_subdirectory(mpi)
 
 # *** applications
 add_subdirectory(applications)
