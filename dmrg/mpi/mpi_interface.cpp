@@ -1,6 +1,11 @@
-//
-// Copyright (C) 2019 Quantum Simulation Technologies, Inc. - All Rights Reserved
-//
+/*****************************************************************************
+*
+* MPI interface for QCMaquis
+* adapted for QCMaquis from the MPI interface for BAGEL by Toru Shiozaki
+*
+* Copyright (C) 2019         Stefan Knecht  <stknecht@ethz.ch>
+*
+*****************************************************************************/
 
 #include <iostream>
 #include <iomanip>
