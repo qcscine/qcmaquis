@@ -163,12 +163,12 @@ public:
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             boost::smatch what;
-            for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
-                std::string lhs = it->key();
+            for (auto&& it: parms.get_range()) {
+                std::string lhs = it.first;
                 if (boost::regex_match(lhs, what, expression)) {
 
                     op_vec meas_op;
-                    if (it->value() == "N")
+                    if (it.second == "N")
                         meas_op = count_ops;
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurement supported so far is \"N\"\n");
@@ -190,31 +190,31 @@ public:
         boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
         boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
         boost::smatch what;
-        for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
-            std::string lhs = it->key();
+        for (auto&& it : parms.get_range()) {
+            std::string lhs = it.first;
 
             std::string name, value;
             bool half_only, nearest_neighbors_only;
             if (boost::regex_match(lhs, what, expression)) {
-                value = it->value();
+                value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = false;
             }
             if (boost::regex_match(lhs, what, expression_half)) {
-                value = it->value();
+                value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = false;
             }
             if (boost::regex_match(lhs, what, expression_nn)) {
-                value = it->value();
+                value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = true;
             }
             if (boost::regex_match(lhs, what, expression_halfnn)) {
-                value = it->value();
+                value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = true;
@@ -229,7 +229,7 @@ public:
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){
                     name = "transition_oneptdm";
-                    bra_ckp = it->value();
+                    bra_ckp = it.second;
                 }
                 else
                     name = "oneptdm";
@@ -258,7 +258,7 @@ public:
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
-                    bra_ckp = it->value();
+                    bra_ckp = it.second;
                 }
                 else
                     name = "twoptdm";

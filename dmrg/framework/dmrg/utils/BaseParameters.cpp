@@ -197,7 +197,7 @@
 
     template std::vector<int> BaseParameters::get<std::vector<int> >(std::string const & key);
     template std::vector<unsigned long> BaseParameters::get<std::vector<unsigned long> >(std::string const & key);
-    // template void BaseParameters::set<char[]>(std::string const & key, char[] const (&) value);
+
     template void BaseParameters::print_description(std::ostream& os) const;
 
     std::ostream& operator<<(std::ostream& os, const BaseParameters& p)

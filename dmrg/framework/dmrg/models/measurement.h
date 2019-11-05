@@ -178,6 +178,7 @@ template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, measurement<Matrix, SymmGroup> const& m)
 {
     m.print(os);
+    return os;
 }
 
 
