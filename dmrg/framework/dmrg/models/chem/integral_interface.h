@@ -32,6 +32,9 @@
 #include <unordered_map>
 #include "dmrg/models/chem/util.h"
 #include <boost/serialization/serialization.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/complex.hpp>
 #include <boost/serialization/unordered_map.hpp>
