@@ -42,7 +42,7 @@ struct measure_transform
     void operator()(std::string rfile, std::string result_path, Lattice lat, MPS<Matrix, SymmGroup> const & mps)
     {}
 
-    results_map_type meas_out(Lattice lat, MPS<Matrix, SymmGroup> const & mps) {};
+    results_map_type meas_out(Lattice lat, MPS<Matrix, SymmGroup> const & mps) { return results_map_type(); };
 };
 
 template <class Matrix, class SymmGroup>
