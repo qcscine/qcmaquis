@@ -119,6 +119,11 @@ extern "C"
         parms.set("nsweeps", nsweeps);
     }
 
+    void qcmaquis_interface_set_param(char* key, char* value)
+    {
+        parms.set(key, std::string(value));
+    }
+
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset()
     {

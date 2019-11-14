@@ -70,6 +70,9 @@ extern "C"
     // Sets the number of sweeps
     void qcmaquis_interface_set_nsweeps(int nsweeps);
 
+    // Set an arbitrary QCMaquis parameter
+    void qcmaquis_interface_set_param(char* key, char* value);
+
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset();
 

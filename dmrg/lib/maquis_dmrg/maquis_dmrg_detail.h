@@ -32,6 +32,7 @@
 #include "dmrg/models/chem/integral_interface.h"
 #include "dmrg/models/chem/util.h"
 #include "dmrg/utils/results_collector.h"
+#include "dmrg/utils/BaseParameters.h"
 
 namespace maquis {
     using chem::integral_map;
