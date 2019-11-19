@@ -35,7 +35,7 @@
     class BaseParameters::Impl : public alps::Parameters { typedef alps::Parameters base; using base::base; };
 
     BaseParameters::BaseParameters() : impl_(new Impl()) {}
-    BaseParameters::BaseParameters(const BaseParameters& p) : impl_(new Impl(*(p.impl_))) {}
+    BaseParameters::BaseParameters(const BaseParameters& p) : defaults(p.defaults), descriptions(p.descriptions), impl_(new Impl(*(p.impl_))) {}
 
     BaseParameters::BaseParameters(std::istream& param_file)
     {
