@@ -70,7 +70,7 @@ private:
         add_option("eigensolver", "", value("IETL_JCD"));
         add_option("ietl_jcd_tol", "", value(1e-8));
         add_option("ietl_jcd_gmres", "", value(0));
-        add_option("ietl_jcd_maxiter", "", value(8));
+        add_option("ietl_jcd_maxiter", "", value(10));
 
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);
