@@ -306,7 +306,15 @@ public:
         }
 
         return iteration_results_;
-    };
+    }
+
+    virtual typename Matrix::value_type get_overlap(const std::string & aux_filename)
+    {
+        MPS<Matrix, SymmGroup> aux_mps;
+        load(aux_filename, aux_mps);
+        // TODO: Do symmetry checks
+        return overlap(aux_mps, this->mps);
+    }
 
     int get_last_sweep() { return last_sweep_; };
 

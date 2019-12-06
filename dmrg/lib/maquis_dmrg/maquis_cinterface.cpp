@@ -211,4 +211,9 @@ extern "C"
         *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
         *nsweeps = interface_ptr->get_last_sweep();
     }
+
+    double qcmaquis_interface_get_overlap(char* filename)
+    {
+        return interface_ptr->overlap(filename);
+    }
 }

@@ -143,6 +143,12 @@ namespace maquis
     template <class V>
     DMRGInterface<V>::~DMRGInterface() = default;
 
+    template <class V>
+    V DMRGInterface<V>::overlap(const std::string& aux_mps_name)
+    {
+        return impl_->sim->get_overlap(aux_mps_name);
+    }
+
     template class DMRGInterface<double>;
     template class DMRGInterface<std::complex<double> >;
 }

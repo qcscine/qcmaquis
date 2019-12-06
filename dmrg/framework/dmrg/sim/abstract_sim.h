@@ -55,6 +55,7 @@ public:
     virtual int get_last_sweep() = 0;
     virtual results_map_type measure_out() =0;
     virtual void update_integrals(const chem::integral_map<typename Matrix::value_type> &)=0;
+    virtual typename Matrix::value_type get_overlap(const std::string &) = 0;
 };
 
 #endif

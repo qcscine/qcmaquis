@@ -92,6 +92,9 @@ extern "C"
     // size: size of values array, size of indices array = 4*size
     void qcmaquis_interface_get_2rdm(int* indices, V* values, int size);
 
+    // Measure overlap
+    double qcmaquis_interface_get_overlap(char* filename);
+
 }
 
 #endif
