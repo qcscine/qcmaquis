@@ -123,6 +123,8 @@ namespace maquis
     {
         if (measurements_.empty())
             measure();
+        // This is probably not going to work if we call optimize() several times
+        // TODO: handle also these cases!
         return measurements_;
     };
 
