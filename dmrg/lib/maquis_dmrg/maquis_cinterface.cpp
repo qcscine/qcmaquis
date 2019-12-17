@@ -156,7 +156,7 @@ extern "C"
 
     void qcmaquis_interface_get_1rdm(int* indices, V* values, int size)
     {
-        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface_ptr->onerdm();
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->onerdm();
         // the size attribute is pretty much useless if we allocate the output arrays outside of the interface
         // we'll just use it to check if the size matches the size of the measurement
 	//
@@ -176,7 +176,7 @@ extern "C"
     // hooray for copy-paste
     void qcmaquis_interface_get_2rdm(int* indices, V* values, int size)
     {
-        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface_ptr->twordm();
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->twordm();
 
         assert(size >= meas.first.size());
         assert(size >= meas.second.size());

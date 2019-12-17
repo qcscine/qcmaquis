@@ -38,7 +38,7 @@ namespace maquis
     {
         public:
             // typedef for measurements
-            typedef typename DMRGInterface<V>::meas_with_results_type meas_with_results_type;
+            typedef maquis::meas_with_results_type<V> meas_with_results_type;
 
             MPSSIInterface(std::size_t nel,
                            const std::vector<std::size_t>& multiplicities,

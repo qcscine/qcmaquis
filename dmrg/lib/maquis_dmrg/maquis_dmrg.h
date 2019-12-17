@@ -33,16 +33,21 @@
 
 namespace maquis
 {
+    // Types for measurement results
+    // meas_with_results_type: one measurement = pair of vectors with labels and results
+    template <class V>
+    using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<V> >;
+
+    // All measurements -- a map with measurement names as keys and results as values
+    template <class V>
+    using results_map_type = std::map<std::string, meas_with_results_type<V> >;
 
     template <class V> // real or complex
     class DMRGInterface
     {
         public:
-            // Types for measurement results
-            // meas_with_results_type: one measurement = pair of vectors with labels and results
-            typedef std::pair<std::vector<std::vector<int> >, std::vector<V> > meas_with_results_type;
-            // All measurements -- a map with measurement names as keys and results as values
-            typedef std::map<std::string, meas_with_results_type> results_map_type;
+            typedef maquis::meas_with_results_type<V> meas_with_results_type;
+            typedef maquis::results_map_type<V> results_map_type;
 
             DMRGInterface(DmrgParameters& parms_);
             ~DMRGInterface();
