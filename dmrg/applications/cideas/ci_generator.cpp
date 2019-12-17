@@ -29,7 +29,7 @@
 #include <alps/numeric/matrix.hpp>
 
 #include "dmrg/models/lattice.h"
-#include "../applications/tools/deas.hpp"
+#include "dmrg/models/measurements/chementropy.h"
 #include "determinant.hpp"
 
 
