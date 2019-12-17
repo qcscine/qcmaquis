@@ -7,6 +7,7 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2019         Leon Freitag <lefreita@ethz.ch>
+*               2019         Stefan Knecht <stknecht@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -26,45 +27,77 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
-#include <algorithm>
-#include "maquis_dmrg.h"
+#include "fiedler_order.h"
+#include "dmrg/utils/BaseParameters.h"
 #include "dmrg/sim/matrix_types.h"
 
 
-typedef double V;
-
-
-template <class V, class Matrix>
-class FiedlerOrder
+namespace maquis
 {
-    std::unique_ptr<maquis::DMRGInterface<V> > interface_ptr;
-    DmrgParameters parms;
-    private:
-        int nstates_;
-    public:
-    // constructor
-    FiedlerOrder(int nstates) : nstates_(nstates) { }
-    // copy constructor 
-    FiedlerOrder(const FiedlerOrder& Copy) {*this = Copy;}
+    template <class V>
+    struct FiedlerOrder<V>::Impl
+    {
 
-    void get_FiedlerOrder();
-    std::string calculate_FiedlerOrder(std::array<V,2> *I);
+        std::string calculate_FiedlerOrder()
+        {
 
-};
+            typedef alps::numeric::matrix<V> Matrix;
 
-template <class Matrix> 
-std::string FiedlerOrder<V,Matrix>::calculate_FiedlerOrder(std::array<V,2> *I)
-{
-    Matrix rdm(2,2);
-    rdm(0,0) = 1; rdm(1,0) = 1; rdm(0,1) = 1; rdm(1,1) = -1;
-    Matrix evecs(2,2);
-    std::vector<V> eval(2);
-    alps::numeric::syev(rdm,evecs,eval);
-    return "1,2,3,4";
+            Matrix rdm(2,2);
+            rdm(0,0) = 1; rdm(1,0) = 1; rdm(0,1) = 1; rdm(1,1) = -1;
+            Matrix evecs(2,2);
+            std::vector<V> eval(2);
+            alps::numeric::syev(rdm,evecs,eval);
+
+            return "1,2,3,4";
+        }
+        Impl() = default;
+       ~Impl() = default;
+    };
+
+    template <class V>
+    FiedlerOrder<V>::FiedlerOrder(int nstates,
+                                  const std::string& pname):
+                                  nstates_(nstates),
+                                  pname_(pname),
+                                  impl_()
+    {
+
+        // add stuff here
+        for (std::size_t i = 0; i < nstates_; i++)
+          {
+                /*
+                std::string chkp_name = pname_ + "." + mult_suffixes_[TwoS] + ".checkpoint_state." +
+                    std::to_string(states[TwoS][i]) + ".h5";
+
+                // Transform all checkpoints into the 2U1 representation
+                transform(pname, mult_suffixes_[TwoS], states_[TwoS][i], multiplicities_[TwoS]);
+
+                // Convert SU2 name to 2U1 name
+                std::string twou1_chkp_name = twou1_name(pname_, mult_suffixes_[TwoS], states[TwoS][i], multiplicities_[TwoS]);
+
+                // Rotate if we have more than 1 multiplicity
+                if (multiplicities_.size() > 1)
+                    rotate(twou1_chkp_name);
+                */
+          }
+    }
+
+    template <class V>
+    FiedlerOrder<V>::~FiedlerOrder() = default;
+
+    template <class V>
+    std::string FiedlerOrder<V>::calculate_FiedlerOrder()
+    {
+        return impl_->calculate_FiedlerOrder();
+    }
+
+    template class FiedlerOrder<double>;
+
 }
 
+/*
 template <class Matrix>
-void FiedlerOrder<V,Matrix>::get_FiedlerOrder()
 {
     std::array<V,2> I;
     std::array<V,1> s1;
@@ -85,4 +118,5 @@ void FiedlerOrder<V,Matrix>::get_FiedlerOrder()
     parms.set("orbital_order", fiedlerorder);
 
 }
+*/
 
