@@ -103,7 +103,7 @@ namespace entanglement_detail {
     template <class Matrix>
     Matrix load_vector(const maquis::results_map_type<typename Matrix::value_type>& map, std::string path)
     {
-        const maquis::meas_with_results_type<typename Matrix::value_type> & meas = map[path];
+        const maquis::meas_with_results_type<typename Matrix::value_type> & meas = map.at(path);
         const std::vector<std::vector<int> > & labels = meas.first;
         const std::vector<typename Matrix::value_type> & values = meas.second;
         assert(labels.size() > 0);
@@ -161,8 +161,8 @@ namespace entanglement_detail {
     template <class Matrix>
     Matrix load_matrix(const maquis::results_map_type<typename Matrix::value_type> & map, std::string path, int L)
     {
-        const maquis::meas_with_results_type<typename Matrix::value_type> & meas = map[path];
-        return assy_hc(meas,L);
+        const maquis::meas_with_results_type<typename Matrix::value_type> & meas = map.at(path);
+        return assy_hc<Matrix>(meas, L);
     }
 
     template <class Matrix>
@@ -204,10 +204,10 @@ namespace entanglement_detail {
     template <class Matrix>
     Matrix load_matrix_pair(const maquis::results_map_type<typename Matrix::value_type> & map, std::string path1, std::string path2, int L)
     {
-        const std::vector<std::vector<int> > & labels1 = map[path1].first;
-        const std::vector<typename Matrix::value_type> & values1 = map[path1].second;
-        const std::vector<std::vector<int> > & labels2 = map[path2].first;
-        const std::vector<typename Matrix::value_type> & values2 = map[path2].second;
+        const std::vector<std::vector<int> > & labels1 = map.at(path1).first;
+        const std::vector<typename Matrix::value_type> & values1 = map.at(path1).second;
+        const std::vector<std::vector<int> > & labels2 = map.at(path2).first;
+        const std::vector<typename Matrix::value_type> & values2 = map.at(path2).second;
 
         assert(labels1.size() > 0);
         assert(labels1[0].size() == 2); // Must have only 2 labels per entry!
