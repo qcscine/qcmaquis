@@ -448,7 +448,11 @@ private:
     void calculateData(entanglement_detail::EntropyData<Matrix>& data)
     {
 
+        typedef typename Matrix::value_type value_type;
+        typedef typename maquis::traits::real_type<value_type>::type real_type;
+
         int L = data.L;
+        real_type threshold = 1.0e-10;
 
         //  calculate s1:
         s1_.resize(1,L);
@@ -459,8 +463,14 @@ private:
             m22(i,0) = (data.Ndown(i,0) - data.Nupdown(i,0)); // O(6)
             m33(i,0) = (1 - data.Nup(i,0) - data.Ndown(i,0) + data.Nupdown(i,0)); //O(1)
             m44(i,0) = data.Nupdown(i,0); // O(16)
-            s1_(0,i) = -(m11(i,0)*log( m11(i,0) ) + m22(i,0)*log( m22(i,0) )\
-                      + m33(i,0)*log( m33(i,0) ) + m44(i,0)*log( m44(i,0)) );
+            // handle NaNs for very small entanglements
+            value_type logm11 = std::abs(m11(i,0)) > threshold ? log( m11(i,0) ) : 0;
+            value_type logm22 = std::abs(m22(i,0)) > threshold ? log( m22(i,0) ) : 0;
+            value_type logm33 = std::abs(m33(i,0)) > threshold ? log( m33(i,0) ) : 0;
+            value_type logm44 = std::abs(m44(i,0)) > threshold ? log( m44(i,0) ) : 0;
+
+            s1_(0,i) = -(m11(i,0)*logm11 + m22(i,0)*logm22 \
+                      + m33(i,0)*logm33 + m44(i,0)*logm44);
 
         }
 
@@ -497,16 +507,16 @@ private:
         }
 
         // get CAS vector and sort HF occ vector
-        std::vector<std::pair<real_type, int> > casv_sort(L);
-        std::vector<int> casv(L);
-        for(int i = 0; i < L; i++){
-            casv_sort[i].first = s1_(0,i);
-            casv_sort[i].second = i;
-        }
-        std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp<std::pair<real_type, int> >);
-        for(int i = 0; i<L; i++){
-            casv[i] = casv_sort[i].second;
-        }
+        // std::vector<std::pair<real_type, int> > casv_sort(L);
+        // std::vector<int> casv(L);
+        // for(int i = 0; i < L; i++){
+        //     casv_sort[i].first = s1_(0,i);
+        //     casv_sort[i].second = i;
+        // }
+        // std::sort(casv_sort.begin(), casv_sort.end(), entanglement_detail::comp<std::pair<real_type, int> >);
+        // for(int i = 0; i<L; i++){
+        //     casv[i] = casv_sort[i].second;
+        // }
         // print CAS vector and sorted HF vector
         //std::cout << "CAS vector: ";
         //for(int i =0; i<L; i++){std::cout << ","<<casv[i];}
