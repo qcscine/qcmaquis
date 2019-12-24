@@ -28,6 +28,8 @@
 *
 *****************************************************************************/
 #include "fiedler_order.h"
+
+#include "dmrg/models/measurements/chementropy.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/sim/matrix_types.h"
 
@@ -40,8 +42,6 @@ namespace maquis
 
         std::string calculate_FiedlerOrder()
         {
-
-            typedef alps::numeric::matrix<V> Matrix;
 
             Matrix rdm(2,2);
             rdm(0,0) = 1; rdm(1,0) = 1; rdm(0,1) = 1; rdm(1,1) = -1;
@@ -63,24 +63,31 @@ namespace maquis
                                   impl_()
     {
 
+        std::unique_ptr<maquis::DMRGInterface<V> > interface_ptr;
+
+        std::vector<Matrix> mutI;
+        mutI.reserve(nstates_);
+
+        V omega = 1.0/nstates_;
+
         // add stuff here
         for (std::size_t i = 0; i < nstates_; i++)
           {
-                /*
-                std::string chkp_name = pname_ + "." + mult_suffixes_[TwoS] + ".checkpoint_state." +
-                    std::to_string(states[TwoS][i]) + ".h5";
 
-                // Transform all checkpoints into the 2U1 representation
-                transform(pname, mult_suffixes_[TwoS], states_[TwoS][i], multiplicities_[TwoS]);
-
-                // Convert SU2 name to 2U1 name
-                std::string twou1_chkp_name = twou1_name(pname_, mult_suffixes_[TwoS], states[TwoS][i], multiplicities_[TwoS]);
-
-                // Rotate if we have more than 1 multiplicity
-                if (multiplicities_.size() > 1)
-                    rotate(twou1_chkp_name);
-                */
+            // optimize the state
+            interface_ptr->optimize();
+            // evaluate and get the entropy data
+            EntanglementData<Matrix> em( interface_ptr->measurements() );
+            std::cout << "mutual information for state " << i << ":" << std::endl << em.I() << std::endl;
+            // store data - scaled with state-average factor
+            mutI.push_back(em.I()*omega);
           }
+        // accumulate mutual information matrix
+        Matrix SAmutI;
+        for (auto& n : mutI)
+            SAmutI += n;
+        // get Laplacian
+        Matrix L = get_laplacian(SAmutI);
     }
 
     template <class V>
@@ -90,6 +97,12 @@ namespace maquis
     std::string FiedlerOrder<V>::calculate_FiedlerOrder()
     {
         return impl_->calculate_FiedlerOrder();
+    }
+
+    template <class V>
+    alps::numeric::matrix<V> FiedlerOrder<V>::get_laplacian(alps::numeric::matrix<V> mutI)
+    {
+        return mutI;
     }
 
     template class FiedlerOrder<double>;

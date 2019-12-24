@@ -39,7 +39,7 @@ namespace maquis
     {
         public:
             // typedef for measurements
-            typedef typename DMRGInterface<V>::meas_with_results_type meas_with_results_type;
+            typedef maquis::meas_with_results_type<V> meas_with_results_type;
 
             FiedlerOrder(int nstates_,
                          const std::string& pname);
@@ -51,6 +51,8 @@ namespace maquis
 
         private:
 
+            typedef typename alps::numeric::matrix<V> Matrix;
+
             // Number of states to include in Fiedler vector calculation
             int nstates_;
 
@@ -59,6 +61,8 @@ namespace maquis
 
             // calculate the Fiedler order for a given (state-averaged) mutual information matrix
             std::string calculate_FiedlerOrder();
+
+            Matrix get_laplacian(Matrix mutI);
 
             struct Impl;
             std::unique_ptr<Impl> impl_;
