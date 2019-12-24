@@ -111,7 +111,7 @@ private:
         add_option("lattice_library", "", value("coded"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
-        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(1.e-300));
+        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
 
         //Default values for lattice, model etc. for quantum chemistry calculations
         add_option("LATTICE", "", value("orbitals"));
