@@ -40,6 +40,7 @@
 #include "dmrg/models/chem/integral_interface.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/chem/transform_symmetry.hpp"
+#include "dmrg/models/chem/su2u1/term_maker.h"
 
 // Functions required for MPSSI
 // Equation numbers are from S. Knecht et al, JCTC 2016, 12, 5881
@@ -107,43 +108,89 @@ namespace mps_rotate
     }
 
     // function to set a new MPO with elements defined by integrals in parms
+    // implemented as a functor for
     // setup MPO with elements as in Eq. 45
     // t: full transformation matrix
     // j: orbital index
     // lat, model : lattice and model for the operator
-    template<class Matrix, class SymmGroup>
-    std::vector<MPO<Matrix, SymmGroup> > setupMPO(const Matrix & t, std::size_t j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
+    template<class Matrix, class SymmGroup, class = void>
+    struct setupMPO
     {
-        typedef Lattice::pos_t pos_t;
-        typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename SymmGroup::subcharge sc_t;
-        std::vector<tag_type> ident, fill;
-        for (size_t i = 0; i <= lat.maximum_vertex_type(); ++i)
+        std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, std::size_t j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
         {
-            ident.push_back(model.identity_matrix_tag(i));
-            fill.push_back(model.filling_matrix_tag(i));
-        }
-
-        std::vector<MPO<Matrix, SymmGroup> > ret;
-        for (std::size_t i=0; i < t.num_rows(); ++i)
-            if (i != j)
+            typedef Lattice::pos_t pos_t;
+            typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
+            typedef typename SymmGroup::subcharge sc_t;
+            std::vector<tag_type> ident, fill;
+            for (size_t i = 0; i <= lat.maximum_vertex_type(); ++i)
             {
-                    std::vector<pos_t> positions;
-                    std::vector<tag_type> operators_up, operators_down;
-                    positions.push_back(i);
-                    positions.push_back(j);
-                    operators_up.push_back(model.get_operator_tag("create_up", lat.get_prop<sc_t>("type", i)));
-                    operators_up.push_back(model.get_operator_tag("destroy_up", lat.get_prop<sc_t>("type", j)));
-                    operators_down.push_back(model.get_operator_tag("create_down", lat.get_prop<sc_t>("type", i)));
-                    operators_down.push_back(model.get_operator_tag("destroy_down", lat.get_prop<sc_t>("type", j)));
-
-                    ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
-                    ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
-
+                ident.push_back(model.identity_matrix_tag(i));
+                fill.push_back(model.filling_matrix_tag(i));
             }
 
-        return ret;
-    }
+            std::vector<MPO<Matrix, SymmGroup> > ret;
+            for (std::size_t i=0; i < t.num_rows(); ++i)
+                if (i != j)
+                {
+                        std::vector<pos_t> positions {i,j};
+                        std::vector<tag_type> operators_up, operators_down;
+                        operators_up.push_back(model.get_operator_tag("create_up", lat.get_prop<sc_t>("type", i)));
+                        operators_up.push_back(model.get_operator_tag("destroy_up", lat.get_prop<sc_t>("type", j)));
+                        operators_down.push_back(model.get_operator_tag("create_down", lat.get_prop<sc_t>("type", i)));
+                        operators_down.push_back(model.get_operator_tag("destroy_down", lat.get_prop<sc_t>("type", j)));
+
+                        ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
+                        ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
+
+                }
+
+            return ret;
+        }
+    };
+
+    template<class Matrix, class SymmGroup>
+    struct setupMPO<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+    {
+        std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, std::size_t j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
+        {
+
+            std::vector<MPO<Matrix, SymmGroup> > ret;
+
+            // find the highest irreducible representation number
+            // used to generate ops for all irreps 0..max_irrep
+            typename SymmGroup::subcharge max_irrep = 0;
+            for (Lattice::pos_t p=0; p < lat.size(); ++p)
+                max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
+                                ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
+
+            typename TermMakerSU2<Matrix, SymmGroup>::Operators ops = TermMakerSU2<Matrix, SymmGroup>::construct_operators(max_irrep, model.operators_table());
+            typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection op_collection = TermMakerSU2<Matrix, SymmGroup>::construct_operator_collection(ops, max_irrep);
+
+            for (std::size_t i = 0; i < t.num_rows(); ++i)
+                if (i != j)
+                {
+                    std::vector<typename Model<Matrix,SymmGroup>::term_descriptor> terms;
+                    // copy-paste from 1-RDM expval from tagged_nrankrdm.h
+                    // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+                    terms.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                        true, op_collection.ident.no_couple, t(i,j)/t(j,j)*std::sqrt(2.), i, j, op_collection.create.couple_down, op_collection.create.fill_couple_up,
+                                                            op_collection.destroy.couple_down, op_collection.destroy.fill_couple_up, lat
+                    ));
+
+
+                    // check if term is allowed by symmetry
+                    // if(not measurements_details::checkpg<SymmGroup>()(terms[0], model.operators_table(), lat))
+                    //         continue;
+
+                    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lat, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
+                                                                            op_collection.fill.no_couple, model.operators_table(), terms);
+                    ret.push_back(mpo_m.create_mpo());
+                }
+
+                return ret;
+        }
+    };
+
 
     // function to calculate MPS' = MPO|MPS> aka (in CI terminology) calculating the sigma vector: sigma = H*C
     // as used e.g. in Eqs. 46 and 48
@@ -251,7 +298,7 @@ namespace mps_rotate
             //debug::mps_print(mps[j], "\nScaled MPS at site " + boost::lexical_cast<std::string>(j));
 
             // get MPO
-            std::vector<MPO<Matrix, SymmGroup> > MPO_vec = setupMPO<Matrix, SymmGroup>(t, j, lat, model);
+            std::vector<MPO<Matrix, SymmGroup> > MPO_vec = setupMPO<Matrix, SymmGroup>()(t, j, lat, model);
 
             // check for non-zero MPO vector
             if(MPO_vec.size() == 0) continue;
