@@ -97,7 +97,7 @@ public:
     {
         typename SymmGroup::charge I(0), J(0), K(0), L(0), tmp(0);
         typename SymmGroup::charge charges[] = {I,J,K,L};
-        std::size_t site[] = {i, j, k, l};
+        int site[] = {i, j, k, l};
         for (int ii=0; ii<4; ++ii) {
             charges[ii][1] = lat.get_prop<int>("type", site[ii]);
             charges[ii][0] = 1;
