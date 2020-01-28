@@ -24,6 +24,9 @@
  *
  *****************************************************************************/
 
+#ifdef MAQUIS_MPI
+#include <mpi.h>
+#endif
 #include "utils/io.hpp" // has to be first include because of impi
 #include <cmath>
 #include <iterator>
@@ -41,6 +44,35 @@
 
 int main(int argc, char ** argv)
 {
+
+// this is to be replaced by the mpi interface
+    int size_gl, id_gl;
+#ifdef MAQUIS_MPI
+    MPI_Comm comm_gl, comm_sm, comm_nm;
+    MPI_Info info_sm;
+    MPI_Aint window_size;
+    MPI_Win win_sm;
+
+    // scratch
+    double *baseptr;
+
+    int size_sm, id_sm;
+    int disp_sm_m;
+    int k = -1;
+    int mpi_zero = 0;
+
+// end of advice
+    MPI_Init(&argc, &argv);
+
+    comm_gl = MPI_COMM_WORLD;
+
+    MPI_Comm_size(comm_gl, &size_gl);
+    MPI_Comm_rank(comm_gl, &id_gl);
+#else
+    size_gl = 1;
+    id_gl   = 0;
+#endif
+    if(id_gl == 0){
     std::cout << "  SCINE QCMaquis \n"
               << "  Quantum Chemical Density Matrix Renormalization group\n"
               << "  available from https://scine.ethz.ch/download/qcmaquis\n"
@@ -80,5 +112,9 @@ int main(int argc, char ** argv)
         
         maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
+    }// id_gl
+#ifdef MAQUIS_MPI
+    MPI_Finalize();
+#endif
 }
 

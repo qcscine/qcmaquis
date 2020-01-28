@@ -36,6 +36,7 @@ set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(ENABLE_OMP "Enable OpenMP" ON)
+option(ENABLE_MPI "Enable MPI" OFF)
 option(USE_AMBIENT "Enable Ambient" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
@@ -301,6 +302,10 @@ if(ENABLE_OMP)
   endif(OPENMP_FOUND)
 endif(ENABLE_OMP)
 
+# MPI
+if(ENABLE_MPI)
+    add_definitions(-DMAQUIS_MPI)
+endif(ENABLE_MPI)
 
 
 ######################################################################
