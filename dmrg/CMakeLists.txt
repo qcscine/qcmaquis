@@ -50,6 +50,8 @@ mark_as_advanced(ENABLE_COLLECTOR)
 
 set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas, alps")
 
+# enable global MACRO PROG_QCM
+add_definitions(-DPROG_QCM)
 
 ######################################################################
 # How to build
@@ -304,7 +306,7 @@ endif(ENABLE_OMP)
 
 # MPI
 if(ENABLE_MPI)
-    add_definitions(-DMAQUIS_MPI)
+    add_definitions(-DHAVE_MPI)
 endif(ENABLE_MPI)
 
 

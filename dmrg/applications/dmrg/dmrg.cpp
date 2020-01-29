@@ -24,9 +24,6 @@
  *
  *****************************************************************************/
 
-#ifdef MAQUIS_MPI
-#include <mpi.h>
-#endif
 #include "utils/io.hpp" // has to be first include because of impi
 #include <cmath>
 #include <iterator>
@@ -42,37 +39,24 @@
 #include "simulation.h"
 #include "dmrg/sim/symmetry_factory.h"
 
+#include <mpi_interface.h>
+
+namespace maquis
+{
+  MPI_interface* mpi__;
+  std::unique_ptr<MPI_interface> mpi;
+}
+
 int main(int argc, char ** argv)
 {
 
-// this is to be replaced by the mpi interface
-    int size_gl, id_gl;
-#ifdef MAQUIS_MPI
-    MPI_Comm comm_gl, comm_sm, comm_nm;
-    MPI_Info info_sm;
-    MPI_Aint window_size;
-    MPI_Win win_sm;
+    // setup MPI interface. It does nothing for serial runs
+    if (!maquis::mpi__) {
+        maquis::mpi   = std::unique_ptr<maquis::MPI_interface>(new maquis::MPI_interface(nullptr, 0));
+        maquis::mpi__ = maquis::mpi.get();
+    }
 
-    // scratch
-    double *baseptr;
-
-    int size_sm, id_sm;
-    int disp_sm_m;
-    int k = -1;
-    int mpi_zero = 0;
-
-// end of advice
-    MPI_Init(&argc, &argv);
-
-    comm_gl = MPI_COMM_WORLD;
-
-    MPI_Comm_size(comm_gl, &size_gl);
-    MPI_Comm_rank(comm_gl, &id_gl);
-#else
-    size_gl = 1;
-    id_gl   = 0;
-#endif
-    if(id_gl == 0){
+    if(maquis::mpi__->id_gl() == 0){
     std::cout << "  SCINE QCMaquis \n"
               << "  Quantum Chemical Density Matrix Renormalization group\n"
               << "  available from https://scine.ethz.ch/download/qcmaquis\n"
@@ -88,13 +72,13 @@ int main(int argc, char ** argv)
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
         maquis::cout.precision(10);
-        
+
         DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"]+1)
         DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"]+1)
-        
+
         timeval now, then, snow, sthen;
         gettimeofday(&now, NULL);
-        
+
         try {
             simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
             sim->run(opt.parms);
@@ -103,18 +87,18 @@ int main(int argc, char ** argv)
             maquis::cerr << e.what() << std::endl;
             exit(1);
         }
-        
+
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-        
+
         DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
         DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
-        
+
         maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
     }// id_gl
-#ifdef MAQUIS_MPI
-    MPI_Finalize();
-#endif
-}
 
+    // terminate MPI (does nothing if serial run)
+    maquis::mpi.reset(nullptr);
+    maquis::mpi__ = nullptr;
+}

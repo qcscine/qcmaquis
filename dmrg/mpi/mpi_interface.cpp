@@ -1,11 +1,11 @@
-/*****************************************************************************
+/*********************************************************************************
 *
-* MPI interface for QCMaquis
-* adapted for QCMaquis from the MPI interface for BAGEL by Toru Shiozaki
+* MPI interface for Scine
+* inspired and adapted for Scine from the MPI interface for BAGEL by Toru Shiozaki
 *
 * Copyright (C) 2019         Stefan Knecht  <stknecht@ethz.ch>
 *
-*****************************************************************************/
+*********************************************************************************/
 
 #include <iostream>
 #include <iomanip>
@@ -13,205 +13,70 @@
 #include <thread>
 #include <stdexcept>
 #include <array>
-#include "mpi_interface.h"
+#include <mpi_interface.h>
 
 using namespace std;
+
+// QCMaquis specific
+#ifdef PROG_QCM
 using namespace maquis;
+#endif
 
-mpiInterface::mpiInterface()
- : depth_(0), cnt_(0), nprow_(0), npcol_(0), context_(0), myprow_(0), mypcol_(0) {
+#ifndef HAVE_MPI
+using MPI_Comm = int;
+#endif
 
-#ifdef HAVE_MPI_H
-  int provided;
-  MPI_Init_thread(0, 0, MPI_THREAD_MULTIPLE, &provided);
-  if (provided != MPI_THREAD_MULTIPLE)
-    throw runtime_error("MPI_THREAD_MULTIPLE not provided");
+// specify default constructor
+MPI_interface::MPI_interface(MPI_Comm* commptr, const int id_GL)
+ : initialized_(true) {
 
-  MPI_Comm_rank(MPI_COMM_WORLD, &wrank_);
-  MPI_Comm_size(MPI_COMM_WORLD, &wsize_);
-  rank_ = wrank_;
-  size_ = wsize_;
-  // print out the node name
-  {
-    constexpr const size_t maxlen = MPI_MAX_PROCESSOR_NAME;
-    int len;
-    char name[maxlen];
-    MPI_Get_processor_name(name, &len);
+#ifdef HAVE_MPI
+  if (!commptr) {
+    MPI_Init(0, 0);
 
-    unique_ptr<char[]> buf(new char[maxlen*size_]);
-    unique_ptr<int[]> lens(new int[size_]);
-    MPI_Gather(static_cast<void*>(name), maxlen, MPI_CHAR, static_cast<void*>(buf.get()), maxlen, MPI_CHAR, 0, MPI_COMM_WORLD);
-    MPI_Gather(static_cast<void*>(&len),      1, MPI_INT,  static_cast<void*>(lens.get()),     1, MPI_INT,  0, MPI_COMM_WORLD);
-    if (rank() == 0) {
-      for (int i = 0; i != size_; ++i)
-        cout << "    " << string(&buf[i*maxlen], &buf[i*maxlen+lens[i]]) << endl;
-      cout << endl;
-    }
+    // setup global communication group
+    MPI_Comm_rank(MPI_COMM_WORLD, &id_gl_);
+    MPI_Comm_size(MPI_COMM_WORLD, &size_gl_);
+
+    mpi_comm_.push_back(MPI_COMM_WORLD);
+
+    // setup shared-memory (NUMA) communication group
+    MPI_Comm comm_local;
+    MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &comm_local);
+    MPI_Comm_size(comm_local, &size_sm_);
+    MPI_Comm_rank(comm_local, &id_sm_);
+
+    mpi_comm_.push_back(comm_local);
+
+    // setup communication group for node masters (id_sm==0)
+    //  (and all others, but they will not be used ...)
+    MPI_Comm_split(MPI_COMM_WORLD, id_sm_ , 0, &comm_local);
+
+    mpi_comm_.push_back(comm_local);
+
+  } else {
+    mpi_comm_.push_back(*commptr);
+    id_gl_ = id_GL;
   }
 
-  // set MPI_COMM_WORLD to mpi_comm_
-  mpi_comm_ = MPI_COMM_WORLD;
 #else
-  wrank_ = 0;
-  wsize_ = 1;
-  rank_ = wrank_;
-  size_ = wsize_;
+  id_gl_   = 0;
+  size_gl_ = 1;
+  id_sm_   = id_gl_;
+  size_sm_ = size_gl_;
 #endif
 }
 
-
-mpiInterface::~mpiInterface() {
-#ifdef HAVE_MPI_H
+// destructor
+MPI_interface::~MPI_interface() {
+#ifdef HAVE_MPI
   MPI_Finalize();
 #endif
 }
 
-
-void mpiInterface::barrier() const {
-#ifdef HAVE_MPI_H
-  MPI_Barrier(mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::allreduce(double* a, const size_t size) const {
-#ifdef HAVE_MPI_H
-  assert(size != 0);
-  const int nbatch = (size-1)/bsize  + 1;
-  for (int i = 0; i != nbatch; ++i)
-    MPI_Allreduce(MPI_IN_PLACE, static_cast<void*>(a+i*bsize), (i+1 == nbatch ? size-i*bsize : bsize), MPI_DOUBLE, MPI_SUM, mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::allreduce(int* a, const size_t size) const {
-#ifdef HAVE_MPI_H
-  assert(size != 0);
-  const int nbatch = (size-1)/bsize  + 1;
-  for (int i = 0; i != nbatch; ++i)
-    MPI_Allreduce(MPI_IN_PLACE, static_cast<void*>(a+i*bsize), (i+1 == nbatch ? size-i*bsize : bsize), MPI_INT, MPI_SUM, mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::allreduce(complex<double>* a, const size_t size) const {
-#ifdef HAVE_MPI_H
-  assert(size != 0);
-  const int nbatch = (size-1)/bsize  + 1;
-  for (int i = 0; i != nbatch; ++i)
-    MPI_Allreduce(MPI_IN_PLACE, static_cast<void*>(a+i*bsize), (i+1 == nbatch ? size-i*bsize : bsize), MPI_CXX_DOUBLE_COMPLEX, MPI_SUM, mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::broadcast(size_t* a, const size_t size, const int root) const {
-#ifdef HAVE_MPI_H
-  static_assert(sizeof(size_t) == sizeof(unsigned long long), "size_t is assumed to be the same size as unsigned long long");
-  assert(size != 0);
-  const int nbatch = (size-1)/bsize  + 1;
-  for (int i = 0; i != nbatch; ++i)
-    MPI_Bcast(static_cast<void*>(a+i*bsize), (i+1 == nbatch ? size-i*bsize : bsize), MPI_UNSIGNED_LONG_LONG, root, mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::broadcast(double* a, const size_t size, const int root) const {
-#ifdef HAVE_MPI_H
-  assert(size != 0);
-  const int nbatch = (size-1)/bsize  + 1;
-  for (int i = 0; i != nbatch; ++i)
-    MPI_Bcast(static_cast<void*>(a+i*bsize), (i+1 == nbatch ? size-i*bsize : bsize), MPI_DOUBLE, root, mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::broadcast(complex<double>* a, const size_t size, const int root) const {
-#ifdef HAVE_MPI_H
-  assert(size != 0);
-  const int nbatch = (size-1)/bsize  + 1;
-  for (int i = 0; i != nbatch; ++i)
-    MPI_Bcast(static_cast<void*>(a+i*bsize), (i+1 == nbatch ? size-i*bsize : bsize), MPI_CXX_DOUBLE_COMPLEX, root, mpi_comm_);
-#endif
-}
-
-
-void mpiInterface::allgather(const double* send, const size_t ssize, double* rec, const size_t rsize) const {
-#ifdef HAVE_MPI_H
-  // I hate const_cast. Blame the MPI C binding
-  MPI_Allgather(const_cast<void*>(static_cast<const void*>(send)), ssize, MPI_DOUBLE, static_cast<void*>(rec), rsize, MPI_DOUBLE, mpi_comm_);
-#else
-  assert(ssize == rsize);
-//copy_n(send, ssize, rec);
-#endif
-}
-
-
-void mpiInterface::allgather(const complex<double>* send, const size_t ssize, complex<double>* rec, const size_t rsize) const {
-#ifdef HAVE_MPI_H
-  // I hate const_cast. Blame the MPI C binding
-  MPI_Allgather(const_cast<void*>(static_cast<const void*>(send)), ssize, MPI_CXX_DOUBLE_COMPLEX, static_cast<void*>(rec), rsize, MPI_CXX_DOUBLE_COMPLEX, mpi_comm_);
-#else
-  assert(ssize == rsize);
-//copy_n(send, ssize, rec);
-#endif
-}
-
-
-void mpiInterface::allgather(const size_t* send, const size_t ssize, size_t* rec, const size_t rsize) const {
-#ifdef HAVE_MPI_H
-  static_assert(sizeof(size_t) == sizeof(unsigned long long), "size_t is assumed to be the same size as unsigned long long");
-  // I hate const_cast. Blame the MPI C binding
-  MPI_Allgather(const_cast<void*>(static_cast<const void*>(send)), ssize, MPI_UNSIGNED_LONG_LONG, static_cast<void*>(rec), rsize, MPI_UNSIGNED_LONG_LONG, mpi_comm_);
-#else
-  assert(ssize == rsize);
-//copy_n(send, ssize, rec);
-#endif
-}
-
-
-void mpiInterface::allgather(const int* send, const size_t ssize, int* rec, const size_t rsize) const {
-#ifdef HAVE_MPI_H
-  // I hate const_cast. Blame the MPI C binding
-  MPI_Allgather(const_cast<void*>(static_cast<const void*>(send)), ssize, MPI_INT, static_cast<void*>(rec), rsize, MPI_INT, mpi_comm_);
-#else
-  assert(ssize == rsize);
-//copy_n(send, ssize, rec);
-#endif
-}
-
-
-// MPI Communicators
-void mpiInterface::split(const int n) {
-#ifdef HAVE_MPI_H
-  MPI_Comm new_comm;
-  const int icomm = rank_ % n;
-  mpi_comm_old_.push_back(pair<MPI_Comm,array<int,5>>(mpi_comm_, {context_, nprow_, npcol_, myprow_, mypcol_}));
-
-  ++depth_;
-
-  MPI_Comm_split(mpi_comm_, icomm, wrank_, &new_comm);
-  mpi_comm_ = new_comm;
-  MPI_Comm_rank(mpi_comm_, &rank_);
-  MPI_Comm_size(mpi_comm_, &size_);
-#endif
-}
-
-
-void mpiInterface::merge() {
-#ifdef HAVE_MPI_H
-  MPI_Comm_free(&mpi_comm_);
-
-  --depth_;
-
-  mpi_comm_ = get<0>(mpi_comm_old_[depth_]);
-  MPI_Comm_rank(mpi_comm_, &rank_);
-  MPI_Comm_size(mpi_comm_, &size_);
-
-  mpi_comm_old_.pop_back();
-#endif
-}
-
-
-int mpiInterface::pnum(const int prow, const int pcol) const {
-  return 0;
-}
+// member functions
+//#ifdef HAVE_MPI
+//MPI_Comm& MPI_interface::mpi_comm(const int ctag) {
+//return mpi_comm_.at(ctag);
+//}
+//#endif

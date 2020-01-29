@@ -1,13 +1,13 @@
-/*****************************************************************************
+/*********************************************************************************
 *
-* MPI interface for QCMaquis
-* adapted for QCMaquis from the MPI interface for BAGEL by Toru Shiozaki
+* MPI interface for Scine
+* inspired and adapted for Scine from the MPI interface for BAGEL by Toru Shiozaki
 *
 * Copyright (C) 2019         Stefan Knecht  <stknecht@ethz.ch>
 *
-*****************************************************************************/
-#ifndef MAQUIS_MPI_INTERFACE_H
-#define MAQUIS_MPI_INTERFACE_H
+**********************************************************************************/
+#ifndef MPI_INTERFACE_H
+#define MPI_INTERFACE_H
 
 #include <stddef.h>
 #include <memory>
@@ -15,94 +15,53 @@
 #include <mutex>
 #include <vector>
 #include <map>
-#ifdef HAVE_MPI_H
- #include <mpi.h>
+
+#ifdef HAVE_MPI
+#include <mpi.h>
+#else
+using MPI_Comm = int;
 #endif
 
+#ifdef PROG_QCM
 namespace maquis
 {
-
-
-class mpiInterface {
-  protected:
-    int wrank_;
-    int wsize_;
-    int rank_;
-    int size_;
-    int depth_;
-    int cnt_;
-
-    int nprow_;
-    int npcol_;
-    int context_;
-    int myprow_;
-    int mypcol_;
-
-#ifdef HAVE_MPI_H
-    MPI_Comm mpi_comm_;
-    std::vector<std::pair<MPI_Comm,std::array<int,5>>> mpi_comm_old_;
 #endif
 
-    // maximum size of the MPI buffer - same as, for example, BAGEL uses
-    static constexpr size_t bsize = 100000000LU;
+class MPI_interface {
+  // protected members are accessible from other members of the same class (or from their "friends"), but also from members of their derived classes
+  protected:
+    bool initialized_; // is the MPI interface initialized?
+    int id_gl_; // global rank
+    int id_sm_; // local rank (shared-memory communicator)
+    int size_gl_; // size of global communicator aka MPI_COMM_WORLD
+    int size_sm_; // size of local (shared-memory) communicator
+
+#ifdef HAVE_MPI
+    std::vector<MPI_Comm> mpi_comm_;
+    // ctag defines which communicator is returned: 0 = global; 1 = shared-memory; 2 = internode
+    MPI_Comm& mpi_comm(const int ctag) { return mpi_comm_.at(ctag); };
+#endif
 
   public:
-    mpiInterface();
-    ~mpiInterface();
+     // default constructor
+     MPI_interface(MPI_Comm* commptr, const int id_GL);
+     // destructor
+    ~MPI_interface();
 
-    int wrank() const { return wrank_; }
-    int wsize() const { return wsize_; }
-    int rank() const { return rank_; }
-    int size() const { return size_; }
-    int depth() const { return depth_; }
-    bool last() const { return rank() == size()-1; }
-
-    // collective functions - MPI-1 standard
-    // barrier
-    void barrier() const;
-    // sum reduce and broadcast to each process
-    void allreduce(int*, const size_t size) const;
-    void allreduce(double*, const size_t size) const;
-    void allreduce(std::complex<double>*, const size_t size) const;
-    // broadcast
-    void broadcast(size_t*, const size_t size, const int root) const;
-    void broadcast(double*, const size_t size, const int root) const;
-    void broadcast(std::complex<double>*, const size_t size, const int root) const;
-    void allgather(const double* send, const size_t ssize, double* rec, const size_t rsize) const;
-    void allgather(const std::complex<double>* send, const size_t ssize, std::complex<double>* rec, const size_t rsize) const;
-    void allgather(const size_t* send, const size_t ssize, size_t* rec, const size_t rsize) const;
-    void allgather(const int* send, const size_t ssize, int* rec, const size_t rsize) const;
-
-#ifdef HAVE_MPI_H
-    // communicators. n is the number of processes per communicator.
-    const MPI_Comm& mpi_comm() const { return mpi_comm_; }
-#endif
-    void split(const int n);
-    void merge();
-
-
-    // scalapack
-    int nprow() const { return nprow_; }
-    int npcol() const { return npcol_; }
-    int context() const { return context_; }
-    int myprow() const { return myprow_; }
-    int mypcol() const { return mypcol_; }
-
-#ifdef HAVE_MPI_H
-    // communicators. n is the number of processes per communicator.
-    const MPI_Comm& mpi_comm() const { return mpi_comm_; }
-#endif
-
-    int pnum(const int prow, const int pcol) const;
-    std::pair<int,int> numroc(const int, const int) const;
-    std::vector<int> descinit(const int, const int) const;
+    // some simple member functions - definition of function body here
+    int id_gl() const { return id_gl_; }
+    int size_gl() const { return size_gl_; }
+    int id_sm() const { return id_sm_; }
+    int size_sm() const { return size_sm_; }
 
 };
 
-extern mpiInterface* qcm_mpi__;
+// declaration that somewhere in the code there is an MPI_interface object called mpi__.
+extern MPI_interface* mpi__;
 
+#ifdef PROG_QCM
 }
-
+#endif
 
 #endif
 
