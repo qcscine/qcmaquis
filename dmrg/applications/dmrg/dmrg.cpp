@@ -57,46 +57,50 @@ int main(int argc, char ** argv)
     }
 
     if(maquis::mpi__->id_gl() == 0){
-    std::cout << "  SCINE QCMaquis \n"
-              << "  Quantum Chemical Density Matrix Renormalization group\n"
-              << "  available from https://scine.ethz.ch/download/qcmaquis\n"
-              << "  based on the ALPS MPS codes from http://alps.comp-phys.org/\n"
-              << "  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich\n"
-              << "  copyright (c) 2012-2016 by Sebastian Keller\n"
-              << "  copyright (c) 2016-2018 by Alberto Baiardi, Leon Freitag, \n"
-              << "  Stefan Knecht, Yingjin Ma \n"
-              << "  for details see the publication: \n"
-              << "  S. Keller et al., J. Chem. Phys. 143, 244118 (2015)\n"
-              << std::endl;
+        std::cout << "  SCINE QCMaquis \n"
+                  << "  Quantum Chemical Density Matrix Renormalization group\n"
+                  << "  available from https://scine.ethz.ch/download/qcmaquis\n"
+                  << "  based on the ALPS MPS codes from http://alps.comp-phys.org/\n"
+                  << "  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich\n"
+                  << "  copyright (c) 2012-2016 by Sebastian Keller\n"
+                  << "  copyright (c) 2016-2018 by Alberto Baiardi, Leon Freitag, \n"
+                  << "  Stefan Knecht, Yingjin Ma \n"
+                  << "  for details see the publication: \n"
+                  << "  S. Keller et al., J. Chem. Phys. 143, 244118 (2015)\n"
+                  << std::endl;
+
+    }
 
     DmrgOptions opt(argc, argv);
-    if (opt.valid) {
-        maquis::cout.precision(10);
 
-        DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"]+1)
-        DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"]+1)
+    if(maquis::mpi__->id_gl() == 0){
+        if (opt.valid) {
+            maquis::cout.precision(10);
 
-        timeval now, then, snow, sthen;
-        gettimeofday(&now, NULL);
+            DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"]+1)
+            DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"]+1)
 
-        try {
-            simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
-            sim->run(opt.parms);
-        } catch (std::exception & e) {
-            maquis::cerr << "Exception thrown!" << std::endl;
-            maquis::cerr << e.what() << std::endl;
-            exit(1);
+            timeval now, then, snow, sthen;
+            gettimeofday(&now, NULL);
+
+            try {
+                simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
+                sim->run(opt.parms);
+            } catch (std::exception & e) {
+                maquis::cerr << "Exception thrown!" << std::endl;
+                maquis::cerr << e.what() << std::endl;
+                exit(1);
+            }
+
+            gettimeofday(&then, NULL);
+            double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+
+            DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
+            DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
+
+            maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
         }
-
-        gettimeofday(&then, NULL);
-        double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-
-        DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
-        DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
-
-        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
-    }// id_gl
 
     // terminate MPI (does nothing if serial run)
     maquis::mpi.reset(nullptr);
