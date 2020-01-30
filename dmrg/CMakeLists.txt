@@ -20,7 +20,7 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 # Project START
 ######################################################################
-project (MAQUIS_DMRG) 
+project (MAQUIS_DMRG)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 
@@ -307,6 +307,22 @@ endif(ENABLE_OMP)
 # MPI
 if(ENABLE_MPI)
     add_definitions(-DHAVE_MPI)
+    set (mpi_src ${PROJECT_SOURCE_DIR}/mpi)
+    set (mpi_bin ${PROJECT_BINARY_DIR}/mpi)
+
+        configure_file(${mpi_src}/CMakeLists.txt ${mpi_bin}/CMakeLists.txt COPYONLY)
+        ## Builds with build subdirectory outside the source tree require the second argument of add_subdirectory
+        add_subdirectory(${mpi_bin} ${mpi_bin})
+
+        get_directory_property(${MPI_INCLUDE} DIRECTORY ${mpi_bin} DEFINITION ${MPI_INCLUDE})
+        get_directory_property(${MPI_LIBRARIES} DIRECTORY ${mpi_bin} DEFINITION ${MPI_LIBRARIES})
+        include_directories(${MPI_INCLUDE})
+
+        message ("-- MPI_INCLUDE_PATH: ${MPI_INCLUDE}")
+        message ("-- MPI_LIBRARIES: ${MPI_LIBRARIES}")
+
+        list (APPEND DMRG_LIBRARY_DIRS ${MPI_LIBRARIES})
+
 endif(ENABLE_MPI)
 
 
@@ -320,7 +336,7 @@ if(NOT USE_AMBIENT)
   list(APPEND DMRG_LIBRARY_DIRS ${MAQUISLapack_LIB_DIRS})
 endif(NOT USE_AMBIENT)
 
-include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${PROJECT_SOURCE_DIR}/mpi ${PROJECT_BINARY_DIR}/mpi ${DMRG_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})
 add_definitions(${DMRG_DEFINITIONS})
 
@@ -358,9 +374,6 @@ endif(USE_IMGTE_ONLY)
 
 # *** libraries / utilities
 add_subdirectory(framework/dmrg)
-
-# *** MPI interface
-add_subdirectory(mpi)
 
 # *** applications
 add_subdirectory(applications)
