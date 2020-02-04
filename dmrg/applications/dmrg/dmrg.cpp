@@ -43,8 +43,8 @@
 
 namespace maquis
 {
-  MPI_interface* mpi__;
-  std::unique_ptr<MPI_interface> mpi;
+  Scine::Mpi::MpiInterface* mpi__;
+  std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
 }
 
 int main(int argc, char ** argv)
@@ -52,11 +52,11 @@ int main(int argc, char ** argv)
 
     // setup MPI interface. It does nothing for serial runs
     if (!maquis::mpi__) {
-        maquis::mpi   = std::unique_ptr<maquis::MPI_interface>(new maquis::MPI_interface(nullptr, 0));
+        maquis::mpi   = std::unique_ptr<Scine::Mpi::MpiInterface>(new Scine::Mpi::MpiInterface(nullptr, 0));
         maquis::mpi__ = maquis::mpi.get();
     }
 
-    if(maquis::mpi__->id_gl() == 0){
+    if(maquis::mpi__->getGlobalRank() == 0){
         std::cout << "  SCINE QCMaquis \n"
                   << "  Quantum Chemical Density Matrix Renormalization group\n"
                   << "  available from https://scine.ethz.ch/download/qcmaquis\n"
@@ -73,7 +73,7 @@ int main(int argc, char ** argv)
 
     DmrgOptions opt(argc, argv);
 
-    if(maquis::mpi__->id_gl() == 0){
+    if(maquis::mpi__->getGlobalRank() == 0){
         if (opt.valid) {
             maquis::cout.precision(10);
 
