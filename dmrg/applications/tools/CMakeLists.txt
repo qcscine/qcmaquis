@@ -1,6 +1,6 @@
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 
-set(DMRG_APP_LIBRARIES dmrg_utils ${DMRG_LIBRARIES})
+set(DMRG_APP_LIBRARIES dmrg_utils mpi_interface ${DMRG_LIBRARIES})
 
 if(USE_AMBIENT)
   compile_with_ambient()
@@ -19,12 +19,12 @@ macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
 endmacro(create_tools_symm_target)
 
 
-create_tools_symm_target("mps_overlap_u1"       "U1"     "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_overlap_2u1"      "TWOU1"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps_overlap_u1"       "U1"     "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps_overlap_2u1"      "TWOU1"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_overlap_2u1pg"    "TWOU1PG"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_overlap_su2u1"    "SU2U1"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps_overlap_su2u1"    "SU2U1"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_overlap_su2u1pg"  "SU2U1PG"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps_overlap_none" "NONE"   "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps_overlap_none" "NONE"   "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
 
 #create_tools_symm_target("mps_reflect_u1"   "U1"     "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
 #create_tools_symm_target("mps_reflect_2u1"  "TWOU1"  "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
@@ -56,18 +56,18 @@ create_tools_symm_target("mps_overlap_none" "NONE"   "mps_overlap.cpp"  "${DMRG_
 #create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 #create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("onetdm_diag_2u1"     "TWOU1"   "onetdm_diag.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("onetdm_diag_2u1"     "TWOU1"   "onetdm_diag.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("onetdm_diag_2u1pg"  "TWOU1PG"  "onetdm_diag.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 #create_tools_symm_target("nrdmexpect_2u1pg"   "TWOU1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-#create_tools_symm_target("nrdmexpect_su2u1pg" "SU2U1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("nrdmexpect_su2u1pg" "SU2U1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("srcas_2u1pg"           "TWOU1PG"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("srcas_2u1pg"           "TWOU1PG"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 #create_tools_symm_target("mult_test_2u1pg"   "TWOU1PG" "mult_test.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
