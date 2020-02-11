@@ -71,7 +71,7 @@ typedef U1 symm;
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
-MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattice)
+MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattice, size_t const & myrank)
 {
         typedef operator_selector<matrix, symm>::type op_t;
         typedef OPTable<matrix, symm>::tag_type tag_type;
@@ -82,7 +82,7 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
         boost::shared_ptr<TagHandler<matrix, symm> > tag_handler_local = model.operators_table();
 
         const int nterm = 2;
-        int pos_[nterm] = {0, 0};
+        int pos_[nterm] = {myrank, myrank};
         std::vector<int> pos(pos_, pos_ + nterm);
 
         std::vector<tag_type> ident_no_couple;
@@ -105,14 +105,11 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
                                                               op_collection.destroy.couple_down, op_collection.destroy.fill_couple_up, lattice
                         ));
         else {
-                        maquis::cout << "in here 0" << std::endl;
                         term_descriptor term;
                         term.coeff = 1.;
-                        maquis::cout << "in here 1 " << pos_[0] << " " << lattice.get_prop<typename symm::subcharge>("type", pos_[0]) << std::endl;
-                        maquis::cout << "in here 1 " << pos_[0] << " " << model.get_operator_tag("count", lattice.get_prop<typename symm::subcharge>("type", pos_[0])) << std::endl;
+                        maquis::cout << "I am creating term " << pos_[0] << pos_[1] << " " << lattice.get_prop<typename symm::subcharge>("type", pos_[0]) << std::endl;
                         term.push_back( boost::make_tuple(pos_[0], model.get_operator_tag("count", lattice.get_prop<typename symm::subcharge>("type", pos_[0]))));
                         terms.push_back(term);
-                        maquis::cout << "done in here " << std::endl;
         }
 
         generate_mpo::TaggedMPOMaker<matrix, symm> mpo_m(lattice, ident_no_couple, ident_full_no_couple,
@@ -139,38 +136,35 @@ int main(int argc, char ** argv)
         maquis::mpi__ = maquis::mpi.get();
     }
 
+    DmrgOptions opt(argc, argv);
+    if (!opt.valid) return 0;
+    DmrgParameters parms = opt.parms;
+
+    maquis::cout.precision(10);
+
+    /// Parsing model
+    Lattice lattice = Lattice(parms);
+    Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
+
+    MPS<matrix, symm> mps;
+
     if(maquis::mpi__->getGlobalRank() == 0){
-
-    try {
-        DmrgOptions opt(argc, argv);
-        if (!opt.valid) return 0;
-        DmrgParameters parms = opt.parms;
-
-        maquis::cout.precision(10);
-
-        /// Parsing model
-        Lattice lattice = Lattice(parms);
-        Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
-        model.create_terms();
-
         // load state
-        MPS<matrix, symm> mps;
         maquis::cout << "Loading " << parms["chkpfile"] << std::endl;
         std::string wvf = parms["chkpfile"];
         load(wvf, mps);
+    } else {
+    }
 
-        //MPO<matrix, symm> mpo = rdm2(model, lattice);
-        MPO<matrix, symm> mpo = rdm1(model, lattice);
+    //MPO<matrix, symm> mpo = rdm2(model, lattice);
+    MPO<matrix, symm> mpo = rdm1(model, lattice, maquis::mpi__->getGlobalRank());
 
-        maquis::cout << "enter expval " << std::endl;
+    maquis::cout << "enter expval " << std::endl;
+    if(maquis::mpi__->getGlobalRank() == 0){
         maquis::traits::real_type<matrix::value_type>::type value = maquis::real(expval(mps, mpo));
         maquis::cout << "Expval is: " << value << std::endl;
+    }
 
-    } catch (std::exception& e) {
-        std::cerr << "Error:" << std::endl << e.what() << std::endl;
-        return 1;
-    }
-    }
     // terminate MPI (does nothing if serial run)
     maquis::mpi.reset(nullptr);
     maquis::mpi__ = nullptr;
