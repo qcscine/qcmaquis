@@ -183,8 +183,10 @@ namespace measurements {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
             // the default setting is only required for "measure_correlation"
             if (positions_first.size() == 0 && operator_terms[0].first.size() == 2)
-                std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
-                          back_inserter(positions_first));
+            {
+                positions_first.resize(extent);
+                std::iota(positions_first.begin(), positions_first.end(), 0);
+            }
 
             //this->cast_to_real = is_hermitian_meas(ops[0]);
             this->cast_to_real = false;
@@ -755,8 +757,10 @@ namespace measurements {
         {
             pos_t extent = lattice.size();
             if (positions_first.size() == 0)
-                std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
-                          back_inserter(positions_first));
+            {
+                positions_first.resize(extent);
+                std::iota(positions_first.begin(), positions_first.end(), 0);
+            }
 
             //this->cast_to_real = is_hermitian_meas(ops[0]);
             this->cast_to_real = false;
@@ -974,12 +978,10 @@ namespace measurements {
         {
             pos_t extent = lattice.size();
             if (positions_first.size() == 0)
-                std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
-                          back_inserter(positions_first));
-            //pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
-            //if (positions_first.size() == 0 && operator_terms[0].first.size() == 2)
-            //    std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
-            //              back_inserter(positions_first));
+            {
+                positions_first.resize(extent);
+                std::iota(positions_first.begin(), positions_first.end(), 0);
+            }
 
             this->cast_to_real = false;
         }
