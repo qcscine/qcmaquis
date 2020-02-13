@@ -214,7 +214,9 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
         boost::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
+        boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         boost::regex expression_transition_oneptdm_uu("^MEASURE\\[trans1rdm_aa\\]");
         boost::regex expression_oneptdm_dd("^MEASURE\\[1rdm_bb\\]");
         boost::regex expression_transition_oneptdm_dd("^MEASURE\\[trans1rdm_bb\\]");
@@ -843,6 +845,60 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+
+            // 1-RDM and transition-1RDM
+            else if (boost::regex_match(lhs, what, expression_oneptdm) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[trans1rdm]"){
+                    name = "transition_oneptdm";
+                    bra_ckp = it.second;
+                    half_only = false;
+                }
+                else
+                    name = "oneptdm";
+                    half_only = true;
+
+                // full 1-TDM
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                // if bra == ket the cross terms will be zero for sure, no need to include them
+                if (name == "transition_oneptdm")
+                {
+                    {
+                        bond_tag_element meas_operators;
+                        meas_operators.push_back(create_up);
+                        meas_operators.push_back(destroy_down);
+                        synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    }
+
+                    {
+                        bond_tag_element meas_operators;
+                        meas_operators.push_back(create_down);
+                        meas_operators.push_back(destroy_up);
+                        synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    }
+                }
+
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
