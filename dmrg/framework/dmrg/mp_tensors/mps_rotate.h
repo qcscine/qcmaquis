@@ -129,7 +129,7 @@ namespace mps_rotate
             }
 
             std::vector<MPO<Matrix, SymmGroup> > ret;
-            for (std::size_t i=0; i < t.num_rows(); ++i)
+            for (pos_t i=0; i < t.num_rows(); ++i)
                 if (i != j)
                 {
                         std::vector<pos_t> positions {i,j};
@@ -231,8 +231,8 @@ namespace mps_rotate
     {
         maquis::cout << "- MPS compression - input MPS: "<< text << std::endl;
 
-        matrix::value_type final_norm        = norm(mps);
-        matrix::value_type compression_trace = 1.0;
+        typename Matrix::value_type final_norm        = norm(mps);
+        typename Matrix::value_type compression_trace = 1.0;
 
         mps = compression::l2r_compress(mps, 8000, 1e-8, compression_trace);
         maquis::cout << "- compression trace          : "<< compression_trace << std::endl;

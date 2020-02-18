@@ -14,7 +14,7 @@ get_symm_files(APPEND DMRG_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_
 
 
 # *** Targets
-add_library(maquis_dmrg SHARED ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp maquis_cinterface.cpp mpssi_interface.cpp fiedler_order.cpp)
+add_library(maquis_dmrg SHARED ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp maquis_cinterface.cpp mpssi_interface.cpp mpssi_cinterface.cpp fiedler_order.cpp)
 set_property(TARGET maquis_dmrg PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 if(APPLE)
   target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES} "-framework Accelerate")

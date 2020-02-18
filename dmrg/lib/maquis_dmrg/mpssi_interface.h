@@ -39,33 +39,49 @@ namespace maquis
         public:
             // typedef for measurements
             typedef maquis::meas_with_results_type<V> meas_with_results_type;
-
-            MPSSIInterface(std::size_t nel,
-                           const std::vector<std::size_t>& multiplicities,
-                           const std::vector<std::vector<std::size_t> >& states,
+#if defined(HAVE_SU2U1)
+            typedef SU2U1 SU2U1grp;
+            typedef TwoU1 TwoU1grp;
+#elif defined(HAVE_SU2U1PG)
+            typedef SU2U1PG SU2U1grp;
+            typedef TwoU1PG TwoU1grp;
+#endif
+            MPSSIInterface(int nel,
+                           const std::vector<int>& multiplicities,
+                           const std::vector<std::vector<int> >& states,
                            const std::string& pname,
                            const std::vector<std::string>& mult_suffixes);
 
             ~MPSSIInterface();
 
             // Overlap
-            V overlap(std::size_t bra_state, std::size_t bra_multiplicity, std::size_t ket_state, std::size_t ket_multiplicity);
+            V overlap(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, bool su2u1);
 
             // 1-TDM
-            meas_with_results_type onetdm(std::size_t bra_state, std::size_t bra_multiplicity, std::size_t ket_state, std::size_t ket_multiplicity);
+            meas_with_results_type onetdm(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity);
 
+            // SU2U1->2U1 transformation, takes SU2U1 checkpoint name as checkpoint_name
+            void transform(const std::string & pname, const std::string & suffix, int state, int multiplicity);
+
+            // MPS counterrotation.
+            // Parameters:
+            // checkpoint_name: 2U1 checkpoint name
+            // t: rotational matrix, flattened row-wise (row-major)
+            // scale_inactive: inactive scaling factor
+            // This function overwrites the MPS in the checkpoint with its rotated version!
+            void rotate(const std::string& checkpoint_name, const std::vector<V> & t, V scale_inactive);
         private:
 
             // Number of electrons. Must be same for all multiplicities (Dyson orbitals or similar not allowed yet)
-            std::size_t nel_;
+            int nel_;
 
             // Vector with all MS2 multiplicities: 0 -- singlet, 1 -- doublet etc.
             // Can contain also same multiplicities in different entries if states have been optimised with different orbitals
             // e.g. for two state-specific singlets we have two entries in the multiplicities_ vector with 0
-            std::vector<std::size_t> multiplicities_;
+            std::vector<int> multiplicities_;
 
             //State indexes for each multiplicity
-            std::vector<std::vector<std::size_t> > states_;
+            std::vector<std::vector<int_least32_t> > states_;
 
             // Project name
             std::string pname_;
@@ -73,20 +89,15 @@ namespace maquis
             // Suffixes of hdf5 files for each multiplicity
             std::vector<std::string> mult_suffixes_;
 
-            // SU2U1->2U1 transformation, takes SU2U1 checkpoint name as checkpoint_name
-            void transform(const std::string & pname, const std::string & suffix,
-                                   std::size_t state, std::size_t multiplicity);
 
             // Generate SU2U1 checkpoint name
             std::string su2u1_name(const std::string & pname, const std::string & suffix,
-                                   std::size_t state);
+                                   int state);
 
             // Generate 2U1 checkpoint name
             std::string twou1_name(const std::string & pname, const std::string & suffix,
-                                   std::size_t state, std::size_t multiplicity);
+                                   int state, int multiplicity);
 
-            // MPS counterrotation. takes 2U1 checkpoint name as a parameter!
-            void rotate(const std::string& checkpoint_name);
 
             struct Impl;
             std::unique_ptr<Impl> impl_;
