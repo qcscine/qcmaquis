@@ -46,22 +46,19 @@ namespace maquis
             typedef SU2U1PG SU2U1grp;
             typedef TwoU1PG TwoU1grp;
 #endif
-            MPSSIInterface(int nel,
-                           const std::vector<int>& multiplicities,
-                           const std::vector<std::vector<int> >& states,
-                           const std::string& pname,
-                           const std::vector<std::string>& mult_suffixes);
+            MPSSIInterface(const std::vector<std::string>& project_names,
+                           const std::vector<std::vector<int> >& states);
 
             ~MPSSIInterface();
 
             // Overlap
-            V overlap(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, bool su2u1);
+            V overlap(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state, bool su2u1);
 
             // 1-TDM
-            meas_with_results_type onetdm(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity);
+            meas_with_results_type onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
             // SU2U1->2U1 transformation, takes SU2U1 checkpoint name as checkpoint_name
-            void transform(const std::string & pname, const std::string & suffix, int state, int multiplicity);
+            void transform(const std::string& pname, int state);
 
             // MPS counterrotation.
             // Parameters:
@@ -72,32 +69,11 @@ namespace maquis
             void rotate(const std::string& checkpoint_name, const std::vector<V> & t, V scale_inactive);
         private:
 
-            // Number of electrons. Must be same for all multiplicities (Dyson orbitals or similar not allowed yet)
-            int nel_;
-
-            // Vector with all MS2 multiplicities: 0 -- singlet, 1 -- doublet etc.
-            // Can contain also same multiplicities in different entries if states have been optimised with different orbitals
-            // e.g. for two state-specific singlets we have two entries in the multiplicities_ vector with 0
-            std::vector<int> multiplicities_;
-
-            //State indexes for each multiplicity
-            std::vector<std::vector<int_least32_t> > states_;
-
-            // Project name
-            std::string pname_;
-
-            // Suffixes of hdf5 files for each multiplicity
-            std::vector<std::string> mult_suffixes_;
-
-
-            // Generate SU2U1 checkpoint name
-            std::string su2u1_name(const std::string & pname, const std::string & suffix,
-                                   int state);
+            // Generate SU2U1 checkpoint name from project name and state number
+            std::string su2u1_name(const std::string & pname, int state);
 
             // Generate 2U1 checkpoint name
-            std::string twou1_name(const std::string & pname, const std::string & suffix,
-                                   int state, int multiplicity);
-
+            std::string twou1_name(const std::string & pname, int state);
 
             struct Impl;
             std::unique_ptr<Impl> impl_;

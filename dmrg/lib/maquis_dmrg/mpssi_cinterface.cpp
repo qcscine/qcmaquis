@@ -34,11 +34,9 @@ std::unique_ptr<maquis::MPSSIInterface<double> > mpssi_interface_ptr;
 extern "C"
 {
     typedef double V;
-    void qcmaquis_mpssi_init(int nel, int* multiplicities, int n_multiplicities,
-                             int* states, int* nstates, char* pname, char* mult_suffixes[])
+    void qcmaquis_mpssi_init(char* project_names[], int* states, int* nstates, int n_projects)
     {
-        std::vector<int> multiplicities_(multiplicities, multiplicities + n_multiplicities);
-        std::vector<std::vector<int> > states_(n_multiplicities);
+        std::vector<std::vector<int> > states_(n_projects);
         int nstate_counter = 0;
 
         for (int i = 0; i < states_.size(); i++)
@@ -48,21 +46,24 @@ extern "C"
             nstate_counter += nstates[i];
         }
 
-        std::string pname_(pname);
-        std::vector<std::string> mult_suffixes_(mult_suffixes, mult_suffixes + n_multiplicities);
-        mpssi_interface_ptr.reset(new maquis::MPSSIInterface<double>(nel, multiplicities_,
-                                  states_, pname_, mult_suffixes_));
+        std::vector<std::string> project_names_(project_names, project_names + n_projects);
+        mpssi_interface_ptr.reset(new maquis::MPSSIInterface<double>(project_names_, states_));
     }
 
-    V qcmaquis_mpssi_overlap(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, bool su2u1)
+    V qcmaquis_mpssi_overlap(char* bra_pname, int bra_state, char* ket_pname, int ket_state, bool su2u1)
     {
-        return mpssi_interface_ptr->overlap(bra_state, bra_multiplicity, ket_state, ket_multiplicity, su2u1);
+        std::string bra_pname_(bra_pname);
+        std::string ket_pname_(ket_pname);
+        return mpssi_interface_ptr->overlap(bra_pname_, bra_state, ket_pname_, ket_state, su2u1);
     }
 
-    void qcmaquis_mpssi_get_onetdm(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, int* indices, V* values, int size)
+    void qcmaquis_mpssi_get_onetdm(char* bra_pname, int bra_state, char* ket_pname, int ket_state, int* indices, V* values, int size)
     {
+        std::string bra_pname_(bra_pname);
+        std::string ket_pname_(ket_pname);
+
         // copy-paste from 1-RDM code from maquis_cinterface.cpp
-        const typename maquis::meas_with_results_type<V>& meas = mpssi_interface_ptr->onetdm(bra_state, bra_multiplicity, ket_state, ket_multiplicity);
+        const typename maquis::meas_with_results_type<V>& meas = mpssi_interface_ptr->onetdm(bra_pname_, bra_state, ket_pname_, ket_state);
         // the size attribute is pretty much useless if we allocate the output arrays outside of the interface
         // we'll just use it to check if the size matches the size of the measurement
         //
@@ -79,11 +80,10 @@ extern "C"
         }
     }
 
-    void qcmaquis_mpssi_transform(char* checkpoint_name, char* suffix, int state, int multiplicity)
+    void qcmaquis_mpssi_transform(char* checkpoint_name, int state)
     {
         std::string pname_(checkpoint_name);
-        std::string suffix_(suffix);
-        mpssi_interface_ptr->transform(pname_, suffix, state, multiplicity);
+        mpssi_interface_ptr->transform(pname_, state);
     }
     void qcmaquis_mpssi_rotate(char* checkpoint_name, V* t, int t_size, V scale_inactive)
     {

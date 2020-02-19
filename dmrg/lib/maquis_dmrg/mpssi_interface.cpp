@@ -79,8 +79,7 @@ namespace maquis
         // Transforms SU2 checkpoint to 2U1 checkpoint
         // Mostly copy-paste from mps_transform.cpp, but creates only one 2U1 checkpoint per state
         // corresponding to the state with the highest Sz
-        void transform(const std::string & pname, const std::string & suffix,
-                                   int state, int nel, int multiplicity)
+        void transform(const std::string & pname, int state)
         {
 #if defined(HAVE_SU2U1)
             typedef SU2U1 grp;
@@ -89,7 +88,7 @@ namespace maquis
             typedef SU2U1PG grp;
             typedef TwoU1PG mapgrp;
 #endif
-            std::string checkpoint_name = su2u1_name(pname, suffix, state);
+            std::string checkpoint_name = su2u1_name(pname, state);
 
             BaseParameters parms;
 
@@ -112,9 +111,11 @@ namespace maquis
 #endif
             int Nup, Ndown;
             std::string twou1_checkpoint_name;
+            int nel = parms["nelec"];
+            int multiplicity = parms["spin"];
 
             // get number of up/down electrons and the checkpoint name for the 2U1 checkpoint
-            std::tie(twou1_checkpoint_name, Nup, Ndown) = twou1_name_Nup_Ndown(pname, suffix, state, nel, multiplicity);
+            std::tie(twou1_checkpoint_name, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
 
             parms.set("u1_total_charge1", Nup);
             parms.set("u1_total_charge2", Ndown);
@@ -133,33 +134,42 @@ namespace maquis
         }
 
         // Generate names for SU2U1 checkpoint files
-        std::string su2u1_name(const std::string & pname, const std::string & suffix, int state)
+        std::string su2u1_name(const std::string & pname, int state)
         {
-            std::string ret = pname + "." + suffix + ".results_state." + std::to_string(state) + ".h5";
+            // TODO: should we check if pname and state are allowed here too with allowed_names_states()?
+            // if (allowed_names_states(pname, state) == -1)
+            //     throw std::runtime_error("Do not know the project name" + pname );
+
+            std::string ret = pname + ".results_state." + std::to_string(state) + ".h5";
             return ret;
         }
 
         // Generate names for 2U1 checkpoint files
         std::tuple<std::string, int, int>
-        twou1_name_Nup_Ndown(const std::string & pname, const std::string & suffix,
-                                   int state, int nel, int multiplicity)
+        twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity)
         {
             // Use 2U1 checkpoint with Ms=S
             int Nup = (nel + multiplicity) / 2;
             int Ndown = (nel - multiplicity) / 2;
 
-            std::string ret = pname + "." + suffix + ".checkpoint_state." + std::to_string(state)
+            std::string ret = pname + ".checkpoint_state." + std::to_string(state)
                                     + "." + std::to_string(multiplicity) + "." + std::to_string(Nup-Ndown)
                                     + ".h5";
             return std::make_tuple(ret, Nup, Ndown);
         }
 
-        std::string twou1_name(const std::string & pname, const std::string & suffix,
-                                   int state, int nel, int multiplicity)
+        std::string twou1_name(const std::string & pname, int state)
         {
+            // find pname in the project names to get the correct multiplicity
+            // hope this isn't too performance consuming
+
+            int idx = allowed_names_states(pname, state);
+            if (idx == -1)
+                throw std::runtime_error("Do not know the project name" + pname );
+
             int Nup, Ndown;
             std::string ret;
-            std::tie(ret, Nup, Ndown) = twou1_name_Nup_Ndown(pname, suffix, state, nel, multiplicity);
+            std::tie(ret, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel_, multiplicities_[idx]);
             return ret;
         }
 
@@ -205,63 +215,107 @@ namespace maquis
             save(checkpoint_name, mps);
         }
 
-        Impl() = default;
+        // Check if the project name and the state index are allowed
+        // (i.e. the project prefix and the state is present in the vectors with which the class has been initialised)
+        // If project name or state is not found, returns -1
+        // otherwise returns the index of the project name (we don't care about the state index for now)
+        // --- hope searching a vector of strings isn't too performance consuming ---
+        int allowed_names_states(const std::string & pname, int state)
+        {
+            // check if pname is allowed
+            auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
+            if (index_itr == project_names_.cend())
+                return -1;
+
+            int idx = std::distance(project_names_.cbegin(), index_itr);
+
+            // check if the state is found
+            auto index_st_itr = std::find_if(states_[idx].cbegin(), states_[idx].cend(), [&state](const int key)->bool{ return state == key; });
+            if (index_st_itr == states_[idx].cend())
+                return -1;
+
+            return idx;
+        }
+
+        // State indexes for each project. E.g. if states_[0] is {0,3}, we are interested in states 0 and 3 of the first project
+        // Each project has a different name, a typical use would be to use one project name for each multiplicity
+        // or more general, results of a single DMRGSCF calculation
+        const std::vector<std::vector<int> > & states_;
+
+        // Suffixes of hdf5 files for each multiplicity
+        const std::vector<std::string>& project_names_;
+
+        // All multiplicities
+        std::vector<int> multiplicities_;
+
+        // Number of electrons, for now only one number of electrons supported for all projects. (i.e. no Dyson orbitals)
+        int nel_;
+
+        // Constructor that takes project names and states to get the multiplicities
+        Impl(const std::vector<std::string> & project_names, const std::vector<std::vector<int> >& states)
+            : project_names_(project_names), nel_(-1), multiplicities_(states.size()), states_(states)
+        {
+            assert(project_names.size() == states.size());
+
+            // Find out about the spin multiplicity required in the 2U1 filename
+            // by loading the parameters from the SU2U1 file
+
+            for (int i = 0; i < project_names.size(); i++)
+            {
+                // Load the first state of each project group and get its number of electrons and spin.
+                // We will not check if the subsequent states have the same spin for now, but if you want to implement if for better
+                // error safety, feel free.
+                std::string pname = project_names[i];
+                assert(states[i].size() > 0); // make sure we do not have empty state containers
+                int state = states[i][0];
+
+                std::string su2u1_checkpoint_name = su2u1_name(pname, state);
+                BaseParameters parms;
+                if (!boost::filesystem::exists(su2u1_checkpoint_name))
+                    throw std::runtime_error("SU2U1 MPS checkpoint" + su2u1_checkpoint_name + " is required but does not exist\n");
+
+                storage::archive ar_in(su2u1_checkpoint_name + "/props.h5");
+
+                ar_in["/parameters"] >> parms; // TODO: check if /parameters/nelec and /parameters/spin can be read directly and if it saves time
+
+                int nel = parms["nelec"];
+                if ((nel_ != -1) && (nel_ != nel))
+                    throw std::runtime_error("Different electron numbers in different project groups: This is not supported in MPSSI yet.");
+                nel_ = nel;
+                multiplicities_[i] = parms["spin"];
+            }
+        }
         ~Impl() = default;
+
     };
 
     template <class V>
-    MPSSIInterface<V>::MPSSIInterface(int nel,
-                           const std::vector<int>& multiplicities,
-                           const std::vector<std::vector<int> >& states,
-                           const std::string& pname,
-                           const std::vector<std::string>& mult_suffixes) :
-                           nel_(nel),
-                           multiplicities_(multiplicities),
-                           states_(states),
-                           pname_(pname),
-                           mult_suffixes_(mult_suffixes),
-                           impl_()
-    {
-        assert(multiplicities_.size() == mult_suffixes_.size());
-        assert(multiplicities_.size() == states_.size());
-
+    MPSSIInterface<V>::MPSSIInterface(const std::vector<std::string>& project_names,
+                           const std::vector<std::vector<int> >& states)
+                           : impl_(new Impl(project_names, states))  {}
         // TODO: Implement automatic 2U1 transformation logic later
-        // for (int TwoS = 0; TwoS < multiplicities_.size(); TwoS++)
-        //     for (int i; i < states[TwoS].size(); i++)
-        //     {
-                // std::string chkp_name = pname_ + "." + mult_suffixes_[TwoS] + ".checkpoint_state." +
-                //     std::to_string(states[TwoS][i]) + ".h5";
 
-                // Transform all checkpoints into the 2U1 representation
-                // transform(pname, mult_suffixes_[TwoS], states_[TwoS][i], multiplicities_[TwoS]);
-
-                // // Convert SU2 name to 2U1 name
-                // std::string twou1_chkp_name = twou1_name(pname_, mult_suffixes_[TwoS], states[TwoS][i], multiplicities_[TwoS]);
-            // }
-    }
 
     template <class V>
     MPSSIInterface<V>::~MPSSIInterface() = default;
 
     template <class V>
-    std::string MPSSIInterface<V>::su2u1_name(const std::string & pname, const std::string & suffix, int state)
+    std::string MPSSIInterface<V>::su2u1_name(const std::string & pname, int state)
     {
-        return impl_->su2u1_name(pname, suffix, state);
+        return impl_->su2u1_name(pname, state);
     }
 
     template <class V>
-    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, const std::string & suffix,
-                                   int state, int multiplicity)
+    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state)
     {
-        return impl_->twou1_name(pname, suffix, state, nel_, multiplicity);
+        return impl_->twou1_name(pname, state);
     }
 
     // SU2U1->2U1 transformation
     template <class V>
-    void MPSSIInterface<V>::transform(const std::string & pname, const std::string & suffix,
-                                   int state, int multiplicity)
+    void MPSSIInterface<V>::transform(const std::string & pname, int state)
     {
-        impl_->transform(pname, suffix, state, nel_, multiplicity);
+        impl_->transform(pname, state);
     }
 
     // MPS rotation
@@ -273,7 +327,7 @@ namespace maquis
 
     // Calculate 1-TDMs
     template <class V>
-    meas_with_results_type<V> MPSSIInterface<V>::onetdm(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity)
+    meas_with_results_type<V> MPSSIInterface<V>::onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state)
     {
         typedef alps::numeric::matrix<V> Matrix;
 
@@ -283,10 +337,12 @@ namespace maquis
         parms.set("integrals_binary", chem::serialize(fake_integrals));
 
         std::string ket_name, bra_name;
-        if (bra_multiplicity == ket_multiplicity) // if we have the same multiplicity, use SU2U1
+
+        bool bra_eq_ket = (bra_pname == ket_pname) && (bra_state == ket_state);
+        if (bra_pname == ket_pname) // if we have the same multiplicity, use SU2U1
         {
-            ket_name = su2u1_name(pname_, mult_suffixes_[ket_multiplicity], ket_state);
-            bra_name = su2u1_name(pname_, mult_suffixes_[bra_multiplicity], bra_state);
+            ket_name = su2u1_name(ket_pname, ket_state);
+            bra_name = su2u1_name(bra_pname, bra_state);
 #if defined(HAVE_SU2U1)
             parms.set("symmetry", "su2u1");
 #elif defined(HAVE_SU2U1PG)
@@ -295,8 +351,8 @@ namespace maquis
         }
         else // otherwise, 2U1
         {
-            ket_name = twou1_name(pname_, mult_suffixes_[ket_multiplicity], ket_state, ket_multiplicity);
-            bra_name = twou1_name(pname_, mult_suffixes_[bra_multiplicity], bra_state, bra_multiplicity);
+            ket_name = twou1_name(ket_pname, ket_state);
+            bra_name = twou1_name(bra_pname, bra_state);
 #if defined(HAVE_SU2U1)
             parms.set("symmetry", "2u1");
 #elif defined(HAVE_SU2U1PG)
@@ -304,7 +360,7 @@ namespace maquis
 #endif
         }
         parms.set("chkpfile", ket_name);
-        if (bra_state == ket_state) // run 1-RDM measurement if bra == ket
+        if (bra_eq_ket) // run 1-RDM measurement if bra == ket
             parms.set("MEASURE[1rdm]", "1");
         else
             parms.set("MEASURE[trans1rdm]", bra_name);
@@ -312,26 +368,26 @@ namespace maquis
         // run measurement
         maquis::DMRGInterface<double> interface(parms);
         interface.measure();
-        if (bra_state == ket_state)
+        if (bra_eq_ket)
             return interface.measurements().at("oneptdm");
         return interface.measurements().at("transition_oneptdm");
     }
 
     template <class V>
-    V MPSSIInterface<V>::overlap(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, bool su2u1)
+    V MPSSIInterface<V>::overlap(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state, bool su2u1)
     {
-        if ((bra_multiplicity == ket_multiplicity) && su2u1)
+        if ((bra_pname == ket_pname) && su2u1)
         {
             if (bra_state == ket_state) return (V)1.0;
-            std::string ket_name = su2u1_name(pname_, mult_suffixes_[ket_multiplicity], ket_state);
-            std::string bra_name = su2u1_name(pname_, mult_suffixes_[bra_multiplicity], bra_state);
+            std::string ket_name = su2u1_name(ket_pname, ket_state);
+            std::string bra_name = su2u1_name(bra_pname, bra_state);
             return impl_->overlap_su2u1(ket_name, bra_name);
         }
         else
         {
-            if ((bra_state == ket_state) && (bra_multiplicity == ket_multiplicity)) return (V)1.0;
-            std::string ket_name = twou1_name(pname_, mult_suffixes_[ket_multiplicity], ket_state, ket_multiplicity);
-            std::string bra_name = twou1_name(pname_, mult_suffixes_[bra_multiplicity], bra_state, bra_multiplicity);
+            if ((bra_state == ket_state) && (bra_pname == ket_pname)) return (V)1.0;
+            std::string ket_name = twou1_name(ket_pname, ket_state);
+            std::string bra_name = twou1_name(bra_pname, bra_state);
             return impl_->overlap_2u1(ket_name, bra_name);
         }
     }
@@ -339,3 +395,4 @@ namespace maquis
 
     template class MPSSIInterface<double>;
 }
+

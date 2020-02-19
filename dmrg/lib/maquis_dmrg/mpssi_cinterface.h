@@ -37,18 +37,15 @@ extern "C"
 
     // Init the MPSSI interface
     // Parms:
-    // nel -- number of electrons
-    // multiplicities -- array of multiplicities of size n_multiplicities
-    // states -- flattened array of arrays with states for each multiplicity
-    // nstates -- array of numbers of states of each multiplicity
-    // pname -- project name
-    // mult_suffixes -- checkpoint suffixes for each multiplicity to be added after the project name
-    // n_mult_suffixes -- size of mult_suffixes array
-    void qcmaquis_mpssi_init(int nel, int* multiplicities, int n_multiplicities,
-                             int* states, int* nstates, char* pname, char* mult_suffixes[]);
-    V qcmaquis_mpssi_overlap(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, bool su2u1);
-    void qcmaquis_mpssi_get_onetdm(int bra_state, int bra_multiplicity, int ket_state, int ket_multiplicity, int* indices, V* values, int size);
-    void qcmaquis_mpssi_transform(char* checkpoint_name, char* suffix, int state, int multiplicity);
+    // project_names: array of project names (array of size n_projects)
+    // states: state indexes to be considered for each project
+    // nstates: number of states considered for each project (array of the size n_projects)
+    void qcmaquis_mpssi_init(char* project_names[], int* states, int* nstates, int n_projects);
+
+    // Calculate overlap
+    V qcmaquis_mpssi_overlap(char* bra_pname, int bra_state, char* ket_pname, int ket_state, bool su2u1);
+    void qcmaquis_mpssi_get_onetdm(char* bra_pname, int bra_state, char* ket_pname, int ket_state, int* indices, V* values, int size);
+    void qcmaquis_mpssi_transform(char* checkpoint_name, int state);
     void qcmaquis_mpssi_rotate(char* checkpoint_name, V* t, int t_size, V scale_inactive);
 
 }
