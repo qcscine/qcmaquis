@@ -44,7 +44,17 @@ extern "C"
 
     // Calculate overlap
     V qcmaquis_mpssi_overlap(char* bra_pname, int bra_state, char* ket_pname, int ket_state, bool su2u1);
+
+    //
     void qcmaquis_mpssi_get_onetdm(char* bra_pname, int bra_state, char* ket_pname, int ket_state, int* indices, V* values, int size);
+
+    // get spin-components of tdm
+    // input: bra_pname and ket_pname: project names for bra and ket
+    //        bra_state and ket_state: state indices
+    // size: size of tdmaa and tdmbb matrices
+    // output: tdmaa -- non-symmetric TDM with spin-up spin-up
+    //         tdmbb -- idem with spin-down spin-down
+    void qcmaquis_mpssi_get_onetdm_spin(char* bra_pname, int bra_state, char* ket_pname, int ket_state,  V* tdmaa, V* tdmbb, int size);
     void qcmaquis_mpssi_transform(char* checkpoint_name, int state);
     void qcmaquis_mpssi_rotate(char* checkpoint_name, V* t, int t_size, V scale_inactive);
 

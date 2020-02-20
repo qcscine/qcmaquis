@@ -39,12 +39,12 @@ namespace maquis
         public:
             // typedef for measurements
             typedef maquis::meas_with_results_type<V> meas_with_results_type;
-#if defined(HAVE_SU2U1)
-            typedef SU2U1 SU2U1grp;
-            typedef TwoU1 TwoU1grp;
-#elif defined(HAVE_SU2U1PG)
+#if defined(HAVE_SU2U1PG)
             typedef SU2U1PG SU2U1grp;
             typedef TwoU1PG TwoU1grp;
+#elif defined(HAVE_SU2U1)
+            typedef SU2U1 SU2U1grp;
+            typedef TwoU1 TwoU1grp;
 #endif
             MPSSIInterface(const std::vector<std::string>& project_names,
                            const std::vector<std::vector<int> >& states);
@@ -56,6 +56,9 @@ namespace maquis
 
             // 1-TDM
             meas_with_results_type onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
+
+            // 1-TDM, split in four spin components
+            std::vector<meas_with_results_type> onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
             // SU2U1->2U1 transformation, takes SU2U1 checkpoint name as checkpoint_name
             void transform(const std::string& pname, int state);

@@ -81,12 +81,12 @@ namespace maquis
         // corresponding to the state with the highest Sz
         void transform(const std::string & pname, int state)
         {
-#if defined(HAVE_SU2U1)
-            typedef SU2U1 grp;
-            typedef TwoU1 mapgrp;
-#elif defined(HAVE_SU2U1PG)
+#if defined(HAVE_SU2U1PG)
             typedef SU2U1PG grp;
             typedef TwoU1PG mapgrp;
+#elif defined(HAVE_SU2U1)
+            typedef SU2U1 grp;
+            typedef TwoU1 mapgrp;
 #endif
             std::string checkpoint_name = su2u1_name(pname, state);
 
@@ -104,10 +104,10 @@ namespace maquis
 
             ar_in["/parameters"] >> parms;
             parms.set("init_state", "const");
-#if defined(HAVE_SU2U1)
-            parms.set("symmetry", "2u1");
-#elif defined(HAVE_SU2U1PG)
+#if defined(HAVE_SU2U1PG)
             parms.set("symmetry", "2u1pg");
+#elif defined(HAVE_SU2U1)
+            parms.set("symmetry", "2u1");
 #endif
             int Nup, Ndown;
             std::string twou1_checkpoint_name;
@@ -140,7 +140,7 @@ namespace maquis
             // if (allowed_names_states(pname, state) == -1)
             //     throw std::runtime_error("Do not know the project name" + pname );
 
-            std::string ret = pname + ".results_state." + std::to_string(state) + ".h5";
+            std::string ret = pname + ".checkpoint_state." + std::to_string(state) + ".h5";
             return ret;
         }
 
@@ -165,7 +165,7 @@ namespace maquis
 
             int idx = allowed_names_states(pname, state);
             if (idx == -1)
-                throw std::runtime_error("Do not know the project name" + pname );
+                throw std::runtime_error("Do not know the project name " + pname );
 
             int Nup, Ndown;
             std::string ret;
@@ -177,10 +177,10 @@ namespace maquis
         void rotate(const std::string & checkpoint_name, const std::vector<V> & t, V scale_inactive)
         {
 
-#if defined(HAVE_SU2U1)
-            typedef TwoU1 grp;
-#elif defined(HAVE_SU2U1PG)
+#if defined(HAVE_SU2U1PG)
             typedef TwoU1PG grp;
+#elif defined(HAVE_SU2U1)
+            typedef TwoU1 grp;
 #endif
             // convert t to alps::matrix
 
@@ -240,10 +240,10 @@ namespace maquis
         // State indexes for each project. E.g. if states_[0] is {0,3}, we are interested in states 0 and 3 of the first project
         // Each project has a different name, a typical use would be to use one project name for each multiplicity
         // or more general, results of a single DMRGSCF calculation
-        const std::vector<std::vector<int> > & states_;
+        std::vector<std::vector<int> > states_;
 
         // Suffixes of hdf5 files for each multiplicity
-        const std::vector<std::string>& project_names_;
+        std::vector<std::string> project_names_;
 
         // All multiplicities
         std::vector<int> multiplicities_;
@@ -272,7 +272,7 @@ namespace maquis
                 std::string su2u1_checkpoint_name = su2u1_name(pname, state);
                 BaseParameters parms;
                 if (!boost::filesystem::exists(su2u1_checkpoint_name))
-                    throw std::runtime_error("SU2U1 MPS checkpoint" + su2u1_checkpoint_name + " is required but does not exist\n");
+                    throw std::runtime_error("SU2U1 MPS checkpoint " + su2u1_checkpoint_name + " is required but does not exist\n");
 
                 storage::archive ar_in(su2u1_checkpoint_name + "/props.h5");
 
@@ -343,20 +343,20 @@ namespace maquis
         {
             ket_name = su2u1_name(ket_pname, ket_state);
             bra_name = su2u1_name(bra_pname, bra_state);
-#if defined(HAVE_SU2U1)
-            parms.set("symmetry", "su2u1");
-#elif defined(HAVE_SU2U1PG)
+#if defined(HAVE_SU2U1PG)
             parms.set("symmetry", "su2u1pg");
+#elif defined(HAVE_SU2U1)
+            parms.set("symmetry", "su2u1");
 #endif
         }
         else // otherwise, 2U1
         {
             ket_name = twou1_name(ket_pname, ket_state);
             bra_name = twou1_name(bra_pname, bra_state);
-#if defined(HAVE_SU2U1)
-            parms.set("symmetry", "2u1");
-#elif defined(HAVE_SU2U1PG)
+#if defined(HAVE_SU2U1PG)
             parms.set("symmetry", "2u1pg");
+#elif defined(HAVE_SU2U1)
+            parms.set("symmetry", "2u1");
 #endif
         }
         parms.set("chkpfile", ket_name);
@@ -372,6 +372,97 @@ namespace maquis
             return interface.measurements().at("oneptdm");
         return interface.measurements().at("transition_oneptdm");
     }
+
+    // Calculate 1-TDMs, split into four spin-components
+    template <class V>
+    std::vector<meas_with_results_type<V> > MPSSIInterface<V>::onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state)
+    {
+
+        typedef alps::numeric::matrix<V> Matrix;
+
+        DmrgParameters parms;
+        const chem::integral_map<typename Matrix::value_type> fake_integrals = { { { 1, 1, 1, 1 },   0.0 } };
+
+        parms.set("integrals_binary", chem::serialize(fake_integrals));
+
+        std::string ket_name, bra_name;
+
+        bool bra_eq_ket = (bra_pname == ket_pname) && (bra_state == ket_state);
+
+        ket_name = twou1_name(ket_pname, ket_state);
+        bra_name = twou1_name(bra_pname, bra_state);
+
+        transform(ket_pname, ket_state);
+        if (!bra_eq_ket) transform(bra_pname, bra_state);
+
+        storage::archive ar_in(ket_name + "/props.h5");
+
+        int L;
+        ar_in["/parameters/L"] >> L;
+        parms.set("L", L);
+
+        std::string site_types;
+        ar_in["/parameters/site_types"] >> site_types;
+        parms.set("site_types", site_types);
+
+        int u1_c1, u1_c2;
+
+        ar_in["/parameters/u1_total_charge1"] >> u1_c1;
+        parms.set("u1_total_charge1", u1_c1);
+        ar_in["/parameters/u1_total_charge2"] >> u1_c2;
+        parms.set("u1_total_charge2", u1_c2);
+
+#if defined(HAVE_SU2U1PG)
+        parms.set("symmetry", "2u1pg");
+#elif defined(HAVE_SU2U1)
+        parms.set("symmetry", "2u1");
+#endif
+
+        parms.set("chkpfile", ket_name);
+        if (bra_eq_ket) // run 1-RDM measurement if bra == ket
+        {
+            parms.set("MEASURE[1rdm_aa]", "1");
+            // ab and ba are not needed in MOLCAS
+            // parms.set("MEASURE[1rdm_ab]", "1");
+            // parms.set("MEASURE[1rdm_ba]", "1");
+            parms.set("MEASURE[1rdm_bb]", "1");
+        }
+        else
+        {
+            parms.set("MEASURE[trans1rdm_aa]", bra_name);
+            // parms.set("MEASURE[trans1rdm_ab]", bra_name);
+            // parms.set("MEASURE[trans1rdm_ba]", bra_name);
+            parms.set("MEASURE[trans1rdm_bb]", bra_name);
+        }
+
+        // run measurement
+        maquis::DMRGInterface<double> interface(parms);
+        interface.measure();
+
+        std::vector<meas_with_results_type> ret;
+        ret.reserve(4);
+
+        results_map_type<V> meas = interface.measurements();
+
+        if (bra_eq_ket)
+        {
+            ret.push_back(meas.at("oneptdm_aa"));
+            // ret.push_back(meas.at("oneptdm_ab"));
+            // ret.push_back(meas.at("oneptdm_ba"));
+            ret.push_back(meas.at("oneptdm_bb"));
+
+        }
+        else
+        {
+            ret.push_back(meas.at("transition_oneptdm_aa"));
+            // ret.push_back(meas.at("transition_oneptdm_ab"));
+            // ret.push_back(meas.at("transition_oneptdm_ba"));
+            ret.push_back(meas.at("transition_oneptdm_bb"));
+        }
+
+        return ret;
+    }
+
 
     template <class V>
     V MPSSIInterface<V>::overlap(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state, bool su2u1)

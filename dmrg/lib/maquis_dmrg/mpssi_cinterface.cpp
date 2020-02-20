@@ -80,11 +80,76 @@ extern "C"
         }
     }
 
+    void qcmaquis_mpssi_get_onetdm_spin(char* bra_pname, int bra_state, char* ket_pname, int ket_state, V* tdmaa, V* tdmbb, int size)
+    {
+        std::string bra_pname_(bra_pname);
+        std::string ket_pname_(ket_pname);
+
+        const std::vector<typename maquis::meas_with_results_type<V> >& meas = mpssi_interface_ptr->onetdm_spin(bra_pname_, bra_state, ket_pname_, ket_state);
+
+        const int n_meas = 2; // only aa and bb are required, but can be changed easily to accomodate more measurements
+        assert(meas.size() == n_meas); // two measurements for aa, bb, in this order
+        bool bra_eq_ket = (bra_pname == ket_pname && bra_state == ket_state);
+
+        assert(size >= meas[0].first.size());
+        assert(size >= n_meas*meas[0].second.size());
+
+        // find the maximum index to deduce the number of orbitals
+        std::vector<int> idx_vector(meas[0].first.size()); // first copy all the first indices into a separate vector
+        std::transform(std::begin(meas[0].first), std::end(meas[0].first), idx_vector.begin(), [](const std::vector<int> & i){return i[0];});  // indices should be the same for all measurements, so we just take the ones from the first measurement (aa)
+        int L = *std::max_element(idx_vector.cbegin(), idx_vector.cend()); // and then find the max index
+
+        assert(L*L == size);
+
+        // fill tdmaa
+        for (int m = 0; m < meas[0].first.size(); m++)
+        {
+            int i = meas[0].first[m][0];
+            int j = meas[0].first[m][1];
+            tdmaa[L*i+j] = meas[0].second[m];
+            if (bra_eq_ket) // symmetrise if bra==ket
+                tdmaa[L*j+i] = tdmaa[L*i+j];
+        }
+        // and tdmbb
+        for (int m = 0; m < meas[1].first.size(); m++)
+        {
+            int i = meas[1].first[m][0];
+            int j = meas[1].first[m][1];
+            tdmbb[L*i+j] = meas[1].second[m];
+            if (bra_eq_ket)
+                tdmbb[L*j+i] = tdmbb[L*i+j];
+        }
+
+        // Old code
+        // copy the four measurement results into a single array
+        // The layout of the array is as follows:
+        // 0,0 aa 0,0 bb 0,1 aa .... 0,L bb 1,0 aa ... 1,L bb ... L,L bb
+        // This is different from MOLCAS, which expects
+        // 0,0 aa 0,0 ab 0,1 aa 0,1 ab ... 0,L aa 0,L ab 0,0 ba 0,0 bb ... 0,L ba 0,L bb 1,0 aa ... 1,L ab 1,0 ba ... 1,L bb ... L,L bb
+        // but since we want to be compatible not only with MOLCAS, we will use the first layout, which is more generic
+        // and store also the indexes
+        // We expect the conversion to MOLCAS format at the MOLCAS side, despite the additional cost
+        // (if you want to change this behaviour in the future, feel free to do so)
+        // for (int m = 0; m < n_meas; m++) // loop through all measurements
+        //     for (int s = 0; s < meas[m].first.size(); s++) // loop through all matrix elements
+        //     {
+        //         int i = meas[m].first[s][0];
+        //         int j = meas[m].first[s][1];
+
+        //         int C = n_meas*(L*i+j)+m;
+
+        //         indices[n_meas*C] = i;
+        //         indices[n_meas*C+1] = j;
+        //         values[C] = meas[m].second[s];
+        //     }
+    }
+
     void qcmaquis_mpssi_transform(char* checkpoint_name, int state)
     {
         std::string pname_(checkpoint_name);
         mpssi_interface_ptr->transform(pname_, state);
     }
+
     void qcmaquis_mpssi_rotate(char* checkpoint_name, V* t, int t_size, V scale_inactive)
     {
         std::string pname_(checkpoint_name);
