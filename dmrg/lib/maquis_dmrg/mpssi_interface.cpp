@@ -379,12 +379,7 @@ namespace maquis
     {
 
         typedef alps::numeric::matrix<V> Matrix;
-
         DmrgParameters parms;
-        const chem::integral_map<typename Matrix::value_type> fake_integrals = { { { 1, 1, 1, 1 },   0.0 } };
-
-        parms.set("integrals_binary", chem::serialize(fake_integrals));
-
         std::string ket_name, bra_name;
 
         bool bra_eq_ket = (bra_pname == ket_pname) && (bra_state == ket_state);
@@ -392,25 +387,20 @@ namespace maquis
         ket_name = twou1_name(ket_pname, ket_state);
         bra_name = twou1_name(bra_pname, bra_state);
 
-        transform(ket_pname, ket_state);
-        if (!bra_eq_ket) transform(bra_pname, bra_state);
-
         storage::archive ar_in(ket_name + "/props.h5");
+        ar_in["/parameters"] >> parms;
 
-        int L;
-        ar_in["/parameters/L"] >> L;
-        parms.set("L", L);
+        if (parms.is_set("MEASURE[1rdm]"))
+            parms.erase("MEASURE[1rdm]");
+        if (parms.is_set("MEASURE[2rdm]"))
+            parms.erase("MEASURE[2rdm]");
+        if (parms.is_set("integral_file"))
+            parms.erase("integral_file");
+        if (parms.is_set("integrals_binary"))
+            parms.erase("integrals_binary");
 
-        std::string site_types;
-        ar_in["/parameters/site_types"] >> site_types;
-        parms.set("site_types", site_types);
-
-        int u1_c1, u1_c2;
-
-        ar_in["/parameters/u1_total_charge1"] >> u1_c1;
-        parms.set("u1_total_charge1", u1_c1);
-        ar_in["/parameters/u1_total_charge2"] >> u1_c2;
-        parms.set("u1_total_charge2", u1_c2);
+        const chem::integral_map<typename Matrix::value_type> fake_integrals = { { { 1, 1, 1, 1 },   0.0 } };
+        parms.set("integrals_binary", chem::serialize(fake_integrals));
 
 #if defined(HAVE_SU2U1PG)
         parms.set("symmetry", "2u1pg");

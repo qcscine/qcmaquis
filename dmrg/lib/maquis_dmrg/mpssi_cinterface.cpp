@@ -92,14 +92,14 @@ extern "C"
         bool bra_eq_ket = (bra_pname == ket_pname && bra_state == ket_state);
 
         assert(size >= meas[0].first.size());
-        assert(size >= n_meas*meas[0].second.size());
+        assert(size >= meas[0].second.size());
 
         // find the maximum index to deduce the number of orbitals
         std::vector<int> idx_vector(meas[0].first.size()); // first copy all the first indices into a separate vector
         std::transform(std::begin(meas[0].first), std::end(meas[0].first), idx_vector.begin(), [](const std::vector<int> & i){return i[0];});  // indices should be the same for all measurements, so we just take the ones from the first measurement (aa)
         int L = *std::max_element(idx_vector.cbegin(), idx_vector.cend()); // and then find the max index
 
-        assert(L*L == size);
+        assert((L+1)*(L+1) == size);
 
         // fill tdmaa
         for (int m = 0; m < meas[0].first.size(); m++)
