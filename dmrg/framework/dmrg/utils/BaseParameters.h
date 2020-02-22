@@ -93,6 +93,7 @@ class BaseParameters
 
         template<class T> void set(std::string const & key, T const & value);
         void set(std::string const & key, const char value[]);
+        void erase(std::string const & key);
 
         BaseParameters iteration_params(std::string const & var, std::size_t val);
 

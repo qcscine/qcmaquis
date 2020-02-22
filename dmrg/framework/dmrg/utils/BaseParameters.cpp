@@ -121,6 +121,11 @@
         impl_->operator[](key) = std::string(value);
     }
 
+    void BaseParameters::erase(std::string const & key)
+    {
+        impl_->erase(key);
+    }
+
     BaseParameters BaseParameters::iteration_params(std::string const & var, std::size_t val)
     {
         BaseParameters p;
