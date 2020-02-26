@@ -144,9 +144,9 @@ extern "C"
         //     }
     }
 
-    void qcmaquis_mpssi_transform(char* checkpoint_name, int state)
+    void qcmaquis_mpssi_transform(char* pname, int state)
     {
-        std::string pname_(checkpoint_name);
+        std::string pname_(pname);
         mpssi_interface_ptr->transform(pname_, state);
     }
 

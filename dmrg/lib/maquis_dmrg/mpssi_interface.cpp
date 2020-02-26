@@ -265,7 +265,7 @@ namespace maquis
                 // Load the first state of each project group and get its number of electrons and spin.
                 // We will not check if the subsequent states have the same spin for now, but if you want to implement if for better
                 // error safety, feel free.
-                std::string pname = project_names[i];
+                const std::string& pname = project_names[i];
                 assert(states[i].size() > 0); // make sure we do not have empty state containers
                 int state = states[i][0];
 
@@ -283,6 +283,11 @@ namespace maquis
                     throw std::runtime_error("Different electron numbers in different project groups: This is not supported in MPSSI yet.");
                 nel_ = nel;
                 multiplicities_[i] = parms["spin"];
+
+                // transform all checkpoints to 2U1 point group
+
+                for (auto&& st: states[i])
+                    transform(pname, st);
             }
         }
         ~Impl() = default;
@@ -390,14 +395,9 @@ namespace maquis
         storage::archive ar_in(ket_name + "/props.h5");
         ar_in["/parameters"] >> parms;
 
-        if (parms.is_set("MEASURE[1rdm]"))
-            parms.erase("MEASURE[1rdm]");
-        if (parms.is_set("MEASURE[2rdm]"))
-            parms.erase("MEASURE[2rdm]");
-        if (parms.is_set("integral_file"))
-            parms.erase("integral_file");
-        if (parms.is_set("integrals_binary"))
-            parms.erase("integrals_binary");
+
+        parms.erase_substring("MEASURE");
+        parms.erase_substring("integral");
 
         const chem::integral_map<typename Matrix::value_type> fake_integrals = { { { 1, 1, 1, 1 },   0.0 } };
         parms.set("integrals_binary", chem::serialize(fake_integrals));
@@ -430,7 +430,7 @@ namespace maquis
         interface.measure();
 
         std::vector<meas_with_results_type> ret;
-        ret.reserve(4);
+        ret.reserve(2);
 
         results_map_type<V> meas = interface.measurements();
 
