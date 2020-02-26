@@ -149,11 +149,18 @@ namespace maquis
         twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity)
         {
             // Use 2U1 checkpoint with Ms=S
-            int Nup = (nel + multiplicity) / 2;
+            /*int Nup = (nel + multiplicity) / 2;
             int Ndown = (nel - multiplicity) / 2;
+            */
+
+            // Use 2U1 checkpoint with Ms=0 or 1
+
+            int remainder = nel % 2; // integer division
+            int Nup = nel / 2 + remainder;
+            int Ndown = nel / 2 - remainder;
 
             std::string ret = pname + ".checkpoint_state." + std::to_string(state)
-                                    + "." + std::to_string(multiplicity) + "." + std::to_string(Nup-Ndown)
+                                    + "." + std::to_string(multiplicity) + "." + std::to_string(remainder)
                                     + ".h5";
             return std::make_tuple(ret, Nup, Ndown);
         }
