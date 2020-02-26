@@ -95,6 +95,9 @@ class BaseParameters
         void set(std::string const & key, const char value[]);
         void erase(std::string const & key);
 
+        // Erase all keys containing a substring
+        void erase_substring(std::string const & substr);
+
         BaseParameters iteration_params(std::string const & var, std::size_t val);
 
         BaseParameters & operator<<(BaseParameters const& p);

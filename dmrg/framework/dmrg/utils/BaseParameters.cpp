@@ -126,6 +126,15 @@
         impl_->erase(key);
     }
 
+    void BaseParameters::erase_substring(std::string const & substr)
+    {
+        for (auto&& k : *impl_)
+        {
+            if(k.key().find(substr) != std::string::npos)
+                impl_->erase(k.key());
+        }
+    }
+
     BaseParameters BaseParameters::iteration_params(std::string const & var, std::size_t val)
     {
         BaseParameters p;
