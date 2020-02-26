@@ -268,7 +268,7 @@ namespace measurements {
                     dct.push_back(value);
                     num_labels.push_back(positions);
 
-		            if(bra_neq_ket && p2 != p1){
+		            if(bra_neq_ket && (p2 != p1)){
 
                         positions = {p2, p1};
                         value = 0.0;

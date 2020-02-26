@@ -378,7 +378,7 @@ namespace maquis
         return interface.measurements().at("transition_oneptdm");
     }
 
-    // Calculate 1-TDMs, split into four spin-components
+    // Calculate 1-TDMs, split into two spin-components
     template <class V>
     std::vector<meas_with_results_type<V> > MPSSIInterface<V>::onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state)
     {
