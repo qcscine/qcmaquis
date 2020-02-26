@@ -128,11 +128,13 @@
 
     void BaseParameters::erase_substring(std::string const & substr)
     {
+        std::vector<std::string> keys_toerase;
         for (auto&& k : *impl_)
-        {
             if(k.key().find(substr) != std::string::npos)
-                impl_->erase(k.key());
-        }
+                keys_toerase.push_back(k.key());
+
+        for (auto&& k_erase : keys_toerase)
+                impl_->erase(k_erase);
     }
 
     BaseParameters BaseParameters::iteration_params(std::string const & var, std::size_t val)
