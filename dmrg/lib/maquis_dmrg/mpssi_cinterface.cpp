@@ -89,7 +89,7 @@ extern "C"
 
         const int n_meas = 2; // only aa and bb are required, but can be changed easily to accomodate more measurements
         assert(meas.size() == n_meas); // two measurements for aa, bb, in this order
-        bool bra_eq_ket = (bra_pname == ket_pname && bra_state == ket_state);
+        bool bra_eq_ket = ((bra_pname_ == ket_pname_) && (bra_state == ket_state));
 
         assert(size >= meas[0].first.size());
         assert(size >= meas[0].second.size());

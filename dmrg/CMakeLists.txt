@@ -2,14 +2,6 @@
 cmake_minimum_required(VERSION 2.8)
 
 ######################################################################
-# CCache support
-######################################################################
-find_program(CCACHE_PROGRAM ccache)
-if(CCACHE_PROGRAM)
-    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
-endif()
-
-######################################################################
 # Machine Config
 ######################################################################
 if(MACHINE_CONFIG)
