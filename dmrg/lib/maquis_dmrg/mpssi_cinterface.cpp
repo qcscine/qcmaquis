@@ -97,9 +97,9 @@ extern "C"
         // find the maximum index to deduce the number of orbitals
         std::vector<int> idx_vector(meas[0].first.size()); // first copy all the first indices into a separate vector
         std::transform(std::begin(meas[0].first), std::end(meas[0].first), idx_vector.begin(), [](const std::vector<int> & i){return i[0];});  // indices should be the same for all measurements, so we just take the ones from the first measurement (aa)
-        int L = *std::max_element(idx_vector.cbegin(), idx_vector.cend()); // and then find the max index
+        int L = *std::max_element(idx_vector.cbegin(), idx_vector.cend())+1; // and then find the max index. Add 1 because orbital indices start from 0
 
-        assert((L+1)*(L+1) == size);
+        assert(L*L == size);
 
         // fill tdmaa
         for (int m = 0; m < meas[0].first.size(); m++)
