@@ -150,11 +150,11 @@ extern "C"
         mpssi_interface_ptr->transform(pname_, state);
     }
 
-    void qcmaquis_mpssi_rotate(char* checkpoint_name, V* t, int t_size, V scale_inactive)
+    void qcmaquis_mpssi_rotate(char* pname, int state, V* t, int t_size, V scale_inactive)
     {
-        std::string pname_(checkpoint_name);
+        std::string pname_(pname);
         std::vector<V> t_vec(t, t + t_size);
-        mpssi_interface_ptr->rotate(pname_, t_vec, scale_inactive);
+        mpssi_interface_ptr->rotate(pname_, state, t_vec, scale_inactive);
     }
 
 }

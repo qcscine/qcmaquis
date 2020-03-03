@@ -191,8 +191,7 @@ namespace maquis
 #endif
             // convert t to alps::matrix
 
-            // check if the length of the vector is a triangular number,
-            // a necessary condition for the size of a flattened full lower-triangular matrix
+            // check if the length of the vector is a square number
             assert(detail::is_square(t.size()));
 
             // extract matrix dimension from the vector size
@@ -334,7 +333,13 @@ namespace maquis
     template <class V>
     void MPSSIInterface<V>::rotate(const std::string & checkpoint_name, const std::vector<V> & t, V scale_inactive)
     {
-        return impl_->rotate(checkpoint_name, t, scale_inactive);
+        impl_->rotate(checkpoint_name, t, scale_inactive);
+    }
+
+    template <class V>
+    void MPSSIInterface<V>::rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive)
+    {
+        impl_->rotate(twou1_name(pname, state), t, scale_inactive);
     }
 
     // Calculate 1-TDMs

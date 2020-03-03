@@ -70,6 +70,9 @@ namespace maquis
             // scale_inactive: inactive scaling factor
             // This function overwrites the MPS in the checkpoint with its rotated version!
             void rotate(const std::string& checkpoint_name, const std::vector<V> & t, V scale_inactive);
+
+            // MPS counterrotation but with project name and state index as parameters
+            void rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive);
         private:
 
             // Generate SU2U1 checkpoint name from project name and state number
