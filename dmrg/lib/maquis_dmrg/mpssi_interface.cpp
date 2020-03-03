@@ -349,9 +349,6 @@ namespace maquis
         typedef alps::numeric::matrix<V> Matrix;
 
         DmrgParameters parms;
-        const chem::integral_map<typename Matrix::value_type> fake_integrals = { { { 1, 1, 1, 1 },   0.0 } };
-
-        parms.set("integrals_binary", chem::serialize(fake_integrals));
 
         std::string ket_name, bra_name;
 
@@ -376,6 +373,12 @@ namespace maquis
             parms.set("symmetry", "2u1");
 #endif
         }
+
+        // load all parameters from HDF5, but remove measurements
+        storage::archive ar_in(ket_name + "/props.h5");
+        ar_in["/parameters"] >> parms;
+        parms.erase_substring("MEASURE");
+
         parms.set("chkpfile", ket_name);
         if (bra_eq_ket) // run 1-RDM measurement if bra == ket
             parms.set("MEASURE[1rdm]", "1");
@@ -409,10 +412,6 @@ namespace maquis
 
 
         parms.erase_substring("MEASURE");
-        parms.erase_substring("integral");
-
-        const chem::integral_map<typename Matrix::value_type> fake_integrals = { { { 1, 1, 1, 1 },   0.0 } };
-        parms.set("integrals_binary", chem::serialize(fake_integrals));
 
 #if defined(HAVE_SU2U1PG)
         parms.set("symmetry", "2u1pg");
@@ -444,7 +443,7 @@ namespace maquis
         std::vector<meas_with_results_type> ret;
         ret.reserve(2);
 
-        results_map_type<V> meas = interface.measurements();
+        const results_map_type<V>& meas = interface.measurements();
 
         if (bra_eq_ket)
         {
