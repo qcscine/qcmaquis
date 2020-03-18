@@ -79,7 +79,7 @@ namespace maquis
         // Transforms SU2 checkpoint to 2U1 checkpoint
         // Mostly copy-paste from mps_transform.cpp, but creates only one 2U1 checkpoint per state
         // corresponding to the state with the highest Sz
-        void transform(const std::string & pname, int state)
+        void transform(const std::string & pname, int state, bool Ms_equal_s=false)
         {
 #if defined(HAVE_SU2U1PG)
             typedef SU2U1PG grp;
@@ -115,7 +115,7 @@ namespace maquis
             int multiplicity = parms["spin"];
 
             // get number of up/down electrons and the checkpoint name for the 2U1 checkpoint
-            std::tie(twou1_checkpoint_name, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
+            std::tie(twou1_checkpoint_name, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel, multiplicity, Ms_equal_s);
 
             parms.set("u1_total_charge1", Nup);
             parms.set("u1_total_charge2", Ndown);
@@ -146,26 +146,36 @@ namespace maquis
 
         // Generate names for 2U1 checkpoint files
         std::tuple<std::string, int, int>
-        twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity)
+        twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity, bool Ms_equal_s = false)
         {
-            // Use 2U1 checkpoint with Ms=S
-            /*int Nup = (nel + multiplicity) / 2;
-            int Ndown = (nel - multiplicity) / 2;
-            */
+            int Nup, Ndown;
+            std::string ret;
 
-            // Use 2U1 checkpoint with Ms=0 or 1
+            if (Ms_equal_s)
+            {
+                // Use 2U1 checkpoint with Ms=S
+                Nup = (nel + multiplicity) / 2;
+                Ndown = (nel - multiplicity) / 2;
+                ret = pname + ".checkpoint_state." + std::to_string(state)
+                            + "." + std::to_string(multiplicity) + "." + std::to_string(Nup-Ndown)
+                            + ".h5";
+            }
+            else
+            {
+                // Use 2U1 checkpoint with Ms=0 or 1
+                int remainder = nel % 2; // integer division
+                Nup = nel / 2 + remainder;
+                Ndown = nel / 2 - remainder;
+                ret = pname + ".checkpoint_state." + std::to_string(state)
+                            + "." + std::to_string(multiplicity) + "." + std::to_string(remainder)
+                            + ".h5";
+            }
 
-            int remainder = nel % 2; // integer division
-            int Nup = nel / 2 + remainder;
-            int Ndown = nel / 2 - remainder;
 
-            std::string ret = pname + ".checkpoint_state." + std::to_string(state)
-                                    + "." + std::to_string(multiplicity) + "." + std::to_string(remainder)
-                                    + ".h5";
             return std::make_tuple(ret, Nup, Ndown);
         }
 
-        std::string twou1_name(const std::string & pname, int state)
+        std::string twou1_name(const std::string & pname, int state, bool Ms_equal_s = false)
         {
             // find pname in the project names to get the correct multiplicity
             // hope this isn't too performance consuming
@@ -176,7 +186,7 @@ namespace maquis
 
             int Nup, Ndown;
             std::string ret;
-            std::tie(ret, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel_, multiplicities_[idx]);
+            std::tie(ret, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel_, multiplicities_[idx], Ms_equal_s);
             return ret;
         }
 
@@ -317,16 +327,16 @@ namespace maquis
     }
 
     template <class V>
-    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state)
+    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state, bool Ms_equal_s)
     {
-        return impl_->twou1_name(pname, state);
+        return impl_->twou1_name(pname, state, Ms_equal_s);
     }
 
     // SU2U1->2U1 transformation
     template <class V>
-    void MPSSIInterface<V>::transform(const std::string & pname, int state)
+    void MPSSIInterface<V>::transform(const std::string & pname, int state, bool Ms_equal_s)
     {
-        impl_->transform(pname, state);
+        impl_->transform(pname, state, Ms_equal_s);
     }
 
     // MPS rotation
@@ -402,10 +412,15 @@ namespace maquis
         DmrgParameters parms;
         std::string ket_name, bra_name;
 
+        // For some reason for bra==ket MPSSI is using Ms==0 or 1 instead of Ms == S
+
         bool bra_eq_ket = (bra_pname == ket_pname) && (bra_state == ket_state);
 
-        ket_name = twou1_name(ket_pname, ket_state);
-        bra_name = twou1_name(bra_pname, bra_state);
+        ket_name = twou1_name(ket_pname, ket_state, bra_eq_ket);
+        bra_name = twou1_name(bra_pname, bra_state, bra_eq_ket);
+
+        if (bra_eq_ket)
+            transform(bra_pname, bra_state, bra_eq_ket);
 
         storage::archive ar_in(ket_name + "/props.h5");
         ar_in["/parameters"] >> parms;
