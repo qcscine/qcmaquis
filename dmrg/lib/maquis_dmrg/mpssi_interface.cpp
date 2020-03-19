@@ -224,7 +224,7 @@ namespace maquis
             ar_in["/parameters"] >> chkp_parms;
             std::string sym = chkp_parms["symmetry"].str();
 
-            if (sym.find("2u1") != std::string::npos)
+            if (sym.find("2u1") == std::string::npos)
                 throw std::runtime_error("checkpoint for MPS rotation does not have 2U1 symmetry");
 
             mps_rotate::rotate_mps(mps, t_mat, scale_inactive);
