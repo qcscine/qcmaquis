@@ -61,7 +61,7 @@ namespace maquis
             std::vector<meas_with_results_type> onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
             // SU2U1->2U1 transformation, takes SU2U1 checkpoint name as checkpoint_name
-            void transform(const std::string& pname, int state, bool Ms_equal_s = false);
+            void transform(const std::string& pname, int state);
 
             // MPS counterrotation.
             // Parameters:
@@ -79,7 +79,7 @@ namespace maquis
             std::string su2u1_name(const std::string & pname, int state);
 
             // Generate 2U1 checkpoint name
-            std::string twou1_name(const std::string & pname, int state, bool Ms_equal_s=false);
+            std::string twou1_name(const std::string & pname, int state);
 
             struct Impl;
             std::unique_ptr<Impl> impl_;
