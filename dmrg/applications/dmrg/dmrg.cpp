@@ -43,7 +43,7 @@
 
 namespace maquis
 {
-  Scine::Mpi::MpiInterface* mpi__;
+  extern Scine::Mpi::MpiInterface* mpi__;
   std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
 }
 
@@ -73,7 +73,7 @@ int main(int argc, char ** argv)
 
     DmrgOptions opt(argc, argv);
 
-    if(maquis::mpi__->getGlobalRank() == 0){
+    if(maquis::mpi__->getGlobalRank() >= 0){
         if (opt.valid) {
             maquis::cout.precision(10);
 
@@ -84,7 +84,13 @@ int main(int argc, char ** argv)
             gettimeofday(&now, NULL);
 
             try {
+                if(maquis::mpi__->getGlobalRank() == 0)
+                    std::cout << "|dmrg.cpp> BLUBB: calling constructor of sim " << std::endl;
+                // constructor of sim (see sim.hpp)
                 simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
+                if(maquis::mpi__->getGlobalRank() == 0)
+                    std::cout << "|dmrg.cpp> BLUBB: calling sim run " << std::endl;
+                // now run the thing (in dmrg_sim.h)
                 sim->run(opt.parms);
             } catch (std::exception & e) {
                 maquis::cerr << "Exception thrown!" << std::endl;
