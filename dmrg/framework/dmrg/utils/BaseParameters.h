@@ -101,6 +101,7 @@ class BaseParameters
         BaseParameters iteration_params(std::string const & var, std::size_t val);
 
         BaseParameters & operator<<(BaseParameters const& p);
+        template<class T> BaseParameters & add(std::string const & key, T const & value);
 
         friend void swap(BaseParameters& lhs, BaseParameters& rhs)
         {

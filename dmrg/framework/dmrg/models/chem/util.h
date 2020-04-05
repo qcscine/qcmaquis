@@ -278,6 +278,7 @@ namespace detail {
 
         return site_bases;
     }
+
 }
 }
 

@@ -166,6 +166,13 @@
         return *this;
     }
 
+    template<class T>
+    BaseParameters& BaseParameters::add(std::string const & key, const T& value)
+    {
+        impl_->operator[](key) = boost::lexical_cast<std::string>(value);
+        return *this;
+    }
+
 
     void BaseParameters::add_option(std::string const & name,
                                     std::string const & desc,
@@ -204,7 +211,8 @@
 
     #define INSTANTIATE_TEMPLATE_FUNCTIONS(T) \
     template T BaseParameters::get<T>(std::string const & key); \
-    template void BaseParameters::set<T>(std::string const & key, T const & value);
+    template void BaseParameters::set<T>(std::string const & key, T const & value); \
+    template BaseParameters& BaseParameters::add<T>(std::string const & key, T const & value);
 
     INSTANTIATE_TEMPLATE_FUNCTIONS(double)
     INSTANTIATE_TEMPLATE_FUNCTIONS(int)

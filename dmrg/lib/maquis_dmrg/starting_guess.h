@@ -27,44 +27,29 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
-#ifndef FIEDLER_ORDER_H
-#define FIEDLER_ORDER_H
+#ifndef STARTING_GUESS_H
+#define STARTING_GUESS_H
 
 #include "maquis_dmrg.h"
 
 namespace maquis
 {
-    template <class V> // real or complex
-    class FiedlerOrder
+
+    // Interface class
+    template <class V>
+    class StartingGuess
     {
         public:
-            // typedef for measurements
-            typedef maquis::meas_with_results_type<V> meas_with_results_type;
 
-            FiedlerOrder(int nstates_,
-                         const std::string& pname);
-
-            ~FiedlerOrder();
+            StartingGuess(DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas);
+            ~StartingGuess();
 
             // calculate Fiedler order
-            void get_FiedlerOrder();
+            std::string getFiedlerOrder();
 
         private:
 
-            typedef typename alps::numeric::matrix<V> Matrix;
-
-            // Number of states to include in Fiedler vector calculation
-            int nstates_;
-
-            // Project name
-            std::string pname_;
-
-            // calculate the Fiedler order for a given (state-averaged) mutual information matrix
-            std::string calculate_FiedlerOrder();
-
-            Matrix get_laplacian(Matrix mutI);
-
-            struct Impl;
+            class Impl;
             std::unique_ptr<Impl> impl_;
     };
 }

@@ -31,6 +31,7 @@
 #include <string>
 #include <array>
 #include "maquis_dmrg.h"
+#include "starting_guess.h"
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -112,6 +113,30 @@ extern "C"
         if (interface_ptr)
             interface_ptr->update_integrals(integrals);
 
+    }
+
+    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string)
+    {
+        // TODO: Make sure that qcmaquis_interface_preinit and _update_integrals has been called beforehand
+
+        // if neither do_fiedler nor do_cideas are set, return
+
+        if (!(do_fiedler || do_cideas)) return;
+
+        std::string project_name_(project_name);
+
+        maquis::StartingGuess<V> starting_guess(parms, nstates, project_name_, do_fiedler, do_cideas);
+
+        // TODO: implement CI-DEAS
+
+        if (do_fiedler)
+        {
+            // TODO: check length of fiedler_order_string. it must be pre-set to the correct length
+            int len = strlen(fiedler_order_string);
+            std::string str = starting_guess.getFiedlerOrder();
+            assert(str.length() == len);
+            strncpy(fiedler_order_string, str.c_str(), len);
+        }
     }
 
     void qcmaquis_interface_set_nsweeps(int nsweeps)
