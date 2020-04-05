@@ -43,6 +43,14 @@
 #include "../applications/cideas/ci_generator.cpp"
 //#include "../applications/tools/deas.hpp"
 
+#include <mpi_interface.h>
+
+namespace maquis
+{
+  Scine::Mpi::MpiInterface* mpi__;
+  std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
+}
+
 #if defined(USE_TWOU1)
 typedef TwoU1 grp;
 #elif defined(USE_TWOU1PG)
@@ -498,12 +506,21 @@ std::vector<Determinant<SymmGroup> > dets_from_file(std::string file){
 
 
 
+
+
 int main(int argc, char ** argv){
     try {
         if (argc != 2) {
             std::cout << "Usage: " << argv[0] << "dmrg-input file" << std::endl;
             return 1;
         }
+
+        // setup MPI interface. It does nothing for serial runs
+        if (!maquis::mpi__) {
+            maquis::mpi   = std::unique_ptr<Scine::Mpi::MpiInterface>(new Scine::Mpi::MpiInterface(nullptr, 0));
+            maquis::mpi__ = maquis::mpi.get();
+        }
+
 
         DmrgOptions opt(argc, argv);
         DmrgParameters parms = opt.parms;
@@ -562,4 +579,9 @@ int main(int argc, char ** argv){
             std::cerr << "Error:" << std::endl << e.what() << std::endl;
             return 1;
         }
+
+        // terminate MPI (does nothing if serial run)
+        maquis::mpi.reset(nullptr);
+        maquis::mpi__ = nullptr;
+
 }

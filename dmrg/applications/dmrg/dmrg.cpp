@@ -43,7 +43,7 @@
 
 namespace maquis
 {
-  extern Scine::Mpi::MpiInterface* mpi__;
+  Scine::Mpi::MpiInterface* mpi__;
   std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
 }
 

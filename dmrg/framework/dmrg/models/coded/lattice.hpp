@@ -39,6 +39,8 @@
 
 #include "dmrg/utils/BaseParameters.h"
 
+#include <utils/maquis_mpi.h>
+
 class ChainLattice : public lattice_impl
 {
 public:
@@ -160,6 +162,7 @@ public:
 
         if (model.is_set("integral_file")) {
             std::string integral_file = model["integral_file"];
+            std::cout << " |lattice.hpp> BLUBB - in constructor of class Orbitals" << maquis::mpi__->getGlobalRank() << std::endl;
             if (!boost::filesystem::exists(integral_file))
                 throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
 

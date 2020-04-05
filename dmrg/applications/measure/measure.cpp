@@ -33,8 +33,24 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
+#include <mpi_interface.h>
+
+namespace maquis
+{
+  Scine::Mpi::MpiInterface* mpi__;
+  std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
+}
+
+
 int main(int argc, char ** argv)
 {
+
+    // setup MPI interface. It does nothing for serial runs
+    if (!maquis::mpi__) {
+        maquis::mpi   = std::unique_ptr<Scine::Mpi::MpiInterface>(new Scine::Mpi::MpiInterface(nullptr, 0));
+        maquis::mpi__ = maquis::mpi.get();
+    }
+
             
     std::cout << "  SCINE QCMaquis \n"
               << "  Quantum Chemical Density Matrix Renormalization group\n"
@@ -71,4 +87,9 @@ int main(int argc, char ** argv)
         
         maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
+
+    // terminate MPI (does nothing if serial run)
+    maquis::mpi.reset(nullptr);
+    maquis::mpi__ = nullptr;
+
 }
