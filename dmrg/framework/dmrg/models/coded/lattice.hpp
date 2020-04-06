@@ -161,19 +161,31 @@ public:
         }
 
         if (model.is_set("integral_file")) {
-            std::string integral_file = model["integral_file"];
-            std::cout << " |lattice.hpp> BLUBB - in constructor of class Orbitals" << maquis::mpi__->getGlobalRank() << std::endl;
-            if (!boost::filesystem::exists(integral_file))
-                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-
-            std::ifstream orb_file;
-            orb_file.open(model["integral_file"].c_str());
-            orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
             std::string line;
-            std::getline(orb_file, line);
 
-            orb_file.close();
+            // we need to assume that the integral_file is only available on the global master
+            if(maquis::mpi__->getGlobalRank() == 0){
+                std::string integral_file = model["integral_file"];
+                std::cout << " |lattice.hpp> BLUBB - in constructor of class Orbitals" << maquis::mpi__->getGlobalRank() << std::endl;
+                if (!boost::filesystem::exists(integral_file))
+                    throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+
+                std::ifstream orb_file;
+                orb_file.open(model["integral_file"].c_str());
+                orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+                std::getline(orb_file, line);
+                orb_file.close();
+            }
+
+            // start of MPI part
+            int line_size = line.size();
+            maquis::mpi__->broadcast(&line_size,     1, 0, maquis::mpi__->mycomm(0));
+            if(maquis::mpi__->getGlobalRank() != 0)
+                line.resize(line_size);
+            maquis::mpi__->broadcast(const_cast<char*>(line.data()), line_size, 0, maquis::mpi__->mycomm(0));
+            // end of MPI part
 
             std::vector<std::string> split_line;
             boost::split(split_line, line, boost::is_any_of("="));
@@ -185,7 +197,7 @@ public:
         else if (model.is_set("site_types"))
         {
             std::vector<subcharge> symm_vec = model["site_types"];
-        
+
             assert(L == symm_vec.size());
             for (subcharge p = 0; p < L; ++p)
                 irreps[p] = symm_vec[order[p]];
