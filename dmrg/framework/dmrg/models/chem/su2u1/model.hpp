@@ -271,6 +271,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     HERMITIAN(create_couple_up, destroy_couple_up)
     #undef HERMITIAN
 
+    maquis::cout << " BLUBB - |model.hpp> - in constructor of model " << std::endl;
+
 //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
 //    PRINT(ident)
 //    PRINT(ident_full)
@@ -352,6 +354,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
     using boost::bind;
     using chem_detail::ChemHelperSU2;
     using chem_detail::append;
+
+    maquis::cout << " BLUBB - |model.hpp> - started " << std::endl;
  
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = idx_(m, 0);

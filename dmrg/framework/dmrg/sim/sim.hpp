@@ -75,15 +75,17 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         }
     }
 
-    /// Model initialization
-    lat = Lattice(parms);
-    if(maquis::mpi__->getGlobalRank() == 0){
-        model = Model<Matrix, SymmGroup>(lat, parms);
+    // Model and MPO initialization
+    lat   = Lattice(parms);
+    model = Model<Matrix, SymmGroup>(lat, parms);
+maquis::cout << " |sim.hpp> BLUBB - MPO init      " << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
         mpo = make_mpo(lat, model);
-        all_measurements = model.measurements();
-        all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    }
+maquis::cout << " |sim.hpp> BLUBB - MPO passed    " << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
+     // set measurements for a given Model
+     all_measurements = model.measurements();
+     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
 
+    // check for existence of MPS
     if(maquis::mpi__->getGlobalRank() == 0){
         if (!chkpfile.empty())
         {
@@ -112,8 +114,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     }
 
     maquis::mpi__->broadcast(&restore,  1, 0, maquis::mpi__->mycomm(0));
-    maquis::cout << " |sim.hpp> BLUBB - restore == " << restore << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-
 
     /// MPS initialization
     if (restore) {
