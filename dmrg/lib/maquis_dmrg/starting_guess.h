@@ -41,7 +41,7 @@ namespace maquis
     {
         public:
 
-            StartingGuess(DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas);
+            StartingGuess(const DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas);
             ~StartingGuess();
 
             // calculate Fiedler order

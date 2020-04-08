@@ -70,7 +70,7 @@ namespace maquis
         public:
             typedef alps::numeric::matrix<V> Matrix;
 
-            Impl(DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas)
+            Impl(const DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas)
                 : parms_(parms), nstates_(nstates), pname_(pname), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
             {
 
@@ -78,8 +78,17 @@ namespace maquis
 
                 if (do_fiedler_)
                 {
-                    // remove any reference to existing orbital order
-                    parms_.erase_substring("orbital_order");
+                    if (parms_.is_set("orbital_order"))
+                    {
+                        // reset to default orbital order if some order is present
+                        // if this isn't done, there're strange side-effects
+                        std::string default_order;
+                        int L = parms_["L"];
+                        std::vector<int> v(L);
+                        std::iota(v.begin(), v.end(), 1);
+                        parms_.set("orbital_order", vector_tostring(v));
+                    }
+                    // we need mutual information for the Fiedler ordering
                     parms_.set("MEASURE[ChemEntropy]", 1);
                 }
 
@@ -122,8 +131,6 @@ namespace maquis
                     throw std::runtime_error("Cannot obtain Fiedler ordering if do_fiedler_ was not enabled.");
                 // TODO: implement also Block fiedler ordering per symmetry
 
-                std::string ret = "";
-
                 // Collect mutual information from all the states
                 std::vector<Matrix> mutI;
                 mutI.reserve(nstates_);
@@ -157,21 +164,23 @@ namespace maquis
                 auto fv_col = evecs.col(L.num_rows()-2);
                 std::vector<V> fiedler_vector(fv_col.first, fv_col.second);
 
-                // prepare ordering. first create a vector with indices 1..L in ascending order
+                // prepare ordering. first create a vector with indices 0..L-1 in ascending order
                 std::vector<int> order(fiedler_vector.size());
                 std::iota(order.begin(), order.end(), 0);
 
                 // Sort the order vector according to the Fiedler vector
                 std::sort(order.begin(), order.end(), [&fiedler_vector](size_t i1, size_t i2) { return fiedler_vector[i1] < fiedler_vector[i2]; });
 
+                // add 1 to each element because in the parameters our counting starts with 1
+                for (auto&& n: order) n++;
+                // std::transform(order.begin(), order.end(), order.begin(), [](int i){ return i+1; });
+
                 // convert the ordering into a string
-                for (int i = 0; i < order.size(); i++)
-                    ret += std::to_string(order[i]+1) + ((i < order.size()-1) ? "," : "") ;
-                return ret;
+                return vector_tostring(order);
             }
 
         private:
-            DmrgParameters& parms_;
+            DmrgParameters parms_;
             std::string pname_;
             int nstates_;
 
@@ -195,6 +204,16 @@ namespace maquis
                 return laplacian;
             }
 
+            template <class K>
+            std::string vector_tostring(const std::vector<K> & v)
+            {
+                std::string s;
+
+                for (int i = 0; i < v.size(); i++)
+                    s += std::to_string(v[i]) + ((i < v.size()-1) ? "," : "") ;
+                return s;
+            }
+
             // Obtain measurements
             const std::vector<results_map_type<V> > & get_measurements() { return measurements; };
 
@@ -202,7 +221,7 @@ namespace maquis
     };
 
     template <class V>
-    StartingGuess<V>::StartingGuess(DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas)
+    StartingGuess<V>::StartingGuess(const DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas)
         : impl_(new Impl(parms, pname, nstates, do_fiedler, do_cideas)) {}
 
     template <class V>

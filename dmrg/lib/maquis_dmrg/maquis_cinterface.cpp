@@ -137,6 +137,8 @@ extern "C"
             assert(str.length() == len);
             strncpy(fiedler_order_string, str.c_str(), len);
         }
+
+
     }
 
     void qcmaquis_interface_set_nsweeps(int nsweeps)
