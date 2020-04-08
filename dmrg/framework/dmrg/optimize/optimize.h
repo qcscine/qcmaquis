@@ -141,7 +141,7 @@ protected:
 
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site], boundaryIndexes_[site]);
         Storage::pin(left_[site+1]);
 
         for (int n = 0; n < northo; ++n)
@@ -150,7 +150,7 @@ protected:
 
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site], boundaryIndexes_[site+1]);
         Storage::pin(right_[site]);
 
         for (int n = 0; n < northo; ++n)
