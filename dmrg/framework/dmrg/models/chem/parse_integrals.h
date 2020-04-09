@@ -74,9 +74,6 @@ namespace chem_detail {
         // *** Parse orbital data *********************************************
         // ********************************************************************
 
-        std::cout << " |parse_integrals.h> BLUBB - integrals from file ? " << parms.is_set("integral_file") << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-
-
         std::vector<double> raw;
 
         // handle raw data by GLOBAL master and broadcast data for post-processing
@@ -113,6 +110,11 @@ namespace chem_detail {
         }
 
         //bcast size and data
+        int raw_size = raw.size();
+        maquis::mpi__->broadcast(&raw_size,  1, 0, maquis::mpi__->mycomm(0));
+        if(maquis::mpi__->getGlobalRank() !=0 )
+            raw.resize(raw_size,0.0);
+        maquis::mpi__->broadcast(&raw[0],  raw.size(), 0, maquis::mpi__->mycomm(0));
 
         idx_.resize(raw.size()/5, 4);
         std::vector<double>::iterator it = raw.begin();
@@ -240,6 +242,11 @@ namespace chem_detail {
         }
 
         //bcast size and data
+        int raw_size = raw.size();
+        maquis::mpi__->broadcast(&raw_size,  1, 0, maquis::mpi__->mycomm(0));
+        if(maquis::mpi__->getGlobalRank() !=0 )
+            raw.resize(raw_size,0.0);
+        maquis::mpi__->broadcast(&raw[0],  raw.size(), 0, maquis::mpi__->mycomm(0));
 
         idx_.resize(raw.size()/6, 4);
         std::vector<double>::iterator it = raw.begin();
