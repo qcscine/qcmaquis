@@ -2,5 +2,5 @@
 
 namespace maquis
 {
-  Scine::Mpi::MpiInterface* mpi__;
+  extern Scine::Mpi::MpiInterface* mpi__;
 }
