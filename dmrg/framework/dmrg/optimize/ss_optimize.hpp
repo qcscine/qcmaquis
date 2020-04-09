@@ -37,6 +37,8 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
 
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+
+    using base::boundaryIndexes_;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -151,7 +153,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
+                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs, boundaryIndexes_[site], boundaryIndexes_[site+1]);
                     END_TIMING("JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");

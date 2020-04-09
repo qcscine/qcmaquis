@@ -34,9 +34,11 @@
 #define HAVE_GETTIMEOFDAY
 #endif
 
+#include <unordered_map>
 #include <boost/algorithm/string.hpp>
 
 #include "utils/sizeof.h"
+#include "utils/maquis_mpi.h"
 
 #include "ietl_lanczos_solver.h"
 #include "ietl_jacobi_davidson.h"
@@ -49,6 +51,8 @@
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 
+#include "dmrg/mp_tensors/EffectiveBoundaryIndex.h"
+
 
 template<class Matrix, class SymmGroup>
 
@@ -56,12 +60,7 @@ struct SiteProblem<Matrix, SymmGroup>
 {
     SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : left(left_)
-    , right(right_)
-    , mpo(mpo_)
-    {
-    }
+                MPOTensor<Matrix, SymmGroup> const & mpo_) : left(left_), right(right_), mpo(mpo_) {}
 
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
@@ -101,8 +100,10 @@ public:
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
+    , boundaryIndexManager_()
     {
         std::size_t L = mps.length();
+        boundaryIndexManager_.initialize(maquis::mpi__);
 
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
@@ -120,15 +121,12 @@ public:
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-
             maquis::checks::symmetry_check(parms, files[n]);
             maquis::checks::orbital_order_check(parms, files[n]);
             load(files[n], ortho_mps[n]);
             maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
-
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
@@ -143,7 +141,7 @@ protected:
 
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site], boundaryIndexes_[site]);
         Storage::pin(left_[site+1]);
 
         for (int n = 0; n < northo; ++n)
@@ -152,7 +150,7 @@ protected:
 
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site], boundaryIndexes_[site+1]);
         Storage::pin(right_[site]);
 
         for (int n = 0; n < northo; ++n)
@@ -208,6 +206,14 @@ protected:
         //trb.end();
 
         maquis::cout << "Boundaries are fully initialized...\n";
+
+        // Initializes the index manager
+        for (int iSite = 0; iSite <= L; iSite++) {
+            int bDim = 1;
+            if (iSite != 0 || iSite != L)
+                bDim = mpo[iSite].row_dim();
+            boundaryIndexes_.emplace(iSite, boundaryIndexManager_.getEffectiveIndex(bDim));
+        }
     }
 
     double get_cutoff(int sweep) const
@@ -249,6 +255,8 @@ protected:
     unsigned int northo;
     std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
     std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
+    EffectiveBoundaryIndex boundaryIndexManager_;
+    std::unordered_map<int, std::vector<int> > boundaryIndexes_;
 };
 
 #include "ss_optimize.hpp"

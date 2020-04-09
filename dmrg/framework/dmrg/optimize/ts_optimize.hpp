@@ -40,9 +40,11 @@ template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
+    // -- Types definition --
     typedef typename Matrix::value_type value_type;
-
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+
+    using base::boundaryIndexes_;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -180,11 +182,11 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs, boundaryIndexes_[site1], boundaryIndexes_[site2]);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
             	    BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
+                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs, boundaryIndexes_[site1], boundaryIndexes_[site2]);
             	    END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
