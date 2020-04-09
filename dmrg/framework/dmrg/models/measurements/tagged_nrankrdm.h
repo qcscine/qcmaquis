@@ -243,7 +243,7 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
+                for (pos_t p2 = bra_neq_ket ? 0 : p1; p2 < lattice.size(); ++p2)
                 {
 
                     std::vector<pos_t> positions{p1, p2};
@@ -265,36 +265,12 @@ namespace measurements {
                         }
 
                     }
+
                     dct.push_back(value);
-                    num_labels.push_back(positions);
-
-		            if(bra_neq_ket && (p2 != p1)){
-
-                        positions = {p2, p1};
-                        value = 0.0;
-
-                        for (std::size_t synop = 0; synop < operator_terms.size(); ++synop)
-                        {
-                            tag_vec operators(2);
-                            operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
-                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
-
-                            // check if term is allowed by symmetry
-                            term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                            if(measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                            {
-                                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                value += operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
-
-                            }
-                        }
-                        dct.push_back(value);
-                        num_labels.push_back(positions);
-
-                    }
+                    num_labels.push_back(order_labels(lattice, positions));
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(num_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -343,8 +319,7 @@ namespace measurements {
 
                     for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
                     {
-                        pos_t pos_[4] = {p1, p2, p3, p4};
-                        std::vector<pos_t> positions(pos_, pos_ + 4);
+                        std::vector<pos_t> positions= {p1, p2, p3, p4};
 
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
@@ -368,19 +343,12 @@ namespace measurements {
                             }
                             else break;
                         }
-                        if(checkpass)
-                        {
-                             dct.push_back(value);
-                             num_labels.push_back(positions);
-                        }
-                        else
-                        {
-                             dct.push_back(0.0);
-                             num_labels.push_back(positions);
-                        }
+
+                        dct.push_back(checkpass ? value : 0.0);
+                        num_labels.push_back(order_labels(lattice, positions));
                     }
 
-                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                    std::vector<std::string> lbt = label_strings(num_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP
@@ -462,8 +430,7 @@ namespace measurements {
                         if(p4 == p5 && p4 == p6) continue;
 
                         // defines position vector for spin-free 3-RDM element
-                        pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
-                        std::vector<pos_t> positions(pos_, pos_ + 6);
+                        std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
 
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the spin combos of the 3-RDM
@@ -492,12 +459,12 @@ namespace measurements {
                         if(measured)
                         {
                             dct.push_back(value);
-                            num_labels.push_back(positions);
+                            num_labels.push_back(order_labels(lattice, positions));
                         }
 
                     }// p6
 
-                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                    std::vector<std::string> lbt = label_strings(num_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP
@@ -640,8 +607,7 @@ namespace measurements {
                                   }
 
                                   // defines position vector for spin-free 4-RDM element
-                                  pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
-                                  std::vector<pos_t> positions(pos_, pos_ + 8);
+                                  std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6, p7, p8};
 
                                   // check norm of lhs and rhs - skip if norm of rhs > lhs
                                   if(measurements_details::compare_norm<pos_t>()(positions)) continue;
@@ -684,11 +650,11 @@ namespace measurements {
                                           maquis::cout << " " << value << std::endl;
                                       } */
                                       dct.push_back(value);
-                                      num_labels.push_back(positions);
+                                      num_labels.push_back(order_labels(lattice, positions));
                                   }
                               } // p8 loop
 
-                              std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                              std::vector<std::string> lbt = label_strings(num_labels);
                               // save results and labels
                               #ifdef MAQUIS_OPENMP
                               #pragma omp critical
@@ -815,8 +781,7 @@ namespace measurements {
                 std::vector<std::vector<pos_t> > num_labels;
                 for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
                 {
-                    pos_t pos_[2] = {p1, p2};
-                    std::vector<pos_t> positions(pos_, pos_ + 2);
+                    std::vector<pos_t> positions = {p1, p2};
 
                     std::vector<term_descriptor> terms;
                     if (p1 != p2)
@@ -842,11 +807,14 @@ namespace measurements {
                     typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
 
                     dct.push_back(value);
-                    num_labels.push_back(positions);
+
+                    // use lattice.get_prop to save the positions already in correct order
+                    // thus label_strings below does not need to reorder the indices anymore
+                    num_labels.push_back(order_labels(lattice, positions));
                 }
 
-                // the lattice knows the ordering and provides the correct orbital label for each position
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                // no need to reorder the labels here anymore
+                std::vector<std::string> lbt = label_strings(num_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -893,8 +861,7 @@ namespace measurements {
                 {
                     for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
                     {
-                        pos_t pos_[4] = {p1, p2, p3, p4};
-                        std::vector<pos_t> positions(pos_, pos_ + 4);
+                        std::vector<pos_t> positions = {p1, p2, p3, p4};
 
                         std::vector<term_descriptor> terms = SpinSumSU2<Matrix, SymmGroup>::V_term(1., p1, p2, p3, p4, op_collection, lattice);
 
@@ -908,12 +875,12 @@ namespace measurements {
                         typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
 
                         dct.push_back(value);
-                        num_labels.push_back(positions);
+                        num_labels.push_back(order_labels(lattice, positions));
                     }
 
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(num_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -1042,8 +1009,7 @@ namespace measurements {
                 std::vector<std::vector<pos_t> > num_labels;
                 for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
                 {
-                    pos_t pos_[2] = {p1, p2};
-                    std::vector<pos_t> positions(pos_, pos_ + 2);
+                    std::vector<pos_t> positions = {p1, p2};
 
                     tag_vec operators(2);
                     operators[0] = operator_terms[0].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
@@ -1058,7 +1024,7 @@ namespace measurements {
                         typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
 
                         dct.push_back(value);
-                        num_labels.push_back(positions);
+                        num_labels.push_back(order_labels(lattice, positions));
                     }
                     //else {
                     //    dct.push_back(0.0);
@@ -1066,7 +1032,7 @@ namespace measurements {
                     //}
                 }
 
-                std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                std::vector<std::string> lbt = label_strings(num_labels);
 
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
@@ -1119,11 +1085,9 @@ namespace measurements {
 		               if(p1 == p4 && p3 == p2)
                              continue;
 
-                        pos_t pos_[4] = {p1, p3, p4, p2};
-                        std::vector<pos_t> positions(pos_, pos_ + 4);
+                        std::vector<pos_t> positions = {p1, p3, p4, p2};
 
-                        pos_t posORD_[4] = {p1, p2, p3, p4};
-                        std::vector<pos_t> positionsORD(posORD_, posORD_ + 4);
+                        std::vector<pos_t> positionsORD = {p1, p2, p3, p4};
 
                         // Loop over operator terms that are measured synchronously and added together
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
@@ -1149,18 +1113,12 @@ namespace measurements {
 
                         if(measured)
                         {
-                             /* debug print
-                             if (std::abs(value) >= 0)
-                             {
-                                 maquis::cout << " " << value << std::endl;
-                             }*/
-
-                             dct.push_back(value);
-                             num_labels.push_back(positionsORD);
+                            dct.push_back(value);
+                            num_labels.push_back(order_labels(lattice, positionsORD));
                         }
                     }
 
-                    std::vector<std::string> lbt = label_strings(lattice,  num_labels);
+                    std::vector<std::string> lbt = label_strings(num_labels);
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP

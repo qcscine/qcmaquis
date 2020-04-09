@@ -217,8 +217,10 @@ public:
 
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
-        if (property == "label" && pos.size() == 1)
+        if (property == "label" && pos.size() == 1) // return "( label )" as string
             return boost::any( site_label(order[pos[0]]) );
+        if (property == "label_int" && pos.size() == 1) // just return label as integer
+            return boost::any(order[pos[0]]);
         else if (property == "label" && pos.size() == 2)
             return boost::any( bond_label(order[pos[0]], order[pos[1]]) );
         else if (property == "type" && pos.size() == 1)

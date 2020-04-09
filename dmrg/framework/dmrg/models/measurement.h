@@ -219,6 +219,33 @@ inline std::vector<std::string> label_strings (const Lattice& lat, const std::ve
     return ret;
 }
 
+// Create label strings from indices WITHOUT reordering
+inline std::vector<std::string> label_strings(const std::vector<std::vector<Lattice::pos_t> >& labels)
+{
+    std::vector<std::string> ret;
+    ret.reserve(labels.size());
+    for (std::vector<std::vector<Lattice::pos_t> >::const_iterator it = labels.begin();
+         it != labels.end(); ++it)
+    {
+        std::ostringstream oss;
+        for (std::vector<Lattice::pos_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
+            oss << *it2;
+            if (it2 + 1 != it->end())
+                oss << " -- ";
+        }
+        ret.push_back(oss.str());
+    }
+    return ret;
+}
+
+// Order orbital labels according to their ordering in the lattice
+template <class T>
+inline std::vector<T> order_labels(const Lattice& lat, const std::vector<T> & labels)
+{
+    std::vector<T> ret(labels.size());
+    std::transform(labels.begin(), labels.end(), ret.begin(), [&](T i){return lat.get_prop<T>("label_int", i);});
+    return ret;
+}
 
 
 #endif
