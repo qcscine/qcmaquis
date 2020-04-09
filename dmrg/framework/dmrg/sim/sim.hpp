@@ -76,14 +76,12 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     }
 
     // Model and MPO initialization
-    lat   = Lattice(parms);
-    model = Model<Matrix, SymmGroup>(lat, parms);
-maquis::cout << " |sim.hpp> BLUBB - MPO init      " << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-        mpo = make_mpo(lat, model);
-maquis::cout << " |sim.hpp> BLUBB - MPO passed    " << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-     // set measurements for a given Model
-     all_measurements = model.measurements();
-     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+    lat              = Lattice(parms);
+    model            = Model<Matrix, SymmGroup>(lat, parms);
+    mpo              = make_mpo(lat, model);
+    // set measurements for a given Model
+    all_measurements = model.measurements();
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
 
     // check for existence of MPS
     if(maquis::mpi__->getGlobalRank() == 0){

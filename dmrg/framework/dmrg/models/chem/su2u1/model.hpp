@@ -355,8 +355,6 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
     using chem_detail::ChemHelperSU2;
     using chem_detail::append;
 
-    maquis::cout << " BLUBB - |model.hpp> - started " << std::endl;
- 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = idx_(m, 0);
         int j = idx_(m, 1);

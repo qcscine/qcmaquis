@@ -390,12 +390,12 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
                                            num_rows((*this)[match]));
             std::size_t maxcols = std::max(num_cols(mtx),
                                            num_cols((*this)[match]));
-            
+
             Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
-            
+
             resize_block(match, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
-            
+
             (*this)[match] += cpy;
         }
     } else
@@ -426,9 +426,9 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    
+
     std::size_t which = basis_.position(r,c);
-    
+
     basis_.erase(basis_.begin() + which);
     data_.erase(data_.begin() + which);
 }

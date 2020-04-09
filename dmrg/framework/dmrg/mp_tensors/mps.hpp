@@ -342,9 +342,12 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     std::size_t L = 0;
     while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
     
+    std::cout << " L is " << L << std::endl;
+
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
+    std::cout << " loop_max is " << loop_max << std::endl;
     parallel::scheduler_balanced scheduler(loop_max);
     for(size_t k = 0; k < loop_max; ++k){
         parallel::guard proc(scheduler(k));
