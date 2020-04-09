@@ -214,7 +214,9 @@ namespace ietl
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
         /* Class constructor */
-        jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired = Largest);
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired = Largest,
+                        const std::vector<int>& boundaryIndexesLeft=std::vector<int>(),
+                        const std::vector<int>& boundaryIndexesRight=std::vector<int>());
         /* Destructor */
         ~jacobi_davidson();
 
@@ -237,6 +239,7 @@ namespace ietl
         FortranMatrix<scalar_type> M;
         magnitude_type atol_;
         DesiredEigenvalue desired_;
+        std::vector<int> boundaryIndexesLeft_, boundaryIndexesRight_;
     };
     
     template <class MATRIX, class VS>
@@ -359,36 +362,23 @@ namespace ietl
     // C L A S S :   J A C O B I _ D A V I D S O N ////////////////////////////////////
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
-    matrix_(matrix),
-    vecspace_(vec),
-    M(1,1),
-    desired_(desired)
+    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired,
+                                                 const std::vector<int>& boundaryIndexesLeft,
+                                                 const std::vector<int>& boundaryIndexesRight)
+        : matrix_(matrix), vecspace_(vec), M(1,1), desired_(desired), boundaryIndexesLeft_(boundaryIndexesLeft),
+          boundaryIndexesRight_(boundaryIndexesRight)
     {
-        //      n_ = vecspace_.vec_dimension();
         n_ = vec_dimension(vecspace_);
     }
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::~jacobi_davidson()
-    {
-        
-    }
-    
-//    template<class Vector>
-//    Vector orthogonalize(Vector input, std::vector<Vector> const & against)
-//    {
-//        
-//    }
+    jacobi_davidson<MATRIX, VS>::~jacobi_davidson() { }
     
     template <class MATRIX, class VS> 
     template <class GEN, class SOLVER, class ITER>
     std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type> 
-    jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
-                                                      SOLVER& solver,
-                                                      ITER& iter)
+    jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, SOLVER& solver, ITER& iter)
     {
-        int wakeupSignal = 0;
         if (maquis::mpi__->isGlobalLeader()) {
             std::vector<scalar_type> s(iter.max_iterations());
             std::vector<vector_type> V(iter.max_iterations());
