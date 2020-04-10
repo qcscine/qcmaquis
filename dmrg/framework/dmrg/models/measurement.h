@@ -224,19 +224,30 @@ inline std::vector<std::string> label_strings(const std::vector<std::vector<Latt
 {
     std::vector<std::string> ret;
     ret.reserve(labels.size());
-    for (std::vector<std::vector<Lattice::pos_t> >::const_iterator it = labels.begin();
-         it != labels.end(); ++it)
+    // for (std::vector<std::vector<Lattice::pos_t> >::const_iterator it = labels.begin();
+    //      it != labels.end(); ++it)
+    // {
+    //     std::ostringstream oss;
+    //     for (std::vector<Lattice::pos_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
+    //         oss << *it2;
+    //         if (it2 + 1 != it->end())
+    //             oss << " -- ";
+    //     }
+    //     ret.push_back(oss.str());
+    // }
+    // return ret;
+
+    for (auto&& l: labels)
     {
-        std::ostringstream oss;
-        for (std::vector<Lattice::pos_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
-            oss << *it2;
-            if (it2 + 1 != it->end())
-                oss << " -- ";
-        }
-        ret.push_back(oss.str());
+        std::string s;
+        for (auto it = l.begin(); it != l.end(); it++)
+            s += "( " + boost::lexical_cast<std::string>(*it) + (it != std::prev(l.end()) ? " ) -- " : " )") ;
+        ret.emplace_back(std::move(s));
     }
     return ret;
 }
+
+
 
 // Order orbital labels according to their ordering in the lattice
 template <class T>
