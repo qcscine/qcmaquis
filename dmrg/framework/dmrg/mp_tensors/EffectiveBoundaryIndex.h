@@ -82,7 +82,7 @@ public:
             else {
                 if (idxOfThread_ < idxMax) {
                     iMin = idxOfThread_;
-                    iMax = idxOfThread_+1; 
+                    iMax = idxOfThread_+1;
                 }
                 else {
                     skip = true;
