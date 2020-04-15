@@ -115,7 +115,7 @@ extern "C"
 
     }
 
-    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string)
+    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations)
     {
         // TODO: Make sure that qcmaquis_interface_preinit and _update_integrals has been called beforehand
 
@@ -125,9 +125,22 @@ extern "C"
 
         std::string project_name_(project_name);
 
-        maquis::StartingGuess<V> starting_guess(parms, nstates, project_name_, do_fiedler, do_cideas);
+        // copy HF occupations from hf_occupations array if present
+        std::vector<std::vector<int> > hf_occupations_vec;
+        if (hf_occupations != nullptr)
+        {
+            hf_occupations_vec.reserve(nstates);
+            int L = parms["L"];
+            int* counter = hf_occupations;
+            for (int i = 0; i < nstates; i++)
+            {
+                hf_occupations_vec.emplace_back(counter, counter+L);
+                counter += L;
+                // TODO: check for overflows
+            }
+        }
 
-        // TODO: implement CI-DEAS
+        maquis::StartingGuess<V> starting_guess(parms, nstates, project_name_, do_fiedler, do_cideas, hf_occupations_vec);
 
         if (do_fiedler)
         {
@@ -138,6 +151,8 @@ extern "C"
             strncpy(fiedler_order_string, str.c_str(), len);
         }
 
+        if (do_cideas)
+            starting_guess.cideas();
 
     }
 

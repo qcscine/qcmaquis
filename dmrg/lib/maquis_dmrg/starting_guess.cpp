@@ -33,6 +33,9 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/sim/matrix_types.h"
 
+#include "dmrg/models/chem/cideas/cideas.hpp"
+
+
 // namespace chem
 // {
 //     namespace detail
@@ -70,11 +73,29 @@ namespace maquis
         public:
             typedef alps::numeric::matrix<V> Matrix;
 
-            Impl(const DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas)
-                : parms_(parms), nstates_(nstates), pname_(pname), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
+#if defined(HAVE_SU2U1PG)
+            typedef SU2U1PG SymmGroup;
+#elif defined(HAVE_SU2U1)
+            typedef SU2U1 SymmGroup;
+#else
+    #error SU2 symmetry (SU2U1 or SU2U1PG) must be enabled to compile DMRG interface
+#endif
+            Impl(const DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas,
+                 const std::vector<std::vector<int> > & hf_occupations)
+                : parms_(parms), nstates_(nstates), pname_(pname), pname_guess_(pname + "_guess"), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
             {
 
                 parms_.erase_substring("MEASURE");
+
+                if (do_cideas_)
+                {
+                    // Make sure HF occupations are provided, or if we have only 1 state hf_occ is set before running CI-DEAS
+                    if (!hf_occupations.empty())
+                        assert(hf_occupations.size() == nstates);
+                    else
+                        if (!(nstates == 1 && parms_.is_set("hf_occ"))) // if we have only 1 state and provided the occupation in hf_occ, do nothing
+                            throw std::runtime_error("CI-DEAS option requires the HF occupation to be set manually!");
+                }
 
                 if (do_fiedler_)
                 {
@@ -96,25 +117,37 @@ namespace maquis
 
                 // set sweeps and m, same values as in the old python interface
                 parms_.set("nsweeps", 4);
-                if (parms_.is_set("L"))
-                    parms_.set("max_bond_dimension", parms_["L"] > 24 ? 256 : 128);
+                if (parms_.is_set("init_bond_dimension"))
+                {
+                    int init_bond_dimension = parms_["init_bond_dimension"];
+                    parms_.set("max_bond_dimension", init_bond_dimension);
+                }
                 else
-                    throw std::runtime_error("L not defined for a starting guess calculation!");
+                {
+                    if (parms_.is_set("L"))
+                        parms_.set("max_bond_dimension", parms_["L"] > 24 ? 256 : 128);
+                    else
+                        throw std::runtime_error("L not defined for a starting guess calculation!");
+                }
 
                 for (int i = 0; i < nstates; i++)
                 {
                     // set correct checkpoints and result file names
-                    std::string chkpfile = pname + ".checkpoint_state." + std::to_string(i) + ".h5";
-                    std::string rfile = pname + ".results_state." + std::to_string(i) + ".h5";
+                    std::string chkpfile = checkpoint_name(pname_guess_, i);
                     parms_.set("chkpfile", chkpfile);
-                    parms_.set("rfile", rfile);
+                    // std::string rfile = pname_guess_ + ".results_state." + std::to_string(i) + ".h5";
+                    // parms_.set("rfile", rfile);
+
+                    // set HF occupation
+                    if (!hf_occupations.empty())
+                        parms_.set("hf_occ", vector_tostring(hf_occupations[i]));
 
                     if (i > 0)
                     {
                         parms_.set("n_ortho_states", i-1);
                         std::string all_ortho_states;
                         for (int j = 0; j < i; j++)
-                            all_ortho_states += pname + ".checkpoint_state." + std::to_string(j-1) + ".h5" + ((j < i-1) ? ";" : "") ;
+                            all_ortho_states += checkpoint_name(pname_guess_, j-1) + ((j < i-1) ? ";" : "") ;
                         parms_.set("ortho_states", all_ortho_states);
                     }
 
@@ -122,38 +155,87 @@ namespace maquis
                     interface->optimize();
                     measurements.emplace_back(std::move(interface->measurements()));
                 }
-            }
 
-            // calculate Fiedler order
-            std::string getFiedlerOrder()
-            {
-                if (!do_fiedler_)
-                    throw std::runtime_error("Cannot obtain Fiedler ordering if do_fiedler_ was not enabled.");
-                // TODO: implement also Block fiedler ordering per symmetry
-
+                // Get state-average single-orbital entropies and mutual information
                 // Collect mutual information from all the states
+
                 std::vector<Matrix> mutI;
-                mutI.reserve(nstates_);
+
+                // Calculate S1 only if CI-DEAS is requested and mutual information only if Fiedler ordering is requested
+                if (do_cideas)
+                    s1_.reserve(nstates_);
+                if (do_fiedler)
+                    mutI.reserve(nstates_);
 
                 for (int i = 0; i < nstates_; i++)
                 {
 
                     // get the entropy data
                     EntanglementData<Matrix> em(get_measurements()[i]);
-                    // store data - scaled with state-average factor
-                    mutI.emplace_back(std::move(em.I()));
+
+                    // store data
+                    if (do_cideas)
+                        s1_.emplace_back(std::move(em.s1()));
+                    if (do_fiedler)
+                        mutI.emplace_back(std::move(em.I()));
                 }
 
-                // accumulate mutual information matrix
-                Matrix SAmutI(mutI[0].num_rows(), mutI[0].num_cols());
-                for (auto& n : mutI)
-                    SAmutI += n;
-                // get Laplacian
-                Matrix L = get_laplacian(SAmutI);
+
+                // Calculate average mutual information
+                if (do_fiedler)
+                {
+                    Matrix SAmutI(mutI[0].num_rows(), mutI[0].num_cols(),0.0);
+                    for (auto& n : mutI)
+                        SAmutI += n;
+
+                    // Divide mutual information by the number of states: irrelevant for Fiedler ordering
+                    // but let's still do it for the consistency
+                    SAmutI /= nstates;
+                    SA_mutI_ = SAmutI;
+                }
+            }
+
+            ~Impl()
+            {
+               // Delete checkpoint files
+                for (int i = 0; i < nstates_; i++)
+                {
+                    std::string chkpfile = checkpoint_name(pname_guess_, i);
+                    if (boost::filesystem::exists(chkpfile))
+                        boost::filesystem::remove_all(chkpfile);
+                }
+            }
+
+            // Get single-orbital entropy for state i
+            const Matrix& SA_s1(int i) const
+            {
+                if (do_cideas_)
+                    return s1_[i];
+                else
+                    throw std::runtime_error("Please enable CI-DEAS to calculate S1");
+            }
+
+            // Get state-average mutual information
+            const Matrix& SA_mutI() const
+            {
+                if (do_fiedler_)
+                    return SA_mutI_;
+                else
+                    throw std::runtime_error("Please enable Fiedler ordering to calculate mutual information");
+            }
+
+            // calculate Fiedler order
+            std::string getFiedlerOrder()
+            {
+                // TODO: implement also Block fiedler ordering per symmetry
+
+                // get Laplacian of the average mutual information
+                Matrix L = get_laplacian(SA_mutI());
 
                 if (L.num_rows() < 2)
                     throw std::runtime_error("Fiedler vector orbital ordering doesn't work for only one orbital!");
 
+                // get eigenvectors and eigenvalues of the Laplacian
                 Matrix evecs(L.num_rows(), L.num_cols());
                 std::vector<V> evals(L.num_rows());
                 alps::numeric::syev(L,evecs,evals);
@@ -179,9 +261,30 @@ namespace maquis
                 return vector_tostring(order);
             }
 
+            // perform CI-DEAS and save the resulting MPS as "pname.checkpoint_state.X.h5"
+            void cideas()
+            {
+                if (!do_cideas_)
+                    throw std::runtime_error("do_cideas option must be enabled to perform CI-DEAS");
+
+                for (int i = 0; i < nstates_; i++)
+                {
+                    MPS<Matrix, SymmGroup> mps = maquis::cideas<Matrix, SymmGroup>(parms_, s1_[i]);
+
+                    std::string chkp = checkpoint_name(pname_, i);
+                    save(chkp, mps);
+                    storage::archive ar(chkp+"/props.h5", "w");
+                    ar["/parameters"] << parms_;
+                    //TODO obtain version string from cmake
+                    //ar["/version"] << DMRG_VERSION_STRING;
+                    ar["/status/sweep"] << -1;
+                    ar["/status/site"] << -1;
+                }
+            }
+
         private:
             DmrgParameters parms_;
-            std::string pname_;
+            std::string pname_, pname_guess_;
             int nstates_;
 
             std::unique_ptr<DMRGInterface<V> > interface;
@@ -189,8 +292,13 @@ namespace maquis
 
             bool do_fiedler_, do_cideas_;
 
+            // Store single-orbital entropy and mutual information
+            // Mutual information is state-average while single-orbital entropy is state-specific
+            Matrix SA_mutI_;
+            std::vector<Matrix> s1_;
+
             // Calculate the Laplacian
-            Matrix get_laplacian(const Matrix & mutI)
+            Matrix get_laplacian(const Matrix & mutI) const
             {
                 // Ported to C++ from fiedler.py
 
@@ -205,7 +313,7 @@ namespace maquis
             }
 
             template <class K>
-            std::string vector_tostring(const std::vector<K> & v)
+            inline std::string vector_tostring(const std::vector<K> & v) const
             {
                 std::string s;
 
@@ -214,21 +322,30 @@ namespace maquis
                 return s;
             }
 
+            inline
+            std::string checkpoint_name(const std::string & pname, int state)
+            {
+                return pname + ".checkpoint_state." + std::to_string(state) + ".h5";
+            }
+
             // Obtain measurements
-            const std::vector<results_map_type<V> > & get_measurements() { return measurements; };
+            const std::vector<results_map_type<V> > & get_measurements() const { return measurements; };
 
 
     };
 
     template <class V>
-    StartingGuess<V>::StartingGuess(const DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas)
-        : impl_(new Impl(parms, pname, nstates, do_fiedler, do_cideas)) {}
+    StartingGuess<V>::StartingGuess(const DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas,
+                 const std::vector<std::vector<int> > & hf_occupations)
+        : impl_(new Impl(parms, pname, nstates, do_fiedler, do_cideas, hf_occupations)) {}
 
     template <class V>
     StartingGuess<V>::~StartingGuess() = default;
 
     template <class V>
     std::string StartingGuess<V>::getFiedlerOrder() { return impl_-> getFiedlerOrder(); }
+
+    template<class V> void StartingGuess<V>::cideas() { impl_->cideas(); }
 
     template class StartingGuess<double>;
 }

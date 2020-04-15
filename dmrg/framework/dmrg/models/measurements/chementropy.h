@@ -24,6 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
+#ifndef CHEMENTROPY_H
+#define CHEMENTROPY_H
 
 #ifdef USE_AMBIENT
 #include <mpi.h>
@@ -524,3 +526,5 @@ private:
     }
 };
 
+
+#endif

@@ -67,7 +67,7 @@ extern "C"
     // run preliminary calculation to obtain an MPS as a starting guess from CI-DEAS
     // or the Fiedler ordering
     // if Fiedler ordering is present, return the ordering as a string (starting with 1) in fiedler_order_string (note that its length must be correct!)
-    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string);
+    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations);
 
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);
