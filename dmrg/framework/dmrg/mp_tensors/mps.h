@@ -31,6 +31,8 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/boundary.h"
 
+#include <utils/maquis_mpi.h>
+
 #include <limits>
 
 template<class Matrix, class SymmGroup>

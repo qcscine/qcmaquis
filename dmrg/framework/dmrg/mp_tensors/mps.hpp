@@ -340,9 +340,12 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 {
     /// get size of MPS
     std::size_t L = 0;
+    // calculate the length L of the MPS
     while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
     
     std::cout << " L is " << L << std::endl;
+    maquis::cout << " |mps.hpp> BLUBB - reading MPS file " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
+
 
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
