@@ -32,10 +32,14 @@
 #include <array>
 #include "maquis_dmrg.h"
 #include "starting_guess.h"
+#include "dmrg/utils/stdout_redirector.hpp"
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
 std::string pname;
+
+// stdout redirector
+maquis::StdoutRedirector stdout_redirect;
 
 extern "C"
 {
@@ -257,5 +261,15 @@ extern "C"
     double qcmaquis_interface_get_overlap(char* filename)
     {
         return interface_ptr->overlap(filename);
+    }
+
+    void qcmaquis_interface_stdout(char* filename)
+    {
+        stdout_redirect.set_filename(filename);
+    }
+
+    void qcmaquis_interface_restore_stdout()
+    {
+        stdout_redirect.restore();
     }
 }
