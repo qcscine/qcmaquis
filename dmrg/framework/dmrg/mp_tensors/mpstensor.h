@@ -32,6 +32,9 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
+
+#include <utils/maquis_mpi.h>
+
 //#include "solver.h"
 
 enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
@@ -142,7 +145,9 @@ public:
     void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
     bool reasonable() const;
     bool num_check() const; // checks for nan or inf
-    
+
+    void communicate_index(Index<SymmGroup> & a);
+
     Index<SymmGroup> phys_i, left_i, right_i;
 private:
     mutable block_matrix<Matrix, SymmGroup> data_;
