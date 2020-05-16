@@ -208,12 +208,14 @@ protected:
         maquis::cout << "Boundaries are fully initialized...\n";
 
         // Initializes the index manager
+        /*
         for (int iSite = 0; iSite <= L; iSite++) {
             int bDim = 1;
             if (iSite != 0 || iSite != L)
                 bDim = mpo[iSite].row_dim();
             boundaryIndexes_.emplace(iSite, boundaryIndexManager_.getEffectiveIndex(bDim));
         }
+        */
     }
 
     double get_cutoff(int sweep) const

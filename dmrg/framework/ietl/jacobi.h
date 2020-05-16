@@ -379,7 +379,7 @@ namespace ietl
     std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type> 
     jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, SOLVER& solver, ITER& iter)
     {
-        if (maquis::mpi__->isGlobalLeader()) {
+        //if (maquis::mpi__->isGlobalLeader()) {
             std::vector<scalar_type> s(iter.max_iterations());
             std::vector<vector_type> V(iter.max_iterations());
             std::vector<vector_type> VA(iter.max_iterations());
@@ -452,10 +452,10 @@ namespace ietl
                 V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index;
                 storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
             } while(true);
-        }
-        else {
-            std::cout << "tmp" << std::endl;
-        }
+        //}
+        //else {
+        //    std::cout << "tmp" << std::endl;
+        //}
     }
 
     template<class MATRIX, class VS>
