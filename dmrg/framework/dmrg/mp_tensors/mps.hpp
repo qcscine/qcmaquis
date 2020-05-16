@@ -341,8 +341,11 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     /// get size of MPS
     std::size_t L = 0;
     // calculate the length L of the MPS
-    while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
-    
+    if(maquis::mpi__->getGlobalRank() == 0)
+        while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
+
+    maquis::mpi__->broadcast(&L, 1, 0, maquis::mpi__->mycomm(0) );
+
     std::cout << " L is " << L << std::endl;
     maquis::cout << " |mps.hpp> BLUBB - reading MPS file " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
 
@@ -354,9 +357,18 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     parallel::scheduler_balanced scheduler(loop_max);
     for(size_t k = 0; k < loop_max; ++k){
         parallel::guard proc(scheduler(k));
-        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
-        storage::archive ar(fname);
-        ar["/tensor"] >> tmp[k];
+        // only MASTER reads from file
+        if(maquis::mpi__->getGlobalRank() == 0){
+            std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+            storage::archive ar(fname);
+            ar["/tensor"] >> tmp[k];
+        }
+
+        // communicate MPS tensor
+        tmp[k].communicate(maquis::mpi__->mycomm(0));
+
+        if(maquis::mpi__->getGlobalRank() > 0)
+            std::cout << "exit printing tmp of site " << k << " --> " << tmp[k] << std::endl;
     }
     swap(mps, tmp);
 }

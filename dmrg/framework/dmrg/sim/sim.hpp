@@ -40,14 +40,10 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , stop_callback(static_cast<double>(parms["run_seconds"]))
 {
 
-    std::cout << " |sim.hpp> BLUBB - in constructor of sim " << std::endl;
-
-    std::cout << " |sim.hpp> BLUBB - in constructor of sim " << maquis::mpi__->getGlobalRank() << std::endl;
-
-    maquis::cout << DMRG_VERSION_STRING << std::endl;
+    if(maquis::mpi__->getGlobalRank() >= 0)
+        maquis::cout << DMRG_VERSION_STRING << std::endl;
 
     // create tmp directory for boundary storage
-    std::cout << " |sim.hpp> BLUBB - calling storage::SETUP " << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
 
@@ -60,7 +56,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         rfile = "";
         if (parms.is_set("resultfile"))
             rfile = parms["resultfile"].str();
-            std::cout << " |sim.hpp> BLUBB - rfile = " << rfile << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
 
         // check possible orbital order in existing MPS before(!) model initialization
         if (!chkpfile.empty())
@@ -111,6 +106,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         }
     }
 
+    // communicate restore option
     maquis::mpi__->broadcast(&restore,  1, 0, maquis::mpi__->mycomm(0));
 
     /// MPS initialization
@@ -120,21 +116,27 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         maquis::mpi__->broadcast(&init_site,  1, 0, maquis::mpi__->mycomm(0));
         maquis::mpi__->broadcast(&init_sweep, 1, 0, maquis::mpi__->mycomm(0));
 
-        if(maquis::mpi__->getGlobalRank() == 0){
+        // chkpfile is accessed in this function, only master enters it
+        if(maquis::mpi__->getGlobalRank() == 0)
             maquis::checks::symmetry_check(parms, chkpfile);
-            load(chkpfile, mps);
-            maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-        }
-        else{
-            maquis::cout << " |sim.hpp> BLUBB - waiting for MPS data " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
 
-        }
+        // master loads and broadcasts data to the remaining threads
+        load(chkpfile, mps);
+
+        // chkpfile is not accessed in this function, only needed for printing.
+        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
 
     } else if (!parms["initfile"].empty()) {
+
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
 
-        maquis::checks::symmetry_check(parms, parms["initfile"].str());
+        // chkpfile is accessed in this function, only master enters it
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::checks::symmetry_check(parms, parms["initfile"].str());
+
+        // master loads and broadcasts data to the remaining threads
         load(parms["initfile"].str(), mps);
+
         maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
 
     } else {
@@ -146,13 +148,12 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     if (!rfile.empty() and maquis::mpi__->getGlobalRank() == 0)
     /// Update parameters - after checks have passed
     {
-        maquis::cout << " |sim.hpp> BLUBB - writing result file " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
         storage::archive ar(rfile, "w");
 
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    if (!dns && !chkpfile.empty())
+    if (!dns && !chkpfile.empty() and maquis::mpi__->getGlobalRank() == 0)
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
@@ -164,7 +165,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
 
-    std::cout << " |sim.hpp> BLUBB - end of constructor of sim " << std::endl;
 }
 
 template <class Matrix, class SymmGroup>

@@ -174,7 +174,6 @@ bool MPSTensor<Matrix, SymmGroup>::isobccompatible(Indicator i) const
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 {
-    std::cout << "am i left paired? " << cur_storage << std::endl;
     if (cur_storage == LeftPaired)
         return;
     
@@ -542,32 +541,16 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::load(Archive & ar)
 {
-    maquis::cout << " |mpstensor.hpp> BLUBB - reading MPS file " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
+    // only global master does I/O
+    assert(maquis::mpi__->getGlobalRank() == 0);
 
     data_.clear();
     make_left_paired();
 
-    // read indices
-    if(maquis::mpi__->getGlobalRank() == 0){
-        ar["phys_i" ] >> phys_i;
-        ar["left_i" ] >> left_i;
-        ar["right_i"] >> right_i;
-    }
-    // broadcast indices
-    communicate_index( phys_i);
-    communicate_index( left_i);
-    communicate_index( right_i);
-
-    maquis::cout << " |mpstensor.hpp> BLUBB - right_i --> " << right_i << " <MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-
-    maquis::cout << " |mpstensor.hpp> BLUBB - here we go for data_ " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-
-    // read data
-    if(maquis::mpi__->getGlobalRank() == 0)
-        ar["data_"] >> data();
-
-    // broadcast data
-    // communicate_data( data());
+    ar["phys_i" ] >> phys_i;
+    ar["left_i" ] >> left_i;
+    ar["right_i"] >> right_i;
+    ar["data_"  ] >> data();
 
     cur_normalization = Unorm;
 }
@@ -577,10 +560,13 @@ template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::save(Archive & ar) const
 {
     make_left_paired();
-    ar["phys_i"] << phys_i;
-    ar["left_i"] << left_i;
-    ar["right_i"] << right_i;
-    ar["data_"] << data();
+    // only global master does I/O
+    if(maquis::mpi__->getGlobalRank() == 0){
+        ar["phys_i"] << phys_i;
+        ar["left_i"] << left_i;
+        ar["right_i"] << right_i;
+        ar["data_"] << data();
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -590,53 +576,26 @@ void MPSTensor<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int ve
     ar & phys_i & left_i & right_i & cur_storage & cur_normalization & data_;
 }
 
-template <class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::communicate_index(Index<SymmGroup> & a)
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::communicate(const MPI_Comm & comm)
 {
-    if(maquis::mpi__->getGlobalCommunicatorSize() == 1) return;
 
-    std::vector<std::size_t> is;
-    std::vector<        int> ic;
-
-    // pack a
-    if(maquis::mpi__->getGlobalRank() == 0){
-
-        for (size_t b = 0; b < a.size(); ++b) {
-            is.push_back(a[b].second);
-            typename SymmGroup::charge c = a[b].first;
-            for(int s = 0; s < (sizeof(c)/sizeof(c[0])); ++s)
-                ic.push_back(c[s]);
-        }
+    if(maquis::mpi__->getGlobalRank() != 0){
+        this->data_.clear();
+        this->make_left_paired();
     }
 
-    // bcast a
-    std::size_t sdim = is.size();
-    std::size_t cdim = ic.size();
-    maquis::mpi__->broadcast(&sdim,  1, 0, maquis::mpi__->mycomm(0));
-    maquis::mpi__->broadcast(&cdim,  1, 0, maquis::mpi__->mycomm(0));
-    if(maquis::mpi__->getGlobalRank() !=0 ){
-        is.resize(sdim,0);
-        ic.resize(cdim,0);
-    }
-    maquis::mpi__->broadcast(&is[0],  is.size(), 0, maquis::mpi__->mycomm(0));
-    maquis::mpi__->broadcast(&ic[0],  ic.size(), 0, maquis::mpi__->mycomm(0));
+    // broadcast physical, left and right indices
+    this->data().communicate_index( this->phys_i,  comm);
+    this->data().communicate_index( this->left_i,  comm);
+    this->data().communicate_index( this->right_i, comm);
 
-    // unpack a
-    if(maquis::mpi__->getGlobalRank() !=0){
-        // loop over a indexes
-        for(std::size_t s = 0; s < is.size(); ++s){
+    // broadcast block matrix
+    this->data().communicate_block( comm );
 
-            typename SymmGroup::charge x(0);
-
-            // loop over charges for each index
-            for(std::size_t t = 0; t < (ic.size()/is.size()); ++t){
-                x[t] = ic[ic.size()/is.size()*s + t];
-            }
-            a.insert(std::make_pair(x, is[s]));
-        }
-    }
+    if(maquis::mpi__->getGlobalRank() != 0)
+        this->cur_normalization = Unorm;
 }
-
 
 template<class Matrix, class SymmGroup>
 bool MPSTensor<Matrix, SymmGroup>::reasonable() const
