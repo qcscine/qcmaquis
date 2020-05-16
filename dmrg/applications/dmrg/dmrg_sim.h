@@ -73,7 +73,6 @@ public:
         if (parms["MODEL"] == std::string("quantum_chemistry") && parms["use_compressed"])
             throw std::runtime_error("chem compression has been disabled");
         MPO<Matrix, SymmGroup> mpoc = mpo;
-        std::cout << " BLUBB MPO " << std::endl;
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
 

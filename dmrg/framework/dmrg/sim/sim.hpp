@@ -40,14 +40,14 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , stop_callback(static_cast<double>(parms["run_seconds"]))
 {
 
-    if(maquis::mpi__->getGlobalRank() >= 0)
+    if(maquis::mpi__->getGlobalRank() == 0)
         maquis::cout << DMRG_VERSION_STRING << std::endl;
 
     // create tmp directory for boundary storage
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
 
-    if(maquis::mpi__->getGlobalRank() >= 0){
+    if(maquis::mpi__->getGlobalRank() == 0){
         // chkpfile and resultfile may be empty
         chkpfile = "";
         if (parms.is_set("chkpfile"))

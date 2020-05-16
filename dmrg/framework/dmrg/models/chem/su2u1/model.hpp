@@ -271,7 +271,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     HERMITIAN(create_couple_up, destroy_couple_up)
     #undef HERMITIAN
 
-    maquis::cout << " BLUBB - |model.hpp> - in constructor of model " << std::endl;
+    //maquis::cout << " BLUBB - |model.hpp> - in constructor of model " << std::endl;
 
 //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
 //    PRINT(ident)

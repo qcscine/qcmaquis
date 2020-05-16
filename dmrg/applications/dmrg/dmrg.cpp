@@ -84,12 +84,8 @@ int main(int argc, char ** argv)
             gettimeofday(&now, NULL);
 
             try {
-                if(maquis::mpi__->getGlobalRank() == 0)
-                    std::cout << "|dmrg.cpp> BLUBB: calling constructor of sim " << std::endl;
                 // constructor of sim (see sim.hpp)
                 simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
-                if(maquis::mpi__->getGlobalRank() == 0)
-                    std::cout << "|dmrg.cpp> BLUBB: calling sim run " << std::endl;
                 // now run the thing (in dmrg_sim.h)
                 sim->run(opt.parms);
             } catch (std::exception & e) {

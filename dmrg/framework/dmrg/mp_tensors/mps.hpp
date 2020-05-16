@@ -79,7 +79,6 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
 
     size_t loop_max = this->length();
 
-    std::cout << " loop_max is " << loop_max << std::endl;
     parallel::scheduler_balanced scheduler(loop_max);
     for(size_t k = 0; k < loop_max; ++k){
         parallel::guard proc(scheduler(k));
@@ -87,8 +86,11 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
         // communicate MPS tensor
         this->data_[k].communicate(maquis::mpi__->mycomm(0));
 
-        if(maquis::mpi__->getGlobalRank() > 0)
+#ifdef DEBUG_MPI_
+        if(maquis::mpi__->getGlobalRank() == 1)
             std::cout << "exit printing MPS tensor of site " << k << " --> " << this->data_[k] << std::endl;
+#endif
+
     }
     maquis::mpi__->broadcast(&this->canonized_i, 1, 0, maquis::mpi__->mycomm(0) );
 }
@@ -367,7 +369,6 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
-    std::cout << " loop_max is " << loop_max << std::endl;
     parallel::scheduler_balanced scheduler(loop_max);
     for(size_t k = 0; k < loop_max; ++k){
         parallel::guard proc(scheduler(k));
@@ -381,8 +382,10 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
         // communicate MPS tensor
         tmp[k].communicate(maquis::mpi__->mycomm(0));
 
+#ifdef DEBUG_MPI_
         if(maquis::mpi__->getGlobalRank() > 0)
             std::cout << "exit printing MPS tensor of site " << k << " --> " << tmp[k] << std::endl;
+#endif
     }
     swap(mps, tmp);
 }

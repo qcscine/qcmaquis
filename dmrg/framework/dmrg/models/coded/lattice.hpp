@@ -167,7 +167,6 @@ public:
             // we need to assume that the integral_file is only available on the global master
             if(maquis::mpi__->getGlobalRank() == 0){
                 std::string integral_file = model["integral_file"];
-                std::cout << " |lattice.hpp> BLUBB - in constructor of class Orbitals" << maquis::mpi__->getGlobalRank() << std::endl;
                 if (!boost::filesystem::exists(integral_file))
                     throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
 
