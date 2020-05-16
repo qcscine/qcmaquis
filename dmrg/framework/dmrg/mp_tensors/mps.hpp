@@ -57,22 +57,40 @@ MPS<Matrix, SymmGroup>::MPS(size_t L)
 , canonized_i(std::numeric_limits<size_t>::max())
 { }
 
+// MPS default constructor with initializer (random,thin,HF,...)
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
 : data_(L)
 , canonized_i(std::numeric_limits<size_t>::max())
 {
-    init(*this);
-    
-    // MD: this is actually important
-    //     it turned out, this is also quite dangerous: if a block is 1x2,
-    //     normalize_left will resize it to 1x1
-    //     init() should take care of it, in case needed. Otherwise some
-    //     adhoc states will be broken (e.g. identity MPS)
-    // for (int i = 0; i < L; ++i)
-    //     (*this)[i].normalize_left(DefaultSolver());
+    if(maquis::mpi__->getGlobalRank() == 0){
+        init(*this);
 
-    this->normalize_left();
+        // MD: this is actually important
+        //     it turned out, this is also quite dangerous: if a block is 1x2,
+        //     normalize_left will resize it to 1x1
+        //     init() should take care of it, in case needed. Otherwise some
+        //     adhoc states will be broken (e.g. identity MPS)
+        // for (int i = 0; i < L; ++i)
+        //     (*this)[i].normalize_left(DefaultSolver());
+
+        this->normalize_left();
+    }
+
+    size_t loop_max = this->length();
+
+    std::cout << " loop_max is " << loop_max << std::endl;
+    parallel::scheduler_balanced scheduler(loop_max);
+    for(size_t k = 0; k < loop_max; ++k){
+        parallel::guard proc(scheduler(k));
+
+        // communicate MPS tensor
+        this->data_[k].communicate(maquis::mpi__->mycomm(0));
+
+        if(maquis::mpi__->getGlobalRank() > 0)
+            std::cout << "exit printing MPS tensor of site " << k << " --> " << this->data_[k] << std::endl;
+    }
+    maquis::mpi__->broadcast(&this->canonized_i, 1, 0, maquis::mpi__->mycomm(0) );
 }
 
 template<class Matrix, class SymmGroup>
@@ -346,10 +364,6 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 
     maquis::mpi__->broadcast(&L, 1, 0, maquis::mpi__->mycomm(0) );
 
-    std::cout << " L is " << L << std::endl;
-    maquis::cout << " |mps.hpp> BLUBB - reading MPS file " << "<MYPROC> --> " << maquis::mpi__->getGlobalRank() << std::endl;
-
-
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
@@ -368,7 +382,7 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
         tmp[k].communicate(maquis::mpi__->mycomm(0));
 
         if(maquis::mpi__->getGlobalRank() > 0)
-            std::cout << "exit printing tmp of site " << k << " --> " << tmp[k] << std::endl;
+            std::cout << "exit printing MPS tensor of site " << k << " --> " << tmp[k] << std::endl;
     }
     swap(mps, tmp);
 }
