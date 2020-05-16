@@ -58,10 +58,12 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
 
 public:
 
+    // default constructor
     dmrg_sim (DmrgParameters & parms_)
     : base(parms_)
     { }
 
+    // member functions
     void run()
     {
         int meas_each = parms["measure_each"];
@@ -105,11 +107,12 @@ public:
                 if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
                     /// write iteration results
+                    if(maquis::mpi__->getGlobalRank() == 0)
                     {
+
                         storage::archive ar(rfile, "w");
                         ar[results_archive_path(sweep) + "/parameters"] << parms;
                         ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
-                        // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
 
                         // stop simulation if an energy threshold has been specified
                         // FIXME: this does not work for complex numbers - stknecht feb 2016
@@ -129,6 +132,8 @@ public:
                                 converged = true;
                         }
                     }
+
+                    maquis::mpi__->broadcast(&converged,  1, 0, maquis::mpi__->mycomm(0));
 
                     /// measure observables specified in 'always_measure'
                     if (always_measurements.size() > 0)
@@ -155,6 +160,7 @@ public:
         }
     }
 
+    // default destructor
     ~dmrg_sim()
     {
         storage::disk::sync();

@@ -71,7 +71,7 @@ typedef U1 symm;
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
-MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattice, size_t const & myrank)
+MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattice, int const & myrank)
 {
         typedef operator_selector<matrix, symm>::type op_t;
         typedef OPTable<matrix, symm>::tag_type tag_type;

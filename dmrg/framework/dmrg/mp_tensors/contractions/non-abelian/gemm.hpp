@@ -65,7 +65,11 @@ namespace SU2 {
                 return 1.;
         }
         else
+        {
             throw std::runtime_error("hermitian conjugate for reduced tensor operators only implemented up to rank 1");
+        }
+
+        return std::numeric_limits<T>::quiet_NaN();
     }
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>

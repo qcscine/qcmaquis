@@ -190,7 +190,7 @@ sim<Matrix, SymmGroup>::~sim()
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
-    if (!dns && !chkpfile.empty()) {
+    if (!dns && !chkpfile.empty() && maquis::mpi__->getGlobalRank() == 0) {
         /// save state to chkp dir
         save(chkpfile, state);
 
