@@ -304,26 +304,31 @@ if(ENABLE_OMP)
   endif(OPENMP_FOUND)
 endif(ENABLE_OMP)
 
-# MPI
+
+######################################################################
+# MPI (activate only if requested but include framework ALWAYS)
+######################################################################
 if(ENABLE_MPI)
     add_definitions(-DHAVE_MPI)
-    set (mpi_src ${PROJECT_SOURCE_DIR}/mpi)
-    set (mpi_bin ${PROJECT_BINARY_DIR}/mpi)
-
-        configure_file(${mpi_src}/CMakeLists.txt ${mpi_bin}/CMakeLists.txt COPYONLY)
-        ## Builds with build subdirectory outside the source tree require the second argument of add_subdirectory
-        add_subdirectory(${mpi_bin} ${mpi_bin})
-
-        get_directory_property(${MPI_INCLUDE} DIRECTORY ${mpi_bin} DEFINITION ${MPI_INCLUDE})
-        get_directory_property(${MPI_LIBRARIES} DIRECTORY ${mpi_bin} DEFINITION ${MPI_LIBRARIES})
-        include_directories(${MPI_INCLUDE})
-
-        message ("-- MPI_INCLUDE_PATH: ${MPI_INCLUDE}")
-        message ("-- MPI_LIBRARIES: ${MPI_LIBRARIES}")
-
-        list (APPEND DMRG_LIBRARY_DIRS ${MPI_LIBRARIES})
-
 endif(ENABLE_MPI)
+
+set (mpi_src ${PROJECT_SOURCE_DIR}/mpi)
+set (mpi_bin ${PROJECT_BINARY_DIR}/mpi)
+
+configure_file(${mpi_src}/CMakeLists.txt ${mpi_bin}/CMakeLists.txt COPYONLY)
+## Builds with build subdirectory outside the source tree require the second argument of add_subdirectory
+add_subdirectory(${mpi_bin} ${mpi_bin})
+
+get_directory_property(${MPI_INCLUDE} DIRECTORY ${mpi_bin} DEFINITION ${MPI_INCLUDE})
+get_directory_property(${MPI_LIBRARIES} DIRECTORY ${mpi_bin} DEFINITION ${MPI_LIBRARIES})
+include_directories(${MPI_INCLUDE})
+
+message ("-- MPI_INCLUDE_PATH: ${MPI_INCLUDE}")
+message ("-- MPI_LIBRARIES: ${MPI_LIBRARIES}")
+
+list (APPEND DMRG_LIBRARY_DIRS ${MPI_LIBRARIES})
+#endif(ENABLE_MPI)
+######################################################################
 
 
 ######################################################################
