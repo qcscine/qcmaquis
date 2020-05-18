@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 
 #include <mpi_interface.h>
+#include <utils/qcmaquis_header.h>
 
 namespace maquis
 {
@@ -51,28 +52,19 @@ int main(int argc, char ** argv)
         maquis::mpi__ = maquis::mpi.get();
     }
 
-            
-    std::cout << "  SCINE QCMaquis \n"
-              << "  Quantum Chemical Density Matrix Renormalization group\n"
-              << "  available from https://scine.ethz.ch/download/qcmaquis\n"
-              << "  based on the ALPS MPS codes from http://alps.comp-phys.org/\n"
-              << "  copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich\n"
-              << "  copyright (c) 2012-2016 by Sebastian Keller\n"
-              << "  copyright (c) 2016-2018 by Alberto Baiardi, Leon Freitag, \n"
-              << "  Stefan Knecht, Yingjin Ma \n"
-              << "  for details see the publication: \n"
-              << "  S. Keller et al., J. Chem. Phys. 143, 244118 (2015)\n"
-              << std::endl;
+
+    if(maquis::mpi__->getGlobalRank() == 0)
+        maquis::qcmaquis_header(maquis::mpi__->isMPIAvailable(),maquis::mpi__->getGlobalCommunicatorSize());
 
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
-        
+
         maquis::cout.precision(10);
-        
+
         timeval now, then, snow, sthen;
         gettimeofday(&now, NULL);
-        
-        
+
+
         try {
             simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
             sim->run(opt.parms);
@@ -81,11 +73,12 @@ int main(int argc, char ** argv)
             maquis::cerr << e.what() << std::endl;
             exit(1);
         }
-        
+
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-        
-        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
+
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
 
     // terminate MPI (does nothing if serial run)

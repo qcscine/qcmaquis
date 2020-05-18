@@ -575,7 +575,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
     } // matrix_elements for
 
     ta.commit_terms(this->terms_);
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
+    if(maquis::mpi__->getGlobalRank() == 0)
+        maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
 
 #endif

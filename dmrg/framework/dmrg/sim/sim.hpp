@@ -128,7 +128,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 
     } else if (!parms["initfile"].empty()) {
 
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
 
         // chkpfile is accessed in this function, only master enters it
         if(maquis::mpi__->getGlobalRank() == 0)
@@ -163,7 +164,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/version"] << DMRG_VERSION_STRING;
     }
 
-    maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
+    if(maquis::mpi__->getGlobalRank() == 0)
+        maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
 
 }
 

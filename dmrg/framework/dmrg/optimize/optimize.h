@@ -72,7 +72,7 @@ struct SiteProblem<Matrix, SymmGroup>
 now = boost::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
 then = boost::chrono::high_resolution_clock::now(); \
-maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
+if(maquis::mpi__->getGlobalRank() == 0) maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
 
 inline double log_interpolate(double y0, double y1, int N, int i)
 {
@@ -110,7 +110,8 @@ public:
             Storage::evict(mps[i]);
 
         northo = parms_["n_ortho_states"];
-        maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
 
         if (northo > 0 && !parms_.is_set("ortho_states"))
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
@@ -120,15 +121,28 @@ public:
         std::vector<std::string> files;
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
-            maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-            maquis::checks::symmetry_check(parms, files[n]);
-            maquis::checks::orbital_order_check(parms, files[n]);
+            if(maquis::mpi__->getGlobalRank() == 0)
+                maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
+
+            // chkpfile is accessed in these functions, only master enters them
+            if(maquis::mpi__->getGlobalRank() == 0){
+                maquis::checks::symmetry_check(parms, files[n]);
+                maquis::checks::orbital_order_check(parms, files[n]);
+            }
+
+            // master loads and broadcasts data to the remaining threads
             load(files[n], ortho_mps[n]);
+
+            // chkpfile is not accessed in this function, only needed for printing.
             maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-            maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+
+            if(maquis::mpi__->getGlobalRank() == 0)
+                maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         init_left_right(mpo, site);
-        maquis::cout << "Done init_left_right" << std::endl;
+
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Done init_left_right" << std::endl;
     }
 
     virtual ~optimizer_base() {}
@@ -189,7 +203,8 @@ protected:
         Storage::evict(left_[site]);
         //tlb.end();
 
-        maquis::cout << "Boundaries are partially initialized...\n";
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Boundaries are partially initialized...\n";
 
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
@@ -205,7 +220,8 @@ protected:
         Storage::evict(right_[site]);
         //trb.end();
 
-        maquis::cout << "Boundaries are fully initialized...\n";
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Boundaries are fully initialized...\n";
 
         // Initializes the index manager
         /*
