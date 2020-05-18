@@ -1,3 +1,0 @@
-[submodule "dmrg/mpi"]
-	path = dmrg/mpi
-	url = git@gitlab.chab.ethz.ch:scine/mpi_interface.git

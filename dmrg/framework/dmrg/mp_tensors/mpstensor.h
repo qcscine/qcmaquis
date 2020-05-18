@@ -32,7 +32,6 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
-
 //#include "solver.h"
 
 enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
@@ -108,7 +107,6 @@ public:
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
     
-    // function returning private block matrix member data_ (see below)
     block_matrix<Matrix, SymmGroup> & data();
     block_matrix<Matrix, SymmGroup> const & data() const;
     block_matrix<Matrix, SymmGroup> const & const_data() const;
@@ -144,12 +142,9 @@ public:
     void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
     bool reasonable() const;
     bool num_check() const; // checks for nan or inf
-
-    void communicate( const MPI_Comm & comm );
-
+    
     Index<SymmGroup> phys_i, left_i, right_i;
 private:
-    // private block matrix member data_ (can be modified even if declared const)
     mutable block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;

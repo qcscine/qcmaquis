@@ -48,41 +48,47 @@
 
 namespace ietl
 {
+    //enum DesiredEigenvalue { Largest, Smallest };
+    
     template <class MATRIX, class VS>
     class davidson
     {
     public:
-        // Types definition
         typedef typename vectorspace_traits<VS>::vector_type vector_type;
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        /** @brief Class constructor */
-        davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired = Largest,
-                 const std::vector<int>& boundaryIndexesLeft = std::vector<int>(),
-                 const std::vector<int>& boundaryIndexesRight = std::vector<int>());
-        /** @brief Diagonalizer */
+        
+        
+        davidson(const MATRIX& matrix, 
+                 const VS& vec,
+                 DesiredEigenvalue desired = Largest);
+        
         template <class GEN, class SOLVER, class PRECOND, class ITER>
-        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, SOLVER& solver,
-                                                                    PRECOND& mdiag, ITER& iter);
+        std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, 
+                                                                    SOLVER& solver,
+                                                                    PRECOND& mdiag,
+                                                                    ITER& iter);
     private:
         MATRIX const & matrix_;
         VS vecspace_;
         magnitude_type atol_;
         DesiredEigenvalue desired_;
-        std::vector<int> boundaryIndexesLeft_, boundaryIndexesRight_;
     };
     
-    // Class constructor
     template <class MATRIX, class VS>
-    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired,
-                                   const std::vector<int>& boundaryIndexesLeft, const std::vector<int>& boundaryIndexesRight) 
-        : matrix_(matrix), vecspace_(vec), desired_(desired), boundaryIndexesLeft_(boundaryIndexesLeft),
-          boundaryIndexesRight_(boundaryIndexesRight) {}
+    davidson<MATRIX, VS>::davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
+    matrix_(matrix),
+    vecspace_(vec),
+    desired_(desired)
+    {}
     
     template <class MATRIX, class VS> 
     template <class GEN, class SOLVER, class PRECOND, class ITER>
     std::pair<typename davidson<MATRIX,VS>::magnitude_type, typename davidson<MATRIX, VS>::vector_type> 
-    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, SOLVER& solver, PRECOND& mdiag, ITER& iter)
+    davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
+                                               SOLVER& solver,
+                                               PRECOND& mdiag,
+                                               ITER& iter)
     {
         typedef alps::numeric::matrix<scalar_type> matrix_t;
 

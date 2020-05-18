@@ -20,7 +20,7 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 # Project START
 ######################################################################
-project (MAQUIS_DMRG)
+project (MAQUIS_DMRG) 
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 
@@ -36,7 +36,6 @@ set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(ENABLE_OMP "Enable OpenMP" ON)
-option(ENABLE_MPI "Enable MPI" OFF)
 option(USE_AMBIENT "Enable Ambient" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
@@ -50,8 +49,6 @@ mark_as_advanced(ENABLE_COLLECTOR)
 
 set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas, alps")
 
-# enable global MACRO PROG_QCM
-add_definitions(-DPROG_QCM)
 
 ######################################################################
 # How to build
@@ -304,31 +301,6 @@ if(ENABLE_OMP)
   endif(OPENMP_FOUND)
 endif(ENABLE_OMP)
 
-
-######################################################################
-# MPI (activate only if requested but include framework ALWAYS)
-######################################################################
-if(ENABLE_MPI)
-    add_definitions(-DHAVE_MPI)
-endif(ENABLE_MPI)
-
-set (mpi_src ${PROJECT_SOURCE_DIR}/mpi)
-set (mpi_bin ${PROJECT_BINARY_DIR}/mpi)
-
-configure_file(${mpi_src}/CMakeLists.txt ${mpi_bin}/CMakeLists.txt COPYONLY)
-## Builds with build subdirectory outside the source tree require the second argument of add_subdirectory
-add_subdirectory(${mpi_bin} ${mpi_bin})
-
-get_directory_property(${MPI_INCLUDE} DIRECTORY ${mpi_bin} DEFINITION ${MPI_INCLUDE})
-get_directory_property(${MPI_LIBRARIES} DIRECTORY ${mpi_bin} DEFINITION ${MPI_LIBRARIES})
-include_directories(${MPI_INCLUDE})
-
-message ("-- MPI_INCLUDE_PATH: ${MPI_INCLUDE}")
-message ("-- MPI_LIBRARIES: ${MPI_LIBRARIES}")
-
-list (APPEND DMRG_LIBRARY_DIRS ${MPI_LIBRARIES})
-#endif(ENABLE_MPI)
-######################################################################
 
 
 ######################################################################

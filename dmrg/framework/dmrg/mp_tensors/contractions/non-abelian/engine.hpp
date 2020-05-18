@@ -127,22 +127,20 @@ namespace contraction {
         overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                               MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                               Boundary<OtherMatrix, SymmGroup> const & left,
-                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                              std::vector<int> const& indexes = std::vector<int>())
+                              MPOTensor<Matrix, SymmGroup> const & mpo)
         {
             return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
-                   (bra_tensor, ket_tensor, left, mpo, indexes);
+                   (bra_tensor, ket_tensor, left, mpo);
         }
 
         static Boundary<OtherMatrix, SymmGroup>
         overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                                MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                                Boundary<OtherMatrix, SymmGroup> const & right,
-                               MPOTensor<Matrix, SymmGroup> const & mpo,
-                               std::vector<int> const& indexes = std::vector<int>())
+                               MPOTensor<Matrix, SymmGroup> const & mpo)
         {
             return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
-                   (bra_tensor, ket_tensor, right, mpo, indexes);
+                   (bra_tensor, ket_tensor, right, mpo);
         }
 
         // Single-site prediction

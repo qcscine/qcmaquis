@@ -245,8 +245,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
     assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
-    if(maquis::mpi__->getGlobalRank() == 0)
-        maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
+    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
     
 #endif

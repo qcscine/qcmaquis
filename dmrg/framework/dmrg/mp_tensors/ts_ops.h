@@ -73,7 +73,7 @@ namespace ts_ops_detail
             for (int ip1 = 0; ip1 < p1.size(); ++ip1)
             for (int ip2 = 0; ip2 < p2.size(); ++ip2)
             {
-
+            
             std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(),
                                                          p1.op(ip1).spin().get(), p2.op(ip2).spin().get());
             for (typename std::vector<spin_t>::const_iterator it2 = op_spins.begin(); it2 != op_spins.end(); ++it2)
@@ -159,10 +159,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     #ifdef MAQUIS_OPENMP
     #pragma omp critical
     #endif
-    if(maquis::mpi__->getGlobalRank() == 0){
-        maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size()
-                     << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
-    }
+    maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
+                 << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
     return mpo_big_tag;
 }
 
@@ -176,13 +174,12 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     omp_for(size_t p, parallel::range<size_t>(0,L_ts), {
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], mps[p].site_dim(), mps[p+1].site_dim());
     });
-
+        
     std::size_t ntags=0;
     for (int p=0; p<mpo_out.length(); ++p) {
         ntags += mpo_out[p].get_operator_table()->size();
     }
-    if(maquis::mpi__->getGlobalRank() == 0)
-        maquis::cout << "Total number of tags: " << ntags << std::endl;
+    maquis::cout << "Total number of tags: " << ntags << std::endl;
 }
 
 #endif

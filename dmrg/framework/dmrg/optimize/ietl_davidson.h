@@ -143,9 +143,7 @@ std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
                     MPSTensor<Matrix, SymmGroup> const & initial,
                     BaseParameters & params,
-                    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >(),
-                    std::vector<int> boundaryIndexesLeft = std::vector<int>(),
-                    std::vector<int> boundaryIndexesRight = std::vector<int>())
+                    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >())
 {
     if (initial.num_elements() <= ortho_vecs.size())
         ortho_vecs.resize(initial.num_elements()-1);
@@ -161,7 +159,7 @@ solve_ietl_davidson(SiteProblem<Matrix, SymmGroup> & sp,
     jcd_gmres(sp, vs, params["ietl_jcd_gmres"]);
     
     ietl::davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-    jd(sp, vs, ietl::Smallest, boundaryIndexesLeft, boundaryIndexesRight);
+    jd(sp, vs, ietl::Smallest);
 
     davidson_detail::MultDiagonal<Matrix, SymmGroup> mdiag(sp, initial);
     

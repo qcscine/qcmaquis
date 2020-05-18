@@ -169,7 +169,7 @@ void measurement<Matrix, SymmGroup>::print(std::ostream& os) const
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, measurement<Matrix, SymmGroup> const& m)
 {
-    return m.print(os);
+    m.print(os);
 }
 
 

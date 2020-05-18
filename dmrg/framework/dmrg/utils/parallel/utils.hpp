@@ -33,7 +33,6 @@
 #include "ambient/container/future.hpp"
 #include "utils/meminfo.hpp"
 #else
-#include <utils/maquis_mpi.h>
 #include "dmrg/utils/proc_status.h"
 #endif
 
@@ -70,8 +69,7 @@ namespace parallel {
     }
     #else
     inline void meminfo(){
-        if(maquis::mpi__->getGlobalRank() == 0)
-            parallel::cout << "Memory usage : " << proc_status_mem() << std::endl;
+        parallel::cout << "Memory usage : " << proc_status_mem() << std::endl;
     }
     inline void sync(){
     }

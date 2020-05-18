@@ -40,11 +40,9 @@ template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
-    // -- Types definition --
     typedef typename Matrix::value_type value_type;
-    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
 
-    using base::boundaryIndexes_;
+    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -121,10 +119,8 @@ public:
             //if (lr == +1) mps.canonize(site1);
             //else          mps.canonize(site2);
 
-            if(maquis::mpi__->getGlobalRank() == 0){
-        	    maquis::cout << std::endl;
-                maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
-            }
+    	    maquis::cout << std::endl;
+            maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
 
             // MD: some changes needed to re-enable it.
 //            if (parms.template get<bool>("beta_mode")) {
@@ -184,11 +180,11 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs, boundaryIndexes_[site1], boundaryIndexes_[site2]);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("JCD")
                 } else if (parms["eigensolver"] == std::string("IETL_DAVIDSON")) {
             	    BEGIN_TIMING("DAVIDSON")
-                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs, boundaryIndexes_[site1], boundaryIndexes_[site2]);
+                    res = solve_ietl_davidson(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("DAVIDSON")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -206,7 +202,6 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
 
-            if(maquis::mpi__->getGlobalRank() == 0)
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
@@ -249,8 +244,7 @@ public:
 
         		t = mps[site2].normalize_left(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
-                if(maquis::mpi__->getGlobalRank() == 0)
-                    maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
+                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
                 if (site1 != L-2)
@@ -295,8 +289,7 @@ public:
 
         		t = mps[site1].normalize_right(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
-                if(maquis::mpi__->getGlobalRank() == 0)
-                    maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
+                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
                 if(site1 != 0)
@@ -332,8 +325,7 @@ public:
 
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
-            if(maquis::mpi__->getGlobalRank() == 0)
-                maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
+            maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
 
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);

@@ -37,8 +37,6 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 public:
 
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
-
-    using base::boundaryIndexes_;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -153,7 +151,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs, boundaryIndexes_[site], boundaryIndexes_[site+1]);
+                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
                     END_TIMING("JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -168,7 +166,6 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
             
-            if(maquis::mpi__->getGlobalRank() == 0)
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
@@ -193,8 +190,7 @@ public:
             
             if (lr == +1) {
                 if (site < L-1) {
-                    if(maquis::mpi__->getGlobalRank() == 0)
-                        maquis::cout << "Growing, alpha = " << alpha << std::endl;
+                    maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
@@ -210,8 +206,7 @@ public:
                 }
             } else if (lr == -1) {
                 if (site > 0) {
-                    if(maquis::mpi__->getGlobalRank() == 0)
-                        maquis::cout << "Growing, alpha = " << alpha << std::endl;
+                    maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
@@ -234,8 +229,7 @@ public:
             
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
-            if(maquis::mpi__->getGlobalRank() == 0)
-                maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
+            maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
             
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);

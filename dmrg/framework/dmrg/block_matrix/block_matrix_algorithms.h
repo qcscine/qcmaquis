@@ -388,7 +388,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
-    if(verbose && maquis::mpi__->getGlobalRank() == 0){
+    if(verbose){
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
     
@@ -499,7 +499,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
-    if(verbose && maquis::mpi__->getGlobalRank() == 0){
+    if(verbose){
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
     

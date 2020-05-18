@@ -60,7 +60,7 @@ struct SiteProblem
 now = boost::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
 then = boost::chrono::high_resolution_clock::now(); \
-   if(maquis::mpi__->getGlobalRank() == 0) maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
+    maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
 
 
 /// TODO: 1) implement two-site time evolution. (single-site is stuck in initial MPS structure)

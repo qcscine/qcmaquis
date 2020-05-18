@@ -88,7 +88,6 @@ public:
     }
 
 private:
-    // integer array of size N+1
     S data_[N+1];
 };
 
@@ -131,7 +130,6 @@ std::ostream& operator<<(std::ostream& os, NU1ChargePG<N, S> const & c)
 {
     os << "<";
     for (int i = 0; i < N+1; ++i) {
-      //os << c[i]; os << i; os << " is of type: "; os << typeid(c[i]).name();
         os << c[i];
         if (i+1 < N+1)
             os << ",";
