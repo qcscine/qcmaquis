@@ -28,6 +28,8 @@
 #include <boost/algorithm/string.hpp>
 #include "dmrg/version.h"
 
+#include <utils/maquis_mpi.h>
+
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 : parms(parms_)
@@ -37,75 +39,105 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 , dns( (parms["donotsave"] != 0) )
 , stop_callback(static_cast<double>(parms["run_seconds"]))
 {
-    maquis::cout << DMRG_VERSION_STRING << std::endl;
+
+    if(maquis::mpi__->getGlobalRank() == 0)
+        maquis::cout << DMRG_VERSION_STRING << std::endl;
+
+    // create tmp directory for boundary storage
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
 
-    // chkpfile and resultfile may be empty
-    chkpfile = "";
-    if (parms.is_set("chkpfile"))
-        chkpfile = boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ "));
+    if(maquis::mpi__->getGlobalRank() == 0){
+        // chkpfile and resultfile may be empty
+        chkpfile = "";
+        if (parms.is_set("chkpfile"))
+            chkpfile = boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ "));
 
-    rfile = "";
-    if (parms.is_set("resultfile"))
-        rfile = parms["resultfile"].str();
+        rfile = "";
+        if (parms.is_set("resultfile"))
+            rfile = parms["resultfile"].str();
 
-    // check possible orbital order in existing MPS before(!) model initialization
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
-            maquis::checks::orbital_order_check(parms, chkpfile);
-        }
-        else if (!parms["initfile"].empty()){
-            maquis::checks::orbital_order_check(parms, parms["initfile"].str());
-        }
-    }
-
-    /// Model initialization
-    lat = Lattice(parms);
-    model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model);
-    all_measurements = model.measurements();
-    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
+        // check possible orbital order in existing MPS before(!) model initialization
+        if (!chkpfile.empty())
         {
-            storage::archive ar_in(chkpfile+"/props.h5");
-            if (ar_in.is_scalar("/status/sweep"))
-            {
-                ar_in["/status/sweep"] >> init_sweep;
-
-                if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
-                    ar_in["/status/site"] >> init_site;
-
-                if (init_site == -1)
-                    ++init_sweep;
-
-                maquis::cout << "Restoring state." << std::endl;
-                maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
-                restore = true;
-            } else {
-                maquis::cout << "A fresh simulation will start." << std::endl;
+            boost::filesystem::path p(chkpfile);
+            if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
+                maquis::checks::orbital_order_check(parms, chkpfile);
+            }
+            else if (!parms["initfile"].empty()){
+                maquis::checks::orbital_order_check(parms, parms["initfile"].str());
             }
         }
     }
 
+    // Model and MPO initialization
+    lat              = Lattice(parms);
+    model            = Model<Matrix, SymmGroup>(lat, parms);
+    mpo              = make_mpo(lat, model);
+    // set measurements for a given Model
+    all_measurements = model.measurements();
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+
+    // check for existence of MPS
+    if(maquis::mpi__->getGlobalRank() == 0){
+        if (!chkpfile.empty())
+        {
+            boost::filesystem::path p(chkpfile);
+            if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
+            {
+                storage::archive ar_in(chkpfile+"/props.h5");
+                if (ar_in.is_scalar("/status/sweep"))
+                {
+                    ar_in["/status/sweep"] >> init_sweep;
+
+                    if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
+                        ar_in["/status/site"] >> init_site;
+
+                    if (init_site == -1)
+                        ++init_sweep;
+
+                    maquis::cout << "Restoring state." << std::endl;
+                    maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
+                    restore = true;
+                } else {
+                    maquis::cout << "A fresh simulation will start." << std::endl;
+                }
+            }
+        }
+    }
+
+    // communicate restore option
+    maquis::mpi__->broadcast(&restore,  1, 0, maquis::mpi__->mycomm(0));
+
     /// MPS initialization
     if (restore) {
 
-        maquis::checks::symmetry_check(parms, chkpfile);
+        // communicate sweep data
+        maquis::mpi__->broadcast(&init_site,  1, 0, maquis::mpi__->mycomm(0));
+        maquis::mpi__->broadcast(&init_sweep, 1, 0, maquis::mpi__->mycomm(0));
+
+        // chkpfile is accessed in this function, only master enters it
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::checks::symmetry_check(parms, chkpfile);
+
+        // master loads and broadcasts data to the remaining threads
         load(chkpfile, mps);
+
+        // chkpfile is not accessed in this function, only needed for printing.
         maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
 
     } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
 
-        maquis::checks::symmetry_check(parms, parms["initfile"].str());
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+
+        // chkpfile is accessed in this function, only master enters it
+        if(maquis::mpi__->getGlobalRank() == 0)
+            maquis::checks::symmetry_check(parms, parms["initfile"].str());
+
+        // master loads and broadcasts data to the remaining threads
         load(parms["initfile"].str(), mps);
+
         maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
 
     } else {
@@ -114,7 +146,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 
     assert(mps.length() == lat.size());
 
-    if (!rfile.empty())
+    if (!rfile.empty() and maquis::mpi__->getGlobalRank() == 0)
     /// Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
@@ -122,7 +154,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    if (!dns && !chkpfile.empty())
+    if (!dns && !chkpfile.empty() and maquis::mpi__->getGlobalRank() == 0)
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
@@ -132,7 +164,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/version"] << DMRG_VERSION_STRING;
     }
 
-    maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
+    if(maquis::mpi__->getGlobalRank() == 0)
+        maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
+
 }
 
 template <class Matrix, class SymmGroup>
@@ -158,7 +192,7 @@ sim<Matrix, SymmGroup>::~sim()
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
-    if (!dns && !chkpfile.empty()) {
+    if (!dns && !chkpfile.empty() && maquis::mpi__->getGlobalRank() == 0) {
         /// save state to chkp dir
         save(chkpfile, state);
 

@@ -41,12 +41,12 @@
 
 template <class Matrix, class SymmGroup>
 class dmrg_sim : public sim<Matrix, SymmGroup> {
-    
+
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     typedef typename base::status_type status_type;
     typedef typename base::measurements_type measurements_type;
-    
+
     using base::mps;
     using base::mpo;
     using base::parms;
@@ -55,18 +55,20 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     using base::init_sweep;
     using base::init_site;
     using base::rfile;
-    
+
 public:
-    
+
+    // default constructor
     dmrg_sim (DmrgParameters & parms_)
     : base(parms_)
     { }
-    
+
+    // member functions
     void run()
     {
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
-        
+
         /// MPO creation
         if (parms["MODEL"] == std::string("quantum_chemistry") && parms["use_compressed"])
             throw std::runtime_error("chem compression has been disabled");
@@ -89,29 +91,30 @@ public:
         else {
             throw std::runtime_error("Don't know this optimizer");
         }
-        
+
         measurements_type always_measurements = this->iteration_measurements(init_sweep);
-        
+
         try {
             for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
                 // TODO: introduce some timings
-                
+
                 optimizer->sweep(sweep, Both);
                 storage::disk::sync();
 
                 bool converged = false;
-                
+
                 if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
                     /// write iteration results
+                    if(maquis::mpi__->getGlobalRank() == 0)
                     {
+
                         storage::archive ar(rfile, "w");
                         ar[results_archive_path(sweep) + "/parameters"] << parms;
                         ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
-                        // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
 
                         // stop simulation if an energy threshold has been specified
-                        // FIXME: this does not work for complex numbers - stknecht feb 2016 
+                        // FIXME: this does not work for complex numbers - stknecht feb 2016
                         int prev_sweep = sweep - meas_each;
                         if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
                         {
@@ -128,23 +131,25 @@ public:
                                 converged = true;
                         }
                     }
-                    
+
+                    maquis::mpi__->broadcast(&converged,  1, 0, maquis::mpi__->mycomm(0));
+
                     /// measure observables specified in 'always_measure'
                     if (always_measurements.size() > 0)
                         this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                 }
-                
+
                 /// write checkpoint
                 bool stopped = stop_callback() || converged;
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
                     checkpoint_simulation(mps, sweep, -1);
-                
+
                 if (stopped) break;
             }
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
             checkpoint_simulation(mps, e.sweep(), e.site());
-            
+
             {
                 storage::archive ar(rfile, "w");
                 ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
@@ -153,7 +158,8 @@ public:
             }
         }
     }
-    
+
+    // default destructor
     ~dmrg_sim()
     {
         storage::disk::sync();
@@ -166,7 +172,7 @@ private:
         status["sweep"] = sweep;
         return base::results_archive_path(status);
     }
-    
+
     void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
     {
         status_type status;

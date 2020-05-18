@@ -42,6 +42,9 @@
 #include "dmrg/utils/parallel/tracking.hpp"
 #include "dmrg/utils/parallel.hpp"
 
+// MPI stuff
+#include <utils/maquis_mpi.h>
+
 #ifdef HAVE_ALPS_HDF5
 #include "dmrg/utils/archive.h"
 #include "dmrg/utils/logger.h"
@@ -273,7 +276,7 @@ namespace storage {
             return singleton;
         }
         static void init(const std::string& path){
-            maquis::cout << "Temporary storage enabled in " << path << "\n";
+            maquis::cout << " MPI process # "<< maquis::mpi__->getGlobalRank() << ": temporary storage enabled in " << path << "\n";
             instance().active = true;
             instance().path = path;
         }

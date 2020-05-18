@@ -55,6 +55,14 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
+#include <mpi_interface.h>
+
+namespace maquis
+{
+  Scine::Mpi::MpiInterface* mpi__;
+  std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
+}
+
 
 template <class Matrix, class SymmGroup>
 void compress_mps(MPS<Matrix, SymmGroup> & mps, std::size_t Mmax)
@@ -73,6 +81,13 @@ void compress_mps(MPS<Matrix, SymmGroup> & mps, std::size_t Mmax)
 int main(int argc, char ** argv)
 {
    try {
+        // setup MPI interface. It does nothing for serial runs
+        if (!maquis::mpi__) {
+            maquis::mpi   = std::unique_ptr<Scine::Mpi::MpiInterface>(new Scine::Mpi::MpiInterface(nullptr, 0));
+            maquis::mpi__ = maquis::mpi.get();
+        }
+
+
         if (argc != 3) {
             std::cout << "Usage: " << argv[0] << " mps_checkpoint.h5 new_m" << std::endl;
             return 1;
@@ -97,6 +112,10 @@ int main(int argc, char ** argv)
 
         compress_mps(mps, m);
         save(argv1, mps);
+
+        // terminate MPI (does nothing if serial run)
+        maquis::mpi.reset(nullptr);
+        maquis::mpi__ = nullptr;
 
        } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

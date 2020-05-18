@@ -74,35 +74,47 @@ namespace chem_detail {
         // *** Parse orbital data *********************************************
         // ********************************************************************
 
-        // Distinguish between integral files and string buffers
-
-        std::unique_ptr<std::istream> orb_string;
-
-        if (parms.is_set("integrals"))
-        {
-            // if we provide parameters inline, we expect it to be in FCIDUMP format without the header
-            std::string integrals = parms["integrals"];
-            orb_string = std::unique_ptr<std::istringstream>(new std::istringstream(integrals));
-        }
-        else if (parms.is_set("integral_file"))
-        {
-            std::string integral_file = parms["integral_file"];
-            if (!boost::filesystem::exists(integral_file))
-                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-
-            orb_string = std::unique_ptr<std::ifstream>(new std::ifstream(integral_file.c_str()));
-
-            // ignore the FCIDUMP header -- 1st four lines
-            for (int i = 0; i < 4; ++i)
-                orb_string.get()->ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-
-        }
-        else
-            throw std::runtime_error("Integrals are not defined in the input.");
-
         std::vector<double> raw;
-        std::copy(std::istream_iterator<double>(*(orb_string.get())), std::istream_iterator<double>(),
-                    std::back_inserter(raw));
+
+        // handle raw data by GLOBAL master and broadcast data for post-processing
+        if(maquis::mpi__->getGlobalRank()==0){
+
+            // Distinguish between integral files and string buffers
+
+            std::unique_ptr<std::istream> orb_string;
+
+            if (parms.is_set("integrals"))
+            {
+                // if we provide parameters inline, we expect it to be in FCIDUMP format without the header
+                std::string integrals = parms["integrals"];
+                orb_string = std::unique_ptr<std::istringstream>(new std::istringstream(integrals));
+            }
+            else if (parms.is_set("integral_file"))
+            {
+                std::string integral_file = parms["integral_file"];
+                if (!boost::filesystem::exists(integral_file))
+                    throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+
+                orb_string = std::unique_ptr<std::ifstream>(new std::ifstream(integral_file.c_str()));
+
+                // ignore the FCIDUMP header -- 1st four lines
+                for (int i = 0; i < 4; ++i)
+                    orb_string.get()->ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+            }
+            else
+                throw std::runtime_error("Integrals are not defined in the input.");
+
+            std::copy(std::istream_iterator<double>(*(orb_string.get())), std::istream_iterator<double>(),
+                        std::back_inserter(raw));
+        }
+
+        //bcast size and data
+        int raw_size = raw.size();
+        maquis::mpi__->broadcast(&raw_size,  1, 0, maquis::mpi__->mycomm(0));
+        if(maquis::mpi__->getGlobalRank() !=0 )
+            raw.resize(raw_size,0.0);
+        maquis::mpi__->broadcast(&raw[0],  raw.size(), 0, maquis::mpi__->mycomm(0));
 
         idx_.resize(raw.size()/5, 4);
         std::vector<double>::iterator it = raw.begin();
@@ -138,7 +150,7 @@ namespace chem_detail {
         }
 
         // dump the integrals into the result file for reproducibility
-        if (parms.is_set("resultfile") && parms.is_set("donotsave") && parms["donotsave"] == 0)
+        if (maquis::mpi__->getGlobalRank()==0 && parms.is_set("resultfile") && parms.is_set("donotsave") && parms["donotsave"] == 0)
         {
             std::vector<double> m_;
             std::vector<Lattice::pos_t> i_;
@@ -212,18 +224,29 @@ namespace chem_detail {
         // *** Parse orbital data *********************************************
         // ********************************************************************
 
-        std::string integral_file = parms["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
-            throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-
-        std::ifstream orb_file;
-        orb_file.open(integral_file.c_str());
-        for (int i = 0; i < 4; ++i)
-            orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-
         std::vector<double> raw;
-        std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
-                    std::back_inserter(raw));
+
+        // handle raw data by GLOBAL master and broadcast data for post-processing
+        if(maquis::mpi__->getGlobalRank()==0){
+            std::string integral_file = parms["integral_file"];
+            if (!boost::filesystem::exists(integral_file))
+                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+
+            std::ifstream orb_file;
+            orb_file.open(integral_file.c_str());
+            for (int i = 0; i < 4; ++i)
+                orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+            std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
+                        std::back_inserter(raw));
+        }
+
+        //bcast size and data
+        int raw_size = raw.size();
+        maquis::mpi__->broadcast(&raw_size,  1, 0, maquis::mpi__->mycomm(0));
+        if(maquis::mpi__->getGlobalRank() !=0 )
+            raw.resize(raw_size,0.0);
+        maquis::mpi__->broadcast(&raw[0],  raw.size(), 0, maquis::mpi__->mycomm(0));
 
         idx_.resize(raw.size()/6, 4);
         std::vector<double>::iterator it = raw.begin();
@@ -234,9 +257,6 @@ namespace chem_detail {
             double re = *it++;
             double im = *it++;
             T integral_value(re, im);
-
-            //DEBUG
-            //maquis::cout << integral_value.real() << " " << integral_value.imag() << std::endl;
 
             if (std::abs(integral_value) > parms["integral_cutoff"]){
                 matrix_elements.push_back(integral_value);
@@ -267,7 +287,7 @@ namespace chem_detail {
         }
 
         // dump the integrals into the result file for reproducibility
-        if (parms["donotsave"] == 0)
+        if (maquis::mpi__->getGlobalRank()==0 && parms.is_set("resultfile") && parms.is_set("donotsave") && parms["donotsave"] == 0)
         {
             std::vector<T> m_;
             std::vector<Lattice::pos_t> i_;

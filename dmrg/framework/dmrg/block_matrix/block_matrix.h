@@ -40,6 +40,8 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
+#include <utils/maquis_mpi.h>
+
 template<class Matrix, class SymmGroup> class SiteOperator;
 
 template<class Matrix, class SymmGroup>
@@ -63,6 +65,7 @@ public:
     typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
     typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
    
+    // start of possible constructors
     block_matrix();
 
     block_matrix(Index<SymmGroup> const & rows,
@@ -74,6 +77,7 @@ public:
 
     template <class OtherMatrix>
     block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
+    // end of possible constructors
 
     block_matrix& operator=(block_matrix rhs);
     template<class OtherMatrix>
@@ -131,7 +135,10 @@ public:
     void reserve(charge, charge, std::size_t, std::size_t);
     inline void reserve_pos(charge, charge, std::size_t, std::size_t);
     void allocate_blocks();
-    
+
+    void communicate_index( Index<SymmGroup> & a, const MPI_Comm & comm);
+    void communicate_block( const MPI_Comm & comm );
+
     void resize_block(charge r, charge c,
                       size_type new_r, size_type new_c,
                       bool pretend = false);

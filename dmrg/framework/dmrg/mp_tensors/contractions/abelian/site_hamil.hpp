@@ -42,7 +42,13 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
+
         contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo);
+
+        // if( T is in a GLOBAL memory window) 
+        // MPI barrier - synchronization
+        // else
+        // exchange T data and write it on local disk (using MPI files)
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                & left_i = ket_tensor.row_dim();

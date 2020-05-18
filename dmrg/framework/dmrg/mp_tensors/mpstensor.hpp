@@ -393,6 +393,8 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, MPSTensor<Matrix, SymmGroup> const & mps)
 {
+    std::cout << "read in data by << operator " << std::endl;
+
     os << "Physical space: " << mps.phys_i << std::endl;
     os << "Left space: " << mps.left_i << std::endl;
     os << "Right space: " << mps.right_i << std::endl;
@@ -539,12 +541,17 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::load(Archive & ar)
 {
+    // only global master does I/O
+    assert(maquis::mpi__->getGlobalRank() == 0);
+
     data_.clear();
     make_left_paired();
-    ar["phys_i"] >> phys_i;
-    ar["left_i"] >> left_i;
+
+    ar["phys_i" ] >> phys_i;
+    ar["left_i" ] >> left_i;
     ar["right_i"] >> right_i;
-    ar["data_"] >> data();
+    ar["data_"  ] >> data();
+
     cur_normalization = Unorm;
 }
 
@@ -553,10 +560,13 @@ template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::save(Archive & ar) const
 {
     make_left_paired();
-    ar["phys_i"] << phys_i;
-    ar["left_i"] << left_i;
-    ar["right_i"] << right_i;
-    ar["data_"] << data();
+    // only global master does I/O
+    if(maquis::mpi__->getGlobalRank() == 0){
+        ar["phys_i"] << phys_i;
+        ar["left_i"] << left_i;
+        ar["right_i"] << right_i;
+        ar["data_"] << data();
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -564,6 +574,27 @@ template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
     ar & phys_i & left_i & right_i & cur_storage & cur_normalization & data_;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::communicate(const MPI_Comm & comm)
+{
+
+    if(maquis::mpi__->getGlobalRank() != 0){
+        this->data_.clear();
+        this->make_left_paired();
+    }
+
+    // broadcast physical, left and right indices
+    this->data().communicate_index( this->phys_i,  comm);
+    this->data().communicate_index( this->left_i,  comm);
+    this->data().communicate_index( this->right_i, comm);
+
+    // broadcast block matrix
+    this->data().communicate_block( comm );
+
+    if(maquis::mpi__->getGlobalRank() != 0)
+        this->cur_normalization = Unorm;
 }
 
 template<class Matrix, class SymmGroup>

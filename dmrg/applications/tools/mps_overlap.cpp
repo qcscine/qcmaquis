@@ -59,10 +59,24 @@ typedef TrivialGroup grp;
 typedef U1 grp;
 #endif
 
+#include <mpi_interface.h>
+
+namespace maquis
+{
+  Scine::Mpi::MpiInterface* mpi__;
+  std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
+}
+
 
 int main(int argc, char ** argv)
 {
     try {
+        // setup MPI interface. It does nothing for serial runs
+        if (!maquis::mpi__) {
+            maquis::mpi   = std::unique_ptr<Scine::Mpi::MpiInterface>(new Scine::Mpi::MpiInterface(nullptr, 0));
+            maquis::mpi__ = maquis::mpi.get();
+        }
+
         if (argc != 3) {
             std::cout << "Usage: " << argv[0] << " <mps1.h5> <mps2.h5>" << std::endl;
             return 1;
@@ -95,8 +109,13 @@ int main(int argc, char ** argv)
             std::cout << "<mps1 | 1 | mps2> = " << expval(mps1, mps2, mpo) << std::endl;
             std::cout << "<mps2 | 1 | mps1> = " << expval(mps2, mps1, mpo) << std::endl;
         }
+        // terminate MPI (does nothing if serial run)
+        maquis::mpi.reset(nullptr);
+        maquis::mpi__ = nullptr;
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
     }
+
 }

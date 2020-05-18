@@ -31,6 +31,8 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/boundary.h"
 
+#include <utils/maquis_mpi.h>
+
 #include <limits>
 
 template<class Matrix, class SymmGroup>
@@ -49,40 +51,41 @@ public:
     typedef typename data_t::iterator iterator;
     typedef typename data_t::const_iterator const_iterator;
     typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
-    
+
+    // constructor(s)
     MPS();
-    MPS(size_t L);  
+    MPS(size_t L);
     MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init);
-    
+
     size_t size() const { return data_.size(); }
     size_t length() const { return size(); }
     Index<SymmGroup> const & site_dim(size_t i) const { return data_[i].site_dim(); }
     Index<SymmGroup> const & row_dim(size_t i) const { return data_[i].row_dim(); }
     Index<SymmGroup> const & col_dim(size_t i) const { return data_[i].col_dim(); }
-    
+
     value_type const & operator[](size_t i) const;
     value_type& operator[](size_t i);
-    
+
     void resize(size_t L);
-    
+
     const_iterator begin() const {return data_.begin();}
     const_iterator end() const {return data_.end();}
     const_iterator const_begin() const {return data_.begin();}
     const_iterator const_end() const {return data_.end();}
     iterator begin() {return data_.begin();}
     iterator end() {return data_.end();}
-    
+
     size_t canonization(bool=false) const;
     void canonize(size_t center, DecompMethod method = DefaultSolver());
-    
+
     void normalize_left();
     void normalize_right();
-    
+
     void move_normalization_l2r(size_t p1, size_t p2, DecompMethod method=DefaultSolver());
     void move_normalization_r2l(size_t p1, size_t p2, DecompMethod method=DefaultSolver());
-    
+
     std::string description() const;
-   
+
     template<class OtherMatrix>
     truncation_results grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
@@ -95,25 +98,25 @@ public:
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
                                       double cutoff, std::size_t Mmax);
-    
+
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
-    
+
     void apply(typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
     void apply(typename operator_selector<Matrix, SymmGroup>::type const&,
                typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
-    
+
     friend void swap(MPS& a, MPS& b)
     {
         using std::swap;
         swap(a.data_, b.data_);
         swap(a.canonized_i, b.canonized_i);
     }
-    
+
     template <class Archive> void serialize(Archive & ar, const unsigned int version);
-    
+
 private:
-    
+
     data_t data_;
     mutable size_t canonized_i;
 };
@@ -136,7 +139,7 @@ MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
                             double alpha=1., double beta=1.)
 {
     assert( a.length() == b.length() );
-    
+
     MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
     aright.multiply_by_scalar(alpha);
     bright.multiply_by_scalar(beta);
@@ -158,11 +161,11 @@ make_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> co
     Index<SymmGroup> i = ket[0].row_dim();
     Index<SymmGroup> j = bra[0].row_dim();
     Boundary<Matrix, SymmGroup> ret(i, j, 1);
-    
+
     for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
         for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
             ret[0](*it1, *it2) = 1;
-    
+
     return ret;
 }
 
@@ -175,11 +178,11 @@ make_right_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> c
     Index<SymmGroup> i = ket[L-1].col_dim();
     Index<SymmGroup> j = bra[L-1].col_dim();
     Boundary<Matrix, SymmGroup> ret(j, i, 1);
-    
+
     for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
         for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
             ret[0](*it2, *it1) = 1;
-    
+
     return ret;
 }
 

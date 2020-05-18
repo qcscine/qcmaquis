@@ -363,7 +363,7 @@ void block_matrix<Matrix, SymmGroup>::clear()
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Basis: " << m.basis() << std::endl;
+    os << "|block_matrix.hpp> Basis: " << m.basis() << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
            << "):\n" << m[k] << std::endl;
@@ -390,12 +390,12 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
                                            num_rows((*this)[match]));
             std::size_t maxcols = std::max(num_cols(mtx),
                                            num_cols((*this)[match]));
-            
+
             Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
-            
+
             resize_block(match, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
-            
+
             (*this)[match] += cpy;
         }
     } else
@@ -426,9 +426,9 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    
+
     std::size_t which = basis_.position(r,c);
-    
+
     basis_.erase(basis_.begin() + which);
     data_.erase(data_.begin() + which);
 }
@@ -441,6 +441,138 @@ void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
     basis_.erase(basis_.begin() + which);
     data_.erase(data_.begin() + which);
 }
+
+template <class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::communicate_index(Index<SymmGroup> & a, const MPI_Comm & comm)
+{
+    if(maquis::mpi__->getGlobalCommunicatorSize() == 1) return;
+
+    std::vector<std::size_t> is;
+    std::vector<        int> ic;
+
+    // pack a
+    if(maquis::mpi__->getGlobalRank() == 0){
+
+        for (size_t b = 0; b < a.size(); ++b) {
+            is.push_back(a[b].second);
+            typename SymmGroup::charge c = a[b].first;
+            for(int s = 0; s < (sizeof(c)/sizeof(c[0])); ++s)
+                ic.push_back(c[s]);
+        }
+    }
+
+    // bcast a
+    std::size_t sdim = is.size();
+    std::size_t cdim = ic.size();
+    maquis::mpi__->broadcast(&sdim,  1, 0, comm );
+    maquis::mpi__->broadcast(&cdim,  1, 0, comm );
+    if(maquis::mpi__->getGlobalRank() !=0 ){
+        is.resize(sdim,0);
+        ic.resize(cdim,0);
+    }
+    maquis::mpi__->broadcast(&is[0],  is.size(), 0, comm );
+    maquis::mpi__->broadcast(&ic[0],  ic.size(), 0, comm );
+
+    // unpack a
+    if(maquis::mpi__->getGlobalRank() !=0){
+        // loop over a indexes
+        for(std::size_t s = 0; s < is.size(); ++s){
+
+            typename SymmGroup::charge x(0);
+
+            // loop over charges for each index
+            for(std::size_t t = 0; t < (ic.size()/is.size()); ++t){
+                x[t] = ic[ic.size()/is.size()*s + t];
+            }
+            a.insert(std::make_pair(x, is[s]));
+        }
+    }
+}
+
+template <class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::communicate_block( const MPI_Comm & comm )
+{
+    if(maquis::mpi__->getGlobalCommunicatorSize() == 1) return;
+
+    // left and right basis of block matrix
+    {
+        Index<SymmGroup> r_, c_;
+        if(maquis::mpi__->getGlobalRank() == 0){
+            r_ = this->left_basis();
+            c_ = this->right_basis();
+        }
+        communicate_index(r_, comm);
+        communicate_index(c_, comm);
+
+
+        if(maquis::mpi__->getGlobalRank() != 0){
+            this->basis_.resize(r_.size());
+            for (std::size_t s = 0; s < r_.size(); ++s)
+                this->basis_[s] = typename DualIndex<SymmGroup>::value_type(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
+        }
+    }
+
+    // matrix part of block matrix
+    {
+
+        // pack block matrices in std::vector of matrix value type
+        std::vector<size_t> nr, nc;
+        std::vector<value_type> a;
+
+        if(maquis::mpi__->getGlobalRank() == 0){
+
+            for (std::size_t k = 0; k < this->n_blocks(); ++k){
+                nr.push_back(num_rows(this->data_[k]));
+                nc.push_back(num_cols(this->data_[k]));
+                for (size_t i = 0; i<num_rows(this->data_[k]); ++i)
+                    for (size_t j = 0; j<num_cols(this->data_[k]); ++j)
+                    {
+#ifdef DEBUG_MPI_
+                        std::cout << "|s- comm_data>: ("<< i << "," << j << ") = " << this->data_[k](i,j) << std::endl;
+#endif
+                        a.push_back(this->data_[k](i,j));
+                    }
+            }
+        }
+
+        // number of block matrices to communicate
+        std::size_t nb     = this->n_blocks();
+        std::size_t n_data = a.size();
+        // communicate sizes
+        maquis::mpi__->broadcast(&    nb,  1, 0, comm );
+        maquis::mpi__->broadcast(&n_data,  1, 0, comm );
+        if(maquis::mpi__->getGlobalRank() !=0 ){
+            a.resize(n_data,0);
+            nr.resize(nb,0);
+            nc.resize(nb,0);
+        }
+        // communicate data
+        maquis::mpi__->broadcast(&nr[0],  nr.size(), 0, comm );
+        maquis::mpi__->broadcast(&nc[0],  nc.size(), 0, comm );
+        maquis::mpi__->broadcast(& a[0],   a.size(), 0, comm );
+
+        // unpack data
+        if(maquis::mpi__->getGlobalRank() != 0){
+            this->data_.clear(); // empties boost ptr vector
+            size_t ap = 0;
+            for (size_type k = 0; k < nb; ++k){
+                this->data_.push_back(new Matrix(nr[k],nc[k]));
+                for (size_t i = 0; i<num_rows(this->data_[k]); ++i)
+                    for (size_t j = 0; j<num_cols(this->data_[k]); ++j)
+                    {
+                        this->data_[k](i,j) = a[ap];
+#ifdef DEBUG_MPI_
+                        std::cout << "|r - comm_data>: ("<< i << "," << j << ") = " << this->data_[k](i,j) << std::endl;
+#endif
+                        ap += 1;
+                    }
+            }
+
+        } // rank > 0
+
+    } // matrix part of block matrix
+}
+
 
 template<class Matrix, class SymmGroup>
 template<class Archive>
@@ -455,22 +587,24 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
         basis_[s] = typename DualIndex<SymmGroup>::value_type(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
 
     data_.clear();
+
+    // case a. complex algebra turned on but MPS data is real-valued
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
     {
-        #ifdef USE_AMBIENT
-        printf("ERROR: LOAD COMPLEX DATA NOT TESTED!\n\n");
-        #endif
         typedef typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type> LoadMatrix;
         std::vector<LoadMatrix> tmp;
         ar["data_"] >> tmp;
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
+    // case b. the rest...
     } else {
         std::vector<Matrix> tmp;
         ar["data_"] >> tmp;
+
         // TODO: is swap here possible?
-        for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+        for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it){
             data_.push_back(new Matrix(*it));
+        }
     }
 }
 

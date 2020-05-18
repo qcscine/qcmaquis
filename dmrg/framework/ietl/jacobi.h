@@ -209,15 +209,18 @@ namespace ietl
     class jacobi_davidson
     {
     public:
+        // Types definition
         typedef typename vectorspace_traits<VS>::vector_type vector_type;
         typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
         typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
-        
-        
-        jacobi_davidson(const MATRIX& matrix, 
-                        const VS& vec,
-                        DesiredEigenvalue desired = Largest);
+        /* Class constructor */
+        jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired = Largest,
+                        const std::vector<int>& boundaryIndexesLeft=std::vector<int>(),
+                        const std::vector<int>& boundaryIndexesRight=std::vector<int>());
+        /* Destructor */
         ~jacobi_davidson();
+
+        void applyOperator(const vector_type& inputVec, vector_type& outputVec) const;
         
         template <class GEN, class SOLVER, class ITER>
         std::pair<magnitude_type, vector_type> calculate_eigenvalue(const GEN& gen, 
@@ -236,6 +239,7 @@ namespace ietl
         FortranMatrix<scalar_type> M;
         magnitude_type atol_;
         DesiredEigenvalue desired_;
+        std::vector<int> boundaryIndexesLeft_, boundaryIndexesRight_;
     };
     
     template <class MATRIX, class VS>
@@ -358,118 +362,107 @@ namespace ietl
     // C L A S S :   J A C O B I _ D A V I D S O N ////////////////////////////////////
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
-    matrix_(matrix),
-    vecspace_(vec),
-    M(1,1),
-    desired_(desired)
+    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired,
+                                                 const std::vector<int>& boundaryIndexesLeft,
+                                                 const std::vector<int>& boundaryIndexesRight)
+        : matrix_(matrix), vecspace_(vec), M(1,1), desired_(desired), boundaryIndexesLeft_(boundaryIndexesLeft),
+          boundaryIndexesRight_(boundaryIndexesRight)
     {
-        //      n_ = vecspace_.vec_dimension();
         n_ = vec_dimension(vecspace_);
     }
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::~jacobi_davidson()
-    {
-        
-    }
-    
-//    template<class Vector>
-//    Vector orthogonalize(Vector input, std::vector<Vector> const & against)
-//    {
-//        
-//    }
+    jacobi_davidson<MATRIX, VS>::~jacobi_davidson() { }
     
     template <class MATRIX, class VS> 
     template <class GEN, class SOLVER, class ITER>
     std::pair<typename jacobi_davidson<MATRIX,VS>::magnitude_type, typename jacobi_davidson<MATRIX,VS>::vector_type> 
-    jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen,
-                                                      SOLVER& solver,
-                                                      ITER& iter)
+    jacobi_davidson<MATRIX, VS>::calculate_eigenvalue(const GEN& gen, SOLVER& solver, ITER& iter)
     {
-        std::vector<scalar_type> s(iter.max_iterations());
-        std::vector<vector_type> V(iter.max_iterations());
-        std::vector<vector_type> VA(iter.max_iterations());
-        M.resize(iter.max_iterations(), iter.max_iterations());
-        magnitude_type theta, tau, rel_tol;
-        magnitude_type kappa = 0.25;
-        atol_ = iter.absolute_tolerance();
-        
-        // Start with t=v_o, starting guess
-        ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
-        ietl::project(V[0],vecspace_);
-        
-        // Start iteration
-        do {
-            vector_type& t = V[iter.iterations()];
-
-            // Modified Gram-Schmidt Orthogonalization with Refinement
-            tau = ietl::two_norm(t);
-            for(int i = 1; i <= iter.iterations(); i++)
-                t -= ietl::dot(V[i-1],t)*V[i-1];
-            if(ietl::two_norm(t) < kappa * tau)
+        //if (maquis::mpi__->isGlobalLeader()) {
+            std::vector<scalar_type> s(iter.max_iterations());
+            std::vector<vector_type> V(iter.max_iterations());
+            std::vector<vector_type> VA(iter.max_iterations());
+            M.resize(iter.max_iterations(), iter.max_iterations());
+            magnitude_type theta, tau, rel_tol;
+            magnitude_type kappa = 0.25;
+            atol_ = iter.absolute_tolerance();
+            // Start with t=v_o, starting guess
+            ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
+            ietl::project(V[0],vecspace_);
+            // Start iteration
+            do {
+                vector_type& t = V[iter.iterations()];
+                // Modified Gram-Schmidt Orthogonalization with Refinement
+                tau = ietl::two_norm(t);
                 for(int i = 1; i <= iter.iterations(); i++)
-                    t -= ietl::dot(V[i-1],t) * V[i-1];
-            
-            // Project out orthogonal subspace
-            ietl::project(t,vecspace_);
-            
-            // v_m = t / |t|_2,  v_m^A = A v_m
-            t /= ietl::two_norm(t);
-            ietl::mult(matrix_, t, VA[iter.iterations()]);
-            
-            // for i=1, ..., iter
-            //   M_{i,m} = v_i ^\star v_m ^A
-            for(int i = 1; i <= iter.iterations()+1; i++)
-                M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
-            
-            // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
-            get_extremal_eigenvalue(theta,s,iter.iterations()+1);
-            
-            // u = V s
-            #ifdef USE_AMBIENT
-            std::vector<vector_type> u_parts; u_parts.reserve(iter.iterations()+1);
-            for(int j = 0; j <= iter.iterations(); ++j) u_parts.push_back(V[j] * s[j]);
-            vector_type u = ambient::reduce_sync(u_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
-            std::vector<vector_type>().swap(u_parts);
-            #else
-            vector_type u = V[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
-                u += V[j] * s[j];
-            #endif
+                    t -= ietl::dot(V[i-1],t)*V[i-1];
+                if(ietl::two_norm(t) < kappa * tau)
+                    for(int i = 1; i <= iter.iterations(); i++)
+                        t -= ietl::dot(V[i-1],t) * V[i-1];
+                // Project out orthogonal subspace
+                ietl::project(t,vecspace_);
+                // v_m = t / |t|_2,  v_m^A = A v_m
+                t /= ietl::two_norm(t);
+                applyOperator(t, VA[iter.iterations()]);
+                // for i=1, ..., iter
+                //   M_{i,m} = v_i ^\star v_m ^A
+                for(int i = 1; i <= iter.iterations()+1; i++)
+                    M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
+                // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
+                get_extremal_eigenvalue(theta,s,iter.iterations()+1);
+                // u = V s
+                #ifdef USE_AMBIENT
+                std::vector<vector_type> u_parts; u_parts.reserve(iter.iterations()+1);
+                for(int j = 0; j <= iter.iterations(); ++j) u_parts.push_back(V[j] * s[j]);
+                vector_type u = ambient::reduce_sync(u_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
+                std::vector<vector_type>().swap(u_parts);
+                #else
+                vector_type u = V[0] * s[0];
+                for(int j = 1; j <= iter.iterations(); ++j)
+                    u += V[j] * s[j];
+                #endif
+                // u^A = V^A s
+                // ietl::mult(matrix_,u,uA);
+                #ifdef USE_AMBIENT
+                std::vector<vector_type> uA_parts; uA_parts.reserve(iter.iterations()+1);
+                for(int j = 0; j <= iter.iterations(); ++j) uA_parts.push_back(VA[j] * s[j]);
+                vector_type uA = ambient::reduce_sync(uA_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
+                std::vector<vector_type>().swap(uA_parts);
+                #else
+                vector_type uA = VA[0] * s[0];
+                for(int j = 1; j <= iter.iterations(); ++j)
+                    uA += VA[j] * s[j];
+                #endif
+    
+                ietl::project(uA,vecspace_);
+                
+                // r = u^A - \theta u
+                vector_type& r = uA; r -= theta*u;
+                
+                // if (|r|_2 < \epsilon) stop
+                ++iter;
+                // accept lambda=theta and x=u
+                if(iter.finished(ietl::two_norm(r),theta))
+                    return std::make_pair(theta, u);
+                // solve (approximately) a t orthogonal to u from
+                //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
+                rel_tol = 1. / pow(2.,double(iter.iterations()+1));
+                solver(u, theta, r, V[iter.iterations()], rel_tol);
+                V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index;
+                storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
+            } while(true);
+        //}
+        //else {
+        //    std::cout << "tmp" << std::endl;
+        //}
+    }
 
-            // u^A = V^A s
-            // ietl::mult(matrix_,u,uA);
-            #ifdef USE_AMBIENT
-            std::vector<vector_type> uA_parts; uA_parts.reserve(iter.iterations()+1);
-            for(int j = 0; j <= iter.iterations(); ++j) uA_parts.push_back(VA[j] * s[j]);
-            vector_type uA = ambient::reduce_sync(uA_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
-            std::vector<vector_type>().swap(uA_parts);
-            #else
-            vector_type uA = VA[0] * s[0];
-            for(int j = 1; j <= iter.iterations(); ++j)
-                uA += VA[j] * s[j];
-            #endif
-
-            ietl::project(uA,vecspace_);
-            
-            // r = u^A - \theta u
-            vector_type& r = uA; r -= theta*u;
-            
-            // if (|r|_2 < \epsilon) stop
-            ++iter;
-            // accept lambda=theta and x=u
-            if(iter.finished(ietl::two_norm(r),theta)) return std::make_pair(theta, u);
-            
-            // solve (approximately) a t orthogonal to u from
-            //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
-            rel_tol = 1. / pow(2.,double(iter.iterations()+1));
-            solver(u, theta, r, V[iter.iterations()], rel_tol);
-
-            V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index;
-            storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
-        } while(true);
-        
+    template<class MATRIX, class VS>
+    void jacobi_davidson<MATRIX, VS>::applyOperator(const vector_type& inputVec, vector_type& outputVec) const {
+        maquis::mpi__->globalBarrier();
+        ietl::mult(matrix_, inputVec, outputVec);
+        maquis::mpi__->globalBarrier();
     }
     
     template <class MATRIX, class VS>
@@ -487,7 +480,6 @@ namespace ietl
             il = iu = n;
         else
             il = iu = 1;
-
         fortran_int_t m;
         fortran_int_t ldz=n;
         fortran_int_t lwork=8*n;

@@ -349,8 +349,7 @@ private:
             for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
             {
                 charge pc = f(it1->first, it2->first);
-                keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc]; 	
-          //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc])); 	
+                keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc];
                 size_[pc] += it1->second * it2->second;
             }
     }
@@ -393,24 +392,24 @@ class basis_iterator_
 {
 public:
     typedef typename SymmGroup::charge charge;
-    
+
     basis_iterator_(Index<SymmGroup> const & idx, bool at_end = false)
     : idx_(idx)
     , cur_block(idx.begin())
     , cur_i(0)
     , max_i(cur_block->second)
     { }
-    
+
     std::pair<charge, std::size_t> operator*() const
     {
         return std::make_pair(cur_block->first, cur_i);
     }
-    
+
     boost::shared_ptr<std::pair<charge, std::size_t> > operator->() const
     {
         return boost::shared_ptr<std::pair<charge, std::size_t> >(new std::pair<charge, std::size_t>(cur_block->first, cur_i));
     }
-    
+
     basis_iterator_ & operator++()
     {
         ++cur_i;
@@ -425,7 +424,7 @@ public:
             return *this;
         }
     }
-    
+
     basis_iterator_ operator+(int k)
     {
         assert( k >= 0 );
@@ -434,12 +433,12 @@ public:
             ++r;
         return r;
     }
-    
+
     bool end() const
     {
         return cur_block == idx_.end();
     }
-    
+
 private:
     Index<SymmGroup> const & idx_;
     typename Index<SymmGroup>::const_iterator cur_block;
@@ -491,7 +490,7 @@ Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
         ret.insert(mypair(nc[i], nd[i]));
 #endif
     return ret;
-}   
+}
 
 template<class SymmGroup>
 std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
@@ -504,7 +503,7 @@ std::ostream& operator<<(std::ostream& os, Index<SymmGroup> const & idx)
         os << "( " << it->first << ": " << it->second << " )";
     }
     os << "|";
-    
+
     return os;
 }
 
@@ -513,7 +512,7 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                            Index<SymmGroup> const & i2)
 {
     typedef typename SymmGroup::charge charge;
-    
+
     Index<SymmGroup> ret;
     for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
         for (typename Index<SymmGroup>::const_iterator it2 = i2.begin(); it2 != i2.end(); ++it2)
@@ -538,7 +537,7 @@ Index<SymmGroup> common_subset(Index<SymmGroup> & a,
                            !boost::lambda::bind(&Index<SymmGroup>::has, b,
                                                 boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
             a.end());
-    
+
     b.erase(std::remove_if(b.begin(), b.end(),
                            !boost::lambda::bind(&Index<SymmGroup>::has, a,
                                                 boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
@@ -553,14 +552,14 @@ std::pair<charge, std::size_t> operator-(std::pair<charge, std::size_t> const & 
 }
 
 template<class T> boost::array<T, 1> _(T const & a)
-{ 
+{
     boost::array<T, 1> r;
     r[0] = a;
     return r;
 }
 
 template<class T> boost::array<T, 2> _(T const & a, T const & b)
-{ 
+{
     boost::array<T, 2> r;
     r[0] = a;
     r[1] = b;

@@ -37,8 +37,26 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
+
+#include <mpi_interface.h>
+
+namespace maquis
+{
+  Scine::Mpi::MpiInterface* mpi__;
+  std::unique_ptr<Scine::Mpi::MpiInterface> mpi;
+}
+
+
 int main(int argc, char ** argv)
 {
+
+    // setup MPI interface. It does nothing for serial runs
+    if (!maquis::mpi__) {
+        maquis::mpi   = std::unique_ptr<Scine::Mpi::MpiInterface>(new Scine::Mpi::MpiInterface(nullptr, 0));
+        maquis::mpi__ = maquis::mpi.get();
+    }
+
+
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
         
@@ -54,5 +72,9 @@ int main(int argc, char ** argv)
         }
         
     }
+    // terminate MPI (does nothing if serial run)
+    maquis::mpi.reset(nullptr);
+    maquis::mpi__ = nullptr;
+
 }
 
