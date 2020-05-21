@@ -208,6 +208,8 @@ namespace maquis
             MPS<Matrix, grp> mps;
             load(checkpoint_name, mps);
 
+            mps.canonize(0); // TODO: Stefan -- why is it needed?
+
             // check if the checkpoint has 2U1/2U1PG symmetry
             storage::archive ar_in(checkpoint_name+"/props.h5");
             BaseParameters chkp_parms;
