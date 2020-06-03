@@ -54,8 +54,9 @@ namespace maquis
             // Overlap
             V overlap(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state, bool su2u1);
 
-            // 1-TDM
-            meas_with_results_type onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
+            // Disabled since the interface does not need it
+            // // 1-TDM
+            // meas_with_results_type onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
             // 1-TDM, split in four spin components
             std::vector<meas_with_results_type> onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
@@ -65,21 +66,19 @@ namespace maquis
 
             // MPS counterrotation.
             // Parameters:
-            // checkpoint_name: 2U1 checkpoint name
+            // pname: project name
+            // state: state index
             // t: rotational matrix, flattened row-wise (row-major)
             // scale_inactive: inactive scaling factor
-            // This function overwrites the MPS in the checkpoint with its rotated version!
-            void rotate(const std::string& checkpoint_name, const std::vector<V> & t, V scale_inactive);
-
-            // MPS counterrotation but with project name and state index as parameters
+            // This function appends .rotated. to pname when saving rotated MPS
             void rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive);
         private:
 
             // Generate SU2U1 checkpoint name from project name and state number
             std::string su2u1_name(const std::string & pname, int state);
 
-            // Generate 2U1 checkpoint name
-            std::string twou1_name(const std::string & pname, int state);
+            // Generate 2U1 checkpoint name. rotated == true will append .rotated. to prefix
+            std::string twou1_name(const std::string & pname, int state, bool rotated = false);
 
             struct Impl;
             std::unique_ptr<Impl> impl_;

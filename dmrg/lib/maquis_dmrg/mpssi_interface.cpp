@@ -165,7 +165,7 @@ namespace maquis
             return std::make_tuple(ret, Nup, Ndown);
         }
 
-        std::string twou1_name(const std::string & pname, int state)
+        std::string twou1_name(std::string pname, int state, bool rotated)
         {
             // find pname in the project names to get the correct multiplicity
             // hope this isn't too performance consuming
@@ -174,6 +174,9 @@ namespace maquis
             if (idx == -1)
                 throw std::runtime_error("Do not know the project name " + pname );
 
+            // append '.rotated' to pnameif rotated == true
+            if (rotated) pname += ".rotated";
+
             int Nup, Ndown;
             std::string ret;
             std::tie(ret, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel_, multiplicities_[idx]);
@@ -181,7 +184,7 @@ namespace maquis
         }
 
         // MPS rotation
-        void rotate(const std::string & checkpoint_name, const std::vector<V> & t, V scale_inactive)
+        void rotate(const std::string & pname, int state, const std::vector<V> & t, V scale_inactive)
         {
 
 #if defined(HAVE_SU2U1PG)
@@ -189,6 +192,10 @@ namespace maquis
 #elif defined(HAVE_SU2U1)
             typedef TwoU1 grp;
 #endif
+            // generate checkpoint names
+            std::string checkpoint_name = twou1_name(pname, state, false);
+            std::string checkpoint_name_rotated = twou1_name(pname, state, true);
+
             // convert t to alps::matrix
 
             // check if the length of the vector is a square number
@@ -220,7 +227,13 @@ namespace maquis
                 throw std::runtime_error("checkpoint for MPS rotation does not have 2U1 symmetry");
 
             mps_rotate::rotate_mps(mps, t_mat, scale_inactive);
-            save(checkpoint_name, mps);
+            save(checkpoint_name_rotated, mps);
+
+            // copy over props.h5 file, overwriting the old one
+            if (boost::filesystem::exists(checkpoint_name_rotated + "/props.h5"))
+                boost::filesystem::remove(checkpoint_name_rotated + "/props.h5");
+            boost::filesystem::copy(checkpoint_name + "/props.h5", checkpoint_name_rotated + "/props.h5");
+
         }
 
         // Check if the project name and the state index are allowed
@@ -319,9 +332,9 @@ namespace maquis
     }
 
     template <class V>
-    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state)
+    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state, bool rotated)
     {
-        return impl_->twou1_name(pname, state);
+        return impl_->twou1_name(pname, state, rotated);
     }
 
     // SU2U1->2U1 transformation
@@ -332,19 +345,15 @@ namespace maquis
     }
 
     // MPS rotation
-    template <class V>
-    void MPSSIInterface<V>::rotate(const std::string & checkpoint_name, const std::vector<V> & t, V scale_inactive)
-    {
-        impl_->rotate(checkpoint_name, t, scale_inactive);
-    }
 
     template <class V>
     void MPSSIInterface<V>::rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive)
     {
-        impl_->rotate(twou1_name(pname, state), t, scale_inactive);
+        impl_->rotate(pname, state, t, scale_inactive);
     }
 
     // Calculate 1-TDMs
+    /*
     template <class V>
     meas_with_results_type<V> MPSSIInterface<V>::onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state)
     {
@@ -394,6 +403,7 @@ namespace maquis
             return interface.measurements().at("oneptdm");
         return interface.measurements().at("transition_oneptdm");
     }
+    */
 
     // Calculate 1-TDMs, split into two spin-components
     template <class V>
@@ -405,9 +415,10 @@ namespace maquis
         std::string ket_name, bra_name;
 
         bool bra_eq_ket = (bra_pname == ket_pname) && (bra_state == ket_state);
+        bool rotated = (bra_pname != ket_pname);
 
-        ket_name = twou1_name(ket_pname, ket_state);
-        bra_name = twou1_name(bra_pname, bra_state);
+        ket_name = twou1_name(ket_pname, ket_state, rotated);
+        bra_name = twou1_name(bra_pname, bra_state, rotated);
 
         storage::archive ar_in(ket_name + "/props.h5");
         ar_in["/parameters"] >> parms;
@@ -480,8 +491,9 @@ namespace maquis
         else
         {
             if ((bra_state == ket_state) && (bra_pname == ket_pname)) return (V)1.0;
-            std::string ket_name = twou1_name(ket_pname, ket_state);
-            std::string bra_name = twou1_name(bra_pname, bra_state);
+            bool rotated = (bra_pname != ket_pname);
+            std::string ket_name = twou1_name(ket_pname, ket_state, rotated);
+            std::string bra_name = twou1_name(bra_pname, bra_state, rotated);
             return impl_->overlap_2u1(ket_name, bra_name);
         }
     }

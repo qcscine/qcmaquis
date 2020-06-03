@@ -57,6 +57,7 @@ extern "C"
         return mpssi_interface_ptr->overlap(bra_pname_, bra_state, ket_pname_, ket_state, su2u1);
     }
 
+    /*
     void qcmaquis_mpssi_get_onetdm(char* bra_pname, int bra_state, char* ket_pname, int ket_state, int* indices, V* values, int size)
     {
         std::string bra_pname_(bra_pname);
@@ -78,7 +79,7 @@ extern "C"
             indices[2*i] = meas.first[i][0];
             indices[2*i+1] = meas.first[i][1];
         }
-    }
+    } */
 
     void qcmaquis_mpssi_get_onetdm_spin(char* bra_pname, int bra_state, char* ket_pname, int ket_state, V* tdmaa, V* tdmbb, int size)
     {

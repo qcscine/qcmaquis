@@ -45,8 +45,8 @@ extern "C"
     // Calculate overlap
     V qcmaquis_mpssi_overlap(char* bra_pname, int bra_state, char* ket_pname, int ket_state, bool su2u1);
 
-    //
-    void qcmaquis_mpssi_get_onetdm(char* bra_pname, int bra_state, char* ket_pname, int ket_state, int* indices, V* values, int size);
+    // get 1-TDM. Disabled for now since it isn't needed in MPSSI
+    // void qcmaquis_mpssi_get_onetdm(char* bra_pname, int bra_state, char* ket_pname, int ket_state, int* indices, V* values, int size);
 
     // get spin-components of tdm
     // input: bra_pname and ket_pname: project names for bra and ket
