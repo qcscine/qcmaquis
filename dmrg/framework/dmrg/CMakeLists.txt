@@ -40,16 +40,16 @@ endforeach(SYMM)
 configure_symm_file("models/model_factory_symm/model_factory_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_{SYMM}.cpp" CMAKE_SYMM_GROUP)
 get_symm_files(APPEND DMRG_MODELS_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_{SYMM}.cpp")
 
-## ALPS model library
-if(ENABLE_ALPS_MODELS)
-  add_definitions(-DENABLE_ALPS_MODELS)
-  get_symm_files(APPEND DMRG_MODELS_SOURCES "models/alps/symm_handler_impl/model_{SYMM}.cpp")
-endif(ENABLE_ALPS_MODELS)
+## ALPS model library (disabled)
+# if(ENABLE_ALPS_MODELS)
+#   add_definitions(-DENABLE_ALPS_MODELS)
+#   get_symm_files(APPEND DMRG_MODELS_SOURCES "models/alps/symm_handler_impl/model_{SYMM}.cpp")
+# endif(ENABLE_ALPS_MODELS)
 
-## Other model libraries
-if(ENABLE_LL_MODELS)
-  list(APPEND DMRG_MODELS_SOURCES "models/ll/ll_models.cpp")
-endif(ENABLE_LL_MODELS)
+## Other model libraries (disabled)
+# if(ENABLE_LL_MODELS)
+#   list(APPEND DMRG_MODELS_SOURCES "models/ll/ll_models.cpp")
+# endif(ENABLE_LL_MODELS)
 
 
 # *** Libraries
@@ -62,5 +62,5 @@ set_property(TARGET dmrg_utils dmrg_models PROPERTY POSITION_INDEPENDENT_CODE TR
 
 install(TARGETS dmrg_utils dmrg_models
         EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
-export(TARGETS dmrg_utils dmrg_models
+export(TARGETS dmrg_utils dmrg_models APPEND
        FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")

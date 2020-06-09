@@ -19,7 +19,7 @@ set_property(TARGET maquis_dmrg PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 if(APPLE)
   target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES} "-framework Accelerate")
 else()
-  target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES} )
+#   target_link_libraries(maquis_dmrg ${DMRG_APP_LIBRARIES})
 endif()
 
 # *** Install

@@ -35,20 +35,31 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
+set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRINGS "List of symmetry
+set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRING "List of symmetry
 to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
 set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
-
-option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(ENABLE_OMP "Enable OpenMP" ON)
-option(USE_AMBIENT "Enable Ambient" OFF)
-option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
-option(LAPACK_64_BIT "Build for 64-bit LAPACK library" OFF)
+# Disabled
+# option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
+# option(USE_AMBIENT "Enable Ambient" OFF)
+# option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
+# set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
+option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
+
+# Standalone utility binaries, mostly deprecated by the binary interface
+option (BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
+option (BUILD_CIDEAS "Build CIDEAS binary (deprecated)" OFF)
+option (BUILD_MPS_ROTATE "Build mps_rotate binary for RASSI counterrotation (deprecated)" OFF)
+option (BUILD_MPS_COMPRESS "Build mps_compress binary for MPS compression (not working currently)" OFF)
+option (BUILD_MPS_OVERLAP "Build MPS Overlap calculator" OFF)
+option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated by dmrg_meas and the binary interface)" OFF)
+option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
+option (BUILD_DEAS "Build s1 and I printer tool" OFF)
+option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
 
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
-
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
 option(TESTS      "Build and run tests" OFF)
 
@@ -57,6 +68,12 @@ mark_as_advanced(ENABLE_COLLECTOR)
 
 set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas, alps")
 
+# Packages required for ALPS
+# HDF5
+find_package(HDF5)
+
+## ALPS
+add_subdirectory(${ALPS_SOURCE_DIR})
 
 ######################################################################
 # How to build
@@ -142,44 +159,32 @@ endforeach(SYMM)
 ######################################################################
 
 # ALPS
-if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
-  set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
-endif(NOT ALPS_DIR AND ALPS_ROOT_DIR)
-if(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
-  set(ALPS_DIR $ENV{ALPS_ROOT}/share/alps)
-endif(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
+# if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
+#   set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
+# endif(NOT ALPS_DIR AND ALPS_ROOT_DIR)
+# if(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
+#   set(ALPS_DIR $ENV{ALPS_ROOT}/share/alps)
+# endif(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
 
 
-set(PREVENT_ALPS_COMPILERS ON)
-find_package(ALPS REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
+# set(PREVENT_ALPS_COMPILERS ON)
+# find_package(ALPS REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
 
-set(ALPS_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS} CACHE STRINGS "ALPS library dirs")
-set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} CACHE STRINGS "ALPS include dirs")
-if(ALPS_HDF5_INCLUDE_DIR) # support for old ALPS revisions
-  set(HDF5_INCLUDE_DIR ${ALPS_HDF5_INCLUDE_DIR} CACHE STRINGS "")
-endif(ALPS_HDF5_INCLUDE_DIR)
-if(ALPS_HDF5_LIBRARIES) # support for old ALPS revisions
-  set(HDF5_LIBRARIES ${ALPS_HDF5_LIBRARIES} CACHE STRINGS "")
-endif(ALPS_HDF5_LIBRARIES)
+# set(ALPS_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS} CACHE STRINGS "ALPS library dirs")
+# set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} CACHE STRINGS "ALPS include dirs")
+# if(ALPS_HDF5_INCLUDE_DIR) # support for old ALPS revisions
+#   set(HDF5_INCLUDE_DIR ${ALPS_HDF5_INCLUDE_DIR} CACHE STRINGS "")
+# endif(ALPS_HDF5_INCLUDE_DIR)
+# if(ALPS_HDF5_LIBRARIES) # support for old ALPS revisions
+#   set(HDF5_LIBRARIES ${ALPS_HDF5_LIBRARIES} CACHE STRINGS "")
+# endif(ALPS_HDF5_LIBRARIES)
 
-mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRARIES)
+# mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRARIES)
 
-if (ALPS_PYTHON_INTERPRETER)
-  set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} ${ALPS_PYTHON_INCLUDE_DIRS} ${ALPS_PYTHON_NUMPY_INCLUDE_DIR})
-  list(APPEND DMRG_LIBRARIES ${ALPS_PYTHON_LIBRARY})
-endif (ALPS_PYTHON_INTERPRETER)
-
-
-# Boost
-set(Boost_requirements bindings date_time filesystem regex system
-serialization)
-
-include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
-find_maquis_boost(COMPONENTS ${Boost_requirements})
-
-message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
-message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
-message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
+# if (ALPS_PYTHON_INTERPRETER)
+#   set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} ${ALPS_PYTHON_INCLUDE_DIRS} ${ALPS_PYTHON_NUMPY_INCLUDE_DIR})
+#   list(APPEND DMRG_LIBRARIES ${ALPS_PYTHON_LIBRARY})
+# endif (ALPS_PYTHON_INTERPRETER)
 
 # GSL
 # find GNU Scientific Library if using SU2 Groups
@@ -194,28 +199,6 @@ if(NOT USE_AMBIENT)
   message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
   message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
 endif(NOT USE_AMBIENT)
-
-# Ambient
-if(USE_AMBIENT)
-  add_definitions(-DUSE_AMBIENT)
-  if(BUILD_AMBIENT)
-    add_subdirectory(${AMBIENT_SOURCES_DIR} ambient-build)
-    include(${CMAKE_BINARY_DIR}/ambient-build/AmbientBuildTree.cmake)
-  else(BUILD_AMBIENT)
-    if(NOT Ambient_FOUND)
-      find_package(Ambient REQUIRED)
-    endif(NOT Ambient_FOUND)
-  endif(BUILD_AMBIENT)
-  macro(compile_with_ambient)
-    include_directories(${AMBIENT_INCLUDE_DIRS})
-    link_directories(${AMBIENT_LIBRARY_DIRS})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_COMPILE_FLAGS}")
-  endmacro(compile_with_ambient)
-else(USE_AMBIENT)
-  macro(compile_with_ambient)
-    message(FATAL_ERROR Ambient not enabled!)
-  endmacro(compile_with_ambient)
-endif(USE_AMBIENT)
 
 ######################################################################
 # Version information
@@ -285,11 +268,10 @@ MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 # Parsing user options
 ######################################################################
 
-set(DMRG_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS})
-set(DMRG_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
 #set(DMRG_DEFINITIONS)
-set(DMRG_LIBRARIES alps ${MAQUIS_Boost_LIBRARIES} ${HDF5_LIBRARIES}
+set(DMRG_LIBRARIES alps ${HDF5_LIBRARIES}
 ${GSL_LIBRARIES})
+
 if(USE_AMBIENT)
   list(APPEND DMRG_LIBRARIES ${AMBIENT_LIBRARIES})
 else()
@@ -309,12 +291,24 @@ if(ENABLE_OMP)
   endif(OPENMP_FOUND)
 endif(ENABLE_OMP)
 
+# Boost
+set(Boost_requirements program_options filesystem regex system serialization thread)
+set (Boost_NO_BOOST_CMAKE ON)
+
+find_package(Boost COMPONENTS ${Boost_requirements})
+if(Boost_FOUND)
+    list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
+    list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+endif()
+# include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
+# find_maquis_boost(COMPONENTS ${Boost_requirements})
 
 
 ######################################################################
 # Include / link directories
 ######################################################################
-
+set (ALPS_INCLUDE_DIRS ${ALPS_SOURCE_DIR}/src ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src)
 list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
 if(NOT USE_AMBIENT)
