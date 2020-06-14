@@ -237,6 +237,28 @@ extern "C"
         }
     }
 
+    // hooray for copy-paste
+    void qcmaquis_interface_get_4rdm(int* indices, V* values, int size)
+    {
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->fourrdm();
+
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            values[i] = meas.second[i];
+            indices[8*i] = meas.first[i][0];
+            indices[8*i+1] = meas.first[i][1];
+            indices[8*i+2] = meas.first[i][2];
+            indices[8*i+3] = meas.first[i][3];
+            indices[8*i+4] = meas.first[i][4];
+            indices[8*i+5] = meas.first[i][5];
+            indices[8*i+6] = meas.first[i][6];
+            indices[8*i+7] = meas.first[i][7];
+
+        }
+    }
+
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
     {
         // Get iteration results from the last sweep

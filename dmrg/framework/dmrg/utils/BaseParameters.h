@@ -86,6 +86,7 @@ class BaseParameters
 
         bool is_set (std::string const & key) const;
         bool defined (std::string const & key) const;
+        bool empty () const;
 
         parameters::proxy operator[](std::string const& key);
 

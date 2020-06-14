@@ -90,6 +90,11 @@
         return impl_->defined(key);
     }
 
+    bool BaseParameters::empty() const
+    {
+        return impl_->empty();
+    }
+
     parameters::proxy BaseParameters::operator[](std::string const& key)
     {
         if (!is_set(key)) {
@@ -156,6 +161,7 @@
         p.set(var, val);
         return p;
     }
+
 
     BaseParameters & BaseParameters::operator<<(BaseParameters const& p)
     {

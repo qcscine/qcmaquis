@@ -241,13 +241,20 @@ public:
 
         // Run all measurements and fill the result map
         for(auto&& meas: all_measurements)
-            ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(mps).meas_out(meas);
+                ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(mps).meas_out(meas);
 
+        // Measurements that require SU2U1->2U1 transformation
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-        if (parms.is_set("MEASURE[ChemEntropy]"))
+        if (parms.is_set("MEASURE[ChemEntropy]") || parms.is_set("MEASURE[4rdm]"))
         {
+            BaseParameters parms_meas;
+            if (parms.is_set("MEASURE[ChemEntropy]"))
+                parms_meas.set("MEASURE[ChemEntropy]", 1);
+            if (parms.is_set("MEASURE[4rdm]"))
+                parms_meas.set("MEASURE[4rdm]", 1);
+
             // Obtain a map with transformed measurements
-            results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps);
+            results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps, parms_meas);
 
             // Merge transformed measurements with the remaining results
             ret.insert(transformed_meas.begin(), transformed_meas.end());

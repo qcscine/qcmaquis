@@ -204,10 +204,12 @@ namespace detail {
         return a;
     }
 
+    // Create 2U1 parameter set from a given L, number of spin-up and spin-down electrons (Nup,Ndown)
+    // copy over parameters from existing parameters if provided
     inline
-    BaseParameters set_2u1_parameters(int L, int Nup, int Ndown)
+    BaseParameters set_2u1_parameters(int L, int Nup, int Ndown, const BaseParameters& existing_pars = BaseParameters())
     {
-        BaseParameters ret;
+        BaseParameters ret(existing_pars);
 
         ret.set("lattice_library", "coded");
         ret.set("LATTICE", "orbitals");

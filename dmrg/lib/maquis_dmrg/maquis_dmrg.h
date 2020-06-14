@@ -79,6 +79,7 @@ namespace maquis
             // Fix the model to recognise it!
             const meas_with_results_type & onerdm();
             const meas_with_results_type & twordm();
+            const meas_with_results_type & fourrdm();
 
             // Load an MPS from a given checkpoint and measure the overlap with the current MPS
             V overlap(const std::string& aux_mps_name);

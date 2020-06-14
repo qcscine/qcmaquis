@@ -143,6 +143,13 @@ namespace maquis
     }
 
     template <class V>
+    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::fourrdm()
+    {
+        parms.set("MEASURE[4rdm]", 1); // required for 4-RDM measurement
+        return measurements().at("fourptdm");
+    }
+
+    template <class V>
     DMRGInterface<V>::~DMRGInterface() = default;
 
     template <class V>
