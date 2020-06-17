@@ -16,7 +16,7 @@ get_symm_files(APPEND DMRG_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_
 # *** Targets
 foreach (TYPE IN ITEMS STATIC SHARED)
 string (TOLOWER "${TYPE}" type)
-add_library(maquis_dmrg-${type} "${TYPE}" ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp maquis_cinterface.cpp complex_interface/maquis_cppinterface.cpp)
+add_library(maquis_dmrg-${type} "${TYPE}" ${DMRG_SYMM_SOURCES} maquis_dmrg.cpp maquis_cinterface.cpp mpssi_interface.cpp mpssi_cinterface.cpp starting_guess.cpp complex_interface/maquis_cppinterface.cpp )
 set_property(TARGET maquis_dmrg-${type} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 if(APPLE)
   target_link_libraries(maquis_dmrg-${type} ${DMRG_APP_LIBRARIES} "-framework Accelerate")

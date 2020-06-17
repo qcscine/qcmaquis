@@ -6,22 +6,22 @@
  *               2012-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -43,7 +43,7 @@ class ChainLattice : public lattice_impl
 {
 public:
     typedef lattice_impl::pos_t pos_t;
-    
+
     ChainLattice (BaseParameters & parms, bool pbc_=false)
     : L(parms["L"])
     , a(parms["a"])
@@ -55,7 +55,7 @@ public:
     , a(a_)
     , pbc(pbc_)
     { }
-    
+
     std::vector<pos_t> forward(pos_t i) const
     {
         std::vector<pos_t> ret;
@@ -78,7 +78,7 @@ public:
             ret.push_back(L-1);
         return ret;
     }
-    
+
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
         if (property == "label" && pos.size() == 1)
@@ -101,41 +101,41 @@ public:
             return boost::any( (pos[0] < pos[1]) );
         else {
             std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
+            ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
             throw std::runtime_error(ss.str());
             return boost::any();
         }
     }
-    
+
     pos_t size() const
     {
         return L;
     }
-    
+
     int maximum_vertex_type() const
     {
         return 0;
     }
 
 private:
-    
+
     std::string site_label (int i) const
     {
         return "( " + boost::lexical_cast<std::string>(a * i) + " )";
     }
-    
+
     std::string bond_label (int i, int j) const
     {
         return (  "( " + boost::lexical_cast<std::string>(a * i) + " )"
                 + " -- "
                 + "( " + boost::lexical_cast<std::string>(a * j) + " )");
     }
-    
+
 private:
     int L;
     double a;
     bool pbc;
-    
+
 };
 
 class Orbitals : public lattice_impl
@@ -144,7 +144,7 @@ class Orbitals : public lattice_impl
 
 public:
     typedef lattice_impl::pos_t pos_t;
-    
+
     Orbitals (BaseParameters & model)
     : L(model["L"])
     , irreps(L, 0)
@@ -155,7 +155,10 @@ public:
                 order[p] = p;
         else {
             order = model["orbital_order"].as<std::vector<pos_t> >();
-            std::for_each(order.begin(), order.end(), boost::lambda::_1 = boost::lambda::_1 -1);
+            if (order.size() != L)
+                throw std::runtime_error("Number of orbitals in the orbital order does not match the total number of orbitals");
+
+            for (auto&& o: order) o--;
         }
 
         if (model.is_set("integral_file")) {
@@ -182,7 +185,7 @@ public:
         else if (model.is_set("site_types"))
         {
             std::vector<subcharge> symm_vec = model["site_types"];
-        
+
             assert(L == symm_vec.size());
             for (subcharge p = 0; p < L; ++p)
                 irreps[p] = symm_vec[order[p]];
@@ -211,11 +214,13 @@ public:
             ret.push_back(i-1);
         return ret;
     }
-    
+
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
-        if (property == "label" && pos.size() == 1)
+        if (property == "label" && pos.size() == 1) // return "( label )" as string
             return boost::any( site_label(order[pos[0]]) );
+        if (property == "label_int" && pos.size() == 1) // just return label as integer
+            return boost::any(order[pos[0]]);
         else if (property == "label" && pos.size() == 2)
             return boost::any( bond_label(order[pos[0]], order[pos[1]]) );
         else if (property == "type" && pos.size() == 1)
@@ -224,17 +229,17 @@ public:
             return boost::any( 0 );
         else {
             std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
+            ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
             throw std::runtime_error(ss.str());
             return boost::any();
         }
     }
-    
+
     pos_t size() const
     {
         return L;
     }
-    
+
     int maximum_vertex_type() const
     {
         return maximum_vertex;
@@ -251,7 +256,7 @@ private:
         subcharge number;
         while( iss >> number )
             symm_vec.push_back(number-1);
-        
+
         assert(L == symm_vec.size());
         for (subcharge p = 0; p < L; ++p)
             ret[p] = symm_vec[order[p]];
@@ -263,14 +268,14 @@ private:
     {
         return "( " + boost::lexical_cast<std::string>(i) + " )";
     }
-    
+
     std::string bond_label (int i, int j) const
     {
         return (  "( " + boost::lexical_cast<std::string>(i) + " )"
                 + " -- "
                 + "( " + boost::lexical_cast<std::string>(j) + " )");
     }
-    
+
 private:
     pos_t L;
     int maximum_vertex;
@@ -287,7 +292,7 @@ public:
     , W_(parms["W"])
     , a(parms["a"])
     { }
-    
+
     /*
      0 4  8 12
      1 5  9 13
@@ -301,14 +306,14 @@ public:
             ret.push_back(p+1);
         if (p+W_ < L_*W_)
             ret.push_back(p+W_);
-        
+
         //        maquis::cout << p << " -> ";
         //        std::copy(ret.begin(), ret.end(), std::ostream_iterator<int>(maquis::cout, " "));
         //        maquis::cout << std::endl;
-        
+
         return ret;
     }
-    
+
     std::vector<int> all(int p) const
     {
         std::vector<int> ret = forward(p);
@@ -316,18 +321,18 @@ public:
             ret.push_back(p-1);
         if (p >= W_)
             ret.push_back(p-W_);
-        
+
         return ret;
     }
-    
+
     int size() const { return L_*W_; }
-    
+
     int maximum_vertex_type() const
     {
         return 0;
     }
 
-    
+
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
         if (property == "label" && pos.size() == 1)
@@ -346,27 +351,27 @@ public:
             return boost::any( false );
         else {
             std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
+            ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
             throw std::runtime_error(ss.str());
             return boost::any();
         }
     }
 
-    
-    
+
+
 private:
-    
+
     double x (int i) const
     { return a * int(i/W_); }
     double y (int i) const
     { return a * (i%W_); }
-    
+
     std::string site_label (int i) const
     {
         return "( " + ( boost::lexical_cast<std::string>(x(i))
                        + "," + boost::lexical_cast<std::string>(y(i)) ) + " )";
     }
-    
+
     std::string bond_label (int i, int j) const
     {
         return (  "( " + ( boost::lexical_cast<std::string>(x(i))
@@ -374,9 +379,9 @@ private:
                 + " -- "
                 + "( " + ( boost::lexical_cast<std::string>(x(j))
                           + "," + boost::lexical_cast<std::string>(y(j)) ) + " )" );
-    }        
-    
-    
+    }
+
+
     int L_, W_;
     double a;
 };

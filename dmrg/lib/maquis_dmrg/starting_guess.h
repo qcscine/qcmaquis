@@ -6,7 +6,8 @@
 *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2018-2019    Leon Freitag <lefreita@ethz.ch>
+*               2019         Leon Freitag <lefreita@ethz.ch>
+*               2019         Stefan Knecht <stknecht@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -26,37 +27,39 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
-#ifndef ABSTRACT_SIM_H
-#define ABSTRACT_SIM_H
+#ifndef STARTING_GUESS_H
+#define STARTING_GUESS_H
 
-#include <map>
-#include <vector>
-#include "dmrg/models/chem/integral_interface.h"
-#include "dmrg/utils/results_collector.h"
+#include "maquis_dmrg.h"
 
-class abstract_sim {
-public:
-    virtual ~abstract_sim() {}
-    virtual void run() =0;
-};
+namespace maquis
+{
 
-template <class Matrix>
-class abstract_interface_sim {
-public:
-    // warning, these types are defiled in model_impl already
-    typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
-    typedef std::map<std::string, meas_with_results_type> results_map_type;
+    // Interface that runs preliminary calculations for several states to use them for Fiedler ordering and/or CI-DEAS starting guess
+    template <class V>
+    class StartingGuess
+    {
+        public:
 
-    virtual ~abstract_interface_sim() {}
-    virtual void run() =0;
-    virtual void run_measure() =0;
-    virtual typename Matrix::value_type get_energy() = 0;
-    virtual results_collector& get_iteration_results() = 0;
-    virtual int get_last_sweep() = 0;
-    virtual results_map_type measure_out() =0;
-    virtual void update_integrals(const chem::integral_map<typename Matrix::value_type> &)=0;
-    virtual typename Matrix::value_type get_overlap(const std::string &) = 0;
-//  virtual std::string ... get_fiedler_order
-};
+            // Constructor
+            // parms: common parameters for all states
+            //
+            StartingGuess(const DmrgParameters& parms, int nstates, const std::string & pname, bool do_fiedler, bool do_cideas,
+                          const std::vector<std::vector<int> >& hf_occupations = std::vector<std::vector<int> >());
+            ~StartingGuess();
+
+            // calculate Fiedler order
+            std::string getFiedlerOrder();
+
+            // Calculate and save MPS for CI-DEAS guess, as "pname.checkpoint_state.X.h5"
+            // Currently we do not return the MPS but rather save them into files, which can be read later from disk
+            void cideas();
+
+        private:
+
+            class Impl;
+            std::unique_ptr<Impl> impl_;
+    };
+}
 
 #endif

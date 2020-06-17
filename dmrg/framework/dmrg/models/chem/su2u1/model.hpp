@@ -49,12 +49,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     C[0] = 1; C[1] = -1; // 1-1
     // D = 00
 
-    SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
-    SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
-    SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
-    SpinDescriptor<symm_traits::SU2Tag> one_flat(2,1,1);
-    SpinDescriptor<symm_traits::SU2Tag> one_down(2,2,0);
-
     for (subcharge irr=0; irr <= max_irrep; ++irr)
     {
         Index<SymmGroup> phys;
@@ -66,225 +60,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         phys_indices.push_back(phys);
     }
 
-    // cheaper to use this for spin0 tensors, instead of ident_full
-    op_t ident_op;
-    ident_op.insert_block(Matrix(1,1,1), A, A);
-    ident_op.insert_block(Matrix(1,1,1), B, B);
-    ident_op.insert_block(Matrix(1,1,1), C, C);
-    ident_op.insert_block(Matrix(1,1,1), D, D);
+    ops = TermMakerSU2<Matrix, SymmGroup>::construct_operators(max_irrep, tag_handler);
+    op_collection =  TermMakerSU2<Matrix, SymmGroup>::construct_operator_collection(ops, max_irrep);
 
-    // apply if spin > 0
-    op_t ident_full_op;
-    ident_full_op.insert_block(Matrix(1,1,1), A, A);
-    ident_full_op.insert_block(Matrix(1,1,1), D, D);
-    ident_full_op.insert_block(Matrix(1,1,1), B, B);
-    ident_full_op.insert_block(Matrix(1,1,1), C, C);
-    ident_full_op.insert_block(Matrix(1,1,1), B, C);
-    ident_full_op.insert_block(Matrix(1,1,1), C, B);
-
-    op_t fill_op;
-    fill_op.insert_block(Matrix(1,1,1),  A, A);
-    fill_op.insert_block(Matrix(1,1,1),  D, D);
-    fill_op.insert_block(Matrix(1,1,-1), B, B);
-    fill_op.insert_block(Matrix(1,1,-1), C, C);
-    fill_op.insert_block(Matrix(1,1,-1), B, C);
-    fill_op.insert_block(Matrix(1,1,-1), C, B);
-
-    /*************************************************************/
-
-    op_t create_fill_op;
-    create_fill_op.spin() = one_half_up;
-    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
-    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
-    create_fill_op.insert_block(Matrix(1,1,1), D, B);
-    create_fill_op.insert_block(Matrix(1,1,1), D, C);
-
-    op_t destroy_op;
-    destroy_op.spin() = one_half_down;
-    destroy_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_op.insert_block(Matrix(1,1,1), A, C);
-    destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-    destroy_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
-
-    op_t destroy_fill_op;
-    destroy_fill_op.spin() = one_half_up;
-    destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
-    destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
-    destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
-
-    op_t create_op;
-    create_op.spin() = one_half_down;
-    create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
-    create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
-    create_op.insert_block(Matrix(1,1,-1), D, B);
-    create_op.insert_block(Matrix(1,1,-1), D, C);
-
-    /*************************************************************/
-
-    op_t create_fill_couple_down_op = create_fill_op;
-    create_fill_couple_down_op.spin() = one_half_down;
-
-    op_t destroy_fill_couple_down_op = destroy_fill_op;
-    destroy_fill_couple_down_op.spin() = one_half_down;
-
-    op_t create_couple_up_op = create_op;
-    create_couple_up_op.spin() = one_half_up;
-
-    op_t destroy_couple_up_op = destroy_op;
-    destroy_couple_up_op.spin() = one_half_up;
-
-    /*************************************************************/
-
-    op_t create_fill_count_op;
-    create_fill_count_op.spin() = one_half_up;
-    create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
-    create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
-
-    op_t destroy_count_op;
-    destroy_count_op.spin() = one_half_down;
-    destroy_count_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_count_op.insert_block(Matrix(1,1,1), A, C);
-
-    op_t destroy_fill_count_op;
-    destroy_fill_count_op.spin() = one_half_up;
-    destroy_fill_count_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_fill_count_op.insert_block(Matrix(1,1,1), A, C);
-
-    op_t create_count_op;
-    create_count_op.spin() = one_half_down;
-    create_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
-    create_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
-
-    /*************************************************************/
-
-    op_t count_op;
-    count_op.insert_block(Matrix(1,1,2), A, A);
-    count_op.insert_block(Matrix(1,1,1), B, B);
-    count_op.insert_block(Matrix(1,1,1), C, C);
-
-    op_t docc_op;
-    docc_op.insert_block(Matrix(1,1,1), A, A);
-
-    op_t e2d_op;
-    e2d_op.insert_block(Matrix(1,1,1), D, A);
-
-    op_t d2e_op;
-    d2e_op.insert_block(Matrix(1,1,1), A, D);
-
-    op_t count_fill_op;
-    count_fill_op.insert_block(Matrix(1,1,2),  A, A);
-    count_fill_op.insert_block(Matrix(1,1,-1), B, B);
-    count_fill_op.insert_block(Matrix(1,1,-1), C, C);
-    count_fill_op.insert_block(Matrix(1,1,-1), B, C);
-    count_fill_op.insert_block(Matrix(1,1,-1), C, B);
-
-    op_t flip_to_S2_op;
-    flip_to_S2_op.spin() = one_up;
-    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2)), B, B);
-    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)), C, C);
-    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  B, C);
-    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  C, B);
-
-    op_t flip_to_S0_op = flip_to_S2_op;
-    flip_to_S0_op.spin() = one_down;
-
-    op_t flip_S0_op = flip_to_S2_op;
-    flip_S0_op.spin() = one_flat;
-
-    /**********************************************************************/
-    /*** Create operator tag table ****************************************/
-    /**********************************************************************/
-
-    #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
-
-    GENERATE_SITE_SPECIFIC(ident_op)
-    GENERATE_SITE_SPECIFIC(ident_full_op)
-    GENERATE_SITE_SPECIFIC(fill_op)
-
-    GENERATE_SITE_SPECIFIC(create_fill_op)
-    GENERATE_SITE_SPECIFIC(create_op)
-    GENERATE_SITE_SPECIFIC(destroy_fill_op)
-    GENERATE_SITE_SPECIFIC(destroy_op)
-
-    GENERATE_SITE_SPECIFIC(create_fill_couple_down_op)
-    GENERATE_SITE_SPECIFIC(destroy_fill_couple_down_op)
-    GENERATE_SITE_SPECIFIC(create_couple_up_op)
-    GENERATE_SITE_SPECIFIC(destroy_couple_up_op)
-
-    GENERATE_SITE_SPECIFIC(create_fill_count_op)
-    GENERATE_SITE_SPECIFIC(create_count_op)
-    GENERATE_SITE_SPECIFIC(destroy_fill_count_op)
-    GENERATE_SITE_SPECIFIC(destroy_count_op)
-
-    GENERATE_SITE_SPECIFIC(count_op)
-    GENERATE_SITE_SPECIFIC(docc_op)
-    GENERATE_SITE_SPECIFIC(e2d_op)
-    GENERATE_SITE_SPECIFIC(d2e_op)
-    GENERATE_SITE_SPECIFIC(flip_S0_op)
-    GENERATE_SITE_SPECIFIC(flip_to_S2_op)
-    GENERATE_SITE_SPECIFIC(flip_to_S0_op)
-    GENERATE_SITE_SPECIFIC(count_fill_op)
-
-    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
-
-    REGISTER(ident,        tag_detail::bosonic)
-    REGISTER(ident_full,   tag_detail::bosonic)
-    REGISTER(fill,         tag_detail::bosonic)
-
-    REGISTER(create_fill,  tag_detail::fermionic)
-    REGISTER(create,       tag_detail::fermionic)
-    REGISTER(destroy_fill, tag_detail::fermionic)
-    REGISTER(destroy,      tag_detail::fermionic)
-
-    REGISTER(create_fill_couple_down,  tag_detail::fermionic)
-    REGISTER(destroy_fill_couple_down,  tag_detail::fermionic)
-    REGISTER(create_couple_up,  tag_detail::fermionic)
-    REGISTER(destroy_couple_up,  tag_detail::fermionic)
-
-    REGISTER(create_fill_count,  tag_detail::fermionic)
-    REGISTER(create_count,       tag_detail::fermionic)
-    REGISTER(destroy_fill_count, tag_detail::fermionic)
-    REGISTER(destroy_count,      tag_detail::fermionic)
-
-    REGISTER(count,        tag_detail::bosonic)
-    REGISTER(docc,         tag_detail::bosonic)
-    REGISTER(e2d,          tag_detail::bosonic)
-    REGISTER(d2e,          tag_detail::bosonic)
-    REGISTER(flip_S0,      tag_detail::bosonic)
-    REGISTER(flip_to_S2,   tag_detail::bosonic)
-    REGISTER(flip_to_S0,   tag_detail::bosonic)
-    REGISTER(count_fill,   tag_detail::bosonic)
-
-    #undef REGISTER
-
-    #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
-    HERMITIAN(create_fill, destroy_fill)
-    HERMITIAN(create, destroy)
-    HERMITIAN(e2d, d2e)
-
-    HERMITIAN(create_fill_count, destroy_fill_count) // useless
-    HERMITIAN(create_count, destroy_count)
-
-    HERMITIAN(create_fill_couple_down, destroy_fill_couple_down) // useless
-
-    HERMITIAN(create_couple_up, destroy_couple_up)
-    #undef HERMITIAN
-
-//#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
-//    PRINT(ident)
-//    PRINT(ident_full)
-//    PRINT(fill)
-//    PRINT(create_fill)
-//    PRINT(create)
-//    PRINT(destroy_fill)
-//    PRINT(destroy)
-//    PRINT(count)
-//    PRINT(count_fill)
-//    PRINT(docc)
-//    PRINT(e2d)
-//    PRINT(d2e)
-//#undef PRINT
 }
 
 template <class Matrix, class SymmGroup>
@@ -292,51 +70,6 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 {
     typedef typename SymmGroup::subcharge subcharge;
     subcharge N = SymmGroup::particleNumber(this->total_quantum_numbers(parms));
-
-    /*************************************************************/
-    typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
-    typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_count_pkg, destroy_count_pkg;
-
-    create_pkg.couple_up = create_couple_up;
-    create_pkg.couple_down = create;
-    create_pkg.fill_couple_up = create_fill;
-    create_pkg.fill_couple_down = create_fill_couple_down;
-
-    destroy_pkg.couple_up = destroy_couple_up;
-    destroy_pkg.couple_down = destroy;
-    destroy_pkg.fill_couple_up = destroy_fill;
-    destroy_pkg.fill_couple_down = destroy_fill_couple_down;
-
-    create_count_pkg.couple_down = create_count;
-    create_count_pkg.fill_couple_up = create_fill_count;
-
-    destroy_count_pkg.couple_down = destroy_count;
-    destroy_count_pkg.fill_couple_up = destroy_fill_count;
-
-    /**********************************************************************/
-
-    op_collection.ident     .no_couple = ident;
-    op_collection.ident_full.no_couple = ident_full;
-    op_collection.fill      .no_couple = fill;
-
-    op_collection.create               = create_pkg;
-    op_collection.destroy              = destroy_pkg;
-
-    op_collection.count     .no_couple = count;
-    op_collection.count     .fill_no_couple = count_fill;
-
-    op_collection.create_count         = create_count_pkg;
-    op_collection.destroy_count        = destroy_count_pkg;
-
-    op_collection.e2d       .no_couple = e2d;
-    op_collection.d2e       .no_couple = d2e;
-    op_collection.docc      .no_couple = docc;
-
-    op_collection.flip      .no_couple = flip_S0;
-    op_collection.flip      .couple_up = flip_to_S2;
-    op_collection.flip      .couple_down = flip_to_S0;
-
-    /**********************************************************************/
 
     chem::detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
     alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
@@ -362,7 +95,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
+            term.push_back( boost::make_tuple(0, ops.ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -373,7 +106,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
+            term.push_back( boost::make_tuple(i, ops.count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -388,10 +121,10 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                    true, ident, value_type(std::sqrt(2.))*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill, lat
+                    true, ops.ident, value_type(std::sqrt(2.))*matrix_elements[m],j,i, ops.create, ops.create_fill, ops.destroy, ops.destroy_fill, lat
                 ));
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                    true, ident, value_type(std::sqrt(2.))*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill, lat
+                    true, ops.ident, value_type(std::sqrt(2.))*matrix_elements[m],i,j, ops.create, ops.create_fill, ops.destroy, ops.destroy_fill, lat
                 ));
             }
 
@@ -433,7 +166,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back(boost::make_tuple(i, docc[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
+            term.push_back(boost::make_tuple(i, ops.docc[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;

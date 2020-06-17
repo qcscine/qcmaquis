@@ -2,8 +2,9 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
- *               2015-2015 by Michele Dolfi <dolfim@phys.ethz.ch>
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2019 by Leon Freitag <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,36 +25,31 @@
  *
  *****************************************************************************/
 
-#ifndef UTILS_GUESS_SYMMETRY_H
-#define UTILS_GUESS_SYMMETRY_H
+#define BOOST_TEST_MAIN
+// Unit test for integral map
+#include <boost/test/included/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
+#include <dmrg/models/chem/integral_interface.h>
 
-#include "dmrg/utils/DmrgParameters.h"
-
-#undef tolower
-#undef toupper
-#include <boost/tokenizer.hpp>
-#include <map>
-#include <string>
-
-inline std::string guess_alps_symmetry(BaseParameters & parms)
+BOOST_AUTO_TEST_CASE( Test_Integral_Map )
 {
-    std::map<int, std::string> symm_names;
-    symm_names[0] = "none";
-    symm_names[1] = "u1";
-    symm_names[2] = "2u1";
+    // Real integrals with nonrelativistic permutation
+    chem::integral_map<double> ints;
+    ints[{1,1,2,1}] = 1.0;
+    ints[{1,1,1,2}] = 2.0;
 
-    int n=0;
-    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-    if (parms.defined("CONSERVED_QUANTUMNUMBERS")) {
-        boost::char_separator<char> sep(" ,");
-        std::string qn_string = parms["CONSERVED_QUANTUMNUMBERS"].str();
-        tokenizer qn_tokens(qn_string, sep);
-        for (tokenizer::iterator it=qn_tokens.begin(); it != qn_tokens.end(); it++) {
-            if (parms.defined(*it + "_total"))
-                n += 1;
-        }
-    }
-    return symm_names[n];
+    double val = ints[{1,1,2,1}];
+    // Two insertions of the symmetry-permuted element must yield only one element in the map
+    BOOST_CHECK_EQUAL(ints.size(), 1);
+
+    // check if the permutation works
+    BOOST_CHECK_CLOSE(val, 2.0, 1.0e-15);
+
+    // Now try the relativistic permutation
+    chem::integral_map<std::complex<double> > ints_complex;
+    ints_complex[{1,1,2,1}] = {1.0, 0.0};
+    ints_complex[{1,1,1,2}] = {2.0, -1.0};
+    // Here the integrals should not permute
+    BOOST_CHECK_EQUAL(ints_complex.size(), 2);
+
 }
-
-#endif

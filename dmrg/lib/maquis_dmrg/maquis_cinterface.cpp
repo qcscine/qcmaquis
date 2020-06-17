@@ -31,10 +31,15 @@
 #include <string>
 #include <array>
 #include "maquis_dmrg.h"
+#include "starting_guess.h"
+#include "dmrg/utils/stdout_redirector.hpp"
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
 std::string pname;
+
+// stdout redirector
+maquis::StdoutRedirector stdout_redirect;
 
 extern "C"
 {
@@ -114,9 +119,55 @@ extern "C"
 
     }
 
+    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations)
+    {
+        // TODO: Make sure that qcmaquis_interface_preinit and _update_integrals has been called beforehand
+
+        // if neither do_fiedler nor do_cideas are set, return
+
+        if (!(do_fiedler || do_cideas)) return;
+
+        std::string project_name_(project_name);
+
+        // copy HF occupations from hf_occupations array if present
+        std::vector<std::vector<int> > hf_occupations_vec;
+        if (hf_occupations != nullptr)
+        {
+            hf_occupations_vec.reserve(nstates);
+            int L = parms["L"];
+            int* counter = hf_occupations;
+            for (int i = 0; i < nstates; i++)
+            {
+                hf_occupations_vec.emplace_back(counter, counter+L);
+                counter += L;
+                // TODO: check for overflows
+            }
+        }
+
+        maquis::StartingGuess<V> starting_guess(parms, nstates, project_name_, do_fiedler, do_cideas, hf_occupations_vec);
+
+        if (do_fiedler)
+        {
+            // TODO: check length of fiedler_order_string. it must be pre-set to the correct length
+            int len = strlen(fiedler_order_string);
+            std::string str = starting_guess.getFiedlerOrder();
+            assert(str.length() == len);
+            strncpy(fiedler_order_string, str.c_str(), len);
+        }
+
+        if (do_cideas)
+            starting_guess.cideas();
+
+    }
+
     void qcmaquis_interface_set_nsweeps(int nsweeps)
     {
         parms.set("nsweeps", nsweeps);
+    }
+
+    void qcmaquis_interface_set_param(char* key, char* value)
+    {
+        parms.set(key, std::string(value));
     }
 
     // Start a new simulation with stored parameters
@@ -151,11 +202,15 @@ extern "C"
 
     void qcmaquis_interface_get_1rdm(int* indices, V* values, int size)
     {
-        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface_ptr->onerdm();
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->onerdm();
         // the size attribute is pretty much useless if we allocate the output arrays outside of the interface
         // we'll just use it to check if the size matches the size of the measurement
-        assert(size == meas.first.size());
-        assert(size == meas.second.size());
+	//
+	// When we have point group symmetry, OpenMOLCAS will allocate an array larger than our number of measurements
+	// So as long as our measurements will fit into the allocated array, we're good
+	// I.e. the sizes of an array do not have to match exactly
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
         {
             values[i] = meas.second[i];
@@ -167,10 +222,10 @@ extern "C"
     // hooray for copy-paste
     void qcmaquis_interface_get_2rdm(int* indices, V* values, int size)
     {
-        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface_ptr->twordm();
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->twordm();
 
-        assert(size == meas.first.size());
-        assert(size == meas.second.size());
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
         for (int i = 0; i < meas.first.size(); i++)
         {
             values[i] = meas.second[i];
@@ -201,5 +256,20 @@ extern "C"
         *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
         *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
         *nsweeps = interface_ptr->get_last_sweep();
+    }
+
+    double qcmaquis_interface_get_overlap(char* filename)
+    {
+        return interface_ptr->overlap(filename);
+    }
+
+    void qcmaquis_interface_stdout(char* filename)
+    {
+        stdout_redirect.set_filename(filename);
+    }
+
+    void qcmaquis_interface_restore_stdout()
+    {
+        stdout_redirect.restore();
     }
 }

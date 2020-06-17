@@ -64,11 +64,21 @@ extern "C"
     // integral_size: size of integral_value and 1/4 of size of integral_indices
     void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size);
 
+    // run preliminary calculation to obtain an MPS as a starting guess from CI-DEAS
+    // or the Fiedler ordering
+    // if Fiedler ordering is present, return the ordering as a string (starting with 1) in fiedler_order_string (note that its length must be correct!)
+    // hf_occupation: Array of HF occupations (as 4,3,2,1) for all states, as flattened row-major array of (L*nstates)
+    // For CI-DEAS mandatory, for Fiedler ordering optional
+    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations);
+
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);
 
     // Sets the number of sweeps
     void qcmaquis_interface_set_nsweeps(int nsweeps);
+
+    // Set an arbitrary QCMaquis parameter
+    void qcmaquis_interface_set_param(char* key, char* value);
 
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset();
@@ -88,6 +98,13 @@ extern "C"
     // Get 2-RDM
     // size: size of values array, size of indices array = 4*size
     void qcmaquis_interface_get_2rdm(int* indices, V* values, int size);
+
+    // Measure overlap
+    double qcmaquis_interface_get_overlap(char* filename);
+
+    // Redirect stdout to file filename and restore it back
+    void qcmaquis_interface_stdout(char* filename);
+    void qcmaquis_interface_restore_stdout();
 
 }
 

@@ -16,11 +16,6 @@ macro(create_init_target TNAME SYMM CPPFILE LIBS)
   endif(DMRG_HAS_${SYMM_NAME})
 endmacro(create_init_target)
 
-
-#create_init_target("ci_generator_2u1"     "TWOU1"   "ci_generator.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-#create_init_target("ci_generator_2u1pg"   "TWOU1PG" "ci_generator.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-
-
 create_init_target("det2mps_2u1"     "TWOU1"   "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_init_target("det2mps_2u1pg"   "TWOU1PG" "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_init_target("det2mps_su2u1"   "SU2U1"   "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")

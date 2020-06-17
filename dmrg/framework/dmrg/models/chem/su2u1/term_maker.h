@@ -37,10 +37,12 @@ struct TermMakerSU2 {
     typedef typename Lattice::pos_t pos_t;
     typedef typename M::value_type value_type;
     typedef ::term_descriptor<value_type> term_descriptor;
+    typedef typename operator_selector<M, S>::type op_t;
 
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef std::vector<tag_type> tag_vec;
     typedef typename term_descriptor::value_type pos_op_t;
+    typedef boost::shared_ptr<TagHandler<M, S> > tag_handler_t;
 
     typedef typename S::subcharge sc;
 
@@ -53,6 +55,34 @@ struct TermMakerSU2 {
 
         tag_vec no_couple;
         tag_vec fill_no_couple;
+    };
+
+    // Operators replaces loose tag_vecs in qc_su2
+    struct Operators
+    {
+        tag_vec create_fill,
+                create,
+                destroy_fill,
+                destroy,
+                create_fill_couple_down,
+                destroy_fill_couple_down,
+                create_couple_up,
+                destroy_couple_up,
+                create_fill_count,
+                create_count,
+                destroy_fill_count,
+                destroy_count,
+                count,
+                docc,
+                e2d,
+                d2e,
+                flip_S0,
+                flip_to_S2,
+                flip_to_S0,
+                ident,
+                ident_full,
+                fill,
+                count_fill;
     };
 
     struct OperatorCollection
@@ -91,6 +121,326 @@ struct TermMakerSU2 {
                 if(idx[c1] > idx[c2]) inv_count++;
 
         return (inv_count % 2 != 0);
+    }
+
+    // Functions needed for generating operators in qc_su2
+    static std::vector<op_t> generate_site_specific_ops(op_t const & op, typename S::subcharge max_irrep)
+    {
+        PGDecorator<S> set_symm;
+        std::vector<op_t> ret;
+        for (typename S::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            op_t mod(set_symm(op.basis(), sc));
+            mod.spin() = op.spin();
+            for (std::size_t b = 0; b < op.n_blocks(); ++b)
+                mod[b] = op[b];
+
+            ret.push_back(mod);
+        }
+        return ret;
+    }
+
+    static tag_vec register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind, typename S::subcharge max_irrep, const tag_handler_t & tag_handler)
+    {
+        std::vector<tag_type> ret;
+        for (typename S::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
+            assert( newtag.first < tag_handler->size() );
+            assert( std::abs(newtag.second - value_type(1.)) == value_type() );
+            ret.push_back(newtag.first);
+        }
+
+        return ret;
+    }
+
+    static Operators construct_operators(typename S::subcharge max_irrep, const tag_handler_t & tag_handler)
+    {
+        Operators ret;
+
+        typename S::charge A(0), B(0), C(0), D(0);
+        A[0] = 2; // 20
+        B[0] = 1; B[1] =  1; // 11
+        C[0] = 1; C[1] = -1; // 1-1
+        // D = 00
+
+        SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
+        SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
+        SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
+        SpinDescriptor<symm_traits::SU2Tag> one_flat(2,1,1);
+        SpinDescriptor<symm_traits::SU2Tag> one_down(2,2,0);
+
+        // cheaper to use this for spin0 tensors, instead of ident_full
+        op_t ident_op;
+        ident_op.insert_block(M(1,1,1), A, A);
+        ident_op.insert_block(M(1,1,1), B, B);
+        ident_op.insert_block(M(1,1,1), C, C);
+        ident_op.insert_block(M(1,1,1), D, D);
+
+        // apply if spin > 0
+        op_t ident_full_op;
+        ident_full_op.insert_block(M(1,1,1), A, A);
+        ident_full_op.insert_block(M(1,1,1), D, D);
+        ident_full_op.insert_block(M(1,1,1), B, B);
+        ident_full_op.insert_block(M(1,1,1), C, C);
+        ident_full_op.insert_block(M(1,1,1), B, C);
+        ident_full_op.insert_block(M(1,1,1), C, B);
+
+        op_t fill_op;
+        fill_op.insert_block(M(1,1,1),  A, A);
+        fill_op.insert_block(M(1,1,1),  D, D);
+        fill_op.insert_block(M(1,1,-1), B, B);
+        fill_op.insert_block(M(1,1,-1), C, C);
+        fill_op.insert_block(M(1,1,-1), B, C);
+        fill_op.insert_block(M(1,1,-1), C, B);
+
+        /*************************************************************/
+
+        op_t create_fill_op;
+        create_fill_op.spin() = one_half_up;
+        create_fill_op.insert_block(M(1,1,sqrt(2.)), B, A);
+        create_fill_op.insert_block(M(1,1,sqrt(2.)), C, A);
+        create_fill_op.insert_block(M(1,1,1), D, B);
+        create_fill_op.insert_block(M(1,1,1), D, C);
+
+        op_t destroy_op;
+        destroy_op.spin() = one_half_down;
+        destroy_op.insert_block(M(1,1,1), A, B);
+        destroy_op.insert_block(M(1,1,1), A, C);
+        destroy_op.insert_block(M(1,1,sqrt(2.)), B, D);
+        destroy_op.insert_block(M(1,1,sqrt(2.)), C, D);
+
+        op_t destroy_fill_op;
+        destroy_fill_op.spin() = one_half_up;
+        destroy_fill_op.insert_block(M(1,1,1), A, B);
+        destroy_fill_op.insert_block(M(1,1,1), A, C);
+        destroy_fill_op.insert_block(M(1,1,-sqrt(2.)), B, D);
+        destroy_fill_op.insert_block(M(1,1,-sqrt(2.)), C, D);
+
+        op_t create_op;
+        create_op.spin() = one_half_down;
+        create_op.insert_block(M(1,1,sqrt(2.)), B, A);
+        create_op.insert_block(M(1,1,sqrt(2.)), C, A);
+        create_op.insert_block(M(1,1,-1), D, B);
+        create_op.insert_block(M(1,1,-1), D, C);
+
+        /*************************************************************/
+
+        op_t create_fill_couple_down_op = create_fill_op;
+        create_fill_couple_down_op.spin() = one_half_down;
+
+        op_t destroy_fill_couple_down_op = destroy_fill_op;
+        destroy_fill_couple_down_op.spin() = one_half_down;
+
+        op_t create_couple_up_op = create_op;
+        create_couple_up_op.spin() = one_half_up;
+
+        op_t destroy_couple_up_op = destroy_op;
+        destroy_couple_up_op.spin() = one_half_up;
+
+        /*************************************************************/
+
+        op_t create_fill_count_op;
+        create_fill_count_op.spin() = one_half_up;
+        create_fill_count_op.insert_block(M(1,1,sqrt(2.)), B, A);
+        create_fill_count_op.insert_block(M(1,1,sqrt(2.)), C, A);
+
+        op_t destroy_count_op;
+        destroy_count_op.spin() = one_half_down;
+        destroy_count_op.insert_block(M(1,1,1), A, B);
+        destroy_count_op.insert_block(M(1,1,1), A, C);
+
+        op_t destroy_fill_count_op;
+        destroy_fill_count_op.spin() = one_half_up;
+        destroy_fill_count_op.insert_block(M(1,1,1), A, B);
+        destroy_fill_count_op.insert_block(M(1,1,1), A, C);
+
+        op_t create_count_op;
+        create_count_op.spin() = one_half_down;
+        create_count_op.insert_block(M(1,1,sqrt(2.)), B, A);
+        create_count_op.insert_block(M(1,1,sqrt(2.)), C, A);
+
+        /*************************************************************/
+
+        op_t count_op;
+        count_op.insert_block(M(1,1,2), A, A);
+        count_op.insert_block(M(1,1,1), B, B);
+        count_op.insert_block(M(1,1,1), C, C);
+
+        op_t docc_op;
+        docc_op.insert_block(M(1,1,1), A, A);
+
+        op_t e2d_op;
+        e2d_op.insert_block(M(1,1,1), D, A);
+
+        op_t d2e_op;
+        d2e_op.insert_block(M(1,1,1), A, D);
+
+        op_t count_fill_op;
+        count_fill_op.insert_block(M(1,1,2),  A, A);
+        count_fill_op.insert_block(M(1,1,-1), B, B);
+        count_fill_op.insert_block(M(1,1,-1), C, C);
+        count_fill_op.insert_block(M(1,1,-1), B, C);
+        count_fill_op.insert_block(M(1,1,-1), C, B);
+
+        op_t flip_to_S2_op;
+        flip_to_S2_op.spin() = one_up;
+        flip_to_S2_op.insert_block(M(1,1,std::sqrt(3./2)), B, B);
+        flip_to_S2_op.insert_block(M(1,1,std::sqrt(3./2.)), C, C);
+        flip_to_S2_op.insert_block(M(1,1,std::sqrt(3./2.)),  B, C);
+        flip_to_S2_op.insert_block(M(1,1,std::sqrt(3./2.)),  C, B);
+
+        op_t flip_to_S0_op = flip_to_S2_op;
+        flip_to_S0_op.spin() = one_down;
+
+        op_t flip_S0_op = flip_to_S2_op;
+        flip_S0_op.spin() = one_flat;
+
+        /**********************************************************************/
+        /*** Create operator tag table ****************************************/
+        /**********************************************************************/
+
+        #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = generate_site_specific_ops(opname, max_irrep);
+
+        GENERATE_SITE_SPECIFIC(ident_op)
+        GENERATE_SITE_SPECIFIC(ident_full_op)
+        GENERATE_SITE_SPECIFIC(fill_op)
+
+        GENERATE_SITE_SPECIFIC(create_fill_op)
+        GENERATE_SITE_SPECIFIC(create_op)
+        GENERATE_SITE_SPECIFIC(destroy_fill_op)
+        GENERATE_SITE_SPECIFIC(destroy_op)
+
+        GENERATE_SITE_SPECIFIC(create_fill_couple_down_op)
+        GENERATE_SITE_SPECIFIC(destroy_fill_couple_down_op)
+        GENERATE_SITE_SPECIFIC(create_couple_up_op)
+        GENERATE_SITE_SPECIFIC(destroy_couple_up_op)
+
+        GENERATE_SITE_SPECIFIC(create_fill_count_op)
+        GENERATE_SITE_SPECIFIC(create_count_op)
+        GENERATE_SITE_SPECIFIC(destroy_fill_count_op)
+        GENERATE_SITE_SPECIFIC(destroy_count_op)
+
+        GENERATE_SITE_SPECIFIC(count_op)
+        GENERATE_SITE_SPECIFIC(docc_op)
+        GENERATE_SITE_SPECIFIC(e2d_op)
+        GENERATE_SITE_SPECIFIC(d2e_op)
+        GENERATE_SITE_SPECIFIC(flip_S0_op)
+        GENERATE_SITE_SPECIFIC(flip_to_S2_op)
+        GENERATE_SITE_SPECIFIC(flip_to_S0_op)
+        GENERATE_SITE_SPECIFIC(count_fill_op)
+
+        #undef GENERATE_SITE_SPECIFIC
+
+        #define REGISTER(op, kind) ret.op = register_site_specific(op ## _ops, kind, max_irrep, tag_handler);
+
+        REGISTER(ident,        tag_detail::bosonic)
+        REGISTER(ident_full,   tag_detail::bosonic)
+        REGISTER(fill,         tag_detail::bosonic)
+
+        REGISTER(create_fill,  tag_detail::fermionic)
+        REGISTER(create,       tag_detail::fermionic)
+        REGISTER(destroy_fill, tag_detail::fermionic)
+        REGISTER(destroy,      tag_detail::fermionic)
+
+        REGISTER(create_fill_couple_down,  tag_detail::fermionic)
+        REGISTER(destroy_fill_couple_down,  tag_detail::fermionic)
+        REGISTER(create_couple_up,  tag_detail::fermionic)
+        REGISTER(destroy_couple_up,  tag_detail::fermionic)
+
+        REGISTER(create_fill_count,  tag_detail::fermionic)
+        REGISTER(create_count,       tag_detail::fermionic)
+        REGISTER(destroy_fill_count, tag_detail::fermionic)
+        REGISTER(destroy_count,      tag_detail::fermionic)
+
+        REGISTER(count,        tag_detail::bosonic)
+        REGISTER(docc,         tag_detail::bosonic)
+        REGISTER(e2d,          tag_detail::bosonic)
+        REGISTER(d2e,          tag_detail::bosonic)
+        REGISTER(flip_S0,      tag_detail::bosonic)
+        REGISTER(flip_to_S2,   tag_detail::bosonic)
+        REGISTER(flip_to_S0,   tag_detail::bosonic)
+        REGISTER(count_fill,   tag_detail::bosonic)
+
+        #undef REGISTER
+
+        #define HERMITIAN(op1, op2) for (int hh=0; hh < ret.op1.size(); ++hh) tag_handler->hermitian_pair(ret.op1[hh], ret.op2[hh]);
+        HERMITIAN(create_fill, destroy_fill)
+        HERMITIAN(create, destroy)
+        HERMITIAN(e2d, d2e)
+
+        HERMITIAN(create_fill_count, destroy_fill_count) // useless
+        HERMITIAN(create_count, destroy_count)
+
+        HERMITIAN(create_fill_couple_down, destroy_fill_couple_down) // useless
+
+        HERMITIAN(create_couple_up, destroy_couple_up)
+        #undef HERMITIAN
+
+        //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
+        //    PRINT(ident)
+        //    PRINT(ident_full)
+        //    PRINT(fill)
+        //    PRINT(create_fill)
+        //    PRINT(create)
+        //    PRINT(destroy_fill)
+        //    PRINT(destroy)
+        //    PRINT(count)
+        //    PRINT(count_fill)
+        //    PRINT(docc)
+        //    PRINT(e2d)
+        //    PRINT(d2e)
+        //#undef PRINT
+
+        return ret;
+    }
+
+    static OperatorCollection construct_operator_collection(Operators const& ops, typename S::subcharge max_irrep)
+    {
+        OperatorCollection op_collection;
+
+        OperatorBundle create_pkg, destroy_pkg;
+        OperatorBundle create_count_pkg, destroy_count_pkg;
+
+        create_pkg.couple_up = ops.create_couple_up;
+        create_pkg.couple_down = ops.create;
+        create_pkg.fill_couple_up = ops.create_fill;
+        create_pkg.fill_couple_down = ops.create_fill_couple_down;
+
+        destroy_pkg.couple_up = ops.destroy_couple_up;
+        destroy_pkg.couple_down = ops.destroy;
+        destroy_pkg.fill_couple_up = ops.destroy_fill;
+        destroy_pkg.fill_couple_down = ops.destroy_fill_couple_down;
+
+        create_count_pkg.couple_down = ops.create_count;
+        create_count_pkg.fill_couple_up = ops.create_fill_count;
+
+        destroy_count_pkg.couple_down = ops.destroy_count;
+        destroy_count_pkg.fill_couple_up = ops.destroy_fill_count;
+
+        /**********************************************************************/
+
+        op_collection.ident     .no_couple = ops.ident;
+        op_collection.ident_full.no_couple = ops.ident_full;
+        op_collection.fill      .no_couple = ops.fill;
+
+        op_collection.create               = create_pkg;
+        op_collection.destroy              = destroy_pkg;
+
+        op_collection.count     .no_couple = ops.count;
+        op_collection.count     .fill_no_couple = ops.count_fill;
+
+        op_collection.create_count         = create_count_pkg;
+        op_collection.destroy_count        = destroy_count_pkg;
+
+        op_collection.e2d       .no_couple = ops.e2d;
+        op_collection.d2e       .no_couple = ops.d2e;
+        op_collection.docc      .no_couple = ops.docc;
+
+        op_collection.flip      .no_couple = ops.flip_S0;
+        op_collection.flip      .couple_up = ops.flip_to_S2;
+        op_collection.flip      .couple_down = ops.flip_to_S0;
+
+        /**********************************************************************/
+        return op_collection;
     }
 
     static term_descriptor two_term(bool sign, tag_vec full_ident, value_type scale, pos_t i, pos_t j,

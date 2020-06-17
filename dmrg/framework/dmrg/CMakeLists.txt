@@ -27,7 +27,7 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_suffix(SYMM_SUFFIX ${SYMM})
   get_symm_group_name(GROUP_NAME ${SYMM})
   set(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME})
-  
+
   set(TRIAL_INCLUDE_FACTORY "models/coded/factory_${SYMM_SUFFIX}.ipp")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${TRIAL_INCLUDE_FACTORY}")
     add_line_to(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} "#include \"dmrg/${TRIAL_INCLUDE_FACTORY}\"")
@@ -53,7 +53,7 @@ endif(ENABLE_LL_MODELS)
 
 
 # *** Libraries
-add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp utils/DmrgOptions.cpp utils/time_stopper.cpp utils/proc_statm.cpp utils/proc_status.cpp)
+add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp utils/DmrgOptions.cpp utils/time_stopper.cpp utils/proc_statm.cpp utils/proc_status.cpp utils/BaseParameters.cpp)
 add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
 set_property(TARGET dmrg_utils dmrg_models PROPERTY POSITION_INDEPENDENT_CODE TRUE)

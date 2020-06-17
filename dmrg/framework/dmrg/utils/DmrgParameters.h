@@ -70,7 +70,7 @@ private:
         add_option("eigensolver", "", value("IETL_JCD"));
         add_option("ietl_jcd_tol", "", value(1e-8));
         add_option("ietl_jcd_gmres", "", value(0));
-        add_option("ietl_jcd_maxiter", "", value(8));
+        add_option("ietl_jcd_maxiter", "", value(10));
 
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);
@@ -111,7 +111,7 @@ private:
         add_option("lattice_library", "", value("coded"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
-        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(1.e-300));
+        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
 
         //Default values for lattice, model etc. for quantum chemistry calculations
         add_option("LATTICE", "", value("orbitals"));

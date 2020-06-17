@@ -373,6 +373,7 @@ if(TESTS)
   add_test(NAME Test1 COMMAND test1)
   add_test(NAME Test2 COMMAND test2)
   add_test(NAME Test_Relativistic COMMAND test_rel)
+  add_test(NAME Test_Integral_Map COMMAND test_integral_map)
 endif(TESTS)
 
 

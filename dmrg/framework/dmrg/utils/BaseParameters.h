@@ -4,22 +4,23 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *               2019 by Leon Freitag <lefreita@ethz.ch>
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -32,150 +33,111 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
-
-#include <alps/parameter.h>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/split_member.hpp>
 
 #include "dmrg/utils/parameter_proxy.h"
 
-                
 namespace parameters {
     class value {
     public:
         value () : val_(""), empty_(true) { }
-        
+
         template <class T>
         value (const T & val)
         : val_(boost::lexical_cast<std::string>(val))
         , empty_(false)
         { }
-        
+
         std::string get() const {return val_;}
         bool empty() const {return empty_;}
     private:
         std::string val_;
         bool empty_;
-        
+
     };
 }
-                
-class BaseParameters : public alps::Parameters
+
+class BaseParameters
 {
-public:
-    
-    BaseParameters ()
-    : alps::Parameters()
-    { }
-    
-    BaseParameters (std::istream& param_file)
-    : alps::Parameters()
-    {
-        try {
-            alps::Parameters temp(param_file);
-            *static_cast<alps::Parameters*>(this) = temp;
-        } catch (std::exception & e) {
-            maquis::cerr << "Exception thrown when parsing parameters:" << std::endl;
-            maquis::cerr << e.what() << std::endl;
-            exit(1);
-        }
-    }
+    public:
 
-    BaseParameters(alps::Parameters const& p)
-    : alps::Parameters(p)
-    { }
-    
-    template <class Stream>
-    void print_description(Stream& os) const
-    {
-        typedef std::map<std::string, std::string>::const_iterator map_iterator;
-        
-        std::size_t column_length = 0;
-        for (map_iterator it = descriptions.begin(); it != descriptions.end(); ++it)
-            column_length = std::max(column_length, it->first.size());
-        column_length += 2;
-        
-        for (map_iterator it = descriptions.begin(); it != descriptions.end(); ++it) {
-            os << std::setw(column_length) << std::left << it->first << it->second << std::endl;
-            map_iterator matched = defaults.find(it->first);
-            if (matched != defaults.end())
-                os << std::setw(column_length) << "" << "(default: " << matched->second << ")" << std::endl;
-        }
-    }
-    
-    bool is_set (std::string const & key) const
-    {
-        return defined(key);
-    }
+        typedef std::map<std::string, std::string> map_t;
+        typedef typename map_t::value_type value_type;
 
-    parameters::proxy operator[](std::string const& key)
-    {
-        if (!defined(key)) {
-            std::map<std::string, std::string>::const_iterator match = defaults.find(key);
-            if (match != defaults.end())
-                alps::Parameters::operator[](key) = match->second;
-            else
-                boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
-        }
-        return parameters::proxy(alps::Parameters::operator[](key));
-    }
-    
-    template<class T> T get(std::string const & key)
-    {
-        parameters::proxy const& p = (*this)[key];
-        return p.as<T>();
-    }
-    
-    template<class T> void set(std::string const & key, T const & value)
-    {
-        alps::Parameters::operator[](key) = boost::lexical_cast<std::string>(value);
-    }
-    
-    BaseParameters iteration_params(std::string const & var, std::size_t val)
-    {
-        BaseParameters p;
-        
-        boost::regex expression("^(.*)\\[" + var + "\\]$");
-        boost::smatch what;
-        for (alps::Parameters::const_iterator it=this->begin();it != this->end();++it) {
-            std::string key = it->key();
-            if (boost::regex_match(key, what, expression)) {
-                std::vector<std::string> v = (*this)[key]; // use std::strign instead of value type, because value type is some alps internal type that can anyway be constructed from string.
-                if (val < v.size())
-                    p.set(what.str(1), v[val]);
-                else
-                    p.set(what.str(1), *(v.rbegin()));
-            }
-        }
-        p.set(var, val);
-        return p;
-    }
-    
-    BaseParameters & operator<<(BaseParameters const& p)
-    {
-        for (alps::Parameters::const_iterator it=p.begin(); it!=p.end(); ++it)
-            alps::Parameters::operator[](it->key()) = it->value();
-        defaults.insert(p.defaults.begin(), p.defaults.end());
+        BaseParameters();
+        BaseParameters(const BaseParameters & p);
+        BaseParameters(std::istream& param_file);
 
-        return *this;
-    }
-    
-protected:
-    void add_option(std::string const & name,
-                    std::string const & desc,
-                    parameters::value const & val = parameters::value())
-    {
-        if (!val.empty())
-            defaults[name] = val.get();
-        descriptions[name] = desc;        
-    }
-    
-    std::map<std::string, std::string> defaults;
-    std::map<std::string, std::string> descriptions;
-    
+        ~BaseParameters();
+
+        // BaseParameters(alps::Parameters const& p);
+
+        std::list<value_type> get_range() const;
+
+        template <class Stream>
+        void print_description(Stream& os) const;
+
+        bool is_set (std::string const & key) const;
+        bool defined (std::string const & key) const;
+
+        parameters::proxy operator[](std::string const& key);
+
+        template<class T> T get(std::string const & key);
+
+        template<class T> void set(std::string const & key, T const & value);
+        void set(std::string const & key, const char value[]);
+        void erase(std::string const & key);
+
+        // Erase all keys containing a substring
+        void erase_substring(std::string const & substr);
+
+        BaseParameters iteration_params(std::string const & var, std::size_t val);
+
+        BaseParameters & operator<<(BaseParameters const& p);
+        template<class T> BaseParameters & add(std::string const & key, T const & value);
+
+        friend void swap(BaseParameters& lhs, BaseParameters& rhs)
+        {
+            using std::swap;
+            swap(lhs.defaults, rhs.defaults);
+            swap(lhs.descriptions, rhs.descriptions);
+            lhs.impl_.swap(rhs.impl_);
+        }
+
+        BaseParameters& operator=(BaseParameters rhs);
+        BaseParameters& operator=(BaseParameters&& rhs);
+
+        // for Boost::serialization
+        BOOST_SERIALIZATION_SPLIT_MEMBER()
+        template<class Archive>
+        void load(Archive& ar);
+
+        template<class Archive>
+        void save(Archive& ar) const;
+
+
+    protected:
+        friend class boost::serialization::access;
+
+        friend std::ostream& operator<<(std::ostream& os, const BaseParameters& p);
+
+        void add_option(std::string const & name,
+                        std::string const & desc,
+                        parameters::value const & val = parameters::value());
+
+        map_t defaults;
+        map_t descriptions;
+
+        class Impl;
+        std::unique_ptr<Impl> impl_;
 };
+
 
 #endif
