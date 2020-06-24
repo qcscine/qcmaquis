@@ -388,7 +388,7 @@ namespace maquis
         // load all parameters from HDF5, but remove measurements
         storage::archive ar_in(ket_name + "/props.h5");
         ar_in["/parameters"] >> parms;
-        parms.erase_substring("MEASURE");
+        parms.erase_measurements();
 
         parms.set("chkpfile", ket_name);
         if (bra_eq_ket) // run 1-RDM measurement if bra == ket
@@ -424,7 +424,7 @@ namespace maquis
         ar_in["/parameters"] >> parms;
 
 
-        parms.erase_substring("MEASURE");
+        parms.erase_measurements();
 
 #if defined(HAVE_SU2U1PG)
         parms.set("symmetry", "2u1pg");

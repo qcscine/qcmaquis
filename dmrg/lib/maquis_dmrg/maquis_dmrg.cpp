@@ -150,6 +150,28 @@ namespace maquis
     }
 
     template <class V>
+    void DMRGInterface<V>::measure_and_save_4rdm()
+    {
+
+        // Clear all unnecessary measurements before running 4-RDM measurement
+
+        // Back up measurements
+        BaseParameters meas_parms = parms.measurements();
+
+        // clear
+        parms.erase_measurements();
+
+        // set 4-RDM measurement
+        parms.set("MEASURE[4rdm]", 1);
+
+        // measure and save
+        impl_->sim->run_measure();
+
+        // Restore measurements in the parameters
+        parms << meas_parms;
+    }
+
+    template <class V>
     DMRGInterface<V>::~DMRGInterface() = default;
 
     template <class V>

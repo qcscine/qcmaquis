@@ -131,15 +131,32 @@
         impl_->erase(key);
     }
 
-    void BaseParameters::erase_substring(std::string const & substr)
+    void BaseParameters::erase_regex(std::string const & regex)
     {
         std::vector<std::string> keys_toerase;
+        // TODO: convert all regex to std::regex!
+        boost::regex expression(regex);
+        boost::smatch what;
         for (auto&& k : *impl_)
-            if(k.key().find(substr) != std::string::npos)
+            if(boost::regex_match(k.key(), what, expression))
                 keys_toerase.push_back(k.key());
 
         for (auto&& k_erase : keys_toerase)
                 impl_->erase(k_erase);
+    }
+
+    BaseParameters BaseParameters::measurements() const
+    {
+        BaseParameters p;
+        const std::string regex = "^MEASURE";
+        boost::regex expression(regex);
+        boost::smatch what;
+
+        for (auto&& k : *impl_)
+            if(boost::regex_match(k.key(), what, expression))
+                p.set(k.key(), k.value());
+
+        return p;
     }
 
     BaseParameters BaseParameters::iteration_params(std::string const & var, std::size_t val)

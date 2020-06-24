@@ -227,7 +227,7 @@ public:
         }
 
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-        if (parms.is_set("MEASURE[ChemEntropy]"))
+        if (parms.is_set("MEASURE[ChemEntropy]") || parms.is_set("MEASURE[4rdm]"))
             if (!rfile.empty())
                 measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
             else

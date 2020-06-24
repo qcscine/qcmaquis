@@ -281,6 +281,13 @@ namespace detail {
         return site_bases;
     }
 
+    // SU2U1 result name file
+    // TODO: Similar functions for (SU2U1 and 2U1) checkpoint names are found in mpssi_interface.cpp, maybe they should be moved here?
+    inline std::string su2u1_result_name(const std::string& pname, int state)
+    {
+        std::string ret = pname + ".results_state." + std::to_string(state) + ".h5";
+        return ret;
+    }
 }
 }
 

@@ -85,7 +85,7 @@ namespace maquis
                 : parms_(parms), nstates_(nstates), pname_(pname), pname_guess_(pname + "_guess"), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
             {
 
-                parms_.erase_substring("MEASURE");
+                parms_.erase_measurements();
 
                 if (do_cideas_)
                 {

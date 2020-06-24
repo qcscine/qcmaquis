@@ -81,6 +81,9 @@ namespace maquis
             const meas_with_results_type & twordm();
             const meas_with_results_type & fourrdm();
 
+            // Measure 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file
+            void measure_and_save_4rdm();
+
             // Load an MPS from a given checkpoint and measure the overlap with the current MPS
             V overlap(const std::string& aux_mps_name);
         private:

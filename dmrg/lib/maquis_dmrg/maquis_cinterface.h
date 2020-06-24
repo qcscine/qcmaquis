@@ -99,9 +99,15 @@ extern "C"
     // size: size of values array, size of indices array = 4*size
     void qcmaquis_interface_get_2rdm(int* indices, V* values, int size);
 
-    // Get 4-RDM
+    // Get 4-RDM [Currently unused]
     // size: size of values array, size of indices array = 8*size
     void qcmaquis_interface_get_4rdm(int* indices, V* values, int size);
+
+    // Measure 4-RDM and save it into HDF5 result file (using project name passed to qcmaquis_interface_preinit)
+    // state: state index (starting from 0)
+    // Warning: this reinitialises the interface and loads a checkpoint corresponding to the state index
+    // so this should be called after wavefunction optimisation
+    void qcmaquis_interface_measure_and_save_4rdm(int state);
 
     // Measure overlap
     double qcmaquis_interface_get_overlap(char* filename);

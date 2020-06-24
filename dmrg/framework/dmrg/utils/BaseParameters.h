@@ -97,9 +97,17 @@ class BaseParameters
         void erase(std::string const & key);
 
         // Erase all keys containing a substring
-        void erase_substring(std::string const & substr);
+        void erase_regex(std::string const & regex);
+
+        // Erase all measurements
+        void erase_measurements() { erase_regex("^MEASURE"); }
+
+        // Return all meaurements
+        BaseParameters measurements() const;
 
         BaseParameters iteration_params(std::string const & var, std::size_t val);
+
+        // Parameters that correspond
 
         BaseParameters & operator<<(BaseParameters const& p);
         template<class T> BaseParameters & add(std::string const & key, T const & value);

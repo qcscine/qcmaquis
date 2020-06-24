@@ -259,6 +259,27 @@ extern "C"
         }
     }
 
+    void qcmaquis_interface_measure_and_save_4rdm(int state)
+    {
+        std::string res_name = chem::detail::su2u1_result_name(pname, state);
+
+        // make sure the checkpoint actually exists, otherwise we'd be measuring garbage
+        // (dmrg_meas doesn't print an error yet if you try to load a non-existing checkpoint)
+        if (!boost::filesystem::exists(res_name))
+            throw std::runtime_error("QCMaquis checkpoint " + res_name + " does not exist. Did you optimise the wavefunction for this state?");
+
+        // We need to remove all other measurements, so let's make a backup of current parameters and restore it when we're done
+        BaseParameters parms_backup(parms);
+        parms.erase_measurements();
+
+        // reset the parameters for state state and load the checkpoint
+        qcmaquis_interface_set_state(state);
+        interface_ptr->measure_and_save_4rdm();
+
+        parms = parms_backup;
+
+    }
+
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
     {
         // Get iteration results from the last sweep
