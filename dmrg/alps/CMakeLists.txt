@@ -69,14 +69,13 @@ ENDIF(HDF5_IS_PARALLEL)
 # configuration files
 ######################################################################
 
-
-if(LAPACK_64_BIT)
-    set (BIND_FORTRAN_INTEGER_8 ON)
-else()
-    set (BIND_FORTRAN_INTEGER_8 OFF)
-endif()
 # This should be covered by configure_file, but for some reason it isn't
+# probably because the configure file is included at a wrong place
 # so let's set it again explicitly
+#
+if(LAPACK_64_BIT)
+   add_definitions(-DBIND_FORTRAN_INTEGER_8)
+endif()
 if (BIND_FORTRAN_LOWERCASE)
   add_definitions(-DBIND_FORTRAN_LOWERCASE)
 endif (BIND_FORTRAN_LOWERCASE)

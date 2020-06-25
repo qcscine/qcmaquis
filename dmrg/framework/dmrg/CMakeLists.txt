@@ -1,11 +1,6 @@
 
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 
-
-if(USE_AMBIENT)
-  compile_with_ambient()
-endif(USE_AMBIENT)
-
 # Utils
 macro(add_line_to VARNAME LINE)
   set(${VARNAME} "${${VARNAME}}\n${LINE}")

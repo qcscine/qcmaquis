@@ -57,10 +57,10 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_parallel")
   set(MAQUISLapack_INCLUDE_DIRS $ENV{MKLROOT}/include)
 
 
-elseif(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
-  set(MAQUISLapack_LIBRARIES ${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY} ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY})
-  set(MAQUISLapack_CXX_COMPILER_FLAGS ${ALPS_LAPACK_DEFINITIONS})
-  set(MAQUISLapack_LINKER_FLAGS ${ALPS_LAPACK_LINKER_FLAGS})
+# elseif(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
+#   set(MAQUISLapack_LIBRARIES ${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY} ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY})
+#   set(MAQUISLapack_CXX_COMPILER_FLAGS ${ALPS_LAPACK_DEFINITIONS})
+#   set(MAQUISLapack_LINKER_FLAGS ${ALPS_LAPACK_LINKER_FLAGS})
 
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   if(APPLE)
@@ -72,22 +72,32 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   endif(APPLE)
 
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "openblas")
-  set(MAQUISLapack_LIBRARIES -lopenblas)
-  set(MAQUISLapack_LIB_DIRS ${OPENBLASROOT}/lib)
-  set(MAQUISLapack_INCLUDE_DIRS ${OPENBLASROOT}/include)
+set(MAQUISLapack_LIB_DIRS ${OPENBLASROOT}/lib)
+set(MAQUISLapack_INCLUDE_DIRS ${OPENBLASROOT}/include)
+
+if (APPLE)
+    set(MAQUISLapack_LIBRARIES "${MAQUISLapack_LIB_DIRS}/libopenblas.dylib")
+else(APPLE)
+    set(MAQUISLapack_LIBRARIES "${MAQUISLapack_LIB_DIRS}/libopenblas.so")
+endif(APPLE)
+## For some reason find_library IGNORES NO_DEFAULT_PATH and includes a wrong path, so we will not use it
+# find_library(MAQUISLapack_LIBRARIES NAMES openblas PATHS ${MAQUISLapack_LIB_DIRS}
+#              NO_DEFAULT_PATH
+#              NO_CMAKE_PATH
+#              NO_CMAKE_FIND_ROOT_PATH
+#              NO_SYSTEM_ENVIRONMENT_PATH
+#              NO_CMAKE_SYSTEM_PATH)
 
   if (OPENBLASROOT STREQUAL "")
     set (OPENBLASROOT $ENV{OPENBLASROOT} CACHE PATH "OpenBLAS root directory." FORCE)
     if (NOT OPENBLASROOT)
-        message (FATAL_ERROR
-            "You must set environment variable OPENBLASROOT, "
-            "or specify -DOPENBLASROOT=/path/to/openblas_dir "
-            "when running cmake."
-            )
+        set (OPENBLASROOT "${OPENBLASROOT}")
+        message ("-- Default OPENBLASROOT: ${OPENBLASROOT}")
+    else()
+        # at this point, OPENBLASROOT should be defined and not empty
+        message ("-- OPENBLASROOT = ${OPENBLASROOT}")
     endif ()
   endif ()
-  # at this point, OPENBLASROOT should be defined and not empty
-  message ("-- OPENBLASROOT = ${OPENBLASROOT}")
 
   message(STATUS "LAPACK 64-bit integers:" ${LAPACK_64_BIT})
   # check the 64-bit version of OpenBLAS

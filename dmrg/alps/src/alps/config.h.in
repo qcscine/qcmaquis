@@ -11,17 +11,17 @@
 * Library License; you can use, redistribute it and/or modify it under
 * the terms of the license, either version 1 or (at your option) any later
 * version.
-* 
+*
 * You should have received a copy of the ALPS Library License along with
 * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
 * available from http://alps.comp-phys.org/.
 *
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
@@ -123,7 +123,10 @@
 #cmakedefine ALPS_HAVE_ATLAS
 
 // Set 8-byte integers for Boost bindings if needed
-#cmakedefine BIND_FORTRAN_INTEGER_8
+// This does not work for some reason, probably because the header is included after
+// boost/bindings/numeric/fortran.hpp
+// so this define is set with a compiler flag instead
+// #cmakedefine BIND_FORTRAN_INTEGER_8
 
 //
 // XML parser
@@ -235,7 +238,7 @@ using boost::uint_fast64_t;
 #endif
 
 //
-// Enable HDF5 checkpoints: no ALPS checkpoint data is written into XDR files 
+// Enable HDF5 checkpoints: no ALPS checkpoint data is written into XDR files
 // anymore, but they can still be read
 //
 #ifdef ALPS_HAVE_HDF5

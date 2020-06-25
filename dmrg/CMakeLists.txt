@@ -14,7 +14,7 @@ if(MACHINE_CONFIG)
 endif(MACHINE_CONFIG)
 
 if(NOT DEFAULT_BLAS_LAPACK)
-    set(DEFAULT_BLAS_LAPACK alps)
+    set(DEFAULT_BLAS_LAPACK auto)
 endif(NOT DEFAULT_BLAS_LAPACK)
 
 ######################################################################
@@ -63,7 +63,7 @@ option(TESTS      "Build and run tests" OFF)
 
 mark_as_advanced(ENABLE_COLLECTOR)
 
-set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas, alps")
+set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas")
 
 # Packages required for ALPS
 # HDF5
@@ -190,10 +190,15 @@ if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
 endif()
 
 # BLAS/LAPACK selector
-  find_package(MAQUISLapack)
-  message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
-  message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
-  message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
+find_package(MAQUISLapack)
+message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
+message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
+message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
+
+# ILP64 definition
+if(LAPACK_64_BIT)
+   add_definitions(-DBIND_FORTRAN_INTEGER_8)
+endif()
 
 ######################################################################
 # Version information
