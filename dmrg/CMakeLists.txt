@@ -43,9 +43,6 @@ set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
-# option(USE_AMBIENT "Enable Ambient" OFF)
-# option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
-# set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
 # Standalone utility binaries, mostly deprecated by the binary interface
@@ -193,12 +190,10 @@ if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
 endif()
 
 # BLAS/LAPACK selector
-if(NOT USE_AMBIENT)
   find_package(MAQUISLapack)
   message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
   message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
   message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
-endif(NOT USE_AMBIENT)
 
 ######################################################################
 # Version information
@@ -272,12 +267,6 @@ MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 set(DMRG_LIBRARIES alps ${HDF5_LIBRARIES}
 ${GSL_LIBRARIES})
 
-if(USE_AMBIENT)
-  list(APPEND DMRG_LIBRARIES ${AMBIENT_LIBRARIES})
-else()
-  list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
-endif(USE_AMBIENT)
-
 # OpenMP
 if(ENABLE_OMP)
   find_package(OpenMP)
@@ -313,9 +302,6 @@ endif(Boost_FOUND)
 set (ALPS_INCLUDE_DIRS ${ALPS_SOURCE_DIR}/src ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src)
 list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
-if(NOT USE_AMBIENT)
-  list(APPEND DMRG_LIBRARY_DIRS ${MAQUISLapack_LIB_DIRS})
-endif(NOT USE_AMBIENT)
 
 include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${PROJECT_SOURCE_DIR}/lib/maquis_dmrg ${PROJECT_BINARY_DIR}/lib/maquis_dmrg ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})

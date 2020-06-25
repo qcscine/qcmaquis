@@ -125,6 +125,7 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
   # variables set manually
 
 else() # auto mode
+  message ("No linear algebra library provided, trying to guess... Make sure you compile with the correct integer interface.")
   find_package(LAPACK)
   if(LAPACK_FOUND)
     set(MAQUISLapack_LIBRARIES ${LAPACK_LIBRARIES})
