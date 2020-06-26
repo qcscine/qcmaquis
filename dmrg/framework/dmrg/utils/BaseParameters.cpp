@@ -136,9 +136,8 @@
         std::vector<std::string> keys_toerase;
         // TODO: convert all regex to std::regex!
         boost::regex expression(regex);
-        boost::smatch what;
         for (auto&& k : *impl_)
-            if(boost::regex_match(k.key(), what, expression))
+            if(boost::regex_search(k.key(), expression))
                 keys_toerase.push_back(k.key());
 
         for (auto&& k_erase : keys_toerase)
@@ -150,10 +149,9 @@
         BaseParameters p;
         const std::string regex = "^MEASURE";
         boost::regex expression(regex);
-        boost::smatch what;
 
         for (auto&& k : *impl_)
-            if(boost::regex_match(k.key(), what, expression))
+            if(boost::regex_search(k.key(), expression))
                 p.set(k.key(), k.value());
 
         return p;

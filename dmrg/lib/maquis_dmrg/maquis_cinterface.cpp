@@ -268,16 +268,21 @@ extern "C"
         if (!boost::filesystem::exists(res_name))
             throw std::runtime_error("QCMaquis checkpoint " + res_name + " does not exist. Did you optimise the wavefunction for this state?");
 
-        // We need to remove all other measurements, so let's make a backup of current parameters and restore it when we're done
-        BaseParameters parms_backup(parms);
-        parms.erase_measurements();
-
         // reset the parameters for state state and load the checkpoint
+
+        // Remove all unneeded measurements before measuring 4-RDM and save them into a backup
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        // set 4-RDM measurement
+        parms.set("MEASURE[4rdm]", 1);
         qcmaquis_interface_set_state(state);
+
+        // measure and save
         interface_ptr->measure_and_save_4rdm();
 
-        parms = parms_backup;
-
+        // restore measurements
+        parms.erase_measurements();
+        parms << meas_parms;
     }
 
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)

@@ -229,7 +229,10 @@ public:
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
         if (parms.is_set("MEASURE[ChemEntropy]") || parms.is_set("MEASURE[4rdm]"))
             if (!rfile.empty())
-                measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps);
+            {
+                const BaseParameters & meas_parms = parms.is_set("MEASURE[4rdm]") ? parms : BaseParameters();
+                measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps, meas_parms);
+            }
             else
                 throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
         #endif

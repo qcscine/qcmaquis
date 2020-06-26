@@ -154,7 +154,8 @@ namespace maquis
     {
 
         // Clear all unnecessary measurements before running 4-RDM measurement
-
+        // FIXME: modifying parms here has NO EFFECT on the measurements! This has to be changed in another way!
+        // For now the measurements are modified in maquis_cinterface.cpp, but it won't work if DMRGInterface is called directly!
         // Back up measurements
         BaseParameters meas_parms = parms.measurements();
 
@@ -166,6 +167,9 @@ namespace maquis
 
         // measure and save
         impl_->sim->run_measure();
+
+        // erase the 4-RDM measurement again
+        parms.erase_measurements();
 
         // Restore measurements in the parameters
         parms << meas_parms;
