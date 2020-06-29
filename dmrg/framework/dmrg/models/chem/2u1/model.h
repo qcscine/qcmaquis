@@ -489,6 +489,9 @@ public:
                     std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::    _1 + 1);
                     maquis::cout << " " << std::endl;
                     */
+                   // check if positions are out of bounds
+                   for (auto&& p: positions)
+                        assert(p < parms["L"]);
 
                 }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
@@ -737,7 +740,9 @@ public:
                     std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::    _1 + 1);
                     maquis::cout << " " << std::endl;
                     */
-
+                    // check if positions exceed L
+                    for (auto&& p: positions)
+                        assert(p < parms["L"]);
                 }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
