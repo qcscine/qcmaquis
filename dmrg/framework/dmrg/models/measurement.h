@@ -126,6 +126,9 @@ void measurement<Matrix, SymmGroup>::save(Archive & ar) const
         }
         if (labels.size() > 0)
             ar[storage::encode(name()) + std::string("/labels")] << labels;
+        // Save also the numerical values of the labels for those who do not want to parse the strings on reading
+        if (labels_num.size() > 0)
+            ar[storage::encode(name()) + std::string("/labels_num")] << labels_num;
     } else {
         if (cast_to_real) {
             save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"), maquis::real(result), eigenstate_index());

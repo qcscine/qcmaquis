@@ -137,7 +137,7 @@ namespace measurements_details {
     // (e.g. increments a counter or adds an index vector)
     // examples for fun see below
     template <class F, class I=int>
-    typename F::return_type iterate_4rdm_indices(F fun, I L, const std::vector<I> positions_first = std::vector<I>())
+    typename F::return_type iterate_4rdm_indices(F fun, I L, const std::vector<I> & positions_first = std::vector<I>())
     {
         typedef Lattice::pos_t pos_t;
         pos_t p4_start = 0;
@@ -653,7 +653,7 @@ namespace measurements {
             auto iterator = measurements_details::iterate_4rdm(lattice.size(), positions_first);
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for schedule(dynamic,1)
             #endif
             for(auto&& positions : iterator)
             {
