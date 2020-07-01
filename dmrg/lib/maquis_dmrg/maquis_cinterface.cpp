@@ -33,6 +33,7 @@
 #include "maquis_dmrg.h"
 #include "starting_guess.h"
 #include "dmrg/utils/stdout_redirector.hpp"
+#include "dmrg/models/measurements/tagged_nrankrdm.h" // for 4-RDM functions
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
@@ -319,5 +320,11 @@ extern "C"
     void qcmaquis_interface_restore_stdout()
     {
         stdout_redirect.restore();
+    }
+
+    int qcmaquis_interface_get_4rdm_elements(int L, int* slice)
+    {
+        std::vector<int> slice_ = slice == nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
+        return measurements_details::get_4rdm_permutations(L, slice_);
     }
 }

@@ -116,6 +116,11 @@ extern "C"
     void qcmaquis_interface_stdout(char* filename);
     void qcmaquis_interface_restore_stdout();
 
+    // Obtain number of 4-RDM elements to be evaluated
+    // L: number of orbitals
+    // slice: integer array of 4 indices corresponding to a 4-RDM slice with four first indices fixed
+    // if is not nullptr, number of all 4-RDM elements will be evaluated, otherwise only the number of elements in the slice
+    int qcmaquis_interface_get_4rdm_elements(int L, int* slice);
 }
 
 #endif
