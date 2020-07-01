@@ -33,7 +33,7 @@
 #include "maquis_dmrg.h"
 #include "starting_guess.h"
 #include "dmrg/utils/stdout_redirector.hpp"
-#include "dmrg/models/measurements/tagged_nrankrdm.h" // for 4-RDM functions
+#include "dmrg/models/measurements/measurements_details.h" // for 4-RDM functions
 
 std::unique_ptr<maquis::DMRGInterface<double> > interface_ptr;
 DmrgParameters parms;
