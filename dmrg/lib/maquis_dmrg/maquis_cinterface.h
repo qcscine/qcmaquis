@@ -55,6 +55,9 @@ extern "C"
                                  int* sweep_m, int nsweepm, char* project_name,
                                  bool meas_2rdm);
 
+    // Populate parameters from an existing QCMaquis checkpoint file
+    void qcmaquis_interface_preinit_checkpoint(char* checkpoint_name);
+
     // Initializes/updates integrals
     // If integrals were not present before, initializes the interface
     // Otherwise, updates the integrals and re-initializes the model

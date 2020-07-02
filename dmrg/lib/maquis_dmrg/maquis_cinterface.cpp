@@ -30,6 +30,7 @@
 #include <memory>
 #include <string>
 #include <array>
+#include <regex>
 #include "maquis_dmrg.h"
 #include "starting_guess.h"
 #include "dmrg/utils/stdout_redirector.hpp"
@@ -94,6 +95,27 @@ extern "C"
         }
 
         parms.set("conv_thresh", conv_thresh);
+
+    }
+
+    void qcmaquis_interface_preinit_checkpoint(char* checkpoint_name)
+    {
+        // extract project name from checkpoint
+        std::regex r("^(.+)\\.checkpoint");
+        std::smatch m;
+        std::string name_str(checkpoint_name);
+        std::regex_search(name_str, m, r);
+        // match found
+        if (m.size() <= 1)
+            throw std::runtime_error("Cannot deduce project name from the checkpoint name");
+
+        pname = m[1];
+        std::string props_name = std::string(checkpoint_name) + "/props.h5";
+        if (!boost::filesystem::exists(props_name))
+            throw std::runtime_error("Filename " + props_name + " cannot be found.");
+
+        storage::archive props(props_name);
+        props["/parameters"] >> parms;
 
     }
 
