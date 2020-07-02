@@ -157,11 +157,11 @@ overlap_measurements(BaseParameters const & parms, boost::optional<size_t> sweep
      * matches the given one.
      */
     boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
-    boost::regex expression("^MEASURE_OVERLAP\\[([a-zA-Z]+)(\\(([0-9]+)\\))?\\]$");
-    boost::smatch what;
+    std::regex expression("^MEASURE_OVERLAP\\[([a-zA-Z]+)(\\(([0-9]+)\\))?\\]$");
+    std::smatch what;
     for (auto&& it: parms.get_range()) {
         std::string lhs = it.first;
-        if (boost::regex_match(lhs, what, expression)) {
+        if (std::regex_match(lhs, what, expression)) {
             if (sweep && !what[3].matched) continue;
             if (!sweep && what[3].matched) continue;
             if (sweep && what[3].matched && boost::lexical_cast<long>(what.str(3)) != sweep.get()) continue;

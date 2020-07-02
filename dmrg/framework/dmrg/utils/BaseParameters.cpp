@@ -135,9 +135,9 @@
     {
         std::vector<std::string> keys_toerase;
         // TODO: convert all regex to std::regex!
-        boost::regex expression(regex);
+        std::regex expression(regex);
         for (auto&& k : *impl_)
-            if(boost::regex_search(k.key(), expression))
+            if(std::regex_search(k.key(), expression))
                 keys_toerase.push_back(k.key());
 
         for (auto&& k_erase : keys_toerase)
@@ -148,10 +148,10 @@
     {
         BaseParameters p;
         const std::string regex = "^MEASURE";
-        boost::regex expression(regex);
+        std::regex expression(regex);
 
         for (auto&& k : *impl_)
-            if(boost::regex_search(k.key(), expression))
+            if(std::regex_search(k.key(), expression))
                 p.set(k.key(), k.value());
 
         return p;
@@ -161,11 +161,11 @@
     {
         BaseParameters p;
 
-        boost::regex expression("^(.*)\\[" + var + "\\]$");
-        boost::smatch what;
+        std::regex expression("^(.*)\\[" + var + "\\]$");
+        std::smatch what;
         for (alps::Parameters::const_iterator it=impl_->begin();it != impl_->end();++it) {
             std::string key = it->key();
-            if (boost::regex_match(key, what, expression)) {
+            if (std::regex_match(key, what, expression)) {
                 std::vector<std::string> v = (*this)[key]; // use std::strign instead of value type, because value type is some alps internal type that can anyway be constructed from string.
                 if (val < v.size())
                     p.set(what.str(1), v[val]);

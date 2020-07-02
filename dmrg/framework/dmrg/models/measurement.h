@@ -43,7 +43,7 @@
 
 #include <stdexcept>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/static_assert.hpp>
 
 /// TODO: 1) move data to new object measurement_result.

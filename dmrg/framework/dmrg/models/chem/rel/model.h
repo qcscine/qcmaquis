@@ -35,7 +35,7 @@
 #include <iterator>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -161,11 +161,11 @@ public:
         typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         {
-            boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
+            std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             boost::smatch what;
             for (auto&& it: parms.get_range()) {
                 std::string lhs = it.first;
-                if (boost::regex_match(lhs, what, expression)) {
+                if (std::regex_match(lhs, what, expression)) {
 
                     op_vec meas_op;
                     if (it.second == "N")
@@ -179,48 +179,48 @@ public:
         }
 
         {
-        boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
-        boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
-        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
-        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
-        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
-        boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
+        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
+        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
+        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        std::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
+        std::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        std::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
+        std::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
         boost::smatch what;
         for (auto&& it : parms.get_range()) {
             std::string lhs = it.first;
 
             std::string name, value;
             bool half_only, nearest_neighbors_only;
-            if (boost::regex_match(lhs, what, expression)) {
+            if (std::regex_match(lhs, what, expression)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_half)) {
+            if (std::regex_match(lhs, what, expression_half)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_nn)) {
+            if (std::regex_match(lhs, what, expression_nn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = true;
             }
-            if (boost::regex_match(lhs, what, expression_halfnn)) {
+            if (std::regex_match(lhs, what, expression_halfnn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = true;
             }
-            if (boost::regex_match(lhs, what, expression_oneptdm) ||
-                    boost::regex_match(lhs, what, expression_transition_oneptdm)) {
+            if (std::regex_match(lhs, what, expression_oneptdm) ||
+                    std::regex_match(lhs, what, expression_transition_oneptdm)) {
 
                 typedef std::vector<tag_type> tag_vec;
                 typedef std::vector<tag_vec> bond_tag_element;
@@ -248,8 +248,8 @@ public:
 										                                            positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_twoptdm) ||
-                    boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+            else if (std::regex_match(lhs, what, expression_twoptdm) ||
+                    std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 typedef std::vector<tag_type> tag_vec;
                 typedef std::vector<tag_vec> bond_tag_element;

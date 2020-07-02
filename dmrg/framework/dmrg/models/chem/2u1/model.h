@@ -34,7 +34,7 @@
 #include <iterator>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -188,11 +188,11 @@ public:
         typedef std::vector<tag_vec> bond_tag_element;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
         {
-            boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
-            boost::smatch what;
+            std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
+            std::smatch what;
             for (auto&& it : parms.get_range()) {
                 std::string lhs = it.first;
-                if (boost::regex_match(lhs, what, expression)) {
+                if (std::regex_match(lhs, what, expression)) {
 
                     std::vector<op_t> meas_op;
                     if (it.second == "Nup")
@@ -210,63 +210,63 @@ public:
         }
 
         {
-        boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
-        boost::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
-        boost::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
-        boost::regex expression_transition_oneptdm_uu("^MEASURE\\[trans1rdm_aa\\]");
-        boost::regex expression_oneptdm_dd("^MEASURE\\[1rdm_bb\\]");
-        boost::regex expression_transition_oneptdm_dd("^MEASURE\\[trans1rdm_bb\\]");
-        boost::regex expression_oneptdm_ud("^MEASURE\\[1rdm_ab\\]");
-        boost::regex expression_transition_oneptdm_ud("^MEASURE\\[trans1rdm_ab\\]");
-        boost::regex expression_oneptdm_du("^MEASURE\\[1rdm_ba\\]");
-        boost::regex expression_transition_oneptdm_du("^MEASURE\\[trans1rdm_ba\\]");
-        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
-        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
-        boost::regex expression_transition_twoptdm_uuuu("^MEASURE\\[trans2rdm_aaaa\\]");
-        boost::regex expression_transition_twoptdm_uddu("^MEASURE\\[trans2rdm_abba\\]");
-        boost::regex expression_transition_twoptdm_duud("^MEASURE\\[trans2rdm_baab\\]");
-        boost::regex expression_transition_twoptdm_dddd("^MEASURE\\[trans2rdm_bbbb\\]");
-        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
-        boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
-        boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
-        boost::smatch what;
+        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
+        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
+        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        std::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
+        std::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
+        std::regex expression_transition_oneptdm_uu("^MEASURE\\[trans1rdm_aa\\]");
+        std::regex expression_oneptdm_dd("^MEASURE\\[1rdm_bb\\]");
+        std::regex expression_transition_oneptdm_dd("^MEASURE\\[trans1rdm_bb\\]");
+        std::regex expression_oneptdm_ud("^MEASURE\\[1rdm_ab\\]");
+        std::regex expression_transition_oneptdm_ud("^MEASURE\\[trans1rdm_ab\\]");
+        std::regex expression_oneptdm_du("^MEASURE\\[1rdm_ba\\]");
+        std::regex expression_transition_oneptdm_du("^MEASURE\\[trans1rdm_ba\\]");
+        std::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        std::regex expression_transition_twoptdm_uuuu("^MEASURE\\[trans2rdm_aaaa\\]");
+        std::regex expression_transition_twoptdm_uddu("^MEASURE\\[trans2rdm_abba\\]");
+        std::regex expression_transition_twoptdm_duud("^MEASURE\\[trans2rdm_baab\\]");
+        std::regex expression_transition_twoptdm_dddd("^MEASURE\\[trans2rdm_bbbb\\]");
+        std::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
+        std::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
+        std::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
+        std::smatch what;
 
         for (auto&& it: parms.get_range()) {
             std::string lhs = it.first;
 
             std::string name, value;
             bool half_only, nearest_neighbors_only;
-            if (boost::regex_match(lhs, what, expression)) {
+            if (std::regex_match(lhs, what, expression)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_half)) {
+            if (std::regex_match(lhs, what, expression_half)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_nn)) {
+            if (std::regex_match(lhs, what, expression_nn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = true;
             }
-            if (boost::regex_match(lhs, what, expression_halfnn)) {
+            if (std::regex_match(lhs, what, expression_halfnn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = true;
             }
 
-            if (boost::regex_match(lhs, what, expression_twoptdm) ||
-                    boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+            if (std::regex_match(lhs, what, expression_twoptdm) ||
+                    std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans2rdm]"){
@@ -314,10 +314,10 @@ public:
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
-            else if (boost::regex_match(lhs, what, expression_transition_twoptdm_uuuu) ||
-                     boost::regex_match(lhs, what, expression_transition_twoptdm_uddu) ||
-                     boost::regex_match(lhs, what, expression_transition_twoptdm_duud) ||
-                     boost::regex_match(lhs, what, expression_transition_twoptdm_dddd) ) {
+            else if (std::regex_match(lhs, what, expression_transition_twoptdm_uuuu) ||
+                     std::regex_match(lhs, what, expression_transition_twoptdm_uddu) ||
+                     std::regex_match(lhs, what, expression_transition_twoptdm_duud) ||
+                     std::regex_match(lhs, what, expression_transition_twoptdm_dddd) ) {
 
                 std::string bra_ckp("");
                 bra_ckp = it.second;
@@ -372,8 +372,8 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_threeptdm) ||
-                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
+            else if (std::regex_match(lhs, what, expression_threeptdm) ||
+                     std::regex_match(lhs, what, expression_transition_threeptdm)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans3rdm]"){
@@ -498,7 +498,7 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_fourptdm)) {
+            else if (std::regex_match(lhs, what, expression_fourptdm)) {
 
                 std::string bra_ckp("");
                 name = "fourptdm";
@@ -748,8 +748,8 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_uu) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_uu) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_aa]"){
@@ -775,8 +775,8 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_dd) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_dd) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_bb]"){
@@ -802,8 +802,8 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_ud) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_ud) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_ab]"){
@@ -829,8 +829,8 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_du) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_du)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_du) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_du)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_ba]"){
@@ -857,8 +857,8 @@ public:
             }
 
             // 1-RDM and transition-1RDM
-            else if (boost::regex_match(lhs, what, expression_oneptdm) ||
-                    boost::regex_match(lhs, what, expression_transition_oneptdm)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm) ||
+                    std::regex_match(lhs, what, expression_transition_oneptdm)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){

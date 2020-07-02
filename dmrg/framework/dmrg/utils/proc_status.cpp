@@ -32,7 +32,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <boost/regex.hpp>
+#include <regex>
 
 #if defined(__APPLE__)
 #include <mach/task.h>
@@ -44,15 +44,15 @@ std::string proc_status_mem() {
     std::ifstream ifs("/proc/self/status");
     if (ifs) {
         std::string res;
-        boost::regex peak_expr("^VmPeak:	([ ]*)([0-9]+) kB");
-        boost::regex size_expr("^VmSize:	([ ]*)([0-9]+) kB");
+        std::regex peak_expr("^VmPeak:	([ ]*)([0-9]+) kB");
+        std::regex size_expr("^VmSize:	([ ]*)([0-9]+) kB");
         std::string line;
         while (!ifs.eof()) {
             getline(ifs, line);
-            boost::smatch what;
-            if      (boost::regex_match(line, what, peak_expr))
+            std::smatch what;
+            if      (std::regex_match(line, what, peak_expr))
                 res += what.str(2) + " ";
-            else if (boost::regex_match(line, what, size_expr))
+            else if (std::regex_match(line, what, size_expr))
                 res += what.str(2) + " ";
         }
         ifs.close();

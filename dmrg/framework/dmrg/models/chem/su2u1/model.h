@@ -34,7 +34,7 @@
 #include <iterator>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -145,17 +145,17 @@ public:
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_element;
 
-        boost::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
-        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
-        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
-        boost::smatch what;
+        std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        std::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        std::smatch what;
 
         for (auto&& it : parms.get_range()) {
             std::string lhs = it.first;
 
             std::string name, value;
-            if (boost::regex_match(lhs, what, expression_twoptdm) ||
-                boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+            if (std::regex_match(lhs, what, expression_twoptdm) ||
+                std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 name = "twoptdm";
 
@@ -165,7 +165,7 @@ public:
                                 name, lat, tag_handler, op_collection, positions, bra_ckp));
             }
 
-            if (boost::regex_match(lhs, what, expression_oneptdm)) {
+            if (std::regex_match(lhs, what, expression_oneptdm)) {
 
                 name = "oneptdm";
 
