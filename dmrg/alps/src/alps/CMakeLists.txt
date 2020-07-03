@@ -88,6 +88,8 @@ set(ALPS_SOURCES
 # endif(NOT ALPS_FOR_VISTRAILS)
 
 add_library(alps SHARED ${ALPS_SOURCES})
+target_link_libraries(alps ${HDF5_LIBRARIES} ${Boost_LIBRARIES})
+
 set_property(TARGET alps PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
 install(TARGETS alps EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)

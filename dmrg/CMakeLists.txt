@@ -151,8 +151,8 @@ find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
   endif()
 
-  # BLAS/LAPACK selector
-  find_package(MAQUISLapack)
+# BLAS/LAPACK selector
+find_package(MAQUISLapack)
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
 message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
@@ -161,6 +161,10 @@ list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 if(LAPACK_64_BIT)
 add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
+
+# HDF5
+find_package(HDF5 REQUIRED)
+list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 
 # Boost
 set(Boost_requirements program_options filesystem system serialization thread)
@@ -175,14 +179,9 @@ else(Boost_FOUND)
 message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
 
-# HDF5
-find_package(HDF5 REQUIRED)
-list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
-
-## ALPS
+# ALPS
 add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
-
 
 ######################################################################
 # Version information
@@ -315,6 +314,7 @@ if(TESTS)
   add_test(NAME Test2 COMMAND test2)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
+  add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
 endif(TESTS)
 
 
