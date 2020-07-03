@@ -142,28 +142,47 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
-# HDF5
-find_package(HDF5 REQUIRED)
-list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
+##### Dependencies #####
 
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
-  find_package(GSL REQUIRED)
+find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
-endif()
+  endif()
 
-# BLAS/LAPACK selector
-find_package(MAQUISLapack)
+  # BLAS/LAPACK selector
+  find_package(MAQUISLapack)
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
 message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
 list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
-
 # ILP64 definition
 if(LAPACK_64_BIT)
-   add_definitions(-DBIND_FORTRAN_INTEGER_8)
+add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
+
+# Boost
+set(Boost_requirements program_options filesystem system serialization thread)
+set (Boost_NO_BOOST_CMAKE ON)
+
+find_package(Boost COMPONENTS ${Boost_requirements})
+if(Boost_FOUND)
+list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
+list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+else(Boost_FOUND)
+message(FATAL_ERROR "Boost libraries are required for QCMaquis")
+endif(Boost_FOUND)
+
+# HDF5
+find_package(HDF5 REQUIRED)
+list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
+
+## ALPS
+add_subdirectory(${ALPS_SOURCE_DIR})
+list(APPEND DMRG_LIBRARIES alps)
+
 
 ######################################################################
 # Version information
@@ -240,25 +259,6 @@ if(ENABLE_OMP)
     message("OpenMP not found")
   endif(OPENMP_FOUND)
 endif(ENABLE_OMP)
-
-# Boost
-set(Boost_requirements program_options filesystem system serialization thread)
-set (Boost_NO_BOOST_CMAKE ON)
-
-find_package(Boost COMPONENTS ${Boost_requirements})
-if(Boost_FOUND)
-    list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-    list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
-    list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
-else(Boost_FOUND)
-    message(FATAL_ERROR "Boost libraries are required for QCMaquis")
-endif(Boost_FOUND)
-# include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
-# find_maquis_boost(COMPONENTS ${Boost_requirements})
-
-## ALPS
-add_subdirectory(${ALPS_SOURCE_DIR})
-list(APPEND DMRG_LIBRARIES alps)
 
 
 ######################################################################
