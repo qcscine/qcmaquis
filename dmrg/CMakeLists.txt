@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 2.8)
 
 ######################################################################
@@ -64,13 +63,6 @@ option(TESTS      "Build and run tests" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
 
 set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas")
-
-# Packages required for ALPS
-# HDF5
-find_package(HDF5)
-
-## ALPS
-add_subdirectory(${ALPS_SOURCE_DIR})
 
 ######################################################################
 # How to build
@@ -143,50 +135,22 @@ endmacro(configure_symm_file)
 
 
 # Adding symmetries definitions
+message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
-  message(STATUS "Enabling ${SYMM_NAME} symmetry.")
   list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
-
-######################################################################
-# Libraries
-######################################################################
-
-# ALPS
-# if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
-#   set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
-# endif(NOT ALPS_DIR AND ALPS_ROOT_DIR)
-# if(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
-#   set(ALPS_DIR $ENV{ALPS_ROOT}/share/alps)
-# endif(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
-
-
-# set(PREVENT_ALPS_COMPILERS ON)
-# find_package(ALPS REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
-
-# set(ALPS_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS} CACHE STRINGS "ALPS library dirs")
-# set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} CACHE STRINGS "ALPS include dirs")
-# if(ALPS_HDF5_INCLUDE_DIR) # support for old ALPS revisions
-#   set(HDF5_INCLUDE_DIR ${ALPS_HDF5_INCLUDE_DIR} CACHE STRINGS "")
-# endif(ALPS_HDF5_INCLUDE_DIR)
-# if(ALPS_HDF5_LIBRARIES) # support for old ALPS revisions
-#   set(HDF5_LIBRARIES ${ALPS_HDF5_LIBRARIES} CACHE STRINGS "")
-# endif(ALPS_HDF5_LIBRARIES)
-
-# mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRARIES)
-
-# if (ALPS_PYTHON_INTERPRETER)
-#   set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} ${ALPS_PYTHON_INCLUDE_DIRS} ${ALPS_PYTHON_NUMPY_INCLUDE_DIR})
-#   list(APPEND DMRG_LIBRARIES ${ALPS_PYTHON_LIBRARY})
-# endif (ALPS_PYTHON_INTERPRETER)
+# HDF5
+find_package(HDF5 REQUIRED)
+list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
   find_package(GSL REQUIRED)
+  list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
 endif()
 
 # BLAS/LAPACK selector
@@ -194,6 +158,7 @@ find_package(MAQUISLapack)
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIB_DIRS}")
 message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
+list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 
 # ILP64 definition
 if(LAPACK_64_BIT)
@@ -263,16 +228,6 @@ endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
 MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 
-
-######################################################################
-# Parsing user options
-######################################################################
-
-#set(DMRG_DEFINITIONS)
-set(DMRG_LIBRARIES alps ${HDF5_LIBRARIES}
-${GSL_LIBRARIES})
-list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
-
 # OpenMP
 if(ENABLE_OMP)
   find_package(OpenMP)
@@ -287,7 +242,7 @@ if(ENABLE_OMP)
 endif(ENABLE_OMP)
 
 # Boost
-set(Boost_requirements program_options filesystem regex system serialization thread)
+set(Boost_requirements program_options filesystem system serialization thread)
 set (Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost COMPONENTS ${Boost_requirements})
@@ -300,6 +255,10 @@ else(Boost_FOUND)
 endif(Boost_FOUND)
 # include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
 # find_maquis_boost(COMPONENTS ${Boost_requirements})
+
+## ALPS
+add_subdirectory(${ALPS_SOURCE_DIR})
+list(APPEND DMRG_LIBRARIES alps)
 
 
 ######################################################################
@@ -338,12 +297,6 @@ if(ENABLE_COLLECTOR)
   add_library(maquis_collector framework/utils/data_collector.cpp)
   list(APPEND DMRG_LIBRARIES maquis_collector)
 endif(ENABLE_COLLECTOR)
-
-
-if(USE_IMGTE_ONLY)
-  add_definitions(-DIMG_ONLY)
-endif(USE_IMGTE_ONLY)
-
 
 # *** libraries / utilities
 add_subdirectory(framework/dmrg)
