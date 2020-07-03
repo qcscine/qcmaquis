@@ -391,13 +391,14 @@ namespace measurements {
 
             maquis::cout << "Number of total 4-RDM elements measured: " << measurements_details::get_4rdm_permutations(lattice.size(), positions_first) << std::endl;
 
-            auto iterator = measurements_details::iterate_4rdm(lattice.size(), positions_first);
+            auto indices = measurements_details::iterate_4rdm(lattice.size(), positions_first);
 
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for schedule(dynamic,1)
             #endif
-            for(auto&& positions : iterator)
+            for (decltype(indices)::const_iterator it = indices.begin(); it < indices.end(); it++)
             {
+                auto&& positions = *it;
                 MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
