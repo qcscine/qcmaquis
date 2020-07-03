@@ -10,17 +10,17 @@
 * Library License; you can use, redistribute it and/or modify it under
 * the terms of the license, either version 1 or (at your option) any later
 * version.
-* 
+*
 * You should have received a copy of the ALPS Library License along with
 * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
 * available from http://alps.comp-phys.org/.
 *
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
@@ -33,7 +33,7 @@
 #undef tolower
 #undef toupper
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/throw_exception.hpp>
 #include <stdexcept>
 #include <sstream>
@@ -65,7 +65,7 @@ oxstream& oxstream::operator<<(const detail::header_t& c)
   if (context_ == Comment || context_ == Cdata)
     boost::throw_exception(std::runtime_error(
       "header not allowed in comment or CDATA section"));
-    
+
   *this << detail::pi_t("xml")
         << detail::attribute_t("version", c.version);
   if (!c.encoding.empty())
@@ -191,7 +191,7 @@ void oxstream::output(bool close)
          a != attr_.end(); ++a)
       os_ << " " << a->key() << "=\"" << static_cast<std::string>(a->value())
           << "\"";
-    
+
     if (context_ == PI) {
       os_ << "?>";
     } else {
@@ -234,10 +234,13 @@ std::string convert(const std::string& str)
 {
   std::ostringstream out;
   std::ostream_iterator<char> oi(out);
-  boost::regex_replace(oi, str.begin(), str.end(), 
-                       boost::regex("(&)|(')|(>)|(<)|(\")"), 
+  std::regex_replace(oi, str.begin(), str.end(),
+                       std::regex("(&)|(')|(>)|(<)|(\")"),
                        "(?1&amp;)(?2&apos;)(?3&gt;)(?4&lt;)(?5&quot;)",
-                       boost::match_default | boost::format_all);
+                       std::regex_constants::match_default);
+                       //| boost::regex_constants::format_all);
+                       // Leon: this has been removed in the hope this still works
+                       // The built-in test worked but
   return out.str();
 }
 
@@ -249,10 +252,3 @@ oxstream& oxstream::operator<<(const detail::stylesheet_t& c)
 }
 
 } // end namespace alps
-
-// workaround for boost 1_32_0
-#if !defined(BOOST_REGEX_WORKAROUND_HPP)
-# if defined(__GNUC__) && !defined(__ICC) && !defined(__ECC) && __GNUC__ == 3 && __GNUC_MINOR__ < 3 // ICC 8.0 defines __GNUC__!
-template boost::re_detail::perl_matcher<__gnu_cxx::__normal_iterator<char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<boost::sub_match<__gnu_cxx::__normal_iterator<char const*, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >, boost::regex_traits<char>, std::allocator<char> >;
-# endif
-#endif

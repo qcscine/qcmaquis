@@ -162,7 +162,7 @@ public:
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         {
             std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
-            boost::smatch what;
+            std::smatch what;
             for (auto&& it: parms.get_range()) {
                 std::string lhs = it.first;
                 if (std::regex_match(lhs, what, expression)) {
@@ -189,7 +189,7 @@ public:
         std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         std::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
         std::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
-        boost::smatch what;
+        std::smatch what;
         for (auto&& it : parms.get_range()) {
             std::string lhs = it.first;
 

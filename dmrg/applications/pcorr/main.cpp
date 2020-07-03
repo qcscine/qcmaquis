@@ -221,7 +221,7 @@ int main(int argc, char ** argv)
         std::vector<corr_measurement> measurements;
         {
             std::regex expression("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-            boost::smatch what;
+            std::smatch what;
             for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
                 std::string lhs = it->key();
 

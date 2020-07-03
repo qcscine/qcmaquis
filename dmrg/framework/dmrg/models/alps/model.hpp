@@ -38,7 +38,7 @@
 #undef tolower
 #undef toupper
 #include <boost/tokenizer.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/container/flat_map.hpp>
 
 #include "symm_handler.hpp"
@@ -616,19 +616,19 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
     }
 
     {
-        boost::regex average_expr("^MEASURE_AVERAGE\\[(.*)]$");
-        boost::regex locale_expr("^MEASURE_LOCAL\\[(.*)]$");
-        boost::smatch what;
+        std::regex average_expr("^MEASURE_AVERAGE\\[(.*)]$");
+        std::regex locale_expr("^MEASURE_LOCAL\\[(.*)]$");
+        std::smatch what;
         for (auto&& it : parms.get_range()) {
             std::string lhs = it.first;
             std::string obsname;
 
             enum {not_found, is_local, is_average} meas_found = not_found;
-            if (boost::regex_match(lhs, what, average_expr)) {
+            if (std::regex_match(lhs, what, average_expr)) {
                 meas_found = is_average;
                 obsname = what.str(1);
             }
-            if (boost::regex_match(lhs, what, locale_expr)) {
+            if (std::regex_match(lhs, what, locale_expr)) {
                 meas_found = is_local;
                 obsname = what.str(1);
             }
@@ -725,12 +725,12 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
     }
 
     { // Example: MEASURE_LOCAL_AT[Custom correlation] = "bdag:b|(1,2),(3,4),(5,6)"
-        boost::regex expression("^MEASURE_LOCAL_AT\\[(.*)]$");
-        boost::smatch what;
+        std::regex expression("^MEASURE_LOCAL_AT\\[(.*)]$");
+        std::smatch what;
         for (auto&& it: parms.get_range()) {
             std::string lhs = it.first;
             std::string value = it.second;
-            if (boost::regex_match(lhs, what, expression)) {
+            if (std::regex_match(lhs, what, expression)) {
                 int f_ops = 0;
 
                 std::string name = what.str(1);
@@ -749,7 +749,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
 
                 /// parse positions
                 std::vector<std::vector<pos_t> > positions;
-                boost::regex pos_re("\\(([^(^)]*)\\)");
+                std::regex pos_re("\\(([^(^)]*)\\)");
                 boost::sregex_token_iterator it_pos(parts[1].begin(), parts[1].end(), pos_re, 1);
                 boost::sregex_token_iterator it_pos_end;
                 for (; it_pos != it_pos_end; ++it_pos)
@@ -773,13 +773,13 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
     }
 
     {
-        boost::regex expression("^MEASURE_MPS_BONDS\\[(.*)]$");
-        boost::smatch what;
+        std::regex expression("^MEASURE_MPS_BONDS\\[(.*)]$");
+        std::smatch what;
         for (auto&& it: parms.get_range()) {
             std::string lhs = it.first;
             std::string value;
 
-            if (boost::regex_match(lhs, what, expression)) {
+            if (std::regex_match(lhs, what, expression)) {
                 throw std::runtime_error("MEASURE_MPS_BONDS not yet implemented in new version.");
 //                mterm_t term;
 //                term.name = what.str(1);
@@ -792,35 +792,35 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
     }
 
     {
-        boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::smatch what;
+        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
+        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
+        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        std::smatch what;
         for (auto&& it : parms.get_range()) {
             std::string lhs = it.first;
 
             std::string name, value;
             bool half_only=true, nearest_neighbors_only=false;
-            if (boost::regex_match(lhs, what, expression)) {
+            if (std::regex_match(lhs, what, expression)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_half)) {
+            if (std::regex_match(lhs, what, expression_half)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_nn)) {
+            if (std::regex_match(lhs, what, expression_nn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = true;
             }
-            if (boost::regex_match(lhs, what, expression_halfnn)) {
+            if (std::regex_match(lhs, what, expression_halfnn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
