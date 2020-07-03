@@ -16,3 +16,6 @@ target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
 
 add_executable(test_rel test_rel.cpp)
 target_link_libraries(test_rel ${DMRG_APP_LIBRARIES})
+
+add_executable(test_4rdm_save test_4rdm_save.cpp)
+target_link_libraries(test_4rdm_save ${DMRG_APP_LIBRARIES})
