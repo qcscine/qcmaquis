@@ -278,6 +278,9 @@ public:
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
         parms.set("integrals_binary", chem::serialize(integrals));
 
+        //std::cout << " parms are set (and ints are updated) -> " << std::endl;
+        //std::cout << parms << std::endl;
+
         // construct new model and mpo with new integrals
         // hope this doesn't give any memory leaks
         model = Model<Matrix, SymmGroup>(lat, parms);

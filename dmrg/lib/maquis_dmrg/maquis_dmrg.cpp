@@ -63,6 +63,10 @@ namespace maquis
     {
         try
         {
+            //std::cout << "start optimization inside interface --> " <<std::endl;
+            //std::cout << " parms are -> " << std::endl;
+            //std::cout << parms << std::endl;
+            //sim->run();
             impl_->sim->run();
         }
         catch (std::exception & e)

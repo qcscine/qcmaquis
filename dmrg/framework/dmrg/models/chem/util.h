@@ -229,6 +229,9 @@ namespace detail {
         parms.set("CONSERVED_QUANTUMNUMBERS", "N");
         parms.set("MODEL", "relativistic_quantum_chemistry");
         parms.set("COMPLEX", "1");
+        parms.set("lattice_library", "coded");
+        parms.set("model_library", "coded");
+        parms.set("use_compressed", "0");
     }
 
     template <class Matrix, class SymmGroup>

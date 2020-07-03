@@ -42,6 +42,16 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     maquis ::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
+    // check possible orbital order in existing MPS before(!) model initialization
+    {
+        boost::filesystem::path p(chkpfile);
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
+            maquis::checks::orbital_order_check(parms, chkpfile);
+        }
+        else if (!parms["initfile"].empty()){
+            maquis::checks::orbital_order_check(parms, parms["initfile"].str());
+        }
+    }
 
     /// Model initialization
     lat = Lattice(parms);

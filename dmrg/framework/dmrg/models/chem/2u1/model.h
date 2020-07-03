@@ -45,6 +45,8 @@
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
 #include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/utils/checks.h"
+
 
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>

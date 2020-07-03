@@ -78,9 +78,15 @@ namespace detail {
 
         // load ordering and determine inverse ordering
         std::vector<pos_t> order(lat.size());
-        if (!parms.is_set("orbital_order"))
-            for (pos_t p = 0; p < lat.size(); ++p)
+        if (!parms.is_set("orbital_order")){
+            std::string s;
+            for (pos_t p = 0; p < lat.size(); ++p){
                 order[p] = p+1;
+                s += (std::to_string(p+1)+ (p < (lat.size()-1) ? "," : ""));
+            }
+            parms.set("orbital_order", s);
+            //std::cout << "orbital order string " << s << std::endl;
+        }
         else
             order = parms["orbital_order"].as<std::vector<pos_t> >();
 
