@@ -22,7 +22,7 @@ else()
 endif()
 
 # *** Install
-install(FILES maquis_dmrg_detail.h interface_sim.h DESTINATION include/lib/maquis_dmrg COMPONENT headers)
+install(FILES maquis_dmrg_detail.h DESTINATION include/lib/maquis_dmrg COMPONENT headers)
 install(FILES maquis_dmrg.h maquis_cinterface.h complex_interface/maquis_cppinterface.h DESTINATION include COMPONENT headers)
 install(TARGETS maquis_dmrg EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
 export(TARGETS maquis_dmrg APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")

@@ -5,12 +5,11 @@ set(MAQUIS_DMRG_INCLUDE_DIRS @CONF_INCLUDE_DIRS@)
 set(MAQUIS_DMRG_LIBRARY_DIRS @DMRG_LIBRARY_DIRS@)
 set(MAQUIS_DMRG_DEFINITIONS  @DMRG_DEFINITIONS@)
 
-message(STATUS "cmake list file ${CMAKE_CURRENT_LIST_FILE}")
-message(STATUS "maquis cmake dir ${MAQUIS_DMRG_CMAKE_DIR}")
+message(STATUS "Loading QCMaquis configuration from ${CMAKE_CURRENT_LIST_FILE}")
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT TARGET dmrg_models AND NOT MAQUIS_DMRG_BINARY_DIR)
   include("${SELF_DIR}/DMRGTargets.cmake")
 endif()
- 
+
 set(MAQUIS_DMRG_LIBRARIES dmrg_utils dmrg_models @DMRG_LIBRARIES@)
