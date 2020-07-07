@@ -227,14 +227,15 @@ public:
         }
 
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-        if (parms.is_set("MEASURE[ChemEntropy]") || parms.is_set("MEASURE[4rdm]"))
-            if (!rfile.empty())
-            {
-                const BaseParameters & meas_parms = parms.is_set("MEASURE[4rdm]") ? parms : BaseParameters();
-                measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps, meas_parms);
-            }
-            else
-                throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
+        if (!rfile.empty())
+        {
+            BaseParameters parms_meas;
+            parms_meas = parms.twou1_measurements();
+            if (!parms_meas.empty())
+                measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps, parms_meas);
+        }
+        else
+            throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
         #endif
     }
 
@@ -248,20 +249,17 @@ public:
 
         // Measurements that require SU2U1->2U1 transformation
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-        if (parms.is_set("MEASURE[ChemEntropy]") || parms.is_set("MEASURE[4rdm]"))
-        {
             BaseParameters parms_meas;
-            if (parms.is_set("MEASURE[ChemEntropy]"))
-                parms_meas.set("MEASURE[ChemEntropy]", 1);
-            if (parms.is_set("MEASURE[4rdm]"))
-                parms_meas.set("MEASURE[4rdm]", 1);
+            parms_meas = parms.twou1_measurements();
 
-            // Obtain a map with transformed measurements
-            results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps, parms_meas);
+            if (!parms_meas.empty())
+            {
+                // Obtain a map with transformed measurements
+                results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps, parms_meas);
 
-            // Merge transformed measurements with the remaining results
-            ret.insert(transformed_meas.begin(), transformed_meas.end());
-        }
+                // Merge transformed measurements with the remaining results
+                ret.insert(transformed_meas.begin(), transformed_meas.end());
+            }
         #endif
 
         return ret;

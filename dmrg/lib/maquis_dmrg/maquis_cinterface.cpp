@@ -261,6 +261,26 @@ extern "C"
     }
 
     // hooray for copy-paste
+    void qcmaquis_interface_get_3rdm(int* indices, V* values, int size)
+    {
+        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->threerdm();
+
+        assert(size >= meas.first.size());
+        assert(size >= meas.second.size());
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            values[i] = meas.second[i];
+            indices[6*i] = meas.first[i][0];
+            indices[6*i+1] = meas.first[i][1];
+            indices[6*i+2] = meas.first[i][2];
+            indices[6*i+3] = meas.first[i][3];
+            indices[6*i+4] = meas.first[i][4];
+            indices[6*i+5] = meas.first[i][5];
+
+        }
+    }
+
+    // hooray for copy-paste
     void qcmaquis_interface_get_4rdm(int* indices, V* values, int size)
     {
         const typename maquis::meas_with_results_type<V>& meas = interface_ptr->fourrdm();
@@ -282,30 +302,26 @@ extern "C"
         }
     }
 
+    #define measure_and_save_rdm(N, state) \
+    std::string res_name = chem::detail::su2u1_result_name(pname, state); \
+    if (!boost::filesystem::exists(res_name)) \
+        throw std::runtime_error("QCMaquis checkpoint " + res_name + \
+            " does not exist. Did you optimise the wavefunction for this state?"); \
+    BaseParameters meas_parms = parms.measurements(); \
+    parms.erase_measurements(); \
+    parms.set("MEASURE[" #N "rdm]", 1); \
+    qcmaquis_interface_set_state(state); \
+    interface_ptr->measure_and_save_ ## N ## rdm(); \
+    parms.erase_measurements(); \
+    parms << meas_parms
+
     void qcmaquis_interface_measure_and_save_4rdm(int state)
     {
-        std::string res_name = chem::detail::su2u1_result_name(pname, state);
-
-        // make sure the checkpoint actually exists, otherwise we'd be measuring garbage
-        // (dmrg_meas doesn't print an error yet if you try to load a non-existing checkpoint)
-        if (!boost::filesystem::exists(res_name))
-            throw std::runtime_error("QCMaquis checkpoint " + res_name + " does not exist. Did you optimise the wavefunction for this state?");
-
-        // reset the parameters for state state and load the checkpoint
-
-        // Remove all unneeded measurements before measuring 4-RDM and save them into a backup
-        BaseParameters meas_parms = parms.measurements();
-        parms.erase_measurements();
-        // set 4-RDM measurement
-        parms.set("MEASURE[4rdm]", 1);
-        qcmaquis_interface_set_state(state);
-
-        // measure and save
-        interface_ptr->measure_and_save_4rdm();
-
-        // restore measurements
-        parms.erase_measurements();
-        parms << meas_parms;
+       measure_and_save_rdm(4, state);
+    }
+    void qcmaquis_interface_measure_and_save_3rdm(int state)
+    {
+       measure_and_save_rdm(3, state);
     }
 
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)

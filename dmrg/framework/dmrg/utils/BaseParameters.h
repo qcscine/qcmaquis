@@ -105,6 +105,9 @@ class BaseParameters
         // Return all meaurements
         BaseParameters measurements() const;
 
+        // Return measurements that require 2U1 group (not SU2)
+        BaseParameters twou1_measurements() const;
+
         BaseParameters iteration_params(std::string const & var, std::size_t val);
 
         // Parameters that correspond
@@ -120,7 +123,7 @@ class BaseParameters
             lhs.impl_.swap(rhs.impl_);
         }
 
-        BaseParameters& operator=(BaseParameters rhs);
+        BaseParameters& operator=(const BaseParameters& rhs);
         BaseParameters& operator=(BaseParameters&& rhs);
 
         // for Boost::serialization

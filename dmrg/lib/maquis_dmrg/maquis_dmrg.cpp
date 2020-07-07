@@ -147,37 +147,44 @@ namespace maquis
     }
 
     template <class V>
+    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::threerdm()
+    {
+        parms.set("MEASURE[3rdm]", 1); // required for 3-RDM measurement
+        return measurements().at("threeptdm");
+    }
+
+    template <class V>
     const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::fourrdm()
     {
         parms.set("MEASURE[4rdm]", 1); // required for 4-RDM measurement
         return measurements().at("fourptdm");
     }
 
+    #define measure_and_save_rdm(N) \
+        BaseParameters meas_parms = parms.measurements(); \
+        parms.erase_measurements(); \
+        parms.set("MEASURE[" #N "rdm]", 1); \
+        impl_->sim->run_measure(); \
+        parms.erase_measurements(); \
+        parms << meas_parms
+
+    template <class V>
+    void DMRGInterface<V>::measure_and_save_3rdm()
+    {
+        measure_and_save_rdm(3);
+    }
+
     template <class V>
     void DMRGInterface<V>::measure_and_save_4rdm()
     {
-
         // Clear all unnecessary measurements before running 4-RDM measurement
-        // FIXME: modifying parms here has NO EFFECT on the measurements! This has to be changed in another way!
+        // FIXME: clearing parms here has NO EFFECT on the measurements! This has to be changed in another way!
         // For now the measurements are modified in maquis_cinterface.cpp, but it won't work if DMRGInterface is called directly!
         // Back up measurements
-        BaseParameters meas_parms = parms.measurements();
-
-        // clear
-        parms.erase_measurements();
-
-        // set 4-RDM measurement
-        parms.set("MEASURE[4rdm]", 1);
-
-        // measure and save
-        impl_->sim->run_measure();
-
-        // erase the 4-RDM measurement again
-        parms.erase_measurements();
-
-        // Restore measurements in the parameters
-        parms << meas_parms;
+        measure_and_save_rdm(4);
     }
+
+    #undef measure_and_save_rdm
 
     template <class V>
     DMRGInterface<V>::~DMRGInterface() = default;

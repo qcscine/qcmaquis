@@ -49,9 +49,10 @@
         }
     }
 
-    BaseParameters& BaseParameters::operator=(BaseParameters rhs)
+    BaseParameters& BaseParameters::operator=(const BaseParameters& rhs)
     {
-        swap(*this, rhs);
+        BaseParameters tmp(rhs);
+        swap(*this, tmp);
         return *this;
     }
 
@@ -154,6 +155,21 @@
         for (auto&& k : *impl_)
             if(std::regex_search(k.key(), expression))
                 p.set(k.key(), k.value());
+
+        return p;
+    }
+
+    BaseParameters BaseParameters::twou1_measurements() const
+    {
+        // Get all measurements
+        BaseParameters p = measurements();
+
+        // For now, the SU2-enabled measurements are hard-coded
+        // and set to 1/2-RDM (this also matches the corresponding
+        // transition DMs)
+        const std::string regex = "1rdm|2rdm";
+        // Erase SU2-enabled measurements
+        p.erase_regex(regex);
 
         return p;
     }

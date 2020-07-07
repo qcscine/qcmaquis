@@ -75,13 +75,16 @@ namespace maquis
             //update the integrals and re-initialize the model
             void update_integrals(const integral_map<V> & integrals);
 
+            // Get RDMs
             // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
             // Fix the model to recognise it!
             const meas_with_results_type & onerdm();
             const meas_with_results_type & twordm();
+            const meas_with_results_type & threerdm();
             const meas_with_results_type & fourrdm();
 
             // Measure 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file
+            void measure_and_save_3rdm();
             void measure_and_save_4rdm();
 
             // Load an MPS from a given checkpoint and measure the overlap with the current MPS
