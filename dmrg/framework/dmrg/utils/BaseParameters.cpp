@@ -31,6 +31,7 @@
 #include "BaseParameters.h"
 #include <alps/parameter.h>
 #include <boost/serialization/list.hpp>
+#include <boost/preprocessor/seq/for_each.hpp>
 
     class BaseParameters::Impl : public alps::Parameters { typedef alps::Parameters base; using base::base; };
 
@@ -230,15 +231,17 @@
     template void BaseParameters::load<alps::hdf5::archive>(alps::hdf5::archive& ar);
     template void BaseParameters::save<alps::hdf5::archive>(alps::hdf5::archive& ar) const;
 
-    #define INSTANTIATE_TEMPLATE_FUNCTIONS(T) \
+    #define INSTANTIATE_TEMPLATE_FUNCTIONS(r,d,T) \
     template T BaseParameters::get<T>(std::string const & key); \
     template void BaseParameters::set<T>(std::string const & key, T const & value); \
     template BaseParameters& BaseParameters::add<T>(std::string const & key, T const & value);
 
-    INSTANTIATE_TEMPLATE_FUNCTIONS(double)
-    INSTANTIATE_TEMPLATE_FUNCTIONS(int)
-    INSTANTIATE_TEMPLATE_FUNCTIONS(unsigned long)
-    INSTANTIATE_TEMPLATE_FUNCTIONS(std::string)
+    #define BASE_PARAMETERS_TYPES (double) (int) (unsigned long) (std::string)
+
+    BOOST_PP_SEQ_FOR_EACH(INSTANTIATE_TEMPLATE_FUNCTIONS, _, BASE_PARAMETERS_TYPES)
+
+    #undef BASE_PARAMETERS_TYPES
+    #undef INSTANTIATE_TEMPLATE_FUNCTIONS
 
     template std::vector<int> BaseParameters::get<std::vector<int> >(std::string const & key);
     template std::vector<unsigned long> BaseParameters::get<std::vector<unsigned long> >(std::string const & key);
