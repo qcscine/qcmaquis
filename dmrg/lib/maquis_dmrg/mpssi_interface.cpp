@@ -28,12 +28,12 @@
 *****************************************************************************/
 
 #include "mpssi_interface.h"
-#include "dmrg/models/chem/transform_symmetry.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
 #include "dmrg/sim/matrix_types.h"
+
 
 // Internal functions
 namespace detail
@@ -76,95 +76,6 @@ namespace maquis
             return (V) ::overlap(bra, ket);
         }
 
-        // Transforms SU2 checkpoint to 2U1 checkpoint
-        // Mostly copy-paste from mps_transform.cpp, but creates only one 2U1 checkpoint per state
-        // corresponding to the state with the highest Sz
-        void transform(const std::string & pname, int state)
-        {
-#if defined(HAVE_SU2U1PG)
-            typedef SU2U1PG grp;
-            typedef TwoU1PG mapgrp;
-#elif defined(HAVE_SU2U1)
-            typedef SU2U1 grp;
-            typedef TwoU1 mapgrp;
-#endif
-            std::string checkpoint_name = su2u1_name(pname, state);
-
-            BaseParameters parms;
-
-            if (!boost::filesystem::exists(checkpoint_name))
-                throw std::runtime_error("input MPS " + checkpoint_name + " does not exist\n");
-
-            // load source MPS
-            MPS<matrix, SU2U1grp> mps;
-            load(checkpoint_name, mps);
-
-            // fetch parameters and modify symmetry
-            storage::archive ar_in(checkpoint_name + "/props.h5");
-
-            ar_in["/parameters"] >> parms;
-            parms.set("init_state", "const");
-#if defined(HAVE_SU2U1PG)
-            parms.set("symmetry", "2u1pg");
-#elif defined(HAVE_SU2U1)
-            parms.set("symmetry", "2u1");
-#endif
-            int Nup, Ndown;
-            std::string twou1_checkpoint_name;
-            int nel = parms["nelec"];
-            int multiplicity = parms["spin"];
-
-            // get number of up/down electrons and the checkpoint name for the 2U1 checkpoint
-            std::tie(twou1_checkpoint_name, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
-
-            parms.set("u1_total_charge1", Nup);
-            parms.set("u1_total_charge2", Ndown);
-
-            // transform MPS
-            MPS<matrix, TwoU1grp> mps_out = transform_mps<matrix, SU2U1grp>()(mps, Nup, Ndown);
-
-            save(twou1_checkpoint_name, mps_out);
-
-            if (boost::filesystem::exists(twou1_checkpoint_name + "/props.h5"))
-                boost::filesystem::remove(twou1_checkpoint_name + "/props.h5");
-            boost::filesystem::copy(checkpoint_name + "/props.h5", twou1_checkpoint_name + "/props.h5");
-
-            storage::archive ar_out(twou1_checkpoint_name + "/props.h5", "w");
-            ar_out["/parameters"] << parms;
-        }
-
-        // Generate names for SU2U1 checkpoint files
-        std::string su2u1_name(const std::string & pname, int state)
-        {
-            // TODO: should we check if pname and state are allowed here too with allowed_names_states()?
-            // if (allowed_names_states(pname, state) == -1)
-            //     throw std::runtime_error("Do not know the project name" + pname );
-
-            std::string ret = pname + ".checkpoint_state." + std::to_string(state) + ".h5";
-            return ret;
-        }
-
-        // Generate names for 2U1 checkpoint files
-        std::tuple<std::string, int, int>
-        twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity)
-        {
-            // Use 2U1 checkpoint with Ms=S
-            /*int Nup = (nel + multiplicity) / 2;
-            int Ndown = (nel - multiplicity) / 2;
-            */
-
-            // Use 2U1 checkpoint with Ms=0 or 1
-
-            int remainder = nel % 2; // integer division
-            int Nup = nel / 2 + remainder;
-            int Ndown = nel / 2 - remainder;
-
-            std::string ret = pname + ".checkpoint_state." + std::to_string(state)
-                                    + "." + std::to_string(multiplicity) + "." + std::to_string(remainder)
-                                    + ".h5";
-            return std::make_tuple(ret, Nup, Ndown);
-        }
-
         std::string twou1_name(std::string pname, int state, bool rotated)
         {
             // find pname in the project names to get the correct multiplicity
@@ -174,13 +85,11 @@ namespace maquis
             if (idx == -1)
                 throw std::runtime_error("Do not know the project name " + pname );
 
-            // append '.rotated' to pnameif rotated == true
+            // append '.rotated' to pname if rotated == true
             if (rotated) pname += ".rotated";
 
-            int Nup, Ndown;
-            std::string ret;
-            std::tie(ret, Nup, Ndown) = twou1_name_Nup_Ndown(pname, state, nel_, multiplicities_[idx]);
-            return ret;
+            return maquis::interface_detail::twou1_name(pname, state, nel_, multiplicities_[idx]);
+
         }
 
         // MPS rotation
@@ -290,7 +199,7 @@ namespace maquis
                 assert(states[i].size() > 0); // make sure we do not have empty state containers
                 int state = states[i][0];
 
-                std::string su2u1_checkpoint_name = su2u1_name(pname, state);
+                std::string su2u1_checkpoint_name = maquis::interface_detail::su2u1_name(pname, state);
                 BaseParameters parms;
                 if (!boost::filesystem::exists(su2u1_checkpoint_name))
                     throw std::runtime_error("SU2U1 MPS checkpoint " + su2u1_checkpoint_name + " is required but does not exist\n");
@@ -308,7 +217,7 @@ namespace maquis
                 // transform all checkpoints to 2U1 point group
 
                 for (auto&& st: states[i])
-                    transform(pname, st);
+                    maquis::transform(pname, st);
             }
         }
         ~Impl() = default;
@@ -326,22 +235,9 @@ namespace maquis
     MPSSIInterface<V>::~MPSSIInterface() = default;
 
     template <class V>
-    std::string MPSSIInterface<V>::su2u1_name(const std::string & pname, int state)
-    {
-        return impl_->su2u1_name(pname, state);
-    }
-
-    template <class V>
     std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state, bool rotated)
     {
         return impl_->twou1_name(pname, state, rotated);
-    }
-
-    // SU2U1->2U1 transformation
-    template <class V>
-    void MPSSIInterface<V>::transform(const std::string & pname, int state)
-    {
-        impl_->transform(pname, state);
     }
 
     // MPS rotation
@@ -484,8 +380,8 @@ namespace maquis
         if ((bra_pname == ket_pname) && su2u1)
         {
             if (bra_state == ket_state) return (V)1.0;
-            std::string ket_name = su2u1_name(ket_pname, ket_state);
-            std::string bra_name = su2u1_name(bra_pname, bra_state);
+            std::string ket_name = maquis::interface_detail::su2u1_name(ket_pname, ket_state);
+            std::string bra_name = maquis::interface_detail::su2u1_name(bra_pname, bra_state);
             return impl_->overlap_su2u1(ket_name, bra_name);
         }
         else

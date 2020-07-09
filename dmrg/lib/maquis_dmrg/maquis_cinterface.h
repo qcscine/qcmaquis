@@ -130,6 +130,14 @@ extern "C"
     // slice: integer array of 4 indices corresponding to a 4-RDM slice with four first indices fixed
     // if is not nullptr, number of all 4-RDM elements will be evaluated, otherwise only the number of elements in the slice
     int qcmaquis_interface_get_4rdm_elements(int L, int* slice);
+
+    enum HIRDM_Template { TEMPLATE_4RDM, TEMPLATE_TRANSITION_3RDM };
+    // Prepare QCMaquis input template file for distributed calculation of higher-order RDMs
+    // filename: name under which the template should be saved
+    // state: state index, beginning with 0
+    // tpl: specify if we need to calculate 4-RDM or 3-TDM
+    // state_j: second state for 3-TDM measurements, unused for 4-RDM
+    void qcmaquis_interface_prepare_hirdm_template(char* filename, int state, HIRDM_Template tpl, int state_j);
 }
 
 #endif

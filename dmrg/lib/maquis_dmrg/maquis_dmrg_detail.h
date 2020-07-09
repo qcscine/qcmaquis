@@ -43,6 +43,24 @@ namespace maquis {
         const bool relativistic = true;
         const bool nonrelativistic = false;
     }
+
+    namespace interface_detail {
+        // Generate names for SU2U1 checkpoint files
+        std::string su2u1_name(const std::string & pname, int state);
+
+        // Generate names for 2U1 checkpoint files
+        // Generates only the checkpoint with minimum Ms, as consistently used in the interface
+        // returns a tuple containing the filename, Nup and Ndown electrons
+        std::tuple<std::string, int, int> twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity);
+
+        // same as above, but returns only the filename
+        std::string twou1_name(const std::string & pname, int state, int nel, int multiplicity);
+    }
+
+
+    // Transforms SU2 checkpoint to 2U1 checkpoint
+    void transform(const std::string & pname, int state);
+
 }
 
 

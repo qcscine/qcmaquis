@@ -108,11 +108,12 @@ class BaseParameters
         // Return measurements that require 2U1 group (not SU2)
         BaseParameters twou1_measurements() const;
 
+        // Parameters that correspond to iterations
         BaseParameters iteration_params(std::string const & var, std::size_t val);
 
-        // Parameters that correspond
-
+        // Append parameters to another parameters object
         BaseParameters & operator<<(BaseParameters const& p);
+
         template<class T> BaseParameters & add(std::string const & key, T const & value);
 
         friend void swap(BaseParameters& lhs, BaseParameters& rhs)

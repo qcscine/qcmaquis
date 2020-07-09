@@ -148,7 +148,7 @@ extern "C"
     void qcmaquis_mpssi_transform(char* pname, int state)
     {
         std::string pname_(pname);
-        mpssi_interface_ptr->transform(pname_, state);
+        maquis::transform(pname_, state);
     }
 
     void qcmaquis_mpssi_rotate(char* pname, int state, V* t, int t_size, V scale_inactive)

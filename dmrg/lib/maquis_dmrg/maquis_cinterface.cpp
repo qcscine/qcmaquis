@@ -365,4 +365,53 @@ extern "C"
         std::vector<int> slice_ = slice == nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
         return measurements_details::get_4rdm_permutations(L, slice_);
     }
+
+    void qcmaquis_interface_prepare_hirdm_template(char* filename, int state, HIRDM_Template tpl, int state_j)
+    {
+        BaseParameters parms_rdm = parms;
+        parms_rdm.erase_measurements();
+
+        // set info for 2U1 group
+        #if defined(HAVE_SU2U1PG)
+            parms_rdm.set("symmetry", "2u1pg");
+        #elif defined(HAVE_SU2U1)
+            parms_rdm.set("symmetry", "2u1");
+        #endif
+
+        int Nup, Ndown;
+        std::string twou1_checkpoint_name;
+
+        int nel = parms_rdm["nelec"];
+        int multiplicity = parms_rdm["spin"];
+
+        std::tie(twou1_checkpoint_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
+
+        // generate result file name
+        std::string twou1_result_name = pname + ".results_state." + std::to_string(state) + "." + std::to_string(Nup)
+            + "." + std::to_string(Ndown) + ".h5";
+
+
+        // remove the absolute directory for checkpoint and result files
+        boost::filesystem::path chkp_name(twou1_checkpoint_name);
+        parms_rdm.set("chkpfile", chkp_name.filename().string());
+
+        boost::filesystem::path res_name(twou1_result_name);
+        parms_rdm.set("resultfile", res_name.filename().string());
+
+
+        if (tpl == TEMPLATE_4RDM)
+            parms_rdm.set("MEASURE[4rdm]", "p4:p3:p1:p2@LLL,KKK,III,JJJ");
+        else if (tpl == TEMPLATE_TRANSITION_3RDM)
+        {
+            std::string bra_name = maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity);
+            parms_rdm.set("MEASURE[trans3rdm]", bra_name + ";p1:p2@III,JJJ");
+        }
+        else
+            throw std::runtime_error("Cannot prepare QCMaquis template for this measurement");
+
+
+        std::ofstream fs(filename);
+        fs << parms_rdm;
+
+    }
 }

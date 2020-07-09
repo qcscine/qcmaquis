@@ -195,6 +195,13 @@ namespace maquis
         return impl_->sim->get_overlap(aux_mps_name);
     }
 
+    template <class V>
+    void DMRGInterface<V>::dump_parameters(const std::string & file)
+    {
+        std::ofstream fs(file);
+        fs << parms;
+    }
+
     template class DMRGInterface<double>;
     template class DMRGInterface<std::complex<double> >;
 }

@@ -61,8 +61,6 @@ namespace maquis
             // 1-TDM, split in four spin components
             std::vector<meas_with_results_type> onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
-            // SU2U1->2U1 transformation, takes SU2U1 checkpoint name as checkpoint_name
-            void transform(const std::string& pname, int state);
 
             // MPS counterrotation.
             // Parameters:
@@ -73,9 +71,6 @@ namespace maquis
             // This function appends .rotated. to pname when saving rotated MPS
             void rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive);
         private:
-
-            // Generate SU2U1 checkpoint name from project name and state number
-            std::string su2u1_name(const std::string & pname, int state);
 
             // Generate 2U1 checkpoint name. rotated == true will append .rotated. to prefix
             std::string twou1_name(const std::string & pname, int state, bool rotated = false);

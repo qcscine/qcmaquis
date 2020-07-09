@@ -89,6 +89,9 @@ namespace maquis
 
             // Load an MPS from a given checkpoint and measure the overlap with the current MPS
             V overlap(const std::string& aux_mps_name);
+
+            // Dump parameters into text file
+            void dump_parameters(const std::string & file);
         private:
             DmrgParameters& parms;
             results_map_type measurements_;
