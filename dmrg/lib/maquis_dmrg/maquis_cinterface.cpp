@@ -378,17 +378,17 @@ extern "C"
             parms_rdm.set("symmetry", "2u1");
         #endif
 
-        int Nup, Ndown;
         std::string twou1_checkpoint_name;
 
         int nel = parms_rdm["nelec"];
         int multiplicity = parms_rdm["spin"];
 
+        int Nup, Ndown;
+
         std::tie(twou1_checkpoint_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
 
-        // generate result file name
-        std::string twou1_result_name = pname + ".results_state." + std::to_string(state) + "." + std::to_string(Nup)
-            + "." + std::to_string(Ndown) + ".h5";
+        // generate result file name from checkpoint file name by substituting 'checkpoint' with 'results'
+        std::string twou1_result_name = std::regex_replace(twou1_checkpoint_name, std::regex("checkpoint"), "results");
 
 
         // remove the absolute directory for checkpoint and result files
@@ -398,9 +398,11 @@ extern "C"
         boost::filesystem::path res_name(twou1_result_name);
         parms_rdm.set("resultfile", res_name.filename().string());
 
+        parms_rdm.set("u1_total_charge1", Nup);
+        parms_rdm.set("u1_total_charge2", Ndown);
 
         if (tpl == TEMPLATE_4RDM)
-            parms_rdm.set("MEASURE[4rdm]", "p4:p3:p1:p2@LLL,KKK,III,JJJ");
+            parms_rdm.set("MEASURE[4rdm]", "\"p4:p3:p1:p2@LLL,KKK,III,JJJ\"");
         else if (tpl == TEMPLATE_TRANSITION_3RDM)
         {
             std::string bra_name = maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity);
