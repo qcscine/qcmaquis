@@ -362,7 +362,7 @@ extern "C"
 
     int qcmaquis_interface_get_4rdm_elements(int L, int* slice)
     {
-        std::vector<int> slice_ = slice == nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
+        std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
         return measurements_details::get_4rdm_permutations(L, slice_);
     }
 
@@ -387,8 +387,11 @@ extern "C"
 
         std::tie(twou1_checkpoint_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
 
-        // generate result file name from checkpoint file name by substituting 'checkpoint' with 'results'
-        std::string twou1_result_name = std::regex_replace(twou1_checkpoint_name, std::regex("checkpoint"), "results");
+        // generate result file name. this should be analogous to SU2U1 file name to be consistent with on-the-fly evaluation
+        // which just writes the rdm into the SU2U1 result
+        std::string twou1_result_name = std::regex_replace(
+                                            maquis::interface_detail::su2u1_name(pname, state), // generate SU2U1 checkpoint file
+                                            std::regex("checkpoint"), "results"); // replace 'checkpoint' with 'results'
 
 
         // remove the absolute directory for checkpoint and result files
