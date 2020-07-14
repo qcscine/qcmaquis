@@ -55,8 +55,8 @@ extern "C"
     // output: tdmaa -- non-symmetric TDM with spin-up spin-up
     //         tdmbb -- idem with spin-down spin-down
     void qcmaquis_mpssi_get_onetdm_spin(char* bra_pname, int bra_state, char* ket_pname, int ket_state,  V* tdmaa, V* tdmbb, int size);
-    void qcmaquis_mpssi_transform(char* pname, int state);
-    void qcmaquis_mpssi_rotate(char* pname, int state, V* t, int t_size, V scale_inactive);
+    void qcmaquis_mpssi_transform(char* pname, int state, int Ms);
+    void qcmaquis_mpssi_rotate(char* pname, int state, V* t, int t_size, V scale_inactive, int Ms);
 
 }
 

@@ -69,11 +69,11 @@ namespace maquis
             // t: rotational matrix, flattened row-wise (row-major)
             // scale_inactive: inactive scaling factor
             // This function appends .rotated. to pname when saving rotated MPS
-            void rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive);
+            void rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive, int Ms);
         private:
 
             // Generate 2U1 checkpoint name. rotated == true will append .rotated. to prefix
-            std::string twou1_name(const std::string & pname, int state, bool rotated = false);
+            std::string twou1_name(const std::string & pname, int state, int Ms, bool rotated = false);
 
             struct Impl;
             std::unique_ptr<Impl> impl_;

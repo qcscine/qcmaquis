@@ -145,17 +145,17 @@ extern "C"
         //     }
     }
 
-    void qcmaquis_mpssi_transform(char* pname, int state)
+    void qcmaquis_mpssi_transform(char* pname, int state, int Ms)
     {
         std::string pname_(pname);
         maquis::transform(pname_, state);
     }
 
-    void qcmaquis_mpssi_rotate(char* pname, int state, V* t, int t_size, V scale_inactive)
+    void qcmaquis_mpssi_rotate(char* pname, int state, V* t, int t_size, V scale_inactive, int Ms)
     {
         std::string pname_(pname);
         std::vector<V> t_vec(t, t + t_size);
-        mpssi_interface_ptr->rotate(pname_, state, t_vec, scale_inactive);
+        mpssi_interface_ptr->rotate(pname_, state, t_vec, scale_inactive, Ms);
     }
 
 }

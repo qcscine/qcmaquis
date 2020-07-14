@@ -76,7 +76,7 @@ namespace maquis
             return (V) ::overlap(bra, ket);
         }
 
-        std::string twou1_name(std::string pname, int state, bool rotated)
+        std::string twou1_name(std::string pname, int state, int Ms, bool rotated)
         {
             // find pname in the project names to get the correct multiplicity
             // hope this isn't too performance consuming
@@ -85,15 +85,18 @@ namespace maquis
             if (idx == -1)
                 throw std::runtime_error("Do not know the project name " + pname );
 
+            if (Ms > multiplicities_[idx])
+                throw std::runtime_error("Invalid Ms in twou1_name");
+
             // append '.rotated' to pname if rotated == true
             if (rotated) pname += ".rotated";
 
-            return maquis::interface_detail::twou1_name(pname, state, nel_, multiplicities_[idx]);
+            return maquis::interface_detail::twou1_name(pname, state, nel_, multiplicities_[idx], Ms);
 
         }
 
         // MPS rotation
-        void rotate(const std::string & pname, int state, const std::vector<V> & t, V scale_inactive)
+        void rotate(const std::string & pname, int state, const std::vector<V> & t, V scale_inactive, int Ms)
         {
 
 #if defined(HAVE_SU2U1PG)
@@ -102,8 +105,8 @@ namespace maquis
             typedef TwoU1 grp;
 #endif
             // generate checkpoint names
-            std::string checkpoint_name = twou1_name(pname, state, false);
-            std::string checkpoint_name_rotated = twou1_name(pname, state, true);
+            std::string checkpoint_name = twou1_name(pname, state, Ms, false);
+            std::string checkpoint_name_rotated = twou1_name(pname, state, Ms, true);
 
             // convert t to alps::matrix
 
@@ -145,42 +148,6 @@ namespace maquis
 
         }
 
-        // Check if the project name and the state index are allowed
-        // (i.e. the project prefix and the state is present in the vectors with which the class has been initialised)
-        // If project name or state is not found, returns -1
-        // otherwise returns the index of the project name (we don't care about the state index for now)
-        // --- hope searching a vector of strings isn't too performance consuming ---
-        int allowed_names_states(const std::string & pname, int state)
-        {
-            // check if pname is allowed
-            auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
-            if (index_itr == project_names_.cend())
-                return -1;
-
-            int idx = std::distance(project_names_.cbegin(), index_itr);
-
-            // check if the state is found
-            auto index_st_itr = std::find_if(states_[idx].cbegin(), states_[idx].cend(), [&state](const int key)->bool{ return state == key; });
-            if (index_st_itr == states_[idx].cend())
-                return -1;
-
-            return idx;
-        }
-
-        // State indexes for each project. E.g. if states_[0] is {0,3}, we are interested in states 0 and 3 of the first project
-        // Each project has a different name, a typical use would be to use one project name for each multiplicity
-        // or more general, results of a single DMRGSCF calculation
-        std::vector<std::vector<int> > states_;
-
-        // Suffixes of hdf5 files for each multiplicity
-        std::vector<std::string> project_names_;
-
-        // All multiplicities
-        std::vector<int> multiplicities_;
-
-        // Number of electrons, for now only one number of electrons supported for all projects. (i.e. no Dyson orbitals)
-        int nel_;
-
         // Constructor that takes project names and states to get the multiplicities
         Impl(const std::vector<std::string> & project_names, const std::vector<std::vector<int> >& states)
             : project_names_(project_names), nel_(-1), multiplicities_(states.size()), states_(states)
@@ -215,12 +182,81 @@ namespace maquis
                 multiplicities_[i] = parms["spin"];
 
                 // transform all checkpoints to 2U1 point group
-
                 for (auto&& st: states[i])
-                    maquis::transform(pname, st);
+                {
+                    // We need to transform for all multiplicities that are needed, i.e.
+                    // For each spin multiplicity, we need to have the Ms=S and Ms=min(S, otherS) for all other S
+                    // so we create a list with these Ms values
+                    int min_tmp = multiplicities_[i];
+                    std::vector<int> mult_totransform{min_tmp};
+                    for (int j = 0; j < project_names.size(); j++)
+                    {
+                        if (min_tmp > std::min(multiplicities_[j], min_tmp))
+                        {
+                            min_tmp = multiplicities_[j];
+                            mult_totransform.push_back(min_tmp);
+                        }
+                    }
+
+                    for (auto&& m: mult_totransform)
+                        maquis::transform(pname, st, m);
+
+                }
             }
         }
         ~Impl() = default;
+
+        const std::vector<int> & multiplicities() const { return multiplicities_; }
+
+        // Return multiplicity for a given pname
+        int get_multiplicity(const std::string & pname)
+        {
+            // find the project in the project name
+            auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
+            if (index_itr == project_names_.cend())
+                throw std::runtime_error("cannot find multiplicity for project name "+pname);
+
+            // get the corresponding multiplicity
+            return multiplicities_[std::distance(project_names_.cbegin(), index_itr)];
+        }
+
+        private:
+
+            // Check if the project name and the state index are allowed
+            // (i.e. the project prefix and the state is present in the vectors with which the class has been initialised)
+            // If project name or state is not found, returns -1
+            // otherwise returns the index of the project name (we don't care about the state index for now)
+            // --- hope searching a vector of strings isn't too performance consuming ---
+            int allowed_names_states(const std::string & pname, int state)
+            {
+                // check if pname is allowed
+                auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
+                if (index_itr == project_names_.cend())
+                    return -1;
+
+                int idx = std::distance(project_names_.cbegin(), index_itr);
+
+                // check if the state is found
+                auto index_st_itr = std::find_if(states_[idx].cbegin(), states_[idx].cend(), [&state](const int key)->bool{ return state == key; });
+                if (index_st_itr == states_[idx].cend())
+                    return -1;
+
+                return idx;
+            }
+
+            // State indexes for each project. E.g. if states_[0] is {0,3}, we are interested in states 0 and 3 of the first project
+            // Each project has a different name, a typical use would be to use one project name for each multiplicity
+            // or more general, results of a single DMRGSCF calculation
+            std::vector<std::vector<int> > states_;
+
+            // Suffixes of hdf5 files for each multiplicity
+            std::vector<std::string> project_names_;
+
+            // All multiplicities
+            std::vector<int> multiplicities_;
+
+            // Number of electrons, for now only one number of electrons supported for all projects. (i.e. no Dyson orbitals)
+            int nel_;
 
     };
 
@@ -235,17 +271,17 @@ namespace maquis
     MPSSIInterface<V>::~MPSSIInterface() = default;
 
     template <class V>
-    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state, bool rotated)
+    std::string MPSSIInterface<V>::twou1_name(const std::string & pname, int state, int Ms, bool rotated)
     {
-        return impl_->twou1_name(pname, state, rotated);
+        return impl_->twou1_name(pname, state, Ms, rotated);
     }
 
     // MPS rotation
 
     template <class V>
-    void MPSSIInterface<V>::rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive)
+    void MPSSIInterface<V>::rotate(const std::string& pname, int state, const std::vector<V> & t, V scale_inactive, int Ms)
     {
-        impl_->rotate(pname, state, t, scale_inactive);
+        impl_->rotate(pname, state, t, scale_inactive, Ms);
     }
 
     // Calculate 1-TDMs
@@ -310,11 +346,16 @@ namespace maquis
         DmrgParameters parms;
         std::string ket_name, bra_name;
 
+        // Calculate Ms according to OpenMOLCAS logic: Ms=min(S_bra, S_ket)
+        int S_bra = impl_->get_multiplicity(bra_pname);
+        int S_ket = impl_->get_multiplicity(ket_pname);
+        int Ms = std::min(S_bra, S_ket);
+
         bool bra_eq_ket = (bra_pname == ket_pname) && (bra_state == ket_state);
         bool rotated = (bra_pname != ket_pname);
 
-        ket_name = twou1_name(ket_pname, ket_state, rotated);
-        bra_name = twou1_name(bra_pname, bra_state, rotated);
+        ket_name = twou1_name(ket_pname, ket_state, Ms, rotated);
+        bra_name = twou1_name(bra_pname, bra_state, Ms, rotated);
 
         storage::archive ar_in(ket_name + "/props.h5");
         ar_in["/parameters"] >> parms;
@@ -388,8 +429,13 @@ namespace maquis
         {
             if ((bra_state == ket_state) && (bra_pname == ket_pname)) return (V)1.0;
             bool rotated = (bra_pname != ket_pname);
-            std::string ket_name = twou1_name(ket_pname, ket_state, rotated);
-            std::string bra_name = twou1_name(bra_pname, bra_state, rotated);
+
+            // Actually this does not matter, but we need to provide some Ms
+            const auto& multiplicities = impl_->multiplicities();
+            int Ms = std::min(multiplicities[bra_state], multiplicities[ket_state]);
+
+            std::string ket_name = twou1_name(ket_pname, ket_state, Ms, rotated);
+            std::string bra_name = twou1_name(bra_pname, bra_state, Ms, rotated);
             return impl_->overlap_2u1(ket_name, bra_name);
         }
     }

@@ -46,18 +46,26 @@ namespace maquis {
 
         // Generate names for 2U1 checkpoint files (helper)
         std::tuple<std::string, int, int>
-        twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity)
+        twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity, int Ms)
         {
-            // Use 2U1 checkpoint with Ms=S
-            /*int Nup = (nel + multiplicity) / 2;
-            int Ndown = (nel - multiplicity) / 2;
-            */
+            int Nup = (nel + Ms)/2;
+            int Ndown = (nel - Ms)/2;
+
+            int remainder = Ms;
+            if (Ms == 0)
+            {
+                // Use 2U1 checkpoint with Ms=0 or 1 for default Ms
+                remainder = nel % 2; // integer division
+                Nup = nel / 2 + remainder;
+                Ndown = nel / 2 - remainder;
+            }
 
             // Use 2U1 checkpoint with Ms=0 or 1
 
-            int remainder = nel % 2; // integer division
-            int Nup = nel / 2 + remainder;
-            int Ndown = nel / 2 - remainder;
+            // int remainder = nel % 2; // integer division
+            // int Nup = nel / 2 + remainder;
+            // int Ndown = nel / 2 - remainder;
+
 
             std::string ret = pname + ".checkpoint_state." + std::to_string(state)
                                     + "." + std::to_string(multiplicity) + "." + std::to_string(remainder)
@@ -65,9 +73,9 @@ namespace maquis {
             return std::make_tuple(ret, Nup, Ndown);
         }
 
-        std::string twou1_name(const std::string & pname, int state, int nel, int multiplicity)
+        std::string twou1_name(const std::string & pname, int state, int nel, int multiplicity, int Ms)
         {
-            return std::get<0>(twou1_name_Nup_Ndown(pname, state, nel, multiplicity));
+            return std::get<0>(twou1_name_Nup_Ndown(pname, state, nel, multiplicity, Ms));
         }
 
     }
@@ -76,7 +84,7 @@ namespace maquis {
 // Mostly copy-paste from mps_transform.cpp, but creates only one 2U1 checkpoint per state
 // corresponding to the state with the highest Sz
 
-    void transform(const std::string & pname, int state)
+    void transform(const std::string & pname, int state, int Ms)
     {
         // This works only for double
         // Do we really need complex? (since we don't transform double groups)
@@ -117,7 +125,7 @@ namespace maquis {
         int multiplicity = parms["spin"];
 
         // get number of up/down electrons and the checkpoint name for the 2U1 checkpoint
-        std::tie(twou1_checkpoint_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state, nel, multiplicity);
+        std::tie(twou1_checkpoint_name, Nup, Ndown) = maquis::interface_detail::twou1_name_Nup_Ndown(pname, state, nel, multiplicity, Ms);
 
         parms.set("u1_total_charge1", Nup);
         parms.set("u1_total_charge2", Ndown);

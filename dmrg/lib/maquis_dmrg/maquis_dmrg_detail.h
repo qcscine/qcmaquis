@@ -51,15 +51,16 @@ namespace maquis {
         // Generate names for 2U1 checkpoint files
         // Generates only the checkpoint with minimum Ms, as consistently used in the interface
         // returns a tuple containing the filename, Nup and Ndown electrons
-        std::tuple<std::string, int, int> twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity);
+        // If Ms is set to 0, the Ms closest to 0 (i.e. 0 or 1) will be chosen
+        // (to allow for default values where we do not care for Ms)
+        std::tuple<std::string, int, int> twou1_name_Nup_Ndown(const std::string & pname, int state, int nel, int multiplicity, int Ms=0);
 
         // same as above, but returns only the filename
-        std::string twou1_name(const std::string & pname, int state, int nel, int multiplicity);
+        std::string twou1_name(const std::string & pname, int state, int nel, int multiplicity, int Ms=0);
     }
 
-
     // Transforms SU2 checkpoint to 2U1 checkpoint
-    void transform(const std::string & pname, int state);
+    void transform(const std::string & pname, int state, int Ms=0);
 
 }
 
