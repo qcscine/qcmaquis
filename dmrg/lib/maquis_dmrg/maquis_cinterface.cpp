@@ -408,8 +408,8 @@ extern "C"
             parms_rdm.set("MEASURE[4rdm]", "p4:p3:p1:p2@LLL,KKK,III,JJJ");
         else if (tpl == TEMPLATE_TRANSITION_3RDM)
         {
-            std::string bra_name = maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity);
-            parms_rdm.set("MEASURE[trans3rdm]", bra_name + ";p1:p2@III,JJJ");
+            boost::filesystem::path bra_name(maquis::interface_detail::twou1_name(pname, state_j, nel, multiplicity));
+            parms_rdm.set("MEASURE[trans3rdm]", bra_name.filename().string() + ";p1:p2@III,JJJ");
         }
         else
             throw std::runtime_error("Cannot prepare QCMaquis template for this measurement");
