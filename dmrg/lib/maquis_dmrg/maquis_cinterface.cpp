@@ -217,8 +217,8 @@ extern "C"
 
         parms.set("ortho_states", str);
         parms.set("n_ortho_states", state);
-        parms.set("chkpfile", pname + ".checkpoint_state." + std::to_string(state) + ".h5");
-        parms.set("resultfile", pname + ".results_state." + std::to_string(state) + ".h5");
+        parms.set("chkpfile", maquis::interface_detail::su2u1_name(pname, state));
+        parms.set("resultfile", chem::detail::su2u1_result_name(pname, state));
 
         qcmaquis_interface_reset();
     }
@@ -304,9 +304,6 @@ extern "C"
 
     #define measure_and_save_rdm(N, state) \
     std::string res_name = chem::detail::su2u1_result_name(pname, state); \
-    if (!boost::filesystem::exists(res_name)) \
-        throw std::runtime_error("QCMaquis checkpoint " + res_name + \
-            " does not exist. Did you optimise the wavefunction for this state?"); \
     BaseParameters meas_parms = parms.measurements(); \
     parms.erase_measurements(); \
     parms.set("MEASURE[" #N "rdm]", 1); \
@@ -317,11 +314,46 @@ extern "C"
 
     void qcmaquis_interface_measure_and_save_4rdm(int state)
     {
-       measure_and_save_rdm(4, state);
+        measure_and_save_rdm(4, state);
     }
     void qcmaquis_interface_measure_and_save_3rdm(int state)
     {
-       measure_and_save_rdm(3, state);
+        measure_and_save_rdm(3, state);
+    }
+    #undef measure_and_save_rdm
+
+    // this one does not use the macro above as it's a bit too complicated
+    void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state)
+    {
+
+        // change the result file name to a special name that contains state numbers
+        // because in an ordinary HDF5 result file it is only possible to have one transition 3-RDM
+        // but we need one for each bra_state
+        std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra_state);
+
+        std::string rfile = chem::detail::trans3rdm_result_name(pname, state, bra_state);
+        std::string old_rfile;
+        if (parms.is_set("resultfile"))
+            old_rfile = parms["resultfile"].str();
+
+        if (!boost::filesystem::exists(bra_chkp))
+            throw std::runtime_error("QCMaquis checkpoint " + bra_chkp +
+                " does not exist. Did you optimise the wavefunction for this state?");
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[trans3rdm]", bra_chkp);
+        qcmaquis_interface_set_state(state);
+        parms["resultfile"] = rfile;
+
+        interface_ptr->measure_and_save_trans3rdm(bra_chkp);
+        parms.erase_measurements();
+        parms << meas_parms;
+
+        // restore old result file name
+        if (old_rfile.empty())
+            parms.erase("resultfile");
+        else
+            parms["resultfile"] = old_rfile;
     }
 
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev)
@@ -364,6 +396,12 @@ extern "C"
     {
         std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
         return measurements_details::get_4rdm_permutations(L, slice_);
+    }
+
+    int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, int* slice)
+    {
+        std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
+        return measurements_details::get_3rdm_permutations(L, bra_neq_ket, slice_);
     }
 
     void qcmaquis_interface_prepare_hirdm_template(char* filename, int state, HIRDM_Template tpl, int state_j)

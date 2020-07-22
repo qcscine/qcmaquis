@@ -116,13 +116,13 @@ public:
 
                 bool converged = false;
 
-                if (!rfile.empty())
+                if (!rfile().empty())
                 {
                     if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                     {
                         /// write iteration results
                         {
-                            storage::archive ar(rfile, "w");
+                            storage::archive ar(rfile(), "w");
                             ar[results_archive_path(sweep) + "/parameters"] << parms;
                             ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
                             iteration_results_ = optimizer->iteration_results();
@@ -170,9 +170,9 @@ public:
             checkpoint_simulation(mps, e.sweep(), e.site());
 
             {
-                if (!rfile.empty())
+                if (!rfile().empty())
                 {
-                    storage::archive ar(rfile, "w");
+                    storage::archive ar(rfile(), "w");
                     ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
                     ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
                     iteration_results_ = optimizer->iteration_results();
@@ -201,9 +201,9 @@ public:
             energy = maquis::real(expval(mps, mpoc)) + maquis::real(mpoc.getCoreEnergy());
             maquis::cout << "Energy: " << energy << std::endl;
 
-            if (!rfile.empty())
+            if (!rfile().empty())
             {
-                storage::archive ar(rfile, "w");
+                storage::archive ar(rfile(), "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
             }
         }
@@ -218,21 +218,21 @@ public:
             maquis::cout << "Energy^2: " << energy2 << std::endl;
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
 
-            if (!rfile.empty())
+            if (!rfile().empty())
             {
-                storage::archive ar(rfile, "w");
+                storage::archive ar(rfile(), "w");
                 ar["/spectrum/results/Energy^2/mean/value"] << std::vector<double>(1, energy2);
                 ar["/spectrum/results/EnergyVariance/mean/value"] << std::vector<double>(1, energy2 - energy*energy);
             }
         }
 
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
-        if (!rfile.empty())
+        if (!rfile().empty())
         {
             BaseParameters parms_meas;
             parms_meas = parms.twou1_measurements();
             if (!parms_meas.empty())
-                measure_transform<Matrix, SymmGroup>()(rfile, "/spectrum/results", base::lat, mps, parms_meas);
+                measure_transform<Matrix, SymmGroup>()(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
         }
         else
             throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
@@ -298,11 +298,11 @@ public:
         // so we need to load also iteration results
         if (iteration_results_.empty())
         {
-            if (!rfile.empty())
+            if (!rfile().empty())
             {
                 try // Load the iteration results from the last sweep
                 {
-                    storage::archive ar(rfile, "r");
+                    storage::archive ar(rfile(), "r");
                     ar[results_archive_path(last_sweep_) + "/results"] >> iteration_results_;
                 }
                 catch (std::exception& e)
@@ -321,9 +321,11 @@ public:
 
     virtual typename Matrix::value_type get_overlap(const std::string & aux_filename)
     {
+        maquis::checks::symmetry_check(parms, aux_filename);
+
         MPS<Matrix, SymmGroup> aux_mps;
         load(aux_filename, aux_mps);
-        // TODO: Do symmetry checks
+
         return overlap(aux_mps, this->mps);
     }
 

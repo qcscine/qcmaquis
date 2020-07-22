@@ -187,6 +187,17 @@ namespace maquis
     #undef measure_and_save_rdm
 
     template <class V>
+    void DMRGInterface<V>::measure_and_save_trans3rdm(const std::string & bra_name)
+    {
+        BaseParameters meas_parms = parms.measurements();
+        parms.erase_measurements();
+        parms.set("MEASURE[trans3rdm]", bra_name);
+        impl_->sim->run_measure();
+        parms.erase_measurements();
+        parms << meas_parms;
+    }
+
+    template <class V>
     DMRGInterface<V>::~DMRGInterface() = default;
 
     template <class V>

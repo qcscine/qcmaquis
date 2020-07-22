@@ -85,7 +85,13 @@ protected:
     bool restore;
     bool dns;
     std::string chkpfile;
-    std::string rfile;
+    std::string rfile() const
+    {
+        if (parms.is_set("resultfile"))
+            return parms["resultfile"].str();
+        else
+            return std::string();
+    };
 
     time_stopper stop_callback;
 

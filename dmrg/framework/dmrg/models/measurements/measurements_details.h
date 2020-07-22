@@ -248,13 +248,73 @@ namespace measurements_details {
         return fun.get();
     }
 
-    // Helper class for counting all 4-RDM permutations using the handle_4rdm_indices function
+    // Same for 3-RDM indices
+    template <class F, class I=int>
+    typename F::return_type iterate_3rdm_indices(F fun, I L, bool bra_neq_ket = true, const std::vector<I> & positions_first = std::vector<I>())
+    {
+        typedef Lattice::pos_t pos_t;
+        pos_t p1_start = 0;
+        pos_t p2_start = 0;
+        pos_t p3_start = 0;
+        pos_t p1_end   = L;
+        pos_t p2_end   = L;
+        pos_t p3_end   = L;
+        pos_t p4_end   = L;
+        pos_t p5_end   = L;
+        pos_t p6_end   = L;
+
+        if(positions_first.size() == 2){
+            p1_start = positions_first[0];
+            p2_start = positions_first[1];
+            p1_end   = positions_first[0]+1;
+            p2_end   = positions_first[1]+1;
+        }
+
+        // Leon: allow both 2-index and 3-index 3-RDM measurement splitting
+        // warning: if two indices are used, the order in the input file is p1,p2; but for three it's p2,p1,p3 !
+
+        if(positions_first.size() == 3){
+            p1_start = positions_first[0];
+            p2_start = positions_first[1];
+            p3_start = positions_first[2];
+            p1_end   = positions_first[0]+1;
+            p2_end   = positions_first[1]+1;
+            p3_end   = positions_first[2]+1;
+        }
+
+        for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
+        for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
+        for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
+        for (pos_t p4 = 0;                p4 < p4_end; ++p4)
+        for (pos_t p5 = 0;                p5 < p5_end; ++p5)
+        {
+            // index restrictions
+            if(p1 < p2 ) continue;
+            if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) continue;
+            if(!bra_neq_ket && p4 < std::min(p1, p2)) continue;
+            if(!bra_neq_ket && p5 < std::min(p1, p2)) continue;
+
+
+            for (pos_t p6 = std::min(p4, p5); p6 < p6_end; ++p6)
+            {
+                // sixth index must be different if p4 == p5
+                if(p4 == p5 && p4 == p6) continue;
+
+                // do with the indices what's required to do -- define a vector with all positions and pass it on to the functor
+                std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
+                fun(positions);
+            }
+        }
+        return fun.get();
+    }
+
+    // Helper class for counting all n-RDM permutations using the handle_<n>rdm_indices function
     template<class I=int, class Dummy=std::vector<I> >
-    class fourrdm_counter
+    class nrdm_counter
     {
         public:
             typedef I return_type;
-            fourrdm_counter() : counter_(0) {}
+            nrdm_counter() : counter_(0) {}
             return_type get() { return counter_; }
             void operator()(const Dummy & d) { counter_++; }
         private:
@@ -263,12 +323,12 @@ namespace measurements_details {
 
     // Helper class for accumulating iterators of indices
     template<class I=int>
-    class fourrdm_iterator
+    class nrdm_iterator
     {
         public:
             typedef std::vector<I> vec_type;
             typedef std::vector<std::vector<I> > return_type;
-            fourrdm_iterator() : indexes_() {};
+            nrdm_iterator() : indexes_() {};
             return_type get() { return indexes_; }
             void operator()(const vec_type & vec) { indexes_.push_back(vec); }
         private:
@@ -277,16 +337,29 @@ namespace measurements_details {
 
     // nice wrapper functions for the above classes
     template<class I=int>
-    I get_4rdm_permutations(I L, const std::vector<I> positions_first = std::vector<I>())
+    I get_4rdm_permutations(I L, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_4rdm_indices(fourrdm_counter<I>(), L, positions_first);
+        return iterate_4rdm_indices(nrdm_counter<I>(), L, positions_first);
     }
 
     template<class I=int>
-    typename fourrdm_iterator<I>::return_type iterate_4rdm(I L, const std::vector<I> positions_first = std::vector<I>())
+    typename nrdm_iterator<I>::return_type iterate_4rdm(I L, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_4rdm_indices(fourrdm_iterator<I>(), L, positions_first);
+        return iterate_4rdm_indices(nrdm_iterator<I>(), L, positions_first);
     }
+
+    template<class I=int>
+    I get_3rdm_permutations(I L, bool bra_neq_ket, const std::vector<I> & positions_first = std::vector<I>())
+    {
+        return iterate_3rdm_indices(nrdm_counter<I>(), L, bra_neq_ket, positions_first);
+    }
+
+    template<class I=int>
+    typename nrdm_iterator<I>::return_type iterate_3rdm(I L, bool bra_neq_ket, const std::vector<I> & positions_first = std::vector<I>())
+    {
+        return iterate_3rdm_indices(nrdm_iterator<I>(), L, bra_neq_ket, positions_first);
+    }
+
 
 }
 #endif

@@ -35,25 +35,45 @@
 namespace maquis {
 namespace checks {
 
-    inline void symmetry_check(BaseParameters & parms, std::string chkpfile)
+    namespace detail{
+        // get symmetry of a checkpoint as a string
+        inline
+        std::string get_symmetry(const std::string & chkpfile)
+        {
+            storage::archive ar_in(chkpfile+"/props.h5");
+            BaseParameters chkp_parms;
+            ar_in["/parameters"] >> chkp_parms;
+
+            if (chkp_parms.defined("symmetry"))
+                return chkp_parms["symmetry"].str();
+            else
+                throw std::runtime_error("Symmetry not defined in checkpoint "+chkpfile);
+        }
+    }
+    // check whether the checkpoint chkpfile has the same symmetry as is declared in parms
+    // removed guess_alps_symmetry as it is irrelevant for QCMaquis
+    // Why is parms not const&, this could be potentially dangerous
+    inline bool same_symmetry(BaseParameters & parms, const std::string & chkpfile)
     {
-        storage::archive ar_in(chkpfile+"/props.h5");
-        BaseParameters chkp_parms;
-        ar_in["/parameters"] >> chkp_parms;
+        return parms["symmetry"].str() == detail::get_symmetry(chkpfile);
+    }
 
-        std::string chkp_sym, parm_sym;
-        if (chkp_parms.defined("symmetry")) {
-            chkp_sym = chkp_parms["symmetry"].str();
-            parm_sym = parms["symmetry"].str();
-        }
-        else {
-            chkp_sym = guess_alps_symmetry(chkp_parms);
-            parm_sym = guess_alps_symmetry(parms);
-        }
-
-        if (chkp_sym != parm_sym)
+    inline void symmetry_check(BaseParameters & parms, const std::string & chkpfile)
+    {
+        std::string chkp_sym = detail::get_symmetry(chkpfile);
+        if (parms["symmetry"].str() != chkp_sym)
             throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong symmetry group " + chkp_sym + "\n");
     }
+
+    // check whether the checkpoint has symmetry that ends in pg
+    inline bool has_pg(const std::string & chkpfile)
+    {
+        std::string chkp_sym = detail::get_symmetry(chkpfile);
+        std::regex regex_pg("pg$");
+
+        return std::regex_search(chkp_sym, regex_pg);
+    }
+
 
     template <class Matrix, class SymmGroup>
     void right_end_check(std::string filename, MPS<Matrix, SymmGroup> const & mps, typename SymmGroup::charge right_end)
@@ -77,6 +97,7 @@ namespace checks {
                                      ") compared to the input (" + parm_sector.str() + ")\n");
         }
     }
+
 
 
     inline void orbital_order_check(BaseParameters & parms, std::string chkpfile)

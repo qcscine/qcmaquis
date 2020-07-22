@@ -83,9 +83,13 @@ namespace maquis
             const meas_with_results_type & threerdm();
             const meas_with_results_type & fourrdm();
 
-            // Measure 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file
+            // Measure 3 and 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file (which should be set with parms["rfile"])
             void measure_and_save_3rdm();
             void measure_and_save_4rdm();
+
+            // The same for transition 3-RDM. bra_name provides the name of the bra checkpoint
+            // (doesn't matter if it is in SU2U1 or 2U1, as in the former case it will be transformed)
+            void measure_and_save_trans3rdm(const std::string & bra_name);
 
             // Load an MPS from a given checkpoint and measure the overlap with the current MPS
             V overlap(const std::string& aux_mps_name);

@@ -291,6 +291,13 @@ namespace detail {
         std::string ret = pname + ".results_state." + std::to_string(state) + ".h5";
         return ret;
     }
+
+    // Result file name for transition 3-RDM measurements
+    inline std::string trans3rdm_result_name(const std::string& pname, int state, int bra_state)
+    {
+        std::string ret = pname + ".trans3rdm." + std::to_string(state) + "_" + std::to_string(bra_state) + ".h5";
+        return ret;
+    }
 }
 }
 

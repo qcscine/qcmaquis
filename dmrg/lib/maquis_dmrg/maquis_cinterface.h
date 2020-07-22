@@ -117,6 +117,7 @@ extern "C"
 
     void qcmaquis_interface_measure_and_save_3rdm(int state);
     void qcmaquis_interface_measure_and_save_4rdm(int state);
+    void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state);
 
     // Measure overlap
     double qcmaquis_interface_get_overlap(char* filename);
@@ -125,10 +126,13 @@ extern "C"
     void qcmaquis_interface_stdout(char* filename);
     void qcmaquis_interface_restore_stdout();
 
-    // Obtain number of 4-RDM elements to be evaluated
+    // Obtain number of 3 or 4-RDM elements to be evaluated
     // L: number of orbitals
+    // bra_neq_ket: true for transition RDM measurement, otherwise false (only for 3-RDM)
     // slice: integer array of 4 indices corresponding to a 4-RDM slice with four first indices fixed
-    // if is not nullptr, number of all 4-RDM elements will be evaluated, otherwise only the number of elements in the slice
+    // for 3-RDM this has 2 or 3 indices
+    // if is not nullptr, number of all 3/4-RDM elements will be evaluated, otherwise only the number of elements in the slice
+    int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, int* slice);
     int qcmaquis_interface_get_4rdm_elements(int L, int* slice);
 
     enum HIRDM_Template { TEMPLATE_4RDM, TEMPLATE_TRANSITION_3RDM };

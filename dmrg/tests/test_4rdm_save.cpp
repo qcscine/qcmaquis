@@ -91,9 +91,10 @@ BOOST_AUTO_TEST_CASE( Test_4RDM_Save )
     p.set("u1_total_charge1", 2);
     p.set("u1_total_charge2", 2);
 
-    // Measure 2-RDM
-    p.set("MEASURE[4rdm]","1");
-
+    // Measure 4-RDM
+    p.set("MEASURE[4rdm]",1);
+    // Measure 3-RDM
+    p.set("MEASURE[3rdm]",1);
     // This is an expensive test, so we will run it only for one symmetry
     std::vector<std::string> symmetries;
     #ifdef HAVE_SU2U1PG
@@ -120,6 +121,7 @@ BOOST_AUTO_TEST_CASE( Test_4RDM_Save )
 
         BOOST_CHECK_CLOSE(interface.energy(), -7.8986766891097169 , 1e-7);
 
+        // 4-RDM
         const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface.fourrdm();
 
         // we don't have a map for the measurements yet, so we'll do it the stupid way
@@ -133,6 +135,18 @@ BOOST_AUTO_TEST_CASE( Test_4RDM_Save )
             }
 
         BOOST_CHECK_CLOSE(value, -0.0001629623226497 , 1e-7);
+
+        // 3-RDM
+        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas3 = interface.threerdm();
+
+        for (int i = 0; i < meas3.first.size(); i++)
+            if (meas3.first[i] == std::vector<int>{1,0,2,2,1,2})
+            {
+                value = meas3.second[i];
+                break;
+            }
+
+        BOOST_CHECK_CLOSE(value, 0.0004443548698028, 1e-7);
     }
 
 
