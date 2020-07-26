@@ -74,6 +74,7 @@ public:
     void load(Archive & ar);
 
     bool empty() const ;
+    bool has(const std::string key) const {return collection.find(key) != collection.end(); }
 private:
     std::map<std::string, std::shared_ptr<collector_impl_base> > collection;
 };
