@@ -400,7 +400,7 @@ extern "C"
 
     int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, int* slice)
     {
-        std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
+        std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+1) : std::vector<int>();
         return measurements_details::get_3rdm_permutations(L, bra_neq_ket, slice_);
     }
 
