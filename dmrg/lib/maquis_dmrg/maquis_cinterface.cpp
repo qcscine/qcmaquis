@@ -431,7 +431,7 @@ extern "C"
         // which just writes the rdm into the SU2U1 result
         std::string twou1_result_name = std::regex_replace(
                                             maquis::interface_detail::su2u1_name(pname, state), // generate SU2U1 checkpoint file
-                                            std::regex("checkpoint"), std::string("results")); // replace 'checkpoint' with 'results'
+                                            std::regex("checkpoint"), "results"); // replace 'checkpoint' with 'results'
 
 
         // remove the absolute directory for checkpoint and result files
