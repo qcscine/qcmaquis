@@ -116,20 +116,20 @@ namespace mps_rotate
     template<class Matrix, class SymmGroup, class = void>
     struct setupMPO
     {
-        std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, std::size_t j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
+        std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, int j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
         {
             typedef Lattice::pos_t pos_t;
             typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
             typedef typename SymmGroup::subcharge sc_t;
             std::vector<tag_type> ident, fill;
-            for (size_t i = 0; i <= lat.maximum_vertex_type(); ++i)
+            for (std::size_t i = 0; i <= lat.maximum_vertex_type(); ++i)
             {
                 ident.push_back(model.identity_matrix_tag(i));
                 fill.push_back(model.filling_matrix_tag(i));
             }
 
             std::vector<MPO<Matrix, SymmGroup> > ret;
-            for (pos_t i=0; i < t.num_rows(); ++i)
+            for (int i=0; i < t.num_rows(); ++i)
                 if (i != j)
                 {
                         std::vector<pos_t> positions {i,j};

@@ -237,7 +237,7 @@ std::string convert(const std::string& str)
   std::regex_replace(oi, str.begin(), str.end(),
                        std::regex("(&)|(')|(>)|(<)|(\")"),
                        "(?1&amp;)(?2&apos;)(?3&gt;)(?4&lt;)(?5&quot;)",
-                       std::string(std::regex_constants::match_default));
+                       std::regex_constants::match_default);
                        //| boost::regex_constants::format_all);
                        // Leon: this has been removed in the hope this still works
                        // The built-in test worked but

@@ -38,6 +38,7 @@ namespace maquis
     {
         public:
             // typedef for measurements
+            // Intel compiler seems not to like it
             typedef maquis::meas_with_results_type<V> meas_with_results_type;
 #if defined(HAVE_SU2U1PG)
             typedef SU2U1PG SU2U1grp;
@@ -59,7 +60,8 @@ namespace maquis
             // meas_with_results_type onetdm(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
             // 1-TDM, split in four spin components
-            std::vector<meas_with_results_type> onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
+            std::vector<maquis::meas_with_results_type<V> >
+                onetdm_spin(const std::string& bra_pname, int bra_state, const std::string& ket_pname, int ket_state);
 
 
             // MPS counterrotation.
