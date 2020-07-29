@@ -46,6 +46,11 @@ SET(ALPS_HAVE_BOOST_MPI 0)
 set(BUILD_BOOST_MPI FALSE)
 # endif(ALPS_ENABLE_MPI)
 
+# Boost include, should have been found by find_boost in parent CMakeLists.txt
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+link_libraries(${Boost_LIBRARIES})
+
 IF(HDF5_FOUND)
   SET(HAVE_LIBHDF5 1)
   INCLUDE_DIRECTORIES(${HDF5_INCLUDE_DIR})

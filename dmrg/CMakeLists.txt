@@ -173,7 +173,7 @@ list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 set(Boost_requirements program_options filesystem system serialization thread)
 set (Boost_NO_BOOST_CMAKE ON)
 
-find_package(Boost COMPONENTS ${Boost_requirements})
+find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
 list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
