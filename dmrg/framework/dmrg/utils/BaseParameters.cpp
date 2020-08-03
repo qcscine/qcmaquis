@@ -130,7 +130,8 @@
 
     void BaseParameters::erase(std::string const & key)
     {
-        impl_->erase(key);
+        if (this->is_set(key)) // if parameter is not set, do nothing
+            impl_->erase(key);
     }
 
     void BaseParameters::erase_regex(std::string const & regex)
