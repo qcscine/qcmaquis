@@ -83,6 +83,9 @@ extern "C"
     // Set an arbitrary QCMaquis parameter
     void qcmaquis_interface_set_param(char* key, char* value);
 
+    // Remove an arbitrary QCMaquis parameter
+    void qcmaquis_interface_delete_param(char* key);
+
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset();
 

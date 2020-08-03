@@ -193,6 +193,12 @@ extern "C"
         parms.set(key, std::string(value));
     }
 
+    void qcmaquis_interface_remove_param(char* key)
+    {
+        parms.erase(key);
+    }
+
+
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset()
     {
