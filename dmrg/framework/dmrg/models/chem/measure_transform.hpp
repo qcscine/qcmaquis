@@ -44,7 +44,8 @@ struct measure_transform
         BaseParameters const & measurement_parms = BaseParameters()) {}
 
     results_map_type meas_out(Lattice lat, MPS<Matrix, SymmGroup> const & mps,
-        BaseParameters const & measurement_parms = BaseParameters()) { return results_map_type(); };
+        BaseParameters const & measurement_parms = BaseParameters(), const std::string & rfile="",
+        const std::string & result_path="") { return results_map_type(); };
 };
 
 template <class Matrix, class SymmGroup>
@@ -61,15 +62,16 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
         MPS<Matrix, SymmOut> mps_tmp;
         typename Model<Matrix, SymmOut>::measurements_type transformed_measurements;
 
-        // Leon: For compatibility with older versions we need MEASURE[ChemEntropy]
+        // --- disabled for now ---
+        // For compatibility with older versions we need MEASURE[ChemEntropy]
         // in transformed measurements here -- at least I guess so
-        if (measurement_parms.empty())
-        {
-            BaseParameters parms_chementropy;
-            parms_chementropy.set("MEASURE[ChemEntropy]", 1);
-            std::tie(mps_tmp, transformed_measurements) = prepare_measurements(lat, mps, parms_chementropy);
-        }
-        else
+        // if (measurement_parms.empty())
+        // {
+        //     BaseParameters parms_chementropy;
+        //     parms_chementropy.set("MEASURE[ChemEntropy]", 1);
+        //     std::tie(mps_tmp, transformed_measurements) = prepare_measurements(lat, mps, parms_chementropy);
+        // }
+        // else
         {
             std::tie(mps_tmp, transformed_measurements) = prepare_measurements(lat, mps, measurement_parms);
         }
@@ -80,7 +82,7 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
 
     // Measure and return a map with results
     results_map_type meas_out(Lattice lat, MPS<Matrix, SymmGroup> const & mps,
-        BaseParameters const & measurement_parms = BaseParameters())
+        BaseParameters const & measurement_parms = BaseParameters(), const std::string & rfile="", const std::string & result_path="")
     {
         results_map_type ret;
         MPS<Matrix, SymmOut> mps_tmp;
@@ -90,7 +92,7 @@ struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_trait
         std::tie(mps_tmp, transformed_measurements) = prepare_measurements(lat, mps, measurement_parms);
 
         for(auto&& meas: transformed_measurements)
-            ret[meas.name()] = measure_and_save<Matrix,SymmOut>(mps_tmp).meas_out(meas);
+            ret[meas.name()] = measure_and_save<Matrix,SymmOut>(rfile, result_path, mps_tmp).meas_out(meas);
 
         return ret;
     }

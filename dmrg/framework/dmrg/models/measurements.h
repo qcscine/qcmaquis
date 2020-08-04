@@ -78,6 +78,14 @@ public:
         maquis::cout << "Measuring " << meas.name() << std::endl;
         meas.eigenstate_index() = eigenstate;
         meas.evaluate(mps, rmps);
+
+        // save results to file if rfile is specified
+        if (!rfile.empty() && !archive_path.empty())
+        {
+            storage::archive ar(rfile, "w");
+            ar[archive_path] << meas;
+        }
+
         return std::make_pair(meas.get_labels_num(),meas.get_vec_results());
     }
 

@@ -251,7 +251,7 @@ public:
 
         // Run all measurements and fill the result map
         for(auto&& meas: all_measurements)
-                ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(mps).meas_out(meas);
+                ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(), "/spectrum/results", mps).meas_out(meas);
 
         // Measurements that require SU2U1->2U1 transformation
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
@@ -261,7 +261,7 @@ public:
             if (!parms_meas.empty())
             {
                 // Obtain a map with transformed measurements
-                results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps, parms_meas);
+                results_map_type transformed_meas = measure_transform<Matrix, SymmGroup>().meas_out(base::lat, mps, parms_meas, rfile(), "/spectrum/results");
 
                 // Merge transformed measurements with the remaining results
                 ret.insert(transformed_meas.begin(), transformed_meas.end());
