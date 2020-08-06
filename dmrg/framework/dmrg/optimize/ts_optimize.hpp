@@ -71,7 +71,7 @@ public:
     }
     void sweep(int sweep, OptimizeDirection d = Both)
     {
-        boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
+        std::chrono::high_resolution_clock::time_point sweep_now = std::chrono::high_resolution_clock::now();
 
         iteration_results_.clear();
 
@@ -150,7 +150,7 @@ public:
             }
 
 
-            boost::chrono::high_resolution_clock::time_point now, then;
+            std::chrono::high_resolution_clock::time_point now, then;
 
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
@@ -323,8 +323,8 @@ public:
 
             parallel::meminfo();
 
-            boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
-            double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
+            std::chrono::high_resolution_clock::time_point sweep_then = std::chrono::high_resolution_clock::now();
+            double elapsed = std::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
 
             if (stop_callback())
