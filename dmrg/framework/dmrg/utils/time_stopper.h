@@ -29,7 +29,7 @@
 #ifndef MAQUIS_DMRG__UTIS_TIME_STOPPER_H
 #define MAQUIS_DMRG__UTIS_TIME_STOPPER_H
 
-#include <boost/chrono.hpp>
+#include <chrono>
 
 class time_stopper {
 public:

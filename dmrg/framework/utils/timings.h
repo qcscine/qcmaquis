@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <boost/chrono.hpp>
+#include <chrono>
 #include "utils/io.hpp"
 
 #ifdef MAQUIS_OPENMP
