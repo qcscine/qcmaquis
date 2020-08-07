@@ -218,7 +218,7 @@ extern "C"
     {
         std::string str;
         for (int i = 0; i < state; i++)
-            str += pname + ".checkpoint_state." + std::to_string(state-1) + ".h5" + ((i < state-1) ? ";" : "") ;
+            str += pname + ".checkpoint_state." + std::to_string(i) + ".h5" + ((i < state-1) ? " " : "") ;
 
 
         parms.set("ortho_states", str);
