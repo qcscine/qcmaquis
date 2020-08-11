@@ -4,23 +4,23 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
- * 
+ *
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -107,7 +107,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
         }
 
-        //mps = compression::l2r_compress(mps, init_bond_dimension, 1e-6); 
+        //mps = compression::l2r_compress(mps, init_bond_dimension, 1e-6);
 
         //maquis::cout << "\nMPS AFTER COMPRESSION:\n";
         //for(int i = 0; i < mps.length(); ++i) {
@@ -161,6 +161,11 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
 
         container_type bond_charges;
         bond_charges.insert(SymmGroup::IdentityCharge);
+
+        // count total number of electrons in the given HF guess to make sure it matches
+        int nelec = parms["nelec"];
+        int nelec_tmp = 0;
+
         for (pos_t i = 0; i < mps.length(); ++i)
         {
             mps[i].multiply_by_scalar(0.0);
@@ -174,20 +179,26 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
                 );
             if (phys_dims[site_types[i]].size() != 4) throw std::runtime_error("HF init expects 4 states per orbital\n");
 
+
             switch(sc_input) {
                 case 4:
                     site_charges.insert(phys_dims[site_types[i]][0].first); // doubly-occ
+                    // add the number of electrons on each site to the total count
+                    nelec_tmp += phys_dims[site_types[i]][0].first[0];
                     break;
                 case 3:
                     site_charges.insert(phys_dims[site_types[i]][1].first); // singly-occ
                     site_charges.insert(phys_dims[site_types[i]][2].first); // singly-occ
+                    nelec_tmp += phys_dims[site_types[i]][1].first[0];
                     break;
                 case 2:
                     site_charges.insert(phys_dims[site_types[i]][1].first); // singly-occ
                     site_charges.insert(phys_dims[site_types[i]][2].first); // singly-occ
+                    nelec_tmp += phys_dims[site_types[i]][2].first[0];
                     break;
                 case 1:
                     site_charges.insert(phys_dims[site_types[i]][3].first); // empty
+                    nelec_tmp += phys_dims[site_types[i]][3].first[0];
                     break;
             }
 
@@ -227,9 +238,14 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
                 mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
             }
 
+
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
             std::swap(next_bond_charges, bond_charges);
         }
+
+        if (nelec_tmp != nelec)
+            throw std::runtime_error("Number of electrons in the HF guess is incorrect: expected " + std::to_string(nelec) + " but got "
+                                        + std::to_string(nelec_tmp));
     }
 
     BaseParameters parms;
