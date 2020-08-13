@@ -83,7 +83,8 @@ BOOST_AUTO_TEST_CASE( Test1 )
     p.set("u1_total_charge1", 1);
     p.set("u1_total_charge2", 1);
 
-    // Measure 2-RDM
+    // Measure RDMs
+    p.set("MEASURE[1rdm]","1");
     p.set("MEASURE[2rdm]","1");
 
     std::vector<std::string> symmetries;
@@ -108,17 +109,30 @@ BOOST_AUTO_TEST_CASE( Test1 )
         maquis::DMRGInterface<double> interface(p);
         interface.optimize();
 
+        // test energy
         BOOST_CHECK_CLOSE(interface.energy(), -0.980724992658492 , 1e-7);
 
-        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas = interface.twordm();
-
-        // we don't have a map for the measurements yet, so we'll do it the stupid way
+        // test 1-RDM
+        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas1 = interface.onerdm();
         double value = 0.0;
 
-        for (int i = 0; i < meas.first.size(); i++)
-            if (meas.first[i] == std::vector<int>{0,0,0,0})
+        // we don't have a map for the measurements yet, so we'll do it the stupid way
+        for (int i = 0; i < meas1.first.size(); i++)
+            if ((meas1.first[i] == std::vector<int>{0,0}) || (meas1.first[i] == std::vector<int>{1,1}))
+                value +=meas1.second[i];
+
+        BOOST_CHECK_CLOSE(value, 2.0 , 1e-7);
+
+
+        // test 2-RDM
+        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas2 = interface.twordm();
+
+        value = 0.0;
+
+        for (int i = 0; i < meas2.first.size(); i++)
+            if (meas2.first[i] == std::vector<int>{0,0,0,0})
             {
-                value = meas.second[i];
+                value = meas2.second[i];
                 break;
             }
 
