@@ -229,9 +229,12 @@ extern "C"
         qcmaquis_interface_reset();
     }
 
-    void qcmaquis_interface_get_1rdm(int* indices, V* values, int size)
+    // Generic function to request either 1-RDM or spin-DM
+    // to avoid copy-paste between get_1rdm and get_spdm
+    // meas == interface_ptr->onerdm(): 1-RDM
+    // meas == interface_ptr->onespdm(): spin-DM
+    void qcmaquis_interface_get_generic1rdm(const typename maquis::meas_with_results_type<V>& meas, int* indices, V* values, int size)
     {
-        const typename maquis::meas_with_results_type<V>& meas = interface_ptr->onerdm();
         // the size attribute is pretty much useless if we allocate the output arrays outside of the interface
         // we'll just use it to check if the size matches the size of the measurement
 	//
@@ -246,6 +249,16 @@ extern "C"
             indices[2*i] = meas.first[i][0];
             indices[2*i+1] = meas.first[i][1];
         }
+    }
+
+    void qcmaquis_interface_get_1rdm(int* indices, V* values, int size)
+    {
+        qcmaquis_interface_get_generic1rdm(interface_ptr->onerdm(), indices, values, size);
+    }
+
+    void qcmaquis_interface_get_spdm(int* indices, V* values, int size)
+    {
+        qcmaquis_interface_get_generic1rdm(interface_ptr->onespdm(), indices, values, size);
     }
 
     // hooray for copy-paste

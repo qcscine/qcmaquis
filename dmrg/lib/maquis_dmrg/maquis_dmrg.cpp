@@ -141,6 +141,12 @@ namespace maquis
     }
 
     template <class V>
+    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::onespdm()
+    {
+        return measurements().at("oneptspdm");
+    }
+
+    template <class V>
     const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::twordm()
     {
         return measurements().at("twoptdm");

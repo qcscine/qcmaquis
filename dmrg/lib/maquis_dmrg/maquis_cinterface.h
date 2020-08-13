@@ -101,6 +101,9 @@ extern "C"
     // size: size of values array, size of indices array = 2*size
     void qcmaquis_interface_get_1rdm(int* indices, V* values, int size);
 
+    // Get spin-1-RDM
+    void qcmaquis_interface_get_spdm(int* indices, V* values, int size);
+
     // Get 2-RDM
     // size: size of values array, size of indices array = 4*size
     void qcmaquis_interface_get_2rdm(int* indices, V* values, int size);

@@ -197,7 +197,7 @@ namespace measurements {
                         if(measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                         {
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                            value += operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+                            value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
                         }
 
                     }

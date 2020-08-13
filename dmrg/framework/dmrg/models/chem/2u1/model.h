@@ -217,6 +217,7 @@ public:
         std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        std::regex expression_oneptspdm("^MEASURE\\[1spdm\\]");
         std::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
         std::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         std::regex expression_transition_oneptdm_uu("^MEASURE\\[trans1rdm_aa\\]");
@@ -860,7 +861,9 @@ public:
 
             // 1-RDM and transition-1RDM
             else if (std::regex_match(lhs, what, expression_oneptdm) ||
-                    std::regex_match(lhs, what, expression_transition_oneptdm)) {
+                    std::regex_match(lhs, what, expression_transition_oneptdm) ||
+                    std::regex_match(lhs, what, expression_oneptspdm))
+                    {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){
@@ -868,10 +871,16 @@ public:
                     bra_ckp = it.second;
                     half_only = false;
                 }
+                else if(lhs == "MEASURE[1spdm]")
+                {
+                    name = "oneptspdm";
+                    half_only = true;
+                }
                 else
+                {
                     name = "oneptdm";
                     half_only = true;
-
+                }
                 // full 1-TDM
                 std::vector<scaled_bond_element> synchronous_meas_operators;
 
@@ -903,7 +912,11 @@ public:
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    // distinguish whether we want to measure spin density or normal RDM
+                    // if spin density, we need the second term with a negative prefactor (measure Nup-Ndown)
+                    // instead of Nup + Ndown
+                    double factor = (name == "oneptspdm") ? -1 : 1;
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, factor));
                 }
 
                 nearest_neighbors_only = false;
