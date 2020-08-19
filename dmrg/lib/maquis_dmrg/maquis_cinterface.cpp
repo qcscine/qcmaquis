@@ -224,7 +224,7 @@ extern "C"
         parms.set("ortho_states", str);
         parms.set("n_ortho_states", state);
         parms.set("chkpfile", maquis::interface_detail::su2u1_name(pname, state));
-        parms.set("resultfile", chem::detail::su2u1_result_name(pname, state));
+        parms.set("resultfile", maquis::interface_detail::su2u1_result_name(pname, state));
 
         qcmaquis_interface_reset();
     }
@@ -322,7 +322,7 @@ extern "C"
     }
 
     #define measure_and_save_rdm(N, state) \
-    std::string res_name = chem::detail::su2u1_result_name(pname, state); \
+    std::string res_name = maquis::interface_detail::su2u1_result_name(pname, state); \
     BaseParameters meas_parms = parms.measurements(); \
     parms.erase_measurements(); \
     parms.set("MEASURE[" #N "rdm]", 1); \
@@ -350,7 +350,7 @@ extern "C"
         // but we need one for each bra_state
         std::string bra_chkp = maquis::interface_detail::su2u1_name(pname, bra_state);
 
-        std::string rfile = chem::detail::trans3rdm_result_name(pname, state, bra_state);
+        std::string rfile = maquis::interface_detail::trans3rdm_result_name(pname, state, bra_state);
         std::string old_rfile;
         if (parms.is_set("resultfile"))
             old_rfile = parms["resultfile"].str();

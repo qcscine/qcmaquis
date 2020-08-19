@@ -29,7 +29,7 @@
 // Unit test for integral map
 #include <boost/test/included/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
-#include <dmrg/models/chem/integral_interface.h>
+#include <integral_interface.h>
 
 BOOST_AUTO_TEST_CASE( Test_Integral_Map )
 {
@@ -49,7 +49,12 @@ BOOST_AUTO_TEST_CASE( Test_Integral_Map )
     chem::integral_map<std::complex<double> > ints_complex;
     ints_complex[{1,1,2,1}] = {1.0, 0.0};
     ints_complex[{1,1,1,2}] = {2.0, -1.0};
+
     // Here the integrals should not permute
     BOOST_CHECK_EQUAL(ints_complex.size(), 2);
+
+    // Check if the insertion actually worked
+    BOOST_CHECK_CLOSE(std::real(ints_complex[{1,1,1,2}]), 2.0, 1.0e-15);
+    BOOST_CHECK_CLOSE(std::imag(ints_complex[{1,1,1,2}]), -1.0, 1.0e-15);
 
 }

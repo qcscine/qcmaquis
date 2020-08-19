@@ -30,6 +30,7 @@
 #ifndef MEASUREMENTS_DETAILS_H
 #define MEASUREMENTS_DETAILS_H
 
+#include "dmrg/models/model.h"
 namespace measurements_details {
 
     template <class symm, class = void>

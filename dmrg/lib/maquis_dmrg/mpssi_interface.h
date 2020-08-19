@@ -40,13 +40,6 @@ namespace maquis
             // typedef for measurements
             // Intel compiler seems not to like it
             typedef maquis::meas_with_results_type<V> meas_with_results_type;
-#if defined(HAVE_SU2U1PG)
-            typedef SU2U1PG SU2U1grp;
-            typedef TwoU1PG TwoU1grp;
-#elif defined(HAVE_SU2U1)
-            typedef SU2U1 SU2U1grp;
-            typedef TwoU1 TwoU1grp;
-#endif
             MPSSIInterface(const std::vector<std::string>& project_names,
                            const std::vector<std::vector<int> >& states);
 

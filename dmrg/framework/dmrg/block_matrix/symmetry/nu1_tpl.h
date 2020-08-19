@@ -55,6 +55,17 @@ public:
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
 
+    NU1Charge(std::array<S, N> const & rhs)
+    {
+        std::copy(rhs.begin(), rhs.end(), this->begin());
+    }
+
+    // will this work?
+    // NU1Charge(std::array<S, N> && rhs)
+    // {
+    //     this->data_ = std::move(rhs.data());
+    // }
+
     S * begin() { return &data_[0]; }
     S * end() { return &data_[N]; }
 

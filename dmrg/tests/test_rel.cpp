@@ -1009,10 +1009,6 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
 
     p.set("nelec", 3);
 
-    // relativistic options
-    p.set("group_id", 8);
-    p.set("type", 0);
-
     maquis::prepare_relativistic(p);
 
     // Measure 1-RDM
@@ -1024,7 +1020,7 @@ BOOST_AUTO_TEST_CASE( Test_Relativistic )
     interface.optimize();
 
     // check energy
-    BOOST_CHECK_CLOSE(maquis::real(interface.energy()), -1.0780470133e+02 , 1e-7);
+    BOOST_CHECK_CLOSE(std::real(interface.energy()), -1.0780470133e+02 , 1e-7);
 
 
     const typename maquis::DMRGInterface<Complex>::meas_with_results_type& meas = interface.onerdm();

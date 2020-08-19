@@ -36,28 +36,38 @@
 
 
 // Internal functions
-namespace detail
-{
-    // checks if x is an integer square
-    template <class I>
-    bool is_square(I x)
-    {
-        // we only need this for integer types, but floating point should also work ok
-        // if we use floating point, then the return of the sqrt should be of the same type
-        typedef typename std::conditional<std::is_floating_point<I>::value, I, double>::type T;
-
-        T sr = sqrt(x);
-
-        // If square root is an integer
-        return ((sr - floor(sr)) == 0);
-    }
-}
 
 namespace maquis
 {
+    namespace detail
+    {
+        // checks if x is an integer square
+        template <class I>
+        bool is_square(I x)
+        {
+            // we only need this for integer types, but floating point should also work ok
+            // if we use floating point, then the return of the sqrt should be of the same type
+            typedef typename std::conditional<std::is_floating_point<I>::value, I, double>::type T;
+
+            T sr = sqrt(x);
+
+            // If square root is an integer
+            return ((sr - floor(sr)) == 0);
+        }
+    }
+
     template <class V>
     struct MPSSIInterface<V>::Impl
     {
+
+#if defined(HAVE_SU2U1PG)
+        typedef SU2U1PG SU2U1grp;
+        typedef TwoU1PG TwoU1grp;
+#elif defined(HAVE_SU2U1)
+        typedef SU2U1 SU2U1grp;
+        typedef TwoU1 TwoU1grp;
+#endif
+
         typedef alps::numeric::matrix<V> Matrix;
         // Overlap calculation
         V overlap_2u1(const std::string& bra_checkpoint, const std::string& ket_checkpoint)

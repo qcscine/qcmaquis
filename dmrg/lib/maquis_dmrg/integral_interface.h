@@ -30,13 +30,14 @@
 #define INTEGRAL_INTERFACE_H
 
 #include <unordered_map>
-#include "dmrg/models/chem/util.h"
+#include "dmrg/utils/align.h"
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/complex.hpp>
+#include <boost/serialization/array.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/functional/hash.hpp>
 
@@ -93,10 +94,6 @@ namespace chem {
             typedef std::unordered_map<index_type, V, integral_hash> map_t;
             typedef typename map_t::size_type size_type;
 
-            // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation
-            // Maybe these two properties should be decoupled in the future
-            typedef typename std::conditional<is_complex_t<V>::value, U1DG, TrivialGroup>::type relativistic_t;
-
             // Type which returns std::abs(V), for the integral cutoff
             // Not very clean but std::conditional seems not to work here
             typedef typename std::complex<V>::value_type value_type;
@@ -124,10 +121,12 @@ namespace chem {
             iterator end() { return map_.end(); };
             const_iterator end() const { return map_.end(); };
 
-            V& operator[](const index_type & key) { return map_[detail::align<relativistic_t>(key)]; };
-            const V& operator[](const index_type & key) const { return map_[detail::align<relativistic_t>(key)]; };
-            V& at(const index_type & key) { return map_.at(detail::align<relativistic_t>(key)); };
-            const V& at(const index_type & key) const { return map_.at(detail::align<relativistic_t>(key)); };
+            // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation
+            // Maybe these two properties should be decoupled in the future
+            V& operator[](const index_type & key) { return map_[maquis::detail::align<is_complex_t<V>::value>(key)]; };
+            const V& operator[](const index_type & key) const { return map_[maquis::detail::align<is_complex_t<V>::value>(key)]; };
+            V& at(const index_type & key) { return map_.at(maquis::detail::align<is_complex_t<V>::value>(key)); };
+            const V& at(const index_type & key) const { return map_.at(maquis::detail::align<is_complex_t<V>::value>(key)); };
 
             size_type size() const { return map_.size(); }
         private:

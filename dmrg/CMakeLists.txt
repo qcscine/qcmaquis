@@ -346,20 +346,29 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include/framework/dmrg COMPONENT headers)
 
-#TODO: improve using GLOB
-install(DIRECTORY framework/dmrg framework/ietl framework/utils
+install(FILES
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/maquis_dmrg.h
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/mpssi_interface.h
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/maquis_dmrg_detail.h
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/integral_interface.h
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/maquis_cinterface.h
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/mpssi_cinterface.h
+            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/starting_guess.h
         DESTINATION include
         COMPONENT headers
-        PATTERN ".svn" EXCLUDE
-        PATTERN ".DS_Store" EXCLUDE
-        PATTERN "*.cpp" EXCLUDE
-        PATTERN "*.C" EXCLUDE
-        PATTERN "*.c" EXCLUDE
-        PATTERN "*.cu" EXCLUDE
-        PATTERN "*.in" EXCLUDE
-        PATTERN "CMakeLists.txt" EXCLUDE
-        PATTERN "Makefile*" EXCLUDE
         )
+
+install(FILES
+            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/align.h
+            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/DmrgParameters.h
+            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/DmrgOptions.h
+            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/BaseParameters.h
+            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/results_collector.h
+        DESTINATION include/framework/dmrg/utils
+        COMPONENT headers
+    )
+
+
 
 install(DIRECTORY lib/python DESTINATION lib  COMPONENT python
         USE_SOURCE_PERMISSIONS

@@ -80,6 +80,27 @@ namespace maquis {
 
     }
 
+    // Set parameters required for relativistic calculations
+    void prepare_relativistic(BaseParameters& parms, bool magnetic)
+    {
+        parms.set("symmetry", "u1dg");
+        parms.set("LATTICE", "spinors");
+        parms.set("CONSERVED_QUANTUMNUMBERS", "N");
+        parms.set("MODEL", "relativistic_quantum_chemistry");
+        parms.set("COMPLEX", "1");
+        parms.set("lattice_library", "coded");
+        parms.set("model_library", "coded");
+        parms.set("use_compressed", "0");
+
+        // additional relativistic options, why do we need them?
+        parms.set("group_id", 8);
+        parms.set("type", 0);
+
+        // Kramer's symmetry
+        if (magnetic)
+            parms.set("MAGNETIC", 1);
+    }
+
 // Transforms SU2 checkpoint to 2U1 checkpoint
 // Mostly copy-paste from mps_transform.cpp, but creates only one 2U1 checkpoint per state
 // corresponding to the state with the highest Sz

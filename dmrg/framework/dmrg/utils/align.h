@@ -6,7 +6,7 @@
 *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2018-2019    Leon Freitag <lefreita@ethz.ch>
+*               2020         Leon Freitag <lefreita@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -26,37 +26,34 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
-#ifndef ABSTRACT_SIM_H
-#define ABSTRACT_SIM_H
+#ifndef ALIGN_H
+#define ALIGN_H
 
-#include <map>
-#include <vector>
-#include "integral_interface.h"
-#include "dmrg/utils/results_collector.h"
+#include <array>
 
-class abstract_sim {
-public:
-    virtual ~abstract_sim() {}
-    virtual void run() =0;
-};
+namespace maquis{
+    namespace detail {
 
-template <class Matrix>
-class abstract_interface_sim {
-public:
-    // warning, these types are defiled in model_impl already
-    typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
-    typedef std::map<std::string, meas_with_results_type> results_map_type;
+        typedef std::array<int, 4> index_type;
 
-    virtual ~abstract_interface_sim() {}
-    virtual void run() =0;
-    virtual void run_measure() =0;
-    virtual typename Matrix::value_type get_energy() = 0;
-    virtual results_collector& get_iteration_results() = 0;
-    virtual int get_last_sweep() = 0;
-    virtual results_map_type measure_out() =0;
-    virtual void update_integrals(const chem::integral_map<typename Matrix::value_type> &)=0;
-    virtual typename Matrix::value_type get_overlap(const std::string &) = 0;
-//  virtual std::string ... get_fiedler_order
-};
+        // Permutes integral indices to yield the canonical form with i>=j, k>=l
+        template<bool P=false>
+        inline index_type align(const index_type & idx)
+        {
+            int i = idx[0], j = idx[1], k = idx[2], l = idx[3];
+            if (i<j) std::swap(i,j);
+            if (k<l) std::swap(k,l);
+            if (i<k) { std::swap(i,k); std::swap(j,l); }
+            if (i==k && j<l) { std::swap(j,l); }
+            return index_type{i,j,k,l};
+        }
 
+        // Disables permutation (e.g. for relativistic calculations)
+        template<>
+        inline index_type align<true>(const index_type & idx)
+        {
+            return idx;
+        }
+    }
+}
 #endif

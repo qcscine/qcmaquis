@@ -159,6 +159,14 @@ public:
 
         measurements_type meas;
 
+        // set ChemEntropy measurement properly
+        if (parms.is_set("MEASURE[ChemEntropy]"))
+        {
+            parms.set("MEASURE_LOCAL[N]","N");
+            parms.set("MEASURE_HALF_CORRELATIONS[dm]","c_dag:c");
+            parms.set("MEASURE_HALF_CORRELATIONS[doccdocc]","N:N");
+        }
+
         typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         {

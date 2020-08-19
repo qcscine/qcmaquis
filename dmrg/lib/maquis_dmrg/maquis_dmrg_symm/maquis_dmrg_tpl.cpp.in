@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "interface_sim.h"
+#include "dmrg/sim/interface_sim.h"
 #include "dmrg/sim/matrix_types.h"
 
 template class interface_sim<matrix,@CMAKE_SYMM_GROUP@>;

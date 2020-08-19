@@ -36,7 +36,7 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/models/chem/measure_transform.hpp"
-#include "dmrg/models/chem/integral_interface.h"
+#include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
 
 

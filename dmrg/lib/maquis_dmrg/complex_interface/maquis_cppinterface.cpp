@@ -48,14 +48,8 @@ DmrgParameters cpp_parms;
                                     const std::string& twosite_truncation_, const std::string& orb_order_)
 
     {
-        // relativistic options
-        cpp_parms.set("group_id", 8);
-        cpp_parms.set("type", 0);
-        maquis::prepare_relativistic(cpp_parms);
-        // Kramers symmetry?
-        if(magnetism_)
-            cpp_parms.set("MAGNETIC", 1);
 
+        maquis::prepare_relativistic(cpp_parms, magnetism_);
         // optimization conditions
         cpp_parms.set("orbital_order", orb_order_);
         cpp_parms.set("init_state", init_state_);
@@ -73,11 +67,9 @@ DmrgParameters cpp_parms;
         cpp_parms.set("MEASURE[1rdm]", 1);
         if (meas_2rdm_) cpp_parms.set("MEASURE[2rdm]", 1);
 
-        if(entropy_){
-            cpp_parms.set("MEASURE_LOCAL[N]","N");
-            cpp_parms.set("MEASURE_HALF_CORRELATIONS[dm]","c_dag:c");
-            cpp_parms.set("MEASURE_HALF_CORRELATIONS[doccdocc]","N:N");
-        };
+        if(entropy_)
+            cpp_parms.set("MEASURE[ChemEntropy]",1);
+
 
         // bond dimension
         cpp_parms.set("max_bond_dimension", m_);

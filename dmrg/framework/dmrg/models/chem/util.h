@@ -33,6 +33,7 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice.h"
+#include "dmrg/utils/align.h"
 
 namespace chem {
 namespace detail {
@@ -103,34 +104,18 @@ namespace detail {
     {
     public:
         typedef std::array<int, 4> array_type;
+        typedef NU1Charge<4> base;
+        using base::base;
 
         IndexTuple() {}
         IndexTuple(int i, int j, int k, int l) {
             (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
         }
-        inline operator array_type() const
-        {
-            array_type ret;
-            for (int i = 0; i < 4; i++)
-            {
-                ret[i] = (*this)[i];
-            }
-            return ret;
-        }
     };
 
 	template <class SymmGroup=TrivialGroup>
     inline IndexTuple align(int i, int j, int k, int l) {
-        if (i<j) std::swap(i,j);
-        if (k<l) std::swap(k,l);
-        if (i<k) { std::swap(i,k); std::swap(j,l); }
-        if (i==k && j<l) { std::swap(j,l); }
-        return IndexTuple(i,j,k,l);
-    }
-
-    template <class SymmGroup=TrivialGroup>
-    inline IndexTuple align(const typename IndexTuple::array_type & arr) {
-        return align<SymmGroup>(arr[0], arr[1], arr[2], arr[3]);
+        return IndexTuple(maquis::detail::align<false>({i,j,k,l}));
     }
 
 	template <>
@@ -222,18 +207,6 @@ namespace detail {
         return ret;
     }
 
-    inline void prepare_relativistic(BaseParameters& parms)
-    {
-        parms.set("symmetry", "u1dg");
-        parms.set("LATTICE", "spinors");
-        parms.set("CONSERVED_QUANTUMNUMBERS", "N");
-        parms.set("MODEL", "relativistic_quantum_chemistry");
-        parms.set("COMPLEX", "1");
-        parms.set("lattice_library", "coded");
-        parms.set("model_library", "coded");
-        parms.set("use_compressed", "0");
-    }
-
     template <class Matrix, class SymmGroup>
     inline
     std::string infer_site_types(MPS<Matrix, SymmGroup> const & mps)
@@ -282,21 +255,6 @@ namespace detail {
             site_bases.push_back(model.phys_dim(i));
 
         return site_bases;
-    }
-
-    // SU2U1 result name file
-    // TODO: Similar functions for (SU2U1 and 2U1) checkpoint names are found in mpssi_interface.cpp, maybe they should be moved here?
-    inline std::string su2u1_result_name(const std::string& pname, int state)
-    {
-        std::string ret = pname + ".results_state." + std::to_string(state) + ".h5";
-        return ret;
-    }
-
-    // Result file name for transition 3-RDM measurements
-    inline std::string trans3rdm_result_name(const std::string& pname, int state, int bra_state)
-    {
-        std::string ret = pname + ".trans3rdm." + std::to_string(state) + "_" + std::to_string(bra_state) + ".h5";
-        return ret;
     }
 }
 }

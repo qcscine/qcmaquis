@@ -37,7 +37,7 @@
 #include "dmrg/mp_tensors/mps_join.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/models/chem/integral_interface.h"
+#include "integral_interface.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/chem/transform_symmetry.hpp"
 #include "dmrg/models/chem/su2u1/term_maker.h"

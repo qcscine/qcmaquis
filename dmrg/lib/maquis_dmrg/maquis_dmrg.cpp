@@ -32,10 +32,18 @@
 
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/sim/matrix_types.h"
-#include "interface_sim.h"
+#include "dmrg/sim/interface_sim.h"
 
 namespace maquis
 {
+    #if defined(HAVE_SU2U1PG)
+                typedef SU2U1PG SU2U1grp;
+                typedef TwoU1PG TwoU1grp;
+    #elif defined(HAVE_SU2U1)
+                typedef SU2U1 SU2U1grp;
+                typedef TwoU1 TwoU1grp;
+    #endif
+
     template<class V>
     struct simulation_traits {
         typedef std::shared_ptr<abstract_interface_sim<tmatrix<V> > > shared_ptr;
