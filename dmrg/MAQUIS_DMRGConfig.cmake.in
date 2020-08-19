@@ -12,4 +12,4 @@ if(NOT TARGET dmrg_models AND NOT MAQUIS_DMRG_BINARY_DIR)
   include("${SELF_DIR}/DMRGTargets.cmake")
 endif()
 
-set(MAQUIS_DMRG_LIBRARIES maquis_dmrg dmrg_utils dmrg_models alps maquis_dmrg @DMRG_LIBRARIES@)
+set(MAQUIS_DMRG_LIBRARIES maquis_dmrg dmrg_utils dmrg_models alps @DMRG_LIBRARIES@)

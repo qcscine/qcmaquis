@@ -347,23 +347,23 @@ install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include/framework/dmrg COMPONENT headers)
 
 install(FILES
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/maquis_dmrg.h
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/mpssi_interface.h
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/maquis_dmrg_detail.h
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/integral_interface.h
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/maquis_cinterface.h
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/mpssi_cinterface.h
-            ${CMAKE_BINARY_DIR}/lib/maquis_dmrg/starting_guess.h
+            lib/maquis_dmrg/maquis_dmrg.h
+            lib/maquis_dmrg/mpssi_interface.h
+            lib/maquis_dmrg/maquis_dmrg_detail.h
+            lib/maquis_dmrg/integral_interface.h
+            lib/maquis_dmrg/maquis_cinterface.h
+            lib/maquis_dmrg/mpssi_cinterface.h
+            lib/maquis_dmrg/starting_guess.h
         DESTINATION include
         COMPONENT headers
         )
 
 install(FILES
-            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/align.h
-            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/DmrgParameters.h
-            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/DmrgOptions.h
-            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/BaseParameters.h
-            ${CMAKE_BINARY_DIR}/framework/dmrg/utils/results_collector.h
+            framework/dmrg/utils/align.h
+            framework/dmrg/utils/DmrgParameters.h
+            framework/dmrg/utils/DmrgOptions.h
+            framework/dmrg/utils/BaseParameters.h
+            framework/dmrg/utils/results_collector.h
         DESTINATION include/framework/dmrg/utils
         COMPONENT headers
     )
