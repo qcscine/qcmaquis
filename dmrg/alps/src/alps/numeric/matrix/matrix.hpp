@@ -124,6 +124,14 @@ namespace alps {
         explicit matrix(size_type rows = 0, size_type cols = 0, T init_value = T());
 
         /**
+          * Constructor that creates a matrix from a vector
+          * @param rows the number of rows
+          * @param columns the number of columns
+          * @param data: data in column-major format
+          */
+        explicit matrix(size_type rows, size_type cols, MemoryBlock data);
+
+        /**
           * Create a matrix from several columns
           * @param colums a vector containing the column ranges (ForwardIterator pairs marking the begin and end of the data to be stored in a column)
           */

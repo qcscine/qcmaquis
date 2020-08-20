@@ -70,6 +70,10 @@ public:
     block_matrix(Index<SymmGroup> const & rows,
                  Index<SymmGroup> const & cols);
 
+    block_matrix(Index<SymmGroup> const & rows,
+                 Index<SymmGroup> const & cols,
+                 std::initializer_list<Matrix> data);
+
     block_matrix(DualIndex<SymmGroup> const & basis);
 
     block_matrix(block_matrix const&);

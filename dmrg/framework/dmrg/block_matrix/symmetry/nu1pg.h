@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Sebastian Keller <sebkelleb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -45,19 +45,31 @@ class NU1PG;
 
 template<int N, class S = int>
 class NU1ChargePG
-{   
+{
 public:
     NU1ChargePG(S init = 0)
     {
         for (S i = 0; i < N; ++i) (*this)[i] = init;
         (*this)[N] = 0;
     }
-    
-    NU1ChargePG(boost::array<S, N> const & rhs)
+
+    NU1ChargePG(boost::array<S, N> const & rhs) : NU1ChargePG()
     {
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
-    
+
+    NU1ChargePG(std::array<S, N> const & rhs) : NU1ChargePG()
+    {
+        std::copy(rhs.begin(), rhs.end(), this->begin());
+    }
+
+    NU1ChargePG(std::initializer_list<S> rhs)
+    {
+        assert((rhs.size() == N+1)||(rhs.size() == N));
+        std::copy(rhs.begin(), rhs.end(), this->begin());
+        if (rhs.size() == N) data_[N] = 0;
+    }
+
     S * begin() { return &data_[0]; }
     S * end() { return &data_[N+1]; }
 
@@ -66,21 +78,21 @@ public:
 
     S & operator[](std::size_t p) { return data_[p]; }
     S const & operator[](std::size_t p) const { return data_[p]; }
-   
-    template<class Archive> 
+
+    template<class Archive>
     void save(Archive & ar) const
     {
         for (int i = 0; i < N+1; ++i)
             ar[boost::lexical_cast<std::string>(i)] << (*this)[i];
     }
-    
-    template<class Archive> 
+
+    template<class Archive>
     void load(Archive & ar)
     {
         for (int i = 0; i < N+1; ++i)
             ar[boost::lexical_cast<std::string>(i)] >> (*this)[i];
     }
-    
+
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
@@ -151,7 +163,7 @@ struct tpl_ops_pg_
         else
             return tpl_ops_pg_<N, I+1>().operator_lt(a, b);
     }
-    
+
     template<typename T>
     bool operator_gt(T const * a, T const * b) const
     {
@@ -162,7 +174,7 @@ struct tpl_ops_pg_
         else
             return tpl_ops_pg_<N, I+1>().operator_gt(a, b);
     }
-    
+
     template<typename T>
     bool operator_eq(T const * a, T const * b) const
     {
@@ -182,7 +194,7 @@ struct tpl_arith_
         c[I] = a[I] + b[I];
         tpl_arith_<G, N, I+1>().operator_plus(a, b, c);
     }
-    
+
     template<typename T>
     void operator_uminus(T const * a, T * b) const
     {
@@ -204,10 +216,10 @@ struct tpl_ops_pg_<N, N>
 {
     template<typename T>
     bool operator_lt(T const * a , T const * b) const { return a[N] < b[N]; }
-    
+
     template<typename T>
     bool operator_gt(T const * a, T const * b) const { return a[N] > b[N]; }
-    
+
     template<typename T>
     bool operator_eq(T const * a, T const * b) const { return a[N] == b[N]; }
 };
@@ -221,7 +233,7 @@ struct tpl_arith_<G, N, N>
         ret[N] = G::mult_table(a[N], b[N]);
     }
 
-    
+
     template<typename T>
     void operator_uminus(T const * a, T * b) const { b[N] = G::adjoin(a[N]); }
 
@@ -300,7 +312,7 @@ public:
     {
         return a+b;
     }
-    
+
     static subcharge adjoin(subcharge I)
     {
         return I;

@@ -318,6 +318,7 @@ if(TESTS)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
+  add_test(NAME Test_MPS_Rotate COMMAND test_mps_rotate)
 endif(TESTS)
 
 

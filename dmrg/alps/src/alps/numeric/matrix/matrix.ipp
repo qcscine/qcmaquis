@@ -51,6 +51,13 @@ namespace numeric {
     }
 
     template <typename T, typename MemoryBlock>
+    matrix<T, MemoryBlock>::matrix(size_type rows, size_type cols, MemoryBlock data)
+    : values_(data), reserved_size1_(rows), size1_(rows), size2_(cols)
+    {
+        assert(rows*cols == data.size());
+    }
+
+    template <typename T, typename MemoryBlock>
     matrix<T, MemoryBlock>::matrix(matrix const& m)
     : values_(m.values_), reserved_size1_(m.reserved_size1_), size1_(m.size1_), size2_(m.size2_)
     {

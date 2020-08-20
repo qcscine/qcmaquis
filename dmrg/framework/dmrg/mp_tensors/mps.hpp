@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -58,12 +58,17 @@ MPS<Matrix, SymmGroup>::MPS(size_t L)
 { }
 
 template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup>::MPS(std::initializer_list<MPSTensor<Matrix, SymmGroup> > l)
+: data_{l}, canonized_i(std::numeric_limits<size_t>::max())
+{ }
+
+template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
 : data_(L)
 , canonized_i(std::numeric_limits<size_t>::max())
 {
     init(*this);
-    
+
     // MD: this is actually important
     //     it turned out, this is also quite dangerous: if a block is 1x2,
     //     normalize_left will resize it to 1x1
@@ -100,7 +105,7 @@ size_t MPS<Matrix, SymmGroup>::canonization(bool search) const
 {
     if (!search)
         return canonized_i;
-    
+
     size_t center = ((*this)[0].isleftnormalized()) ? 1 : 0;
     for (size_t i=1; i<length(); ++i) {
         if (!(*this)[i].isnormalized() && center != i) {
@@ -115,7 +120,7 @@ size_t MPS<Matrix, SymmGroup>::canonization(bool search) const
     }
     if (center == length())
         center = length()-1;
-    
+
     canonized_i = center;
     return canonized_i;
 }
@@ -152,7 +157,7 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center, DecompMethod method)
 {
     if (canonized_i == center)
         return;
-    
+
     if (canonized_i < center)
         move_normalization_l2r(canonized_i, center, method);
     else if (canonized_i < length())
@@ -235,10 +240,10 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    
+
     boost::tie(new_mps, trunc) =
     contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
-    
+
     (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
                                                     (*this)[l], new_mps);
     (*this)[l] = new_mps;
@@ -256,10 +261,10 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
 { // canonized_i invalided through (*this)[]
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-    
+
     boost::tie(new_mps, trunc) =
     contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
-    
+
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
@@ -299,7 +304,7 @@ void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>
 {
     typedef typename SymmGroup::charge charge;
     using std::size_t;
-    
+
     /// Compute (and check) charge difference
     charge diff = SymmGroup::IdentityCharge;
     if (op.n_blocks() > 0)
@@ -308,10 +313,10 @@ void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>
         if ( SymmGroup::fuse(op.basis().right_charge(n), -op.basis().left_charge(n)) != diff )
             throw std::runtime_error("Operator not allowed. All non-zero blocks have to provide same `diff`.");
     }
-    
+
     /// Apply operator
     (*this)[p] = contraction::multiply_with_op((*this)[p], op);
-    
+
     /// Propagate charge difference
     for (size_t i=p+1; i<length(); ++i) {
         (*this)[i].shift_aux_charges(diff);
@@ -341,7 +346,7 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     /// get size of MPS
     std::size_t L = 0;
     while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
-    
+
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
@@ -361,7 +366,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     /// create chkp dir
     if(parallel::master() && !boost::filesystem::exists(dirname))
         boost::filesystem::create_directory(dirname);
-    
+
     parallel::scheduler_balanced scheduler(mps.length());
     size_t loop_max = mps.length();
 
@@ -379,9 +384,9 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
         storage::archive ar(fname, "w");
         ar["/tensor"] << mps[k];
     }
-    
+
     parallel::sync(); // be sure that chkp is in valid state before overwriting the old one.
-    
+
     omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
         parallel::guard proc(scheduler(k));
         if(!parallel::local()) continue;
@@ -396,7 +401,7 @@ void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup
     // Length
     if (mps1.length() != mps2.length())
         throw std::runtime_error("Length doesn't match.");
-    
+
     for (int i=0; i<mps1.length(); ++i)
         try {
             mps1[i].check_equal(mps2[i]);
