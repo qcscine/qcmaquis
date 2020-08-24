@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE( Test_MPS_Rotate )
     BOOST_CHECK_EQUAL(mps[1].data().n_blocks(), 9);
     BOOST_CHECK_EQUAL(mps[1].data()[3].num_rows(), 2);
     BOOST_CHECK_CLOSE(mps[3].data()[0](0,0), -0.34947974240673951, 1e-8);
-    BOOST_CHECK_CLOSE(mps[3].data()[0](3,0), -0.001800346670096781, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps[3].data()[0](3,0)), std::abs(-0.001800346670096781), 1e-8);
     BOOST_CHECK_CLOSE(mps[3].data()[3](2,1), -1.4831922467019456e-07, 10);
     BOOST_CHECK_CLOSE(mps[3].data()[0](11,0), 0.93692334071306171, 1e-8);
     BOOST_CHECK_CLOSE(mps[4].data()[2](1,0), -0.083918122130324874, 1e-8);

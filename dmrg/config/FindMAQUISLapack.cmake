@@ -16,51 +16,63 @@ if(NOT DEFINED MAQUISLapack_LINKER_FLAGS)
 endif()
 
 
-if(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_sequential")
-  if(NOT DEFINED ENV{MKLROOT})
+if("${BLAS_LAPACK_SELECTOR}" MATCHES "mkl_sequential" OR "${BLAS_LAPACK_SELECTOR}" MATCHES "mkl_parallel")
+    if(NOT DEFINED ENV{MKLROOT})
     message(FATAL_ERROR "ENV variable MKLROOT is required for BLAS_LAPACK_SELECTOR in MKL mode.")
-  endif(NOT DEFINED ENV{MKLROOT})
+    endif(NOT DEFINED ENV{MKLROOT})
 
-  if(NOT APPLE)
-    set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib/intel64)
-  else()
-    set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib)
-  endif()
+    if(NOT APPLE)
+        set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib/intel64)
+    else()
+        set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib)
+    endif()
 
-  set (MKL_LIB "")
-  if (LAPACK_64_BIT)
-    message(STATUS "Enabling 64 bit integers with Intel MKL")
-    set (MKL_LIB "-lmkl_intel_ilp64")
-  else ()
-    message(STATUS "Disabled 64 bit integers with Intel MKL")
-    set (MKL_LIB "-lmkl_intel_lp64")
-  endif ()
-  set(MAQUISLapack_LIBRARIES "${MKL_LIB} -lmkl_core -lmkl_sequential -lpthread -lm")
+    # the code below has been adapted from OpenMOLCAS CMakeLists.txt, (C) Ignacio Fdez. Galvan
+    set (MKL_ARCH "")
+
+    if (LAPACK_64_BIT)
+    message(STATUS "Enabled 64 bit integers with Intel MKL")
+        set (MKL_ARCH "ilp64")
+    else ()
+        message(STATUS "Disabled 64 bit integers with Intel MKL")
+        set (MKL_ARCH "lp64")
+    endif ()
+
+    set (MKL_COMPILER "")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set(MKL_COMPILER "gf")
+        else()
+        set(MKL_COMPILER "intel")
+        endif()
+
+    # core library
+    find_library (LIBMKL_CORE NAMES "mkl_core"
+    PATHS ${MAQUISLapack_LIB_DIRS} NO_DEFAULT_PATH)
+
+    # compiler-specific library interface
+    find_library (LIBMKL_INTERFACE NAMES "mkl_${MKL_COMPILER}_${MKL_ARCH}"
+            PATHS ${MAQUISLapack_LIB_DIRS} NO_DEFAULT_PATH)
+
+    # sequential/compiler-specific threading interface
+    find_library (LIBMKL_PARALLEL NAMES "${BLAS_LAPACK_SELECTOR}"
+        PATHS ${MAQUISLapack_LIB_DIRS} NO_DEFAULT_PATH)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        find_library (LIBMKL_THREADING NAMES "mkl_gnu_thread"
+                PATHS ${MAQUISLapack_LIB_DIRS} NO_DEFAULT_PATH)
+    else()
+        find_library (LIBMKL_THREADING NAMES "mkl_intel_thread"
+            PATHS ${MAQUISLapack_LIB_DIRS} NO_DEFAULT_PATH)
+    endif ()
+
+    list (APPEND MKL_LIBRARIES ${LIBMKL_INTERFACE})
+    list (APPEND MKL_LIBRARIES ${LIBMKL_CORE})
+    list (APPEND MKL_LIBRARIES ${LIBMKL_PARALLEL})
+    if (ENABLE_OMP)
+        list (APPEND MKL_LIBRARIES ${LIBMKL_THREADING})
+    endif()
+
+  set(MAQUISLapack_LIBRARIES "${MKL_LIBRARIES}")
   set(MAQUISLapack_INCLUDE_DIRS $ENV{MKLROOT}/include)
-
-
-elseif(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_parallel")
-  if(NOT DEFINED ENV{MKLROOT})
-    message(FATAL_ERROR "ENV variable MKLROOT is required for BLAS_LAPACK_SELECTOR in MKL mode.")
-  endif(NOT DEFINED ENV{MKLROOT})
-
-  if(NOT APPLE)
-    set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib/intel64)
-  else()
-    set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib)
-  endif()
-  if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-    set(MAQUISLapack_LIBRARIES "${MKL_LIB} -lmkl_core -lmkl_intel_thread -lpthread -lm -openmp")
-  else()
-    set(MAQUISLapack_LIBRARIES "${MKL_LIB} -lmkl_core -lmkl_gnu_thread -ldl -lpthread -lm -fopenmp")
-  endif()
-  set(MAQUISLapack_INCLUDE_DIRS $ENV{MKLROOT}/include)
-
-
-# elseif(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
-#   set(MAQUISLapack_LIBRARIES ${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY} ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY})
-#   set(MAQUISLapack_CXX_COMPILER_FLAGS ${ALPS_LAPACK_DEFINITIONS})
-#   set(MAQUISLapack_LINKER_FLAGS ${ALPS_LAPACK_LINKER_FLAGS})
 
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   if(APPLE)
