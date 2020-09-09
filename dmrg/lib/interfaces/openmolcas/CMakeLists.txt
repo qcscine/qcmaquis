@@ -11,12 +11,9 @@ include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 message(STATUS "Compiling OpenMolcas interface modules")
 message(STATUS "-- Module directory: ${CMAKE_Fortran_MODULE_DIRECTORY}" )
 
-configure_file(qcmaquis_interface_version.f90.in qcmaquis_interface_version.f90)
-
 set(OPENMOLCAS_INTERFACE_SOURCES
     qcmaquis_interface_cfg.f90
     qcmaquis_interface_utility_routines.f90
-    qcmaquis_interface_version.f90
     qcmaquis_interface.f90
     qcmaquis_interface_mpssi.f90
     )
@@ -50,6 +47,9 @@ endif()
 
 if (BUILD_OPENMOLCAS_MPI)
   target_compile_definitions(qcmaquis-driver-utils PRIVATE "_MOLCAS_MPP_")
+  if (GA_INCLUDE_DIR)
+    set_target_properties(qcmaquis-driver-utils INCLUDE_DIRECTORIES "${GA_INCLUDE_DIR}")
+  endif()
 endif()
 
 set_target_properties(qcmaquis-driver-utils PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY})
