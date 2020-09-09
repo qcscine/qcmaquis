@@ -199,6 +199,7 @@ list(APPEND DMRG_LIBRARIES alps)
 
 # OpenMolcas interface
 if (BUILD_OPENMOLCAS_INTERFACE)
+    project (MAQUIS_DMRG CXX C Fortran)
     add_subdirectory(lib/interfaces/openmolcas)
 endif()
 
