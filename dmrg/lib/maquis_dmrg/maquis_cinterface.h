@@ -51,12 +51,12 @@ extern "C"
     // nsweepm -- size of sweep_m
     // project_name -- prefix for checkpoint files
     void qcmaquis_interface_preinit(int nel, int L, int spin, int irrep,
-                                 int* site_types, V conv_thresh, int m, int nsweeps,
-                                 int* sweep_m, int nsweepm, char* project_name,
+                                 const int* site_types, V conv_thresh, int m, int nsweeps,
+                                 const int* sweep_m, int nsweepm, const char* project_name,
                                  bool meas_2rdm);
 
     // Populate parameters from an existing QCMaquis checkpoint file
-    void qcmaquis_interface_preinit_checkpoint(char* checkpoint_name);
+    void qcmaquis_interface_preinit_checkpoint(const char* checkpoint_name);
 
     // Initializes/updates integrals
     // If integrals were not present before, initializes the interface
@@ -65,14 +65,14 @@ extern "C"
     // integral_indices: indices are as in FCIDUMP, but flattened
     // integral_values: corresponding values of integrals
     // integral_size: size of integral_value and 1/4 of size of integral_indices
-    void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size);
+    void qcmaquis_interface_update_integrals(const int* integral_indices, const V* integral_values, int integral_size);
 
     // run preliminary calculation to obtain an MPS as a starting guess from CI-DEAS
     // or the Fiedler ordering
     // if Fiedler ordering is present, return the ordering as a string (starting with 1) in fiedler_order_string (note that its length must be correct!)
     // hf_occupation: Array of HF occupations (as 4,3,2,1) for all states, as flattened row-major array of (L*nstates)
     // For CI-DEAS mandatory, for Fiedler ordering optional
-    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations);
+    void qcmaquis_interface_run_starting_guess(int nstates, const char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations);
 
     // Set checkpoint names correctly for excited states
     void qcmaquis_interface_set_state(int state);
@@ -81,10 +81,10 @@ extern "C"
     void qcmaquis_interface_set_nsweeps(int nsweeps);
 
     // Set an arbitrary QCMaquis parameter
-    void qcmaquis_interface_set_param(char* key, char* value);
+    void qcmaquis_interface_set_param(const char* key, const char* value);
 
     // Remove an arbitrary QCMaquis parameter
-    void qcmaquis_interface_delete_param(char* key);
+    void qcmaquis_interface_delete_param(const char* key);
 
     // Start a new simulation with stored parameters
     void qcmaquis_interface_reset();
@@ -126,10 +126,10 @@ extern "C"
     void qcmaquis_interface_measure_and_save_trans3rdm(int state, int bra_state);
 
     // Measure overlap
-    double qcmaquis_interface_get_overlap(char* filename);
+    double qcmaquis_interface_get_overlap(const char* filename);
 
     // Redirect stdout to file filename and restore it back
-    void qcmaquis_interface_stdout(char* filename);
+    void qcmaquis_interface_stdout(const char* filename);
     void qcmaquis_interface_restore_stdout();
 
     // Obtain number of 3 or 4-RDM elements to be evaluated
@@ -138,8 +138,8 @@ extern "C"
     // slice: integer array of 4 indices corresponding to a 4-RDM slice with four first indices fixed
     // for 3-RDM this has 2 or 3 indices
     // if is not nullptr, number of all 3/4-RDM elements will be evaluated, otherwise only the number of elements in the slice
-    int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, int* slice);
-    int qcmaquis_interface_get_4rdm_elements(int L, int* slice);
+    int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, const int* slice);
+    int qcmaquis_interface_get_4rdm_elements(int L, const int* slice);
 
     enum HIRDM_Template { TEMPLATE_4RDM, TEMPLATE_TRANSITION_3RDM };
     // Prepare QCMaquis input template file for distributed calculation of higher-order RDMs
@@ -147,7 +147,7 @@ extern "C"
     // state: state index, beginning with 0
     // tpl: specify if we need to calculate 4-RDM or 3-TDM
     // state_j: second state for 3-TDM measurements, unused for 4-RDM
-    void qcmaquis_interface_prepare_hirdm_template(char* filename, int state, HIRDM_Template tpl, int state_j);
+    void qcmaquis_interface_prepare_hirdm_template(const char* filename, int state, HIRDM_Template tpl, int state_j);
 }
 
 #endif

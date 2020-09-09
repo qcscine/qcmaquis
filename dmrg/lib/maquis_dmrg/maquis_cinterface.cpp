@@ -47,8 +47,8 @@ extern "C"
 {
     typedef double V;
     void qcmaquis_interface_preinit(int nel, int L, int spin, int irrep,
-                                 int* site_types, V conv_thresh, int m, int nsweeps,
-                                 int* sweep_m, int nsweepm, char* project_name,
+                                 const int* site_types, V conv_thresh, int m, int nsweeps,
+                                 const int* sweep_m, int nsweepm, const char* project_name,
                                  bool meas_2rdm)
     {
         parms.set("symmetry", "su2u1pg");
@@ -98,7 +98,7 @@ extern "C"
 
     }
 
-    void qcmaquis_interface_preinit_checkpoint(char* checkpoint_name)
+    void qcmaquis_interface_preinit_checkpoint(const char* checkpoint_name)
     {
         // extract project name from checkpoint
         std::regex r("^(.+)\\.checkpoint");
@@ -119,7 +119,7 @@ extern "C"
 
     }
 
-    void qcmaquis_interface_update_integrals(int* integral_indices, V* integral_values, int integral_size)
+    void qcmaquis_interface_update_integrals(const int* integral_indices, const V* integral_values, int integral_size)
     {
         if (parms.is_set("integral_file")||parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
@@ -142,7 +142,7 @@ extern "C"
 
     }
 
-    void qcmaquis_interface_run_starting_guess(int nstates, char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations)
+    void qcmaquis_interface_run_starting_guess(int nstates, const char* project_name, bool do_fiedler, bool do_cideas, char* fiedler_order_string, int* hf_occupations)
     {
         // TODO: Make sure that qcmaquis_interface_preinit and _update_integrals has been called beforehand
 
@@ -188,12 +188,12 @@ extern "C"
         parms.set("nsweeps", nsweeps);
     }
 
-    void qcmaquis_interface_set_param(char* key, char* value)
+    void qcmaquis_interface_set_param(const char* key, const char* value)
     {
         parms.set(key, std::string(value));
     }
 
-    void qcmaquis_interface_remove_param(char* key)
+    void qcmaquis_interface_remove_param(const char* key)
     {
         parms.erase(key);
     }
@@ -398,12 +398,12 @@ extern "C"
         *nsweeps = interface_ptr->get_last_sweep();
     }
 
-    double qcmaquis_interface_get_overlap(char* filename)
+    double qcmaquis_interface_get_overlap(const char* filename)
     {
         return interface_ptr->overlap(filename);
     }
 
-    void qcmaquis_interface_stdout(char* filename)
+    void qcmaquis_interface_stdout(const char* filename)
     {
         stdout_redirect.set_filename(filename);
     }
@@ -413,19 +413,19 @@ extern "C"
         stdout_redirect.restore();
     }
 
-    int qcmaquis_interface_get_4rdm_elements(int L, int* slice)
+    int qcmaquis_interface_get_4rdm_elements(int L, const int* slice)
     {
         std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
         return measurements_details::get_4rdm_permutations(L, slice_);
     }
 
-    int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, int* slice)
+    int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, const int* slice)
     {
         std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+1) : std::vector<int>();
         return measurements_details::get_3rdm_permutations(L, bra_neq_ket, slice_);
     }
 
-    void qcmaquis_interface_prepare_hirdm_template(char* filename, int state, HIRDM_Template tpl, int state_j)
+    void qcmaquis_interface_prepare_hirdm_template(const char* filename, int state, HIRDM_Template tpl, int state_j)
     {
         BaseParameters parms_rdm = parms;
         parms_rdm.erase_measurements();
