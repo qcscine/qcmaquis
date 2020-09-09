@@ -58,12 +58,23 @@ option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
 
+
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
+mark_as_advanced(ENABLE_COLLECTOR)
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
 option(TESTS      "Build and run tests" OFF)
 
+# OpenMOLCAS interface
+option (BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
+if (BUILD_OPENMOLCAS_INTERFACE)
+    include(CMakeDependentOption)
+    cmake_dependent_option(BUILD_OPENMOLCAS_MPI "Build with OpenMOLCAS MPI support" OFF "NOT BUILD_OPENMOLCAS_INTERFACE" OFF)
+    mark_as_advanced(BUILD_OPENMOLCAS_MPI)
+    if (BUILD_OPENMOLCAS_MPI AND NOT GA_INCLUDE_DIR)
+        message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires Global Arrays include directory")
+    endif()
 
-mark_as_advanced(ENABLE_COLLECTOR)
+endif()
 
 set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas")
 
@@ -185,6 +196,11 @@ endif(Boost_FOUND)
 # ALPS
 add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
+
+# OpenMolcas interface
+if (BUILD_OPENMOLCAS_INTERFACE)
+    add_subdirectory(lib/interfaces/openmolcas)
+endif()
 
 ######################################################################
 # Version information
