@@ -6,8 +6,7 @@ endif()
 include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
 
 
-message(STATUS "Compiling OpenMolcas interface modules")
-message(STATUS "-- Module directory: ${CMAKE_Fortran_MODULE_DIRECTORY}" )
+message(STATUS "Compiling OpenMolcas interface modules enabled")
 
 set(OPENMOLCAS_INTERFACE_SOURCES
     qcmaquis_interface_cfg.f90
@@ -56,6 +55,7 @@ set_target_properties(qcmaquis-hdf5-interface PROPERTIES Fortran_MODULE_DIRECTOR
 install(TARGETS qcmaquis-driver EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
 install(TARGETS qcmaquis-hdf5-interface EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
 install(PROGRAMS tools/qcm_checkpoint_rename.py DESTINATION bin COMPONENT tools)
+install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY} DESTINATION .)
 
 message(STATUS "${PROJECT_BINARY_DIR}")
 export(TARGETS qcmaquis-driver APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
