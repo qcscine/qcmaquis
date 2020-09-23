@@ -1,0 +1,1750 @@
+\documentclass[bibliography=totoc,12pt,a4paper]{scrartcl}
+
+\usepackage[nott]{kpfonts}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+% \usepackage[libertine]{newtxmath}
+\usepackage{graphicx}% Include figure files
+\usepackage{xcolor}
+\usepackage{bm}% bold math
+\usepackage[colorlinks=true]{hyperref} % web links
+\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\definecolor{citecolour}{rgb}{0,0.8,0.2}
+\hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour,citecolor=citecolour}
+\usepackage{framed}
+\usepackage{longtable}
+\usepackage[bf,singlelinecheck=off]{caption}
+\usepackage{amsmath}
+\usepackage{listings}
+%\lstset{breaklines=true}
+\usepackage{multirow}
+% \usepackage[top=2.25cm, bottom=2.25cm, left=2cm, right=2.25cm]{geometry}
+\usepackage{booktabs}
+\usepackage{chemformula}
+\usepackage{placeins}
+\usepackage[numbers,sort&compress]{natbib}
+\setcounter{secnumdepth}{4}
+% \renewcommand{\baselinestretch}{1.5}
+\newcommand{\relv}{release version 3.0}
+\newcommand{\mol}{\textsc{OpenMolcas}}
+\newcommand{\qcm}{\textsc{QCMaquis}}
+\newcommand{\scine}{SCINE}
+\newcommand{\hostp}{\mol}
+\newcommand{\molbuild}{\texttt{my-Molcas-build}}
+\newcommand{\molsrc}{\texttt{my-Molcas-src}}
+\newcommand{\qcmsrc}{\texttt{my-QCMaquis-src}}
+\newcommand{\qcmbuild}{\texttt{my-QCMaquis-build}}
+%\setlength{\parindent}{1.0cm}
+%\setlength{\parskip}{1.00ex plus0.5ex minus0.5ex}
+% \setlength{\abovecaptionskip}{2.00ex plus0.25ex minus0.25ex}
+% \setlength{\belowcaptionskip}{\abovecaptionskip}
+%\setlength{\textfloatsep}{3.0ex plus0.5ex minus0.5ex}
+%\setlength{\intextsep}{3.0ex plus0.5ex minus0.5ex}
+
+\newcommand{\tableoptionskip}{0.3em}
+\newcommand{\myemph}[1]{\textbf{#1}}
+
+% \usepackage{bibentry}
+%% required for the bibentry package
+
+\lstdefinelanguage{molcas}
+{
+keywordsprefix=\&,alsoletter=\&,%
+keywords=[1]{GATEWAY,SEWARD,SCF,DMRGSCF,MPSSI},
+morekeywords=[2]{ActiveSpaceOptimizer,DMRGSettings,EndDMRGSettings,OOptimizationSettings,EndOOptimizationSettings,NEVPT2Prep,EvRDM,HDF5,DMRG,EJOB,SPIN,AMFI,Angmom},
+keywordstyle=[1]\color{green!20!red},
+keywordstyle=[2]\color{green!20!blue},
+sensitive=false,
+morecomment=[l]{*},
+morecomment=[s]{/*}{*/},
+}
+
+\lstdefinelanguage{qcmaquis}
+{
+%
+keywords=[1]{L,nelec,spin,irrep,nsweeps,max_bond_dimension,integral_file,chkpfile,resultfile,init_state,LATTICE,lattice_library,MODEL,model_library},
+morekeywords=[2]{conv_thresh,integral_cutoff,truncation_initial,truncation_final,symmetry,MEASURE},
+keywordstyle=[1]\color{green!20!red},
+keywordstyle=[2]\color{green!20!blue},
+commentstyle=\color{gray},
+sensitive=false,
+morecomment=[l]{//},
+morecomment=[s]{/*}{*/},
+}
+
+
+\lstset{numbers=left,numberstyle=\tiny,numberblanklines=true,basicstyle=\ttfamily\small,frame=single,showlines=true,flexiblecolumns=true,breaklines=true,postbreak={\llap{\textcolor{red}{$\lhook\joinrel\longrightarrow$\kern2.1em}}},escapechar=|}
+
+
+\newcommand{\todo}[1]{\textcolor{red}{#1}}
+\newcommand{\kwd}[1]{\texttt{#1}}
+
+\title{A quick user guide to the\\ \scine-\qcm\ software suite for \mol}
+\author{Leon Freitag, Sebastian Keller, Stefan Knecht, Yingjin Ma,\\ Christopher Stein and Markus Reiher}
+\publishers{ETH Z\"urich, Laboratorium f\"ur Physikalische Chemie, Vladimir-Prelog-Weg 2,\\ CH-8093 Z\"urich}
+\date{\today}
+
+\begin{document}
+
+\bibliographystyle{achemso}
+% \nobibliography{qcmaquis_manual}
+
+\pagenumbering{roman}
+\maketitle
+\thispagestyle{empty}
+\begin{center}
+\end{center}
+\vspace{-1.85cm}
+\centerline{\large{\relv}}
+
+\vspace{2cm}
+\noindent We kindly request that, for reproducibility reasons, any use of the \qcm\ software suite for  density matrix renormalization group (DMRG) calculations in \mol\ that results in published material should cite the set-up steered by settings and warm-up procedures described in:
+\begin{framed}
+		\noindent {\textbf{Check for a preprint on \href{http://arxiv.org/}{arXiv.org} (to appear soon).}}\\
+	\noindent Freitag~L.; Keller~S.; Knecht~S.; Lindh~R.; Ma~Y.; Stein~C. J.; Reiher~M. \emph{in preparation}.
+\end{framed}
+
+The DMRG calculations are then conducted with the software \qcm\ that requires a citation. It is described in the following paper:
+\begin{framed}
+%\noindent {\textbf{Check for the journal article asap on \href{http://arxiv.org/pdf/1510.02026.pdf}{arXiv.org}.}}\\
+\noindent Keller,~S.; Dolfi,~M.; Troyer,~M.; Reiher,~M. \emph{J. Chem. Phys.}
+  \textbf{2015}, \emph{143}, 244118, \href{https://doi.org/10.1063/1.4939000}{doi:10.1063/1.4939000}.
+\end{framed}
+
+\qcm\ builds upon the ALPS MPS project. The \href{http://alps.comp-phys.org/static/mps\_doc/index.html}{ALPS MPS codes} implement the DMRG algorithm for variational ground and low-lying excited state search as well as time evolution of arbitrary one- and two-dimensional models in a matrix-product-state representation. They have been developed at ETH Zurich by Michele Dolfi and Bela Bauer in the group of Matthias Troyer with contributions from Sebastian Keller and Alexandr Kosenkov and at the University of Geneva by Timoth{\'e}e Ewart and Adrian Kantian in the group of Thierry Giamarchi.
+
+\begin{framed}
+\noindent \textbf{For further information on the ALPS project, please visit \href{alps.comp-phys.org}{alps.comp-phys.org}.}\\[2ex]
+\textbf{Refer to the original ALPS MPS paper:}\\
+M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, \textit{Comp. Phys. Commun.} \textbf{2014}, 12, 3430. \href{https://doi.org/10.1016/j.cpc.2014.08.019}{doi:10.1016/j.cpc.2014.08.019}
+\end{framed}
+
+ALPS is a general open-source framework for the description of strongly correlated many-particle systems.
+\begin{framed}
+B. Bauer, \textit{et al.} (ALPS Collaboration), The ALPS project release 2.0: open source software for strongly correlated systems, \textit{J. Stat. Mech.} \textbf{2011} P05001. \href{http://dx.doi.org/10.1088/1742-5468/2011/05/P05001}{http://dx.doi.org/10.1088/1742-5468/2011/05/P05001}.
+\end{framed}
+
+%The NEVPT2 program builds on the NEVPT2 code originally authored by Celestino Angeli, Renzo Cimiraglia and Jean-Paul Malrieu.
+%\begin{framed}
+% \noindent Cite the following papers when performing NEVPT2 calculations within the \mol{} software suite:
+%%  \bibentry{Freitag_JChemTheoryComput_Multireference_2017}
+%
+%Freitag,~L.; Knecht,~S.; Angeli,~C.; Reiher,~M. \emph{J. Chem. Theory Comput.}
+%  \textbf{2017}, \emph{13}, 451--459, \href{https://doi.org/10.1021/acs.jctc.6b00778}{doi:10.1021/acs.jctc.6b00778}
+%
+%Angeli,~C.; Cimiraglia,~R.; Malrieu,~J.-P. \emph{J. Chem. Phys.} \textbf{2002},
+%  \emph{117}, 9138--9153, \href{https://doi.org/10.1063/1.1515317}{doi:10.1063/1.1515317}
+%%  \bibentry{Angeli_JChemPhys_nelectron_2002}
+%\end{framed}
+%
+%The MPS-SI program exploits the framework of the CASSI code in \hostp.
+%\begin{framed}
+% \noindent Cite the following papers when performing MPS-SI calculations within the \mol{} software suite:
+%
+% Knecht,~S.;~Keller~S.;~Autschbach~J.;~Reiher~M., \emph{J.~Chem.~Theory~Comput.} \textbf{2016}, \emph{12} 5881--5894, \href{http://dx.doi.org/10.1021/acs.jctc.6b00889}{http://dx.doi.org/10.1021/acs.jctc.6b00889}
+%
+% Malmqvist,~P.-{\AA}.;~Roos,~B.~O., \emph{Chem. Phys. Lett.} \textbf{1989},
+%   \emph{155}, 189--194
+%\end{framed}
+
+
+
+\clearpage
+
+
+\tableofcontents
+\clearpage
+
+
+\pagenumbering{arabic}
+\section{Introduction to the \qcm\ Software Suite}
+
+\subsection{Overview and Goals}
+The computational cost of traditional full CI and full CI-based multiconfigurational calculations (such as CASSCF) scales exponentially with the number of active orbitals, thus calculations beyond a certain limit (e. g. 18 electrons in 18 orbitals for CASSCF) become prohibitively expensive. A possible approach to overcome the scaling limit is to employ methods such as density matrix renormalization group (DMRG) \cite{Schollwock_AnnPhys_densitymatrix_2011,Marti_ZPhysChem_Density_2010,Chan2011,Chan_JChemPhys_Matrix_2016} to solve the full CI problem approximately.
+
+In DMRG, usually the wave function is represented in form of a matrix product state
+(MPS). The \qcm\ software suite solves a full CI problem approximately by means of
+an efficient optimization of an MPS wave function based on a second-generation DMRG algorithm \cite{Keller_JChemPhys_efficient_2015}.
+The quantum-chemical operators are represented as matrix product operators (MPOs) which provides the necessary flexibility to accommodate Abelian and non-Abelian symmetries as well as the implementation of non-relativistic and relativistic quantum chemical Hamiltonians \cite{maquis-rel}, respectively,
+in a unified framework. We have implemented the special unitary group of degree 2 (SU(2)) in the MPO representation of the non-relativistic Hamiltonian to ensure
+spin conservation \cite{Keller_JChemPhys_Spinadapted_2016}.
+The current implementation of \qcm\ allows for efficient full-CI-type calculations of active space sizes beyond capabilities (``CAS(18,18)") of standard CI approaches.
+
+The \qcm\ software suite comes with a Fortran/Python-based interface \cite{interface} to the \mol\ \cite{Aquilante_JComputChem_Molcas_2016} framework, where we have implemented a state-specific and state-average DMRG self-consistent field (DMRG-SCF) algorithm, the possibility to include solvent effects in DMRG calculations, analytic gradients for state-specific calculations, state interaction in a nonorthogonal basis\cite{Knecht_JChemTheoryComput_nonorthogonal_2016} and n-electron valence state perturbation theory employing the DMRG reference wave function.\cite{Freitag_JChemTheoryComput_Multireference_2017} These developments allow for, among others, structure optimizations, spin-orbit coupling calculations, evaluation of transition densities between non-orthogonal states for electronic and magnetic properties, as well as to account for dynamic correlation by means of the NEVPT2 approach.
+
+\begin{framed}
+	\large{\textbf{Advice:} The break-even point wrt computational cost for a DMRG-CI/-SCF calculation compared to a ``traditional" CAS-CI/-SCF calculation is approximately reached for a CAS(14,14) space. For active spaces smaller than CAS(14,14) we recommend to choose a traditional \mol\ CAS approach.}
+\end{framed}
+
+\subsection{What features are included in this release?}\label{sec:features-v1.0}
+
+\subsubsection{Updates in the \relv}
+In the \relv, \qcm{} features:
+\begin{itemize}
+  \item a completely rewritten \qcm{}-\mol{} interface that does not require Python
+  \item simple and straightforward to use Fortran, C and C++ API for interfacing with other quantum chemistry packages (e.\,g.\ BAGEL or Serenity)
+  \item simplified installation procedure with less package dependencies
+  \item Bug fix for calculation of excited states with Fiedler ordering
+  \item Reworked distributed 4-RDM calculation in NEVPT2 with improved error handling
+\end{itemize}
+
+\subsubsection{Features in the \qcm{} standalone version}\label{sec:features-stand}
+
+\begin{itemize}
+	\item Optimization of spin-adapted SU(2) MPS wave functions with the DMRG algorithm (DMRG-CI calculations)
+	\item Non-relativistic and scalar-relativistic quantum-chemical Hamiltonians
+	\item Calculation of reduced density matrices of up to fourth order and transition reduced density matrices of up to third order
+	\item Calculation of excited states
+	\item A tool set to analyze the MPS wave function and its quantum entanglement
+\end{itemize}
+
+\subsubsection{Features in  \qcm\ in \mol}\label{sec:features-qcm-mol}
+
+\begin{itemize}
+	\item DMRG-CI and DMRG-SCF calculations w/wo reaction field (e.g. PCM)
+	\item State-specific and state-averaged DMRG-SCF calculations
+	\item Analytic gradients for state-specific DMRG-SCF calculations
+  \item MPS state interaction (MPS-SI) for the calculation of spin-orbit coupling matrix elements,
+  electronic and magnetic properties
+  \item state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
+\end{itemize}
+
+% \subsection{Organization of this document}
+%
+% In the following we list and briefly summarize the remaining sections of this document.
+%
+% \begin{itemize}
+% 	\item Section \ref{sec:install-req}, \nameref{sec:install-req},  guides through the software requirements and the registration process for \qcm.
+% 	\item Section \ref{sec:installation}, \nameref{sec:installation}, guides through the installation process for \qcm\ (and possibly the host program \mol).
+% 	\item Section \ref{sec:maintenance}, \nameref{sec:maintenance}, summarizes general information concerning the \qcm\ software suite including how to ask for user support, retreive future patches for the code and where to send bug reports.
+% 	\item Section \ref{sec:general-consid}, \nameref{sec:general-consid}, introduces the basic workflow for \qcm\ DMRG calculations and provides details about memory requirements as well as input and output data required and generated by \qcm, respectively.
+% 	\item Section \ref{sec:input}, \nameref{sec:input}, provides in the first part a list of keywords and options to control \qcm\ DMRG calculation in \mol. The second part explains in detail all mandatory and optional \qcm\ keywords and their usage. In addition we introduce several tools that are part of the \qcm\ software suite which can be used to analyze and visualize the resulting DMRG wave function(s).
+% 	\item Section \ref{sec:input-examples}, \nameref{sec:input-examples}, then shows two example input files for \qcm\ DMRG calculations in \mol\ and with the \qcm\ standalone suite, respectively.
+% \end{itemize}
+
+\subsection{Licenses}\label{sec:license}
+The \qcm{}-\mol{} interface and the NEVPT2 program are licensed under GNU LGPL, version 2.1.
+The \qcm{} software suite and the ALPS library are distributed under \href{http://alps.comp-phys.org/static/software/applications/LICENSE.txt}{ALPS Application License version 1.0} and the \href{http://alps.comp-phys.org/static/software/ALPS/LICENSE.txt}{ALPS Library License version 1.0}.
+\clearpage
+\newpage
+\section{Software Requirements \& Download}\label{sec:install-req}
+
+\subsection{Prerequisites}
+In order to install either \qcm\ or the quantum chemistry package \mol\ with DMRG support through the \qcm\ software suite \cite{Keller_JChemPhys_efficient_2015,interface}, requires the following libraries/programs:
+
+\begin{itemize}
+ \item Git
+%  \item Python version 2.\texttt{x} with \texttt{x}\ $\geq 7$, with SciPy and NumPy
+ \item HDF5 (\url{http://www.hdfgroup.org/HDF5}) with Python2 bindings (\texttt{h5py})
+ \item SZIP
+ \item GNU Scientific Library GSL (\url{http://www.gnu.org/software/gsl/})
+ \item CMake version $\geq$3.7 (\url{https://cmake.org/})
+ \item Boost version $\geq$1.56 (\url{https://github.com/boostorg/boost})
+ \item Python 3.x with \texttt{h5py} package installed\\
+(optional, required only for MPSSI and distributed RDM calculations for NEVPT2 or the python tools)
+\end{itemize}
+\vspace{0.01cm}
+\noindent
+Please make sure that these libraries/programs are available and their location is visible in your \texttt{\$PATH}\ and
+\texttt{\$LD\_LIBRARY\_PATH}, respectively.
+Note that these libraries are \emph{NOT} part of the installation package of the \qcm\ software suite (see Section \ref{sec:installation}\
+for further details).
+
+
+\subsection{Downloading \qcm{}}\label{sec:reg}
+
+\begin{framed}
+\noindent \textbf{Advice:} We recommend to install \qcm{} with the \mol-\qcm{} interface. \qcm{} installed with the \mol-\qcm{} interface is also fully usable as a standalone version.
+\end{framed}
+
+%%% Obtaining QCMaquis from scine.ethz.ch
+If you want to install QCMaquis with the \mol-\qcm{} interface, please proceed to Section~\ref{sec:install-qcm-mol}. No manual download is necessary: \qcm{} and \mol-\qcm{} interface will be automatically downloaded installed during the compilation and installation procedure of \mol{}.
+
+If you want to download and install a standalone version of \qcm{}, it may be obtained from \url{https://scine.ethz.ch/download/qcmaquis}. After downloading, please proceed to Section~\ref{sec:install-qcm-stand} for installation instructions.
+
+
+\clearpage
+\newpage
+\section{Installation}\label{sec:installation}
+
+
+% QCMaquis in Molcas
+\subsection{Installation of the \mol-\qcm{} interface}\label{sec:install-qcm-mol}
+
+% \noindent In the following steps \ref{subsubsec:download}-\ref{subsubsec:runtime}\ we describe how to successfully build and install the \mol\ program together with the \qcm\ software suite.
+The installation of \qcm\ has been tested for different
+operating systems and compiler/math libraries environments found in Section~\ref{subsec:supportedOS}.
+While other combinations might work equally well they are \emph{not} officially supported.
+
+\noindent The installation of the \qcm\ software suite within \mol\ will
+comprise several libraries which are \emph{automatically downloaded and installed} during the \mol\ build
+process provided that DMRG support within \mol\ is requested by the user.
+The list of external libraries comprises:
+\begin{itemize}
+\item Optionally: the NEVPT2 program
+\end{itemize}
+All of the above libraries will be installed locally in the user-defined build folder \texttt{my-Molcas-build} of \mol.
+
+
+\subsubsection{Download and build folder setup}
+Download \mol{} from the official \mol{} GitLab repository:
+
+\begin{verbatim}
+git clone git@gitlab.com:Molcas/OpenMolcas.git /path/to/my-Molcas-src
+\end{verbatim}
+
+\noindent Create a build folder \texttt{\molbuild} -- note that this folder \emph{does not} necessarily have to be a subfolder
+of \texttt{my-Molcas-src} -- and change to this new folder:
+\begin{verbatim}
+mkdir /path/to/my-Molcas-build && cd /path/to/my-Molcas-build
+\end{verbatim}
+
+\subsubsection{Configuration}\label{subsubsec:configure}
+
+To install \qcm{} and the \qcm{}-\mol{} interface, one may follow the standard \mol{} installation procedure and enable the CMake option \kwd{DMRG} (and \kwd{NEVPT2} for the NEVPT2 program).
+
+% Below we present some example configurations for the GNU compiler collection and the Intel compiler.
+
+\paragraph{Configuration with the GNU compiler suite}\label{sec:gnu-conf}$\;$\\
+
+\noindent To configure \mol\ and \qcm\ with the GNU compiler suite type
+\begin{verbatim}
+FC=gfortran CC=gcc CXX=g++ cmake -DDMRG=ON -DLINALG=MKL \
+  -DQCMaquis_NAME="Your Name" -DQCMaquis_EMAIL="your@email.com" \
+  /path/to/my-Molcas-src
+\end{verbatim}
+
+\noindent where we assumed (\texttt{-DLINALG=MKL}) that the MKL libraries are available (recommended option).
+If the MKL libraries are not available internal math libraries of \mol\ can be requested with \texttt{-DLINALG=Internal} (default option for \texttt{LINALG} in \mol) or \texttt{-DLINALG=Runtime} (to use a system-wide BLAS or LAPACK installation). Please also specify your name and e-mail address in the \texttt{-DQCMaquis\_NAME} and \texttt{-DQCMaquis\_EMAIL} CMake options, otherwise the download of \qcm{} will not work.
+
+\begin{framed}
+	\noindent\large{Note: We strongly recommend to configure \qcm\ (and \mol) with the Intel Math Kernel Library (MKL) to ensure the best numerical performance. See Section \ref{subsec:supportedOS}\ for further details.}
+\end{framed}
+% \paragraph{Configuration with the Intel compiler suite}\label{sec:intel-conf}$\;$\\
+\begin{framed}
+ \noindent Note: Intel compiler is currently not supported. Running a binary compiled with Intel compilers may result in segmentation faults. We are currently investigating the issue.
+\end{framed}
+
+\paragraph{Upgrading an existing \mol{} installation}\label{sec:build-upgrade}$\;$\\
+
+If you're upgrading from an \mol{} installation compiled with an older release of \qcm{}, you need to add an additional command line flag when invoking \texttt{cmake}, namely
+\begin{verbatim}
+  -DQCMaquis_UPDATE=ON
+\end{verbatim}
+
+This flag activates the \qcm{} update for the current and all the following \texttt{cmake} runs. To switch off \qcm{} updates, \texttt{cmake} may be run with
+\begin{verbatim}
+  -DQCMaquis_UPDATE=OFF
+\end{verbatim}
+
+% \noindent To configure \mol\ and \qcm\ with the Intel compiler suite including MKL type
+% \begin{verbatim}
+% FC=ifort CC=icc CXX=icpc cmake -DDMRG=ON -DLINALG=MKL \
+%   -DQCMaquis_NAME="Your Name" -DQCMaquis_EMAIL="your@email.com" \
+%   /path/to/my-Molcas-src
+% \end{verbatim}
+
+
+
+\paragraph{Additional options}$\;$\\
+Following additional options can be switched on by passing additional flags to \texttt{cmake}:
+\begin{itemize}
+ \item \texttt{-DNEVPT2=ON}: Downloads and compiles the NEVPT2 program and its interface with \mol\ and \qcm.
+ \item \texttt{-DOPENMP=ON}: Enable OpenMP parallelization for MOLCAS and NEVPT2 (see Section \ref{sec:parallel}). Note that \qcm{} is built with OpenMP support \emph{regardless} of this flag.
+\end{itemize}
+
+Other options to enable/disable various options in \mol{} may be passed to \texttt{cmake} at this step. Please consult the \mol{} manual for details.
+% \paragraph{Additional \mol{} options}$\;$\\
+% By running
+% \begin{verbatim}
+%  ccmake /path/to/my-Molcas-src
+% \end{verbatim}
+% in the build directory you may obtain a text user interface where several options for building \mol{}, along with the ones mentioned above, may be conveniently set. Use \texttt{ccmake} to set other various options for \mol{}: for details please consult the \mol{} manual.
+\begin{framed}
+ \noindent Note: it is currently discouraged to install the \qcm{}-\mol{} interface together with the \textsc{Block} or \textsc{CheMPS2} interfaces available in \mol{}. This setup has not been tested and may lead to an unusable installation. A fix allowing different interfaces to be installed at the same time is currently under development.
+\end{framed}
+
+
+
+\paragraph{MPI parallel and shared-memory OMP parallel configurations}\label{sec:parallel}$\;$\\
+
+\noindent Installing an MPI-parallel version of \mol\ with DMRG support is possible although
+\qcm\ itself is by default shared-memory OMP but \emph{not} yet MPI-parallelized.
+To configure \mol\ for an MPI-installation type
+\begin{verbatim}
+FC=mpif90 CC=mpicc CXX=mpiCXX cmake -DDMRG=ON -DLINALG=MKL \
+  -DQCMaquis_NAME="Your Name" -DQCMaquis_EMAIL="your@email.com" \
+  /path/to/my-Molcas-src
+\end{verbatim}
+
+\vspace{2ex}
+
+A shared-memory OMP parallelized version of \mol\ can be activated with the option
+\texttt{-DOPENMP=ON}\ passed to \texttt{cmake} during the configuration step, for example
+\begin{verbatim}
+FC=... CC=... CXX=... cmake -DDMRG=ON -DLINALG=MKL \
+  -DQCMaquis_NAME="Your Name" -DQCMaquis_EMAIL="your@email.com" \
+  /path/to/my-Molcas-src
+\end{verbatim}
+
+\noindent It should work with either compiler suite, GNU or Intel, but the user may want to consult the \mol\ user manual for further information.
+
+\vspace{2ex}
+
+In order to exploit the shared-memory OMP parallelization of \qcm\ which is \emph{enabled by default}
+the user is strongly encouraged to set at runtime the environment
+variable \texttt{export QCMaquis\_CPUS=XX} or \texttt{export OMP\_NUM\_THREADS=XX}
+where \texttt{XX}\ specifies the number of shared-memory cores to be used. The default is to use a single core.
+
+\subsubsection{Building and installation}\label{subsubsec:build}
+
+After a successful configuration, type
+\begin{verbatim}
+make
+\end{verbatim}
+\noindent or
+\begin{verbatim}
+make -j8
+\end{verbatim}
+to compile \mol\ (in parallel on 8 cores) and install all its components in the build folder \texttt{\molbuild}.
+In the same folder \qcm\ as well as the required \textsc{Boost} and \textsc{Alps}
+libraries will be downloaded and installed, respectively.
+The installation process thus requires a working internet connection.
+
+\subsubsection{Setting up the runtime environment}\label{subsubsec:runtime}
+
+After having successfully passed the \qcm\ installation step as indicated by the CMake message
+\begin{verbatim}
+[xxx%] Installation of QCMaquis, ALPS and Boost was successful!
+\end{verbatim}
+set up your \mol{} environment by setting \texttt{MOLCAS} environment variable
+\begin{verbatim}
+export MOLCAS=/path/to/my-MOLCAS-build
+\end{verbatim}
+and then set up the \qcm{} runtime environment by running the following shell script
+\begin{verbatim}
+source $MOLCAS/qcmaquis/bin/qcmaquis.sh
+\end{verbatim}
+You might want to include the above lines in your local \texttt{\$HOME/.bashrc} to set up your environment automatically every time your session is started.
+
+\subsection{Supported operating systems and compiler environments}\label{subsec:supportedOS}
+
+\qcm\ in \hostp\ is tested and officially supported for Linux (x86\_64)
+and MacOS X (10.12.x and 10.13.x ) operating systems. We support GCC compilers starting from 5.x up to 7.x along with the MKL (Linux, x86\_64) and MKL/Accelerate (Mac OS X) math libraries, respectively, to successfully build the \qcm\ software suite within \hostp.
+Note that other combinations might work equally well but they are not officially supported at present.
+
+\noindent See the \mol\ manual at \url{www.molcas.org}\ for details on
+supported operating systems and compiler environments of a ``plain" \mol\ installation.
+
+%\begin{table}[htbp]
+%\begin{center}
+%\caption{\label{comb}Supported operating system/compiler/math library combinations for
+%the combined installation of \mol\ and \qcm.}
+% \begin{tabular}{lll}
+%  \toprule
+%operating system & compiler & math library\\
+%\midrule
+%Mac OS X (10.11 ``El Capitan") & GNU 5.2 & ``Accelerate" (Xcode)\\
+%Mac OS X (10.11 ``El Capitan") & Intel XE 15 (patch 0) & MKL 11.2 \\
+%x86\_64                        & GNU 6.2.0             & MKL 2018.1 \\
+%x86\_64                        & Intel XE 15 (patch 0) & MKL 11.2 \\
+%x86\_64                        & GNU 5.4               & MKL 15.0.090 \\
+%x86\_64                        & GNU 4.8               & MKL 11.1 \\
+%x86\_64                        & GNU 4.7.2             & MKL 11.1 \\
+%x86\_64                        & Intel XE 13           & MKL 11.1\\
+%x86\_64                        & Intel XE 13 (sp 1)    & MKL 11.1 \\
+%x86\_64                        & OpenMPI 1.6.5 + Intel XE 13 (sp 1)    & MKL 11.1 \\
+%\bottomrule
+% \end{tabular}
+%\end{center}
+%\end{table}
+
+\subsection{Tests and verification of the installation}
+
+To verify that your installation of \mol\ and \qcm\ was successful, run the following command
+\begin{verbatim}
+pymolcas verify qcmaquis
+\end{verbatim}
+\noindent The message
+\begin{verbatim}
+Verification has been completed
+\end{verbatim}
+\noindent indicates that all tests passed correctly and your installation is good to go for production work.
+\vspace{2ex}
+
+\noindent Test inputs are distributed with \mol{} and can be found in the \texttt{qcmaquis} subdirectory of the \mol{} test directory.
+They may also serve as sample inputs for your actual calculation.  Table \ref{tab:inputex}\ comprises a short summary of
+the tests for \qcm\ covering different computational aspects within the \mol\ framework.
+
+
+\begin{longtable}{lll}
+\caption{\label{tab:inputex}List of \qcm{} test inputs in \mol{}.}
+\\
+  \toprule
+file & type & features\\
+  \midrule
+\endfirsthead
+
+\multicolumn{3}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\toprule
+file & type & features\\
+\midrule
+\endhead
+\midrule
+001.input & State-specific & Ground-state DMRG-SCF optimization of N$_2$\\
+002.input & State-average & Two-state (S$_0$/S$_1$) DMRG-SCF of N$_2$\\
+003.input & DMRG-CI     & DMRG-CI with a dynamic list of renormalized states $m$\\
+004.input & State-specific & Structure optimization of the ground state of dioxetanone\\
+005.input & State-specific & Structure optimization of the S$_1$ state of N$_2$\\
+006.input & PCM model      & DMRG-SCF for a non equilibrium state\\
+007.input & MPS-SI & Calculation of singlet-triplet spin-orbit matrix elements\\
+008.input & State-specific & DMRG-SCF with Fiedler ordering and CI-DEAS start guess\\
+009.input & NEVPT2 & DMRG-NEVPT2 energy calculation of the CH$_2$ triplet state\\
+010.input & MC-PDFT & DMRG-MC-PDFT energy calculation of the ground state of N$_2^+$\\
+\bottomrule
+\end{longtable}
+
+
+\subsection{Maintenance}\label{sec:maintenance}
+
+\subsubsection{Updates and patches}\label{sec:patches-qcm}
+
+New versions of the \qcm\ software suite as well as possible bug fixes will be announced
+on the \href{https://www.scine.ethz.ch/download/qcmaquis}{SCINE \qcm\ homepage}. They can be then downloaded from the SCINE website or by rerunning CMake in the \mol{} directory.
+
+\subsubsection{Reporting bugs and user support}\label{sec:bugs-support}
+
+The \qcm\ program suite is distributed to the \mol\ community with no obligations on the side of the authors.
+The authors thus take no responsibility for the performance of the code nor for the correctness of the results.
+This distribution policy gives the authors no responsibility for problems experienced by the users when using the \qcm\ program in \mol.
+
+%Bug reports are to be reported via the mailing list \href{mailto:dmrg@phys.chem.ethz.ch}{dmrg@phys.chem.ethz.ch} and will be dealt with by one of the authors, although no responsibility on the promptness of this response is given.
+Bugs/suggestions for improvements are to be reported as follows:
+
+\begin{itemize}
+  \item For issues regarding usage of \qcm\ in \mol{}, open an issue in the \mol{} bug tracker at
+    \url{https://gitlab.com/Molcas/OpenMolcas/issues}
+  \item For issues regarding the usage of \qcm{} standalone version, please send an e-mail to \href{mailto:dmrg@phys.chem.ethz.ch}{dmrg@phys.chem.ethz.ch}.
+\end{itemize}
+
+Any issue will be dealt with by one of the authors, although no guarantee on the promptness of response is given.
+In general, serious bugs that have been reported and fixed will lead to a new patch of the \qcm\ program,
+announced and distributed via the \href{https://www.scine.ethz.ch/download/qcmaquis}{SCINE \qcm\ homepage}.
+
+\clearpage
+\newpage
+
+\section{Running a \qcm\ DMRG Calculation}\label{sec:general-consid}
+
+Running a \qcm\ DMRG calculation --- either DMRG-CI or DMRG-SCF --- is most easily achieved with the \qcm-\mol{} interface \cite{interface}, which integrates the DMRG calculation into the \mol{} workflow. Usage of the \qcm-\mol{} interface described in Section~\ref{sec:input}. In a few advanced cases the user might want to run \qcm{} directly, which will be described in Section~\ref{sec:workflow-qcm}.
+
+\subsection{Keywords and Options for \hostp}\label{sec:input}
+
+\subsubsection{The DMRGSCF module}\label{sec:dmrgscf}
+
+\begin{framed}
+\noindent Cite the following papers when performing DMRG-SCF calculations within the \mol{} software suite:
+\begin{enumerate}
+\item Freitag,~L.; Keller,~S.; Knecht,~S.; Lindh,~R.; Ma,~Y.; Stein,~C.~J.;
+  Reiher,~M. \textit{in
+		preparation} \textbf{Check for a preprint on \href{http://arxiv.org/}{arXiv.org} (to appear soon).}
+\item{Keller,~S.;~Reiher,~M., \emph{J. Chem. Phys.} \textbf{2016}, \emph{144}, 134101\\ \href{https://doi.org/10.1063/1.4944921}{doi:10.1063/1.4944921}}
+\item Keller,~S.;~Dolfi,~M.;~Troyer,~M.;~Reiher,~M., \emph{J. Chem. Phys.}
+  \textbf{2015}, \emph{143}, 244118\\ \href{https://doi.org/10.1063/1.4939000}{doi:10.1063/1.4939000}
+\item{Knecht~S.;~Hedeg{\aa}rd E. D.;~Keller S.;~Kovyrshin A.;~Ma  Y.;~Muolo A.;~Stein C. J.;~Reiher M.,
+	\emph{Chimia} \textbf{2016}, \emph{70} ~244--251, \href{https://doi.org/10.2533/chimia.2016.244}{doi:10.2533/chimia.2016.244}.
+}
+  \end{enumerate}
+\end{framed}
+
+The \qcm-\mol{} interface introduces a new \hostp\ module, \texttt{DMRGSCF} which may be used to perform DMRG-CI or DMRG-SCF wave function optimizations. A \texttt{DMRGSCF} input (see example in Listing~\ref{lst:dmrgscf}) consists of the mandatory keyword \kwd{ActiveSpaceOptimizer} and the two input blocks \kwd{DMRGSettings\ldots{}EndDMRGSettings} and \kwd{OOptimizationSettings\ldots{}EndOOptimizationSettings}. Optional keywords within the \texttt{DMRGSCF} input section are \kwd{Fiedler} and \kwd{CIDEAS}, respectively.
+
+\paragraph{The \kwd{ActiveSpaceOptimizer} keyword}\mbox{}\\
+The \kwd{ActiveSpaceOptimizer} keyword specifies the CI solver program to be used in the \kwd{DMRGSCF} module. Currently, only one value, namely\\
+\noindent\kwd{ActiveSpaceOptimizer=QCMaquis}\\
+is supported, which, obviously, calls the \qcm{} program. In the future, this option will be used to enable interfaces to other DMRG programs such as \textsc{Block} or \textsc{CheMPS2}.
+
+\paragraph{The \kwd{Fiedler} keyword}\mbox{}\\
+The \kwd{Fiedler} keyword, i.e.,\\
+\noindent\kwd{Fiedler=on}\\
+enables a state-specific orbital ordering for the MPS optimization
+by exploiting concepts from graph theory. The ordering follows from the elements of the
+Fiedler vector \cite{fied73,fied75} which is the eigenvector corresponding to the second
+lowest eigenvalue of the so-called graph Laplacian.
+Further details concerning our implementation of the Fiedler-vector ordering within \qcm\ can be found in Ref.\cite{interface}.
+
+\paragraph{The \kwd{CIDEAS} keyword}\mbox{}\\
+The \kwd{CIDEAS} keyword, i.e.,\\
+\noindent\kwd{CIDEAS=on}\\
+enables a more advanced algorithm to construct a suitable initial MPS (see the keyword \kwd{init\_state} in Table \ref{tab:standard_kw_auto} for other options) provided by the configuration interaction dynamically extended active space (CI-DEAS) approach \cite{Legeza2003,fiedler}. The CI-DEAS protocol can be interpreted as an orbital entanglement entropy guided configuration selection and the quality of this initial guess depends on the quality of the initial CAS vector.
+Further details concerning our implementation of the CI-DEAS approach within \qcm\ can be found in Ref.\cite{interface}.
+\begin{framed}
+\noindent \textbf{Warning!} The CI-DEAS functionality is currently restricted to calculations performed with C$_1$\ symmetry. Support for other point group symmetries will be available in due time.
+
+\noindent \textbf{Note}: The \kwd{CIDEAS} option requires to set the ``HF occupation" for each state in the \texttt{OOptimizationSettings}\ input section by means of the \kwd{SOCC}\ keyword (see Table \ref{table:opt-keyword}).
+\end{framed}
+
+\paragraph{The \kwd{DMRGSettings} block}\mbox{}\\
+The \kwd{DMRGSettings} block contains DMRG-specific options, which will be passed on to the \qcm{} program. The mandatory keywords, which must be present in each calculation, are summarized in Table~\ref{tab:standard_kw}. In addition to these keywords, any \qcm{} keyword (see Table~\ref{tab:advanced_kw} may be used in this section.
+% In addition, keyword \kwd{Compress} may be used to enable wavefunction compression, e.\,g.\ for a subsequent NEVPT2 calculation.
+
+\begin{table}[h]
+ \caption{\label{tab:standard_kw}Mandatory and special \qcm{} keywords to be specified in the \kwd{DMRGSettings} block of the \kwd{DMRGSCF} input.}
+\begin{tabular}{ll}
+ \toprule
+ keyword & description \\
+ \midrule
+
+ \multirow{3}{*}{\texttt{max\_bond\_dimension}} & \multirow{3}{11cm}{Maximum number of renormalized states
+(commonly referred to as $m$-value or maximum bond dimension)
+kept during each microiteration step of a sweep.}\\
+& \\
+& \\
+\multirow{4}{*}{\texttt{nsweeps}} & \multirow{4}{11cm}{Maximum number of DMRG sweeps. Please be aware that \texttt{nsweeps} sets
+the number of combined forward and backward sweeps. Thus, the actual number of sweeps is $2\ \times $ \texttt{nsweeps}.} \\
+& \\
+& \\
+& \\
+%   \cmidrule(rl){1-2}
+%  \multirow{6}{*}{\texttt{Compress} (optional)} & \multirow{5}{12cm}{Compress the MPS obtained from the wavefunction optimization to an MPS with a smaller maximum number of renormalized states (provided as a parameter to the option) and use the compressed MPS in a subsequent 4-RDM evaluation. As the 4-RDM evaluation scales as $m^{3}L^8$, this is a convenient way to save computational cost in DMRG-NEVPT2 calculations.}\\
+%   & \\
+%   & \\
+%   & \\
+%   & \\
+%   & \\
+%   & \textbf{default:} \texttt{Compress=0}, which disables the compression. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\begin{center}
+\caption{Inoperative \kwd{RASSCF} keywords in the \kwd{OOptimizationSettings} block.}\label{table:disabled-kw}
+\begin{tabular}{l@{\hspace{1.25cm}}l}
+\toprule
+keyword & description \\
+\midrule
+\multirow{2}{*}{\texttt{RASScf}} & \multirow{3}{12cm}{Keywords are unavailable as excitation level restrictions between subspaces are unsupported in DMRG calculations.}\\
+\multirow{2}{*}{\texttt{GASScf}}  & \\
+ & \\
+\multirow{4}{*}{\texttt{TIGHt}} & \multirow{4}{12cm}{This keyword is not available because the Jacobi-Davidson diagonalization is
+independent and can be controlled with the \texttt{ietl\_jcd\_tol} and \texttt{ietl\_jcd\_maxiter} parameters (see
+Section \ref{sec:qcmaquis-kw}) in the \kwd{DMRGSettings} section.}\\
+ & \\
+ & \\
+ & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\paragraph{The \kwd{OOptimizationSettings} block}\mbox{}\\
+The \kwd{OOptimizationSettings} block contains general, non DMRG-specific options required for the wavefunction optimisation (such as number of the active electrons, active orbital specification etc.) and resemble the input for an analogous CASCI or CASSCF calculation with the \mol{} \kwd{RASSCF} module. Most of the \kwd{RASSCF} keywords are accepted, with the exception of the keywords in Table~\ref{table:disabled-kw}. Please consult the \kwd{RASSCF} entry of the \mol{} manual for a detailed description of the input.
+
+In addition to the standard \kwd{RASSCF} keywords, several optional keywords are available, listed in Table~\ref{table:opt-keyword}.
+
+% \begin{longtable}{l@{\hspace{1.25cm}}l}
+\begin{table}[h]
+\caption{Optional non-standard keywords in the \kwd{OOptimizationSettings} block.}\label{table:opt-keyword}
+\begin{tabular}{ll}
+\\
+  \toprule
+keyword & description \\
+  \midrule
+% \endfirsthead
+%
+% \multicolumn{2}{c}%
+% {{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+% \toprule
+% keyword & description \\
+% \midrule
+% \endhead
+\multirow{4}{*}{\texttt{FCIDUMP}} & \multirow{4}{12cm}{Skip the optimization and write out the transformed active MO integrals to a
+\kwd{FCIDUMP} file in \kwd{\$WorkDir} (see Ref. \citenum{fcidump} for a detailed description of the format) which can be used in subsequent \qcm\ DMRG calculations.}\\
+ & \\
+ & \\
+ & \\
+\multirow{6}{*}{\texttt{SOCCupy}} & \multirow{6}{12cm}{Initial electronic configuration for the calculated state(s). This keyword is equivalent to the \texttt{hf\_occ} card in the \qcm\ input (see Section
+\ref{sec:qcmaquis-kw}), but allows input for multiple states. The occupation is inserted as a string (strings) of aliases of occupations of the active (RAS2) orbitals with the aliases $2 \,=\,$ full, $u \,=\,$ up, $d \,=\,$ down, $0 \,=\,$ empty. For several states, the occupation strings for each state are separated by newlines.}\\
+ & \\
+ & \\
+ & \\
+ & \\
+ & \\
+ & \\
+ \cmidrule(rl){1-2}
+ \multicolumn{2}{l}{Optional options for DMRG-NEVPT2 calculations}\\
+ \cmidrule(rl){1-2}
+ \multirow{3}{*}{\texttt{NEVPT2prep}} & \multirow{3}{12cm}{Prepare QCMaquis input templates for distributed 3-TDM or 4-RDM evaluation for a subsequent DMRG-NEVPT2 calculation. More about external RDM evaluation in Section~\ref{sec:4rdm-distributed}.} \\
+  & \\
+  & \\
+\bottomrule
+% \end{longtable}
+\end{tabular}
+\end{table}
+
+\subsubsection{DMRG calculations with the RASSCF module}
+
+\begin{framed}
+  \noindent \textbf{Note}: The input format for DMRG/DMRGSCF calculations with the \kwd{RASSCF} module of \mol{} described in this section is \textbf{deprecated} and will be \textbf{unavailable} in future versions of \mol{}!
+
+  \noindent Instead, please use the \kwd{DMRGSCF} module as described in Section~\ref{sec:dmrgscf}.
+\end{framed}
+
+
+Instead of using the new \kwd{DMRGSCF} module, DMRG calculations with \qcm{} are also supported from within the \kwd{RASSCF} module directly. Compared to the \kwd{DMRGSCF} input, the \kwd{RASSCF} input changes as follows:
+\begin{samepage}
+  \begin{itemize}
+  \item The \kwd{DMRG} keyword must be specified in the \kwd{RASSCF} input.
+  \item The \kwd{DMRGSettings} block from \kwd{DMRGSCF} input is delimited with \kwd{RGInput\ldots{}EndRG} instead of \kwd{DMRGSettings\ldots{}EndDMRGSettings}
+  \item The \kwd{OOptimizationSettings} block is just the normal \kwd{RASSCF} input, i.\,e.\ it is not delimited with \kwd{OOptimizationSettings\ldots{}EndOOptimizationSettings}
+  \end{itemize}
+An input example is provided in Listing~\ref{lst:rasscf}.
+\end{samepage}
+
+\subsubsection{Molcas environment variables}
+
+\noindent As described in Section \ref{sec:parallel}\ \qcm\ is built by default with a shared-memory
+OMP parallelization. To speedup calculations the user can thus set at runtime the environment variable \texttt{OMP\_NUM\_THREADS} to the number of shared-memory cores to be used. The default is to use all possible cores.
+
+\FloatBarrier
+\newpage
+\subsubsection{Input Examples}
+\begin{lstlisting}[language=molcas,caption={(File \texttt{001.input} in the test directory) Input example for a DMRG-SCF calculation with the \kwd{DMRGSCF} module (\ch{N2}, 6 orbitals, with symmetry).},label=lst:dmrgscf]
+&GATEWAY
+ coord
+ 2
+Angstrom
+ N  0.000000  0.000000  -0.54880
+ N  0.000000  0.000000   0.54880
+ basis=cc-pvdz
+&SEWARD
+&SCF
+&DMRGSCF
+ActiveSpaceOptimizer=QCMaquis
+DMRGSettings
+  nsweeps            = 4
+  max_bond_dimension = 100
+EndDMRGSettings
+OOptimizationSettings
+  inactive = 2 0 0 0 2 0 0 0
+  RAS2     = 1 1 1 0 1 1 1 0
+  LINEAR
+EndOOptimizationSettings
+\end{lstlisting}
+\vspace{-0.5em}
+\begin{lstlisting}[language=molcas,caption={Input example for a DMRG-SCF calculation with the \kwd{RASSCF} module (\ch{N2}, 6 orbitals, with symmetry)},label=lst:rasscf]
+&GATEWAY
+ coord
+ 2
+Angstrom
+ N 0.000000  0.000000  -0.54880
+ N 0.000000  0.000000   0.54880
+ basis=cc-pvdz
+&SEWARD
+&SCF
+&RASSCF
+DMRG
+RGINPUT
+  nsweeps            = 4
+  max_bond_dimension = 100
+EndRG
+inactive = 2 0 0 0 2 0 0 0
+RAS2     = 1 1 1 0 1 1 1 0
+LINEAR
+\end{lstlisting}
+
+\clearpage
+\newpage
+
+\section{State interaction with DMRG (MPS-SI)}\label{sec:mps-si}
+
+\begin{framed}
+ \noindent Cite the following papers when performing MPS-SI calculations within the \mol{} software suite:
+\begin{enumerate}
+\item Knecht,~S.;~Keller~S.;~Autschbach~J.;~Reiher~M., \emph{J.~Chem.~Theory~Comput.} \textbf{2016}, \emph{12} 5881--5894, \href{https://doi.org/10.1021/acs.jctc.6b00889}{doi:10.1021/acs.jctc.6b00889}
+ \item Malmqvist,~P.-{\AA}.;~Roos,~B.~O., \emph{Chem. Phys. Lett.} \textbf{1989}, \emph{155}, 189--194\\ \href{https://doi.org/10.1016/0009-2614(89)85347-3}{doi:10.1016/0009-2614(89)85347-3}
+\end{enumerate}
+\end{framed}
+
+The state-interaction module for MPS wave functions (MPS-SI) introduced in
+Ref.~\cite{knec16b} is based on the \texttt{CASSI/RASSI} framework \cite{malm89,malm02} of \hostp.
+MPS-SI is a generalized state-interaction approach for
+both \textit{nonorthogonal} and \textit{orthonormal} spin-free MPS wave
+functions which enables the evaluation of arbitrary one- and
+two-particle transition matrix elements as well as, for example, matrix
+elements of the spin-orbit coupling operator.
+For instance, diagonalization of the spin-orbit Hamiltonian matrix
+yields spin-orbit coupled wave functions as linear combinations of the
+uncoupled, spin-pure MPS states. The latter can (but do not have to)
+be obtained as results from one or several DMRG-SCF orbital
+optimization calculations as described in Section \ref{sec:dmrgscf}.
+
+Following the work of Malmqvist \cite{malm86}, the central element of the MPS-SI
+algorithm is the transformation of the bra and ket MPS wave functions
+to a biorthonormal basis representation.
+It is important to note that the latter transformation is not needed
+if the MPS wave functions considered for state interaction
+share a common MO basis. In this particular case, the MPS-SI program directly
+proceeds with the calculation of the reduced (transition) one- and two-particle
+density matrices.
+We emphasize that our approach is applicable to the general case with MPS
+wave functions built from mutually nonorthogonal molecular orbital bases.
+It therefore provides the desired flexibility
+to find the best individual molecular orbital basis to represent
+wave functions of different spin and/or spatial symmetry.
+After solving a generalized eigenvalue
+equation of the form
+\begin{equation}\label{eq:eigproblem}
+{\textbf{Hc}} = E {\textbf{Sc}}\ ,
+\end{equation}
+with the Hamiltonian matrix \textbf{H} expressed in the basis of the DMRG-SCF MPS
+wave functions and the wave function overlap matrix \textbf{S},
+a set of fully orthogonal and non-interacting states are obtained
+as linear combinations of the DMRG-SCF MPS wave functions with
+the expansion coefficients given by \textbf{c}.
+
+Moreover, it is possible to ``dress" the diagonal elements of the Hamiltonian in Eq.~\eqref{eq:eigproblem} for \kwd{MPS-SI} by adding
+a correlation-correction term obtained, for example, from a preceding NEVPT2
+calculation (see Section \ref{sec:nevpt2}), by either using the \texttt{HDIAG} keyword within the \kwd{RASSI}\ module or provide the \texttt{nevpt2.h5}\ wave function file as input option to the \kwd{\&MPSSI} module (see the description of the keyword \kwd{FILE} in the \hostp\ manual for the \kwd{MPSSI} module for details on the correct syntax).
+
+\subsection{Running MPS-SI}\label{sec:run-mpssi}
+
+An MPS-SI calculation requires reference DMRG-SCF or NEVPT2
+wave functions as obtained with the \kwd{DMRGSCF} (see Section \ref{sec:dmrgscf}) or \kwd{NEVPT2} modules (see Section \ref{sec:nevpt2}), respectively.
+\begin{framed}
+ \noindent Note: Currently, the MPS-SI implementation supports all point groups implemented in \hostp\
+ if there is only one set of input states (i.e., all states have the same spatial \underline{and} spin symmetry). By contrast, if there is more than one set of input states of different spin symmetry, the \kwd{MPS-SI} module
+ supports only calculations in C$_1$\ symmetry. The latter restriction will be removed in a forthcoming release.
+\end{framed}
+Listing \ref{lst:mpssi} shows an input example for an MPS-SI calculation (a calculation of spin-orbit coupling matrix elements for the \ch{CH2} molecule) where
+the important keywords are highlighted in blue. A detailed explanation of the input is given below.
+
+\begin{lstlisting}[language=molcas,caption={(File \texttt{007.input} in the QCMaquis test directory) Input example for a one-shot MPS-SI spin-orbit calculation (Singlet and triplet state, \ch{CH2} molecule, 6 electrons in 6 orbitals, C1 symmetry).},label=lst:mpssi]
+&GATEWAY
+  coord
+  3
+  CH2 Triplet coordinates in Angstrom
+  C 0.000000 0.000000 0.000000
+  H 0.000000 0.000000 1.077500
+  H 0.784304 0.000000 -0.738832
+  basis=ANO-RCC-MB
+  Group=Nosym
+  AMFI
+  ANGMOM
+  0.0 0.0 0.0
+&SEWARD
+&DMRGSCF
+  ActiveSpaceOptimizer=QCMaquis
+  DMRGSettings
+    max_bond_dimension=1024
+    nsweeps=10
+  EndDMRGSettings
+  OOptimizationSettings
+    Spin=3
+    Inactive=1
+    Ras2=6
+    NActEl=6,0,0
+  EndOOptimizationSettings
+  >> COPY $Project.JobIph JOBOLD
+  >> COPY $Project.dmrgscf.h5 $Project.trip.h5
+  >> EXEC mv $CurrDir/$Project.checkpoint_state.0.h5 $CurrDir/$Project.trip.checkpoint_state.0.h5 |\label{line:mv}|
+  >> EXEC $MOLCAS/Tools/qcmaquis/qcm_checkpoint_rename.py $Project.trip.h5 -q |\label{line:rename}|
+&DMRGSCF
+ActiveSpaceOptimizer=QCMaquis
+  DMRGSettings
+    max_bond_dimension=1024
+    nsweeps=10
+  EndDMRGSettings
+  OOptimizationSettings
+    Spin=1
+    Inactive=1
+    Ras2=6
+    NActEl=6,0,0
+    JobIph
+  EndOOptimizationSettings
+>> COPY $Project.dmrgscf.h5 $Project.sing.h5
+>> EXEC mv $CurrDir/$Project.checkpoint_state.0.h5 $CurrDir/$Project.sing.checkpoint_state.0.h5 |\label{line:mv2}|
+>> EXEC $MOLCAS/Tools/qcmaquis/qcm_checkpoint_rename.py $Project.sing.h5 -q |\label{line:rename2}|
+&MPSSI
+  Nrof
+  2 1 1
+  1
+  1
+  FILE
+  2
+  $Project.trip.h5
+  $Project.sing.h5
+  EJOB
+  SOCOupling
+  0.0001
+  SPIN
+\end{lstlisting}
+
+In order to calculate spin-orbit matrix elements within the \kwd{MPS-SI} framework, one needs to add the keyword \texttt{AMFI} (and optionally \texttt{Angmom}) in the \kwd{\&GATEWAY} input section (This is no different from a standard RASSI calculation). Then, we perform two DMRG-SCF calculations with the \kwd{\&DMRGSCF} module (see Section \ref{sec:dmrgscf})\ to calculate the lowest-lying triplet and singlet state of CH$_2$.
+At the end of each DMRG-SCF step, we save the \texttt{dmrgscf.h5} files for each spin state for later usage in \kwd{\&MPSSI}.
+
+The largest differences to standard RASSI calculations are found in lines~\ref{line:mv} and \ref{line:rename} in Listing \ref{lst:mpssi}. Line \ref{line:mv}, in addition to the \kwd{dmrgscf.h5} file, also saves the \qcm{} checkpoint folder \texttt{\$Project.checkpoint\_state.0.h5} under a different name, which would otherwise be overwritten in the subsequent DMRG-SCF calculation. The information about the \qcm{} checkpoint name is saved in the \texttt{dmrgscf.h5} file, hence the reference to the new name must be updated in the \kwd{dmrgscf.h5} file with an utility script named \kwd{qcm\_checkpoint\_rename.py} in line~\ref{line:rename}. In the second DMRG-SCF calculation, these steps are repeated in lines~\ref{line:mv2} and \ref{line:rename2}.
+
+
+The MPS-SI framework is driven by the \kwd{\&MPSSI} module, which derives from the \mol{} \kwd{\&RASSI} module and has the same input syntax. The spin-orbit matrix-element calculation is triggered with \texttt{SPIN}. Note, that we use the keyword \texttt{EJOB}\ which prevents the MPS-SI program to calculate any two-particle reduced (transition) density matrices which are not only rather expensive to calculate compared to the one-electron reduced (transition) density matrices but also are of no further usage for the calculation of spin-orbit matrix-elements. The diagonal values for the Hamiltonian in Eq.\eqref{eq:eigproblem}\ are taken in this case from the respective \texttt{\$Project.xxx.h5} files (with \texttt{xxx=sing,trip}).
+\begin{framed}
+ \noindent Note: For MPS-SI, the wavefunctions from the RASSCF/DMRG-SCF calculations \emph{MUST} be provided as \texttt{dmrgscf.h5} files. Old-style \texttt{JobIph} files are not supported.
+\end{framed}
+
+\subsection{Input options for MPS-SI}\label{sec:input-mpssi}
+
+\begin{table}[h]
+  \begin{center}
+    \caption{\label{table:mpssi-keyword}\kwd{\&MPSSI} module keywords not present in the \mol{} \kwd{\&RASSI} module.}
+    \begin{tabular}{l@{\hspace{0.9cm}}l}
+      \toprule
+      keyword & description \\
+      \midrule
+      \multirow{2}{*}{\texttt{QDSC}} &  \multirow{2}{12.2cm}{Read the Hermitian effective Hamiltonian from a preceding QD-SC-NEVPT2 calculation for state mixing in MPS-SI.} \\
+      &\\[\tableoptionskip]
+      \multirow{2}{*}{\texttt{QDPC}} & \multirow{2}{12.2cm}{Same as above, but for the QD-PC-NEVPT2 effective Hamiltonian.}\\
+            &\\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{table}
+\FloatBarrier
+
+\clearpage
+\newpage
+
+\section{The NEVPT2 module}\label{sec:nevpt2}
+
+\begin{framed}
+ \noindent Cite the following papers when performing NEVPT2 calculations within the \hostp\ software suite:
+%  \bibentry{Freitag_JChemTheoryComput_Multireference_2017}
+\begin{enumerate}
+\item Freitag,~L.; Knecht,~S.; Angeli,~C.; Reiher,~M. \emph{J. Chem. Theory Comput.}
+  \textbf{2017}, \emph{13}, 451--459\\ \href{https://doi.org/10.1021/acs.jctc.6b00778}{doi:10.1021/acs.jctc.6b00778}
+\item Angeli,~C.; Cimiraglia,~R.; Malrieu,~J.-P. \emph{J. Chem. Phys.} \textbf{2002},
+  \emph{117}, 9138\\ \href{https://doi.org/10.1063/1.1515317}{doi:10.1063/1.1515317}
+%  \bibentry{Angeli_JChemPhys_nelectron_2002}
+\end{enumerate}
+\end{framed}
+
+NEVPT2 is a second-order perturbation theory with a CAS (or a CAS-like) reference wavefunction originally developed by Angeli et al.~\cite{Angeli_JChemPhys_Introduction_2001,Angeli_ChemPhysLett_Nelectron_2001,Angeli_JChemPhys_nelectron_2002,Angeli_JChemPhys_quasidegenerate_2004} In contrast to CASPT2, it uses a Dyall Hamiltonian\cite{Dyall_JChemPhys_choice_1995} as the zeroth-order Hamiltonian and is therefore inherently free of intruder states and parameters such as the IPEA shift. NEVPT2 exists in two formulations -- the strongly- (SC-) and the partially-contracted NEVPT2 (PC-NEVPT2), which differ in the basis of the first-order wavefunction expansion. The implementation in the NEVPT2 module is based on the original NEVPT2 implementation by Angeli et al.~\cite{Angeli_JChemPhys_nelectron_2002,Angeli_JChemPhys_quasidegenerate_2004}, with the implementation of the \qcm{} DMRG reference wave function and Cholesky decomposition for the two-electron integrals\cite{chimia,Freitag_JChemTheoryComput_Multireference_2017}. For excited states both single-state and multi-state calculations with the QD-NEVPT2 approach\cite{Angeli_JChemPhys_quasidegenerate_2004} are supported.
+
+\subsection{Running NEVPT2}
+
+Prior to running a NEVPT2 calculation, one must obtain a reference wavefunction with the \kwd{RASSCF} or \kwd{DMRGSCF} module and perform an integral transformation with the \kwd{MOTRA} module.
+
+Currently, the implementation supports \emph{only} QCMaquis DMRG reference wavefunctions (support for CASSCF reference wavefunctions will be added in the near future). It is nevertheless possible to run NEVPT2 with a CASSCF reference wavefunction by performing a DMRG-CI calculation with a sufficiently large $m$ value using the CASSCF converged orbitals. For example, an $m$ value of 2000 recovers the exact CASCI energy up to $5\times{}10^{-8}$\,a.\,u. for active spaces of up to 14 orbitals. Listing~\ref{lst:nevpt2} shows an input example for a NEVPT2 calculation, the important keywords are highlighted in \textcolor{green!20!blue}{blue}, and below we will explain the input example in more detail.
+
+\begin{lstlisting}[language=molcas,caption={(\texttt{009.input} in the QCMaquis test subdirectory) Input example for a one-shot NEVPT2 calculation (Singlet \ch{CH2}, 6 electrons in 6 orbitals, RICD)},label=lst:nevpt2]
+&GATEWAY
+  coord
+  3
+  CH2 Triplet coordinates in Angstrom
+  C      0.000000  0.000000  0.000000
+  H      0.000000  0.000000  1.077500
+  H      0.784304  0.000000 -0.738832
+  basis=cc-pVTZ
+  Group=Nosym
+  RICD
+  CDTH=1.0E-7
+&SEWARD
+&DMRGSCF
+  ActiveSpaceOptimizer=QCMaquis
+  DMRGSettings
+      max_bond_dimension=128
+      nsweeps=5
+  EndDMRGSettings
+  OOptimizationSettings
+      Spin=3
+      Inactive=1
+      Ras2=6
+      NActEl=6,0,0
+      NEVPT2Prep
+      EvRDM
+  EndOOptimizationSettings
+&MOTRA
+  Frozen=0
+  CTOnly
+  Kpq
+  HDF5
+&NEVPT2
+\end{lstlisting}
+
+First, one performs a DMRG-SCF calculation with the keywords \kwd{NEVPT2Prep} and (optionally) \kwd{EvRDM}, which enable the evaluation of the 4-RDMs (and, in case of multiple states, also t-3RDMs) required by NEVPT2. If \kwd{EvRDM} is specified, the RDMs are evaluated immediately, otherwise an input file is prepared for separate RDM calculations with QCMaquis (see also Table~\ref{table:nevpt2-keyword}). The latter option is particularly useful for large active spaces, where offloaded evaluation can be performed in a massively parallel manner, which will be explained in detail in Section~\ref{sec:4rdm-distributed}.
+
+\begin{framed}
+ \noindent Note: The computational cost of the RDM evaluation grows as $N^8$ with the number of active orbitals, therefore we strongly recommend to use the distributed RDM evaluation for active spaces larger than 10-11 orbitals described in Section~\ref{sec:4rdm-distributed}.
+\end{framed}
+
+Second, one must perform an integral transformation with the \kwd{MOTRA} module. If no Cholesky decomposition or RICD is used in the calculation, the only mandatory keyword is \kwd{HDF5}, which enables the write-out of the transformed integrals in the HDF5 format required by the \kwd{NEVPT2} module. If Cholesky decomposition is used, one additionally needs to add the keys \kwd{CTOnly} and \kwd{Kpq}.
+
+\begin{framed}
+ \noindent Note: The Cholesky decomposition currently does not support symmetry, and the support for frozen orbitals in \kwd{MOTRA} with Cholesky is untested, hence also the keyword \kwd{Frozen=0} is recommended!
+\end{framed}
+
+Finally, one calls the NEVPT2 module with \kwd{\&NEVPT2}. It has no mandatory options, but options described in Section~\ref{sec:nevpt2-opts} can be specified. If a distributed RDM evaluation is performed, the \kwd{NEVPT2} module must be called in a separate calculation.
+
+\subsection{Options to the \kwd{NEVPT2} module}\label{sec:nevpt2-opts}
+\begin{longtable}{l@{\hspace{0.9cm}}l}
+\caption{\label{table:nevpt2-keyword}NEVPT2 keywords.}
+\\
+  \toprule
+keyword & description \\
+  \midrule
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\toprule
+keyword & description \\
+\midrule
+\endhead
+      \texttt{STATes} &  Number of electronic states to calculate. Default: 1 \\[\tableoptionskip]
+      \multirow{2}{*}{\texttt{NOMS}} &  \multirow{2}{13.2cm}{Omit the QD-NEVPT2 calculation and perform single-state NEVPT2 calculations instead.} \\
+      &\\[\tableoptionskip]
+      \multirow{5}{*}{\texttt{MULT}} & \multirow{5}{13.2cm}{Select specific states to perform QD-NEVPT2 calculation. Followed by a list of whitespace-separated state numbers, preceded by their total amount. Example: \kwd{MULT=3 1 2 4} for states 1, 2, 4 of a preceeding DMRG-SCF calculation of 4 roots (or more). \kwd{MULT=ALL} includes all states and is the default.}\\
+      &\\
+      &\\
+      &\\
+      &\\[\tableoptionskip]
+      \multirow{3}{*}{\texttt{FILE}}&\multirow{3}{13.2cm}{Specify the path to a \kwd{JobIph} or \kwd{.h5} file with the reference wavefunction. By default, the reference wavefunction is read from \kwd{JOBIPH}.}\\
+      &\\
+      &\\[\tableoptionskip]
+      \multirow{9}{*}{\texttt{FROZen}}&\multirow{9}{13.2cm}{Specify the number of frozen orbitals. The number of frozen orbitals may be specified in two ways: if only one number $n$ is specified, then all orbitals from 1 to $n$ are frozen. Otherwise, it is possible to freeze specific orbitals with the \texttt{SELECT} keyword which follows the \texttt{FROZEN} keyword. In this case, the total number of frozen orbitals followed by the space-separated list of frozen orbitals must be entered. Note that if symmetry is used, the orbital numbering for all symmetries is still consecutive, e.\,g. the 1\textsuperscript{st} orbital of symmetry 2 is has the number $m+1$ if there are $m$ orbitals in symmetry 1.}\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\[\tableoptionskip]
+      \multirow{3}{*}{\texttt{NOPC}}&\multirow{3}{13.2cm}{Disable the PC-NEVPT2 calculation. If the option is not present (default), both SC-NEVPT2 and PC-NEVPT2 calculations are performed.}\\
+      &\\
+      &\\[\tableoptionskip]
+      \multirow{5}{*}{\texttt{SKIPk}}&\multirow{5}{13.2cm}{Skip the calculation of Koopmans' matrices. Requires a file named \texttt{nevpt.h5} obtained from a previous calculation in the scratch directory. May be useful to restart a previous crashed calculation if it crashed past the calculation of Koopmans' matrices, and may save some computational time, especially for large active spaces.}\\
+      &\\
+      &\\
+      &\\
+      &\\
+      \cmidrule(rl){1-2}
+      \multicolumn{2}{l}{New options concerning 4-RDM calculations (since \relv)}\\
+      \cmidrule(rl){1-2}
+      \multirow{4}{*}{\texttt{RDMRead}}&\multirow{4}{13.2cm}{Do not calculate the 4-RDM, but rather read it from QCMaquis result files \texttt{\$Project.results$\_$state.X.h5} for state \texttt{X}. Useful if the previous calculation crashed but the 4-RDM evaluation step has succeeded. Do NOT use it if you are using the distributed 4-RDM calculation.}\\
+      &\\
+      &\\
+      &\\[\tableoptionskip]
+      \multirow{8}{*}{\texttt{DISTributedRDM}}&\multirow{8}{13.2cm}{Enable reading the distributed RDMs, calculated separately. This keyword should be followed by another line, which specifies the path to the folder with the calculation results. The 4-RDM will then be read from QCMaquis HDF5 files found in \kwd{$\langle$path$\rangle$/4rdm-scratch.$\langle$state$\rangle$/parts/part-*/}\kwd{
+      \$Project.results$\_$state.$\langle$state$\rangle$.h5}.
+      More about distributed n-RDM evaluation can be found in Section~\ref{sec:4rdm-distributed}: if the scripts presented in this section are used, the path should be specified as \texttt{\$WorkDir}.}\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\
+      &\\
+      \bottomrule
+%    \end{tabular}
+%  \end{center}
+\end{longtable}
+\FloatBarrier
+\subsection{Massively parallel distributed 4-RDM calculations}\label{sec:4rdm-distributed}
+The computational cost of the RDM evaluation grows as $N^8$ with the number of active orbitals, and becomes prohibitively expensive even for moderate active spaces. Therefore we provide an (experimental) python utility \texttt{jobmanager.py} for distributed massively parallel 4-RDM calculations. With distributed 4-RDM calculations, active spaces of up to 22 orbitals can be employed in DMRG-NEVPT2 calculations without any approximation to the 4-RDM.
+
+\texttt{jobmanager.py} splits the evaluation of the 4-RDM $G_{ijklmnop}$ into four-index subblocks with indices $i,j,k,l$. Due to permutational symmetry and the properties of the creation and annihilation operators, $i >= j >= k >= l$ and no more than two indexes are equal (pairwise equality $i=j$ and $k=l$ is allowed). The script prepares input files and, if requested, submits a separate job for each subblock, and merges the subblocks into the full matrix once the jobs are finished. The script is expected to be run on a head node of a distrubuted computing system with a batch system: \href{https://www.ibm.com/support/knowledgecenter/en/SSETD4/product_welcome_platform_lsf.html}{LSF} has been tested, but any batch system which supports the \href{http://www.drmaa.org/}{DRMAA} library, such as Slurm or PBS, should work. If no support for DRMAA is found, the script still may be used to prepare the input files for each subblock, which then may be submitted manually.
+
+Note that the DMRG-SCF/NEVPT2 calculation need not be performed on the same system as the 4-RDM evaluation.
+\subsubsection*{How to run NEVPT2 calculations with distributed 4-RDM evaluation}
+\subsubsection{Prerequisites}
+\begin{itemize}
+ \item Python $>= 2.7.9$ (3.x is also supported)
+ \item (optional) DRMAA library compatible with your batch submission system\\
+ (e.\,g.\ \href{https://github.com/IBMSpectrumComputing/lsf-drmaa}{LSF-DRMAA})
+ \item (optional) \href{https://github.com/drmaa-python/drmaa-python.github.com}{Python DRMAA}
+ \item (optional) GNU Parallel
+\end{itemize}
+ If your system administrator has not set up DRMAA and Python DRMAA, you might need to download and install these libraries yourself. After the installation, the environment variable \kwd{DRMAA\_LIBRARY\_PATH} must be set to the path to \kwd{libdrmaa.so} and, if Python does not find the DRMAA Python binding, also \kwd{PYTHONPATH} to the path of the Python DRMAA library.
+\subsubsection{Workflow}\label{sec:4rdm-workflow}
+\begin{enumerate}
+ \item Run DMRGSCF and MOTRA calculations as shown in e.\,g. Listing~\ref{lst:nevpt2}, but \myemph{omit} the \kwd{\&NEVPT2} keyword. The \kwd{NEVPT2Prep} keyword creates QCMaquis input templates and the MPS checkpoint files required for a later 4-RDM and/or t-3RDM evaluation.
+ \item Copy the \kwd{\$MOLCAS/Tools/distributed-4rdm/prepare\_rdm\_template.sh} script to the MOLCAS scratch directory and run it. The script will create subdirectories named \kwd{4rdm-scratch.$\langle$state$\rangle$} for each state.
+
+ If you wish to perform the 4-RDM evaluation on a different machine (e.\,g.\ a cluster), copy the subdirectory for each state to that machine.
+ If you do not wish to evaluate the 4-RDM for all states, pass the list of desired states as parameters to the \kwd{prepare\_rdm\_template.sh} script. For example,
+ \kwd{./prepare\_rdm\_template.sh \{0..2\}} or \kwd{./prepare\_rdm\_template.sh 0 1 2} will create the scratch directories for states from 0 to 2 (note that QCMaquis starts counting states with 0).
+
+%  \item For each state, create a directory on the machine where the RDM calculation will be performed with subdirectories \kwd{parts} and \kwd{template}. Copy the \kwd{jobmanager.py} script to this directory, and following files and subdirectories from the DMRGSCF/MOTRA scratch directory to the \kwd{template} subdirectory:
+%  \begin{itemize}
+%   \item \kwd{\$MOLCAS\_Project.checkpoint\_state.$\langle$state$\rangle$.0.0.h5}
+%   \item \kwd{FCIDUMP}
+%   \item \kwd{meas-4rdm.$\langle$state$\rangle$.in}
+%   \item \kwd{submit-4rdm.sh} (from \kwd{\$MOLCAS/template-files/distributed-4rdm})
+%  \end{itemize}
+%  \item Change to the \kwd{template} subdirectory and edit the \kwd{submit-4rdm.sh} file. Change the state number (line starting with \kwd{state=}) and the number of processors per job. Rename the \kwd{meas-4rdm.$\langle$state$\rangle$.in} file to \kwd{meas-4rdm-template.in}.
+ \item \textbf{If you have installed and working DRMAA setup:}\\
+  For each state, change to the \kwd{4rdm-scratch.$\langle$state$\rangle$} subdirectory and run\\
+ \kwd{nohup jobmanager.py \&}\\
+ (Login to the machine where you evaluate the 4-RDM before if you wish to run the evaluation on a different machine.) This will create a subdirectory for each batch job (corresponding for each four-index 4-RDM subblock) and submit the jobs. The script will stay in the background until all the jobs have completed.
+ The script also accepts the following job-specific options:
+ \begin{itemize}
+  \item \kwd{-t HH:MM:SS}: set the maximum walltime per job. Default is 24h.
+  \item \kwd{-n NCPU}: run each job in an SMP parallelised fashion and set the number of CPU cores per job. Default is 1 core. For large active spaces, it is recommended to use several cores (e.\,g.\ 16 or 24, or as much as is available on a single node on your cluster).
+ \end{itemize}
+ \textbf{If you do NOT have DRMAA installed and working:}\\
+ Run the \texttt{jobmanager.py} script with the \texttt{-n} option:\\
+ \kwd{jobmanager.py -n}\\
+ This will create subfolders for each 4-RDM block and prepare all the necessary input scripts, but will not submit them to the batch system. Now you may manually submit the scripts from the subfolders \kwd{parts/part-*}.
+
+ \item If you ran the distributed 4-RDM calculation on a different machine, copy the \kwd{4rdm-scratch.$\langle$state$\rangle$} back to \mol{} \kwd{\$WorkDir}.
+ \item Create an input file with the input to the \kwd{\&NEVPT2} module and run it. The keyword \kwd{DISTributedRDM} followed by the path to \kwd{4rdm-scratch.$\langle$state$\rangle$} folders (in our case, \kwd{\$WorkDir}) is \emph{mandatory}.
+\end{enumerate}
+
+\subsubsection{Troubleshooting}
+The \kwd{jobmanager.py} script is experimental, and also batch jobs in queuing systems are prone to crash, therefore we provide a mechanism to identify and restart the crashed batch jobs. The NEVPT2 program will check if the 4-RDM calculation has been finished correctly. If some 4-RDM values are missing, the NEVPT2 program will stop with an error. In this case several options are available:
+\begin{itemize}
+ \item[] \textbf{If DRMAA has been used:}
+ \item If the \kwd{jobmanager.py} finishes without errors, it will produce two files, \kwd{successlist} and \kwd{faillist} with the list of successful and failed batch jobs, respectively. In this case, the failed jobs may be restarted using the restart mode of \kwd{jobmanager.py}, which is invoked with\\
+ \kwd{nohup jobmanager.py -r successlist faillist \&}\label{item:jobm-restart}
+ \item If the \kwd{jobmanager.py} finishes with an error, the \kwd{successlist} and \kwd{faillist} will be either nonexistent or empty. Note that this does NOT necessarily mean that the jobs have failed: in our tests, certain configurations of the queuing system may lead to the crash of the \kwd{jobmanager.py} script after the successful completion of the jobs.\\
+
+ \textbf{If DRMAA has not been used and the script was run with the \texttt{-n} switch:}\\
+ \item In this case the user is advised to check manually the subfolders for each 4-RDM subblock for the existence of \texttt{\$Project.results$\_$state.X.h5} files. The files should exist and the command\\
+ \kwd{h5dump \$Project.results$\_$state.X.h5 | grep fourpt}\\
+ should not yield an empty result -- otherwise the corresponding calculation should be rerun.
+\end{itemize}
+
+\subsubsection{Transition 3-RDM distributed calculations}
+\kwd{jobmanager.py} also supports distributed calculations of t-3RDMs (required for QD-NEVPT2). The split evaluation is similar to that of the 4-RDMs, and Section~\ref{sec:4rdm-workflow} can be followed with the following differences:
+\begin{enumerate}
+ \item The t-3RDM evaluation requires two states instead of one. Run the \\
+ \kwd{prepare\_rdm\_template.sh} script with the \kwd{-3} parameter.
+ \item Launch the \kwd{jobmanager.py} script with the \kwd{-3} parameter.
+\end{enumerate}
+
+\clearpage
+\newpage
+
+\section{\qcm{} Standalone Version}
+
+Section \ref{sec:install-qcm-stand}\ describes in details the installation process for a standalone version of \qcm.
+\begin{framed}
+\noindent Note: If you have installed \qcm{} with the \qcm{}-\mol{} interface, you may skip this Section.
+\end{framed}
+
+% To install \qcm\ as external module of the quantum chemistry software \mol\ proceed to Section \ref{sec:install-qcm-mol}.
+
+% QCMaquis standalone
+
+\subsection{Installation}\label{sec:install-qcm-stand}
+
+\noindent In the following steps \ref{subsubsec:download-stand}-\ref{subsubsec:runtime-stand}\ we describe how to successfully build and install  the \qcm\ software suite in a standalone manner.
+The installation of \qcm\ has been tested for different operating systems and compiler/math libraries environments. Their list can be found in Section \ref{subsec:supportedOS}.
+While other combinations might work equally well they are \emph{not} officially supported.
+
+The following libraries are required and need to be installed manually by the user (but are usually provided by the system package manager)
+\begin{itemize}
+ \item GSL
+ \item HDF5
+ \item SZIP
+ \item Boost
+\end{itemize}
+Additionally, \qcm{} distribution contains a customised version of the ALPS 2.3.0 library, which will be downloaded and installed automatically.
+
+\subsubsection{Download \qcm}\label{subsubsec:download-stand}
+
+As mentioned in Section~\ref{sec:reg}, \qcm{} standalone version may be downloaded from \texttt{\url{https://scine.ethz.ch/download/qcmaquis}}.
+
+\subsubsection{Setting up a build folder}
+
+Extract the downloaded archive \texttt{public.tar.bz2} into a new directory \texttt{\qcmsrc}.
+\noindent Create a build folder \texttt{\qcmbuild} -- note that this folder \emph{does not} necessarily have to be a subfolder
+of \qcmsrc\ -- and change to this new folder:
+\begin{verbatim}
+mkdir /path/to/my-QCMaquis-build && cd /path/to/my-QCMaquis-build
+\end{verbatim}
+
+\subsubsection{Configuration}\label{subsubsec:configure-stand}
+
+\qcm{} supports operating systems, C++ compilers and math libraries as listed in Section~\ref{subsec:supportedOS}. Below we will show the configuration steps for
+the most popular compiler suites GNU (Section \ref{sec:gnu-conf-stand}) and Intel (Section \ref{sec:intel-conf-stand}), respectively.
+How to setup and use a shared-memory OMP installation of \qcm\ is described in Section \ref{sec:parallel-stand}.
+
+\paragraph{Configuration with the GNU compiler suite}\label{sec:gnu-conf-stand}$\;$\\
+
+\noindent To configure \qcm\ with the GNU compiler suite type
+\begin{verbatim}
+CC=gcc CXX=g++ cmake /path/to/my-QCMaquis-src
+\end{verbatim}
+
+\noindent where we assumed that the Intel Math Kernel Library (MKL) is available (recommended option).
+If the MKL libraries are not available \qcm\ will search for other suitable math libraries installed on the operating system. If none are found the configuration step will stop with an appropriate message.
+
+% \paragraph{Configuration with the Intel compiler suite}\label{sec:intel-conf-stand}$\;$\\
+%
+% \noindent To configure \qcm\ with the Intel compiler suite including MKL type
+% \begin{verbatim}
+% FC=ifort CC=icc CXX=icpc cmake -DQCM_standalone=ON /path/to/my-QCMaquis-src
+% \end{verbatim}
+
+\begin{framed}
+ \noindent Note: Intel compiler is currently not supported. Running a binary compiled with Intel compilers may result in segmentation faults. We are currently investigating the issue.
+\end{framed}
+
+\paragraph{Shared-memory OMP parallel configuration}\label{sec:parallel-stand}$\;$\\
+
+By default \qcm\ is built as shared-memory OMP parallelized version which should work with either compiler suite, GNU or Intel.
+
+\vspace{2ex}
+
+In order to exploit the shared-memory OMP parallelization of \qcm\ the user is strongly encouraged to set at runtime the environment
+variable
+\begin{verbatim}
+export OMP_NUM_THREADS=XX
+\end{verbatim}
+where \texttt{XX}\ specifies the number of shared-memory cores to be used. The default (\emph{depending on the operating system!!!}) is to use all available cores.
+
+\subsubsection{Building and installation}\label{subsubsec:build-stand}
+
+After a successful configuration, type
+\begin{verbatim}
+make
+\end{verbatim}
+\noindent or
+\begin{verbatim}
+make -j8
+\end{verbatim}
+to compile \qcm\ (in parallel on 8 cores) and install all its components in the build folder \texttt{\qcmbuild}.
+
+\subsection{Keywords and Options}\label{sec:qcmaquis-kw}
+
+In the following we describe (i) compulsory keywords (Section \ref{sec:compul-qcm}), (ii)
+optional keywords (Section \ref{sec:optional-qcm}) for \qcm\ DMRG calculations as well as (iii)
+keywords for property calculations (Section \ref{sec:prop-qcm}).
+Most of the \qcm\ keywords have default settings that guarantee convergence in the general case and are inserted automatically
+by the host program (\hostp\ in this case). A reasonable choice of default values for optional keywords is given in our
+example \qcm\ input file in Section \ref{sec:input-qcm}.
+
+\begin{framed}
+\noindent\textbf{Note:}\ \textsc{Maquis} has many features beyond quantum chemistry, e.g. related to solid state physics.
+Some keywords listed in the example file in Section \ref{sec:input-qcm} (e.\,g.\ \kwd{LATTICE}, \kwd{lattice\_library} etc.)\ are therefore explained only briefly in the following
+and are not to be changed from the default values (see Listing~\ref{lst:qcm}), if a quantum chemical calculation is desired.
+\end{framed}
+
+\subsubsection{Compulsory keywords}\label{sec:compul-qcm}
+
+The keywords in Tables \ref{tab:standard_kw} and \ref{tab:standard_kw_auto} have to be set for every DMRG calculation since they may crucially affect the accuracy of the final result.
+Their choice depends for example on the molecule under consideration
+(i.\,e. whether you expect strong static electron correlation and/or dynamical correlation to play a major role),
+the nature of the reference orbitals (Hartree-Fock orbitals, natural orbitals of some kind, \ldots), the size of the
+active space, and many other aspects.
+
+
+% \noindent Some of the compulsory keywords listed in Table \ref{standard_kw}\ are indeed automatically set if you run a \qcm\ DMRG calculation through the \qcm\ host program driver which is the case for \mol-\qcm\ DMRG
+% calculations. In this case skip the upper part of Table \ref{standard_kw}\ and proceed immediately to the lower part
+% marked by ``{\color{red}{Keywords \emph{NOT} set by the host program \mol}}".
+
+\begin{table}
+  \caption{\label{tab:standard_kw_auto}Compulsory \qcm{} keywords automatically set by the \qcm{}-\mol{} interface.}
+  \begin{tabular}{p{3.6cm}l}
+  \toprule
+keyword & description \\
+  \midrule
+
+\texttt{nelec} & Total number of electrons. \\[\tableoptionskip]
+\multirow{3}{*}{\texttt{irrep}} & \multirow{3}{12cm}{Irreducible representation of the point group symmetry of the target state. \textbf{Note:} Counting starts with 0 which has to be the totally symmetric representation.} \\
+& \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{spin}} & \multirow{2}{12cm}{Total spin ($2\times S$) of the target state, for example:\\
+\texttt{spin=0} (singlet), \texttt{spin=1} (doublet), \texttt{spin=2} (triplet), \ldots}\\
+& \\[\tableoptionskip]
+\texttt{L} & Length of lattice = number of orbitals in the active space. \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{integral\_file}} & \multirow{2}{12cm}{Path and filename of the integral file, for example\\
+\texttt{integral\_file = /path/to/file/FCIDUMP}} \\
+& \\[\tableoptionskip]
+\texttt{chkpfile} & Path and name of the folder in which the MPS is stored. \\[\tableoptionskip]
+\texttt{resultfile} & Path and filename of the result file. \\[\tableoptionskip]
+\multirow{3}{*}{\texttt{n\_ortho\_states}} &\multirow{3}{12cm}{If an excited state calculation is desired, the number of states the current wave function is to be orthogonalized against shall be specified here.} \\
+& \\
+& \\[\tableoptionskip]
+\multirow{3}{*}{\texttt{ortho\_states}} & \multirow{3}{12cm}{Path(s) and filename(s) of the MPS checkpoint file(s) that store the lower lying states to which the current MPS shall be orthogonal to.} \\
+& \\
+& \\[\tableoptionskip]
+\multirow{9}{*}{\texttt{init\_state}} & \multirow{9}{12cm}{Possible options are \texttt{default}, \texttt{thin} and \texttt{hf}.
+The \texttt{default} and \texttt{thin} initializations fill the initial MPS with random numbers, the difference being
+that a singular value decomposition reduces the bond dimension to \texttt{init\_bond\_dimension} in the case of
+\texttt{thin}. Usage of \texttt{hf} generates an MPS consisting of only the determinant defined on the \texttt{hf\_occ}
+card. Note that the CI-DEAS procedure \cite{Legeza2003,fiedler,interface} (as invoked by \texttt{dmrginit.py}, see Section
+\ref{sec:pytools-qcm}) behaves like a restart from the newly generated CI-DEAS MPS.\\
+% {\textbf{default in \mol: \texttt{init\_state = "default"}}}
+}\\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{7}{*}{\begin{minipage}{5cm}
+                  \texttt{%
+                  LATTICE\\
+                  lattice\_library\\
+                  MODEL\\
+                  model\_library\\}
+                \end{minipage}}
+ & \multirow{3}{11cm}{These options set the Hamiltonian and the lattice type in \qcm{} calculations. For a quantum chemical calculation, these must be set to (see also Listing~\ref{lst:qcm})}\\
+ & \\
+ & \\
+  & \texttt{LATTICE = "orbitals"}\\
+  & \texttt{lattice\_library = "coded"}\\
+  & \texttt{MODEL = "quantum\_chemistry"}\\
+  & \texttt{model\_library = "coded"}\\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+\begin{framed}
+\noindent\textbf{Note:}\ We strongly encourage any new user of \qcm\ to carefully read first Ref.\ \citenum{Keller_CHIMIA_Determining_2014}\ which gives a detailed introduction to
+DMRG calculations in quantum chemistry. Further quantum chemical DMRG sample calculations starting from different computational setups are discussed for
+example in Refs. \cite{interface,ru-dmrg,fde-dmrg,srdft-dmrg}.
+\end{framed}
+\subsubsection{Optional keywords}\label{sec:optional-qcm}
+
+The keywords summarized in Table \ref{tab:advanced_kw} may be exploited by the more experienced user but can be safely
+ignored by those who just want to get started. They may affect the convergence and accuracy of the final result, though.
+For the inexperienced user however, we advise to not change these settings and accept the default values provided by \qcm.
+
+% \vspace{3ex}
+
+\begin{longtable}{ll}
+\caption{Optional keywords for \qcm\ calculations.}\label{tab:advanced_kw}
+\\
+  \toprule
+keyword & description \\
+  \midrule
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\toprule
+keyword & description \\
+\midrule
+\endhead
+
+\multirow{6}{*}{\texttt{orbital\_order}} & \multirow{6}{12cm}{Manual ordering of the orbitals along the one dimensional lattice. The order has to be entered as a string of comma separated orbital numbers. We recommend the Fiedler ordering based on the mutual information \cite{interface,fiedler} which can be obtained by means of the python script \texttt{fiedler.py} (see Section \ref{sec:pytools-qcm}).\\
+	\textbf{default}: \texttt{orbital\_order = "1,2,3,4,5,6,\ldots"}} \\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{4}{*}{\texttt{sweep\_bond\_dimensions}} & \multirow{4}{12cm}{Sets \texttt{max\_bond\_dimension}\ for each sweep separately.\\
+	\emph{Note}: Replaces \texttt{max\_bond\_dimension} which does \emph{NOT} need to be specified in this case.\\
+	Example (\texttt{nsweeps=3}): \texttt{sweep\_bond\_dimensions}=``300,400,500"} \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{init\_bond\_dimension}} & \multirow{2}{12cm}{Adjusts the maximal bond dimension of the MPS produced by the
+CI-DEAS procedure \cite{Legeza2003,fiedler,interface}.} \\
+& \\[\tableoptionskip]
+\multirow{7}{*}{\texttt{conv\_thresh}} &\multirow{7}{12cm}{Sets the energy convergence threshold (in Hartree). If the lowest energy from the previous sweep differs from the lowest energy of the current sweep by less than \texttt{conv\_thresh}, the DMRG calculation stops.\\
+		\emph{Note}: Requires to set also \texttt{truncation\_final} and \texttt{ietl\_jcd\_tol}.\\
+	{Numerical format}: \texttt{xe-y} with \texttt{x}\ and \texttt{y} being integers. \\
+	Example: \texttt{conv\_thresh = 1e-6}.}\\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{3}{*}{\texttt{ietl\_jcd\_tol}} & \multirow{3}{12cm}{Convergence threshold for the Jacobi-Davidson diagonalization.\\
+	{Numerical format}: \texttt{xe-y} with \texttt{x}\ and \texttt{y} being integers. \\
+	Example: \texttt{ietl\_jcd\_tol = 1e-6}.} \\
+& \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{ietl\_jcd\_maxiter}} & \multirow{2}{12cm}{Maximum number of iterations in the Jacobi-Davidson diagonalization.} \\
+& \\ \pagebreak
+\multirow{6}{*}{\texttt{truncation\_initial}} & \multirow{6}{12cm}{If during the \texttt{ngrowsweeps}, the sum of the discarded singular values for $m$ retained states is lower than the value defined here, more block states will be discarded until the discarded sum increases to \texttt{truncation\_initial}.\\
+		{Numerical format}: \texttt{xe-y} with \texttt{x}\ and \texttt{y} being integers. \\
+		Example: \texttt{truncation\_initial = 1e-6}.}\\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{6}{*}{\texttt{truncation\_final}} & \multirow{6}{12cm}{If during the \texttt{nmainsweeps}, the sum of the discarded singular values for $m$ retained states is lower than the value defined here, more block states will be discarded until the discarded sum increases to \texttt{truncation\_final}.\\
+	{Numerical format}: \texttt{xe-y} with \texttt{x}\ and \texttt{y} being integers. \\
+	Example: \texttt{truncation\_final = 1e-6}.}\\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{measure\_each}} &\multirow{2}{12cm}{Tells the program to compute the expectation values every\\$2\ \times$
+	\texttt{measure\_each} sweeps.} \\
+& \\[\tableoptionskip]
+\multirow{10}{*}{\texttt{symmetry}} & \multirow{10}{11cm}{Defines the total symmetry group. Default is the combined spin- (SU2) and point
+symmetry group (PG) \texttt{su2u1pg}, where the \texttt{pg}-suffix should be omitted for better performance if the molecule is C1-symmetric.
+For test purposes, it is possible to switch off spin-adaptation, again with or without point group symmetry: \texttt{2u1(pg)} .
+In the latter case the keywords \texttt{spin} and \texttt{nelec} (see Section \ref{sec:compul-qcm}) have no meaning.
+Instead \texttt{u1\_total\_charge1} and \texttt{u1\_total\_charge2} corresponding to the number of up and down electrons have to be specified.} \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{chkp\_each}} & \multirow{2}{11cm}{Tells the program to update the checkpoint file every\\ $2\ \times$
+\texttt{chkp\_each} sweeps.} \\
+& \\[\tableoptionskip]
+\multirow{9}{*}{\texttt{hf\_occ}} & \multirow{9}{11cm}{Occupation of the starting orbitals (e.g. Hartree-Fock occupation) to be
+entered as a comma separated string of occupation aliases. The aliases are defined as follows: 4~=~full, 3~=~up,
+2~=~down, 1~=~empty. This information has to be entered in case of \texttt{hf} as \texttt{init\_state} and for the
+CI-DEAS procedure \cite{Legeza2003,fiedler,interface} as invoked by \texttt{dmrginit.py}.\\
+Example: \texttt{hf\_occ = "4,4,4,2,2,1"}\ for a CAS(8,6) triplet state setup where the unpaired electrons are ``located"
+in orbital \# 4 and \# 5.}\\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{nmainsweeps}} & \multirow{2}{11cm}{Number of sweeps in which \texttt{truncation\_final} is used in the singular value decomposition.} \\
+& \\[\tableoptionskip]
+\multirow{2}{*}{\texttt{ngrowsweeps}} &\multirow{2}{11cm}{Number of sweeps in which \texttt{truncation\_initial} is used in the singular value decomposition.}\\
+& \\[\tableoptionskip]
+\texttt{storagedir} &Scratch directory for temporary files.\\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Keywords for expectation value calculations}\label{sec:prop-qcm}
+
+\qcm\ can (in principle) compute expectation values for any one- or two-particle operator that can be formulated in
+second quantization. Table \ref{tab:expval}\ comprises a list of the available property keywords available in \qcm.
+% For further updates/other properties please contact \href{mailto:dmrg@phys.chem.ethz.ch}{dmrg@phys.chem.ethz.ch}.
+
+The one-particle reduced density matrix as well as the one-particle spin-density matrix are implicitly computed from the
+expectation values of some of the operators contained in \texttt{MEASURE[ChemEntropy]}.
+
+If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be transformed into 2U1 group with the \texttt{mps\_transform(\_pg)} tool (see Section~\ref{sec:tools-qcm})
+
+\begin{longtable}{ll}
+ \caption{\label{tab:expval}Expectation value calculations available in the release version of \qcm.}
+\\
+  \toprule
+keyword & description \\
+  \midrule
+\endfirsthead
+
+\multicolumn{2}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\toprule
+keyword & description \\
+\midrule
+\endhead
+% \begin{tabular}{p{5.6cm}l}
+
+\multirow{3}{*}{\texttt{MEASURE[ChemEntropy]}} & \multirow{3}{11cm}{All expectation values over the operators required to
+calculate the mutual information (as specified in Ref.~\cite{entanglement}) will be computed. Available only for SU2 symmetry.} \\
+ & \\
+ & \\[\tableoptionskip]
+\multirow{3}{*}{\texttt{MEASURE[1rdm]}} & \multirow{3}{11cm}{Computes the one-particle reduced density matrix, without the additional correlators
+contained in the \texttt{ChemEntropy} measurement.}\\
+ & \\
+ & \\[\tableoptionskip]
+\multirow{10}{*}{\begin{minipage}{5cm}
+                 \texttt{MEASURE[2rdm]}\\
+                 \texttt{MEASURE[3rdm]}\\
+                 \texttt{MEASURE[4rdm]}\\
+                \end{minipage}
+                }& \multirow{10}{11cm}{Computes the two-particle, three-particle and four-particle reduced density matrix, respectively. In case of 4-RDM, \texttt{MEASURE[4rdm]="p4:p3:p1:p2@\textit{l,k,i,j}"} allows to compute only a 4-index sub-block of the 4-RDM with the indices \texttt{\textit{i,j,k,l}}. This functionality is used in the distributed RDM calculations described in Section~\ref{sec:4rdm-distributed}. Analogously, for 3-RDM a two-index subblock may be calculated with \texttt{MEASURE[3rdm]="p1:p2@\textit{j,i}"}.\\ 3-RDM and 4-RDM calculations are available only in 2U1(pg) symmetry.}\\
+& \\
+& \\
+&\\
+&\\
+&\\
+&\\
+&\\
+&\\
+&\\[\tableoptionskip]
+\multirow{6}{*}{\begin{minipage}{5.6cm}
+%                  \texttt{MEASURE[trans1rdm]="\textit{chk}"}\\ %% trans1rdm_aa, _bb, _ab, _ba ??
+                 \texttt{MEASURE[trans2rdm]="\textit{chk}"}\\
+                 \texttt{MEASURE[trans3rdm]="\textit{chk}"}\\
+                \end{minipage}} & \multirow{6}{11cm}{Computes the transition two- or three-particle reduced density matrix with the current state and the state specified in the \texttt{\textit{chk}} checkpoint file. For t-3RDM calculations, two-index subblocks can be calculated with \texttt{MEASURE[trans3rdm]="\textit{chk};p1:p2@\textit{j,i}"}. Available only for 2U1(pg) symmetry.}\\
+ & \\
+ & \\
+ & \\
+ & \\
+ & \\ \pagebreak
+\multirow{4}{*}{\texttt{MEASURE\_LOCAL[\textit{name}]="\textit{op}"}} &
+            \multirow{4}{11cm}{Computes $\langle \psi | op_i | \psi \rangle, \, i = 1 \ldots L$. \texttt{Nup}, \texttt{Ndown} and \texttt{Nup*Ndown}
+            are meaningful choices for \textit{op}. Available for \texttt{2u1(pg) only.}\\
+            \emph{Note}: \texttt{\textit{name}}\ defines the name under which the expectation values are stored on the \texttt{resultfile}.}\\
+ & \\
+ & \\
+ & \\[\tableoptionskip]
+\multirow{8}{5.6cm}{\texttt{MEASURE\_HALF}\texttt{\_CORRELATIONS} \texttt{[\textit{name}]="\textit{op$_1$:op$_2$}"}} &
+            \multirow{8}{11cm}{Computes $\langle \psi | op_{1i} op_{2j}| \psi \rangle, \, i = 1 \ldots L, j=i+1 \ldots L$.
+            \texttt{Nup}, \texttt{Ndown}, \texttt{Nup*Ndown}, \texttt{cdag\_up}, \texttt{cdag\_down}, \texttt{c\_up}, \texttt{c\_down},
+            \texttt{cdag\_up*Ndown},
+            \texttt{c\_up*Ndown},
+            \texttt{cdag\_down*Nup},
+            \texttt{c\_down*Nup},
+            \texttt{cdag\_up*cdag\_down},
+            \texttt{c\_up*c\_down},
+            \texttt{cdag\_up*c\_down},
+            and \texttt{cdag\_down*c\_up},
+            as \textit{op$_1$} and \textit{op$_2$} are recognized by the program. Available for \texttt{2u1(pg)} only.\\
+            \emph{Note}: \texttt{\textit{name}}\ defines the name under which the expectation values are stored on the \texttt{resultfile}.}\\
+%\multirow{2}{*}{= "\textit{op$_1$:op$_2$}"}} & \\
+ & \\
+ & \\
+ & \\
+ & \\
+ & \\
+ & \\
+ & \\
+\bottomrule
+\end{longtable}
+\FloatBarrier
+
+\subsection{QCMaquis input example}\label{sec:input-qcm}
+
+Listing~\ref{lst:qcm} provides an input example for a DMRG-CASCI calculation. It assumes that an integral file \texttt{FCIDUMP} has been generated and placed in the same directory with the input file. The mandatory keywords are indicated in red, and the optional keywords in blue. The \texttt{FCIDUMP} for this particular example has been generated by the \mol-\qcm{} interface with the \texttt{001.input} input file from the \mol-\qcm{} test directory.
+
+\begin{lstlisting}[language=qcmaquis,caption={Input example for a DMRG-CASCI(8,8) standalone \qcm{} calculation},label=lst:qcm]
+ //active-space dependent parameters
+L     = 8
+nelec = 8
+// target symmetry (spin and spatial) of the wave function:
+// 2*spin = 0 (singlet) + totally symmetric point group irrep
+spin  = 0
+irrep = 0
+//parameters to control the actual DMRG calculation
+nsweeps = 8
+max_bond_dimension = 256
+conv_thresh = 1e-6
+// initialization procedure
+init_state = 'default'
+// technical parameters
+symmetry = 'su2u1pg'
+integral_cutoff = 1e-40
+truncation_initial = 1e-50
+truncation_final = 1e-7
+chkpfile = 'chkp.h5'
+resultfile = 'result.h5'
+integral_file = "FCIDUMP"
+storagedir = '/scratch/$USER/boundaries'
+LATTICE = "orbitals"
+lattice_library = "coded"
+MODEL = "quantum_chemistry"
+model_library = "coded"
+//all expectation value calculations required for entropy measures
+MEASURE[ChemEntropy]
+\end{lstlisting}
+
+
+%\clearpage
+\clearpage
+\newpage
+\section{Additional Considerations}
+
+
+\subsection{Files required and written by \qcm}\label{sec:file-req-qcm}
+
+\qcm\ requires only two files to start a calculation:
+\begin{enumerate}
+ \item an input file, see Listing~\ref{lst:qcm} for example
+ \item an integral file in the \texttt{FCIDUMP} format as described in Ref. \citenum{fcidump}.
+\end{enumerate}
+
+When used with the \qcm{}-\mol{} interface, both files are produced by the interface from the \mol{} input.
+
+Besides standard output, \qcm\ produces two types of files:
+\begin{enumerate}
+ \item a HDF5 \emph{result file} in which all information on, e.g. the energies and expectation values is stored. The file name is specified as the \kwd{resultfile} option in \qcm{} input file. In \qcm{}-\mol{} calculations, the result files are named \texttt{\$Project.result\_state.}(state\#)\texttt{.h5}, and are stored in the same directory as the \mol{} input file. Note that state numbering begins with 0.
+ \item a \emph{checkpoint folder} which contains the matrix product state (MPS) wave function. The checkpoint folder name is controlled with the \kwd{chkpfile} option in \qcm{} input file, and In \qcm{}-\mol{} calculations, the checkpoint folders are named \texttt{\$Project.checkpoint\_state.}(state\#)\texttt{.h5}. The checkpoint is required for a later restart of the calculation, while the tools and the analysis scripts
+described in Sections \ref{sec:tools-qcm} and \ref{sec:pytools-qcm}, respectively, require either a \texttt{result-file} or a
+\texttt{checkpoint-folder} or both.
+\end{enumerate}
+
+\subsection{Typical workflow for a standalone QCMaquis DMRG calculation}\label{sec:workflow-qcm}
+The usual workflow to set up, run and analyze a DMRG calculation proceeds as follows:
+\begin{itemize}
+   \item prepare an FCIDUMP integral file using the \mol-\qcm\ host
+   program driver \cite{interface}) starting from a set of previously computed reference orbitals
+   \item prepare an input file \texttt{dmrg-input} starting for example from the template input file provided in Listing~\ref{lst:qcm} and adjust all molecular system and wave function specific parameters (for example \texttt{nelec, spin,
+   irrep, L, \ldots}, see Sections \ref{sec:compul-qcm}-\ref{sec:prop-qcm} for a list of all compulsory and optional input arguments)
+   \item run the DMRG calculation with\\
+\texttt{dmrg dmrg-input (| tee out)}
+   \item compute expectation values with\\
+\texttt{dmrg\_meas dmrg-input}
+   \item analyze the results using the \textsc{Python} tools provided with the \qcm\ package (see Sections \ref{sec:tools-qcm}\ and
+   \ref{sec:pytools-qcm}, respectively, for a list of utility programs and scripts)
+\end{itemize}
+
+\subsection{Memory management and memory requirements}\label{sec:memory-qcm}
+
+Note that if you run a \mol-\qcm\ DMRG calculation, the memory consumption and memory allocation
+of \qcm\ is entirely \emph{disconnected}\ from that of \mol. This means that the maximum memory specified within \mol{} (e.\,g.\ with the \texttt{MOLCAS\_MEM} environment variable) has no influence on the \qcm{} memory usage. For DMRG-SCF calculations, the \mol{} memory usage may be kept low (i.\,e. at around 4 GB regardless of the size of the active space), since CI vector expansions (which grow roughly factorially with the number of electrons and $N_\text{act}$) need not be stored in memory anymore. On the other hand, the calculation of the reduced two-particle density matrix is quite memory-intensive with the current implementation: for a 20 orbital active space it currently requires $\approx$16\,GB of memory, and an active space of 72 orbitals requires about 900\,GB of memory. (Theoretically, the memory requirement scales as $N_\text{act}^4$, but with a large prefactor). Note that in a QCMaquis standalone run, the memory problem may be alleviated by running \texttt{dmrg\_meas} on a different machine.
+
+% \subsection{\qcm\ tools}\label{sec:tools-qcm}
+%
+% \qcm\ comes with several tools that allow for example further manipulation of the MPS or to acquire additional wave function analysis information.
+% The tools \texttt{det2mps\_"symmetry"}, \texttt{mps2ci} and \texttt{mps\_transform(\_"pg")} will be briefly described in the following.
+% These tools are provided in the \texttt{\molbuild/qcmaquis/bin} folder.
+% \begin{table}[h]
+%   \caption{Overview of \qcm\ tools.}
+% \begin{tabular}{ll}
+%       \toprule
+%       {tool} & {description} \\
+%       \midrule
+%
+%                         \multirow{6}{*}{\texttt{mps\_transform(\_pg)}} & \multirow{6}{11cm}{This tool allows for a transformation of an \texttt{su2u1(pg)} MPS wave function to \texttt{2u1(pg)} symmetry.\\
+%                         	\emph{Command line}:\\ \texttt{mps\_transform(\_pg) chkpfile}\\
+%                         	\emph{Note}: for an \texttt{su2u1(pg)} MPS with S\ $ > 0$\  \texttt{2u1(pg)} MPSs for all S$_z$ components are generated.}\\
+%                         & \\
+%                         & \\
+%                         & \\
+%                         & \\
+%                         & \\
+%                         \cmidrule(rl){1-2}
+%       \multirow{14}{*}{\texttt{det2mps\_{symmetry}}} & \multirow{14}{11cm}{This tool generates determinants based on the
+%       CI-DEAS procedure \cite{Legeza2003,fiedler} and inserts them in an MPS from which a new DMRG calculation can be started. Starting from such an MPS is likely to  improve convergence behaviour and is less prone to get stuck in local minima. The current implementation is described in Ref. \cite{interface}. The number of determinants will be chosen such that the maximal bond order at any site does not exceed the value set in \texttt{init\_bond\_dimension}. The new MPS
+%       will be stored in the checkpoint folder specified in \texttt{chkpfile}.\\
+%       \emph{Command line}:\\ \texttt{det2mps\_"symmetry" dmrg-input} \\\emph{Note}:  "\texttt{symmetry}" must equal the total symmetry specified in the input file \texttt{dmrg-input}.} \\
+%       & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%      & \\
+%       \cmidrule(rl){1-2}
+%            \multirow{6}{*}{\texttt{mps\_overlap\_{symmetry}(\_pg)}} & \multirow{6}{11cm}{This tool calculates the overlap
+%            	between two MPS $\Theta_\mathrm{1}$\ and $\Theta_\mathrm{2}$, respectively, according to $\langle \Theta_\mathrm{1} | \Theta_\mathrm{2} \rangle $.\\ \emph{Command line}:\\
+%            	\texttt{mps\_overlap\_"{symmetry}"(\_pg) chkpfile\_1 chkpfile\_2}\\
+%            	\emph{Note}:  "\texttt{symmetry}" must equal the full symmetry specified in the input file \texttt{dmrg-input}.} \\
+%            & \\
+%            & \\
+%            & \\
+%            & \\
+%            & \\
+%             \cmidrule(rl){1-2}
+% \multirow{11}{*}{\texttt{mps2ci\_2u1(pg)}} & \multirow{11}{11cm}{Given a text file \texttt{determant\_list.txt}\ containing a list of determinant strings, this tool
+% 					  calculates the CI-coefficients of the respective determinants
+% 					  \cite{determinants}. The determinant strings have to encode the occupation of the orbitals as described for the \texttt{hf\_occ} keyword (4~=~full, 3~=~up, 2~=~down, 1~=~empty).\\
+% 					  \emph{Command line}:\\ \texttt{mps2ci\_2u1(pg) chkpfile determinant\_list.txt}\\
+% 					  \emph{Note}: with the conversion tool \texttt{mps\_transform(\_pg)} this analysis becomes possible also for MPS of the full symmetry \texttt{su2u1(pg)}.}\\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%                                                & \\
+%       \bottomrule
+% \end{tabular}
+% \end{table}
+% \FloatBarrier
+\subsection{\qcm\ \text{python} scripts for wave function analysis and visualization}\label{sec:pytools-qcm}
+
+The python scripts of \qcm\ are helpful to analyze and visualize the results of a DMRG calculation. Their usage should be evident from the documentation strings in the \textsc{Python} files.
+
+The only script currently supported, \texttt{mutinf.py} is described below. Old scripts described in the previous versions of the manual have been moved to the\\ \kwd{dmrg/python/legacy} subdirectory, are deprecated and require Python 2.
+%%% Commented out the documentation of old scripts until they get ported to Python 3
+% However, those that are most frequently used will be briefly explained here. All scripts except \texttt{dmrginit.py}\ take the \qcm\ HDF5 result file as input. They are located in the folder\\
+% \texttt{\$MOLCAS/qcmaquis/lib/python/pyeval}.
+\begin{longtable}{ll}
+  \caption{Overview of \qcm\ \textsc{Python} analysis and visualization scripts.}\\
+      \toprule
+      {script} & {description} \\
+      \midrule
+            \endfirsthead
+            \multicolumn{2}{c}%
+            {{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+            \toprule
+            script & description \\
+            \midrule
+            \endhead
+%                   \multirow{5}{*}{\texttt{sweeps.py}} & \multirow{5}{11cm}{Plots the energy for each microiteration.\\
+%                   	\emph{Command line}:\\ \texttt{sweeps.py resultfile}\\
+%                   	\emph{Note}: use this tool to check the convergence wrt the number of sweeps.} \\
+%                   & \\
+%                   & \\
+%                   & \\
+%                   & \\
+%                   \cmidrule(rl){1-2}
+%       \multirow{11}{*}{\texttt{dmrginit.py}} & \multirow{11}{11cm}{Starts a \qcm\ DMRG calculation with \texttt{max\_bond\_dimension =
+%       200} and \texttt{nsweeps = 2}, measures the entropy information  \cite{entropy, entanglement} from this unconverged calculation and based on this, generates a new MPS with the CI-DEAS procedure according to all settings specified in the input file \texttt{dmrg-input}. We recommend to use this script for the preparation of calculations for active spaces that are larger than those that can be handled with traditional CAS methods.\\
+%        \emph{Command line}:\\ \texttt{dmrginit.py dmrg-input}
+%        } \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       & \\
+%       \cmidrule(rl){1-2}
+%             \multirow{10}{*}{\texttt{fiedler.py}} & \multirow{10}{11cm}{Optimizes the ordering based on entropy information as proposed in Ref. \citenum{fiedler}. The current implementation is described in Ref. \citenum{interface}. The ordering ensures that highly entangled orbitals are close to each other in the one dimensional lattice. The first ordering in the output ignores the point group symmetry of the orbitals, while the second version orders the orbitals within each irreducible representation and then reorders these symmetry blocks.\\
+%             	\emph{Command line}:\\ \texttt{fiedler.py resultfile}\\
+%             	\emph{Note}: we recommend to use the second option.} \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             & \\
+%             \cmidrule(rl){1-2}
+%                                                 \multirow{4}{*}{\texttt{input.py}} & \multirow{4}{11cm}{This script recovers the complete \qcm\ input file \texttt{dmrg-input} from a given \texttt{resultfile}.\\
+%                                                 	\emph{Command line}:\\ \texttt{input.py resultfile}}\\
+%                                                 & \\
+%                                                 & \\
+%                                                 &\\
+%                                                 \cmidrule(rl){1-2}
+      \multirow{9}{*}{\texttt{mutinf.py}} & \multirow{9}{11cm}{Produces mutual information plots \cite{entanglement}\ given that an expectation value calculation for \texttt{MEASURE[ChemEntropy]}\ has been performed.\\
+      \emph{Usage:} \texttt{mutinf.py resultfile}\\
+      \emph{Note}: if orbital images (in .png format) named  1.png, 2.png, \ldots, L.png (with L being the number of active orbitals) are present in the same folder where \texttt{mutinf.py}\ is executed, they can be added to the mutual information plot by providing the optional argument \texttt{-i}  to \texttt{mutinf.py}.}\\
+      & \\
+      & \\
+      & \\
+      & \\
+      & \\
+      & \\
+      & \\
+      & \\
+      \bottomrule
+\end{longtable}
+
+\clearpage
+\newpage
+
+\bibliography{qcmaquis_manual}
+
+\end{document}

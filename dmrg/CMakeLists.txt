@@ -58,9 +58,10 @@ option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
 
-
-option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
+option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
+
+option (BUILD_MANUAL "Enable pdf manual building. Requires pdflatex" OFF)
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
 option(TESTS      "Build and run tests" OFF)
 
@@ -77,6 +78,13 @@ if (BUILD_OPENMOLCAS_INTERFACE)
 endif()
 
 set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas")
+
+# QCMaquis manual
+if (BUILD_MANUAL)
+    find_package(LATEX)
+    set (DOC_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/share/doc/qcmaquis CACHE PATH "QCMaquis documentation path" )
+    add_subdirectory(doc)
+endif()
 
 ######################################################################
 # How to build
@@ -390,5 +398,5 @@ install(FILES
 
 install(DIRECTORY lib/python DESTINATION lib  COMPONENT python
         USE_SOURCE_PERMISSIONS
-        FILES_MATCHING PATTERN "*.py" PATTERN "*.pyc"
+        FILES_MATCHING PATTERN "*.py" PATTERN "*.pyc" EXCLUDE
         PATTERN ".svn" EXCLUDE PATTERN "CVS" EXCLUDE)
