@@ -25,9 +25,9 @@ if("${BLAS_LAPACK_SELECTOR}" MATCHES "mkl_sequential" OR "${BLAS_LAPACK_SELECTOR
         set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib/intel64)
         # Fix for Ubuntu 20.04 where standard MKL installation does not set MKLROOT and the libraries are
         # found in /usr/lib/x86_64-linux-gnu
-        if (NOT EXISTS $ENV{MKLROOT}/lib/intel64)
+        if (NOT EXISTS ${MAQUISLapack_LIB_DIRS})
             set(MAQUISLapack_LIB_DIRS $ENV{MKLROOT}/lib/x86_64-linux-gnu)
-            if (NOT EXISTS $ENV{MKLROOT}/lib/intel64)
+            if (NOT EXISTS ${MAQUISLapack_LIB_DIRS})
                 message(FATAL_ERROR "Could not determine path to MKL libraries. Did you set MKLROOT environment variable correctly?")
             endif()
         endif()
