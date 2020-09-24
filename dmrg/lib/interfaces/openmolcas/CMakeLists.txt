@@ -1,6 +1,6 @@
 if(NOT CMAKE_Fortran_MODULE_DIRECTORY)
     set(CMAKE_Fortran_MODULE_DIRECTORY
-        ${PROJECT_BINARY_DIR}/mod)
+        ${PROJECT_BINARY_DIR}/share/qcmaquis/fortran_mod)
 endif()
 
 include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
@@ -55,7 +55,7 @@ set_target_properties(qcmaquis-hdf5-interface PROPERTIES Fortran_MODULE_DIRECTOR
 install(TARGETS qcmaquis-driver EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
 install(TARGETS qcmaquis-hdf5-interface EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
 install(PROGRAMS tools/qcm_checkpoint_rename.py DESTINATION bin COMPONENT tools)
-install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY} DESTINATION .)
+install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY} DESTINATION share/qcmaquis)
 
 message(STATUS "${PROJECT_BINARY_DIR}")
 export(TARGETS qcmaquis-driver APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
