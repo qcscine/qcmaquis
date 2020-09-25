@@ -92,21 +92,6 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   endif(APPLE)
 
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "openblas")
-set(MAQUISLapack_LIB_DIRS ${OPENBLASROOT}/lib)
-set(MAQUISLapack_INCLUDE_DIRS ${OPENBLASROOT}/include)
-
-if (APPLE)
-    set(MAQUISLapack_LIBRARIES "${MAQUISLapack_LIB_DIRS}/libopenblas.dylib")
-else(APPLE)
-    set(MAQUISLapack_LIBRARIES "${MAQUISLapack_LIB_DIRS}/libopenblas.so")
-endif(APPLE)
-## For some reason find_library IGNORES NO_DEFAULT_PATH and includes a wrong path, so we will not use it
-# find_library(MAQUISLapack_LIBRARIES NAMES openblas PATHS ${MAQUISLapack_LIB_DIRS}
-#              NO_DEFAULT_PATH
-#              NO_CMAKE_PATH
-#              NO_CMAKE_FIND_ROOT_PATH
-#              NO_SYSTEM_ENVIRONMENT_PATH
-#              NO_CMAKE_SYSTEM_PATH)
 
   if (OPENBLASROOT STREQUAL "")
     set (OPENBLASROOT $ENV{OPENBLASROOT} CACHE PATH "OpenBLAS root directory." FORCE)
@@ -118,6 +103,9 @@ endif(APPLE)
         message ("-- OPENBLASROOT = ${OPENBLASROOT}")
     endif ()
   endif ()
+
+  find_library(MAQUISLapack_LIBRARIES NAMES openblas PATHS ${OPENBLASROOT} PATH_SUFFIXES lib lib64
+                NO_DEFAULT_PATH)
 
   message(STATUS "LAPACK 64-bit integers:" ${LAPACK_64_BIT})
   # check the 64-bit version of OpenBLAS

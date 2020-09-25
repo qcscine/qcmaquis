@@ -3,7 +3,7 @@ if(NOT CMAKE_Fortran_MODULE_DIRECTORY)
         ${PROJECT_BINARY_DIR}/share/qcmaquis/fortran_mod)
 endif()
 
-include_directories(${CMAKE_Fortran_MODULE_DIRECTORY})
+include_directories(${CMAKE_Fortran_MODULE_DIRECTORY} ${HDF5_INCLUDE_DIR})
 
 
 message(STATUS "Compiling OpenMolcas interface modules enabled")
