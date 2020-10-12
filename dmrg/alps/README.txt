@@ -1,5 +1,5 @@
-The ALPS distribution in this subdirectory has been modified to provide a minimal ALPS library to work flawlessly with the QCMaquis distribution.
-Only utility/ expression/ parameter/ parser/ and hdf5/ subdirectories are used, the remaining source code has been removed. In addition, the src/boost subdirectory
+In this directory, a modified minimal ALPS library is provided that covers only the necessary requirements of the QCMaquis distribution.
+This version is based on ALPS 2.3.0, but only the files in the utility/ expression/ parameter/ parser/ and hdf5/ subdirectories have been retained, the remaining source code has been removed. In addition, the src/boost subdirectory
 contains the boost::numeric bindings that compile with ALPS 2.3.0.
 
 The full version of this library is available from
@@ -7,7 +7,7 @@ http://alps.comp-phys.org/static/software/releases/alps-2.3.0-src.tar.gz
 or
 http://alps.comp-phys.org/static/software/releases/alps-2.3.0-src-with-boost.tar.gz
 
-Below you can find the original ALPS readme file.
+Below you can find the original ALPS README file.
 -----------------------------------------------------------------------------------
 
 The ALPS project (Algorithms and Libraries for Physics Simulations) aims at providing generic parallel algorithms for classical and quantum lattice models and provides utility classes and algorithm for many other problems. It strives to increase software reuse in the physics community.
