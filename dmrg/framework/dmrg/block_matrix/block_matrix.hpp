@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -51,6 +51,23 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
 
     for (size_type k = 0; k < rows.size(); ++k)
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
+                                              Index<SymmGroup> const & cols,
+                                              std::initializer_list<Matrix> data)
+{
+    assert(rows.size() == cols.size());
+    assert(rows.size() == data.size());
+
+    basis_.resize(rows.size());
+    for (size_type k = 0; k < rows.size(); ++k)
+        basis_[k] = typename DualIndex<SymmGroup>::value_type(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
+
+    data_.reserve(data.size());
+    for (auto&& it : data)
+        data_.push_back(new Matrix(it));
 }
 
 template<class Matrix, class SymmGroup>
@@ -142,7 +159,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     Matrix* block = new Matrix(mtx);
     data_.insert(data_.begin() + i1, block);
     size_index.insert(i1, (data_.size()-1));
-    
+
     return i1;
 }
 
@@ -153,13 +170,13 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, num_rows(*mtx), num_cols(*mtx)));
     data_.insert(data_.begin() + i1, mtx);
     size_index.insert(i1, (data_.size()-1));
-    
+
     return i1;
 }
 
 template<class Matrix, class SymmGroup>
 Index<SymmGroup> block_matrix<Matrix, SymmGroup>::left_basis() const
-{ 
+{
     Index<SymmGroup> ret(basis_.size());
     for (std::size_t s = 0; s < basis_.size(); ++s)
         ret[s] = std::make_pair(basis_[s].lc, basis_[s].ls);
@@ -390,12 +407,12 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
                                            num_rows((*this)[match]));
             std::size_t maxcols = std::max(num_cols(mtx),
                                            num_cols((*this)[match]));
-            
+
             Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
-            
+
             resize_block(match, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
-            
+
             (*this)[match] += cpy;
         }
     } else
@@ -426,9 +443,9 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    
+
     std::size_t which = basis_.position(r,c);
-    
+
     basis_.erase(basis_.begin() + which);
     data_.erase(data_.begin() + which);
 }
@@ -504,16 +521,16 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         std::size_t pos = basis_.position(c1, c2);
         std::size_t maxrows = std::max(basis_[pos].ls, r);
         std::size_t maxcols = std::max(basis_[pos].rs, c);
-    
+
         basis_[pos].ls = maxrows;
         basis_[pos].rs = maxcols;
     } else {
-        
+
         assert(basis_.size() == data_.size());
-        
+
         size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, r, c));
         Matrix* block = new Matrix(1,1);
-        data_.insert(data_.begin() + i1, block); 
+        data_.insert(data_.begin() + i1, block);
     }
     assert( this->has_block(c1,c2) );
 }

@@ -5,22 +5,22 @@
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -33,8 +33,10 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice.h"
+#include "dmrg/utils/align.h"
 
-namespace chem_detail {
+namespace chem {
+namespace detail {
 
     template <class SymmGroup>
     struct qn_helper
@@ -101,26 +103,26 @@ namespace chem_detail {
     class IndexTuple : public NU1Charge<4>
     {
     public:
+        typedef std::array<int, 4> array_type;
+        typedef NU1Charge<4> base;
+        using base::base;
+
         IndexTuple() {}
         IndexTuple(int i, int j, int k, int l) {
             (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
         }
     };
 
-	template <class SymmGroup>
+	template <class SymmGroup=TrivialGroup>
     inline IndexTuple align(int i, int j, int k, int l) {
-        if (i<j) std::swap(i,j);
-        if (k<l) std::swap(k,l);
-        if (i<k) { std::swap(i,k); std::swap(j,l); }
-        if (i==k && j<l) { std::swap(j,l); }
-        return IndexTuple(i,j,k,l);
+        return IndexTuple(maquis::detail::align<false>({i,j,k,l}));
     }
-    
+
 	template <>
     inline IndexTuple align<U1DG>(int i, int j, int k, int l) {
         return IndexTuple(i,j,k,l);
     }
-    
+
 	template <class SymmGroup>
     inline IndexTuple align(IndexTuple const & rhs) {
         return align<SymmGroup>(rhs[0], rhs[1], rhs[2], rhs[3]);
@@ -131,7 +133,7 @@ namespace chem_detail {
         int inv_count=0, n=4;
         for(int c1 = 0; c1 < n - 1; c1++)
             for(int c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;  
+                if(idx[c1] > idx[c2]) inv_count++;
 
         return 1 - 2 * (inv_count % 2);
     }
@@ -187,10 +189,12 @@ namespace chem_detail {
         return a;
     }
 
+    // Create 2U1 parameter set from a given L, number of spin-up and spin-down electrons (Nup,Ndown)
+    // copy over parameters from existing parameters if provided
     inline
-    BaseParameters set_2u1_parameters(int L, int Nup, int Ndown)
+    BaseParameters set_2u1_parameters(int L, int Nup, int Ndown, const BaseParameters& existing_pars = BaseParameters())
     {
-        BaseParameters ret;
+        BaseParameters ret(existing_pars);
 
         ret.set("lattice_library", "coded");
         ret.set("LATTICE", "orbitals");
@@ -252,6 +256,7 @@ namespace chem_detail {
 
         return site_bases;
     }
+}
 }
 
 #endif

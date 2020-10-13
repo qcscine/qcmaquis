@@ -5,6 +5,7 @@
  * Copyright (C) 2016 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2016-2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2018 by Alberto Baiardi <abaiardi@ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -97,7 +98,7 @@ namespace detail {
     {
         if (mpo.num_row_non_zeros(b) == 1)
             if (mpo.herm_info.left_skip(b))
-                return gemm_trim_left_basis(boundary[mpo.herm_info.left_conj(b)], mps_basis);
+                return gemm_trim_left_basis(conjugate(boundary[mpo.herm_info.left_conj(b)]), mps_basis);
             else
                 return gemm_trim_left_basis(transpose(boundary[b]), mps_basis);
         else
@@ -112,7 +113,7 @@ namespace detail {
     {
         if (mpo.num_col_non_zeros(b) == 1)
             if (mpo.herm_info.right_skip(b))
-                return gemm_trim_right_basis(mps_basis, transpose(boundary[mpo.herm_info.right_conj(b)]));
+                return gemm_trim_right_basis(mps_basis, transpose(conjugate(boundary[mpo.herm_info.right_conj(b)])));
             else
                 return gemm_trim_right_basis(mps_basis, boundary[b]);
         else

@@ -70,10 +70,10 @@ struct SiteProblem<Matrix, SymmGroup>
 };
 
 #define BEGIN_TIMING(name) \
-now = boost::chrono::high_resolution_clock::now();
+now = std::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
-then = boost::chrono::high_resolution_clock::now(); \
-maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
+then = std::chrono::high_resolution_clock::now(); \
+maquis::cout << "Time elapsed in " << name << ": " << std::chrono::duration<double>(then-now).count() << std::endl;
 
 inline double log_interpolate(double y0, double y1, int N, int i)
 {

@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -58,45 +58,43 @@
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
 
-
-class abstract_sim {
-public:
-    virtual ~abstract_sim() {}
-    virtual void run() =0;
-};
-
+#include "abstract_sim.h"
 
 template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
-    sim(DmrgParameters const &);
+    sim(DmrgParameters &);
     virtual ~sim();
-    
-    virtual void run() =0;
-    
+
 protected:
     typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
     typedef std::map<std::string, int> status_type;
-    
+
     virtual std::string results_archive_path(status_type const&) const;
-    
+
     measurements_type iteration_measurements(int sweep);
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
-    
+
     virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
-    
+
 protected:
-    DmrgParameters parms;
-    
+    DmrgParameters& parms;
+
     int init_sweep, init_site;
     bool restore;
     bool dns;
     std::string chkpfile;
-    std::string rfile;
-    
+    std::string rfile() const
+    {
+        if (parms.is_set("resultfile"))
+            return parms["resultfile"].str();
+        else
+            return std::string();
+    };
+
     time_stopper stop_callback;
-    
+
     Lattice lat;
     Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;

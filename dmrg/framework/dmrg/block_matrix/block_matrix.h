@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -34,8 +34,10 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
 
+
 #include "utils/timings.h"
 #include "utils/traits.hpp"
+#include "detail/alps.hpp"
 #include "dmrg/utils/storage.h"
 
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -62,14 +64,18 @@ public:
     typedef typename maquis::traits::real_type<Matrix>::type real_type;
     typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
     typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
-   
+
     block_matrix();
 
     block_matrix(Index<SymmGroup> const & rows,
                  Index<SymmGroup> const & cols);
 
+    block_matrix(Index<SymmGroup> const & rows,
+                 Index<SymmGroup> const & cols,
+                 std::initializer_list<Matrix> data);
+
     block_matrix(DualIndex<SymmGroup> const & basis);
-    
+
     block_matrix(block_matrix const&);
 
     template <class OtherMatrix>
@@ -87,7 +93,7 @@ public:
 
     std::string description() const;
     std::size_t num_elements() const;
-    
+
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
     value_type &         operator()(std::pair<charge, size_type> const & r,
@@ -104,7 +110,7 @@ public:
     bool has_block(charge r, charge c) const;
     bool has_block(std::pair<charge, size_type> const & r,
                    std::pair<charge, size_type> const & c) const;
-    
+
     size_type insert_block(Matrix const &, charge, charge);
     size_type insert_block(Matrix *, charge, charge);
     void remove_block(charge r, charge c);
@@ -115,7 +121,7 @@ public:
 
     void index_iter(int i, int max) const;
     void index_sizes() const;
-    
+
     scalar_type trace() const;
     real_type norm() const;
     void transpose_inplace();
@@ -125,20 +131,20 @@ public:
     template<class Generator>
     void generate(Generator g);
     void cleanup_zeros(value_type const&);
-    
+
     void match_and_add_block(Matrix const &, charge, charge);
-    
+
     void reserve(charge, charge, std::size_t, std::size_t);
     inline void reserve_pos(charge, charge, std::size_t, std::size_t);
     void allocate_blocks();
-    
+
     void resize_block(charge r, charge c,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
     void resize_block(size_type pos,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
-    
+
     friend void swap(block_matrix & x, block_matrix & y)
     {
         swap(x.data_, y.data_);
@@ -152,29 +158,29 @@ public:
         assert( has_block(r, c) );
         return data_[basis_.position(r,c)];
     }
-    
+
     Matrix & operator()(charge r, charge c)
     {
         assert( has_block(r, c) );
         return data_[basis_.position(r,c)];
     }
-    
+
     std::pair<const_block_iterator,const_block_iterator> blocks() const {
         return std::make_pair(data_.begin(), data_.end());
     }
-    
+
     template<class Archive> void load(Archive & ar);
     template<class Archive> void save(Archive & ar) const;
-    
+
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);
-    
+
     bool reasonable() const;
-    
+
 private:
     DualIndex<SymmGroup> basis_;
     boost::ptr_vector<Matrix> data_;
-};    
+};
 
 #include "dmrg/block_matrix/block_matrix.hpp"
 template<class Matrix, class SymmGroup>

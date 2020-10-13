@@ -333,24 +333,24 @@ alps::numeric::matrix<S> generate_mult_table_C32h(S const & num_irreps)
             if(mij >   num_irreps/4){mij = mij - num_irreps/2;}
             if(mij == -num_irreps/4){mij = num_irreps/4;}
 
+            irrep  = mj2rep(shift+mi, 0);
+            jrrep  = mj2rep(shift+mj, 0);
+            ijrrep = mj2rep(shift+mij,0);
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+
             irrep  = mj2rep(shift+mi, 1);
+            jrrep  = mj2rep(shift+mj, 0);
+            ijrrep = mj2rep(shift+mij,1);
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+
+            irrep  = mj2rep(shift+mi, 0);
             jrrep  = mj2rep(shift+mj, 1);
             ijrrep = mj2rep(shift+mij,1);
             mult_table(irrep-1,jrrep-1) = ijrrep-1;
 
-            irrep  = mj2rep(shift+mi, 2);
-            jrrep  = mj2rep(shift+mj, 1);
-            ijrrep = mj2rep(shift+mij,2);
-            mult_table(irrep-1,jrrep-1) = ijrrep-1;
-
             irrep  = mj2rep(shift+mi, 1);
-            jrrep  = mj2rep(shift+mj, 2);
-            ijrrep = mj2rep(shift+mij,2);
-            mult_table(irrep-1,jrrep-1) = ijrrep-1;
-
-            irrep  = mj2rep(shift+mi, 2);
-            jrrep  = mj2rep(shift+mj, 2);
-            ijrrep = mj2rep(shift+mij,1);
+            jrrep  = mj2rep(shift+mj, 1);
+            ijrrep = mj2rep(shift+mij,0);
             mult_table(irrep-1,jrrep-1) = ijrrep-1;
         }
     }

@@ -1,0 +1,4 @@
+ALPS Project
+
+The ALPS project (Algorithms and Libraries for Physics Simulations) aims at providing generic parallel algorithms for classical and quantum lattice models and provides utility classes and algorithm for many other problems. It strives to increase software reuse in the physics community.
+

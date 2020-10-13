@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -41,20 +41,31 @@
 
 template<int N, class S = int>
 class NU1Charge
-{   
+{
 public:
     static const int static_size = N;
-    
+
     NU1Charge(S init = 0)
     {
         for (S i = 0; i < N; ++i) (*this)[i] = init;
     }
-    
+
     NU1Charge(boost::array<S, N> const & rhs)
     {
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
-    
+
+    NU1Charge(std::array<S, N> const & rhs)
+    {
+        std::copy(rhs.begin(), rhs.end(), this->begin());
+    }
+
+    // will this work?
+    // NU1Charge(std::array<S, N> && rhs)
+    // {
+    //     this->data_ = std::move(rhs.data());
+    // }
+
     S * begin() { return &data_[0]; }
     S * end() { return &data_[N]; }
 
@@ -63,21 +74,21 @@ public:
 
     S & operator[](std::size_t p) { return data_[p]; }
     S const & operator[](std::size_t p) const { return data_[p]; }
-   
-    template<class Archive> 
+
+    template<class Archive>
     void save(Archive & ar) const
     {
         for (int i = 0; i < N; ++i)
             ar[boost::lexical_cast<std::string>(i)] << (*this)[i];
     }
-    
-    template<class Archive> 
+
+    template<class Archive>
     void load(Archive & ar)
     {
         for (int i = 0; i < N; ++i)
             ar[boost::lexical_cast<std::string>(i)] >> (*this)[i];
     }
-    
+
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
@@ -110,6 +121,9 @@ namespace boost {
             }
     };
 
+    // Leon: Commented out as it breaks on later Boost versions!
+    // Anyway to whoever did that: overloading functions in standard namespaces is bad practice!
+    /*
     template <>
     class hash<std::pair<int, int>  >{
         public :
@@ -117,6 +131,7 @@ namespace boost {
                 return boost::hash_value(Pair_of_charge);
             }
     };
+    */
 
 };
 
@@ -146,7 +161,7 @@ struct tpl_ops_
         else
             return tpl_ops_<N, I+1>().operator_lt(a, b);
     }
-    
+
     template<typename T>
     bool operator_gt(T const * a, T const * b) const
     {
@@ -157,7 +172,7 @@ struct tpl_ops_
         else
             return tpl_ops_<N, I+1>().operator_gt(a, b);
     }
-    
+
     template<typename T>
     bool operator_eq(T const * a, T const * b) const
     {
@@ -166,14 +181,14 @@ struct tpl_ops_
         else
             return tpl_ops_<N, I+1>().operator_eq(a, b);
     }
-    
+
     template<typename T>
     void operator_plus(T const * a, T const * b, T * c) const
     {
         c[I] = a[I] + b[I];
         tpl_ops_<N, I+1>().operator_plus(a, b, c);
     }
-    
+
     template<typename T>
     void operator_uminus(T const * a, T * b) const
     {
@@ -194,16 +209,16 @@ struct tpl_ops_<N, N>
 {
     template<typename T>
     bool operator_lt(T const *, T const *) const { return false; }
-    
+
     template<typename T>
     bool operator_gt(T const *, T const *) const { return false; }
-    
+
     template<typename T>
     bool operator_eq(T const *, T const *) const { return true; }
-    
+
     template<typename T>
     void operator_plus(T const *, T const *, T *) const { }
-    
+
     template<typename T>
     void operator_uminus(T const *, T *) const { }
 
@@ -270,7 +285,7 @@ public:
     typedef S subcharge;
     typedef NU1Charge<N, S> charge;
     typedef std::vector<charge> charge_v;
-    
+
     static const charge IdentityCharge;
     static const bool finite = false;
 
@@ -280,7 +295,7 @@ public:
     {
         return a+b;
     }
-    
+
     template<int R> static charge fuse(boost::array<charge, R> const & v)
     {
         charge ret = v[0];

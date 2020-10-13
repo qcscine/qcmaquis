@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -38,27 +38,27 @@
 #endif
 
 template <class Matrix, class SymmGroup>
-class dmrg_init {    
+class dmrg_init {
 public:
     typedef typename SymmGroup::charge charge;
     typedef std::pair<charge, size_t> local_state;
     typedef typename std::vector<local_state>::const_iterator states_iterator;
-    
+
     dmrg_init(DmrgParameters const & parms_)
     : parms(parms_)
     , chkpfile(parms["chkpfile"].str())
     , nthreads(1)
     {
         maquis::cout << DMRG_VERSION_STRING << std::endl;
-        
-        // TODO: insert boost::chrono timers
-        
+
+        // TODO: insert std::chrono timers
+
         lat = Lattice(parms);
         model = Model<Matrix, SymmGroup>(lat, parms);
         phys = model.phys_dim(); // TODO: extend for multiple site bases!
         initc = model.total_quantum_numbers(parms);
         L = lat.size();
-        
+
 #ifdef MAQUIS_OPENMP
         #pragma omp parallel
         {
@@ -71,7 +71,7 @@ public:
         vmps1.resize(nthreads);
         vmps2.resize(nthreads);
     }
-    
+
     void build()
     {
 #ifdef MAQUIS_OPENMP
@@ -106,7 +106,7 @@ public:
                 vmps1[rank].normalize_left();
             }
         }
-        
+
         MPS<Matrix, SymmGroup> & mps = vmps1[0];
         for (size_t n=0; n<nthreads; ++n) {
             if (num_states2[n] > 0) {
@@ -116,7 +116,7 @@ public:
                 num_states1[0] += num_states1[n];
             }
         }
-        
+
         // write parameters and mps
         save(chkpfile, mps);
         storage::archive ar(chkpfile+"/props.h5", "w");
@@ -124,7 +124,7 @@ public:
         ar["/version"] << DMRG_VERSION_STRING;
         ar["/status/sweep"] << 0;
     }
-    
+
 private:
     // slow version looping over all basis states, discarding those with N!=initc
     void build_slow()
@@ -133,11 +133,11 @@ private:
         for (size_t i=0; i<phys.size(); ++i)
             for (size_t j=0; j<phys[i].second; ++j)
                 alllocal.push_back( local_state(phys[i].first, j) );
-        
+
         std::vector<states_iterator> it(L);
         for (size_t i=0; i<L; ++i)
             it[i] = alllocal.begin();
-        
+
         std::vector<local_state> basis;
         while (it[0] != alllocal.end()) {
             std::vector<local_state> state(L);
@@ -147,7 +147,7 @@ private:
                                        boost::bind(static_cast<charge(*)(charge,charge)>(&SymmGroup::fuse), _1,  boost::bind(&local_state::first, _2)) );
             if (N == initc)
                 add_state(state);
-            
+
             ++it[L-1];
             for (int i = L-1; (i > 0) && (it[i] == alllocal.end()); --i) {
                 it[i] = alllocal.begin();
@@ -155,7 +155,7 @@ private:
             }
         }
     }
-    
+
     // faster version looping only over basis states with N == initc
     void build_fast()
     {
@@ -163,17 +163,17 @@ private:
         for (size_t i=0; i<phys.size(); ++i)
             for (size_t j=0; j<phys[i].second; ++j)
                 alllocal.push_back( local_state(phys[i].first, j) );
-        
+
         std::vector<states_iterator> it(L);
         for (size_t i=0; i<L; ++i)
             it[i] = alllocal.begin();
-        
+
         std::vector<local_state> basis;
         while (it[0] != alllocal.end()) {
             charge N = SymmGroup::IdentityCharge;
             for (size_t i=0; i<L; ++i)
                  N = SymmGroup::fuse(N, it[i]->first);
-            
+
             if (N == initc) {
                 std::stringstream ss;
                 ss << "permutations on [";
@@ -202,7 +202,7 @@ private:
         #pragma omp taskwait
 #endif
     }
-    
+
     void permutate_states(std::vector<states_iterator> its)
     {
         std::vector<local_state> state(L);
@@ -212,11 +212,11 @@ private:
             add_state(state);
         } while ( next_permutation(its.begin(), its.end()) );
     }
-    
+
     MPS<Matrix, SymmGroup> state_mps(std::vector<local_state> const & state)
     {
         MPS<Matrix, SymmGroup> mps(state.size());
-        
+
         Index<SymmGroup> curr_i;
         curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
         size_t curr_b = 0;
@@ -238,7 +238,7 @@ private:
         mps.normalize_left();
         return mps;
     }
-    
+
     void add_state(std::vector<local_state> const & state)
     {
 #ifdef MAQUIS_OPENMP
@@ -246,13 +246,13 @@ private:
 #else
         size_t rank = 0;
 #endif
-        
+
         MPS<Matrix, SymmGroup> & mps1=vmps1[rank], mps2=vmps2[rank];
         size_t nstates1=num_states1[rank], nstates2=num_states2[rank], tstates=totstates[rank];
-        
+
         MPS<Matrix, SymmGroup> & curr = (nstates1 < parms["init_bond_dimension"]) ? vmps1[rank] : vmps2[rank];
         size_t & nstates = (nstates1 < parms["init_bond_dimension"]) ? nstates1 : nstates2;
-        
+
         MPS<Matrix, SymmGroup> temp = state_mps(state);
         if (curr.length() > 1)
             curr = join(curr, temp);
@@ -260,7 +260,7 @@ private:
             swap(curr, temp);
         nstates += 1;
         tstates += 1;
-        
+
         if (nstates2 > parms["init_bond_dimension"]) {
             if (nstates1 == parms["init_bond_dimension"])
                 mps1.normalize_left();
@@ -277,13 +277,13 @@ private:
         num_states2[rank] = nstates2;
         totstates[rank] =  tstates;
     }
-    
-    
+
+
 private:
     DmrgParameters parms;
-    
+
     std::string chkpfile;
-    
+
     Lattice lat;
     Model<Matrix, SymmGroup> model;
     Index<SymmGroup> phys;

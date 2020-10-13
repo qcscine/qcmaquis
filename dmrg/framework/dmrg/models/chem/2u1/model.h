@@ -34,7 +34,7 @@
 #include <iterator>
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -95,7 +95,7 @@ public:
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
     {
-        return chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
+        return chem::detail::qn_helper<SymmGroup>().total_qn(parms_);
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -190,18 +190,18 @@ public:
         typedef std::vector<tag_vec> bond_tag_element;
         typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
         {
-            boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
-            boost::smatch what;
-            for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
-                std::string lhs = it->key();
-                if (boost::regex_match(lhs, what, expression)) {
+            std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
+            std::smatch what;
+            for (auto&& it : parms.get_range()) {
+                std::string lhs = it.first;
+                if (std::regex_match(lhs, what, expression)) {
 
                     std::vector<op_t> meas_op;
-                    if (it->value() == "Nup")
+                    if (it.second == "Nup")
                         meas_op = count_up_ops;
-                    else if (it->value() == "Ndown")
+                    else if (it.second == "Ndown")
                         meas_op = count_down_ops;
-                    else if (it->value() == "Nup*Ndown" || it->value() == "docc")
+                    else if (it.second == "Nup*Ndown" || it.second == "docc")
                         meas_op = docc_ops;
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
@@ -212,67 +212,69 @@ public:
         }
 
         {
-        boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
-        boost::regex expression_transition_oneptdm_uu("^MEASURE\\[trans1rdm_aa\\]");
-        boost::regex expression_oneptdm_dd("^MEASURE\\[1rdm_bb\\]");
-        boost::regex expression_transition_oneptdm_dd("^MEASURE\\[trans1rdm_bb\\]");
-        boost::regex expression_oneptdm_ud("^MEASURE\\[1rdm_ab\\]");
-        boost::regex expression_transition_oneptdm_ud("^MEASURE\\[trans1rdm_ab\\]");
-        boost::regex expression_oneptdm_du("^MEASURE\\[1rdm_ba\\]");
-        boost::regex expression_transition_oneptdm_du("^MEASURE\\[trans1rdm_ba\\]");
-        boost::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
-        boost::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
-        boost::regex expression_transition_twoptdm_uuuu("^MEASURE\\[trans2rdm_aaaa\\]");
-        boost::regex expression_transition_twoptdm_uddu("^MEASURE\\[trans2rdm_abba\\]");
-        boost::regex expression_transition_twoptdm_duud("^MEASURE\\[trans2rdm_baab\\]");
-        boost::regex expression_transition_twoptdm_dddd("^MEASURE\\[trans2rdm_bbbb\\]");
-        boost::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
-        boost::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
-        boost::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
-        boost::smatch what;
+        std::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
+        std::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
+        std::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
+        std::regex expression_oneptspdm("^MEASURE\\[1spdm\\]");
+        std::regex expression_oneptdm_uu("^MEASURE\\[1rdm_aa\\]");
+        std::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
+        std::regex expression_transition_oneptdm_uu("^MEASURE\\[trans1rdm_aa\\]");
+        std::regex expression_oneptdm_dd("^MEASURE\\[1rdm_bb\\]");
+        std::regex expression_transition_oneptdm_dd("^MEASURE\\[trans1rdm_bb\\]");
+        std::regex expression_oneptdm_ud("^MEASURE\\[1rdm_ab\\]");
+        std::regex expression_transition_oneptdm_ud("^MEASURE\\[trans1rdm_ab\\]");
+        std::regex expression_oneptdm_du("^MEASURE\\[1rdm_ba\\]");
+        std::regex expression_transition_oneptdm_du("^MEASURE\\[trans1rdm_ba\\]");
+        std::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
+        std::regex expression_transition_twoptdm_uuuu("^MEASURE\\[trans2rdm_aaaa\\]");
+        std::regex expression_transition_twoptdm_uddu("^MEASURE\\[trans2rdm_abba\\]");
+        std::regex expression_transition_twoptdm_duud("^MEASURE\\[trans2rdm_baab\\]");
+        std::regex expression_transition_twoptdm_dddd("^MEASURE\\[trans2rdm_bbbb\\]");
+        std::regex expression_threeptdm("^MEASURE\\[3rdm\\]");
+        std::regex expression_transition_threeptdm("^MEASURE\\[trans3rdm\\]");
+        std::regex expression_fourptdm("^MEASURE\\[4rdm\\]");
+        std::smatch what;
 
-        for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
-            std::string lhs = it->key();
+        for (auto&& it: parms.get_range()) {
+            std::string lhs = it.first;
 
             std::string name, value;
             bool half_only, nearest_neighbors_only;
-            if (boost::regex_match(lhs, what, expression)) {
-                value = it->value();
+            if (std::regex_match(lhs, what, expression)) {
+                value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_half)) {
-                value = it->value();
+            if (std::regex_match(lhs, what, expression_half)) {
+                value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = false;
             }
-            if (boost::regex_match(lhs, what, expression_nn)) {
-                value = it->value();
+            if (std::regex_match(lhs, what, expression_nn)) {
+                value = it.second;
                 name = what.str(1);
                 half_only = false;
                 nearest_neighbors_only = true;
             }
-            if (boost::regex_match(lhs, what, expression_halfnn)) {
-                value = it->value();
+            if (std::regex_match(lhs, what, expression_halfnn)) {
+                value = it.second;
                 name = what.str(1);
                 half_only = true;
                 nearest_neighbors_only = true;
             }
 
-            if (boost::regex_match(lhs, what, expression_twoptdm) ||
-                    boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+            if (std::regex_match(lhs, what, expression_twoptdm) ||
+                    std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
-                    bra_ckp = it->value();
-                    maquis::checks::orbital_order_check(parms, bra_ckp);
+                    bra_ckp = it.second;
                 }
                 else
                     name = "twoptdm";
@@ -315,14 +317,13 @@ public:
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
-            else if (boost::regex_match(lhs, what, expression_transition_twoptdm_uuuu) ||
-                     boost::regex_match(lhs, what, expression_transition_twoptdm_uddu) ||
-                     boost::regex_match(lhs, what, expression_transition_twoptdm_duud) ||
-                     boost::regex_match(lhs, what, expression_transition_twoptdm_dddd) ) {
+            else if (std::regex_match(lhs, what, expression_transition_twoptdm_uuuu) ||
+                     std::regex_match(lhs, what, expression_transition_twoptdm_uddu) ||
+                     std::regex_match(lhs, what, expression_transition_twoptdm_duud) ||
+                     std::regex_match(lhs, what, expression_transition_twoptdm_dddd) ) {
 
                 std::string bra_ckp("");
-                bra_ckp = it->value();
-                maquis::checks::orbital_order_check(parms, bra_ckp);
+                bra_ckp = it.second;
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 if(lhs == "MEASURE[trans2rdm_aaaa]"){
 
@@ -374,21 +375,20 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_threeptdm) ||
-                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
+            else if (std::regex_match(lhs, what, expression_threeptdm) ||
+                     std::regex_match(lhs, what, expression_transition_threeptdm)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans3rdm]"){
                     name = "transition_threeptdm";
                     std::vector<std::string> value_split;
 
-                    value = it->value();
+                    value = it.second;
                     boost::split( value_split, value, boost::is_any_of(";"));
                     if(value_split.size() > 1)
                     	bra_ckp = value_split[0];
                     else
-                    	bra_ckp = it->value();
-                    maquis::checks::orbital_order_check(parms, bra_ckp);
+                    	bra_ckp = it.second;
                 }
                 else
                     name = "threeptdm";
@@ -474,7 +474,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                value = it->value();
+                value = it.second;
                 half_only = true;
                 // parse positions p1:p2:p3@x,y,z,... and split into {x,y,z}
                 // the position vector reflects the loop ordering in the 3-RDM emasurement
@@ -492,13 +492,16 @@ public:
                     std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::    _1 + 1);
                     maquis::cout << " " << std::endl;
                     */
+                   // check if positions are out of bounds
+                   for (auto&& p: positions)
+                        assert(p < parms["L"]);
 
                 }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_fourptdm)) {
+            else if (std::regex_match(lhs, what, expression_fourptdm)) {
 
                 std::string bra_ckp("");
                 name = "fourptdm";
@@ -722,7 +725,7 @@ public:
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
 
-                value = it->value();
+                value = it.second;
                 half_only = true;
                 // parse positions p4:p3:p1:p2@w,x,y,z,... and split into {w,x,y,z}
                 // the position vector reflects the loop ordering in the 4-RDM emasurement
@@ -740,20 +743,21 @@ public:
                     std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::    _1 + 1);
                     maquis::cout << " " << std::endl;
                     */
-
+                    // check if positions exceed L
+                    for (auto&& p: positions)
+                        assert(p < parms["L"]);
                 }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_uu) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_uu) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_aa]"){
                     name = "transition_oneptdm_aa";
-                    bra_ckp = it->value();
-                    maquis::checks::orbital_order_check(parms, bra_ckp);
+                    bra_ckp = it.second;
                     half_only = false;
                 }
                 else{
@@ -774,14 +778,13 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_dd) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_dd) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_bb]"){
                     name = "transition_oneptdm_bb";
-                    bra_ckp = it->value();
-                    maquis::checks::orbital_order_check(parms, bra_ckp);
+                    bra_ckp = it.second;
                     half_only = false;
                 }
                 else{
@@ -802,14 +805,13 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_ud) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_ud) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_ab]"){
                     name = "transition_oneptdm_ab";
-                    bra_ckp = it->value();
-                    maquis::checks::orbital_order_check(parms, bra_ckp);
+                    bra_ckp = it.second;
                     half_only = false;
                 }
                 else{
@@ -830,14 +832,13 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_oneptdm_du) ||
-                     boost::regex_match(lhs, what, expression_transition_oneptdm_du)) {
+            else if (std::regex_match(lhs, what, expression_oneptdm_du) ||
+                     std::regex_match(lhs, what, expression_transition_oneptdm_du)) {
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm_ba]"){
                     name = "transition_oneptdm_ba";
-                    bra_ckp = it->value();
-                    maquis::checks::orbital_order_check(parms, bra_ckp);
+                    bra_ckp = it.second;
                     half_only = false;
                 }
                 else{
@@ -852,6 +853,72 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+
+            // 1-RDM and transition-1RDM
+            else if (std::regex_match(lhs, what, expression_oneptdm) ||
+                    std::regex_match(lhs, what, expression_transition_oneptdm) ||
+                    std::regex_match(lhs, what, expression_oneptspdm))
+                    {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE[trans1rdm]"){
+                    name = "transition_oneptdm";
+                    bra_ckp = it.second;
+                    half_only = false;
+                }
+                else if(lhs == "MEASURE[1spdm]")
+                {
+                    name = "oneptspdm";
+                    half_only = true;
+                }
+                else
+                {
+                    name = "oneptdm";
+                    half_only = true;
+                }
+                // full 1-TDM
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                // if bra == ket the cross terms will be zero for sure, no need to include them
+                if (name == "transition_oneptdm")
+                {
+                    {
+                        bond_tag_element meas_operators;
+                        meas_operators.push_back(create_up);
+                        meas_operators.push_back(destroy_down);
+                        synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    }
+
+                    {
+                        bond_tag_element meas_operators;
+                        meas_operators.push_back(create_down);
+                        meas_operators.push_back(destroy_up);
+                        synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    }
+                }
+
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    // distinguish whether we want to measure spin density or normal RDM
+                    // if spin density, we need the second term with a negative prefactor (measure Nup-Ndown)
+                    // instead of Nup + Ndown
+                    double factor = (name == "oneptspdm") ? -1 : 1;
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, factor));
+                }
+
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,

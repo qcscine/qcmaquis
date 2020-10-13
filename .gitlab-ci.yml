@@ -6,7 +6,7 @@ build:
     - default_docker
   script:
     - mkdir build && cd build
-    - cmake -DTESTS=ON -DBLAS_LAPACK_SELECTOR=manual -DMAQUISLapack_LIBRARIES="-lblas -llapack" -DALPS_DIR=/devel/alps/share/alps ../dmrg
+    - cmake -DTESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" ../dmrg
     - make -j4
   artifacts:
     paths:

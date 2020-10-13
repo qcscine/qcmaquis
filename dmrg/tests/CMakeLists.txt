@@ -2,13 +2,23 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
-set(DMRG_APP_LIBRARIES dmrg_models dmrg_utils ${DMRG_LIBRARIES})
+set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 
-# *** Configure symmetries
-configure_symm_file("common/simulation_symm/simulation_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp" CMAKE_SYMM_GROUP)
-get_symm_files(APPEND DMRG_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp")
-
-
-# *** Targets            
-add_executable(test1 ${DMRG_SYMM_SOURCES} test1.cpp)
+# *** Targets
+add_executable(test1 test1.cpp)
 target_link_libraries(test1 ${DMRG_APP_LIBRARIES})
+
+add_executable(test2 test2.cpp)
+target_link_libraries(test2 ${DMRG_APP_LIBRARIES})
+
+add_executable(test_integral_map test_integral_map.cpp)
+target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
+
+add_executable(test_rel test_rel.cpp)
+target_link_libraries(test_rel ${DMRG_APP_LIBRARIES})
+
+add_executable(test_4rdm_save test_4rdm_save.cpp)
+target_link_libraries(test_4rdm_save ${DMRG_APP_LIBRARIES})
+
+add_executable(test_mps_rotate test_mps_rotate.cpp)
+target_link_libraries(test_mps_rotate ${DMRG_APP_LIBRARIES})

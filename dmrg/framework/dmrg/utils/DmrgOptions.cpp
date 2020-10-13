@@ -42,12 +42,12 @@ valid(false)
 DmrgOptions::DmrgOptions(int argc, char** argv)
 {
     namespace po = boost::program_options;
-    
+
     programname = std::string(argv[0]);
     valid = true;
     if (argc) {
         std::string parms_fname, model_fname;
-        
+
         po::options_description desc("Allowed options");
         desc.add_options()
         ("help,h", "produce help message")
@@ -58,12 +58,12 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
         po::positional_options_description p;
         p.add("parms-file", 1);
         p.add("model-file", 1);
-        
+
         po::variables_map vm;
         po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
         po::notify(vm);
-        
-        
+
+
         if (vm.count("help")) {
             maquis::cout << desc << std::endl;
             maquis::cout << "DMRG Parameters:" << std::endl;
@@ -76,14 +76,14 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
         }
         if (!valid)
             return;
-        
-        
+
+
         /// Load parameters
         std::ifstream param_file(parms_fname.c_str());
         if (!param_file)
             throw std::runtime_error("Could not open parameter file.");
         parms = DmrgParameters(param_file);
-        
+
         /// Load model parameters from second input (if needed)
         std::string model_file;
         if (parms.is_set("model_file") && model_fname.empty())
@@ -94,8 +94,8 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
                 throw std::runtime_error("Could not open model_parms file.");
             parms << ModelParameters(model_ifs);
         }
-        
-        
+
+
         if (!vm["time-limit"].defaulted())
             parms["run_seconds"] = time_limit;
 
