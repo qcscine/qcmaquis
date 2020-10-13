@@ -214,9 +214,9 @@ endif()
 ######################################################################
 # Version information
 ######################################################################
-set(DMRG_YEAR 2018)
-set(DMRG_VERSION_MAJOR 2)
-set(DMRG_VERSION_MINOR 1)
+set(DMRG_YEAR 2020)
+set(DMRG_VERSION_MAJOR 3)
+set(DMRG_VERSION_MINOR 0)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
