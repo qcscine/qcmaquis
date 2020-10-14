@@ -20,12 +20,9 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
 
 We strongly recommend installing and running QCMaquis together with the OpenMOLCAS program package and the OpenMOLCAS-QCMaquis interface, as described below.
 
-## QCMaquis in [OpenMolcas](https://gitlab.com/Molcas/OpenMolcas)
 
-To install QCMaquis with the OpenMOLCAS interface, download OpenMOLCAS from the official OpenMOLCAS GitLab repository and follow its installation guide. To activate QCMaquis (and NEVPT2) support within OpenMolcas, add the following flags to cmake when configuring OpenMOLCAS (see step 3 of the OpenMOLCAS installation guide):
-
-```$ cmake -DDMRG=ON -DNEVPT2=ON <other CMAKE flags> ../```
-### Installation Requirements:
+## QCMaquis compilation and installation
+### Prerequisites:
 - a C++ compiler, optionally a Fortran compiler for the OpenMOLCAS Fortran interface. Only G++ has been tested.
 - GNU make
 - [CMake](https://cmake.org)
@@ -34,8 +31,6 @@ To install QCMaquis with the OpenMOLCAS interface, download OpenMOLCAS from the 
 - [HDF5](https://www.hdfgroup.org/downloads/hdf5)
 - Linear algebra library, such as BLAS/Lapack, [Intel MKL](https://software.intel.com/content/www/us/en/develop/tools/math-kernel-library.html) or [OpenBLAS](https://www.openblas.net/)
 - For documentation: PDFLaTeX
-
-## QCMaquis standalone compilation
 For a quick start, type the following into the terminal:
 ```
 git clone https://github.com/qcscine/qcmaquis.git qcmaquis
@@ -57,9 +52,15 @@ where `<CMAKE_COMPILE_OPTIONS>` can be (optionally) one of the following:
 
 A full installation guide including package dependencies can be found in Section 3.1 of our manual.
 
+## QCMaquis in [OpenMolcas](https://gitlab.com/Molcas/OpenMolcas)
+
+To install QCMaquis with the OpenMOLCAS interface, download OpenMOLCAS from the official OpenMOLCAS GitLab repository and follow its installation guide. To activate QCMaquis (and NEVPT2) support within OpenMolcas, add the following flags to cmake when configuring OpenMOLCAS (see step 3 of the OpenMOLCAS installation guide):
+
+```$ cmake -DDMRG=ON -DNEVPT2=ON <other CMAKE flags> ../```
+
 ## Documentation
 
-A detailed installation guide and manual for QCMaquis (and its components) can be found [here](https://scine.ethz.ch/static/download/manuals/qcmaquis_manual.pdf). (outdated!)
+A detailed installation guide and manual for QCMaquis (and its components) can be found in the `doc` subdirectory. Compile QCMaquis with the `BUILD_MANUAL` CMake option to obtain the documentation in the PDF format.
 
 ## Support
 
