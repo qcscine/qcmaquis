@@ -16,11 +16,6 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
     - state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
   - The current release version can be used together with SCINE autoCAS
 
-## Download
-
-We strongly recommend installing and running QCMaquis together with the OpenMOLCAS program package and the OpenMOLCAS-QCMaquis interface, as described below.
-
-
 ## QCMaquis compilation and installation
 ### Prerequisites:
 - a C++ compiler, optionally a Fortran compiler for the OpenMOLCAS Fortran interface. Only G++ has been tested.
