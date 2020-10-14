@@ -21,30 +21,14 @@ set(ALPS_VERSION_MAJOR 2)
 set(ALPS_VERSION_MINOR 3)
 set(ALPS_VERSION_PATCH 0)
 set(ALPS_VERSION_BUILD "")
-
-IF(NOT ALPS_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
-  FIND_PACKAGE(Subversion)
-  IF(Subversion_FOUND)
-    Subversion_WC_INFO(${PROJECT_SOURCE_DIR} ALPS)
-    set(ALPS_VERSION_BUILD "r${ALPS_WC_REVISION}")
-  ENDIF(Subversion_FOUND)
-ENDIF(NOT ALPS_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
-
-if(ALPS_VERSION_BUILD)
-  set(ALPS_VERSION "${ALPS_VERSION_MAJOR}.${ALPS_VERSION_MINOR}.${ALPS_VERSION_PATCH}-${ALPS_VERSION_BUILD}")
-else(ALPS_VERSION_BUILD)
-  set(ALPS_VERSION "${ALPS_VERSION_MAJOR}.${ALPS_VERSION_MINOR}.${ALPS_VERSION_PATCH}")
-endif(ALPS_VERSION_BUILD)
+set(ALPS_VERSION "${ALPS_VERSION_MAJOR}.${ALPS_VERSION_MINOR}.${ALPS_VERSION_PATCH}")
 set(ALPS_VERSION_STRING "ALPS Libraries version ${ALPS_VERSION}")
-MESSAGE(STATUS "ALPS version: ${ALPS_VERSION}")
-
 set(ALPS_CONFIG_HOST unknown)
 set(ALPS_CONFIG_USER unknown)
 
 SET(ALPS_HAVE_MPI 0)
 SET(ALPS_HAVE_BOOST_MPI 0)
 set(BUILD_BOOST_MPI FALSE)
-# endif(ALPS_ENABLE_MPI)
 
 # Boost include, should have been found by find_boost in parent CMakeLists.txt
 include_directories(${Boost_INCLUDE_DIRS})
@@ -94,6 +78,21 @@ configure_file(src/alps/version.h.in ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/sr
 # order the include directories so that directories which are in the
 # source or build tree always come before directories outside the project.
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
+
+######################################################################
+# C & C++ Headers. Apparently required for Mac OS X compilation
+######################################################################
+include(CheckIncludeFile)
+CHECK_INCLUDE_FILE(rpc/rpc.h ALPS_HAVE_RPC_XDR_H)
+CHECK_INCLUDE_FILE(stdarg.h ALPS_HAVE_STDARG_H)
+CHECK_INCLUDE_FILE(sys/stat.h ALPS_HAVE_SYS_STAT_H)
+CHECK_INCLUDE_FILE(sys/systeminfo.h ALPS_HAVE_SYS_SYSTEMINFO_H)
+CHECK_INCLUDE_FILE(sys/types.h ALPS_HAVE_SYS_TYPES_H)
+CHECK_INCLUDE_FILE(unistd.h ALPS_HAVE_UNISTD_H)
+CHECK_INCLUDE_FILE(windows.h ALPS_HAVE_WINDOWS_H)
+
+include(CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX(valarray ALPS_HAVE_VALARRAY)
 
 ######################################################################
 # include directories
