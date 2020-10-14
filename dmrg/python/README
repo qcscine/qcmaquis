@@ -1,0 +1,4 @@
+This directory contains the old pydmrg/pyalps scripts that work with ALPS/QCMaquis HDF5 result files, but have been ported to Python 3
+Since pyalps is not compatible with python 3, a replacement library (pyalpslite.py) has been written, which emulates the pyalps functions used in those scripts.
+Note that for now, only scripts related to entanglement have been ported, and those loading energy and plotting sweeps have not been ported yet.
+Old (not yet ported) Python 2 scripts can be found in the legacy/ subdirectory, but keep in mind that they need Python 2 and a functioning pyalps installation.
