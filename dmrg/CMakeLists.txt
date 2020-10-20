@@ -41,7 +41,7 @@ set (ALPS_SOURCE_DIR "alps")
 
 set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRING "List of symmetry
 to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
-set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
+set(DMRG_NUMSYMM "6" CACHE STRING "Maximum number of U1 symmetries.")
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -77,7 +77,8 @@ if (BUILD_OPENMOLCAS_INTERFACE)
 
 endif()
 
-set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas")
+set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
+set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
 
 # QCMaquis manual
 if (BUILD_MANUAL)

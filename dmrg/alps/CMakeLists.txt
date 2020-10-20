@@ -72,9 +72,6 @@ endif (BIND_FORTRAN_LOWERCASE)
 set(ALPS_XML_PATH "lib")
 set(ALPS_XML_DIR "${CMAKE_INSTALL_PREFIX}/${ALPS_XML_PATH}/xml")
 
-configure_file(src/alps/config.h.in ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src/alps/config.h)
-configure_file(src/alps/version.h.in ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src/alps/version.h)
-
 # order the include directories so that directories which are in the
 # source or build tree always come before directories outside the project.
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
@@ -93,6 +90,10 @@ CHECK_INCLUDE_FILE(windows.h ALPS_HAVE_WINDOWS_H)
 
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX(valarray ALPS_HAVE_VALARRAY)
+
+### configure files
+configure_file(src/alps/config.h.in ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src/alps/config.h)
+configure_file(src/alps/version.h.in ${PROJECT_BINARY_DIR}/${ALPS_SOURCE_DIR}/src/alps/version.h)
 
 ######################################################################
 # include directories
