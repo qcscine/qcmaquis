@@ -27,7 +27,6 @@ module hdf5_utils
   use omp_lib
 #endif
   use iso_c_binding
-  use iso_fortran_env
 
   implicit none
 
