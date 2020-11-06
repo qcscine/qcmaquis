@@ -171,7 +171,7 @@ namespace measurements {
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for schedule(dynamic)
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];

@@ -28,7 +28,11 @@
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
+#ifdef LEGACY_BOOST
 #include <boost/test/floating_point_comparison.hpp>
+#else
+#include <boost/test/tools/floating_point_comparison.hpp>
+#endif
 #include "utils/io.hpp" // has to be first include because of impi
 #include <iostream>
 
@@ -119,8 +123,7 @@ BOOST_AUTO_TEST_CASE( Test1 )
         // we don't have a map for the measurements yet, so we'll do it the stupid way
         for (int i = 0; i < meas1.first.size(); i++)
             if ((meas1.first[i] == std::vector<int>{0,0}) || (meas1.first[i] == std::vector<int>{1,1}))
-                value +=meas1.second[i];
-
+                value += meas1.second[i];
         BOOST_CHECK_CLOSE(value, 2.0 , 1e-7);
 
 
