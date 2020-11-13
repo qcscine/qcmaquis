@@ -15,6 +15,8 @@ namespace hash_tuple
     // See Mike Seymour in magic-numbers-in-boosthash-combine:
     //     http://stackoverflow.com/questions/4948780
 
+    // Note: this code has been merged into Boost >= 1.67 as boost::hash_tuple
+
     template <typename TT>
     struct hash
     {
