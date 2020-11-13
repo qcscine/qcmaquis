@@ -39,9 +39,9 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRING "List of symmetry
-to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
-set(DMRG_NUMSYMM "6" CACHE STRING "Maximum number of U1 symmetries.")
+set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry
+to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available.")
+set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -170,9 +170,9 @@ endforeach(SYMM)
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
-find_package(GSL REQUIRED)
+    find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
-  endif()
+endif()
 
 # BLAS/LAPACK selector
 find_package(MAQUISLapack)
@@ -349,6 +349,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
   add_test(NAME Test_MPS_Rotate COMMAND test_mps_rotate)
+  add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
 endif(QCMAQUIS_TESTS)
 
