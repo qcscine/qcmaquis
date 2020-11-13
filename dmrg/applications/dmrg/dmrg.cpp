@@ -36,6 +36,7 @@
 #include "utils/timings.h"
 
 #include "maquis_dmrg.h"
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/utils/DmrgOptions.h"
 
 
@@ -67,6 +68,7 @@ int main(int argc, char ** argv)
         {
             maquis::DMRGInterface<double> interface(opt.parms);
             interface.optimize();
+            // WignerWrapper::print_map_contents();
         }
         else
         {

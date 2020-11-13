@@ -244,7 +244,8 @@ public:
 
         		t = mps[site2].normalize_left(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
-                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
+                auto norm = t.norm();
+                maquis::cout << "Propagating t with norm " << norm << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
                 if (site1 != L-2)

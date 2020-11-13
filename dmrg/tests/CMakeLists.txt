@@ -23,6 +23,9 @@ target_link_libraries(test_4rdm_save ${DMRG_APP_LIBRARIES})
 add_executable(test_mps_rotate test_mps_rotate.cpp)
 target_link_libraries(test_mps_rotate ${DMRG_APP_LIBRARIES})
 
+add_executable(test_wigner test_wigner.cpp)
+target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
+
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
