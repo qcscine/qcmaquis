@@ -204,10 +204,21 @@ namespace SU2 {
             couplings[0] = prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, h, i);
             couplings[2] = prefactor * (T)::SU2::mod_coupling(a, b, c, d, e, f, g, 2, i);
         }
+        else
+        {
+            couplings[0] = 0.0;
+            couplings[2] = 0.0;
+        }
+
         if (triangle(a,2,c))
         {
             couplings[1] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, h, i);
             couplings[3] = prefactor * (T)::SU2::mod_coupling(a, 2, c, d, e, f, g, 2, i);
+        }
+        else
+        {
+            couplings[1] = 0.0;
+            couplings[3] = 0.0;
         }
     }
 }
