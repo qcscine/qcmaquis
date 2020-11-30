@@ -247,6 +247,20 @@ BOOST_AUTO_TEST_CASE( Test_MPS_Rotate )
         )
     };
 
+    // Test MPS compression
+    double norm1 = norm(mps);
+    BOOST_CHECK_CLOSE(norm1, 1.0, 1e-8);
+    mps.normalize_left();     // Checks that normalization is preserved
+    double norm2 = norm(mps);
+    BOOST_CHECK_CLOSE(norm2, 1.0, 1e-8);
+    // Checks that after compression the normalization is preserved
+    double compression_trace;
+    auto mps2 = compression::l2r_compress(mps, 8000, 1e-20, compression_trace);
+    double norm3 = norm(mps2);
+    BOOST_CHECK_CLOSE(norm2, 1.0, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(compression_trace), 1.0, 1e-8);
+
+    // Test MPS rotation
     mps.canonize(0);
     matrix t = matrix(6,6, {1.0000000000000588, -3.0567539950976905e-14, 2.760512847099443e-07, -2.7058888747042958e-14, -2.0386219974666109e-07, -3.5550050708240602e-13, 3.0567531716797842e-14, 1,
     -1.913451608258381e-14, 2.3600317316650584e-21, 1.448071040659122e-14, 1.0559927431889349e-16, -2.760512719947314e-07, 1.9134523617605794e-14, 0.99999999999996381, -8.5930036151948383e-15, -6.237152668522358e-08,
@@ -267,5 +281,7 @@ BOOST_AUTO_TEST_CASE( Test_MPS_Rotate )
     BOOST_CHECK_CLOSE(mps[3].data()[3](2,1), -1.4831922467019456e-07, 10);
     BOOST_CHECK_CLOSE(mps[3].data()[0](11,0), 0.93692334071306171, 1e-8);
     BOOST_CHECK_CLOSE(std::abs(mps[4].data()[2](1,0)), 0.083918122130324874, 1e-4); // TODO: check if sign is correct
-    BOOST_CHECK_CLOSE(mps[4].data()[2](3,0), 1.0322307057313466e-06, 1);
+    BOOST_CHECK_CLOSE(std::abs(mps[4].data()[2](3,0)), 1.0322307057313466e-06, 1e-2);
+
+
 }

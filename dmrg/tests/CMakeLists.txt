@@ -20,8 +20,8 @@ target_link_libraries(test_rel ${DMRG_APP_LIBRARIES})
 add_executable(test_4rdm_save test_4rdm_save.cpp)
 target_link_libraries(test_4rdm_save ${DMRG_APP_LIBRARIES})
 
-add_executable(test_mps_rotate test_mps_rotate.cpp)
-target_link_libraries(test_mps_rotate ${DMRG_APP_LIBRARIES})
+add_executable(test_mps_mpo_ops test_mps_mpo_ops.cpp)
+target_link_libraries(test_mps_mpo_ops ${DMRG_APP_LIBRARIES})
 
 add_executable(test_wigner test_wigner.cpp)
 target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
