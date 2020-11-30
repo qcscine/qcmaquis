@@ -195,7 +195,7 @@ struct gesvd_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
     //
     // Static member function that
     // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
+    //   the results to the user-defined workspace overload of the
     //   invoke static member function
     // * Enables the unblocked algorithm (BLAS level 2)
     //
@@ -213,7 +213,7 @@ struct gesvd_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
     //
     // Static member function that
     // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
+    //   the results to the user-defined workspace overload of the
     //   invoke static member
     // * Enables the blocked algorithm (BLAS level 3)
     //
@@ -230,8 +230,12 @@ struct gesvd_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
                 bindings::begin_value(u), bindings::stride_major(u),
                 bindings::begin_value(vt), bindings::stride_major(vt),
                 &opt_size_work, -1 );
-        bindings::detail::array< real_type > tmp_work(
-                traits::detail::to_int( opt_size_work ) );
+
+        // Workaround for MKL which reports too small work arrays on query sometimes
+        auto real_opt_work = std::max(
+                              traits::detail::to_int( opt_size_work ),
+                              min_size_work(jobu,jobvt, bindings::size_row(a), bindings::size_column(a)));
+        bindings::detail::array< real_type > tmp_work(real_opt_work);
         return invoke( jobu, jobvt, a, s, u, vt, workspace( tmp_work ) );
     }
 
@@ -335,7 +339,7 @@ struct gesvd_impl< Value, typename boost::enable_if< is_complex< Value > >::type
     //
     // Static member function that
     // * Figures out the minimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
+    //   the results to the user-defined workspace overload of the
     //   invoke static member function
     // * Enables the unblocked algorithm (BLAS level 2)
     //
@@ -359,7 +363,7 @@ struct gesvd_impl< Value, typename boost::enable_if< is_complex< Value > >::type
     //
     // Static member function that
     // * Figures out the optimal workspace requirements, and passes
-    //   the results to the user-defined workspace overload of the 
+    //   the results to the user-defined workspace overload of the
     //   invoke static member
     // * Enables the blocked algorithm (BLAS level 3)
     //
@@ -428,7 +432,7 @@ struct gesvd_impl< Value, typename boost::enable_if< is_complex< Value > >::type
 // Functions for direct use. These functions are overloaded for temporaries,
 // so that wrapped types can still be passed and used for write-access. In
 // addition, if applicable, they are overloaded for user-defined workspaces.
-// Calls to these functions are passed to the gesvd_impl classes. In the 
+// Calls to these functions are passed to the gesvd_impl classes. In the
 // documentation, most overloads are collapsed to avoid a large number of
 // prototypes which are very similar.
 //
