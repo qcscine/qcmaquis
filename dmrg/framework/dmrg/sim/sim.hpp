@@ -59,6 +59,11 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 
             // maximum parameter for 9j symbols
             int max_9j = (max_spin + spin)/2;
+
+            // For spin = 0 or 1 we may require 9j symbols with c,g,f=2 due to permutational symmetry of the rows/columns
+            // since we do not implement this permutational symmetry for performance reasons, we need to fill the cache for elements up to 2
+            if (max_9j < 2) max_9j = 2;
+
             WignerWrapper::fill_cache(max_9j);
         }
     }

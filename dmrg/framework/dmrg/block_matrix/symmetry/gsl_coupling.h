@@ -148,7 +148,7 @@ class WignerWrapper
                     // print a warning
                     std::cout << "Warning: Wigner 9j symbol for " << a << "," << b << "," << c <<
                                                               "," << d << "," << e << "," << f <<
-                                                              "," << g << "," << h << "," << i << " not found in cache.";
+                                                              "," << g << "," << h << "," << i << " not found in cache." << std::endl;
 
                     // alternatively, add the missing value to the cache, but this is not threadsafe so has been disabled
                     //map[idx] = ret;
