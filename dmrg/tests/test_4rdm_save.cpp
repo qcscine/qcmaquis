@@ -28,11 +28,7 @@
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
-#ifdef LEGACY_BOOST
-#include <boost/test/floating_point_comparison.hpp>
-#else
-#include <boost/test/tools/floating_point_comparison.hpp>
-#endif
+#include "utils/fpcomparison.h"
 #include "utils/io.hpp" // has to be first include because of impi
 #include <iostream>
 

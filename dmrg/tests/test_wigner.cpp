@@ -31,7 +31,7 @@
 
 // Unit test for integral map
 #include <boost/test/included/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include "utils/fpcomparison.h"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 
 BOOST_AUTO_TEST_CASE( Test_Wigner )
