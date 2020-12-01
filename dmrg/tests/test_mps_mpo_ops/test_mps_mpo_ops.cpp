@@ -66,24 +66,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Test_MPS_Compress, S, symmetries )
 
     // Check some random values
     BOOST_CHECK_EQUAL(mps2[1].data().n_blocks(), 9);
-    BOOST_CHECK_CLOSE(mps2[1].data()[4](0,0), -0.61380232931524104, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[1].data()[4](3,0), -0.78945975231570409, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[1].data()[4](1,1), -0.70710678118614889, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[1].data()[4](2,1),  0.70710678118614845, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[1].data()[4](3,2), -0.61380232931579326, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[1].data()[4](0,0)), 0.61380232931524104, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[1].data()[4](3,0)), 0.78945975231570409, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[1].data()[4](1,1)), 0.70710678118614889, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[1].data()[4](2,1)), 0.70710678118614845, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[1].data()[4](3,2)), 0.61380232931579326, 1e-8);
 
     BOOST_CHECK_EQUAL(mps2[2].data().n_blocks(), 14);
-    BOOST_CHECK_CLOSE(mps2[2].data()[3](0,0), 0.86358071578894613, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[2].data()[4](0,0), -0.10708900415704489, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[2].data()[3](0,0)), 0.86358071578894613, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[2].data()[4](0,0)), 0.10708900415704489, 1e-8);
     BOOST_CHECK_CLOSE(std::abs(mps2[2].data()[4](2,0)), 0.10693866927266986, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[2].data()[9](0,0), -0.12106610568661753, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[2].data()[9](0,0)), 0.12106610568661753, 1e-8);
     BOOST_CHECK_CLOSE(std::abs(mps2[2].data()[9](3,0)), 0.06822157836692079, 1e-8);
 
     BOOST_CHECK_EQUAL(mps2[3].data().n_blocks(), 9);
-    BOOST_CHECK_CLOSE(mps2[3].data()[0](0,0), -0.3494797405967025, 1e-8);
-    BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[0](1,0)),  0.0059432339005499706, 1e-8);
-    BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[0](3,0)),  0.001800346775965004, 1e-8);
-    BOOST_CHECK_CLOSE(mps2[3].data()[1](0,0), -0.21769837259839703, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[0](0,0)), 0.3494797405967025, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[0](1,0)), 0.0059432339005499706, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[0](3,0)), 0.001800346775965004, 1e-8);
+    BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[1](0,0)), 0.21769837259839703, 1e-8);
     BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[1](11,1)), 0.59209488750654526, 1e-8);
     BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[7](9,1)), 0.45264009928067311, 1e-8);
     BOOST_CHECK_CLOSE(std::abs(mps2[3].data()[8](7,0)), 0.83281243970818863, 1e-8);
