@@ -28,7 +28,7 @@
 #define BOOST_TEST_MAIN
 // Unit test for integral map
 #include <boost/test/included/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include "utils/fpcomparison.h"
 #include <integral_interface.h>
 
 BOOST_AUTO_TEST_CASE( Test_Integral_Map )

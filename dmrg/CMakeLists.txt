@@ -39,9 +39,9 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRING "List of symmetry
-to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
-set(DMRG_NUMSYMM "6" CACHE STRING "Maximum number of U1 symmetries.")
+set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry
+to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available.")
+set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -63,7 +63,7 @@ mark_as_advanced(ENABLE_COLLECTOR)
 
 option (BUILD_MANUAL "Enable pdf manual building. Requires pdflatex" OFF)
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
-option(TESTS      "Build and run tests" OFF)
+option(QCMAQUIS_TESTS      "Build and run tests" OFF)
 
 # OpenMOLCAS interface
 option (BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
@@ -170,9 +170,9 @@ endforeach(SYMM)
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
-find_package(GSL REQUIRED)
+  find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
-  endif()
+endif()
 
 # BLAS/LAPACK selector
 find_package(MAQUISLapack)
@@ -182,7 +182,7 @@ message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
 list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 # ILP64 definition
 if(LAPACK_64_BIT)
-add_definitions(-DBIND_FORTRAN_INTEGER_8)
+  add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
 
 # HDF5
@@ -198,6 +198,8 @@ if(Boost_FOUND)
 list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
 list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+if(${Boost_MINOR_VERSION} VERSION_LESS 60)
+    add_definitions(-DLEGACY_BOOST)
 else(Boost_FOUND)
 message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
@@ -218,6 +220,7 @@ endif()
 set(DMRG_YEAR 2020)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 0)
+set(DMRG_VERSION_PATCH 1)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -268,9 +271,9 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 
 if(DMRG_VERSION_BUILD)
-  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}-${DMRG_VERSION_BUILD}")
+  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}-${DMRG_VERSION_BUILD}")
 else(DMRG_VERSION_BUILD)
-  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}")
+  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}")
 endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
 MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
@@ -336,7 +339,8 @@ add_subdirectory(lib/maquis_dmrg)
 add_subdirectory(applications)
 
 # *** tests
-if(TESTS)
+if(QCMAQUIS_TESTS)
+  message(STATUS "Enabling tests")
   enable_testing()
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
@@ -344,8 +348,10 @@ if(TESTS)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
-  add_test(NAME Test_MPS_Rotate COMMAND test_mps_rotate)
-endif(TESTS)
+  add_test(NAME Test_MPS_MPO_Ops COMMAND test_mps_mpo_ops)
+  add_test(NAME Test_Wigner COMMAND test_wigner)
+  add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
+endif(QCMAQUIS_TESTS)
 
 
 
