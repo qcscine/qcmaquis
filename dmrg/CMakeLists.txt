@@ -39,9 +39,9 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1;TwoU1PG;SU2U1;SU2U1PG" CACHE STRING "List of symmetry
-to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
-set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
+set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry
+to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available.")
+set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -63,7 +63,7 @@ mark_as_advanced(ENABLE_COLLECTOR)
 
 option (BUILD_MANUAL "Enable pdf manual building. Requires pdflatex" OFF)
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
-option(TESTS      "Build and run tests" OFF)
+option(QCMAQUIS_TESTS      "Build and run tests" OFF)
 
 # OpenMOLCAS interface
 option (BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
@@ -77,7 +77,8 @@ if (BUILD_OPENMOLCAS_INTERFACE)
 
 endif()
 
-set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, openblas")
+set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
+set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
 
 # QCMaquis manual
 if (BUILD_MANUAL)
@@ -169,9 +170,9 @@ endforeach(SYMM)
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
-find_package(GSL REQUIRED)
+    find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
-  endif()
+endif()
 
 # BLAS/LAPACK selector
 find_package(MAQUISLapack)
@@ -197,6 +198,9 @@ if(Boost_FOUND)
 list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
 list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+if(${Boost_MINOR_VERSION} VERSION_LESS 60)
+    add_definitions(-DLEGACY_BOOST) # TODO: Should be changed as other definitions in the cmake-rework branch
+endif()
 else(Boost_FOUND)
 message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
@@ -336,7 +340,8 @@ add_subdirectory(lib/maquis_dmrg)
 add_subdirectory(applications)
 
 # *** tests
-if(TESTS)
+if(QCMAQUIS_TESTS)
+  message("Testing enabled")
   enable_testing()
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
@@ -344,8 +349,10 @@ if(TESTS)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
-  add_test(NAME Test_MPS_Rotate COMMAND test_mps_rotate)
-endif(TESTS)
+  add_test(NAME Test_MPS_MPO_Ops COMMAND test_mps_mpo_ops)
+  add_test(NAME Test_Wigner COMMAND test_wigner)
+  add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
+endif(QCMAQUIS_TESTS)
 
 
 

@@ -28,6 +28,8 @@
 #include <boost/algorithm/string.hpp>
 #include "dmrg/version.h"
 
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
+
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 : parms(parms_)
@@ -39,8 +41,33 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 // , rfile(parms.is_set("resultfile") ? parms["resultfile"].str() : "")
 , stop_callback(static_cast<double>(parms["run_seconds"]))
 {
-    maquis ::cout << DMRG_VERSION_STRING << std::endl;
+    maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
+
+    // Initialise Wigner 9j coupling cache if we have SU2
+    bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
+    if (hasSU2)
+    {
+        if (!(parms.is_set("NoWignerCache") && parms["NoWignerCache"]))
+        {
+            WignerWrapper::UseCache = true;
+            int nelec = parms["nelec"];
+            int L = parms["L"];
+            int spin = parms["spin"];
+
+            int max_spin = (nelec > L) ? nelec - (nelec-L)*2 : nelec;
+
+            // maximum parameter for 9j symbols
+            int max_9j = (max_spin + spin)/2;
+
+            // For spin = 0 or 1 we may require 9j symbols with c,g,f=2 due to permutational symmetry of the rows/columns
+            // since we do not implement this permutational symmetry for performance reasons, we need to fill the cache for elements up to 2
+            if (max_9j < 2) max_9j = 2;
+
+            WignerWrapper::fill_cache(max_9j);
+        }
+    }
+
     dmrg_random::engine.seed(parms["seed"]);
     // check possible orbital order in existing MPS before(!) model initialization
     if (!chkpfile.empty())

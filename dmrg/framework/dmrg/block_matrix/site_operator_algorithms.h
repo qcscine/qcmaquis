@@ -330,7 +330,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
     //*************************************
     // Matrix basis coupling coefficient, applies uniformly to whole product
 
-    typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
+    typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * WignerWrapper::gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
     coupling = (((j+jp+k1+k2)/2)%2) ? -coupling : coupling;
     blocks *= coupling;
 
