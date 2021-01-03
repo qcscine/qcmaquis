@@ -316,7 +316,7 @@ endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
 # Configure files
 ######################################################################
 
-configure_file(framework/dmrg/version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg/version.h)
+configure_file(framework/dmrg/version.h.in ${PROJECT_BINARY_DIR}/framework/dmrg/version.h)
 
 
 ######################################################################
@@ -377,7 +377,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 # Install
 ######################################################################
 
-install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
+install(FILES ${PROJECT_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include/framework/dmrg COMPONENT headers)
 
 install(FILES
