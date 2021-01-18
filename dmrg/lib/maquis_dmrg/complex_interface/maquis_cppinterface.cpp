@@ -63,6 +63,10 @@ DmrgParameters cpp_parms;
         cpp_parms.set("twosite_truncation", twosite_truncation_);
         cpp_parms.set("storagedir", "./tmp/");
 
+        cpp_parms.set("alpha_initial", 0.0);
+        cpp_parms.set("alpha_main", 0.0);
+        cpp_parms.set("alpha_final", 0.0);
+
         // for now, making things easier
         cpp_parms.set("MEASURE[1rdm]", 1);
         if (meas_2rdm_) cpp_parms.set("MEASURE[2rdm]", 1);
@@ -73,6 +77,7 @@ DmrgParameters cpp_parms;
 
         // bond dimension
         cpp_parms.set("max_bond_dimension", m_);
+        cpp_parms.set("init_bond_dimension", m_);
 
         // lattice, #e-, symmetry
         cpp_parms.set("L", L_);
