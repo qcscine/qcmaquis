@@ -23,6 +23,9 @@ target_link_libraries(test_4rdm_save ${DMRG_APP_LIBRARIES})
 add_executable(test_mps_mpo_ops test_mps_mpo_ops/test_mps_mpo_ops.cpp)
 target_link_libraries(test_mps_mpo_ops ${DMRG_APP_LIBRARIES})
 
+add_executable(test_mpsjoin test_mps_mpo_ops/mpsjoin.cpp)
+target_link_libraries(test_mpsjoin ${DMRG_APP_LIBRARIES})
+
 add_executable(test_wigner test_wigner.cpp)
 target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
 
