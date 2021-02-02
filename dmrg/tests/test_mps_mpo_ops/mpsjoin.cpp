@@ -27,7 +27,6 @@
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
 
 #include <iterator>
 #include <iostream>
@@ -35,6 +34,8 @@
 using std::cerr;
 using std::cout;
 using std::endl;
+
+#include "utils/fpcomparison.h"
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 
@@ -47,7 +48,7 @@ using std::endl;
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/coded/lattice.hpp"
 
-typedef U1 SymmGroup;
+typedef TwoU1PG SymmGroup;
 typedef alps::numeric::matrix<double> matrix;
 
 std::ostream& operator<< (std::ostream& os, std::vector<double> const& v){
