@@ -62,7 +62,7 @@ namespace checks {
     {
         std::string chkp_sym = detail::get_symmetry(chkpfile);
         if (parms["symmetry"].str() != chkp_sym)
-            throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong symmetry group " + chkp_sym + "\n");
+            throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong symmetry group " + chkp_sym + " instead of " + parms["symmetry"].str() + "\n");
     }
 
     // check whether the checkpoint has symmetry that ends in pg

@@ -40,6 +40,7 @@
 #include "utils/io.hpp"
 
 #include "dmrg/utils/guess_symmetry.h"
+#include "dmrg/utils/checks.h"
 
 namespace dmrg {
 
@@ -55,8 +56,19 @@ namespace dmrg {
 #ifdef HAVE_NU1
             symm_name = "nu1";
 #else
-            if (parms["model_library"] == "alps")
+            if (parms["model_library"] == "alps") // TODO: should be removed eventually
                 symm_name = guess_alps_symmetry(parms);
+            else
+            {
+                // obtain symmetry from checkpoint if exists
+                if (parms.is_set("chkpfile"))
+                {
+                    parms["symmetry"] = maquis::checks::detail::get_symmetry(parms["chkpfile"]);
+                    symm_name = parms["symmetry"].str();
+                }
+                else
+                    throw std::runtime_error("Symmetry is not set in the parameters and cannot be autodetected.");
+            }
 #endif
         } else {
             symm_name = parms["symmetry"].str();

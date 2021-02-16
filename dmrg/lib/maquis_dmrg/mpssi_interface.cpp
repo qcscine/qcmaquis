@@ -144,8 +144,10 @@ namespace maquis
             BaseParameters chkp_parms;
             ar_in["/parameters"] >> chkp_parms;
             std::string sym = chkp_parms["symmetry"].str();
-
-            if (sym.find("2u1") == std::string::npos)
+            // check if we have "2u1" or "2u1pg": "su2u1"/"su2u1pg" should NOT work
+            // i.e. 2u1 must be found at the beginning of the string
+            std::size_t twou1_pos = sym.find("2u1");
+            if ((twou1_pos == std::string::npos) || (twou1_pos > 0))
                 throw std::runtime_error("checkpoint for MPS rotation does not have 2U1 symmetry");
 
             mps_rotate::rotate_mps(mps, t_mat, scale_inactive);

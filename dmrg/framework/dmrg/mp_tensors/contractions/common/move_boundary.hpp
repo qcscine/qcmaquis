@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -118,27 +118,16 @@ namespace contraction {
 
             index_type loop_max = mpo.col_dim();
 
-    #ifdef USE_AMBIENT
-            ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
-
-            // TODO add separate allocate / execute Kernel templates
-            parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-            });
-
-            return contr_grid.make_boundary();
-    #else
             Boundary<Matrix, SymmGroup> ret;
             ret.resize(mpo.col_dim());
 
             omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-                Kernel()(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                Kernel()(b2, contr_grid, left, t, mpo, mps.data().basis(), mps.data().left_basis(), right_i, out_left_i, in_right_pb, out_left_pb);
                 swap(ret[b2], contr_grid(0,0));
             });
 
             return ret;
-    #endif
         }
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
@@ -169,20 +158,11 @@ namespace contraction {
 
             index_type loop_max = mpo.row_dim();
 
-    #ifdef USE_AMBIENT
-
-            // TODO: add separate allocate / execute Kernel templates
-            parallel_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                ::contraction::abelian::rbtm_kernel(b1, ret[b1], right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-            });
-    #else
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
                 parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                Kernel()(b1, ret[b1], right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
+                Kernel()(b1, ret[b1], right, t, mpo, mps.data().basis(), mps.data().right_basis(),  left_i, out_right_i, in_left_pb, out_right_pb);
             });
 
-    #endif
             return ret;
         }
 
@@ -196,13 +176,14 @@ namespace contraction {
             typedef typename SymmGroup::charge charge;
             typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-            MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, left, mpo);
-
             Index<SymmGroup> const & left_i = bra_tensor.row_dim();
+            MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
+            BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, left, mpo, left_i);
+
             Index<SymmGroup> right_i = ket_tensor.col_dim();
-            Index<SymmGroup> out_left_i = ket_tensor.site_dim() * left_i;
-            common_subset(out_left_i, right_i);
+            Index<SymmGroup> bra_right_i = bra_tensor.col_dim();
+            Index<SymmGroup> out_left_i = bra_tensor.site_dim() * left_i;
+            common_subset(out_left_i, bra_right_i);
             ProductBasis<SymmGroup> out_left_pb(ket_tensor.site_dim(), left_i);
             ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
                                     boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -219,21 +200,6 @@ namespace contraction {
                 std::swap(ket_basis_transpose[i].ls, ket_basis_transpose[i].rs);
             }
 
-
-    #ifdef USE_AMBIENT
-            ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
-
-            // TODO: add separate allocate / execute Kernel templates
-            parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-            });
-            for(index_type b2 = 0; b2 < loop_max; b2++){
-                // TODO: use SU2 gemm in contr_grid in SU2 runs
-                contr_grid.multiply_column_trans(b2, bra_conj);
-            };
-
-            return contr_grid.make_boundary();
-    #else
             Boundary<Matrix, SymmGroup> ret;
             ret.resize(loop_max);
 
@@ -241,7 +207,7 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(b2)) continue;
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
                 block_matrix<Matrix, SymmGroup> tmp;
-                Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
+                Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, left_i,  right_i, out_left_i, in_right_pb, out_left_pb);
                 typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2], MPOTensor_detail::get_spin(mpo, b2, false));
             });
 
@@ -267,7 +233,6 @@ namespace contraction {
             */
 
             return ret;
-    #endif
         }
 
         template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
@@ -281,15 +246,16 @@ namespace contraction {
             typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
-            MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo);
-
             Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                      right_i = bra_tensor.col_dim();
-            Index<SymmGroup> left_i = ket_tensor.row_dim(),
-                             out_right_i = adjoin(physical_i) * right_i;
+            MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
+            contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo, right_i);
 
-            common_subset(out_right_i, left_i);
+            Index<SymmGroup> left_i = ket_tensor.row_dim(),
+                             out_right_i = adjoin(physical_i) * right_i,
+                             bra_left_i = bra_tensor.row_dim();
+
+            common_subset(out_right_i, bra_left_i);
             ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
             ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                                  boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -303,28 +269,15 @@ namespace contraction {
             bra_tensor.make_right_paired();
             block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
 
-    #ifdef USE_AMBIENT
-            parallel_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                ::contraction::abelian::rbtm_kernel(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-            });
-            omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                block_matrix<Matrix, SymmGroup> tmp;
-                gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
-                swap(ret[b1], tmp);
-            });
-
-    #else
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
                 if (mpo.herm_info.left_skip(b1)) continue;
-                Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
+                Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), right_i, left_i, out_right_i, in_left_pb, out_right_pb);
 
                 block_matrix<Matrix, SymmGroup> tmp;
                 typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp, MPOTensor_detail::get_spin(mpo, b1, true));
                 //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
                 swap(ret[b1], tmp);
             });
-    #endif
             return ret;
         }
 

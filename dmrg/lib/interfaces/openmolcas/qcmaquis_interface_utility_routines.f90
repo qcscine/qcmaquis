@@ -253,7 +253,7 @@ contains
           c = L
           do while (c.gt.0)
             ! Calculate the maximum power of 10 that does not exceed c
-            p = int(log10(dble(l)))
+            p = int(log10(dble(c)))
             n = 10**p
 
             ! In total we will have (c-n+1) (p+1)-digit numbers, which will each,obviously,
