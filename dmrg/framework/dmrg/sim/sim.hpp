@@ -151,6 +151,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         ar["/version"] << DMRG_VERSION_STRING;
     }
 
+    for (int iSite = 0; iSite < lat.size(); iSite++)
+        std::cout << mps[iSite] << std::endl;
+
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
 }
 

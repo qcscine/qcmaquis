@@ -455,6 +455,8 @@ namespace ietl
             
             // r = u^A - \theta u
             vector_type& r = uA; r -= theta*u;
+            std::cout << "Error" << std::endl;
+            std::cout << r << std::endl;
             
             // if (|r|_2 < \epsilon) stop
             ++iter;
