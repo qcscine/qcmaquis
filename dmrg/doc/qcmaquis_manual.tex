@@ -51,7 +51,7 @@
 {
 keywordsprefix=\&,alsoletter=\&,%
 keywords=[1]{GATEWAY,SEWARD,SCF,DMRGSCF,MPSSI},
-morekeywords=[2]{ActiveSpaceOptimizer,DMRGSettings,EndDMRGSettings,OOptimizationSettings,EndOOptimizationSettings,NEVPT2Prep,EvRDM,HDF5,DMRG,EJOB,SPIN,AMFI,Angmom},
+morekeywords=[2]{ActiveSpaceOptimizer,DMRGSettings,EndDMRGSettings,OOptimizationSettings,EndOOptimizationSettings,NEVPT2Prep,HDF5,DMRG,EJOB,SPIN,AMFI,Angmom},
 keywordstyle=[1]\color{green!20!red},
 keywordstyle=[2]\color{green!20!blue},
 sensitive=false,
@@ -972,10 +972,10 @@ Currently, the implementation supports \emph{only} QCMaquis DMRG reference wavef
 &NEVPT2
 \end{lstlisting}
 
-First, one performs a DMRG-SCF calculation with the keywords \kwd{NEVPT2Prep} and (optionally) \kwd{EvRDM}, which enable the evaluation of the 4-RDMs (and, in case of multiple states, also t-3RDMs) required by NEVPT2. If \kwd{EvRDM} is specified, the RDMs are evaluated immediately, otherwise an input file is prepared for separate RDM calculations with QCMaquis (see also Table~\ref{table:nevpt2-keyword}). The latter option is particularly useful for large active spaces, where offloaded evaluation can be performed in a massively parallel manner, which will be explained in detail in Section~\ref{sec:4rdm-distributed}.
+First, one performs a DMRG-SCF calculation with the keyword \kwd{NEVPT2Prep}, which enables the evaluation of the 4-RDMs (and, in case of multiple states, also t-3RDMs) required by NEVPT2. The RDMs can be evaluated separately in a massively parallel manner, which is explained in detail in Section~\ref{sec:4rdm-distributed}.
 
 \begin{framed}
- \noindent Note: The computational cost of the RDM evaluation grows as $N^8$ with the number of active orbitals, therefore we strongly recommend to use the distributed RDM evaluation for active spaces larger than 10-11 orbitals described in Section~\ref{sec:4rdm-distributed}.
+ \noindent Note: The computational cost of the RDM evaluation grows as $N^8$ with the number of active orbitals, therefore we strongly recommend to use the distributed RDM evaluation for active spaces larger than 11-12 orbitals described in Section~\ref{sec:4rdm-distributed}.
 \end{framed}
 
 Second, one must perform an integral transformation with the \kwd{MOTRA} module. If no Cholesky decomposition or RICD is used in the calculation, the only mandatory keyword is \kwd{HDF5}, which enables the write-out of the transformed integrals in the HDF5 format required by the \kwd{NEVPT2} module. If Cholesky decomposition is used, one additionally needs to add the keys \kwd{CTOnly} and \kwd{Kpq}.

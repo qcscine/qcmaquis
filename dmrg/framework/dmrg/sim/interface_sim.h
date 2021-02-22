@@ -188,8 +188,8 @@ public:
 
     void run_measure()
     {
-        //if (this->get_last_sweep() < 1)
-        //    throw std::runtime_error("Tried to measure before a sweep");
+        if (this->get_last_sweep() < 1)
+            throw std::runtime_error("Tried to measure before a sweep");
         this->measure("/spectrum/results/", all_measurements);
 
         /// MPO creation
@@ -246,8 +246,8 @@ public:
         results_map_type ret;
 
         // Do not measure before a sweep
-        //if (this->get_last_sweep() < 1)
-        //    throw std::runtime_error("Tried to measure before a sweep");
+        if (this->get_last_sweep() < 1)
+            throw std::runtime_error("Tried to measure before a sweep");
 
         // Run all measurements and fill the result map
         for(auto&& meas: all_measurements)
