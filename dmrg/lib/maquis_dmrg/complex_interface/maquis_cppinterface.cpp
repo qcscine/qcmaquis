@@ -63,6 +63,10 @@ DmrgParameters cpp_parms;
         cpp_parms.set("twosite_truncation", twosite_truncation_);
         cpp_parms.set("storagedir", "./tmp/");
 
+        cpp_parms.set("alpha_initial", 0.0);
+        cpp_parms.set("alpha_main", 0.0);
+        cpp_parms.set("alpha_final", 0.0);
+
         // for now, making things easier
         cpp_parms.set("MEASURE[1rdm]", 1);
         if (meas_2rdm_) cpp_parms.set("MEASURE[2rdm]", 1);
@@ -73,6 +77,7 @@ DmrgParameters cpp_parms;
 
         // bond dimension
         cpp_parms.set("max_bond_dimension", m_);
+        cpp_parms.set("init_bond_dimension", m_);
 
         // lattice, #e-, symmetry
         cpp_parms.set("L", L_);
@@ -176,7 +181,7 @@ integral_indices[i][3]};
         qcmaquis_interface_reset();
     }
 
-    void qcmaquis_interface_get_1rdm(std::vector<std::pair<V,std::array<int,2>>> *rdm1)
+    void qcmaquis_interface_get_1rdm(std::vector<std::pair<V,std::array<int,2>>> *rdm1) // BAGEL
     {
         const typename maquis::DMRGInterface<V>::meas_with_results_type& meas = cpp_interface_ptr->onerdm();
         for (int i = 0; i < meas.first.size(); i++)
@@ -186,8 +191,38 @@ integral_indices[i][3]};
         }
     }
 
+    void qcmaquis_interface_get_1rdm(V* rdm1) // CQ
+    {
+        const typename maquis::DMRGInterface<V>::meas_with_results_type& meas = cpp_interface_ptr->onerdm();
+
+        int L_ = cpp_parms.get<int>("L");
+
+        // clean memory
+        std::fill_n(rdm1,L_*L_,V(0.));
+
+        // setup spinorOrder from QCM to CQ
+        std::vector<int> revSpinorOrder;
+        // initialize spinor reordering index vector (first unbarred than the barred partner)
+        revSpinorOrder.reserve(L_);
+        for (int i = 0; i < L_; i++){
+            if(i < L_/2){ /* unbarred */
+                revSpinorOrder.push_back(2*i         );
+            }else{ /* barred */
+                revSpinorOrder.push_back(2*i - L_ + 1);
+            }
+        }
+
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            //std::cout << " 1-rdm from meas ... element " <<  meas.first[i][0]<<" " << meas.first[i][1] << " is --> " << meas.second[i] << std::endl;
+                rdm1[revSpinorOrder[meas.first[i][0]] + revSpinorOrder[meas.first[i][1]]*L_] =           meas.second[i];
+            if(meas.first[i][0] < meas.first[i][1])
+                rdm1[revSpinorOrder[meas.first[i][1]] + revSpinorOrder[meas.first[i][0]]*L_] = std::conj(meas.second[i]);
+        }
+    }
+
     // hooray for copy-paste
-    void qcmaquis_interface_get_2rdm(std::vector<std::pair<V,std::array<int,4>>> *rdm2)
+    void qcmaquis_interface_get_2rdm(std::vector<std::pair<V,std::array<int,4>>> *rdm2) // BAGEL
     {
         const typename maquis::DMRGInterface<V>::meas_with_results_type& meas = cpp_interface_ptr->twordm();
 
@@ -196,6 +231,44 @@ integral_indices[i][3]};
             //std::cout << " 2-rdm from meas ... element " <<  i << " is --> " << meas.second[i] << std::endl;
             std::array<int,4> pos_ = {meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]};
             rdm2->push_back(std::make_pair(meas.second[i], pos_));
+        }
+    }
+
+    void qcmaquis_interface_get_2rdm(V* rdm2)
+    {
+        const typename maquis::DMRGInterface<V>::meas_with_results_type& meas = cpp_interface_ptr->twordm();
+
+        int L_  = cpp_parms.get<int>("L");
+        int L2_ = L_*L_;
+        int L3_ = L_*L_*L_;
+
+        // clean memory
+        std::fill_n(rdm2,L_*L_*L_*L_,V(0.));
+
+        // setup spinorOrder from QCM to CQ
+        std::vector<int> revSpinorOrder;
+        // initialize spinor reordering index vector (first unbarred than the barred partner)
+        revSpinorOrder.reserve(L_);
+        for (int i = 0; i < L_; i++){
+            if(i < L_/2){ /* unbarred */
+                revSpinorOrder.push_back(2*i         );
+            }else{ /* barred */
+                revSpinorOrder.push_back(2*i - L_ + 1);
+            }
+        }
+
+        for (int i = 0; i < meas.first.size(); i++)
+        {
+            std::array<int,4> pos_ = {meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]};
+
+            // permutation           m                         n                            o                             p
+            rdm2[revSpinorOrder[pos_[0]] + revSpinorOrder[pos_[1]]*L_ + revSpinorOrder[pos_[2]]*L2_ + revSpinorOrder[pos_[3]]*L3_] =  meas.second[i];
+            // permutation           o                         p                            m                             n
+            rdm2[revSpinorOrder[pos_[2]] + revSpinorOrder[pos_[3]]*L_ + revSpinorOrder[pos_[0]]*L2_ + revSpinorOrder[pos_[1]]*L3_] =  meas.second[i];
+            // permutation           m                         p                            o                             n
+            rdm2[revSpinorOrder[pos_[0]] + revSpinorOrder[pos_[3]]*L_ + revSpinorOrder[pos_[2]]*L2_ + revSpinorOrder[pos_[1]]*L3_] = -meas.second[i];
+            // permutation           o                         n                            m                             p
+            rdm2[revSpinorOrder[pos_[2]] + revSpinorOrder[pos_[1]]*L_ + revSpinorOrder[pos_[0]]*L2_ + revSpinorOrder[pos_[3]]*L3_] = -meas.second[i];
         }
     }
 

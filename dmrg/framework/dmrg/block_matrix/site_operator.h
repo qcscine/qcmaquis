@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -52,14 +52,14 @@ public:
     typedef typename maquis::traits::real_type<Matrix>::type real_type;
     typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
     typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
-   
+
     SiteOperator();
 
     SiteOperator(Index<SymmGroup> const & rows,
                  Index<SymmGroup> const & cols);
 
     SiteOperator(DualIndex<SymmGroup> const & basis);
-    
+
     SiteOperator(block_matrix<Matrix, SymmGroup> const&, spin_basis_type const &);
 
     SiteOperator& operator=(SiteOperator rhs);
@@ -71,7 +71,7 @@ public:
     DualIndex<SymmGroup> const & basis() const;
 
     std::string description() const;
-    
+
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
     value_type &         operator()(std::pair<charge, size_type> const & r,
@@ -88,7 +88,7 @@ public:
     bool has_block(charge r, charge c) const;
     bool has_block(std::pair<charge, size_type> const & r,
                    std::pair<charge, size_type> const & c) const;
-    
+
     size_type insert_block(Matrix const &, charge, charge);
     size_type insert_block(Matrix *, charge, charge);
     void remove_block(charge r, charge c);
@@ -103,18 +103,18 @@ public:
     void clear();
 
     void match_and_add_block(Matrix const &, charge, charge);
-    
-    void reserve(charge, charge, std::size_t, std::size_t);
 
+    void reserve(charge, charge, std::size_t, std::size_t);
     void allocate_blocks();
-    
+
+
     void resize_block(charge r, charge c,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
     void resize_block(size_type pos,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
-    
+
     friend void swap(SiteOperator & x, SiteOperator & y)
     {
         std::swap(x.spin_, y.spin_);
@@ -136,16 +136,16 @@ public:
     {
         return bm_(r, c);
     }
-    
+
     Matrix & operator()(charge r, charge c)
     {
         return bm_(r, c);
     }
-    
+
     std::pair<const_block_iterator,const_block_iterator> blocks() const {
         return bm_.blocks();
     }
-    
+
     block_matrix<Matrix, SymmGroup> & bm()
     {
         return bm_;
@@ -154,22 +154,24 @@ public:
     {
         return bm_;
     }
-    
+
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);
-    
+
     void update_sparse();
     SparseOperator<Matrix, SymmGroup, void> const & get_sparse() const { return sparse_op; }
-    
+
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }
-    
+
 private:
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin_;
     spin_basis_type spin_basis;
     block_matrix<Matrix, SymmGroup> bm_;
     SparseOperator<Matrix, SymmGroup, void> sparse_op;
-};    
+
+};
+
 
 #include "dmrg/block_matrix/site_operator.hpp"
 

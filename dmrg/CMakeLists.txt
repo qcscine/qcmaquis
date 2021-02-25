@@ -33,7 +33,6 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -171,7 +170,7 @@ endforeach(SYMM)
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
-    find_package(GSL REQUIRED)
+  find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
 endif()
 
@@ -183,7 +182,7 @@ message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
 list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 # ILP64 definition
 if(LAPACK_64_BIT)
-add_definitions(-DBIND_FORTRAN_INTEGER_8)
+  add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
 
 # HDF5
@@ -196,14 +195,14 @@ set (Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
-list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
-list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
-if(${Boost_MINOR_VERSION} VERSION_LESS 60)
-    add_definitions(-DLEGACY_BOOST) # TODO: Should be changed as other definitions in the cmake-rework branch
-endif()
+    list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
+    list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+    if(${Boost_MINOR_VERSION} VERSION_LESS 60)
+        add_definitions(-DLEGACY_BOOST)
+    endif()
 else(Boost_FOUND)
-message(FATAL_ERROR "Boost libraries are required for QCMaquis")
+    message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
 
 # ALPS
@@ -222,7 +221,7 @@ endif()
 set(DMRG_YEAR 2020)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 0)
-set(DMRG_VERSION_PATCH 1)
+set(DMRG_VERSION_PATCH 2)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -317,7 +316,7 @@ endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
 # Configure files
 ######################################################################
 
-configure_file(framework/dmrg/version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg/version.h)
+configure_file(framework/dmrg/version.h.in ${PROJECT_BINARY_DIR}/framework/dmrg/version.h)
 
 
 ######################################################################
@@ -342,7 +341,7 @@ add_subdirectory(applications)
 
 # *** tests
 if(QCMAQUIS_TESTS)
-  message("Testing enabled")
+  message(STATUS "Enabling tests")
   enable_testing()
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
@@ -379,7 +378,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 # Install
 ######################################################################
 
-install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
+install(FILES ${PROJECT_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include/framework/dmrg COMPONENT headers)
 
 install(FILES
