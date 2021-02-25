@@ -57,6 +57,5 @@ install(TARGETS qcmaquis-hdf5-interface EXPORT DMRGTargets COMPONENT libraries D
 install(PROGRAMS tools/qcm_checkpoint_rename.py DESTINATION bin COMPONENT tools)
 install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY} DESTINATION share/qcmaquis)
 
-message(STATUS "${PROJECT_BINARY_DIR}")
 export(TARGETS qcmaquis-driver APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
 export(TARGETS qcmaquis-hdf5-interface APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
