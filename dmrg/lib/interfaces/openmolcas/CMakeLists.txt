@@ -43,9 +43,13 @@ if (LAPACK_64_BIT)
 endif()
 
 if (BUILD_OPENMOLCAS_MPI)
+  message(STATUS "Compiling for OpenMOLCAS interface with enabled MPI")
   target_compile_definitions(qcmaquis-driver PRIVATE "_MOLCAS_MPP_")
   if (GA_INCLUDE_DIR)
-    set_target_properties(qcmaquis-driver INCLUDE_DIRECTORIES "${GA_INCLUDE_DIR}")
+    set_target_properties(qcmaquis-driver PROPERTIES INCLUDE_DIRECTORIES "${GA_INCLUDE_DIR}")
+  endif()
+  if (GA_LIBRARIES)
+    set_property(TARGET qcmaquis-driver APPEND PROPERTY INTERFACE_LINK_LIBRARIES "${GA_LIBRARIES}")
   endif()
 endif()
 
@@ -57,6 +61,5 @@ install(TARGETS qcmaquis-hdf5-interface EXPORT DMRGTargets COMPONENT libraries D
 install(PROGRAMS tools/qcm_checkpoint_rename.py DESTINATION bin COMPONENT tools)
 install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY} DESTINATION share/qcmaquis)
 
-message(STATUS "${PROJECT_BINARY_DIR}")
 export(TARGETS qcmaquis-driver APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
 export(TARGETS qcmaquis-hdf5-interface APPEND FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")

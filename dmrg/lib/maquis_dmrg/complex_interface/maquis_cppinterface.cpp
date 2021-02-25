@@ -260,7 +260,7 @@ integral_indices[i][3]};
         for (int i = 0; i < meas.first.size(); i++)
         {
             std::array<int,4> pos_ = {meas.first[i][0], meas.first[i][1], meas.first[i][2], meas.first[i][3]};
-            /* debug print std::cout << " 2-rdm from meas ... element " <<  pos_[0]<<pos_[1]<<pos_[2]<<pos_[3] << " is --> " << meas.second[i] << std::endl; */
+
             // permutation           m                         n                            o                             p
             rdm2[revSpinorOrder[pos_[0]] + revSpinorOrder[pos_[1]]*L_ + revSpinorOrder[pos_[2]]*L2_ + revSpinorOrder[pos_[3]]*L3_] =  meas.second[i];
             // permutation           o                         p                            m                             n

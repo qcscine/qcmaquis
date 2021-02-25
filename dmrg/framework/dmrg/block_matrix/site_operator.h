@@ -107,6 +107,7 @@ public:
     void reserve(charge, charge, std::size_t, std::size_t);
     void allocate_blocks();
 
+
     void resize_block(charge r, charge c,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
@@ -168,7 +169,9 @@ private:
     spin_basis_type spin_basis;
     block_matrix<Matrix, SymmGroup> bm_;
     SparseOperator<Matrix, SymmGroup, void> sparse_op;
+
 };
+
 
 #include "dmrg/block_matrix/site_operator.hpp"
 

@@ -29,7 +29,7 @@
 *****************************************************************************/
 #ifndef MAQUIS_CPPINTERFACE_H
 #define MAQUIS_CPPINTERFACE_H
-// CPP/CPP compatible relativistic QCMaquis DMRG interface
+// Interface layer for Bagel and ChronosQ
 
 #include <complex>
 #include <vector>
