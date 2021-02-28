@@ -150,11 +150,12 @@ public:
         std::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         std::smatch what;
-        bool expr_rdm = false;
         std::vector<pos_t> positions;
         std::string bra_ckp("");
 
         for (auto&& it : parms.get_range()) {
+            bool expr_rdm = false;
+
             std::string lhs = it.first;
 
             std::string name, value;

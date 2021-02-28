@@ -114,203 +114,242 @@ namespace measurements_details {
         return (norm_rhs > norm_lhs);
     }
 
-    // Function to handle 4-RDM index permutations
+    // Function to handle n-RDM index permutations
     // it is written in a generic way to avoid copy-paste
     // for now it is used to
     // a) get the total number of permutations
     // b) construct the index tuples to iterate over, in the hope that the iterations become more efficient this way
     // Params:
     // L: number of orbitals
-    // positions_first: optional -- fixed first 4 indices to obtain the slice of 4-RDM
+    // positions_first: optional -- fixed first 4 indices to obtain the slice of 4-RDM (or 2-3 for 3-RDM, unused for lower RDM)
     // fun: a function (wrapped in a class that has return_type and operator() defined)
     // that returns F::return_type that gets executed in the middle of a loop
     // (e.g. increments a counter or adds an index vector)
     // examples for fun see below
-    template <class F, class I=int>
-    typename F::return_type iterate_4rdm_indices(F fun, I L, const std::vector<I> & positions_first = std::vector<I>())
+    template <class F, int N>
+    struct iterate_rdm_indices
     {
         typedef Lattice::pos_t pos_t;
-        pos_t p4_start = 0;
-        pos_t p3_start = 0;
-        pos_t p1_start = L-1;
-        pos_t p2_start = p1_start;
-        pos_t p4_end   = L-1;
-        pos_t p3_end   = L-1;
-        pos_t p1_end   = 0;
-        pos_t p2_end   = 0;
-        pos_t p_max    = L;
-        if(positions_first.size() == 4){
-            p4_start = positions_first[0];
-            p3_start = positions_first[1];
-            p1_start = positions_first[2];
-            p2_start = positions_first[3];
-            p4_end   = positions_first[0]+1;
-            p3_end   = positions_first[1]+1;
-            p1_end   = positions_first[2];
-            p2_end   = positions_first[3];
-        }
-        for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
-        for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
+        typename F::return_type operator()(F fun, pos_t L, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
-            for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
+            throw std::runtime_error("iterate_rdm_indices not implemented for this number of indices");
+        }
+    };
+
+    // specialization for 4-RDMs
+    template <class F>
+    struct iterate_rdm_indices<F, 4>
+    {
+        typedef Lattice::pos_t pos_t;
+        typename F::return_type operator()(F fun, pos_t L, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
+        {
+            pos_t p4_start = 0;
+            pos_t p3_start = 0;
+            pos_t p1_start = L-1;
+            pos_t p2_start = p1_start;
+            pos_t p4_end   = L-1;
+            pos_t p3_end   = L-1;
+            pos_t p1_end   = 0;
+            pos_t p2_end   = 0;
+            pos_t p_max    = L;
+            if(positions_first.size() == 4){
+                p4_start = positions_first[0];
+                p3_start = positions_first[1];
+                p1_start = positions_first[2];
+                p2_start = positions_first[3];
+                p4_end   = positions_first[0]+1;
+                p3_end   = positions_first[1]+1;
+                p1_end   = positions_first[2];
+                p2_end   = positions_first[3];
+            }
+            for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
+            for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
             {
-                if(p4 > p3 || p4 > p1 || p3 > p1) continue;
-
-                if(positions_first.empty()){
-                    p2_start = p1;
-                    p2_end   = 0;
-                }
-
-                for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
+                for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
                 {
-                    if(p3 > p2) continue;
+                    if(p4 > p3 || p4 > p1 || p3 > p1) continue;
 
-                    // third index must be different if p1 == p2
-                    if(p1 == p2 && p3 == p1) continue;
+                    if(positions_first.empty()){
+                        p2_start = p1;
+                        p2_end   = 0;
+                    }
 
-                    // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
-                    if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2)) continue;
-
-                    bool double_equal = (p1 == p2 && p3 == p4);             // case 1
-                    bool     ij_equal = (p1 == p2 && p2 != p3 && p3 != p4); // case 2
-                    bool     jk_equal = (p1 != p2 && p2 == p3 && p3 != p4); // case 3
-                    bool     kl_equal = (p1 != p2 && p2 != p3 && p3 == p4); // case 4
-                    bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
-
-                    for (pos_t p5 = p1; p5 >= 0; --p5)
-                    for (pos_t p6 = p1; p6 >= 0; --p6)
-                    for (pos_t p7 = 0; p7 < p_max; ++p7)
+                    for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
                     {
-                        // set restrictions on index p6
-                        if ((double_equal || ij_equal) && p6 > p5 ) continue;
+                        if(p3 > p2) continue;
 
-                        // set restrictions on index p7
-                        if(double_equal)
-                            if(p7 > p5) continue;
-                        else
-                            if(p7 > p1) continue;
+                        // third index must be different if p1 == p2
+                        if(p1 == p2 && p3 == p1) continue;
 
-                        if(p5 == p6 && p5 == p7) continue;
+                        // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
+                        if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2)) continue;
 
-                        // set restrictions on index p8
-                        pos_t p8_end = 0;
-                        if (double_equal)
-                            p8_end = p5+1;
-                        else if (kl_equal)
-                            p8_end = p7+1;
-                        else
-                            p8_end = p1+1;
+                        bool double_equal = (p1 == p2 && p3 == p4);             // case 1
+                        bool     ij_equal = (p1 == p2 && p2 != p3 && p3 != p4); // case 2
+                        bool     jk_equal = (p1 != p2 && p2 == p3 && p3 != p4); // case 3
+                        bool     kl_equal = (p1 != p2 && p2 != p3 && p3 == p4); // case 4
+                        bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
 
-                        for (pos_t p8 = 0; p8 < p8_end; ++p8)
+                        for (pos_t p5 = p1; p5 >= 0; --p5)
+                        for (pos_t p6 = p1; p6 >= 0; --p6)
+                        for (pos_t p7 = 0; p7 < p_max; ++p7)
                         {
-                            // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
-                            if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) continue;
+                            // set restrictions on index p6
+                            if ((double_equal || ij_equal) && p6 > p5 ) continue;
 
-                            // case 1
-                            if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                            if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                            if(double_equal && p8 > p7 && p7 > p6 && (p8 > p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                            if(double_equal && p8 < p7 && p7 > p6 && (p8 == p5 || p8 == p6 || p7 == p5 || p7 == p6)) continue;
-                            if(double_equal && p8 < p7 && p7 > p6 && p8 <  p6 ) continue;
-                            // case 2/3/4: 2x2 equal indices
-                            if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) continue;
+                            // set restrictions on index p7
+                            if(double_equal)
+                                if(p7 > p5) continue;
+                            else
+                                if(p7 > p1) continue;
 
-                            // case 2/4: 2 equal indices
-                            if((ij_equal || kl_equal) && (p5 == p7 || p5 == p8 || p6 == p7|| p6 == p8)) continue;
+                            if(p5 == p6 && p5 == p7) continue;
 
-                            // case 3
-                            if(jk_equal){
-                                // 2 equal indices
-                                if(p5 == p7 || p6 == p7 || p6 == p8) continue;
-                                if(p5 == p6 && p7 != p8 && p6 > p7) continue;
-                                if(p5 == p8 && p7 > p6) continue;
-                                // none equal
-                                if(std::min(p5,p6) != std::min(p7,p8) && p7 != p8 && p7 > p6) continue;
+                            pos_t p8_end = 0;
+                            if (double_equal)
+                            // set restrictions on index p8
+                                p8_end = p5+1;
+                            else if (kl_equal)
+                                p8_end = p7+1;
+                            else
+                                p8_end = p1+1;
+
+                            for (pos_t p8 = 0; p8 < p8_end; ++p8)
+                            {
+                                // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
+                                if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) continue;
+
+                                // case 1
+                                if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                if(double_equal && p8 > p7 && p7 > p6 && (p8 > p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
+                                if(double_equal && p8 < p7 && p7 > p6 && (p8 == p5 || p8 == p6 || p7 == p5 || p7 == p6)) continue;
+                                if(double_equal && p8 < p7 && p7 > p6 && p8 <  p6 ) continue;
+                                // case 2/3/4: 2x2 equal indices
+                                if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) continue;
+
+                                // case 2/4: 2 equal indices
+                                if((ij_equal || kl_equal) && (p5 == p7 || p5 == p8 || p6 == p7|| p6 == p8)) continue;
+
+                                // case 3
+                                if(jk_equal){
+                                    // 2 equal indices
+                                    if(p5 == p7 || p6 == p7 || p6 == p8) continue;
+                                    if(p5 == p6 && p7 != p8 && p6 > p7) continue;
+                                    if(p5 == p8 && p7 > p6) continue;
+                                    // none equal
+                                    if(std::min(p5,p6) != std::min(p7,p8) && p7 != p8 && p7 > p6) continue;
+                                }
+
+                                // case 5
+                                if(none_equal){
+                                    if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) continue;
+                                }
+
+                                // defines position vector for spin-free 4-RDM element
+                                std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6, p7, p8};
+
+                                // check norm of lhs and rhs - skip if norm of rhs > lhs
+                                if(compare_norm(positions)) continue;
+
+                                // execute functor
+                                fun(positions);
                             }
-
-                            // case 5
-                            if(none_equal){
-                                if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) continue;
-                            }
-
-                            // defines position vector for spin-free 4-RDM element
-                            std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6, p7, p8};
-
-                            // check norm of lhs and rhs - skip if norm of rhs > lhs
-                            if(compare_norm(positions)) continue;
-
-                            // execute functor
-                            fun(positions);
                         }
                     }
                 }
             }
+            return fun.get();
         }
-        return fun.get();
-    }
+    };
+
 
     // Same for 3-RDM indices
-    template <class F, class I=int>
-    typename F::return_type iterate_3rdm_indices(F fun, I L, bool bra_neq_ket = true, const std::vector<I> & positions_first = std::vector<I>())
+    template <class F>
+    struct iterate_rdm_indices<F, 3>
     {
         typedef Lattice::pos_t pos_t;
-        pos_t p1_start = 0;
-        pos_t p2_start = 0;
-        pos_t p3_start = 0;
-        pos_t p1_end   = L;
-        pos_t p2_end   = L;
-        pos_t p3_end   = L;
-        pos_t p4_end   = L;
-        pos_t p5_end   = L;
-        pos_t p6_end   = L;
-
-        if(positions_first.size() == 2){
-            p1_start = positions_first[0];
-            p2_start = positions_first[1];
-            p1_end   = positions_first[0]+1;
-            p2_end   = positions_first[1]+1;
-        }
-
-        // Leon: allow both 2-index and 3-index 3-RDM measurement splitting
-        // warning: if two indices are used, the order in the input file is p1,p2; but for three it's p2,p1,p3 !
-
-        if(positions_first.size() == 3){
-            p1_start = positions_first[0];
-            p2_start = positions_first[1];
-            p3_start = positions_first[2];
-            p1_end   = positions_first[0]+1;
-            p2_end   = positions_first[1]+1;
-            p3_end   = positions_first[2]+1;
-        }
-
-        for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
-        for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
-        for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
-        for (pos_t p4 = 0;                p4 < p4_end; ++p4)
-        for (pos_t p5 = 0;                p5 < p5_end; ++p5)
+        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = true, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
-            // index restrictions
-            if(p1 < p2 ) continue;
-            if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) continue;
-            if(!bra_neq_ket && p4 < std::min(p1, p2)) continue;
-            if(!bra_neq_ket && p5 < std::min(p1, p2)) continue;
+            pos_t p1_start = 0;
+            pos_t p2_start = 0;
+            pos_t p3_start = 0;
+            pos_t p1_end   = L;
+            pos_t p2_end   = L;
+            pos_t p3_end   = L;
+            pos_t p4_end   = L;
+            pos_t p5_end   = L;
+            pos_t p6_end   = L;
 
+            if(positions_first.size() == 2){
+                p1_start = positions_first[0];
+                p2_start = positions_first[1];
+                p1_end   = positions_first[0]+1;
+                p2_end   = positions_first[1]+1;
+            }
 
-            for (pos_t p6 = std::min(p4, p5); p6 < p6_end; ++p6)
+            // Leon: allow both 2-index and 3-index 3-RDM measurement splitting
+            // warning: if two indices are used, the order in the input file is p1,p2; but for three it's p2,p1,p3 !
+
+            if(positions_first.size() == 3){
+                p1_start = positions_first[0];
+                p2_start = positions_first[1];
+                p3_start = positions_first[2];
+                p1_end   = positions_first[0]+1;
+                p2_end   = positions_first[1]+1;
+                p3_end   = positions_first[2]+1;
+            }
+
+            for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
+            for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
+            for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
+            for (pos_t p4 = 0;                p4 < p4_end; ++p4)
+            for (pos_t p5 = 0;                p5 < p5_end; ++p5)
             {
-                // sixth index must be different if p4 == p5
-                if(p4 == p5 && p4 == p6) continue;
+                // index restrictions
+                if(p1 < p2 ) continue;
+                if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) continue;
+                if(!bra_neq_ket && p4 < std::min(p1, p2)) continue;
+                if(!bra_neq_ket && p5 < std::min(p1, p2)) continue;
 
-                // do with the indices what's required to do -- define a vector with all positions and pass it on to the functor
-                std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
+
+                for (pos_t p6 = std::min(p4, p5); p6 < p6_end; ++p6)
+                {
+                    // sixth index must be different if p4 == p5
+                    if(p4 == p5 && p4 == p6) continue;
+
+                    // do with the indices what's required to do -- define a vector with all positions and pass it on to the functor
+                    std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
+                    fun(positions);
+                }
+            }
+            return fun.get();
+        }
+    };
+
+    // 2-RDMs
+    template <class F>
+    struct iterate_rdm_indices<F, 2>
+    {
+        typedef Lattice::pos_t pos_t;
+        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = true)
+        {
+            for (pos_t p1 = 0; p1 < L; ++p1)
+            for (pos_t p2 = 0; p2 < L; ++p2)
+            // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
+            // if bra != ket, pertmutation symmetry is only pqrs == qpsr
+            for (pos_t p3 = (bra_neq_ket) ? 0 : std::min(p1,p2); p3 < L; ++p3)
+            for (pos_t p4 = p3; p4 < L; ++p4)
+            {
+                std::vector<pos_t> positions{p1, p2, p3, p4};
                 fun(positions);
             }
+            return fun.get();
         }
-        return fun.get();
-    }
+    };
 
     // Helper class for counting all n-RDM permutations using the handle_<n>rdm_indices function
-    template<class I=int, class Dummy=std::vector<I> >
+    template<class I=Lattice::pos_t, class Dummy=std::vector<I> >
     class nrdm_counter
     {
         public:
@@ -323,7 +362,7 @@ namespace measurements_details {
     };
 
     // Helper class for accumulating iterators of indices
-    template<class I=int>
+    template<class I=Lattice::pos_t>
     class nrdm_iterator
     {
         public:
@@ -337,28 +376,40 @@ namespace measurements_details {
     };
 
     // nice wrapper functions for the above classes
-    template<class I=int>
+    template<class I=Lattice::pos_t>
     I get_4rdm_permutations(I L, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_4rdm_indices(nrdm_counter<I>(), L, positions_first);
+        return iterate_rdm_indices<nrdm_counter<I>, 4>()(nrdm_counter<I>(), L, positions_first);
     }
 
-    template<class I=int>
+    template<class I=Lattice::pos_t>
     typename nrdm_iterator<I>::return_type iterate_4rdm(I L, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_4rdm_indices(nrdm_iterator<I>(), L, positions_first);
+        return iterate_rdm_indices<nrdm_iterator<I>, 4>()(nrdm_iterator<I>(), L, positions_first);
     }
 
-    template<class I=int>
+    template<class I=Lattice::pos_t>
     I get_3rdm_permutations(I L, bool bra_neq_ket, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_3rdm_indices(nrdm_counter<I>(), L, bra_neq_ket, positions_first);
+        return iterate_rdm_indices<nrdm_counter<I>, 3>()(nrdm_counter<I>(), L, bra_neq_ket, positions_first);
     }
 
-    template<class I=int>
+    template<class I=Lattice::pos_t>
     typename nrdm_iterator<I>::return_type iterate_3rdm(I L, bool bra_neq_ket, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_3rdm_indices(nrdm_iterator<I>(), L, bra_neq_ket, positions_first);
+        return iterate_rdm_indices<nrdm_iterator<I>, 3>()(nrdm_iterator<I>(), L, bra_neq_ket, positions_first);
+    }
+
+    template<class I=Lattice::pos_t>
+    typename nrdm_iterator<I>::return_type iterate_2rdm(I L, bool bra_neq_ket)
+    {
+        return iterate_rdm_indices<nrdm_iterator<I>, 2>()(nrdm_iterator<I>(), L, bra_neq_ket);
+    }
+
+    template<class I=Lattice::pos_t>
+    I get_2rdm_permutations(I L, bool bra_neq_ket)
+    {
+        return iterate_rdm_indices<nrdm_counter<I>, 2>()(nrdm_counter<I>(), L, bra_neq_ket);
     }
 
 
