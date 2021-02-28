@@ -329,6 +329,7 @@ BOOST_AUTO_TEST_CASE( Test2 )
         }
 
         // excited state calculation
+        p.erase("MEASURE[2rdm]");
         p.set("n_ortho_states", 1);
         p.set("ortho_states", checkpoint_path.c_str());
         p.erase("chkpfile");
@@ -353,7 +354,7 @@ BOOST_AUTO_TEST_CASE( Test2 )
             BOOST_CHECK_EQUAL(meas_trans1rdm.second.size(), 16);
 
             // Reference values
-            const maquis::DMRGInterface<double>::meas_with_results_type ref_trans1rdm = {
+            const rdm_measurement ref_trans1rdm = {
                 { {0,0}, {0,1}, {0,2}, {0,3}, {1,0}, {1,1}, {1,2}, {1,3},
                 {2,0}, {2,1}, {2,2}, {2,3}, {3,0}, {3,1}, {3,2}, {3,3} },
                 su2 ?
