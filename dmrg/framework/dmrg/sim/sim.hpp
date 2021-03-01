@@ -73,12 +73,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     if (!chkpfile.empty())
     {
         boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
             maquis::checks::orbital_order_check(parms, chkpfile);
-        }
-        else if (!parms["initfile"].empty()){
-            maquis::checks::orbital_order_check(parms, parms["initfile"].str());
-        }
     }
 
     /// Model initialization
@@ -94,6 +90,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
             storage::archive ar_in(chkpfile+"/props.h5");
+            restore = true;
             if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
@@ -106,26 +103,15 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
-                restore = true;
-            } else {
-                maquis::cout << "A fresh simulation will start." << std::endl;
             }
         }
     }
 
     /// MPS initialization
     if (restore) {
-
         maquis::checks::symmetry_check(parms, chkpfile);
         load(chkpfile, mps);
         maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-
-        maquis::checks::symmetry_check(parms, parms["initfile"].str());
-        load(parms["initfile"].str(), mps);
-        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
 
     } else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
