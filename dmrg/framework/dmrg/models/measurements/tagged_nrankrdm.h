@@ -232,74 +232,47 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
+            // get all the labels ahead of the measurement and initialise the result arrays with the correct size
+            auto indices = measurements_details::iterate_2rdm(lattice.size(), bra_neq_ket);
+            this->labels_num.resize(indices.size());
+            this->labels.resize(indices.size());
+            this->vector_results.resize(indices.size());
+
+
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(1)
+            #pragma omp parallel for
             #endif
-            for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
-            for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
+            for (int i = 0; i < indices.size(); i++)
             {
+                auto&& positions = indices[i];
+
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
-                // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
-                // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-                pos_t subref = 0;
-                if (bra_neq_ket)
-                    subref = 0;
-                else
-                    subref = std::min(p1, p2);
+                auto&& num_labels = order_labels(lattice, positions);
+                std::string lbt = label_string(num_labels);
+                this->labels[i] = lbt;
+                this->labels_num[i] = num_labels;
+                // Loop over operator terms that are measured synchronously and added together
+                // Used e.g. for the four spin combos of the 2-RDM
 
-                for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
-                {
-                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                    std::vector<std::vector<pos_t> > num_labels;
+                this->vector_results[i] = 0.;
 
-                    for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
-                    {
-                        std::vector<pos_t> positions= {p1, p2, p3, p4};
+                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
-                        // Loop over operator terms that are measured synchronously and added together
-                        // Used e.g. for the four spin combos of the 2-RDM
-                        typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                        bool checkpass = false;
-                        for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
+                    tag_vec operators(4);
+                    operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
+                    operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
+                    operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
+                    operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
 
-                            tag_vec operators(4);
-                            operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
-                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
-                            operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
-                            operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                    // check if term is allowed by symmetry
+                    term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
+                    if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                        break;
 
-                            // check if term is allowed by symmetry
-                            term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                            if(checkpass || measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                            {
-                                checkpass = true;
-                                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                            }
-                            else break;
-                        }
+                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                    this->vector_results[i] += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
 
-                        dct.push_back(checkpass ? value : 0.0);
-                        num_labels.push_back(order_labels(lattice, positions));
-                    }
-
-                    std::vector<std::string> lbt = label_strings(num_labels);
-
-                    // save results and labels
-                    #ifdef MAQUIS_OPENMP
-                    #pragma omp critical
-                    #endif
-                    {
-                        this->vector_results.reserve(this->vector_results.size() + dct.size());
-                        std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                        this->labels.reserve(this->labels.size() + dct.size());
-                        std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-
-                        this->labels_num.reserve(this->labels_num.size() + dct.size());
-                        std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
-                    }
                 }
             }
         }
@@ -388,20 +361,28 @@ namespace measurements {
             maquis::cout << "Number of total 4-RDM elements measured: " << measurements_details::get_4rdm_permutations(lattice.size(), positions_first) << std::endl;
 
             auto indices = measurements_details::iterate_4rdm(lattice.size(), positions_first);
+            this->labels_num.resize(indices.size());
+            this->labels.resize(indices.size());
+            this->vector_results.resize(indices.size());
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic,1)
+            #pragma omp parallel for
             #endif
-            for (decltype(indices)::const_iterator it = indices.begin(); it < indices.end(); it++)
-            {
-                auto&& positions = *it;
-                MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
-                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                std::vector<std::vector<pos_t> > num_labels;
 
-                typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                bool measured = false;
+            for (int i = 0; i < indices.size(); i++)
+            {
+                auto&& positions = indices[i];
+
+                auto&& num_labels = order_labels(lattice, positions);
+                std::string lbt = label_string(num_labels);
+                this->labels[i] = lbt;
+                this->labels_num[i] = num_labels;
+
+                // MPS<Matrix, SymmGroup> ket_mps_local = ket_mps; // enable if you get pairing issues
+                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+
+                this->vector_results[i] = 0.;
+
                 for (std::size_t synop = 0; synop < operator_terms.size(); ++synop)
                 {
                     tag_vec operators(8);
@@ -416,45 +397,13 @@ namespace measurements {
 
                     // check if term is allowed by symmetry
                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                        continue;
-                    measured = true;
+                    if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                        break;
 
                     MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    typename MPS<Matrix, SymmGroup>::scalar_type local_value = expval(ket_mps_local, ket_mps_local, mpo);
-                    //maquis::cout << "synop term " << synop+1 << "--> local value: " << local_value << std::endl;
-                    //value += operator_terms[synop].second * expval(ket_mps_local, ket_mps_local, mpo);
-                    value += operator_terms[synop].second * local_value;
+                    this->vector_results[i] += operator_terms[synop].second * expval(ket_mps, ket_mps, mpo);
 
                 }// spin combo loop
-
-                if(measured)
-                {
-                    // debug print
-                    /* if (std::abs(value) > 0)
-                    {
-                        std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                        maquis::cout << " " << value << std::endl;
-                    } */
-                    dct.push_back(value);
-                    num_labels.push_back(order_labels(lattice, positions));
-                }
-
-                std::vector<std::string> lbt = label_strings(num_labels);
-                // save results and labels
-                #ifdef MAQUIS_OPENMP
-                #pragma omp critical
-                #endif
-                {
-                    this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                    this->labels.reserve(this->labels.size() + dct.size());
-                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-
-                    this->labels_num.reserve(this->labels_num.size() + dct.size());
-                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
-                }
             } // iterator loop
         }
 
@@ -640,6 +589,7 @@ namespace measurements {
 
                 std::vector<term_descriptor> terms = SpinSumSU2<Matrix, SymmGroup>::V_term(1., positions[0], positions[1], positions[2], positions[3], op_collection, lattice);
 
+                // save labels
                 auto&& num_labels = order_labels(lattice, positions);
                 std::string lbt = label_string(num_labels);
                 this->labels[i] = lbt;
@@ -657,7 +607,7 @@ namespace measurements {
                 MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
                 typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
 
-                // save results and labels
+                // save results
                 this->vector_results[i] = value;
             }
         }
