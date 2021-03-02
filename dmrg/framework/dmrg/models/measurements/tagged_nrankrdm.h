@@ -240,7 +240,7 @@ namespace measurements {
 
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for schedule(dynamic)
             #endif
             for (int i = 0; i < indices.size(); i++)
             {
@@ -284,29 +284,33 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            maquis::cout << "Number of total 3-RDM elements measured: " << measurements_details::get_3rdm_permutations(lattice.size(), bra_neq_ket, positions_first) << std::endl;
-
             auto indices = measurements_details::iterate_3rdm(lattice.size(), bra_neq_ket, positions_first);
+            maquis::cout << "Number of total 3-RDM elements measured: " << indices.size() << std::endl;
+
+            this->labels_num.resize(indices.size());
+            this->labels.resize(indices.size());
+            this->vector_results.resize(indices.size());
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule (dynamic,1)
+            #pragma omp parallel for schedule(dynamic)
             #endif
-            for (decltype(indices)::const_iterator it = indices.begin(); it < indices.end(); it++)
+
+            for (int i = 0; i < indices.size(); i++)
             {
-                auto&& positions = *it;
+                auto&& positions = indices[i];
 
-                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                std::vector<std::vector<pos_t> > num_labels;
+                auto&& num_labels = order_labels(lattice, positions);
+                std::string lbt = label_string(num_labels);
+                this->labels[i] = lbt;
+                this->labels_num[i] = num_labels;
+
+                // MPS<Matrix, SymmGroup> ket_mps_local = ket_mps; // enable if you get pairing issues
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
-                MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
-                MPS<Matrix, SymmGroup> bra_mps_local = bra_mps;
 
-                // Loop over operator terms that are measured synchronously and added together
-                // Used e.g. for the spin combos of the 3-RDM
-                typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                bool measured = false;
-                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
+                this->vector_results[i] = 0.;
 
+                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop)
+                {
                     tag_vec operators(6);
                     operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
                     operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
@@ -317,36 +321,13 @@ namespace measurements {
 
                     // check if term is allowed by symmetry
                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                        continue;
-                    measured = true;
+                    if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                        break;
 
                     MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    value += operator_terms[synop].second * expval(bra_mps_local, ket_mps_local, mpo);
-                }
+                    this->vector_results[i] += operator_terms[synop].second * expval(ket_mps, ket_mps, mpo);
 
-                if(measured)
-                {
-                    dct.push_back(value);
-                    num_labels.push_back(order_labels(lattice, positions));
-                }
-
-                std::vector<std::string> lbt = label_strings(num_labels);
-
-                // save results and labels
-                #ifdef MAQUIS_OPENMP
-                #pragma omp critical
-                #endif
-                {
-                    this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                    this->labels.reserve(this->labels.size() + dct.size());
-                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-
-                    this->labels_num.reserve(this->labels_num.size() + dct.size());
-                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
-                }
+                }// spin combo loop
             } // iterator loop
         }
 
@@ -358,15 +339,15 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            maquis::cout << "Number of total 4-RDM elements measured: " << measurements_details::get_4rdm_permutations(lattice.size(), positions_first) << std::endl;
-
             auto indices = measurements_details::iterate_4rdm(lattice.size(), positions_first);
+            maquis::cout << "Number of total 4-RDM elements measured: " << indices.size() << std::endl;
+
             this->labels_num.resize(indices.size());
             this->labels.resize(indices.size());
             this->vector_results.resize(indices.size());
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for schedule(dynamic)
             #endif
 
             for (int i = 0; i < indices.size(); i++)
@@ -579,7 +560,7 @@ namespace measurements {
             this->vector_results.resize(indices.size());
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for schedule(dynamic)
             #endif
             for (int i = 0; i < indices.size(); i++)
             {
