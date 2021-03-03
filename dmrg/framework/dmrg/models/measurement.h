@@ -76,7 +76,7 @@ public:
     measurement* clone() const { return do_clone(); }
 
     std::vector<std::vector<int> > get_labels_num() { return labels_num; };
-    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> get_vec_results() { return vector_results; };
+    std::vector<value_type> get_vec_results() { return vector_results; };
 
 protected:
     virtual measurement* do_clone() const =0;
@@ -89,7 +89,7 @@ protected:
     // Plain indices
     std::vector<std::vector<int> > labels_num;
     value_type result;
-    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vector_results;
+    std::vector<value_type> vector_results;
 
     Index<SymmGroup> phys_psi;
 

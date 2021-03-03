@@ -58,7 +58,7 @@ namespace measurements {
 
         typedef typename base::op_t op_t;
         typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Matrix::value_type value_type;
+        typedef typename base::value_type value_type;
 
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_term;
@@ -146,11 +146,11 @@ namespace measurements {
             if (operator_terms[0].first.size() == 2)
                 measure_correlation(bra_mps, ket_mps);
             else if (operator_terms[0].first.size() == 4)
-                measure_2rdm(bra_mps, ket_mps);
+                measure_nrdm<2>(bra_mps, ket_mps);
             else if (operator_terms[0].first.size() == 6)
-                measure_3rdm(bra_mps, ket_mps);
+                measure_nrdm<3>(bra_mps, ket_mps);
             else if (operator_terms[0].first.size() == 8)
-                measure_4rdm(bra_mps, ket_mps);
+                measure_nrdm<4>(bra_mps, ket_mps);
             else
                 throw std::runtime_error("correlation measurements at the moment supported with 2, 4, 6 and 8 operators, size is "
                                           + boost::lexical_cast<std::string>(operator_terms[0].first.size()));
@@ -225,127 +225,22 @@ namespace measurements {
             }
         }
 
-        void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps)
-        {
-            // Test if a separate bra state has been specified
-            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
-
-            // get all the labels ahead of the measurement and initialise the result arrays with the correct size
-            auto indices = measurements_details::iterate_2rdm(lattice.size(), bra_neq_ket);
-            this->labels_num.resize(indices.size());
-            this->labels.resize(indices.size());
-            this->vector_results.resize(indices.size());
-
-
-            #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
-            #endif
-            for (int i = 0; i < indices.size(); i++)
-            {
-                auto&& positions = indices[i];
-
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
-
-                auto&& num_labels = order_labels(lattice, positions);
-                std::string lbt = label_string(num_labels);
-                this->labels[i] = lbt;
-                this->labels_num[i] = num_labels;
-                // Loop over operator terms that are measured synchronously and added together
-                // Used e.g. for the four spin combos of the 2-RDM
-
-                this->vector_results[i] = 0.;
-
-                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
-
-                    tag_vec operators(4);
-                    operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
-                    operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
-                    operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
-                    operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
-
-                    // check if term is allowed by symmetry
-                    term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                        break;
-
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    this->vector_results[i] += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-
-                }
-            }
-        }
-
-        void measure_3rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps)
-        {
-            // Test if a separate bra state has been specified -- if bra != ket, no transpose symmetry
-            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
-
-            auto indices = measurements_details::iterate_3rdm(lattice.size(), bra_neq_ket, positions_first);
-            maquis::cout << "Number of total 3-RDM elements measured: " << indices.size() << std::endl;
-
-            this->labels_num.resize(indices.size());
-            this->labels.resize(indices.size());
-            this->vector_results.resize(indices.size());
-
-            #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
-            #endif
-
-            for (int i = 0; i < indices.size(); i++)
-            {
-                auto&& positions = indices[i];
-
-                auto&& num_labels = order_labels(lattice, positions);
-                std::string lbt = label_string(num_labels);
-                this->labels[i] = lbt;
-                this->labels_num[i] = num_labels;
-
-                // MPS<Matrix, SymmGroup> ket_mps_local = ket_mps; // enable if you get pairing issues
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
-
-                this->vector_results[i] = 0.;
-
-                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop)
-                {
-                    tag_vec operators(6);
-                    operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
-                    operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
-                    operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
-                    operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
-                    operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
-                    operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-
-                    // check if term is allowed by symmetry
-                    term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                        break;
-
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    this->vector_results[i] += operator_terms[synop].second * expval(ket_mps, ket_mps, mpo);
-
-                }// spin combo loop
-            } // iterator loop
-        }
-
-
-        void measure_4rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                          MPS<Matrix, SymmGroup> const & ket_mps)
+        // Generic function for measuring all RDMs
+        template<int N>
+        void measure_nrdm(const MPS<Matrix, SymmGroup> & dummy_bra_mps, const MPS<Matrix, SymmGroup> & ket_mps)
         {
             // Test if a separate bra state has been specified bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            auto indices = measurements_details::iterate_4rdm(lattice.size(), positions_first);
-            maquis::cout << "Number of total 4-RDM elements measured: " << indices.size() << std::endl;
+            // Obtain the total number of RDM elements and the list of all indices (eventually for a given slice)
+            auto indices = measurements_details::iterate_nrdm<N>(lattice.size(), bra_neq_ket, positions_first);
+            maquis::cout << "Number of total " << N << "-RDM elements measured: " << indices.size() << std::endl;
 
-            this->labels_num.resize(indices.size());
-            this->labels.resize(indices.size());
-            this->vector_results.resize(indices.size());
+            // Prepare result arrays
+            resize_results(indices.size());
 
+            // Loop over all indices
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for schedule(dynamic)
             #endif
@@ -354,37 +249,18 @@ namespace measurements {
             {
                 auto&& positions = indices[i];
 
+                // Prepare labels
                 auto&& num_labels = order_labels(lattice, positions);
                 std::string lbt = label_string(num_labels);
                 this->labels[i] = lbt;
                 this->labels_num[i] = num_labels;
 
                 // MPS<Matrix, SymmGroup> ket_mps_local = ket_mps; // enable if you get pairing issues
+                // Make a local copy of tag_handler since it can be modified by the MPO creator
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
-                this->vector_results[i] = 0.;
-
-                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop)
-                {
-                    tag_vec operators(8);
-                    operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
-                    operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
-                    operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
-                    operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
-                    operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
-                    operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-                    operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
-                    operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
-
-                    // check if term is allowed by symmetry
-                    term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                        break;
-
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    this->vector_results[i] += operator_terms[synop].second * expval(ket_mps, ket_mps, mpo);
-
-                }// spin combo loop
+                // Setup MPO and calculate the expectation value for a given indices set
+                this->vector_results[i] = nrdm_expval(N, bra_mps, ket_mps, positions, tag_handler_local);
             } // iterator loop
         }
 
@@ -397,6 +273,46 @@ namespace measurements {
         bool half_only;
 
         std::string bra_ckp;
+
+        // Helper functions for RDM measurements:
+
+        // Resize labels and results, used before the measurements
+        inline void resize_results(int size)
+        {
+            this->labels_num.resize(size);
+            this->labels.resize(size);
+            this->vector_results.resize(size);
+        }
+
+        // Obtain an expectation value for <bra|op|ket> for given n-RDM order and positions
+        inline value_type nrdm_expval(std::size_t n, const MPS<Matrix, SymmGroup> & bra_mps, const MPS<Matrix, SymmGroup> & ket_mps,
+                    const std::vector<int> & positions, const boost::shared_ptr<TagHandler<Matrix, SymmGroup> > & tag_handler_local)
+        {
+            assert(operator_terms.size() > 0);
+            auto opsize = operator_terms[0].first.size();
+            assert(n*2 == opsize);
+
+            value_type result = 0.;
+
+            for (std::size_t synop = 0; synop < operator_terms.size(); ++synop)
+            {
+                tag_vec operators(opsize);
+                for (std::size_t op = 0; op < opsize; op++)
+                    operators[op] = operator_terms[synop].first[op][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[op])];
+
+                // check if term is allowed by symmetry
+                term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
+                if(!measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                    return 0.;
+
+                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                result += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+
+            }// spin combo loop
+
+            return result;
+        }
+
     };
 
 
@@ -554,7 +470,7 @@ namespace measurements {
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             // get all the labels ahead of the measurement and initialise the result arrays with the correct size
-            auto indices = measurements_details::iterate_2rdm(lattice.size(), bra_neq_ket);
+            auto indices = measurements_details::iterate_nrdm<2>(lattice.size(), bra_neq_ket);
             this->labels_num.resize(indices.size());
             this->labels.resize(indices.size());
             this->vector_results.resize(indices.size());

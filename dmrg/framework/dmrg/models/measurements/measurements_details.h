@@ -117,10 +117,11 @@ namespace measurements_details {
     // Function to handle n-RDM index permutations
     // it is written in a generic way to avoid copy-paste
     // for now it is used to
-    // a) get the total number of permutations
-    // b) construct the index tuples to iterate over, in the hope that the iterations become more efficient this way
+    // a) get the total number of permutations for a given n-RDM or its slice.
+    // b) construct the index tuples to iterate over
     // Params:
     // L: number of orbitals
+    // bra_neq_ket -- true for transition RDMs, false otherwise Unsupported (ignored) for 4-RDM.
     // positions_first: optional -- fixed first 4 indices to obtain the slice of 4-RDM (or 2-3 for 3-RDM, unused for lower RDM)
     // fun: a function (wrapped in a class that has return_type and operator() defined)
     // that returns F::return_type that gets executed in the middle of a loop
@@ -130,7 +131,7 @@ namespace measurements_details {
     struct iterate_rdm_indices
     {
         typedef Lattice::pos_t pos_t;
-        typename F::return_type operator()(F fun, pos_t L, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
+        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             throw std::runtime_error("iterate_rdm_indices not implemented for this number of indices");
         }
@@ -141,7 +142,7 @@ namespace measurements_details {
     struct iterate_rdm_indices<F, 4>
     {
         typedef Lattice::pos_t pos_t;
-        typename F::return_type operator()(F fun, pos_t L, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
+        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             pos_t p4_start = 0;
             pos_t p3_start = 0;
@@ -269,7 +270,7 @@ namespace measurements_details {
     struct iterate_rdm_indices<F, 3>
     {
         typedef Lattice::pos_t pos_t;
-        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = true, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
+        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             pos_t p1_start = 0;
             pos_t p2_start = 0;
@@ -332,7 +333,7 @@ namespace measurements_details {
     struct iterate_rdm_indices<F, 2>
     {
         typedef Lattice::pos_t pos_t;
-        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = true)
+        typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             for (pos_t p1 = 0; p1 < L; ++p1)
             for (pos_t p2 = 0; p2 < L; ++p2)
@@ -376,42 +377,17 @@ namespace measurements_details {
     };
 
     // nice wrapper functions for the above classes
-    template<class I=Lattice::pos_t>
-    I get_4rdm_permutations(I L, const std::vector<I> & positions_first = std::vector<I>())
+    template<int N, class I=Lattice::pos_t>
+    I get_nrdm_permutations(I L, bool bra_neq_ket = false, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_rdm_indices<nrdm_counter<I>, 4>()(nrdm_counter<I>(), L, positions_first);
+        return iterate_rdm_indices<nrdm_counter<I>, N>()(nrdm_counter<I>(), L, bra_neq_ket, positions_first);
     }
 
-    template<class I=Lattice::pos_t>
-    typename nrdm_iterator<I>::return_type iterate_4rdm(I L, const std::vector<I> & positions_first = std::vector<I>())
+    template<int N, class I=Lattice::pos_t>
+    typename nrdm_iterator<I>::return_type iterate_nrdm(I L, bool bra_neq_ket = false, const std::vector<I> & positions_first = std::vector<I>())
     {
-        return iterate_rdm_indices<nrdm_iterator<I>, 4>()(nrdm_iterator<I>(), L, positions_first);
+        return iterate_rdm_indices<nrdm_iterator<I>, N>()(nrdm_iterator<I>(), L, bra_neq_ket, positions_first);
     }
-
-    template<class I=Lattice::pos_t>
-    I get_3rdm_permutations(I L, bool bra_neq_ket, const std::vector<I> & positions_first = std::vector<I>())
-    {
-        return iterate_rdm_indices<nrdm_counter<I>, 3>()(nrdm_counter<I>(), L, bra_neq_ket, positions_first);
-    }
-
-    template<class I=Lattice::pos_t>
-    typename nrdm_iterator<I>::return_type iterate_3rdm(I L, bool bra_neq_ket, const std::vector<I> & positions_first = std::vector<I>())
-    {
-        return iterate_rdm_indices<nrdm_iterator<I>, 3>()(nrdm_iterator<I>(), L, bra_neq_ket, positions_first);
-    }
-
-    template<class I=Lattice::pos_t>
-    typename nrdm_iterator<I>::return_type iterate_2rdm(I L, bool bra_neq_ket)
-    {
-        return iterate_rdm_indices<nrdm_iterator<I>, 2>()(nrdm_iterator<I>(), L, bra_neq_ket);
-    }
-
-    template<class I=Lattice::pos_t>
-    I get_2rdm_permutations(I L, bool bra_neq_ket)
-    {
-        return iterate_rdm_indices<nrdm_counter<I>, 2>()(nrdm_counter<I>(), L, bra_neq_ket);
-    }
-
 
 }
 #endif
