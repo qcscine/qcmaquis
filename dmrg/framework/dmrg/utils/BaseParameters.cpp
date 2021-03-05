@@ -137,7 +137,7 @@
     void BaseParameters::erase_regex(std::string const & regex)
     {
         std::vector<std::string> keys_toerase;
-        // TODO: convert all regex to std::regex!
+
         std::regex expression(regex);
         for (auto&& k : *impl_)
             if(std::regex_search(k.key(), expression))
