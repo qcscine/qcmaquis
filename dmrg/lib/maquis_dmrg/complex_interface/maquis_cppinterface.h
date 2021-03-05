@@ -29,13 +29,14 @@
 *****************************************************************************/
 #ifndef MAQUIS_CPPINTERFACE_H
 #define MAQUIS_CPPINTERFACE_H
-// CPP/CPP compatible relativistic QCMaquis DMRG interface
+// Interface layer for Bagel and ChronosQ
 
 #include <complex>
 #include <vector>
 #include <array>
 
     typedef std::complex<double> V;
+    typedef double dV;
     // Set basic simulation parameters
     // nel -- number of electrons
     // L -- number of sites
@@ -85,9 +86,13 @@
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev);
 
     // Get 1-RDM
-    void qcmaquis_interface_get_1rdm(std::vector<std::pair<V,std::array<int,2>>> *rdm1);
+    void qcmaquis_interface_get_1rdm(std::vector<std::pair<V,std::array<int,2>>> *rdm1); // BAGEL
+    void qcmaquis_interface_get_1rdm(V *rdm1); // CQ
+    void qcmaquis_interface_get_1rdm(dV *rdm1){}; // CQ
 
     // Get 2-RDM
-    void qcmaquis_interface_get_2rdm(std::vector<std::pair<V,std::array<int,4>>> *rdm2);
+    void qcmaquis_interface_get_2rdm(std::vector<std::pair<V,std::array<int,4>>> *rdm2);// BAGEL
+    void qcmaquis_interface_get_2rdm(V *rdm2); // CQ
+    void qcmaquis_interface_get_2rdm(dV *rdm2){}; // CQ
 
 #endif

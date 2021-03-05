@@ -28,7 +28,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
 
 # set proper rpath for installed binaries
 # @stknecht: make sure this works also for OS X with MACOS_RPATH
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "\$ORIGIN/../lib:${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -69,12 +69,19 @@ option(QCMAQUIS_TESTS      "Build and run tests" OFF)
 option (BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
 if (BUILD_OPENMOLCAS_INTERFACE)
     include(CMakeDependentOption)
-    cmake_dependent_option(BUILD_OPENMOLCAS_MPI "Build with OpenMOLCAS MPI support" OFF "NOT BUILD_OPENMOLCAS_INTERFACE" OFF)
+    cmake_dependent_option(BUILD_OPENMOLCAS_MPI "Build with OpenMOLCAS MPI support" OFF "BUILD_OPENMOLCAS_INTERFACE" OFF)
     mark_as_advanced(BUILD_OPENMOLCAS_MPI)
-    if (BUILD_OPENMOLCAS_MPI AND NOT GA_INCLUDE_DIR)
-        message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires Global Arrays include directory")
+    if (BUILD_OPENMOLCAS_MPI)
+        if (NOT GA_INCLUDE_DIR)
+            message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires Global Arrays include directory")
+        endif ()
+        # if (NOT MPI_LIBRARIES)
+        #     message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires specifying MPI libraries")
+        # endif ()
+        if (NOT GA_LIBRARIES)
+            message(FATAL_ERROR "Compilation with OpenMOLCAS MPI support requires specifying Global Arrays libraries")
+        endif ()
     endif()
-
 endif()
 
 set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
@@ -170,7 +177,7 @@ endforeach(SYMM)
 # GSL
 # find GNU Scientific Library if using SU2 Groups
 if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
-    find_package(GSL REQUIRED)
+  find_package(GSL REQUIRED)
   list(APPEND DMRG_LIBRARIES ${GSL_LIBRARIES})
 endif()
 
@@ -182,7 +189,7 @@ message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
 list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
 # ILP64 definition
 if(LAPACK_64_BIT)
-add_definitions(-DBIND_FORTRAN_INTEGER_8)
+  add_definitions(-DBIND_FORTRAN_INTEGER_8)
 endif()
 
 # HDF5
@@ -195,14 +202,14 @@ set (Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
-list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
-list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
-if(${Boost_MINOR_VERSION} VERSION_LESS 60)
-    add_definitions(-DLEGACY_BOOST) # TODO: Should be changed as other definitions in the cmake-rework branch
-endif()
+    list(APPEND DMRG_INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
+    list(APPEND DMRG_LIBRARY_DIRS ${Boost_LIBRARY_DIRS})
+    list(APPEND DMRG_LIBRARIES ${Boost_LIBRARIES})
+    if(${Boost_MINOR_VERSION} VERSION_LESS 60)
+        add_definitions(-DLEGACY_BOOST)
+    endif()
 else(Boost_FOUND)
-message(FATAL_ERROR "Boost libraries are required for QCMaquis")
+    message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
 
 # ALPS
@@ -221,6 +228,7 @@ endif()
 set(DMRG_YEAR 2020)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 0)
+set(DMRG_VERSION_PATCH 2)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -271,9 +279,9 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 
 if(DMRG_VERSION_BUILD)
-  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}-${DMRG_VERSION_BUILD}")
+  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}-${DMRG_VERSION_BUILD}")
 else(DMRG_VERSION_BUILD)
-  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}")
+  set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}.${DMRG_VERSION_PATCH}")
 endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
 MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
@@ -315,7 +323,7 @@ endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
 # Configure files
 ######################################################################
 
-configure_file(framework/dmrg/version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg/version.h)
+configure_file(framework/dmrg/version.h.in ${PROJECT_BINARY_DIR}/framework/dmrg/version.h)
 
 
 ######################################################################
@@ -340,7 +348,7 @@ add_subdirectory(applications)
 
 # *** tests
 if(QCMAQUIS_TESTS)
-  message("Testing enabled")
+  message(STATUS "Enabling tests")
   enable_testing()
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
@@ -349,6 +357,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
   add_test(NAME Test_MPS_MPO_Ops COMMAND test_mps_mpo_ops)
+  add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
   add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
 endif(QCMAQUIS_TESTS)
@@ -376,7 +385,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 # Install
 ######################################################################
 
-install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
+install(FILES ${PROJECT_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include/framework/dmrg COMPONENT headers)
 
 install(FILES

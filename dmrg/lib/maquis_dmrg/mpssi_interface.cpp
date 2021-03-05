@@ -181,7 +181,8 @@ namespace maquis
                 std::string su2u1_checkpoint_name = maquis::interface_detail::su2u1_name(pname, state);
                 BaseParameters parms;
                 if (!boost::filesystem::exists(su2u1_checkpoint_name))
-                    throw std::runtime_error("SU2U1 MPS checkpoint " + su2u1_checkpoint_name + " is required but does not exist\n");
+                    throw std::runtime_error("SU2U1 MPS checkpoint " + su2u1_checkpoint_name + " is required but does not exist\n"
+                                              "You might be getting this error because qcm_checkpoint_rename.py did not run properly.\n");
 
                 storage::archive ar_in(su2u1_checkpoint_name + "/props.h5");
 

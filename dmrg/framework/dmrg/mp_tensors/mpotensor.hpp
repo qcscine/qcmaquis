@@ -88,11 +88,9 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld
         }
     }
 
-
     num_one_rows_ = std::count(row_non_zeros.begin(), row_non_zeros.end(), 1);
     num_one_cols_ = std::count(col_non_zeros.begin(), col_non_zeros.end(), 1);
     // maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
-
 
     // if the optional Hermitian object h_ is valid, adopt it
     if (h_.left_size() == left_i && h_.right_size() == right_i)

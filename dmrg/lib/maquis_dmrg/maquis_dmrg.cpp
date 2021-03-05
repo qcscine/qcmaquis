@@ -33,7 +33,6 @@
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/sim/interface_sim.h"
-#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 
 namespace maquis
 {
@@ -65,7 +64,7 @@ namespace maquis
 
     template <class V>
     DMRGInterface<V>::DMRGInterface(DmrgParameters & parms_)
-        : parms(parms_), impl_(new Impl(::dmrg::symmetry_factory<simulation_traits<V> >(parms_, parms_))) { };
+        : parms(parms_), impl_(new Impl(::dmrg::symmetry_factory<simulation_traits<V> >(parms_, parms_))) {};
 
     template <class V>
     void DMRGInterface<V>::optimize()
