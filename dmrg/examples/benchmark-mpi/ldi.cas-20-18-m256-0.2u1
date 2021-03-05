@@ -1,0 +1,44 @@
+// +---------------------+
+//  CAS(20,18) for (HCN)2 
+// +---------------------+
+
+// -- General parameters --
+L                        = 18
+max_bond_dimension       = 256
+nsweeps                  = 10
+irrep                    = 0
+nelec                    = 20
+spin                     = 0
+symmetry                 = '2u1pg'
+u1_total_charge1         = 10
+u1_total_charge2         = 10
+LATTICE                  = "orbitals"
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+MODEL                    = "quantum_chemistry"
+//integral_file            = "/home/cds/stknecht/calc/dmrg-embedding/hcn-dimer/from-td/dmrg-scf/m4096/fcidump-for-mpi-benchmark/FCIDUMP_hcn2_cas2018"
+integral_file            = "./FCIDUMP_hcn2_cas2018"
+lattice_library          = "coded"
+model_library            = "coded"
+optimization             = twosite
+use_compressed           = 0
+
+// -- SVD truncation --
+truncation_initial       = 1e-40
+truncation_final         = 1e-40
+
+// -- Initialization and storage information --
+init_state               =  "hf"
+hf_occ                   =  "4,4,4,4,4,4,1,1,1,1,4,4,1,1,4,4,1,1"
+chkpfile                 = 'hcn2.m512.su2u1.checkpoint_state.0.h5'
+resultfile               = 'hcn2.m512.su2u1.results_state.0.h5'
+
+// -- Measurements --
+MEASURE[1rdm]            = 0
+MEASURE[2rdm]            = 0
+MEASURE[ChemEntropy]     = 0
+
+// -- Jacobi-Davidson parameters --
+ietl_jcd_maxiter         = 10
+ietl_jcd_tol             = 1e-8
+conv_thresh              = -1
+integral_cutoff          = 1e-300
