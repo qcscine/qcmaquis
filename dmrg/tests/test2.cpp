@@ -335,8 +335,11 @@ BOOST_AUTO_TEST_CASE( Test2 )
         p.erase("chkpfile");
 
         // measure 1-TDM
-        std::string measure_str = su2 ? "MEASURE[trans1rdm]" : "MEASURE[trans1rdm_aa]";
-        p.set(measure_str,checkpoint_path.c_str());
+        std::string measure_1rdm = su2 ? "MEASURE[trans1rdm]" : "MEASURE[trans1rdm_aa]";
+        p.set(measure_1rdm,checkpoint_path.c_str());
+        // measure 2-TDM
+        std::string measure_2rdm = "MEASURE[trans2rdm]";
+        p.set(measure_2rdm,checkpoint_path.c_str());
         {
             maquis::DMRGInterface<double> interface(p);
             interface.optimize();
@@ -372,21 +375,11 @@ BOOST_AUTO_TEST_CASE( Test2 )
             };
 
             check_measurement_mat(meas_trans1rdm, ref_trans1rdm, true);
-            // double phase;
-            // for (auto&& it = reference.first.begin(); it != reference.first.end(); it++)
-            // {
-            //     auto index = std::distance(meas.first.begin(), std::find(meas.first.begin(), meas.first.end(), *it));
-            //     auto index_ref = std::distance(reference.first.begin(), it);
-            //     // the phase can be 1 or -1, so set the phase in the first run
-            //     if (it == reference.first.begin())
-            //         phase = std::copysign(1.0, meas.second[index]/reference.second[index_ref]);
 
-            //     BOOST_CHECK_SMALL(std::abs(meas.second[index]-phase*reference.second[index_ref]), 5e-7);
-            // }
         }
 
         // clean up to avoid messing up with the upcoming measurements
-        p.erase(measure_str);
+        p.erase(measure_1rdm);
         boost::filesystem::remove_all(checkpoint_path);
     }
 
