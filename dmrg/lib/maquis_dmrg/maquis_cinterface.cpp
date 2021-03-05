@@ -416,13 +416,13 @@ extern "C"
     int qcmaquis_interface_get_4rdm_elements(int L, const int* slice)
     {
         std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+3) : std::vector<int>();
-        return measurements_details::get_4rdm_permutations(L, slice_);
+        return measurements_details::get_nrdm_permutations<4>(L, false, slice_);
     }
 
     int qcmaquis_interface_get_3rdm_elements(int L, bool bra_neq_ket, const int* slice)
     {
         std::vector<int> slice_ = slice != nullptr ? std::vector<int>(slice, slice+1) : std::vector<int>();
-        return measurements_details::get_3rdm_permutations(L, bra_neq_ket, slice_);
+        return measurements_details::get_nrdm_permutations<3>(L, bra_neq_ket, slice_);
     }
 
     void qcmaquis_interface_prepare_hirdm_template(const char* filename, int state, HIRDM_Template tpl, int state_j)
