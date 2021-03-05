@@ -55,12 +55,13 @@ namespace contraction {
                             BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> const & left_mult_mps,
                             MPOTensor<Matrix, SymmGroup> const & mpo,
                             DualIndex<SymmGroup> const & ket_basis,
+                            Index<SymmGroup> const & ref_left_basis,
                             Index<SymmGroup> const & right_i,
                             Index<SymmGroup> const & out_left_i,
                             ProductBasis<SymmGroup> const & in_right_pb,
                             ProductBasis<SymmGroup> const & out_left_pb)
             {
-                abelian::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis,
+                abelian::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, ref_left_basis,
                                              right_i, out_left_i, in_right_pb, out_left_pb);
             }
         };
@@ -73,12 +74,13 @@ namespace contraction {
                             MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> const & right_mult_mps,
                             MPOTensor<Matrix, SymmGroup> const & mpo,
                             DualIndex<SymmGroup> const & ket_basis,
+                            Index<SymmGroup> const & ref_right_basis,
                             Index<SymmGroup> const & left_i,
                             Index<SymmGroup> const & out_right_i,
                             ProductBasis<SymmGroup> const & in_left_pb,
                             ProductBasis<SymmGroup> const & out_right_pb)
             {
-                abelian::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis,
+                abelian::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis, ref_right_basis,
                                              left_i, out_right_i, in_left_pb, out_right_pb);
             }
         };

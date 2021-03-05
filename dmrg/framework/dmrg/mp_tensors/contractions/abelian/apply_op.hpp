@@ -6,22 +6,22 @@
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -48,6 +48,7 @@ namespace contraction {
                               BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               DualIndex<SymmGroup> const & ket_basis,
+                              Index<SymmGroup> const & ref_left_basis,
                               Index<SymmGroup> const & right_i,
                               Index<SymmGroup> const & out_left_i)
     {
@@ -61,7 +62,7 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
 
-            DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, ket_basis, b1);
+            DualIndex<SymmGroup> T_basis = detail::T_basis_left(left, left_mult_mps, mpo, ket_basis, ref_left_basis, b1);
             if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -72,7 +73,7 @@ namespace contraction {
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T_basis.right_charge(0), -T_basis.left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
-        
+
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for(size_t r = 0; r < right_i.size(); ++r){
@@ -82,7 +83,7 @@ namespace contraction {
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
                     #ifdef USE_AMBIENT
                     // both versions should be fine for AMBIENT
-                    ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
+                    ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge),
                                      out_left_i.size_of_block(out_l_charge), r_size);
                     #else
                     ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge), r_size), out_l_charge, out_r_charge);
@@ -133,7 +134,7 @@ namespace contraction {
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
-        
+
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
             parallel::guard group(contr_grid.where(b1,b2), contr_grid.granularity);
             parallel::scheduler_size_indexed scheduler(ret);
@@ -177,6 +178,7 @@ namespace contraction {
                               MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               DualIndex<SymmGroup> const & ket_basis,
+                              Index<SymmGroup> const & ref_right_basis,
                               Index<SymmGroup> const & left_i,
                               Index<SymmGroup> const & out_right_i)
     {
@@ -190,7 +192,7 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            DualIndex<SymmGroup> T_basis = detail::T_basis_right(right, right_mult_mps, mpo, ket_basis, b2);
+            DualIndex<SymmGroup> T_basis = detail::T_basis_right(right, right_mult_mps, mpo, ket_basis, ref_right_basis, b2);
             if (T_basis.size() == 0) continue;
 
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
@@ -210,7 +212,7 @@ namespace contraction {
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
                     #ifdef USE_AMBIENT
                     // both versions should be fine for AMBIENT
-                    ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
+                    ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge),
                                      l_size, out_right_i.size_of_block(out_r_charge));
                     #else
                     ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
@@ -269,8 +271,8 @@ namespace contraction {
                     charge phys_c1 = W.basis().left_charge(w_block);
                     charge phys_c2 = W.basis().right_charge(w_block);
 
-                    charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
-                    charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
+                    charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1);
+                    charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta);
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if (t_block == T.basis().size()) continue;
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
@@ -300,12 +302,13 @@ namespace contraction {
                      BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      DualIndex<SymmGroup> const & ket_basis,
+                     Index<SymmGroup> const & ref_left_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
-        lbtm_kernel_allocate(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i);
+        lbtm_kernel_allocate(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, ref_left_basis, right_i, out_left_i);
         lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
     }
 
@@ -316,15 +319,16 @@ namespace contraction {
                      MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemms> const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
                      DualIndex<SymmGroup> const & ket_basis,
+                     Index<SymmGroup> const & ref_right_basis,
                      Index<SymmGroup> const & left_i,
                      Index<SymmGroup> const & out_right_i,
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
-        rbtm_kernel_allocate(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i);
+        rbtm_kernel_allocate(b1, ret, right, right_mult_mps, mpo, ket_basis, ref_right_basis, left_i, out_right_i);
         rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
-    
+
     } // namespace abelian
 } // namespace contraction
 #endif

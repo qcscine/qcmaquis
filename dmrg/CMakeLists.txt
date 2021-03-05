@@ -225,10 +225,10 @@ endif()
 ######################################################################
 # Version information
 ######################################################################
-set(DMRG_YEAR 2020)
+set(DMRG_YEAR 2021)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 0)
-set(DMRG_VERSION_PATCH 2)
+set(DMRG_VERSION_PATCH 3)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -355,7 +355,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test2 COMMAND test2)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
-  add_test(NAME Test_4rdm_save COMMAND test_4rdm_save)
+  add_test(NAME Test_HiRDM COMMAND test_hirdm)
   add_test(NAME Test_MPS_MPO_Ops COMMAND test_mps_mpo_ops)
   add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
   add_test(NAME Test_Wigner COMMAND test_wigner)

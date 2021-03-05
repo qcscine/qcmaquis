@@ -103,7 +103,6 @@ namespace maquis
                     {
                         // reset to default orbital order if some order is present
                         // if this isn't done, there're strange side-effects
-                        std::string default_order;
                         int L = parms_["L"];
                         std::vector<int> v(L);
                         std::iota(v.begin(), v.end(), 1);
@@ -147,7 +146,7 @@ namespace maquis
                         parms_.set("n_ortho_states", i-1);
                         std::string all_ortho_states;
                         for (int j = 0; j < i; j++)
-                            all_ortho_states += checkpoint_name(pname_guess_, j-1) + ((j < i-1) ? ";" : "") ;
+                            all_ortho_states += checkpoint_name(pname_guess_, j) + ((j < i-1) ? " " : "");
                         parms_.set("ortho_states", all_ortho_states);
                     }
 

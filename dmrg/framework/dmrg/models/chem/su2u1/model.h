@@ -147,33 +147,48 @@ public:
 
         std::regex expression_oneptdm("^MEASURE\\[1rdm\\]");
         std::regex expression_twoptdm("^MEASURE\\[2rdm\\]");
+        std::regex expression_transition_oneptdm("^MEASURE\\[trans1rdm\\]");
         std::regex expression_transition_twoptdm("^MEASURE\\[trans2rdm\\]");
         std::smatch what;
+        std::vector<pos_t> positions;
+        std::string bra_ckp("");
 
         for (auto&& it : parms.get_range()) {
+            bool expr_rdm = false;
+
             std::string lhs = it.first;
 
             std::string name, value;
-            if (std::regex_match(lhs, what, expression_twoptdm) ||
-                std::regex_match(lhs, what, expression_transition_twoptdm)) {
+            if (std::regex_match(lhs, what, expression_twoptdm)) {
 
                 name = "twoptdm";
-
-                std::string bra_ckp("");
-                std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
-                                name, lat, tag_handler, op_collection, positions, bra_ckp));
+                expr_rdm = true;
             }
 
-            if (std::regex_match(lhs, what, expression_oneptdm)) {
+            if (std::regex_match(lhs, what, expression_transition_twoptdm)) {
+
+                name = "transition_twoptdm";
+                bra_ckp = it.second;
+                expr_rdm = true;
+            }
+
+            if (std::regex_match(lhs, what, expression_oneptdm))
+            {
 
                 name = "oneptdm";
+                expr_rdm = true;
+            }
 
-                std::string bra_ckp("");
-                std::vector<pos_t> positions;
+            if (std::regex_match(lhs, what, expression_transition_oneptdm)) {
+
+                name = "transition_oneptdm";
+                bra_ckp = it.second;
+                expr_rdm = true;
+            }
+
+            if (expr_rdm)
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
                                 name, lat, tag_handler, op_collection, positions, bra_ckp));
-            }
         }
 
         return meas;

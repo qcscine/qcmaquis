@@ -76,7 +76,7 @@ public:
     measurement* clone() const { return do_clone(); }
 
     std::vector<std::vector<int> > get_labels_num() { return labels_num; };
-    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> get_vec_results() { return vector_results; };
+    std::vector<value_type> get_vec_results() { return vector_results; };
 
 protected:
     virtual measurement* do_clone() const =0;
@@ -89,7 +89,7 @@ protected:
     // Plain indices
     std::vector<std::vector<int> > labels_num;
     value_type result;
-    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vector_results;
+    std::vector<value_type> vector_results;
 
     Index<SymmGroup> phys_psi;
 
@@ -203,54 +203,39 @@ bool is_hermitian_meas(std::vector<std::pair<std::vector<BlockMatrix>, bool> > c
         is_herm = is_hermitian_meas(ops[i].first);
     return is_herm;
 }
+// Create label strings from indices including orbital reordering
+inline std::string label_string(const Lattice& lat, const std::vector<Lattice::pos_t> & indices)
+{
+    std::string s;
+    for (auto it = indices.begin(); it != indices.end(); it++)
+        s += "( " + boost::lexical_cast<std::string>(lat.get_prop<std::string>("label", *it))
+          + (it != std::prev(indices.end()) ? " ) -- " : " )") ;
+    return s;
+}
 
 inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<Lattice::pos_t> >& labels)
 {
-    std::vector<std::string> ret;
-    ret.reserve(labels.size());
-    for (std::vector<std::vector<Lattice::pos_t> >::const_iterator it = labels.begin();
-         it != labels.end(); ++it)
-    {
-        std::ostringstream oss;
-        for (std::vector<Lattice::pos_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
-            oss << lat.get_prop<std::string>("label", *it2);
-            if (it2 + 1 != it->end())
-                oss << " -- ";
-        }
-        ret.push_back(oss.str());
-    }
+    std::vector<std::string> ret(labels.size());
+    std::transform(labels.begin(), labels.end(), ret.begin(),
+        [&](const std::vector<Lattice::pos_t> & l) { return label_string(lat, l); });
     return ret;
 }
 
 // Create label strings from indices WITHOUT reordering
+inline std::string label_string(const std::vector<Lattice::pos_t> & indices)
+{
+    std::string s;
+    for (auto it = indices.begin(); it != indices.end(); it++)
+        s += "( " + boost::lexical_cast<std::string>(*it) + (it != std::prev(indices.end()) ? " ) -- " : " )") ;
+    return s;
+}
 inline std::vector<std::string> label_strings(const std::vector<std::vector<Lattice::pos_t> >& labels)
 {
-    std::vector<std::string> ret;
-    ret.reserve(labels.size());
-    // for (std::vector<std::vector<Lattice::pos_t> >::const_iterator it = labels.begin();
-    //      it != labels.end(); ++it)
-    // {
-    //     std::ostringstream oss;
-    //     for (std::vector<Lattice::pos_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
-    //         oss << *it2;
-    //         if (it2 + 1 != it->end())
-    //             oss << " -- ";
-    //     }
-    //     ret.push_back(oss.str());
-    // }
-    // return ret;
-
-    for (auto&& l: labels)
-    {
-        std::string s;
-        for (auto it = l.begin(); it != l.end(); it++)
-            s += "( " + boost::lexical_cast<std::string>(*it) + (it != std::prev(l.end()) ? " ) -- " : " )") ;
-        ret.emplace_back(std::move(s));
-    }
+    std::vector<std::string> ret(labels.size());
+    std::transform(labels.begin(), labels.end(), ret.begin(),
+        [&](const std::vector<Lattice::pos_t> & l) { return label_string(l);});
     return ret;
 }
-
-
 
 // Order orbital labels according to their ordering in the lattice
 template <class T>

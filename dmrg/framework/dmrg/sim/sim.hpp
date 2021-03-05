@@ -30,6 +30,42 @@
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 
+namespace sim_detail {
+    // Checks if the parameters in the list parm already exists in parms, if not, loads it from ar
+    // (if it fails, it does nothing)
+    template<class T>
+    void load_if_not_exists(const T& list, BaseParameters& parms, storage::archive & ar)
+    {
+        BaseParameters tmp_parms;
+        ar["/parameters"] >> tmp_parms;
+        for (auto&& parm: list)
+            if (!parms.is_set(parm))
+                if (tmp_parms.is_set(parm))
+                {
+                    std::string tmp = tmp_parms[parm];
+                    parms.set(parm, tmp);
+                }
+    }
+
+    template<class SymmGroup>
+    void print_important_parameters(BaseParameters & parms)
+    {
+        bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
+        bool hasPG = symm_traits::HasPG<SymmGroup>::value;
+        bool has2U1 = symm_traits::Has2U1<SymmGroup>::value;
+
+        maquis::cout << "Parameters:\n"
+                     <<     "               Sites: " << parms["L"] << "\n";
+        if (hasSU2)
+            maquis::cout << "           Electrons: " << parms["nelec"] << "\n"
+                         << "                Spin: " << parms["spin"] << "\n";
+        if (has2U1)
+            maquis::cout << "   Spin-up electrons: " << parms["u1_total_charge1"] << "\n"
+                         << " Spin-down electrons: " << parms["u1_total_charge2"] << "\n";
+        if (hasPG)
+            maquis::cout << "               Irrep: " << parms["irrep"] << std::endl;
+    }
+}
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
 : parms(parms_)
@@ -44,8 +80,70 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
 
-    // Initialise Wigner 9j coupling cache if we have SU2
+    bool has2U1 = symm_traits::Has2U1<SymmGroup>::value;
+    bool hasPG = symm_traits::HasPG<SymmGroup>::value;
     bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
+
+    dmrg_random::engine.seed(parms["seed"]);
+    // check possible orbital order in existing MPS before(!) model initialization
+    if (!chkpfile.empty())
+    {
+        boost::filesystem::path p(chkpfile);
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
+            maquis::checks::orbital_order_check(parms, chkpfile);
+    }
+
+    // Load MPS from checkpoint
+    if (!chkpfile.empty())
+    {
+        boost::filesystem::path p(chkpfile);
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
+        {
+            storage::archive ar_in(chkpfile+"/props.h5");
+            restore = true;
+            if (ar_in.is_scalar("/status/sweep"))
+            {
+                ar_in["/status/sweep"] >> init_sweep;
+
+                if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
+                    ar_in["/status/site"] >> init_site;
+
+                if (init_site == -1)
+                    ++init_sweep;
+
+                maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
+            }
+            // load checkpoint
+            maquis::cout << "Loading checkpoint from " << p.c_str() << std::endl;
+            maquis::checks::symmetry_check(parms, chkpfile);
+            load(chkpfile, mps);
+
+            // Try to load some necessary parameters from checkpoint if they're not found in the input file
+            std::vector<std::string> parms_toload{ "L", "site_types", "orbital_order", "symmetry"};
+            if (hasSU2)
+            {
+                parms_toload.push_back("nelec");
+                parms_toload.push_back("spin");
+            }
+            else if(has2U1)
+            {
+                parms_toload.push_back("u1_total_charge1");
+                parms_toload.push_back("u1_total_charge2");
+            }
+
+            if (hasPG) parms_toload.push_back("irrep");
+            // Try loading integrals too, unless integral_file is set
+            // TODO: use this also with "integrals"
+            if (!parms.is_set("integral_file") && !parms.is_set("integrals"))
+            {
+                parms_toload.push_back("integrals_binary");
+            }
+            sim_detail::load_if_not_exists(parms_toload, parms, ar_in);
+            sim_detail::print_important_parameters<SymmGroup>(parms);
+        }
+    }
+
+    // Initialise Wigner cache for SU2
     if (hasSU2)
     {
         if (!(parms.is_set("NoWignerCache") && parms["NoWignerCache"]))
@@ -68,68 +166,19 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         }
     }
 
-    dmrg_random::engine.seed(parms["seed"]);
-    // check possible orbital order in existing MPS before(!) model initialization
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5")){
-            maquis::checks::orbital_order_check(parms, chkpfile);
-        }
-        else if (!parms["initfile"].empty()){
-            maquis::checks::orbital_order_check(parms, parms["initfile"].str());
-        }
-    }
-
-    /// Model initialization
+    // Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
     mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
 
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
-        {
-            storage::archive ar_in(chkpfile+"/props.h5");
-            if (ar_in.is_scalar("/status/sweep"))
-            {
-                ar_in["/status/sweep"] >> init_sweep;
-
-                if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
-                    ar_in["/status/site"] >> init_site;
-
-                if (init_site == -1)
-                    ++init_sweep;
-
-                maquis::cout << "Restoring state." << std::endl;
-                maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
-                restore = true;
-            } else {
-                maquis::cout << "A fresh simulation will start." << std::endl;
-            }
-        }
-    }
-
-    /// MPS initialization
-    if (restore) {
-
-        maquis::checks::symmetry_check(parms, chkpfile);
-        load(chkpfile, mps);
+    // Final check on the checkpoint MPS after model has been initialised
+    if (restore)
         maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
-
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-
-        maquis::checks::symmetry_check(parms, parms["initfile"].str());
-        load(parms["initfile"].str(), mps);
-        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
-
-    } else {
+    /// Fresh MPS initialization
+    else
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-    }
 
     assert(mps.length() == lat.size());
 
