@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2015 Laboratory of Physical Chemistry, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -82,7 +82,7 @@ namespace generate_mpo
     term_descriptor<typename Matrix::value_type>
     arrange_operators(std::vector<Lattice::pos_t> const & positions,
                       std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & operators,
-                      boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler)
+                      std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler)
     {
         // input: list of positions and operators
         // output: list of (position, operator)-pairs, sorted, unique positions with operators multiplied
@@ -140,12 +140,12 @@ namespace generate_mpo
     }
 
     namespace detail {
-        template <int N, typename Tuple> 
-        inline typename boost::tuples::access_traits<typename boost::tuples::element<N, Tuple>::type>::const_type 
-        get(Tuple const& t) 
-        { 
-             return boost::tuples::get<N>(t) ; 
-        } 
+        template <int N, typename Tuple>
+        inline typename boost::tuples::access_traits<typename boost::tuples::element<N, Tuple>::type>::const_type
+        get(Tuple const& t)
+        {
+             return boost::tuples::get<N>(t) ;
+        }
     }
 
     template<class Matrix, class SymmGroup>
@@ -153,7 +153,7 @@ namespace generate_mpo
     sign_and_fill(term_descriptor<typename Matrix::value_type> term,
                   std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ident,
                   std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & fill,
-                  boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
+                  std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
                   Lattice const & lat)
     {
         // after arrange operators, expand term to the full site-list
@@ -192,19 +192,19 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(product)) carry_sign = !carry_sign;
 
                 prempo.push_back(boost::make_tuple(0,0, product, 1.));
-                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table()); 
+                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
             else if (carry_sign) // if no
             {
                 prempo.push_back(boost::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
-                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table()); 
+                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
             else
             {
                 prempo.push_back(boost::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
-                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table()); 
+                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table());
             }
 
         }
@@ -220,7 +220,7 @@ namespace generate_mpo
                 std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & operators,
                 std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ident,
                 std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & fill,
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
                 Lattice const & lat, typename Matrix::value_type scale = 1)
     {
         term_descriptor<typename Matrix::value_type> term = arrange_operators(positions, operators, tag_handler);

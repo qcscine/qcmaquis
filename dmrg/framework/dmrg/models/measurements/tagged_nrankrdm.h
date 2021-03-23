@@ -66,7 +66,7 @@ namespace measurements {
 
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
-                       boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
+                       std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<scaled_bond_term> const& ops_,
                        bool half_only_, positions_type const& positions_ = positions_type(),
                        std::string const& ckp_ = std::string(""))
@@ -105,7 +105,7 @@ namespace measurements {
                 {
                     // Do symmetry check on the bra checkpoint and eventually transform
                     // check point group
-                    // or boost::is_same<HasPG<SymmGroup>, boost::true_type>::value?
+                    // or boost::is_same<HasPG<SymmGroup>, std::true_type>::value?
                     if (maquis::checks::has_pg(bra_ckp) != symm_traits::HasPG<SymmGroup>::value)
                         throw std::runtime_error("Bra checkpoint " + bra_ckp + "has the wrong point group symmetry.");
 
@@ -175,7 +175,7 @@ namespace measurements {
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
@@ -257,7 +257,7 @@ namespace measurements {
 
                 // MPS<Matrix, SymmGroup> ket_mps_local = ket_mps; // enable if you get pairing issues
                 // Make a local copy of tag_handler since it can be modified by the MPO creator
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 // Setup MPO and calculate the expectation value for a given indices set
                 this->vector_results[i] = nrdm_expval(N, bra_mps, ket_mps, positions, tag_handler_local);
@@ -266,7 +266,7 @@ namespace measurements {
 
     private:
         Lattice lattice;
-        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         positions_type positions_first;
         tag_vec identities, fillings;
         std::vector<scaled_bond_term> operator_terms;
@@ -286,7 +286,7 @@ namespace measurements {
 
         // Obtain an expectation value for <bra|op|ket> for given n-RDM order and positions
         inline value_type nrdm_expval(std::size_t n, const MPS<Matrix, SymmGroup> & bra_mps, const MPS<Matrix, SymmGroup> & ket_mps,
-                    const std::vector<int> & positions, const boost::shared_ptr<TagHandler<Matrix, SymmGroup> > & tag_handler_local)
+                    const std::vector<int> & positions, const std::shared_ptr<TagHandler<Matrix, SymmGroup> > & tag_handler_local)
         {
             assert(operator_terms.size() > 0);
             auto opsize = operator_terms[0].first.size();
@@ -317,7 +317,7 @@ namespace measurements {
 
 
     template <class Matrix, class SymmGroup>
-    class TaggedNRankRDM<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type >
+    class TaggedNRankRDM<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
         : public measurement<Matrix, SymmGroup>
     {
         typedef measurement<Matrix, SymmGroup> base;
@@ -339,7 +339,7 @@ namespace measurements {
 
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
-                       boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
+                       std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        typename TM::OperatorCollection const & op_collection_,
                        positions_type const& positions_ = positions_type(),
                        std::string const& ckp_ = std::string(""))
@@ -404,7 +404,7 @@ namespace measurements {
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
@@ -482,7 +482,7 @@ namespace measurements {
             {
                 auto&& positions = indices[i];
 
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 std::vector<term_descriptor> terms = SpinSumSU2<Matrix, SymmGroup>::V_term(1., positions[0], positions[1], positions[2], positions[3], op_collection, lattice);
 
@@ -511,7 +511,7 @@ namespace measurements {
 
     private:
         Lattice lattice;
-        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
 
         typename TM::OperatorCollection op_collection;
 
@@ -522,7 +522,7 @@ namespace measurements {
     };
 
     template <class Matrix, class SymmGroup>
-    class TaggedNRankRDM<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasU1<SymmGroup> >::type >
+    class TaggedNRankRDM<Matrix, SymmGroup, symm_traits::enable_if_u1dg_t<SymmGroup> >
         : public measurement<Matrix, SymmGroup>
     {
         typedef measurement<Matrix, SymmGroup> base;
@@ -542,7 +542,7 @@ namespace measurements {
 
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
-                       boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
+                       std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<scaled_bond_term> const& ops_,
                        bool half_only_, positions_type const& positions_ = positions_type(),
                        std::string const& ckp_ = std::string(""))
@@ -613,7 +613,7 @@ namespace measurements {
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
@@ -674,7 +674,7 @@ namespace measurements {
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
             {
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
 		    for (pos_t p3 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p3 < lattice.size(); ++p3)
                 {
@@ -750,7 +750,7 @@ namespace measurements {
 
     private:
         Lattice lattice;
-        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         positions_type positions_first;
         tag_vec identities, fillings;
         std::vector<scaled_bond_term> operator_terms;

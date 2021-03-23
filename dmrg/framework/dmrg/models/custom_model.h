@@ -40,20 +40,20 @@ template <class Matrix, class SymmGroup>
 class custom_model_impl : public model_impl<Matrix, SymmGroup>
 {
     typedef model_impl<Matrix, SymmGroup> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::measurements_type measurements_type;
-    
+
 public:
     typedef typename base::size_t size_t;
     typedef typename Matrix::value_type value_type;
     typedef typename base::op_t op_t;
-    
+
     custom_model_impl (Index<SymmGroup> const& phys_)
     : tag_handler(new table_type())
     , phys(phys_)
@@ -61,11 +61,11 @@ public:
         op_t ident_op = identity_matrix<op_t>(phys);
         ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
     }
-    
+
     void add_siteterm(op_t const& op, size_t i, value_type const& coeff=1.)
     {
         tag_type op_tag = tag_handler->register_op(op, tag_detail::bosonic);
-        
+
         term_descriptor term;
         term.coeff = coeff;
         term.push_back( boost::make_tuple(i, op_tag) );
@@ -75,7 +75,7 @@ public:
     {
         tag_type tag_left  = tag_handler->register_op(op_left, tag_detail::bosonic);
         tag_type tag_right = tag_handler->register_op(op_right, tag_detail::bosonic);
-        
+
         term_descriptor term;
         term.coeff = coeff;
         term.push_back( boost::make_tuple(i, tag_left) );
@@ -93,17 +93,17 @@ public:
         }
         this->terms_.push_back(term);
     }
-    
-    
+
+
     /*** Functions needed my model_impl ***/
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     Index<SymmGroup> const& phys_dim(size_t type) const
     {
         return phys;
@@ -134,9 +134,9 @@ public:
     {
         return tag_handler;
     }
-    
+
 private:
-    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     Index<SymmGroup> phys;
     tag_type ident;
 };
@@ -146,21 +146,21 @@ private:
 template <class Matrix, class SymmGroup>
 class CustomModel {
     typedef custom_model_impl<Matrix, SymmGroup> impl_type;
-    typedef boost::shared_ptr<impl_type> impl_ptr;
+    typedef std::shared_ptr<impl_type> impl_ptr;
 public:
     typedef typename impl_type::size_t size_t;
     typedef typename impl_type::value_type value_type;
     typedef typename impl_type::op_t op_t;
-    
+
     CustomModel(Index<SymmGroup> const& phys)
     : impl_(new impl_type(phys))
     { }
-    
+
     Model<Matrix, SymmGroup> make_model() const
     {
         return Model<Matrix, SymmGroup>(boost::static_pointer_cast<model_impl<Matrix, SymmGroup> >(impl_));
     }
-    
+
     void add_siteterm(op_t const& op, size_t i, value_type const& coeff=1.)
     {
         return impl_->add_siteterm(op, i, coeff);
@@ -173,7 +173,7 @@ public:
     {
         return impl_->add_nterm(ops, coeff);
     }
-    
+
 private:
     impl_ptr impl_;
 };

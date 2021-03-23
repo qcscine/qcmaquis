@@ -126,10 +126,10 @@ public:
     //template <class Matrix_, class SymmGroup_>
     //friend std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix_, SymmGroup_> const & m);
     template <class Matrix_, class SymmGroup_>
-    friend std::ostream& operator<<(typename boost::disable_if<symm_traits::HasSU2<SymmGroup_>, std::ostream&>::type os,
+    friend std::ostream& operator<<(symm_traits::disable_if_su2_t<SymmGroup_, std::ostream&> os,
                                     SiteOperator<Matrix_, SymmGroup_> const & m);
     template <class Matrix_, class SymmGroup_>
-    friend std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup_>, std::ostream&>::type os,
+    friend std::ostream& operator<<(symm_traits::enable_if_su2_t<SymmGroup_, std::ostream&> os,
                                     SiteOperator<Matrix_, SymmGroup_> const & m);
 
     Matrix const & operator()(charge r, charge c) const

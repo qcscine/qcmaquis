@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -47,7 +47,7 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
 {
     std::pair<bool, mvalue_type> cmp_result;
     typename std::vector<op_t>::iterator it_pt = this->begin();
-    for (; it_pt != this->end(); ++it_pt) { 
+    for (; it_pt != this->end(); ++it_pt) {
         cmp_result = tag_detail::equal(*it_pt, sample);
         if (cmp_result.first)
             break;
@@ -57,7 +57,7 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
         return std::make_pair(this->register_op(sample), 1.0);
     } else
         return std::make_pair(it_pt - this->begin(), cmp_result.second);
-    
+
 }
 
 // **************************************************************************
@@ -81,7 +81,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::siz
 }
 
 template <class Matrix, class SymmGroup>
-boost::shared_ptr<OPTable<Matrix, SymmGroup> > TagHandler<Matrix, SymmGroup>::get_operator_table() const
+std::shared_ptr<OPTable<Matrix, SymmGroup> > TagHandler<Matrix, SymmGroup>::get_operator_table() const
 {
     return operator_table;
 }
@@ -126,11 +126,11 @@ checked_register(typename OPTable<Matrix, SymmGroup>::op_t const& sample, tag_de
         sign_table.push_back(kind);
         hermitian.push_back(ret.first);
     }
-    
+
     assert(sign_table.size() == operator_table->size());
     assert(hermitian.size() == operator_table->size());
     assert(ret.first < operator_table->size());
-    
+
     return ret;
 }
 
@@ -140,7 +140,7 @@ void TagHandler<Matrix, SymmGroup>::hermitian_pair(typename OPTable<Matrix, Symm
 {
     assert(std::max(pair_tag1, pair_tag2) < hermitian.size());
     assert(pair_tag1 != pair_tag2);
-    
+
     if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1) return;
     assert(hermitian[pair_tag1] == pair_tag1 && hermitian[pair_tag2] == pair_tag2);
     std::swap(hermitian[pair_tag1], hermitian[pair_tag2]);
@@ -234,7 +234,7 @@ duplicates_(Map const & sample)
     typedef typename Map::const_iterator it_t;
 
     std::vector<tag_type> unique_ops;
-    for (it_t it_s = sample.begin(); it_s != sample.end(); ++it_s) 
+    for (it_t it_s = sample.begin(); it_s != sample.end(); ++it_s)
     {
         bool unique = true;
         for (typename std::vector<tag_type>::iterator it_unique = unique_ops.begin(); it_unique != unique_ops.end(); ++it_unique)
@@ -298,7 +298,7 @@ get_kron_tag(Index<SymmGroup> const & phys_i1,
         op_kron(phys_i1, phys_i2, op1, op2, product, lspin, mspin, rspin);
 
         tag_detail::remove_empty_blocks(product);
-        
+
         tag_type ret = kronecker_table->register_op(product);
         kron_tags[std::make_pair(t1, t2)] = std::make_pair(ret, 1.0);
 
