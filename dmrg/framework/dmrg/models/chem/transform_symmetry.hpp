@@ -201,7 +201,7 @@ struct transform_mps
 };
 
 template <class Matrix, class SymmGroup>
-struct transform_mps<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+struct transform_mps<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
 {
     typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
 

@@ -42,7 +42,7 @@ struct TermMakerSU2 {
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef std::vector<tag_type> tag_vec;
     typedef typename term_descriptor::value_type pos_op_t;
-    typedef boost::shared_ptr<TagHandler<M, S> > tag_handler_t;
+    typedef std::shared_ptr<TagHandler<M, S> > tag_handler_t;
 
     typedef typename S::subcharge sc;
 

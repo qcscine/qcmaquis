@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>                 //change that later
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -39,10 +39,10 @@ namespace deas_detail
         std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
         {
             std::vector<charge> site_charges;
-            switch(sc_input) 
+            switch(sc_input)
             {
                 case 4:
-                    site_charges.push_back(phys_dims[site_types[p]][0].first); // updown                   
+                    site_charges.push_back(phys_dims[site_types[p]][0].first); // updown
                     break;
                 case 3:
                     site_charges.push_back(phys_dims[site_types[p]][1].first); // up
@@ -53,13 +53,13 @@ namespace deas_detail
                 case 1:
                     site_charges.push_back(phys_dims[site_types[p]][3].first); // empty
                     break;
-            }   
+            }
             return site_charges;
          }
     };
-   
+
     template <class SymmGroup>
-    class charge_from_int<SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
+    class charge_from_int<SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
     {
         typedef Lattice::pos_t pos_t;
         typedef typename SymmGroup::charge charge;
@@ -103,7 +103,7 @@ class Determinant : public std::vector<int>
 public:
    //constructor
     Determinant(base input_det) : base(input_det)  {}
-     
+
     Determinant(int L) : base(L) {}
    //default constructor
     Determinant() {}
@@ -163,7 +163,7 @@ public:
             }
          }
       }
-      //check if number of changes agrees with ci_level 
+      //check if number of changes agrees with ci_level
       for(int i = 0; i<ci_level.size(); i++){
          if(ci_level[i] != diff){
             wrong_level = true;
@@ -175,7 +175,7 @@ public:
       return wrong_level;
    }
 
-    //function to make charge_vector from int vector    
+    //function to make charge_vector from int vector
     std::vector<std::vector<charge > > charge_det(index_vec const &phys_dims, site_vec const &site_types) const
     {
        std::vector<std::vector< charge > >  c_det;

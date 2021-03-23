@@ -354,7 +354,7 @@ private:
     BaseParameters & parms;
     std::vector<Index<SymmGroup> > phys_indices;
 
-    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     std::vector<tag_type> ident, fill, create, destroy, count;
 
 	std::vector<op_t> generate_site_specific_ops(op_t const & op) const

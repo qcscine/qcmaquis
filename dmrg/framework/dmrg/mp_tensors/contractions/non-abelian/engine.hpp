@@ -45,7 +45,7 @@ namespace contraction {
     using ::contraction::common::MPSBoundaryProduct;
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    class Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+    class Engine<Matrix, OtherMatrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>>
     {
         struct lbtm_functor
         {

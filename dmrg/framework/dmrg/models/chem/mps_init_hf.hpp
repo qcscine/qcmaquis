@@ -124,7 +124,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 };
 
 template<class Matrix, class SymmGroup>
-struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
+struct hf_mps_init<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
         : public mps_initializer<Matrix, SymmGroup>
 {
     typedef Lattice::pos_t pos_t;

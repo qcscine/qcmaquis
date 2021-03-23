@@ -5,22 +5,22 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -39,17 +39,17 @@ template<class Matrix>
 class Heisenberg : public model_impl<Matrix, U1>
 {
     typedef model_impl<Matrix, U1> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
 
-public:   
+public:
     Heisenberg (const Lattice& lat, double Jxy, double Jz)
     : tag_handler(new table_type())
     {
@@ -57,32 +57,32 @@ public:
         phys.insert(std::make_pair(-1, 1));
 
         op_t ident_op, splus_op, sminus_op, sz_op;
-   
+
         ident_op.insert_block(Matrix(1, 1, 1), -1, -1);
         ident_op.insert_block(Matrix(1, 1, 1), 1, 1);
-        
+
         splus_op.insert_block(Matrix(1, 1, 1), -1, 1);
-        
+
         sminus_op.insert_block(Matrix(1, 1, 1), 1, -1);
-        
+
         sz_op.insert_block(Matrix(1, 1, 0.5), 1, 1);
         sz_op.insert_block(Matrix(1, 1, -0.5), -1, -1);
-        
+
         /**********************************************************************/
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
-        
+
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-        
+
         REGISTER(ident,   tag_detail::bosonic)
         REGISTER(splus,   tag_detail::bosonic)
         REGISTER(sminus,  tag_detail::bosonic)
         REGISTER(sz,      tag_detail::bosonic)
-        
+
 #undef REGISTER
         /**********************************************************************/
 
-        
+
         for (int p=0; p<lat.size(); ++p) {
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
@@ -109,15 +109,15 @@ public:
                 }
             }
         }
-        
+
     }
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         return;
     }
-    
+
     Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
@@ -152,7 +152,7 @@ public:
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
     }
-    
+
     table_ptr operators_table() const
     {
         return tag_handler;
@@ -161,7 +161,7 @@ public:
 private:
     Index<U1> phys;
 
-    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident, splus, sminus, sz;
 };
 
@@ -170,17 +170,17 @@ template<class Matrix>
 class HCB : public model_impl<Matrix, U1>
 {
     typedef model_impl<Matrix, U1> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    
-public:   
+
+public:
     HCB (const Lattice& lat, double t=1)
     : tag_handler(new table_type())
     {
@@ -189,30 +189,30 @@ public:
 
         op_t ident_op;
         op_t create_op, destroy_op, count_op;
-        
+
         ident_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_op.insert_block(Matrix(1, 1, 1), 1, 1);
-        
+
         create_op.insert_block(Matrix(1, 1, 1), 0, 1);
         destroy_op.insert_block(Matrix(1, 1, 1), 1, 0);
-        
+
         count_op.insert_block(Matrix(1, 1, 1), 1, 1);
-        
+
         /**********************************************************************/
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
-        
+
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-        
+
         REGISTER(ident,   tag_detail::bosonic)
         REGISTER(create,  tag_detail::bosonic)
         REGISTER(destroy, tag_detail::bosonic)
         REGISTER(count,   tag_detail::bosonic)
-        
+
 #undef REGISTER
         /**********************************************************************/
 
-        
+
         for (int p=0; p<lat.size(); ++p) {
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
@@ -232,17 +232,17 @@ public:
                 }
             }
         }
-        
+
     }
-    
-    
+
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
@@ -259,12 +259,12 @@ public:
     {
         return static_cast<int>(parms["u1_total_charge"]);
     }
-    
+
     measurements_type measurements () const
     {
         return measurements_type();
     }
-    
+
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "n")
@@ -277,17 +277,17 @@ public:
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
     }
-    
+
     table_ptr operators_table() const
     {
         return tag_handler;
     }
 
-    
+
 private:
     Index<U1> phys;
-    
-    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
+
+    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident, create, destroy, count;
 };
 
@@ -296,16 +296,16 @@ template<class Matrix>
 class BoseHubbard : public model_impl<Matrix, U1>
 {
     typedef model_impl<Matrix, U1> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    
+
     typedef typename Matrix::value_type value_type;
 public:
     BoseHubbard (const Lattice& lat_, BaseParameters & model_)
@@ -317,45 +317,45 @@ public:
         double t = model["t"];
         double U = model["U"];
         double V = model["V"];
-        
+
         op_t ident_op;
         op_t create_op, destroy_op, count_op, interaction_op;
 
         phys.insert(std::make_pair(0, 1));
         ident_op.insert_block(Matrix(1, 1, 1), 0, 0);
-        
+
         for (int n=1; n<=Nmax; ++n)
         {
             phys.insert(std::make_pair(n, 1));
-            
+
             ident_op.insert_block(Matrix(1, 1, 1), n, n);
-            
+
             count_op.insert_block(Matrix(1, 1, n), n, n);
             if ((n*n-n) != 0)
                 interaction_op.insert_block(Matrix(1, 1, n*n-n), n, n);
-            
-            
+
+
             create_op.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n-1, n);
             destroy_op.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n, n-1);
         }
-        
-        
+
+
         /**********************************************************************/
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
-        
+
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-        
+
         REGISTER(ident,       tag_detail::bosonic)
         REGISTER(create,      tag_detail::bosonic)
         REGISTER(destroy,     tag_detail::bosonic)
         REGISTER(count,       tag_detail::bosonic)
         REGISTER(interaction, tag_detail::bosonic)
-        
+
 #undef REGISTER
         /**********************************************************************/
 
-        
+
         for (int p=0; p<lat.size(); ++p) {
             /* interaction */
             {
@@ -364,7 +364,7 @@ public:
                 term.push_back( boost::make_tuple(p, interaction) );
                 this->terms_.push_back(term);
             }
-            
+
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
                 /* hopping */
@@ -392,16 +392,16 @@ public:
                 }
             }
         }
-        
+
     }
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
@@ -418,7 +418,7 @@ public:
     {
         return static_cast<int>(parms["u1_total_charge"]);
     }
-    
+
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "n")
@@ -435,19 +435,19 @@ public:
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
     }
-    
+
     table_ptr operators_table() const
     {
         return tag_handler;
     }
-    
+
     measurements_type measurements () const
     {
         typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
-        
+
         measurements_type meas;
-        
+
         if (model["MEASURE[Density]"]) {
             std::string name = "Density";
             meas.push_back( new measurements::average<Matrix, U1>(name, lat,
@@ -455,7 +455,7 @@ public:
                                                       op_vec(1,this->filling_matrix(0)),
                                                       op_vec(1,tag_handler->get_op(count))) );
         }
-        
+
         if (model["MEASURE[Local density]"]) {
             std::string name = "Local density";
             meas.push_back( new measurements::local<Matrix, U1>(name, lat,
@@ -463,7 +463,7 @@ public:
                                                     op_vec(1,this->filling_matrix(0)),
                                                     op_vec(1,tag_handler->get_op(count))) );
         }
-        
+
         if (model["MEASURE[Onebody density matrix]"]) {
             std::string name = "Onebody density matrix";
             bond_element ops;
@@ -474,16 +474,16 @@ public:
                                                            op_vec(1,this->filling_matrix(0)),
                                                            ops, true, false) );
         }
-        
+
         return meas;
     }
-    
+
 private:
     const Lattice & lat;
     BaseParameters & model;
     Index<U1> phys;
-    
-    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
+
+    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident, create, destroy, count, interaction;
 };
 
@@ -492,16 +492,16 @@ template<class Matrix>
 class FreeFermions : public model_impl<Matrix, U1>
 {
     typedef model_impl<Matrix, U1> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    
+
 public:
     FreeFermions (const Lattice& lat, double t=1)
     : lattice(lat)
@@ -512,28 +512,28 @@ public:
 
         create_op.insert_block(Matrix(1, 1, 1), 0, 1);
         destroy_op.insert_block(Matrix(1, 1, 1), 1, 0);
-        
+
         dens_op.insert_block(Matrix(1, 1, 1), 1, 1);
-        
+
         ident_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_op.insert_block(Matrix(1, 1, 1), 1, 1);
         sign_op.insert_block(Matrix(1, 1, 1), 0, 0);
         sign_op.insert_block(Matrix(1, 1, -1), 1, 1);
-        
+
         phys.insert(std::make_pair(0, 1));
         phys.insert(std::make_pair(1, 1));
-        
+
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-        
+
         REGISTER(ident,     tag_detail::bosonic)
         REGISTER(create,    tag_detail::fermionic)
         REGISTER(destroy,   tag_detail::fermionic)
         REGISTER(dens,      tag_detail::bosonic)
         REGISTER(sign,      tag_detail::bosonic)
-        
+
 #undef REGISTER
 
-        
+
         for (int p=0; p<lat.size(); ++p) {
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
@@ -555,16 +555,16 @@ public:
                 }
             }
         }
-        
+
     }
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
@@ -581,7 +581,7 @@ public:
     {
         return static_cast<int>(parms["u1_total_charge"]);
     }
-    
+
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "n")
@@ -594,17 +594,17 @@ public:
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
     }
-    
+
     table_ptr operators_table() const
     {
         return tag_handler;
     }
-    
+
     measurements_type measurements () const
     {
         typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
-        
+
         measurements_type meas;
         {
             meas.push_back( new measurements::local<Matrix, U1>("Density", lattice,
@@ -632,12 +632,12 @@ public:
         }
         return meas;
     }
-    
+
 private:
     Lattice lattice;
     Index<U1> phys;
 
-    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident;
     tag_type create, destroy, sign, dens;
 };
@@ -656,16 +656,16 @@ class FermiHubbardU1 : public model_impl<Matrix, U1> base
 {
 public:
     typedef model_impl<Matrix, U1> base;
-    
+
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-    
+
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
- 
+
     FermiHubbardU1(const Lattice& lat, BaseParameters & parms)
     : tag_handler(new table_type())
     {
@@ -675,40 +675,40 @@ public:
         op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
             count_up_op, count_down_op, doubly_occ_op,
             sign_up_op, sign_down_op, fill_op, ident_op;
-        
+
         ident_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_op.insert_block(Matrix::identity_matrix(2), 1, 1);
         ident_op.insert_block(Matrix(1, 1, 1), 2, 2);
-        
+
         {Matrix tmp(1,2,0); tmp(0,0)=1; create_up_op.insert_block(tmp, 0, 1);}
         {Matrix tmp(2,1,0); tmp(1,0)=1; create_up_op.insert_block(tmp, 1, 2);}
         {Matrix tmp(1,2,0); tmp(0,1)=1; create_down_op.insert_block(tmp, 0, 1);}
         {Matrix tmp(2,1,0); tmp(0,0)=1; create_down_op.insert_block(tmp, 1, 2);}
-        
+
         {Matrix tmp(2,1,0); tmp(0,0)=1; destroy_up_op.insert_block(tmp, 1, 0);}
         {Matrix tmp(1,2,0); tmp(0,1)=1; destroy_up_op.insert_block(tmp, 2, 1);}
         {Matrix tmp(2,1,0); tmp(1,0)=1; destroy_down_op.insert_block(tmp, 1, 0);}
         {Matrix tmp(1,2,0); tmp(0,0)=1; destroy_down_op.insert_block(tmp, 2, 1);}
-        
+
         {Matrix tmp(2,2,0); tmp(0,0)=1; count_up_op.insert_block(tmp, 1, 1);}
         count_up_op.insert_block(Matrix(1, 1, 1), 2, 2);
         {Matrix tmp(2,2,0); tmp(1,1)=1; count_down_op.insert_block(tmp, 1, 1);}
         count_down_op.insert_block(Matrix(1, 1, 1), 2, 2);
-        
+
         doubly_occ_op.insert_block(Matrix(1, 1, 1), 2, 2);
-        
+
         sign_up_op.insert_block(Matrix(1, 1, 1), 0, 0);
         {Matrix tmp=Matrix::identity_matrix(2); tmp(0,0)=-1; sign_up_op.insert_block(tmp, 1, 1);}
         sign_up_op.insert_block(Matrix(1, 1, -1), 2, 2);
-        
+
         sign_down_op.insert_block(Matrix(1, 1, 1), 0, 0);
         {Matrix tmp=Matrix::identity_matrix(2); tmp(1,1)=-1; sign_down_op.insert_block(tmp, 1, 1);}
         sign_down_op.insert_block(Matrix(1, 1, -1), 2, 2);
-        
+
         gemm(sign_up_op, sign_down_op, fill_op);
 
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-        
+
         REGISTER(ident,         tag_detail::bosonic)
         REGISTER(fill,          tag_detail::bosonic)
         REGISTER(create_up,     tag_detail::fermionic)
@@ -720,9 +720,9 @@ public:
         REGISTER(doubly_occ,    tag_detail::bosonic)
         REGISTER(sign_up,       tag_detail::bosonic)
         REGISTER(sign_down,     tag_detail::bosonic)
-        
+
 #undef REGISTER
-        
+
         double U = parms["U"];
         op_t tmp;
         for (int p=0; p<lat.size(); ++p) {
@@ -733,7 +733,7 @@ public:
                 term.push_back( boost::make_tuple(p, doubly_occ) );
                 this->terms_.push_back(term);
             }
-            
+
             std::vector<int> neighs = lat.forward(p);
             for (std::vector<int>::iterator hopto = neighs.begin();
                  hopto != neighs.end(); ++hopto)
@@ -791,7 +791,7 @@ public:
             }
         }
     }
-    
+
     Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
@@ -808,7 +808,7 @@ public:
     {
         return static_cast<int>(parms["u1_total_charge"]);
     }
-    
+
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "n_up")
@@ -831,24 +831,24 @@ public:
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
     }
-    
+
     table_ptr operators_table() const
     {
         return tag_handler;
     }
-    
+
     Measurements<Matrix, U1> measurements () const
     {
         return Measurements<Matrix, U1>();
     }
-    
+
 private:
     Index<U1> phys;
     tag_type create_up, create_down, destroy_up, destroy_down, count_up, count_down, doubly_occ,
              sign_up, sign_down, fill, ident;
 
-    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
-    
+    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
+
     double get_t (BaseParameters & parms, int i)
     {
         std::ostringstream key;

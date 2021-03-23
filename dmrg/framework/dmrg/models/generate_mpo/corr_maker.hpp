@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -54,15 +54,15 @@ namespace generate_mpo
     protected:
         typedef tag_detail::tag_type tag_type;
         typedef boost::tuple<size_t, size_t, tag_type, typename Matrix::value_type> block;
-        
-        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops, boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
+
+        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
         {
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tbl);
             return r;
         }
-        
-        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops, boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
+
+        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops, std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
         {
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, tbl);
@@ -74,12 +74,12 @@ namespace generate_mpo
     class CorrMaker : public CorrMakerBase<Matrix, SymmGroup>
     {
         typedef CorrMakerBase<Matrix, SymmGroup> base;
-        typedef typename base::block block; 
+        typedef typename base::block block;
         typedef Lattice::pos_t pos_t;
         typedef tag_detail::tag_type tag_type;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
-        
+
     public:
         CorrMaker(Lattice const& lat_,
                   const std::vector<op_t> & ident_,
@@ -100,7 +100,7 @@ namespace generate_mpo
                 identities[type] = tag_handler.register_op(ident_[type], tag_detail::bosonic);
             for (int type=0; type<fill_.size(); ++type)
                 fillings[type] = tag_handler.register_op(fill_[type], tag_detail::bosonic);
-            
+
             for (size_t n=0; n<ops.size(); ++n) {
                 op_tags[n].first.resize(ops[n].first.size());
                 op_tags[n].second = ops[n].second;
@@ -112,18 +112,18 @@ namespace generate_mpo
             with_sign[0][0] = false;
         	recurse(0, 0, 0, std::vector<pos_t>(), ref);
         }
-        
+
         MPO<Matrix, SymmGroup> create_mpo()
         {
-            boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
+            std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
             MPO<Matrix, SymmGroup> r(prempo.size());
             for (pos_t p = 1; p < prempo.size(); ++p)
                 r[p] = base::as_bulk(prempo[p], tbl);
             r[0] = base::as_left(prempo[0], tbl);
-            
+
             return r;
         }
-        
+
         std::string description () const
         {
             std::ostringstream ss;
@@ -135,9 +135,9 @@ namespace generate_mpo
             }
         	return ss.str();
         }
-        
+
         vector<vector<pos_t> > const& numeric_labels() { return labels; }
-        
+
     private:
         Lattice const& lat;
         TagHandler<Matrix, SymmGroup> tag_handler;
@@ -145,13 +145,13 @@ namespace generate_mpo
         vector<vector<block> > prempo;
         vector<vector<tag> > tags;
         vector<vector<pos_t> > labels;
-        
+
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
         std::vector<tag_type> identities, fillings;
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
         vector<std::pair<std::vector<tag_type>, bool> > op_tags;
-        
+
         size_t term(pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
         {
             std::string lab;
@@ -176,7 +176,7 @@ namespace generate_mpo
                     scale = 1.;
 				}
             }
-            
+
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
             prempo[p].push_back( boost::make_tuple(u1, u2, op, scale) );
@@ -190,26 +190,26 @@ namespace generate_mpo
                 tags[p].push_back( boost::make_tuple(u1, u2, lab) );
             return u2;
         }
-        
+
         void recurse(pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref)
         {
             if (p0 + op_tags.size() - which < prempo.size()) {
                 size_t use_next = term(p0, use, std::make_pair(identities, false), true);
                 recurse(p0+1, which, use_next, label, ref);
             }
-            
+
             {
                 if (ref >= 0 && which == 0 && p0 != ref)
                     return;
-                
+
                 if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
                     return;
-                
+
                 size_t use_next = term(p0, use, op_tags[which], false);
-                
+
                 vector<pos_t> label_(label);
                 label_.push_back(p0);
-                
+
                 if (which == op_tags.size()-1) {
                     size_t t1 = use_next, t2 = use_next;
                     for (pos_t p2 = p0+1; p2 < prempo.size(); ++p2) {
@@ -224,14 +224,14 @@ namespace generate_mpo
             }
         }
     };
-    
+
     // same as CorrMaker, but operators in ops have to be even,
     //  and are avaluated as ops[0](i)*ops[1](i+1)*ops[2](j)*ops[3](j+1)
     template<class Matrix, class SymmGroup>
     class CorrMakerNN : public CorrMakerBase<Matrix, SymmGroup>
     {
-        typedef CorrMakerBase<Matrix, SymmGroup> base; 
-        typedef typename base::block block; 
+        typedef CorrMakerBase<Matrix, SymmGroup> base;
+        typedef typename base::block block;
         typedef tag_detail::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
         typedef typename OPTable<Matrix,SymmGroup>::op_t op_t;
@@ -271,20 +271,20 @@ namespace generate_mpo
             with_sign[0][0] = false;
             recurse(0, 0, 0, vector<pos_t>(), ref);
         }
-        
+
         MPO<Matrix, SymmGroup> create_mpo()
         {
-            boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
+            std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
             MPO<Matrix, SymmGroup> r(prempo.size());
             for (size_t p = 1; p < prempo.size(); ++p)
                 r[p] = base::as_bulk(prempo[p], tbl);
             r[0] = base::as_left(prempo[0], tbl);
-            
+
             return r;
         }
-        
+
         vector<vector<pos_t> > const& numeric_labels() { return labels; }
-        
+
         std::string description () const
         {
             std::ostringstream ss;
@@ -296,7 +296,7 @@ namespace generate_mpo
             }
         	return ss.str();
         }
-        
+
     private:
         Lattice const& lat;
         TagHandler<Matrix, SymmGroup> tag_handler;
@@ -304,10 +304,10 @@ namespace generate_mpo
         vector<vector<block> > prempo;
         vector<vector<tag> > tags;
         vector<vector<pos_t> > labels;
-        
+
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
-        
+
         std::vector<tag_type> identities, fillings;
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
         vector<std::pair<std::vector<tag_type>, bool> > op_tags;
@@ -334,7 +334,7 @@ namespace generate_mpo
 					op = op_p.first[lat.get_prop<int>("type", p)];
 				}
             }
-            
+
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
             prempo[p].push_back( boost::make_tuple(u1, u2, op, 1.0) );
@@ -348,18 +348,18 @@ namespace generate_mpo
                 tags[p].push_back( boost::make_tuple(u1, u2, lab) );
             return u2;
         }
-        
+
         void recurse(pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref)
         {
             if (p0 + op_tags.size() - which < prempo.size()) {
                 size_t use_next = term(p0, use, std::make_pair(identities, false),  true);
                 recurse(p0+1, which, use_next, label, ref);
             }
-            
+
             {
                 if (ref >= 0 && which == 0 && p0 != ref)
                     return;
-                
+
                 if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
                     return;
                 size_t use_next = term(p0++, use, op_tags[which++], false);
@@ -367,11 +367,11 @@ namespace generate_mpo
                 if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
                     return;
                 use_next = term(p0, use_next, op_tags[which], false);
-                
+
                 vector<pos_t> label_(label);
                 label_.push_back(p0-1);
                 label_.push_back(p0);
-                
+
                 if (which == op_tags.size()-1) {
                     size_t t1 = use_next, t2 = use_next;
                     for (pos_t p2 = p0+1; p2 < prempo.size(); ++p2) {

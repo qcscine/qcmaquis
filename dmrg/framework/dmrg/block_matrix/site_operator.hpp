@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -30,7 +30,7 @@
 #include <boost/serialization/serialization.hpp>
 
 template<class Matrix, class SymmGroup>
-SiteOperator<Matrix, SymmGroup>::SiteOperator() 
+SiteOperator<Matrix, SymmGroup>::SiteOperator()
 {
 }
 
@@ -76,14 +76,14 @@ namespace SiteOperator_detail
 {
 
     template <class Matrix, class SymmGroup>
-    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
+    symm_traits::disable_if_su2_t<SymmGroup>
     extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
                       typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
     {
-    } 
+    }
 
     template <class Matrix, class SymmGroup>
-    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
+    symm_traits::enable_if_su2_t<SymmGroup>
     extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
                       typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
     {
@@ -105,7 +105,7 @@ namespace SiteOperator_detail
                 if(rhsl[i] != 0)
                     sbl[i] = rhsl[i];
         }
-    } 
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -138,18 +138,18 @@ SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator-=(Si
 template<class Matrix, class SymmGroup>
 typename SiteOperator<Matrix, SymmGroup>::size_type SiteOperator<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
 {
-    return bm_.insert_block(mtx, c1, c2);  
+    return bm_.insert_block(mtx, c1, c2);
 }
 
 template<class Matrix, class SymmGroup>
 typename SiteOperator<Matrix, SymmGroup>::size_type SiteOperator<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
 {
-    return bm_.insert_block(mtx, c1, c2);  
+    return bm_.insert_block(mtx, c1, c2);
 }
 
 template<class Matrix, class SymmGroup>
 Index<SymmGroup> SiteOperator<Matrix, SymmGroup>::left_basis() const
-{ 
+{
     return bm_.left_basis();
 }
 
@@ -250,7 +250,7 @@ void SiteOperator<Matrix, SymmGroup>::clear()
 }
 
 template<class Matrix, class SymmGroup>
-std::ostream& operator<<(typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, std::ostream&>::type os, SiteOperator<Matrix, SymmGroup> const & m)
+std::ostream& operator<<(symm_traits::disable_if_su2_t<SymmGroup, std::ostream&> os, SiteOperator<Matrix, SymmGroup> const & m)
 //std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix, SymmGroup> const & m)
 {
     os << "Basis: " << m.basis() << std::endl;
@@ -262,7 +262,7 @@ std::ostream& operator<<(typename boost::disable_if<symm_traits::HasSU2<SymmGrou
 }
 
 template<class Matrix, class SymmGroup>
-std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::ostream&>::type os, SiteOperator<Matrix, SymmGroup> const & m)
+std::ostream& operator<<(symm_traits::enable_if_su2_t<SymmGroup, std::ostream&> os, SiteOperator<Matrix, SymmGroup> const & m)
 {
     os << "Basis: " << m.basis() << std::endl;
     os << m.spin() << std::endl;
@@ -329,14 +329,14 @@ void SiteOperator<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int
 namespace SiteOperator_detail {
 
     template <class Matrix, class SymmGroup>
-    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
+    symm_traits::disable_if_su2_t<SymmGroup>
     check_spin_basis(block_matrix<Matrix, SymmGroup> const & bm,
                      typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type &)
     {
-    } 
+    }
 
     template <class Matrix, class SymmGroup>
-    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
+    symm_traits::enable_if_su2_t<SymmGroup>
     check_spin_basis(block_matrix<Matrix, SymmGroup> const & bm,
                      typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis)
     {
@@ -348,7 +348,7 @@ namespace SiteOperator_detail {
                     = std::make_pair(std::vector<typename SymmGroup::subcharge>(num_rows(bm[b]), std::abs(SymmGroup::spin(bm.basis().left_charge(b)))),
                                      std::vector<typename SymmGroup::subcharge>(num_cols(bm[b]), std::abs(SymmGroup::spin(bm.basis().right_charge(b))))
                                      );
-    } 
+    }
 
 }
 

@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -67,7 +67,7 @@ MPO<matrix, symm> rdm2(Model<matrix, symm> const & model, Lattice const & lattic
         typedef OPTable<matrix, symm>::tag_type tag_type;
         typedef matrix::value_type value_type;
 
-        boost::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
+        std::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
 
         int pos_[4] = {0, 1, 2, 3};
         std::vector<int> pos(pos_, pos_ + 4);
@@ -93,7 +93,7 @@ MPO<matrix, symm> rdm2(Model<matrix, symm> const & model, Lattice const & lattic
         fillings.push_back(model.filling_matrix_tag(1));
 
         MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(pos, ops, identities, fillings, tag_handler, lattice);
-        
+
         return mpo;
 }
 
@@ -103,7 +103,7 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
         typedef OPTable<matrix, symm>::tag_type tag_type;
         typedef matrix::value_type value_type;
 
-        boost::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
+        std::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
 
         const int nterm = 2;
         int pos_[nterm] = {0, 2};
@@ -134,7 +134,7 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
         fillings.push_back(model.filling_matrix_tag(1));
 
         MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(pos, ops, identities, fillings, tag_handler, lattice);
-        
+
         return mpo;
 }
 
@@ -144,9 +144,9 @@ int main(int argc, char ** argv)
         DmrgOptions opt(argc, argv);
         if (!opt.valid) return 0;
         DmrgParameters parms = opt.parms;
-        
+
         maquis::cout.precision(10);
-        
+
         /// Parsing model
         Lattice lattice = Lattice(parms);
         Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
@@ -160,8 +160,8 @@ int main(int argc, char ** argv)
         MPO<matrix, symm> mpo = rdm2(model, lattice);
 
         maquis::traits::real_type<matrix::value_type>::type value = maquis::real(expval(mps, mpo));
-        maquis::cout << "Expval is: " << value << std::endl; 
-        
+        maquis::cout << "Expval is: " << value << std::endl;
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
