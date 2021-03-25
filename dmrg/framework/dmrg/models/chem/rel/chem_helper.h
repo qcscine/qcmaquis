@@ -44,7 +44,7 @@ namespace detail {
 
         RelChemHelper(BaseParameters & parms, Lattice const & lat_,
                    std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_,
-                   boost::shared_ptr<TagHandler<M, S> > tag_handler_)
+                   std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
 			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
@@ -130,7 +130,7 @@ namespace detail {
 
         std::vector<tag_type> const & ident;
         std::vector<tag_type> const & fill;
-        boost::shared_ptr<TagHandler<M, S> > tag_handler;
+        std::shared_ptr<TagHandler<M, S> > tag_handler;
         Lattice const & lat;
 
         std::vector<value_type> matrix_elements;

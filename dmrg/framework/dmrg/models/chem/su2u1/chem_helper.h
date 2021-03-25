@@ -41,7 +41,7 @@ namespace detail {
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef Lattice::pos_t pos_t;
 
-        ChemHelperSU2(BaseParameters & parms, Lattice const & lat, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
+        ChemHelperSU2(BaseParameters & parms, Lattice const & lat, std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : tag_handler(tag_handler_)
         {
             boost::tie(idx_, matrix_elements) = parse_integrals<value_type, S>(parms, lat);
@@ -111,7 +111,7 @@ namespace detail {
 
     private:
 
-        boost::shared_ptr<TagHandler<M, S> > tag_handler;
+        std::shared_ptr<TagHandler<M, S> > tag_handler;
 
         std::vector<value_type> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;

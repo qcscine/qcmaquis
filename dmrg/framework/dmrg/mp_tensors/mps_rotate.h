@@ -148,8 +148,10 @@ namespace mps_rotate
         }
     };
 
+    /*
+    // does not work
     template<class Matrix, class SymmGroup>
-    struct setupMPO<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+    struct setupMPO<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>>
     {
         std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, std::size_t j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
         {
@@ -190,7 +192,7 @@ namespace mps_rotate
                 return ret;
         }
     };
-
+    */
 
     // function to calculate MPS' = MPO|MPS> aka (in CI terminology) calculating the sigma vector: sigma = H*C
     // as used e.g. in Eqs. 46 and 48

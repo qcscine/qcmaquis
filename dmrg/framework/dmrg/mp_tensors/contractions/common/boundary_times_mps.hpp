@@ -39,7 +39,7 @@ namespace contraction {
     namespace common {
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
+    symm_traits::enable_if_su2_t<SymmGroup, std::vector<typename Matrix::value_type> >
     conjugate_phases(block_matrix<Matrix, SymmGroup> const & bm,
                      MPOTensor<OtherMatrix, SymmGroup> const & mpo,
                      size_t k, bool left, bool forward)
@@ -65,7 +65,7 @@ namespace contraction {
     }
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, std::vector<typename Matrix::value_type> >::type
+    symm_traits::disable_if_su2_t<SymmGroup, std::vector<typename Matrix::value_type> >
     conjugate_phases(block_matrix<Matrix, SymmGroup> const & bm,
                      MPOTensor<OtherMatrix, SymmGroup> const & mpo,
                      size_t k, bool left, bool forward)
@@ -74,7 +74,7 @@ namespace contraction {
     }
 
     template <class Matrix, class SymmGroup>
-    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+    symm_traits::enable_if_su2_t<SymmGroup> recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
                                                                                        MPOTensor<Matrix, SymmGroup> const & mpo,
                                                                                        size_t k, bool left, bool forward)
     {
@@ -86,7 +86,7 @@ namespace contraction {
     }
 
     template <class Matrix, class SymmGroup>
-    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
+    symm_traits::disable_if_su2_t<SymmGroup> recover_conjugate(block_matrix<Matrix, SymmGroup> & bm,
                                                                                         MPOTensor<Matrix, SymmGroup> const & mpo,
                                                                                         size_t b, bool left, bool forward)
     { }

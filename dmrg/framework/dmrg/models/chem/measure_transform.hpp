@@ -49,7 +49,7 @@ struct measure_transform
 };
 
 template <class Matrix, class SymmGroup>
-struct measure_transform<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>
+struct measure_transform<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>>
 {
     typedef typename Model<Matrix, SymmGroup>::results_map_type results_map_type;
     typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;

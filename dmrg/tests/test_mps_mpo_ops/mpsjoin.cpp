@@ -75,7 +75,7 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& bra, MPS<matrix,
     assert(bra.length() == ket.length());
     typedef operator_selector<matrix, SymmGroup>::type op_t;
     typedef std::vector<op_t> op_vec;
-    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(bra.length()));
+    std::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(bra.length()));
     Lattice lattice(lat_ptr);
 
     std::vector<double> meas(bra.length());

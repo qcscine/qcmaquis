@@ -40,14 +40,14 @@ namespace measurements_details {
 
         template <class matrix>
         bool operator()(term_descriptor<typename matrix::value_type> const & term,
-                        boost::shared_ptr<TagHandler<matrix, symm> > tag_handler, Lattice const & lat)
+                        std::shared_ptr<TagHandler<matrix, symm> > tag_handler, Lattice const & lat)
         {
             return true;
         }
     };
 
     template <class symm>
-    class checkpg<symm, typename boost::enable_if<symm_traits::HasPG<symm> >::type>
+    class checkpg<symm, symm_traits::enable_if_pg_t<symm> >
     {
     public:
         typedef typename symm::charge charge;
@@ -55,7 +55,7 @@ namespace measurements_details {
 
         template <class matrix>
         bool operator()(term_descriptor<typename matrix::value_type> const & term,
-				boost::shared_ptr<TagHandler<matrix, symm> > tag_handler,
+				std::shared_ptr<TagHandler<matrix, symm> > tag_handler,
 				Lattice const & lat)
         {
             typedef typename TagHandler<matrix, symm>::op_t op_t;
@@ -65,7 +65,7 @@ namespace measurements_details {
 		    charge local = symm::IdentityCharge;
 		    if (tag_handler->is_fermionic(term.operator_tag(p)))
                     // stknecht: this check does not work properly for U1DG. FIXME!
-                    if(symm_traits::HasU1<symm>::value)
+                    if(symm_traits::HasU1DG<symm>::value)
                         if( p % 2 == 0)
 		                symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
                         else

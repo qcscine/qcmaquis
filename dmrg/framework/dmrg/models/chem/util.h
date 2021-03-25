@@ -179,12 +179,12 @@ namespace detail {
     }
 
     template<class T>
-    typename boost::enable_if<boost::is_complex<T>,T>::type cconj(T a)
+    typename std::enable_if<boost::is_complex<T>::value,T>::type cconj(T a)
     {
         return std::conj(a);
     }
     template<class T>
-    typename boost::disable_if<boost::is_complex<T>,T>::type cconj(T a)
+    typename std::enable_if<!boost::is_complex<T>::value,T>::type cconj(T a)
     {
         return a;
     }

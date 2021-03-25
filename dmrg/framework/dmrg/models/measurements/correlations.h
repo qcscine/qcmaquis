@@ -184,7 +184,7 @@ namespace measurements {
                                  std::vector<std::pair<op_vec, bool> > const & ops,
                                  std::vector<pos_t> const & order = std::vector<pos_t>())
         {
-            typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
+            typedef std::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
 
             for (std::vector<pos_t>::const_iterator it = positions_first.begin(); it != positions_first.end(); ++it) {
                 if (*it >= lattice.size()-(ops.size()-1))

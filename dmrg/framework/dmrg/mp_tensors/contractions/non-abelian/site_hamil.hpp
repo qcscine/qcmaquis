@@ -49,7 +49,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
-    Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>::
+    Engine<Matrix, OtherMatrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>>::
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,

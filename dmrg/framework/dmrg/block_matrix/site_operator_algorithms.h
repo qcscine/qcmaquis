@@ -155,14 +155,14 @@ OutOp op_exp_hermitian(Index<SymmGroup> const & phys,
 namespace detail {
 
     template <class Matrix>
-    typename boost::enable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
+    typename std::enable_if<boost::is_complex<typename Matrix::value_type>::value, Matrix>::type
     exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
     {
         return exp(m, alpha);
     }
 
     template <class Matrix>
-    typename boost::disable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
+    typename std::enable_if<!boost::is_complex<typename Matrix::value_type>::value, Matrix>::type
     exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
     {
         throw std::runtime_error("Exponential of non-hermitian real matrices not implemented!");
@@ -183,7 +183,7 @@ template <class Matrix, class SymmGroup, class A> SiteOperator<Matrix, SymmGroup
     return M;
 }
 
-template<class Matrix1, class Matrix2, class SymmGroup, class=typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type>
+template<class Matrix1, class Matrix2, class SymmGroup, class=symm_traits::disable_if_su2_t<SymmGroup>>
 void op_kron(Index<SymmGroup> const & phys_A,
              Index<SymmGroup> const & phys_B,
              SiteOperator<Matrix1, SymmGroup> const & A,
@@ -230,7 +230,7 @@ namespace ts_ops_detail
     std::vector<Integer> allowed_spins(Integer left, Integer right, Integer k1, Integer k2);
 }
 
-template<class Matrix1, class Matrix2, class SymmGroup, class=typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
+template<class Matrix1, class Matrix2, class SymmGroup, class=typename std::enable_if< symm_traits::HasSU2<SymmGroup>::value >::type>
 void op_kron(Index<SymmGroup> const & phys_A,
              Index<SymmGroup> const & phys_B,
              SiteOperator<Matrix1, SymmGroup> const & Ao,

@@ -199,7 +199,7 @@ private:
     BaseParameters & parms;
     std::vector<Index<SymmGroup> > phys_indices;
 
-    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     typename TermMakerSU2<Matrix, SymmGroup>::Operators ops;
     typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection op_collection;
 

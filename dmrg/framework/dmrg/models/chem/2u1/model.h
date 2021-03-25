@@ -1032,7 +1032,7 @@ private:
     BaseParameters & parms;
     std::vector<Index<SymmGroup> > phys_indices;
 
-    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,

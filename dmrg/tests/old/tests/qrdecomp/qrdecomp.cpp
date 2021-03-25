@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -60,9 +60,9 @@ BOOST_AUTO_TEST_CASE( test )
     int M = 50;
     int L = 16;
 
-    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(L));
+    std::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(L));
     Lattice lattice(lat_ptr);
-    
+
     DmrgParameters parms;
     parms.set("max_bond_dimension", M);
 
@@ -72,24 +72,24 @@ BOOST_AUTO_TEST_CASE( test )
     phys.insert(std::make_pair(1, 1));
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
-    
+
     op_t ident = identity_matrix<op_t>(phys);
     op_vec ids_vec(1,ident);
 
     default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
-    
+
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps);
     double onorm = norm(mps);
-    
+
     MPS<matrix, SymmGroup> mps1(mps), mps2(mps);
-    
+
     // here canonize with SVD
     mps1.canonize(L/2, SVD);
-    
+
     // here canonize with QR
     mps2.canonize(L/2, QR);
-    
+
     { // measure norm
         double orig = norm(mps);
         double meas_mps1 = norm(mps1);
@@ -98,26 +98,26 @@ BOOST_AUTO_TEST_CASE( test )
         maquis::cout << "Norm: ";
         maquis::cout << orig << " " << meas_mps1 << " " << meas_mps2 << std::endl;
     }
-    
+
     { // measure density (at some positions)
         op_t op;
         op.insert_block(matrix(1,1,1), 1,1);
         op.insert_block(matrix(1,1,2), 2,2);
-        
+
         for (int i=0; i<10; ++i) {
             int p = dmrg_random::uniform() * L;
-            
+
             generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
             generate_mpo::OperatorTerm<matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, op) );
             term.fill_operator = ident;
             mpom.add_term(term);
             MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
-            
+
             double orig = maquis::real(expval(mps, mpo));
             double meas_mps1 = maquis::real(expval(mps1, mpo));
             double meas_mps2 = maquis::real(expval(mps2, mpo));
-            
+
             maquis::cout << "Density at site " << p << ": ";
             maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
         }
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE( test )
         op1.insert_block(matrix(1,1,sqrt(2)), 1,2);
         op2.insert_block(matrix(1,1,1), 1,0);
         op2.insert_block(matrix(1,1,sqrt(2)), 2,1);
-        
+
         generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
         for (int p=0; p<L-1; ++p) {
             {
@@ -148,11 +148,11 @@ BOOST_AUTO_TEST_CASE( test )
             }
         }
         MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
-        
+
         double orig = maquis::real(expval(mps, mpo));
         double meas_mps1 = maquis::real(expval(mps1, mpo));
         double meas_mps2 = maquis::real(expval(mps2, mpo));
-        
+
         maquis::cout << "Bond energy: ";
         maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
     }
@@ -161,36 +161,36 @@ BOOST_AUTO_TEST_CASE( test )
         op_t op;
         op.insert_block(matrix(1,1,1), 1,1);
         op.insert_block(matrix(1,1,2), 2,2);
-        
+
         for (int i=0; i<10; ++i) {
             int p = dmrg_random::uniform() * L;
-            
+
             generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
             generate_mpo::OperatorTerm<matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, op) );
             term.fill_operator = ident;
             mpom.add_term(term);
             MPO<matrix, SymmGroup> mpo = mpom.create_mpo();
-            
+
             double orig = expval(mps, mpo);
-            
+
             // here canonize with SVD
             mps1.canonize(p, SVD);
-            
+
             double meas_mps1 = mps1[p].scalar_overlap(contraction::local_op(mps1[p], op));
-            
+
             // here canonize with QR
             mps2.canonize(p, QR);
             double meas_mps2 = mps2[p].scalar_overlap(contraction::local_op(mps2[p], op));
-          
+
             double ref_value = orig / onorm;
             BOOST_CHECK_CLOSE(meas_mps1, meas_mps2, 0.00000001 );
             BOOST_CHECK_CLOSE(ref_value, meas_mps1, 0.00000001);
             BOOST_CHECK_CLOSE(ref_value, meas_mps2, 0.00000001 );
-            
+
             maquis::cout << "Density at site " << p << ": ";
             maquis::cout << orig / onorm << " " << meas_mps1 << " " << meas_mps2 << std::endl;
         }
     }
-    
+
 }
