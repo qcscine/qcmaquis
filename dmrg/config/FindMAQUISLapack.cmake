@@ -1,4 +1,3 @@
-
 if(NOT DEFINED MAQUISLapack_LIBRARIES)
   set(MAQUISLapack_LIBRARIES)
 endif()
@@ -89,7 +88,7 @@ if("${BLAS_LAPACK_SELECTOR}" MATCHES "mkl_sequential" OR "${BLAS_LAPACK_SELECTOR
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   if(APPLE)
     set(MAQUISLapack_CXX_COMPILER_FLAGS "-framework Accelerate")
-    if(CMAKE_OSX_DEPLOYMENT_TARGET STRLESS "11.0")
+    if(CMAKE_HOST_SYSTEM_VERSION VERSION_LESS "20.0")
       set(MAQUISLapack_LIBRARIES "/usr/lib/libpthread.dylib")
     endif()
     set(MAQUISLapack_LINKER_FLAGS "-framework Accelerate")
