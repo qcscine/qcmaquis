@@ -23,30 +23,6 @@ module qcmaquis_interface_utility_routines
   use qcmaquis_interface_cfg
 
 contains
-      subroutine dgetsp_util(n,age,asp)
-!
-!     routine taken from Dalton -> dgetsp and adapted
-!     originally written on the 8-Feb-1987 by Hans Joergen Aa. Jensen
-!
-!     Purpose: Transform from GE format to SP format, that is:
-!              extract symmetric part of general matrix AGE
-!              to symmetric, packed matrix ASP.
-!
-      implicit none
-      real*8 , intent(in)    :: AGE(N,*)
-      integer, intent(in)    :: n
-      real*8 , intent(inout) :: ASP(*)
-      real*8 , parameter     :: DP5 = 0.5D0
-
-      integer                :: i, j, joff
-      do j = 1,n
-         joff = (j*j-j)/2
-         do i = 1,j
-            asp(joff+i) = dp5 * (age(i,j) + age(j,i))
-         end do
-      end do
-
-      end subroutine dgetsp_util
 
       SUBROUTINE pretty_print_util(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
 !.......................................................................
@@ -200,30 +176,6 @@ contains
         end do
 
       end subroutine find_qcmaquis_keyword
-
-      subroutine get_state_tag(state,state_tag,offset)
-
-        integer,            intent(in)                       :: state
-        character(len=5  ), intent(inout)                    :: state_tag
-        integer,            intent(in)                       :: offset
-
-        integer                                              :: irootm1
-
-        state_tag(1:5) = ' '
-        irootm1        = state-1+offset
-        if(irootm1 < 10)then
-          write(state_tag,'(i1)') irootm1
-        else if(irootm1 < 100)then
-          write(state_tag,'(i2)') irootm1
-        else if(irootm1 < 1000)then
-          write(state_tag,'(i3)') irootm1
-        else if(irootm1 < 10000)then
-          write(state_tag,'(i4)') irootm1
-        else if(irootm1 < 100000)then
-          write(state_tag,'(i5)') irootm1
-        end if
-
-      end subroutine get_state_tag
 
       ! Quick integer-to-string converter, not to mess with the conversion somewhere else.
       ! From https://stackoverflow.com/questions/1262695/convert-integers-to-strings-to-create-output-filenames-at-run-time
