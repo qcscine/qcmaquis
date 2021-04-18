@@ -22,16 +22,6 @@ module qcmaquis_interface_utility_routines
 
   use qcmaquis_interface_cfg
 
- public dgetsp_util
- public pretty_print_util
- public is_nan
- public lower_to_upper
- public prepare_local_input
- public find_qcmaquis_keyword
- public get_state_tag
- public str
- public file_name_generator
-
 contains
       subroutine dgetsp_util(n,age,asp)
 !
@@ -245,7 +235,7 @@ contains
 
       !! For Fiedler ordering: calculate the length of a string that would fit the Fiedler ordering
       !! i.e., for a given integer N, give the length of a string that fits numbers "1,2,...,N" with commas included
-      integer function fiedlerorder_length(L) result(res)
+      integer(kind=8) function fiedlerorder_length(L) result(res)
           implicit none
           integer, intent(in) :: L
           integer p,n,c ! temporary variables
@@ -278,7 +268,7 @@ contains
 
       subroutine file_name_generator(iroot, prototype_name, suffix, generated_name)
           implicit none
-          integer, intent(in)                :: iroot
+          integer(kind=8), intent(in)                :: iroot
           character(len=*), intent(in)       :: prototype_name
           character(len=*), intent(in)       :: suffix
           character(len=2300), intent(inout) :: generated_name
