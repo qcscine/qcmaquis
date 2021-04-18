@@ -380,22 +380,35 @@ extern "C"
         // Get iteration results from the last sweep
         results_collector& iter = interface_ptr->get_iteration_results();
 
-        // iter contains results, one element per microiteration
-        const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
-        const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
+        *m = 0;
+        *truncated_weight = 0;
+        *truncated_fraction = 0;
+        *smallest_ev = 0;
 
-        // if we do single-site optimization, we will not have TruncatedWeight or TruncatedFraction, so check whether we have it
-        const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<boost::any>();
-        const std::vector<boost::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<boost::any>();
+        if (!iter.empty())
+        {
+            // iter contains results, one element per microiteration
+            const std::vector<boost::any>& m_vec = iter["BondDimension"].get();
+            const std::vector<boost::any>& ev_vec = iter["SmallestEV"].get();
 
-        // We return the sum of these values for the last sweep
-        // this should be done with transform_reduce
+            // if we do single-site optimization, we will not have TruncatedWeight or TruncatedFraction, so check whether we have it
+            const std::vector<boost::any>& tw_vec = (iter.has("TruncatedWeight")) ? iter["TruncatedWeight"].get() : std::vector<boost::any>();
+            const std::vector<boost::any>& tf_vec = (iter.has("TruncatedFraction")) ? iter["TruncatedFraction"].get() : std::vector<boost::any>();
 
-        *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
-        *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
-        *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
-        *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
-        *nsweeps = interface_ptr->get_last_sweep();
+            // We return the sum of these values for the last sweep
+            // this should be done with transform_reduce
+            *m = 0; for (auto&& m_ : m_vec) *m += boost::any_cast<std::size_t>(m_);
+            *truncated_weight = 0; for (auto&& tw_ : tw_vec) *truncated_weight += boost::any_cast<V>(tw_);
+            *truncated_fraction = 0; for (auto&& tf_ : tf_vec) *truncated_fraction += boost::any_cast<V>(tf_);
+            *smallest_ev = 0; for (auto&& ev_ : ev_vec) *smallest_ev += boost::any_cast<V>(ev_);
+
+            *nsweeps = interface_ptr->get_last_sweep()+1;
+        }
+        else
+            *nsweeps = 0; // If iter is empty, no iterations have been made and thus we return all zeros
+
+
+
     }
 
     double qcmaquis_interface_get_overlap(const char* filename)

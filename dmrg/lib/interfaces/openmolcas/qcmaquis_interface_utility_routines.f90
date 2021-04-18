@@ -22,41 +22,7 @@ module qcmaquis_interface_utility_routines
 
   use qcmaquis_interface_cfg
 
- public dgetsp_util
- public pretty_print_util
- public is_nan
- public lower_to_upper
- public prepare_local_input
- public find_qcmaquis_keyword
- public get_state_tag
- public str
- public file_name_generator
-
 contains
-      subroutine dgetsp_util(n,age,asp)
-!
-!     routine taken from Dalton -> dgetsp and adapted
-!     originally written on the 8-Feb-1987 by Hans Joergen Aa. Jensen
-!
-!     Purpose: Transform from GE format to SP format, that is:
-!              extract symmetric part of general matrix AGE
-!              to symmetric, packed matrix ASP.
-!
-      implicit none
-      real*8 , intent(in)    :: AGE(N,*)
-      integer, intent(in)    :: n
-      real*8 , intent(inout) :: ASP(*)
-      real*8 , parameter     :: DP5 = 0.5D0
-
-      integer                :: i, j, joff
-      do j = 1,n
-         joff = (j*j-j)/2
-         do i = 1,j
-            asp(joff+i) = dp5 * (age(i,j) + age(j,i))
-         end do
-      end do
-
-      end subroutine dgetsp_util
 
       SUBROUTINE pretty_print_util(AMATRX,ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,NCTL,LUPRI)
 !.......................................................................
@@ -211,30 +177,6 @@ contains
 
       end subroutine find_qcmaquis_keyword
 
-      subroutine get_state_tag(state,state_tag,offset)
-
-        integer,            intent(in)                       :: state
-        character(len=5  ), intent(inout)                    :: state_tag
-        integer,            intent(in)                       :: offset
-
-        integer                                              :: irootm1
-
-        state_tag(1:5) = ' '
-        irootm1        = state-1+offset
-        if(irootm1 < 10)then
-          write(state_tag,'(i1)') irootm1
-        else if(irootm1 < 100)then
-          write(state_tag,'(i2)') irootm1
-        else if(irootm1 < 1000)then
-          write(state_tag,'(i3)') irootm1
-        else if(irootm1 < 10000)then
-          write(state_tag,'(i4)') irootm1
-        else if(irootm1 < 100000)then
-          write(state_tag,'(i5)') irootm1
-        end if
-
-      end subroutine get_state_tag
-
       ! Quick integer-to-string converter, not to mess with the conversion somewhere else.
       ! From https://stackoverflow.com/questions/1262695/convert-integers-to-strings-to-create-output-filenames-at-run-time
       character(len=30) function str(k)
@@ -245,7 +187,7 @@ contains
 
       !! For Fiedler ordering: calculate the length of a string that would fit the Fiedler ordering
       !! i.e., for a given integer N, give the length of a string that fits numbers "1,2,...,N" with commas included
-      integer function fiedlerorder_length(L) result(res)
+      integer(kind=8) function fiedlerorder_length(L) result(res)
           implicit none
           integer, intent(in) :: L
           integer p,n,c ! temporary variables
@@ -278,7 +220,7 @@ contains
 
       subroutine file_name_generator(iroot, prototype_name, suffix, generated_name)
           implicit none
-          integer, intent(in)                :: iroot
+          integer(kind=8), intent(in)                :: iroot
           character(len=*), intent(in)       :: prototype_name
           character(len=*), intent(in)       :: suffix
           character(len=2300), intent(inout) :: generated_name

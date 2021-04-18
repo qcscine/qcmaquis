@@ -67,7 +67,7 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
 public:
 
     interface_sim (DmrgParameters & parms_)
-    : base(parms_), last_sweep_(init_sweep > 0 ? init_sweep-1 : init_sweep)
+    : base(parms_), last_sweep_(init_sweep-1)
     { }
 
     void run()
@@ -116,45 +116,44 @@ public:
 
                 bool converged = false;
 
-                if (!rfile().empty())
+                if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
-                    if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
+                    iteration_results_ = optimizer->iteration_results();
+
+                    /// write iteration results if result files are specified
+                    if (!rfile().empty())
                     {
-                        /// write iteration results
+                        storage::archive ar(rfile(), "w");
+                        ar[results_archive_path(sweep) + "/parameters"] << parms;
+                        ar[results_archive_path(sweep) + "/results"] << iteration_results_;
+
+                        // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+
+                        // stop simulation if an energy threshold has been specified
+                        // FIXME: this does not work for complex numbers - stknecht feb 2016
+                        // FIXME 2: this reads the previous energies from the result file and so does not work if
+                        // results/checkpoints are not specified. The minimum energy should be stored separately and initialised/read
+                        // at the beginning of the simulation instead -- Leon
+                        int prev_sweep = sweep - meas_each;
+                        if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
                         {
-                            storage::archive ar(rfile(), "w");
-                            ar[results_archive_path(sweep) + "/parameters"] << parms;
-                            ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
-                            iteration_results_ = optimizer->iteration_results();
-                            // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                            typedef typename maquis::traits::real_type<Matrix>::type real_type;
+                            std::vector<real_type> energies;
 
-                            // stop simulation if an energy threshold has been specified
-                            // FIXME: this does not work for complex numbers - stknecht feb 2016
-                            int prev_sweep = sweep - meas_each;
-                            if (prev_sweep >= 0 && parms["conv_thresh"] > 0.)
-                            {
-                                typedef typename maquis::traits::real_type<Matrix>::type real_type;
-                                std::vector<real_type> energies;
+                            ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
+                            real_type emin = *std::min_element(energies.begin(), energies.end());
+                            ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
+                            real_type emin_prev = *std::min_element(energies.begin(), energies.end());
+                            real_type e_diff = std::abs(emin - emin_prev);
 
-                                ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
-                                real_type emin = *std::min_element(energies.begin(), energies.end());
-                                ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies;
-                                real_type emin_prev = *std::min_element(energies.begin(), energies.end());
-                                real_type e_diff = std::abs(emin - emin_prev);
-
-                                if (e_diff < parms["conv_thresh"])
-                                    converged = true;
-                            }
+                            if (e_diff < parms["conv_thresh"])
+                                converged = true;
                         }
 
                         /// measure observables specified in 'always_measure'
                         if (always_measurements.size() > 0)
                             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                     }
-                }
-                else
-                {
-                    iteration_results_ = optimizer->iteration_results();
                 }
                 last_sweep_ = sweep;
 
@@ -170,17 +169,14 @@ public:
             checkpoint_simulation(mps, e.sweep(), e.site());
 
             {
+                iteration_results_ = optimizer->iteration_results();
                 if (!rfile().empty())
                 {
                     storage::archive ar(rfile(), "w");
                     ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
-                    ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
-                    iteration_results_ = optimizer->iteration_results();
+                    ar[results_archive_path(e.sweep()) + "/results"] << iteration_results_;
+
                     // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
-                }
-                else
-                {
-                    iteration_results_ = optimizer->iteration_results();
                 }
             }
         }
@@ -188,7 +184,7 @@ public:
 
     void run_measure()
     {
-        if (this->get_last_sweep() < 1)
+        if (this->get_last_sweep() < 0)
             throw std::runtime_error("Tried to measure before a sweep");
         this->measure("/spectrum/results/", all_measurements);
 
@@ -246,7 +242,7 @@ public:
         results_map_type ret;
 
         // Do not measure before a sweep
-        if (this->get_last_sweep() < 1)
+        if (this->get_last_sweep() < 0)
             throw std::runtime_error("Tried to measure before a sweep");
 
         // Run all measurements and fill the result map
@@ -300,10 +296,16 @@ public:
 
     results_collector& get_iteration_results()
     {
-        // Iteration results is empty, we didn't perform the sweep, but loaded the MPS from a checkpoint
+        // If iteration_results is empty, we didn't perform the sweep yet, but possibly loaded the MPS from a checkpoint
         // so we need to load also iteration results
         if (iteration_results_.empty())
         {
+            // If we are not loading from a checkpoint, last_sweep is set to -1
+            // so we need to return an empty iteration_results vector
+            if (get_last_sweep() < 0)
+                return iteration_results_;
+
+            // otherwise, we are restarting but there's something wrong with the checkpoint
             if (!rfile().empty())
             {
                 try // Load the iteration results from the last sweep
