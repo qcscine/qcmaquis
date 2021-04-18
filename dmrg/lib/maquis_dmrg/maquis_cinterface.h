@@ -92,9 +92,16 @@ extern "C"
     // Run DMRG optimization
     void qcmaquis_interface_optimize();
 
+    // get energy
     double qcmaquis_interface_get_energy();
 
     // Get sweep statistics for the last sweep
+    // nsweeps returns the total number of sweeps made so far
+    // returns:
+    // m -- maximum bond dimension for the last sweep
+    // truncated_weight -- sum of all truncated weights for the last sweep, 0 for single-site optimisation
+    // truncated_fraction -- sum of all truncated fractions for the last sweep, 0 for single-site optimisation
+    // smallest_ev -- smallest cutoff eigenvalue of the last sweep
     void qcmaquis_interface_get_iteration_results(int* nsweeps, std::size_t* m, V* truncated_weight, V* truncated_fraction, V* smallest_ev);
 
     // Get 1-RDM

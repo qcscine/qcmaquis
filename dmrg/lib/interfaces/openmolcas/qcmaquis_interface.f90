@@ -153,7 +153,7 @@ module qcmaquis_interface
                  real*8 :: conv_thresh ! convergence threshold
         logical, intent(in), value :: meas_2rdm ! should we measure 2-RDM?
 
-        integer, dimension(*) :: L_per_sym ! number of orbitals in each symmetry
+        integer, dimension(nsym) :: L_per_sym ! number of orbitals in each symmetry
 #ifdef _MOLCAS_MPP_
         integer, intent(in) :: nprocs
         integer, intent(in) :: myrank
@@ -194,7 +194,7 @@ module qcmaquis_interface
 
         allocate(dmrg_orbital_space%initial_occ(L,lroot), stat=ierr); if( ierr /= 0 ) &
         stop ' Error in allocation: initial_occ(:,:)'
-        dmrg_orbital_space = type_orbital_space(L_per_sym(1:nsym), initial_occ)
+        dmrg_orbital_space = type_orbital_space(L_per_sym, initial_occ)
 
         allocate(dmrg_energy%dmrg_state_specific(lroot), stat=ierr); if( ierr /= 0 ) &
         stop ' Error in allocation: dmrg_state_specific(:)'
@@ -204,16 +204,9 @@ module qcmaquis_interface
         stop ' Error in allocation: num_sweeps(:)'
         dmrg_energy%num_sweeps     = 0
 
-        allocate(dmrg_energy%num_sweeps_old(lroot), stat=ierr); if( ierr /= 0 ) &
-        stop ' Error in allocation: num_sweeps_old(:)'
-        dmrg_energy%num_sweeps_old = 0
-
         allocate(dmrg_energy%max_truncW(lroot), stat=ierr); if( ierr /= 0 ) &
         stop ' Error in allocation: max_truncW(:)'
         dmrg_energy%max_truncW     = 0
-        allocate(dmrg_energy%max_truncW_old(lroot), stat=ierr); if( ierr /= 0 ) &
-        stop ' Error in allocation: max_truncW_old(:)'
-        dmrg_energy%max_truncW_old     = 0
 
         allocate(dmrg_file%qcmaquis_checkpoint_file(lroot), stat=ierr); if( ierr /= 0 ) &
         stop ' Error in allocation: qcmaquis_checkpoint_file(:)'
@@ -704,7 +697,7 @@ module qcmaquis_interface
     integer, intent(in) :: nstates
     real*8, intent(inout), optional :: d1(:,:), d2(:,:), spd(:,:)
     logical, intent(in), optional :: entanglement
-    integer :: i, ii
+    integer :: i, ii, nsweeps_prev
     integer :: nsweeps, m
     real*8 :: truncated_weight, truncated_fraction, smallest_ev
     logical :: hf_guess ! Check if we have a HF guess
@@ -747,7 +740,7 @@ module qcmaquis_interface
         hf_guess_string=""
         do ii=1,qcmaquis_param%L
           ! Construct a comma-separated string with all occupations
-          hf_guess_string=trim(hf_guess_string)//trim(str(dmrg_orbital_space%initial_occ(ii,i)))
+          hf_guess_string=trim(hf_guess_string)//trim(str(int(dmrg_orbital_space%initial_occ(ii,i),kind=8)))
           if ((ii.ne.qcmaquis_param%L)) then
             hf_guess_string=trim(hf_guess_string)//","
           end if
@@ -757,10 +750,21 @@ module qcmaquis_interface
       end if
 
       call qcmaquis_interface_set_state(int(i-1,c_int))
+
+      ! get the real number of sweeps at the beginning of the iteration
+      ! if we load from a previous checkpoint, nsweeps will be nonzero
+      call qcmaquis_interface_get_iteration_results(nsweeps, m, truncated_weight, &
+                                                    truncated_fraction, smallest_ev)
+      ! add total number of sweeps to the current number of sweeps
+      nsweeps_prev = nsweeps
+      call qcmaquis_interface_set_nsweeps(int(qcmaquis_param%num_sweeps+nsweeps_prev,c_int))
+
       call qcmaquis_interface_optimize()
       dmrg_energy%dmrg_state_specific(i) = qcmaquis_interface_get_energy()
 
       ! update # of sweeps and truncated weight
+      ! nsweeps may not be equal to qcmaquis_param%num_sweeps+nsweeps_prev because
+      ! the calculation might have needed less sweeps for convergence
       call qcmaquis_interface_get_iteration_results(nsweeps, m, truncated_weight, &
                                                     truncated_fraction, smallest_ev)
 
@@ -769,16 +773,9 @@ module qcmaquis_interface
       if (present(d2)) call qcmaquis_interface_get_2rdm_compat(d2(:,i))
       if (present(spd)) call qcmaquis_interface_get_spdm_compat(spd(:,i))
 
-
-      dmrg_energy%num_sweeps(i) = nsweeps - dmrg_energy%num_sweeps_old(i)
+      ! save number of sweeps
+      dmrg_energy%num_sweeps(i) = nsweeps-nsweeps_prev
       dmrg_energy%max_truncW(i) = truncated_weight
-
-      call qcmaquis_interface_set_nsweeps(int(dmrg_energy%num_sweeps(i)+nsweeps,c_int))
-
-      dmrg_energy%num_sweeps_old(i) = nsweeps
-      dmrg_energy%max_truncW_old(i)  = truncated_weight
-
-      call qcmaquis_interface_set_nsweeps(int(nsweeps+qcmaquis_param%num_sweeps,c_int))
 
     end do
     ! SA energy
@@ -1055,14 +1052,16 @@ module qcmaquis_interface
     end interface
 
     real(c_double) :: res
-    integer :: state
+    integer,intent(in) :: state
+    integer :: state_real
     character(len=2300) :: filename
     ! TODO: get rid of the old function
 
 #ifdef _MOLCAS_MPP_
   if(dmrg_host_program_settings%myrank == 0)then
 #endif
-    call file_name_generator(state-1,"checkpoint_state.",".h5", filename)
+    state_real = state - 1
+    call file_name_generator(state_real,"checkpoint_state.",".h5", filename)
 
     res = qcmaquis_interface_get_overlap_c(trim(filename)//c_null_char)
 #ifdef _MOLCAS_MPP_
@@ -1098,13 +1097,14 @@ module qcmaquis_interface
   ! Delete the checkpoint corresponding to state state
   subroutine qcmaquis_interface_delete_chkp(state)
     integer, intent(in) :: state
-
+    integer :: state_real
     character(len=2300) :: filename
     ! TODO: get rid of the old function
 #ifdef _MOLCAS_MPP_
     if(dmrg_host_program_settings%myrank == 0)then
 #endif
-      call file_name_generator(state-1,"checkpoint_state.",".h5",filename)
+      state_real = state - 1
+      call file_name_generator(state_real,"checkpoint_state.",".h5",filename)
 
       call system("rm -rf "//trim(filename))
 #ifdef _MOLCAS_MPP_
@@ -1282,9 +1282,7 @@ module qcmaquis_interface
     if(allocated(dmrg_orbital_space%initial_occ))     deallocate(dmrg_orbital_space%initial_occ)
     if(allocated(dmrg_energy%dmrg_state_specific))    deallocate(dmrg_energy%dmrg_state_specific)
     if(allocated(dmrg_energy%num_sweeps))             deallocate(dmrg_energy%num_sweeps)
-    if(allocated(dmrg_energy%num_sweeps_old))         deallocate(dmrg_energy%num_sweeps_old)
     if(allocated(dmrg_energy%max_truncW))             deallocate(dmrg_energy%max_truncW)
-    if(allocated(dmrg_energy%max_truncW_old))         deallocate(dmrg_energy%max_truncW_old)
     if(allocated(dmrg_input%qcmaquis_input))          deallocate(dmrg_input%qcmaquis_input)
     if(allocated(dmrg_file%qcmaquis_checkpoint_file)) deallocate(dmrg_file%qcmaquis_checkpoint_file)
 
