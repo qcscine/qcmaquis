@@ -167,15 +167,18 @@ public:
                 m_inv_order[p] = std::distance(m_order.begin(), std::find(m_order.begin(), m_order.end(), p));
         }
 
+        // TODO: Move this in hamiltonian_terms!
+        generate_Hamiltonian();
+
     } // Main constructor
     /**!
      * Create Hamiltonian terms and return them.
      * @return
      */
-    terms_type & hamiltonian_terms() {
-        generate_Hamiltonian();
-        return this->terms_;
-    }
+    //terms_type const & hamiltonian_terms() const {
+    //    //generate_Hamiltonian();
+    //    return this->terms_;
+    //}
 
 //    /**!
 //     *
