@@ -127,6 +127,10 @@ private:
         add_option("MEASURE[EnergyVariance]", "", value(0));
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
+
+        // Pre-BO
+        add_option("PreBO_MaxBondDimVector", "", value(""));
+
     }
 
 };

@@ -85,9 +85,11 @@ public:
             : lat(lat_), tag_handler(tag_handler_)
     {
 
-        std::vector<unsigned int> vec_ini_state; // Not needed here.
-
-        lat.get_all_variables(num_particle_types, vec_particles, isFermion, vec_orbitals, vec_ini_state, vec_fer_bos);
+        num_particle_types = boost::any_cast<std::size_t>(lat.get_parameter("num_particle_types"));
+        vec_particles = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_particles"));
+        isFermion = boost::any_cast<std::vector<bool>>(lat.get_parameter("isFermion"));
+        vec_orbitals = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_orbitals"));
+        vec_fer_bos = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_fer_bos"));
 
         //
         // Collect all fermions and all bosons in two different vectors.

@@ -107,6 +107,12 @@ public:
         }
     }
 
+    boost::any get_parameter(std::string const & param) const
+    {
+        throw std::runtime_error("No parameter implemented.");
+        return boost::any();
+    }
+
     pos_t size() const
     {
         return L;
@@ -235,6 +241,12 @@ public:
         }
     }
 
+    boost::any get_parameter(std::string const & param) const
+    {
+        throw std::runtime_error("No parameter implemented.");
+        return boost::any();
+    }
+
     pos_t size() const
     {
         return L;
@@ -357,6 +369,12 @@ public:
         }
     }
 
+    boost::any get_parameter(std::string const & param) const
+    {
+        throw std::runtime_error("No parameter implemented.");
+        return boost::any();
+    }
+
 
 
 private:
@@ -411,17 +429,13 @@ public:
     {
 
         // Populate variables:
-        num_particle_types = model["PreBO_NumParticleTypes"].as<std::size_t>();
         vec_particles_str = model["PreBO_ParticleTypeVector"].as<std::string>();
         isFermion_str = model["PreBO_FermionOrBosonVector"].as<std::string>();
         orbitals_str = model["PreBO_OrbitalVector"].as<std::string>();
-        //ini_basis_st_str = model["init_basis_state"].as<std::string>();
         vec_ini_state_str = model["PreBO_InitialStateVector"].as<std::string>();
         if (model["PreBO_MaxBondDimVector"] != "")
             max_m_str = model["PreBO_MaxBondDimVector"].as<std::string>();
 
-        // ATTENTION MINUS ONE!!!
-        maximum_vertex = num_particle_types-1;
         // convert strings to vectors
         std::istringstream is( vec_particles_str );
         vec_particles.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
@@ -445,19 +459,17 @@ public:
             is.str(std::string());
             is.clear();
         }
-        //std::replace(ini_basis_st_str.begin(), ini_basis_st_str.end(), ',', ' ');
-        //is.str(ini_basis_st_str);
-        //vec_ibs.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
-        // Check consistency of variables
-        if (num_particle_types != vec_particles.size()) {
-            throw std::runtime_error("Number of particle types is not equal to length of particle types vector.");
-        }
-        // lattice size
-        // Overall lattice size is the sum of the number of orbitals of each particle type.
+
+        num_particle_types = vec_particles.size();
+        // ATTENTION MINUS ONE!!!
+        maximum_vertex = num_particle_types-1;
+
         L = 0;
         for (auto const& Li : vec_orbitals) {
             L += Li;
         }
+        model.set("L", L);
+        //std::replace(ini_basis_st_str.begin(), ini_basis_st_str.end(), ',', ' ');
         //if (vec_ibs.size() != L) throw std::runtime_error("Lattice size is not equal to length of init_basis_state");
         // construct lattice containing the particle types
         // the length of the lattice is determined by the number of different particle types and the number
@@ -503,27 +515,27 @@ public:
     //  Methods
     // +-------+
     // -- GETTERS --
-    void get_all_variables(std::size_t & num_particle_types,
-                           std::vector<unsigned int> & vec_particles,
-                           std::vector<bool> & isFermion,
-                           std::vector<unsigned int> & vec_orbitals,
-                           std::vector<unsigned int> & vec_ini_state,
-                           std::vector<unsigned int> & vec_fer_bos) const {
-        num_particle_types = this->num_particle_types;
-        vec_particles = this->vec_particles;
-        isFermion = this->isFermion;
-        vec_orbitals = this->vec_orbitals;
-        vec_ini_state = this->vec_ini_state;
-        vec_fer_bos = this->vec_fer_bos;
-    }
+    //void get_all_variables(std::size_t & num_particle_types,
+    //                       std::vector<unsigned int> & vec_particles,
+    //                       std::vector<bool> & isFermion,
+    //                       std::vector<unsigned int> & vec_orbitals,
+    //                       std::vector<unsigned int> & vec_ini_state,
+    //                       std::vector<unsigned int> & vec_fer_bos) const {
+    //    num_particle_types = this->num_particle_types;
+    //    vec_particles = this->vec_particles;
+    //    isFermion = this->isFermion;
+    //    vec_orbitals = this->vec_orbitals;
+    //    vec_ini_state = this->vec_ini_state;
+    //    vec_fer_bos = this->vec_fer_bos;
+    //}
 
 
-    const std::vector<unsigned int>& get_vecOrbitals() const {
-        return vec_orbitals;
-    }
-    const std::vector<bool>& get_isFermion() const {
-        return isFermion;
-    }
+    //const std::vector<unsigned int>& get_vecOrbitals() const {
+    //    return vec_orbitals;
+    //}
+    //const std::vector<bool>& get_isFermion() const {
+    //    return isFermion;
+    //}
     /**
      * Takes the relative position of a given particle type and returns its absolute position on the lattice
      * @param pt
@@ -586,6 +598,28 @@ public:
             return boost::any();
         }
     }
+
+    boost::any get_parameter(std::string const & param) const
+    {
+        if (param == "vec_particles")
+            return boost::any(vec_particles);
+        else if (param == "num_particle_types")
+            return boost::any(num_particle_types);
+        else if (param == "isFermion")
+            return boost::any(isFermion);
+        else if (param == "vec_orbitals")
+            return boost::any(vec_orbitals);
+        else if (param == "vec_ini_state")
+            return boost::any(vec_ini_state);
+        else if (param == "vec_fer_bos")
+            return boost::any(vec_fer_bos);
+        else {
+            std::ostringstream ss;
+            ss << "No param '" << param << "' implemented.";
+            throw std::runtime_error(ss.str());
+            return boost::any();
+        }
+    }
     //
     pos_t size()                const { return L; }
     int   maximum_vertex_type() const { return maximum_vertex; }
@@ -604,7 +638,7 @@ private:
     std::vector<bool> isFermion;                        // Fermion 1, Boson 0
     std::string orbitals_str;
     std::vector<unsigned int> vec_orbitals;             // Number of orbitals per type
-    std::vector<part_type> vec_lattice_type;
+    std::vector<part_type> vec_lattice_type;            // Stores the index of the particle type for each site.
     int maximum_vertex;                                 // Largest index for site types
     std::string ini_basis_st_str;                       // Just in here for safety checks
     std::vector<unsigned int> vec_ibs;                  //              -"-
