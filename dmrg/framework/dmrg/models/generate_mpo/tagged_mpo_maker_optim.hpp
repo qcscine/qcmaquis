@@ -125,7 +125,7 @@ namespace generate_mpo
         enum merge_kind {attach, detach};
 
     public:
-        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model)
+        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> & model)
         : lat(lat_)
         , length(lat.size())
         , tag_handler(model.operators_table())
@@ -208,7 +208,6 @@ namespace generate_mpo
             typedef std::map<prempo_key_type, index_type> index_map;
             typedef typename index_map::iterator index_iterator;
             index_map left;
-            left[trivial_left] = 0;
 
             typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
             std::vector<spin_desc_t> left_spins(1);

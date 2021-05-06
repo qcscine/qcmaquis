@@ -47,6 +47,8 @@ coded_lattice_factory(BaseParameters & parms)
         return impl_ptr(new Orbitals(parms));
     else if (parms["LATTICE"] == std::string("spinors"))
         return impl_ptr(new Orbitals(parms));
+    else if (parms["LATTICE"] == std::string("preBO lattice"))
+        return impl_ptr(new PreBOLattice(parms));
     else {
         throw std::runtime_error("Don't know this lattice!");
     }

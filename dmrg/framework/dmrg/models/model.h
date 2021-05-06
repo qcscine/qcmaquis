@@ -73,7 +73,7 @@ public:
 
     virtual typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const=0;
 
-    virtual terms_type const& hamiltonian_terms() const { return terms_; }
+    virtual terms_type & hamiltonian_terms()  { return terms_; }
     virtual measurements_type measurements() const=0;
 
     virtual op_t const& get_operator(std::string const & name, size_t type) const { return operators_table()->get_op( get_operator_tag(name, type) ); }
@@ -87,7 +87,7 @@ public:
     virtual void create_terms() {};
 
 protected:
-    terms_type terms_;
+    mutable terms_type terms_;
 };
 
 /// model factory
@@ -135,7 +135,7 @@ public:
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const { return impl_->total_quantum_numbers(parms); }
 
-    terms_type const& hamiltonian_terms() const { return impl_->hamiltonian_terms(); }
+    terms_type & hamiltonian_terms()  { return impl_->hamiltonian_terms(); }
     measurements_type measurements() const { return impl_->measurements(); }
 
     op_t const& get_operator(std::string const & name, size_t type=0) const { return impl_->get_operator(name, type); }
