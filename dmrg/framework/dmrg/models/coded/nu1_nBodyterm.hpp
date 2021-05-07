@@ -455,7 +455,6 @@ private:
             for (size_t i = 0; i < temp_nbody.size(); i++) {
                 orb_index = temp_nbody[i].second;
                 abs_index = retrieve_abs_index(orb_index, nt);
-                // create
                 if (i < length / 2) {
                     SymbolicOperator tempOp(abs_index, SymbolicOperator::CREATE, nt,
                                             SymbolicOperator::ZERO);
@@ -477,7 +476,6 @@ private:
             // This generates all possible Spin Configurations
             generateAllSpinConfigs(n, arr, 0);
 
-            // In this step,
             for (auto &spin_config : m_spin_configs) {
                 for (unsigned j = spin_config.size(); j-- != 0;) {
                     spin_config.push_back(spin_config.at(j));
