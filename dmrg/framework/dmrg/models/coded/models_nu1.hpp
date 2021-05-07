@@ -48,6 +48,12 @@
 // | PRE BORN OPPENHEIMER MODEL |
 // +----------------------------+
 // Robin Feldmann
+/**
+ * @brief multicomponent DMRG calculation
+ * @class preBO models_nu1.hpp
+ * This class enables DMRG calculations with multiple indistinguishable fermionic (soon bosonic, too) particle types.
+ * @tparam Matrix
+ */
 template<class Matrix>
 class PreBO : public model_impl<Matrix, NU1> {
     // Types definition
@@ -60,8 +66,8 @@ class PreBO : public model_impl<Matrix, NU1> {
     typedef typename base::op_t op_t;
     typedef typename std::vector<tag_type> operators_type;
     typedef typename base::measurements_type measurements_type;
-    typedef typename Lattice::pos_t pos_t;         // position in the lattice
-    typedef typename Lattice::part_type part_type; // unsigned integer denoting the particle type
+    typedef typename Lattice::pos_t pos_t;                          // position on the lattice
+    typedef typename Lattice::part_type part_type;                  // unsigned integer denoting the particle type
     typedef typename std::vector<pos_t> positions_type;
     typedef typename Matrix::value_type value_type;
     typedef typename NU1::charge charge_type;
@@ -76,11 +82,8 @@ private:
     std::size_t num_particle_types;          // Number of particle types
     std::vector<unsigned int> vec_particles; // Number of particles per type
     std::vector<bool> isFermion;             // Fermion 1, Boson 0
-    std::vector<unsigned int> vec_orbitals;
-
-private:
-    // Number of orbitals per type
-    std::vector<unsigned int> vec_fer_bos;   // vector that maps the particle types vector
+    std::vector<unsigned int> vec_orbitals;  // number of orbitals for each particle type
+    std::vector<unsigned int> vec_fer_bos;   // vector that maps the particle types vector. It counts fermions and bosons
     // to a "fermion -- boson count vector"
     // isFermion      = {1, 1, 0, 0, 1}
     // vec_fer_bos    = {0, 1, 0, 1, 2}
@@ -93,9 +96,8 @@ private:
             fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag, bos_count_tag;
     terms_type terms_temp;
     // terms_type terms1RDM_;
-    std::vector<pos_t> m_order;
-    std::vector<pos_t> m_inv_order;
-
+    std::vector<pos_t> m_order;         // Ordering of the sites. By default starting from 0 to (L-1)
+    std::vector<pos_t> m_inv_order;     // Inverse permutation of the order
 public:
     // +----------------+
     //  Main constructor
@@ -126,10 +128,6 @@ public:
         vec_ini_state = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_ini_state"));
         vec_fer_bos = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_fer_bos"));
         L = lat.size();
-        unsigned int num_orbitals = 0;
-        for (auto const& value : vec_orbitals) {
-            num_orbitals += value;
-        }
         // Checks that the code has been compiled properly
         NU1* NU1_value = new NU1;
         int max_symm = NU1_value->get_dimension();
@@ -146,10 +144,6 @@ public:
         MIN = 2 * fcount + num_particle_types - fcount;
         if (max_symm < MIN)
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
-        // The overall number of basis functions has to be equal to the lattice
-        // size.
-        if (L != num_orbitals)
-            throw std::runtime_error("Overall number of orbitals is not equal to L");
 
         TagContainer<Matrix, NU1> tag_container = TagContainer<Matrix, NU1>(lat, tag_handler);
 

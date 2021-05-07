@@ -39,6 +39,12 @@
 using std::vector;
 using std::pair;
 
+/**
+ * @class TagContainer nu1_tag_generation.hpp
+ * @brief This class handels the correct generation of fermionic and bosonic tags.
+ * @tparam Matrix
+ * @tparam NU1
+ */
 template<class Matrix, class NU1>
 class TagContainer {
     // Types definition
@@ -166,7 +172,6 @@ public:
 
 
     }
-
 
     // +--------------------+
     // | REGISTER_ALL_TYPES |

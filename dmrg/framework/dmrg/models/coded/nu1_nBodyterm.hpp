@@ -35,6 +35,10 @@
 using std::pair;
 using std::vector;
 
+/**
+ * @class SymbolicOperator nu1_nBodyterm.hpp
+ * @brief Symbolic algebra implementation of a 2nd quantization operator. Needed for Jordan--Wigner transformation.
+ */
 class SymbolicOperator {
     // Types definition
     typedef typename Lattice::part_type
@@ -120,6 +124,13 @@ public:
     }
 };
 
+/**
+ * @class SymbolicJordanWigner nu1_nBodyterm.hpp
+ * @brief This class handels the Jordan-Wigner transformation, based on the `SymbolicOperator`.
+ * @note This is the most important and delicate part of the pre-BO model.
+ * For a description of the algorithm, see my Master's thesis:
+ * Correlation effects in Multicomponent Quantum Chemistry (2020), Robin Feldmann, Markus Reiher group ETH Zurich, p 27
+ */
 class SymbolicJordanWigner {
 
     typedef typename Lattice::part_type
@@ -194,7 +205,7 @@ private:
     // +----------------------- +
     /*! \brief
      * This method is the HEART and BRAIN of the Jordan--Wigner transformation.
-     * It evaluates which operator get's assigned a filling operator on the left
+     * It evaluates which operator gets assigned a filling operator on the left
      * and right side.
      */
     static void
@@ -327,10 +338,16 @@ private:
     }
 };
 
+/**
+ * @class NBodyTerm nu1_nBodyterm.hpp
+ * @brief Takes an n-body 2nd quantization string that can contain operators of different particle types and creates
+ *        a string of `SymbolicOperator`s. Moreover, it constructs all different spin-combinations.
+ *        Note that creation operators are always on the left, and -obviously- there must be even numbers of operators
+ *        for all types.
+ */
 class NBodyTerm {
     // Types definition
-    typedef typename Lattice::part_type
-            part_type; // unsigned integer denoting the particle type
+    typedef typename Lattice::part_type part_type; // unsigned integer denoting the particle type
     typedef typename Lattice::pos_t pos_t;
 
 private:
