@@ -28,11 +28,14 @@
 #ifndef MODELS_CODED_NU1_H
 #define MODELS_CODED_NU1_H
 
+/* internal includes */
 #include "dmrg/models/measurements.h"
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "nu1_nBodyTerm.hpp"
 #include "nu1_tag_generation.hpp"
+#include "integral_interface.h"
+/* external includes */
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
 #include <boost/functional/hash.hpp>

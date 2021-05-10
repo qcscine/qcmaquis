@@ -21,7 +21,7 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 project (MAQUIS_DMRG)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
