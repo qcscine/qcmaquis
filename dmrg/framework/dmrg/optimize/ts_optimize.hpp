@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *	                          Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -55,8 +56,9 @@ public:
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
+                const Lattice& lat,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), _lat(lat)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
@@ -221,7 +223,15 @@ public:
                 alpha = parms["alpha_final"];
 
             double cutoff = this->get_cutoff(sweep);
-            std::size_t Mmax = this->get_Mmax(sweep);
+            std::size_t Mmax;
+            if (parms["PreBO_MaxBondDimVector"]=="")
+                Mmax = this->get_Mmax(sweep);
+            else {
+                auto m1 = _lat.template get_prop<size_t>("Mmax", {_lat.template get_prop<int>("type", {site1}) });
+                auto m2 = _lat.template get_prop<size_t>("Mmax", {_lat.template get_prop<int>("type", {site2}) });
+                Mmax = (m1>m2) ? m1 : m2;
+                std::cout << "Mmax is set to " << Mmax << std::endl;
+            }
             truncation_results trunc;
 
     	    if (lr == +1)
@@ -336,6 +346,7 @@ public:
 
 private:
     int initial_site;
+    const Lattice& _lat;
     MPO<Matrix, SymmGroup> ts_cache_mpo;
 };
 
