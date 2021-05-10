@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -71,8 +72,6 @@ public:
     // virtual!
     virtual boost::any get_prop_(std::string const &, std::vector<pos_t> const &) const = 0;
 
-    virtual boost::any get_parameter(std::string const & param) const = 0;
-
     virtual pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {return 0;};
     //virtual const std::vector<unsigned int>& get_vecOrbitals() const {};
     //virtual const std::vector<bool>& get_isFermion() const {};
@@ -124,11 +123,11 @@ public:
     template<class T> T get_prop(std::string property, std::vector<pos_t> const & positions) const
     { return impl_->get_prop<T>(property, positions); }
 
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & positions) const
+    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & positions=std::vector<pos_t>()) const
     { return impl_->get_prop_(property, positions); }
 
-    boost::any get_parameter(std::string const & param) const
-    { return impl_->get_parameter(param); }
+    //boost::any get_parameter(std::string const & param) const
+    //{ return impl_->get_parameter(param); }
 
     pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const
     { return impl_->get_abs_position(pt, rel_pos) ; }

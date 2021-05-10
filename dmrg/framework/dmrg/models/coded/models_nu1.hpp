@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- *               2020 by Robin Feldmann <robinfe@student.ethz.ch>
+ *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -31,7 +31,7 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
-#include "nu1_nBodyterm.hpp"
+#include "nu1_nBodyTerm.hpp"
 #include "nu1_tag_generation.hpp"
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
@@ -39,7 +39,7 @@
 #include <map>
 #include <sstream>
 #include <unordered_map>
-
+#include <chrono>
 // ========================
 //  MODELS OF NU1 SYMMETRY
 // ========================
@@ -121,12 +121,12 @@ public:
         //
         // Get all variables from the lattice
         //
-        num_particle_types = boost::any_cast<std::size_t>(lat.get_parameter("num_particle_types"));
-        vec_particles = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_particles"));
-        isFermion = boost::any_cast<std::vector<bool>>(lat.get_parameter("isFermion"));
-        vec_orbitals = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_orbitals"));
-        vec_ini_state = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_ini_state"));
-        vec_fer_bos = boost::any_cast<std::vector<unsigned>>(lat.get_parameter("vec_fer_bos"));
+        num_particle_types = boost::any_cast<std::size_t>(lat.get_prop_("num_particle_types"));
+        vec_particles = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_particles"));
+        isFermion = boost::any_cast<std::vector<bool>>(lat.get_prop_("isFermion"));
+        vec_orbitals = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_orbitals"));
+        vec_ini_state = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_ini_state"));
+        vec_fer_bos = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_fer_bos"));
         L = lat.size();
         // Checks that the code has been compiled properly
         NU1* NU1_value = new NU1;
@@ -158,26 +158,28 @@ public:
             m_inv_order[i] = i;
         }
         // If sites_order is given, permute the Hamiltonian MPO
-        if (model.is_set("sites_order")) {
-            m_order = model["sites_order"].as<std::vector<pos_t> >();
+        if (model.is_set("orbital_order")) {
+            m_order = model["orbital_order"].as<std::vector<pos_t> >();
             if (m_order.size() != lat.size())
                 throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
             for (int p = 0; p < m_order.size(); ++p)
                 m_inv_order[p] = std::distance(m_order.begin(), std::find(m_order.begin(), m_order.end(), p));
         }
 
-        // TODO: Move this in hamiltonian_terms!
-        generate_Hamiltonian();
-
     } // Main constructor
+
     /**!
-     * Create Hamiltonian terms and return them.
+     * Create Hamiltonian terms
      * @return
      */
-    //terms_type const & hamiltonian_terms() const {
-    //    //generate_Hamiltonian();
-    //    return this->terms_;
-    //}
+    void create_terms() {
+        auto start = std::chrono::high_resolution_clock::now();
+        generate_Hamiltonian();
+        auto stop = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+        std::cout << "Construction of the Hamiltonian took "
+                  << duration.count() << " seconds" << std::endl << std::endl;
+    }
 
 //    /**!
 //     *
@@ -241,7 +243,7 @@ public:
      */
     void clean_hamiltonian() {
         std::cout << "======================================================" << std::endl;
-        std::cout << "Starting to clean the Hamiltonian..." << std::endl;
+        std::cout << "Cleaning the Hamiltonian..." << std::endl;
         std::unordered_map<term_descriptor, value_type, term_descriptor_hasher> count_map;
 
         for (auto const& term1 : this->terms_temp) {
@@ -260,11 +262,13 @@ public:
         std::cout << count_map.size() << std::endl << std::endl;
         std::cout << "======================================================" << std::endl;
 
+        this->terms_.reserve(count_map.size());
         for (const auto& iter : count_map) {
             auto term = iter.first;
             term.coeff = iter.second;
-            this->terms_.push_back(term);
+            this->terms_.push_back(std::move(term));
         }
+
     } // clean_hamiltonian
 
     struct term_descriptor_hasher {
@@ -464,20 +468,8 @@ public:
      * @param type
      * @return
      */
-    tag_type get_operator_tag(std::string const& name, size_t type) const { /*
-                                                                            if (name == "n")
-                                                                                return count[type];
-                                                                            else if (name == "bdag")
-                                                                                return create[type];
-                                                                            else if (name == "b")
-                                                                                return destroy[type];
-                                                                            else if (name == "id")
-                                                                                return ident[type];
-                                                                            else if (name == "fill")
-                                                                                return ident[type];
-                                                                            */
+    tag_type get_operator_tag(std::string const& name, size_t type) const {
         throw std::runtime_error("Operator not valid for this model.");
-        return 0;
     }
 
     void update(BaseParameters const& p) {
@@ -529,6 +521,8 @@ public:
         // +-------------------------------------+
         // | New Construction of the Hamiltonian |
         // +-------------------------------------+
+        std::cout << "======================================================" << std::endl;
+        std::cout << "Starting to construct the Hamiltonian..." << std::endl;
         // ORDER BEGIN
         bool sorting = false;
         // Load ordering and determine inverse ordering
@@ -552,7 +546,6 @@ public:
         // the rule: a(i)+ a(m)+ a(m)- a(i)-
         //                                              The matrix element would be
         //                                              zero otherwise.
-
 
         // +-------------------------------------+
         // | New Construction of the Hamiltonian |
@@ -648,6 +641,7 @@ public:
             const std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> & rhs)
     {
         std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> res;
+        res.reserve(lhs.size()*rhs.size());
         // Multiply the two strings of symbolic operators.
         // Loop over terms on the left hand side and multiply for each term with every other term on the right hand side
         for (auto const & itlhs: lhs)

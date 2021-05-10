@@ -36,7 +36,7 @@ using std::pair;
 using std::vector;
 
 /**
- * @class SymbolicOperator nu1_nBodyterm.hpp
+ * @class SymbolicOperator nu1_nBodyTerm.hpp
  * @brief Symbolic algebra implementation of a 2nd quantization operator. Needed for Jordan--Wigner transformation.
  */
 class SymbolicOperator {
@@ -339,7 +339,7 @@ private:
 };
 
 /**
- * @class NBodyTerm nu1_nBodyterm.hpp
+ * @class NBodyTerm nu1_nBodyTerm.hpp
  * @brief Takes an n-body 2nd quantization string that can contain operators of different particle types and creates
  *        a string of `SymbolicOperator`s. Moreover, it constructs all different spin-combinations.
  *        Note that creation operators are always on the left, and -obviously- there must be even numbers of operators

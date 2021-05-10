@@ -101,12 +101,6 @@ public:
         }
     }
 
-    boost::any get_parameter(std::string const & param) const
-    {
-        throw std::runtime_error("No parameter implemented.");
-        return boost::any();
-    }
-
     pos_t size() const
     {
         return L*N;
