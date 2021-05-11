@@ -36,6 +36,7 @@
 #include <set>
 #include <boost/lexical_cast.hpp>
 #include <boost/lambda/lambda.hpp>
+#include<numeric>
 
 #include "dmrg/utils/BaseParameters.h"
 
@@ -441,10 +442,7 @@ public:
         // construct lattice containing the particle types
         // the length of the lattice is determined by the number of different particle types and the number
         // of the basis functions of each particle type.
-        L = 0;
-        for (auto const& Li : vec_orbitals) {
-            L += Li;
-        }
+        L = std::accumulate(vec_orbitals.begin(), vec_orbitals.end(), 0);
         model.set("L", L);
         std::vector<part_type> vec_abs_index_part_type;
         for (part_type i = 0; i < num_particle_types; i++) {
@@ -494,14 +492,16 @@ public:
      */
     pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {
         //throw std::runtime_error("get_abs_position must be debugged first.");
-        unsigned int abs_pos=0;
-        for (unsigned int i=0; i<pt; i++) {
-            for (unsigned int j=0; j<vec_orbitals[i]; j++) {
-                abs_pos++;
-            }
-        }
-        abs_pos+=rel_pos;
-        return abs_pos;
+        //unsigned int abs_pos=0;
+        //for (unsigned int i=0; i<pt; i++) {
+        //    for (unsigned int j=0; j<vec_orbitals[i]; j++) {
+        //        abs_pos++;
+        //    }
+        //}
+        //abs_pos+=rel_pos;
+        //return abs_pos;
+//        auto it = (vec_orbitals.begin() + pt);
+        return std::accumulate(vec_orbitals.begin(), (vec_orbitals.begin() + pt) , rel_pos);
     }
     // The following methods are the same as for the Orbital and the Open Chain Lattice.
     // The only difference is the way in which the lattice site type is extracted, which
@@ -535,7 +535,7 @@ public:
             return boost::any(vec_lattice_type[pos[0]]);
         else if (property == "Mmax" && pos.size() == 1)
             return boost::any(vec_max_m[pos[0]]);
-        else if (property == "NumTypes" && pos.size() == 0)
+        else if (property == "NumTypes")
             return boost::any(num_particle_types);
         else if (property == "label" && pos.size() == 2)
             return boost::any(bond_label(pos[0], pos[1]));

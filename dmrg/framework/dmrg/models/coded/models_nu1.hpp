@@ -34,7 +34,8 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "nu1_nBodyTerm.hpp"
 #include "nu1_tag_generation.hpp"
-#include "integral_interface.h"
+//#include "integral_interface.h"
+#include "../prebo/prebo_parse_integrals.h"
 /* external includes */
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
@@ -537,52 +538,37 @@ public:
         std::string line_string;
         //
         orb_file.open(integral_file.c_str());
-        // Layout of the input file
-        // Particle type - Basis Function ... integral
-        // One body terms
-        // i-j     i-l     double                    --> Same particle type, same
-        // spin,
-        //                                              but different basis
-        //                                              functions are possible.
-        // Two body terms
-        // i-j     m-n     m-p     i-l     double    --> The ordering must follow
-        // the rule: a(i)+ a(m)+ a(m)- a(i)-
-        //                                              The matrix element would be
-        //                                              zero otherwise.
 
         // +-------------------------------------+
         // | New Construction of the Hamiltonian |
         // +-------------------------------------+
         std::vector<std::pair<part_type, pos_t>> nbody_term;
-        while (getline(orb_file, line_string)) {
-            if (line_string[0] == '#' || line_string=="")
-                continue;
-            // -- Initialization --
+
+        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double, NU1>(model, lat);
+
+        auto getTermOrder = [] (const chem::index_type<chem::Hamiltonian::PreBO>& indices) {
+            auto ans = std::count(indices.begin(), indices.end(), -1);
+            if (ans == 8)
+                return 0;
+            else if (ans == 4)
+                return 1;
+            else if (ans == 8)
+                return 2;
+            else {
+                throw std::runtime_error("Term has invlaid order");
+            }
+        };
+
+        unsigned termOrder=0;
+        for (auto line=0; line<integrals.first.size(); ++line) {
+            /// -- Initialization --
             nbody_term.clear();
-            // initialize integral value
-            value_type integral;
-            // initialize splitted line
-            std::vector<std::string> line_splitted;
-            std::vector<std::size_t> size_vec;
-            // -- Main data parsing --
-            // Trim leading and final spaces in the string.
-            line_string.erase(line_string.begin(),
-                              std::find_if(line_string.begin(), line_string.end(), [&](int ch) { return !std::isspace(ch); }));
-            line_string.erase(
-                    std::find_if(line_string.rbegin(), line_string.rend(), [&](int ch) { return !std::isspace(ch); }).base(),
-                    line_string.end());
-            // Split the string
-            boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on);
-            // EMPTY LINE
-            // if (line_splitted.size() == 0) continue;
-
-            // Last value in string is assigned to the integral value
-            integral = atof(line_splitted[line_splitted.size() - 1].c_str());
-
-            //
-            // Nuclear repulsion
-            //
-            if (line_splitted.size() == 1 ) {
+            // Extract the order of the term:
+            termOrder = getTermOrder(integrals.first[line]);
+            // Nuclear repulsion:
+            const auto& indices = integrals.first[line];
+            const auto& integral = integrals.second[line];
+            if (termOrder==0) {
                 positions_type pos{0};
                 operators_type ops;
                 if (isFermion[lat.template get_prop<int>("type", pos)])
@@ -592,33 +578,25 @@ public:
                 add_term(pos, ops, integral);
                 continue;
             }
-            // remove integral value from vector
-            // now the vector contains all 2nd quantization operators.
-            line_splitted.pop_back();
-            assert(line_splitted.size() == 2 || line_splitted.size() == 4);
-            // loop over all 2nd quant. operators in vector.
-            for (const auto& sq_op_str : line_splitted) {
-                std::vector<std::string> temp;
-                boost::split(temp, sq_op_str, boost::is_any_of("-"));
-                assert(temp.size() == 2);
-                // the first element corresponds to the particle type, the second one is
-                // the orbital index.
-                nbody_term.push_back(std::make_pair(std::stoul(temp[0]), std::stoul(temp[1])));
+            // 1-body and 2-body terms
+            for (auto i=0; i<termOrder*4; i+=2) {
+                nbody_term.push_back(std::make_pair(indices[i], indices[i+1]));
             }
             // Assert tat for a one-body term, the particle types are equal
             // and that for a two-body term, the rule a(i)+ a(m)+ a(m) a(i) is
             // followed.
-            assert((line_splitted.size() == 2 && nbody_term[0].first == nbody_term[1].first) ||
-                   (line_splitted.size() == 4 && nbody_term[0].first == nbody_term[3].first &&
+            assert((termOrder == 1 && nbody_term[0].first == nbody_term[1].first) ||
+                   (termOrder == 2 && nbody_term[0].first == nbody_term[3].first &&
                     nbody_term[1].first == nbody_term[2].first));
             // Assert that the particle type index is less than the number of particle
             // types and that the orbital index is less than the number of orbitals of
             // the given type
+            #ifndef NDEBUG
             for (auto const& iter : nbody_term) {
                 assert(iter.first < num_particle_types);
                 assert(iter.second < vec_orbitals.at(iter.first));
             }
-
+            #endif
             // The nbody term is now ready to be transformed to the second quantized
             // operators with proper symmetry and spin configurations.
             NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, m_inv_order);
@@ -631,7 +609,83 @@ public:
                 Symbols2Tag(pos, ops, OpStr);
                 add_term(pos, ops, integral);
             }
+
         }
+        //while (getline(orb_file, line_string)) {
+        //    if (line_string[0] == '#' || line_string=="")
+        //        continue;
+        //    // initialize integral value
+        //    value_type integral;
+        //    // initialize splitted line
+        //    std::vector<std::string> line_splitted;
+        //    // -- Main data parsing --
+        //    // Trim leading and final spaces in the string.
+        //    line_string.erase(line_string.begin(),
+        //                      std::find_if(line_string.begin(), line_string.end(), [&](int ch) { return !std::isspace(ch); }));
+        //    line_string.erase(
+        //            std::find_if(line_string.rbegin(), line_string.rend(), [&](int ch) { return !std::isspace(ch); }).base(),
+        //            line_string.end());
+        //    // Split the string
+        //    boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on);
+        //    // EMPTY LINE
+        //    // if (line_splitted.size() == 0) continue;
+
+        //    // Last value in string is assigned to the integral value
+        //    integral = atof(line_splitted[line_splitted.size() - 1].c_str());
+
+        //    //
+        //    // Nuclear repulsion
+        //    //
+        //    if (line_splitted.size() == 1 ) {
+        //        positions_type pos{0};
+        //        operators_type ops;
+        //        if (isFermion[lat.template get_prop<int>("type", pos)])
+        //            ops.push_back(fer_ident_tag[lat.template get_prop<int>("type", pos)]);
+        //        else
+        //            ops.push_back(bos_ident_tag[lat.template get_prop<int>("type", pos)]);
+        //        add_term(pos, ops, integral);
+        //        continue;
+        //    }
+        //    // remove integral value from vector
+        //    // now the vector contains all 2nd quantization operators.
+        //    line_splitted.pop_back();
+        //    assert(line_splitted.size() == 2 || line_splitted.size() == 4);
+        //    // loop over all 2nd quant. operators in vector.
+        //    for (const auto& sq_op_str : line_splitted) {
+        //        std::vector<std::string> temp;
+        //        boost::split(temp, sq_op_str, boost::is_any_of("-"));
+        //        assert(temp.size() == 2);
+        //        // the first element corresponds to the particle type, the second one is
+        //        // the orbital index.
+        //        nbody_term.push_back(std::make_pair(std::stoul(temp[0]), std::stoul(temp[1])));
+        //    }
+        //    // Assert tat for a one-body term, the particle types are equal
+        //    // and that for a two-body term, the rule a(i)+ a(m)+ a(m) a(i) is
+        //    // followed.
+        //    assert((line_splitted.size() == 2 && nbody_term[0].first == nbody_term[1].first) ||
+        //           (line_splitted.size() == 4 && nbody_term[0].first == nbody_term[3].first &&
+        //            nbody_term[1].first == nbody_term[2].first));
+        //    // Assert that the particle type index is less than the number of particle
+        //    // types and that the orbital index is less than the number of orbitals of
+        //    // the given type
+        //    for (auto const& iter : nbody_term) {
+        //        assert(iter.first < num_particle_types);
+        //        assert(iter.second < vec_orbitals.at(iter.first));
+        //    }
+
+        //    // The nbody term is now ready to be transformed to the second quantized
+        //    // operators with proper symmetry and spin configurations.
+        //    NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, m_inv_order);
+
+        //    std::vector<std::vector<SymbolicOperator>> vec_SymOpStr = nBodyTerm.getVecSymOpStr();
+
+        //    for (auto const& OpStr : vec_SymOpStr) {
+        //        positions_type pos;
+        //        operators_type ops;
+        //        Symbols2Tag(pos, ops, OpStr);
+        //        add_term(pos, ops, integral);
+        //    }
+        //}
 
         //
         // And finally ... tidy up the mess.

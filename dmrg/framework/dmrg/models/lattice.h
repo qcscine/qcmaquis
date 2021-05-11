@@ -73,15 +73,7 @@ public:
     virtual boost::any get_prop_(std::string const &, std::vector<pos_t> const &) const = 0;
 
     virtual pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {return 0;};
-    //virtual const std::vector<unsigned int>& get_vecOrbitals() const {};
-    //virtual const std::vector<bool>& get_isFermion() const {};
 
-    //virtual void get_all_variables(std::size_t & num_particle_types,
-    //                               std::vector<unsigned int> & vec_particles,
-    //                               std::vector<bool> & isFermion,
-    //                               std::vector<unsigned int> & vec_basis_func,
-    //                               std::vector<unsigned int> & vec_ini_state,
-    //                               std::vector<unsigned int> & vec_fer_bos) const {};
     virtual pos_t size() const = 0;
     virtual int maximum_vertex_type() const = 0;
 
@@ -126,23 +118,8 @@ public:
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & positions=std::vector<pos_t>()) const
     { return impl_->get_prop_(property, positions); }
 
-    //boost::any get_parameter(std::string const & param) const
-    //{ return impl_->get_parameter(param); }
-
     pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const
     { return impl_->get_abs_position(pt, rel_pos) ; }
-
-    //const std::vector<unsigned int>& get_vecOrbitals() const {return impl_->get_vecOrbitals();}
-    //const std::vector<bool>& get_isFermion()   const {return impl_->get_isFermion();}
-
-    //void get_all_variables(std::size_t & num_particle_types,
-    //                       std::vector<unsigned int> & vec_particles,
-    //                       std::vector<bool> & isFermion,
-    //                       std::vector<unsigned int> & vec_basis_func,
-    //                       std::vector<unsigned int> & vec_ini_state,
-    //                       std::vector<unsigned int> & vec_fer_bos) const
-    //{ return impl_->get_all_variables(num_particle_types, vec_particles, isFermion, vec_basis_func, vec_ini_state, vec_fer_bos) ;}
-
 
     pos_t size() const { return impl_->size(); }
     int maximum_vertex_type() const { return impl_->maximum_vertex_type(); };
