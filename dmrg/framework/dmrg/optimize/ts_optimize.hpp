@@ -58,7 +58,7 @@ public:
                 boost::function<bool ()> stop_callback_,
                 const Lattice& lat,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), _lat(lat)
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), lat_(lat)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
@@ -224,11 +224,11 @@ public:
 
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax;
-            if (parms["PreBO_MaxBondDimVector"]=="")
+            if (!parms.is_set("PreBO_MaxBondDimVector"))
                 Mmax = this->get_Mmax(sweep);
             else {
-                auto m1 = _lat.template get_prop<size_t>("Mmax", {_lat.template get_prop<int>("type", {site1}) });
-                auto m2 = _lat.template get_prop<size_t>("Mmax", {_lat.template get_prop<int>("type", {site2}) });
+                auto m1 = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site1}) });
+                auto m2 = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site2}) });
                 Mmax = (m1>m2) ? m1 : m2;
                 std::cout << "Mmax is set to " << Mmax << std::endl;
             }
@@ -346,7 +346,7 @@ public:
 
 private:
     int initial_site;
-    const Lattice& _lat;
+    const Lattice& lat_;
     MPO<Matrix, SymmGroup> ts_cache_mpo;
 };
 

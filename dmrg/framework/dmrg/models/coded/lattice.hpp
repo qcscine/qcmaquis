@@ -409,7 +409,7 @@ public:
         auto orbitals_str = model["PreBO_OrbitalVector"].as<std::string>();
         auto vec_ini_state_str = model["PreBO_InitialStateVector"].as<std::string>();
         std::string max_m_str;
-        if (model["PreBO_MaxBondDimVector"] != "")
+        if (model.is_set("PreBO_MaxBondDimVector"))
             max_m_str = model["PreBO_MaxBondDimVector"].as<std::string>();
         // convert strings to vectors
         std::istringstream is( vec_particles_str );
@@ -428,7 +428,7 @@ public:
         vec_ini_state.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
         is.str(std::string());
         is.clear();
-        if (model["PreBO_MaxBondDimVector"] != "") {
+        if (model.is_set("PreBO_MaxBondDimVector")) {
             is.str(max_m_str);
             vec_max_m.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
             is.str(std::string());
@@ -578,21 +578,18 @@ private:
     std::vector<pos_t> m_order;                         // ordering of the sites -> E.g. canonical or Fiedler
     std::vector<pos_t> m_inv_order;                     // inverted ordering of the sites
     std::vector<std::size_t> vec_max_m;                // Stores max bond dim for all particle types
+
     // +-------------------+
     //   Printing routines
     // +-------------------+
-    std::string site_label (int i) const
-    {
+    std::string site_label (int i) const {
         return "( " + boost::lexical_cast<std::string>(i) + " )";
     }
-    std::string bond_label (int i, int j) const
-    {
+
+    std::string bond_label (int i, int j) const {
         return (  "( " + boost::lexical_cast<std::string>(i) + " )"
                   + " -- " + "( " + boost::lexical_cast<std::string>(j) + " )");
     }
 } ;
-
-
-
 
 #endif

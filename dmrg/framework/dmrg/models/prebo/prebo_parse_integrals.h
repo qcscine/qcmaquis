@@ -10,29 +10,6 @@
 namespace prebo {
 namespace detail {
 
-namespace parser_detail {
-    // read a value from file, either real or complex, needed for integral parsing
-    // since complex integrals are read as space-separated real and imaginary part,
-    // and operator>> of std::complex doesn't support this
-    // function signature is similar to operator>> to be able to use it in a loop
-
-    // need inline as this will be compiled in multiple objects and cause linker errors otherwise
-    template<class V>
-    inline std::istream& read_value(std::istream& s, V& v)
-    {
-        s >> v;
-        return s;
-    }
-    template<>
-    inline std::istream& read_value<std::complex<double> >(std::istream& s, std::complex<double>& v)
-    {
-        double real, imag;
-        s >> real >> imag;
-        v = { real, imag };
-        return s;
-    }
-} //namespace parser detail
-
 // now the integral parser can both real and complex integrals without specialization
 template <class T, class SymmGroup>
 inline
@@ -41,9 +18,7 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
 {
     typedef Lattice::pos_t pos_t;
 
-    std::vector<pos_t> inv_order;
     std::vector<T> matrix_elements;
-//    alps::numeric::matrix<Lattice::pos_t> idx_;
 
     // ********************************************************************
     // *** Parse orbital data *********************************************
@@ -51,9 +26,7 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
 
     std::vector<chem::index_type<chem::Hamiltonian::PreBO>> indices;
 
-
-    if (parms.is_set("integral_file")) // FCIDUMP file
-    {
+    if (parms.is_set("integral_file")) {
         std::string integral_file = parms["integral_file"];
         if (!boost::filesystem::exists(integral_file))
             throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
@@ -106,42 +79,38 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
             // Set all indices to -1
             if (line_splitted.size() == 1) {
                 std::fill(t.first.begin(), t.first.end(), -1);
-                continue;
             }
-            // remove integral value from vector
-            // now the vector contains all 2nd quantization operators.
-            line_splitted.pop_back();
+            else {
+                // remove integral value from vector
+                // now the vector contains all 2nd quantization operators.
+                line_splitted.pop_back();
 
-            assert(line_splitted.size() == 2 || line_splitted.size() == 4);
-            std::vector<std::string> indices_str;
-            // loop over all 2nd quant. operators in vector.
-            for (const auto &sq_op_str : line_splitted) {
-                std::vector<std::string> temp;
-                boost::split(temp, sq_op_str, boost::is_any_of("-"));
-                indices_str.insert(indices_str.end(), std::make_move_iterator(temp.begin()),
-                                   std::make_move_iterator(temp.end()));
-            }
-            assert(indices_str.size() == 4 || indices_str.size() == 8);
-            for (auto i = 0; i < 8; ++i) {
-                if (i < indices_str.size()) {
-                    t.first[i] = std::stoul(indices_str[i]);
-                    assert(t.first[i]<lat.size());
+                assert(line_splitted.size() == 2 || line_splitted.size() == 4);
+                std::vector<std::string> indices_str;
+                // loop over all 2nd quant. operators in vector.
+                for (const auto &sq_op_str : line_splitted) {
+                    std::vector<std::string> temp;
+                    boost::split(temp, sq_op_str, boost::is_any_of("-"));
+                    indices_str.insert(indices_str.end(), std::make_move_iterator(temp.begin()),
+                                       std::make_move_iterator(temp.end()));
                 }
-                else
-                    t.first[i] = -1;
+                assert(indices_str.size() == 4 || indices_str.size() == 8);
+                for (auto i = 0; i < 8; ++i) {
+                    if (i < indices_str.size()) {
+                        t.first[i] = std::stoul(indices_str[i]);
+                        assert(t.first[i] < lat.size());
+                    } else
+                        t.first[i] = -1;
+                }
             }
             if (std::abs(t.second) > parms["integral_cutoff"]) {
                 matrix_elements.push_back(t.second);
                 indices.push_back(t.first);
             }
         }
-
-
     }
-    else if (parms.is_set("integrals_binary")) // Serialized integral object
-    {
+    else if (parms.is_set("integrals_binary")) { // Serialized integral object
         // parse serialized integrals
-
         chem::integral_map<T, chem::Hamiltonian::PreBO> ints;
         std::stringstream ss(parms["integrals_binary"].as<std::string>());
 
@@ -169,7 +138,7 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
 
-        indices_vec.reserve(8*indices.size());
+        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::PreBO)*indices.size());
         for (auto&& idx: indices)
             for (auto&& i: idx)
                 indices_vec.push_back(i);

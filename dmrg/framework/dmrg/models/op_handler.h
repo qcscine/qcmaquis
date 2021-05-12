@@ -100,7 +100,7 @@ public:
     tag_type prod_duplicates() const { return duplicates_(product_tags); }
     tag_type get_num_products() const;
     tag_type total_size() const { return operator_table->size(); }
-    bool is_null(const tag_type t1, const tag_type t2);
+    bool product_is_null(const tag_type t1, const tag_type t2);
 
 private:
     std::shared_ptr<OPTable<Matrix, SymmGroup> > operator_table;

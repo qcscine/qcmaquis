@@ -164,8 +164,8 @@ std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, 
 }
 
 template<class Matrix, class SymmGroup>
-bool TagHandler<Matrix, SymmGroup>::is_null(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
-                                            const typename OPTable<Matrix, SymmGroup>::tag_type t2)
+bool TagHandler<Matrix, SymmGroup>::product_is_null(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
+                                                    const typename OPTable<Matrix, SymmGroup>::tag_type t2)
 {
     op_t product;
     op_t& op1 = (*operator_table)[t1];

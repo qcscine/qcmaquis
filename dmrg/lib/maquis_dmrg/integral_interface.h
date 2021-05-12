@@ -168,8 +168,8 @@ namespace chem {
 
     // Serialize the integral into a string
 
-    template <class V>
-    std::string serialize(const integral_map<V>& ints)
+    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+    std::string serialize(const integral_map<V, HamiltonianType>& ints)
     {
         std::stringstream ss;
         boost::archive::text_oarchive oa{ss};

@@ -40,7 +40,7 @@ struct coded_model_factory<Matrix, TrivialGroup> {
         else if (parms["MODEL"] == std::string("super boson Hubbard"))
             return impl_ptr( new SuperBoseHubbardNone<Matrix>(lattice, parms) );
         else {
-            throw std::runtime_error("Don't know this model with NONE symmetry group!");
+            throw std::runtime_error("Don't know this model with None symmetry group!");
             return impl_ptr();
         }
     }

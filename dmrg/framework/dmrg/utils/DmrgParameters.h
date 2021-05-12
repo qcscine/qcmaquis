@@ -129,11 +129,11 @@ private:
         add_option("MEASURE[Renyi2]", "", value(false));
 
         // Pre-BO
-        add_option("PreBO_MaxBondDimVector", "", value(""));
-        add_option("PreBO_ParticleTypeVector", "");
-        add_option("PreBO_FermionOrBosonVector", "");
-        add_option("PreBO_OrbitalVector", "");
-        add_option("PreBO_InitialStateVector", "");
+        add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
+        add_option("PreBO_ParticleTypeVector", "Number of particles per type");
+        add_option("PreBO_FermionOrBosonVector", "1 if Fermion, 0 if Boson");
+        add_option("PreBO_OrbitalVector", "Number of orbitals for each type");
+        add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
 
     }
 

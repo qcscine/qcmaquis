@@ -33,8 +33,7 @@
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "nu1_nBodyTerm.hpp"
-#include "nu1_tag_generation.hpp"
-//#include "integral_interface.h"
+#include "dmrg/models/prebo/prebo_TagGenerator.hpp"
 #include "../prebo/prebo_parse_integrals.h"
 /* external includes */
 #include <algorithm>
@@ -149,7 +148,7 @@ public:
         if (max_symm < MIN)
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
 
-        TagContainer<Matrix, NU1> tag_container = TagContainer<Matrix, NU1>(lat, tag_handler);
+        auto tag_container = prebo::TagGenerator<Matrix, NU1>(lat, tag_handler);
 
         tag_container.get_all_variables(phys_indexes, tag_handler, fer_ident_tag, fer_filling_tag, fer_create_up_tag,
                                         fer_create_down_tag, fer_dest_up_tag, fer_dest_down_tag, bos_ident_tag,
@@ -304,29 +303,29 @@ public:
     void Symbols2Tag(positions_type& pos, operators_type& ops, const std::vector<SymbolicOperator>& SymOpStr) {
         for (auto const& SymOp : SymOpStr) {
             pos.push_back(SymOp.getSite());
-            if (SymOp.getOpType() == SymbolicOperator::FILLING) {
+            if (SymOp.getOpType() == SymbolicOperator::Filling) {
                 ops.push_back(fer_filling_tag[vec_fer_bos[SymOp.getPartType()]]);
             }
-            else if (SymOp.getOpType() == SymbolicOperator::IDENT) {
+            else if (SymOp.getOpType() == SymbolicOperator::Ident) {
                 if (isFermion[SymOp.getPartType()])
                     ops.push_back(fer_ident_tag[vec_fer_bos[SymOp.getPartType()]]);
                 else
                     ops.push_back(bos_ident_tag[vec_fer_bos[SymOp.getPartType()]]);
             }
-            else if (SymOp.getOpType() == SymbolicOperator::CREATE) {
-                if (SymOp.getSpin() == SymbolicOperator::DOWN)
+            else if (SymOp.getOpType() == SymbolicOperator::Create) {
+                if (SymOp.getSpin() == SymbolicOperator::Down)
                     ops.push_back(fer_create_down_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::UP)
+                else if (SymOp.getSpin() == SymbolicOperator::Up)
                     ops.push_back(fer_create_up_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::ZERO)
+                else if (SymOp.getSpin() == SymbolicOperator::Zero)
                     ops.push_back(bos_create_tag[vec_fer_bos[SymOp.getPartType()]]);
             }
-            else if (SymOp.getOpType() == SymbolicOperator::ANNIHILATE) {
-                if (SymOp.getSpin() == SymbolicOperator::DOWN)
+            else if (SymOp.getOpType() == SymbolicOperator::Annihilate) {
+                if (SymOp.getSpin() == SymbolicOperator::Down)
                     ops.push_back(fer_dest_down_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::UP)
+                else if (SymOp.getSpin() == SymbolicOperator::Up)
                     ops.push_back(fer_dest_up_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::ZERO)
+                else if (SymOp.getSpin() == SymbolicOperator::Zero)
                     ops.push_back(bos_dest_tag[vec_fer_bos[SymOp.getPartType()]]);
             }
         }
@@ -369,7 +368,7 @@ public:
             size_t range_end = opnr + 1;
             while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
                 value_type scale = 1.0;
-                if (tag_handler->is_null(pos_ops[range_end].second, product))
+                if (tag_handler->product_is_null(pos_ops[range_end].second, product))
                     FoundZero = true;
                 boost::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
                 scaling *= scale;
@@ -522,26 +521,8 @@ public:
     }
 
     void generate_Hamiltonian() {
-        // +-------------------------------------+
-        // | New Construction of the Hamiltonian |
-        // +-------------------------------------+
         std::cout << "======================================================" << std::endl;
         std::cout << "Starting to construct the Hamiltonian..." << std::endl;
-        // ORDER BEGIN
-        bool sorting = false;
-        // Load ordering and determine inverse ordering
-        // Open the integral file and do a loop over it.
-        std::string integral_file = model["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
-            throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-        std::ifstream orb_file;
-        std::string line_string;
-        //
-        orb_file.open(integral_file.c_str());
-
-        // +-------------------------------------+
-        // | New Construction of the Hamiltonian |
-        // +-------------------------------------+
         std::vector<std::pair<part_type, pos_t>> nbody_term;
 
         std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double, NU1>(model, lat);
@@ -552,7 +533,7 @@ public:
                 return 0;
             else if (ans == 4)
                 return 1;
-            else if (ans == 8)
+            else if (ans == 0)
                 return 2;
             else {
                 throw std::runtime_error("Term has invlaid order");
@@ -609,84 +590,7 @@ public:
                 Symbols2Tag(pos, ops, OpStr);
                 add_term(pos, ops, integral);
             }
-
         }
-        //while (getline(orb_file, line_string)) {
-        //    if (line_string[0] == '#' || line_string=="")
-        //        continue;
-        //    // initialize integral value
-        //    value_type integral;
-        //    // initialize splitted line
-        //    std::vector<std::string> line_splitted;
-        //    // -- Main data parsing --
-        //    // Trim leading and final spaces in the string.
-        //    line_string.erase(line_string.begin(),
-        //                      std::find_if(line_string.begin(), line_string.end(), [&](int ch) { return !std::isspace(ch); }));
-        //    line_string.erase(
-        //            std::find_if(line_string.rbegin(), line_string.rend(), [&](int ch) { return !std::isspace(ch); }).base(),
-        //            line_string.end());
-        //    // Split the string
-        //    boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on);
-        //    // EMPTY LINE
-        //    // if (line_splitted.size() == 0) continue;
-
-        //    // Last value in string is assigned to the integral value
-        //    integral = atof(line_splitted[line_splitted.size() - 1].c_str());
-
-        //    //
-        //    // Nuclear repulsion
-        //    //
-        //    if (line_splitted.size() == 1 ) {
-        //        positions_type pos{0};
-        //        operators_type ops;
-        //        if (isFermion[lat.template get_prop<int>("type", pos)])
-        //            ops.push_back(fer_ident_tag[lat.template get_prop<int>("type", pos)]);
-        //        else
-        //            ops.push_back(bos_ident_tag[lat.template get_prop<int>("type", pos)]);
-        //        add_term(pos, ops, integral);
-        //        continue;
-        //    }
-        //    // remove integral value from vector
-        //    // now the vector contains all 2nd quantization operators.
-        //    line_splitted.pop_back();
-        //    assert(line_splitted.size() == 2 || line_splitted.size() == 4);
-        //    // loop over all 2nd quant. operators in vector.
-        //    for (const auto& sq_op_str : line_splitted) {
-        //        std::vector<std::string> temp;
-        //        boost::split(temp, sq_op_str, boost::is_any_of("-"));
-        //        assert(temp.size() == 2);
-        //        // the first element corresponds to the particle type, the second one is
-        //        // the orbital index.
-        //        nbody_term.push_back(std::make_pair(std::stoul(temp[0]), std::stoul(temp[1])));
-        //    }
-        //    // Assert tat for a one-body term, the particle types are equal
-        //    // and that for a two-body term, the rule a(i)+ a(m)+ a(m) a(i) is
-        //    // followed.
-        //    assert((line_splitted.size() == 2 && nbody_term[0].first == nbody_term[1].first) ||
-        //           (line_splitted.size() == 4 && nbody_term[0].first == nbody_term[3].first &&
-        //            nbody_term[1].first == nbody_term[2].first));
-        //    // Assert that the particle type index is less than the number of particle
-        //    // types and that the orbital index is less than the number of orbitals of
-        //    // the given type
-        //    for (auto const& iter : nbody_term) {
-        //        assert(iter.first < num_particle_types);
-        //        assert(iter.second < vec_orbitals.at(iter.first));
-        //    }
-
-        //    // The nbody term is now ready to be transformed to the second quantized
-        //    // operators with proper symmetry and spin configurations.
-        //    NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, m_inv_order);
-
-        //    std::vector<std::vector<SymbolicOperator>> vec_SymOpStr = nBodyTerm.getVecSymOpStr();
-
-        //    for (auto const& OpStr : vec_SymOpStr) {
-        //        positions_type pos;
-        //        operators_type ops;
-        //        Symbols2Tag(pos, ops, OpStr);
-        //        add_term(pos, ops, integral);
-        //    }
-        //}
-
         //
         // And finally ... tidy up the mess.
         //
@@ -729,27 +633,27 @@ public:
 //                    //
 //                    // 1
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::IDENT, i));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Ident, i));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // + n_up n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -759,14 +663,14 @@ public:
 //                    //
 //                    // F c_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_up c_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -776,14 +680,14 @@ public:
 //                    //
 //                    // c_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_down c_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -793,8 +697,8 @@ public:
 //                    //
 //                    // c_down c_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -804,14 +708,14 @@ public:
 //                    //
 //                    // c+_down F
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_up c+_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -821,16 +725,16 @@ public:
 //                    //
 //                    // n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_up n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -841,8 +745,8 @@ public:
 //                    transition_op.resize(0);
 //                    // c+_down F c_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -853,9 +757,9 @@ public:
 //                    transition_op.resize(0);
 //                    // - n_down c_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -865,14 +769,14 @@ public:
 //                    //
 //                    // c+_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_down c+_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -882,8 +786,8 @@ public:
 //                    //
 //                    // c_down c+_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -893,16 +797,16 @@ public:
 //                    //
 //                    // n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    // - n_up n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -912,9 +816,9 @@ public:
 //                    //
 //                    // n_up c_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -924,8 +828,8 @@ public:
 //                    //
 //                    // c+_down c+_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -935,9 +839,9 @@ public:
 //                    //
 //                    // - n_down c+_up
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
 //                    scaling = -1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -947,9 +851,9 @@ public:
 //                    //
 //                    // n_up c+_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
@@ -959,10 +863,10 @@ public:
 //                    //
 //                    // n_up n_down
 //                    SymOp_temp.clear();
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::UP));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::CREATE, i, SymbolicOperator::DOWN));
-//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::ANNIHILATE, i, SymbolicOperator::DOWN));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
+//                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
 //                    scaling = 1.;
 //                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
 //                    break;
