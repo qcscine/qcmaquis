@@ -5,7 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
- *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
+ *               2020-2021 by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -49,6 +49,12 @@ public:
     virtual std::vector<pos_t> all(pos_t) const = 0;
 
     // non-virtual!
+    template<class T> T get_prop(std::string property) const
+                                 
+    {
+        return boost::any_cast<T>(get_prop_(property, std::vector<pos_t>()));
+    }
+
     template<class T> T get_prop(std::string property,
                                  pos_t site) const
     {
@@ -105,18 +111,22 @@ public:
 
     std::vector<pos_t> forward(pos_t site) const { return impl_->forward(site); }
     std::vector<pos_t> all(pos_t site) const { return impl_->all(site); }
+    
+    /** @brief General lattice properties */
+    template<class T> T get_prop(std::string property) const
+    { return impl_->get_prop<T>(property); }
 
+    /** @brief Site-specific lattice properties */
     template<class T> T get_prop(std::string property, pos_t site) const
     { return impl_->get_prop<T>(property, site); }
 
+    /** @brief Bond-specific lattice properties */
     template<class T> T get_prop(std::string property, pos_t bond1, pos_t bond2) const
     { return impl_->get_prop<T>(property, bond1, bond2); }
 
+    /** @brief Multi-site properties */
     template<class T> T get_prop(std::string property, std::vector<pos_t> const & positions) const
     { return impl_->get_prop<T>(property, positions); }
-
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & positions=std::vector<pos_t>()) const
-    { return impl_->get_prop_(property, positions); }
 
     pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const
     { return impl_->get_abs_position(pt, rel_pos) ; }

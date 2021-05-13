@@ -100,6 +100,8 @@ public:
             return boost::any( (!pbc) && pos[0]==L-1 );
         else if (property == "wraps_pbc" && pos.size() == 2)
             return boost::any( (pos[0] < pos[1]) );
+        else if (property == "NumTypes")
+            return boost::any( 1 );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
@@ -228,6 +230,8 @@ public:
             return boost::any( irreps[pos[0]] );
         else if (property == "type" && pos.size() == 2)
             return boost::any( 0 );
+        else if (property == "NumTypes")
+            return boost::any( 1 );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
@@ -350,6 +354,8 @@ public:
             return boost::any( y(pos[0]) );
         else if (property == "wraps_pbc" && pos.size() == 2)
             return boost::any( false );
+        else if (property == "NumTypes")
+            return boost::any( 1 );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
