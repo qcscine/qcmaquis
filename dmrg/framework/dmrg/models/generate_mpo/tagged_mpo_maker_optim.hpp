@@ -667,40 +667,12 @@ namespace generate_mpo
 
         }
 
-        /**
-         * @brief Method to insert the proper filling operators in the MPO
-         *
-         * @param int i: site on which start filling.
-         * @param int j: first site where the filling is NOT included.
-         * @param prempo_key_type k: last operator that has acted in the Hamiltonian term that is currently being processed
-         * @param std::vector<bool> trivial_fill: vector of bools that tells wheter to use the identity or the filling for each
-         * particle type
-         */
-        void insert_filling(pos_t i, pos_t j, prempo_key_type k, std::vector<bool > trivial_fill, int custom_ident = -1) {
-          // Loop over the intermediate sites
-          for (; i < j; ++i) {
-            auto typei = lat.get_prop<int>("type", i);
-            tag_type op = (trivial_fill[typei]) ? identities[typei] : fillings[typei];
-            // Insert at the i-th site (i is the index of the loop) in the dictionary the keyword make by a pair
-            // of twice the k operator, and the identity operator
-			if (prempo[i].count(make_pair(k,k)) == 0)
-			    typename prempo_map_type::iterator ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
-			else {
-                if (prempo[i].find(make_pair(k,k))->second != prempo_value_type(op, 1.))
-			        throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
-				                        + ". Needed "+boost::lexical_cast<std::string>(op)
-				                        + ", found "+boost::lexical_cast<std::string>(prempo[i].find(make_pair(k,k))->second.first));
-            }
-          }
-        }
-
-        /*
-		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill, int custom_ident = -1)
+		void insert_filling(pos_t i, pos_t j, prempo_key_type k, std::vector<bool> trivial_fill, int custom_ident = -1)
 		{
 			for (; i < j; ++i) {
-                tag_type use_ident = (custom_ident != -1) ? identities_full[lat.get_prop<int>("type",i)]
-                                                          : identities[lat.get_prop<int>("type",i)];
-                tag_type op = (trivial_fill) ? use_ident : fillings[lat.get_prop<int>("type",i)];
+                auto typei = lat.get_prop<int>("type", i);
+                tag_type use_ident = (custom_ident != -1) ? identities_full[typei] : identities[typei];
+                tag_type op = (trivial_fill[typei]) ? use_ident : fillings[typei];
 				//std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				//if (!ret.second && ret.first->second.first != op)
 				if (prempo[i].count(make_pair(k,k)) == 0)
@@ -714,7 +686,6 @@ namespace generate_mpo
                 }
 			}
 		}
-        */
 
         /**
          * @brief Method to insert an element in the prempo objecj
