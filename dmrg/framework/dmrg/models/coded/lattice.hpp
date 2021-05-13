@@ -102,6 +102,8 @@ public:
             return boost::any( (pos[0] < pos[1]) );
         else if (property == "NumTypes")
             return boost::any( 1 );
+        else if (property == "ParticleType" && pos.size() == 1)
+            return boost::any( 0 );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
@@ -232,6 +234,8 @@ public:
             return boost::any( 0 );
         else if (property == "NumTypes")
             return boost::any( 1 );
+        else if (property == "ParticleType" && pos.size() == 1)
+            return boost::any( 0 );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
@@ -356,6 +360,8 @@ public:
             return boost::any( false );
         else if (property == "NumTypes")
             return boost::any( 1 );
+        else if (property == "ParticleType")
+            return boost::any( 0 );
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
@@ -543,6 +549,8 @@ public:
             return boost::any(vec_max_m[pos[0]]);
         else if (property == "NumTypes")
             return boost::any(num_particle_types);
+        else if (property == "ParticleType" && pos.size() == 1)
+            return boost::any( vec_lattice_type[pos[0]] );
         else if (property == "label" && pos.size() == 2)
             return boost::any(bond_label(pos[0], pos[1]));
         else if (property == "vec_particles")

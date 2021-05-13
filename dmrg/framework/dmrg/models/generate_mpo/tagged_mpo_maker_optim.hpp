@@ -394,7 +394,7 @@ namespace generate_mpo
             for (int i = 0; i < 2; ++i) {
               // Extract position and then type
               v_pos[i] = term.position(i);
-              v_part_type[i] = lat.template get_prop<int>("type", std::vector<pos_t>{v_pos[i]});
+              v_part_type[i] = lat.template get_prop<int>("ParticleType", std::vector<pos_t>{v_pos[i]});
               if (tag_handler->is_fermionic(term.operator_tag(i)))
                 v_nferm[v_part_type[i]] += 1;
             }
@@ -556,7 +556,7 @@ namespace generate_mpo
             for (int i = 0; i < nops; ++i) {
                 // Extract position and then type
                 v_pos[i] = term.position(i);
-                v_part_type[i] = lat.template get_prop<int>("type", std::vector<pos_t>{v_pos[i]});
+                v_part_type[i] = lat.template get_prop<int>("ParticleType", std::vector<pos_t>{v_pos[i]});
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     v_nferm[v_part_type[i]] += 1;
             }
@@ -671,8 +671,9 @@ namespace generate_mpo
 		{
 			for (; i < j; ++i) {
                 auto typei = lat.get_prop<int>("type", i);
+                auto particleTypei = lat.get_prop<int>("ParticleType", i);
                 tag_type use_ident = (custom_ident != -1) ? identities_full[typei] : identities[typei];
-                tag_type op = (trivial_fill[typei]) ? use_ident : fillings[typei];
+                tag_type op = (trivial_fill[particleTypei]) ? use_ident : fillings[typei];
 				//std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				//if (!ret.second && ret.first->second.first != op)
 				if (prempo[i].count(make_pair(k,k)) == 0)
