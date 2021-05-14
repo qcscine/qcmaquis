@@ -50,7 +50,7 @@ private:
     // +---------+
     // | Members |
     // +---------+
-    std::vector<unsigned int> m_vec_orbitals; // Number of orbitals per type
+    std::vector<int> m_vec_orbitals; // Number of orbitals per type
     std::vector<std::pair<part_type, pos_t>> m_nbody_term;
     std::vector<size_t> m_spin; // physical spin is spin/2. So electrons have spin=1
     // If the input is in the Fiedler ordering:
@@ -69,7 +69,7 @@ public:
     // | Constructor |
     // +-------------+
     NBodyTerm(std::vector<std::pair<part_type, pos_t>> nbody_term_,
-              const std::vector<bool> &isFermion_, std::vector<unsigned int> &vec_orbitals_,
+              const std::vector<bool> &isFermion_, std::vector<int>& vec_orbitals_,
               const std::vector<pos_t> &order_) {
         m_nbody_term = nbody_term_;
         size_t m_term_length = m_nbody_term.size();
@@ -173,7 +173,7 @@ private:
             generateAllSpinConfigs(n, arr, 0);
 
             for (auto &spin_config : m_spin_configs) {
-                for (unsigned j = spin_config.size(); j-- != 0;) {
+                for (int j = spin_config.size(); j-- != 0;) {
                     spin_config.push_back(spin_config.at(j));
                 }
             }

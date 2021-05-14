@@ -580,18 +580,18 @@ private:
     //  Attributes
     // +----------+
     pos_t L;       // Size of the DMRG lattice
-    std::size_t num_particle_types;                     // Number of particle types
-    std::vector<unsigned int> vec_particles;            // Number of particles per type
-    std::vector<unsigned int> vec_ini_state;            // Specifies the initial state of the system.
-    std::vector<bool> isFermion;                        // Fermion 1, Boson 0
-    std::vector<unsigned int> vec_orbitals;             // Number of orbitals per type
-    std::vector<part_type> vec_lattice_type;            // Stores the index of the particle type for each site.
-    int maximum_vertex;                                 // Largest index for site types
-    std::vector<unsigned int> vec_ibs;                  // Just in here for safety checks
-    std::vector<unsigned int> vec_fer_bos;              // vector that maps the particle types vector
-    std::vector<pos_t> m_order;                         // ordering of the sites -> E.g. canonical or Fiedler
-    std::vector<pos_t> m_inv_order;                     // inverted ordering of the sites
-    std::vector<std::size_t> vec_max_m;                // Stores max bond dim for all particle types
+    int num_particle_types;                    // Number of particle types
+    std::vector<int> vec_particles;            // Number of particles per type
+    std::vector<int> vec_ini_state;            // Specifies the initial state of the system.
+    std::vector<bool> isFermion;               // Fermion 1, Boson 0
+    std::vector<int> vec_orbitals;             // Number of orbitals per type
+    std::vector<part_type> vec_lattice_type;   // Stores the index of the particle type for each site.
+    int maximum_vertex;                        // Largest index for site types
+    std::vector<int> vec_ibs;                  // Just in here for safety checks
+    std::vector<int> vec_fer_bos;              // vector that maps the particle types vector
+    std::vector<pos_t> m_order;                // ordering of the sites -> E.g. canonical or Fiedler
+    std::vector<pos_t> m_inv_order;            // inverted ordering of the sites
+    std::vector<std::size_t> vec_max_m;        // Stores max bond dim for all particle types
 
     // +-------------------+
     //   Printing routines

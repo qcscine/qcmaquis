@@ -27,6 +27,7 @@
 
 #ifndef MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
+
 #include <dmrg/models/lattice.h>
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/matrix.hpp>
@@ -48,10 +49,8 @@ namespace prebo {
     class TagGenerator {
         // Types definition
         typedef model_impl<Matrix, NU1> base;
-        typedef typename base::table_type table_type;
         typedef typename base::table_ptr table_ptr;
         typedef typename base::tag_type tag_type;
-        typedef typename base::term_descriptor term_descriptor;
         typedef typename base::op_t op_t;
         typedef typename std::vector<tag_type> operators_type;
         typedef typename base::measurements_type measurements_type;
@@ -64,12 +63,12 @@ namespace prebo {
 
     private:
         bool verbose = false;
-        std::size_t num_particle_types; // Number of particle types
-        std::vector<unsigned int> vec_particles; // Number of particles per type
+        int num_particle_types; // Number of particle types
+        std::vector<int> vec_particles; // Number of particles per type
         std::vector<bool> isFermion; // Fermion 1, Boson 0
         // isFermion      = {1, 1, 0, 0, 1}
-        std::vector<unsigned int> vec_orbitals; // Number of orbitals per type
-        std::vector<unsigned int> vec_fer_bos; // vector that maps the particle types vector to a "fermion -- boson count vector"
+        std::vector<int> vec_orbitals; // Number of orbitals per type
+        std::vector<int> vec_fer_bos; // vector that maps the particle types vector to a "fermion -- boson count vector"
         // vec_fer_bos    = {0, 1, 0, 1, 2}
         Lattice lat;
         std::vector<Index<NU1> > phys_indexes;
@@ -89,19 +88,19 @@ namespace prebo {
         TagGenerator(const Lattice &lat_, std::shared_ptr<TagHandler<Matrix, NU1>> &tag_handler_)
                 : lat(lat_), tag_handler(tag_handler_) {
 
-            num_particle_types = boost::any_cast<std::size_t>(lat.get_prop_("num_particle_types"));
-            vec_particles = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_particles"));
-            isFermion = boost::any_cast<std::vector<bool>>(lat.get_prop_("isFermion"));
-            vec_orbitals = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_orbitals"));
-            vec_fer_bos = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_fer_bos"));
+            num_particle_types = lat.template get_prop<int>("num_particle_types");
+            vec_particles = lat.template get_prop<std::vector<int>>("vec_particles");
+            isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
+            vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
+            vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
 
             //
             // Collect all fermions and all bosons in two different vectors.
             //
-            std::size_t num_fer_types = 0; // Number of different fermions
-            std::vector<std::size_t> fer_vec;
-            std::size_t num_bos_types = 0; // Number of different bosons
-            std::vector<std::size_t> bos_vec;
+            int num_fer_types = 0; // Number of different fermions
+            std::vector<int> fer_vec;
+            int num_bos_types = 0; // Number of different bosons
+            std::vector<int> bos_vec;
             for (std::size_t it = 0; it < num_particle_types; it++) {
                 if (isFermion[it]) {
                     num_fer_types++;
@@ -417,4 +416,5 @@ namespace prebo {
     };
 
 } // namespace prebo
+
 #endif //MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP

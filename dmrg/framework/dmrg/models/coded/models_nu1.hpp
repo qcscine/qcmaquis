@@ -81,16 +81,16 @@ private:
     // | Attributes |
     // +------------+
     const bool verbose = false;
-    pos_t L;                                 // Size of the DMRG lattice
-    std::size_t num_particle_types;          // Number of particle types
-    std::vector<unsigned int> vec_particles; // Number of particles per type
-    std::vector<bool> isFermion;             // Fermion 1, Boson 0
-    std::vector<unsigned int> vec_orbitals;  // number of orbitals for each particle type
-    std::vector<unsigned int> vec_fer_bos;   // vector that maps the particle types vector. It counts fermions and bosons
+    pos_t L;                        // Size of the DMRG lattice
+    std::size_t num_particle_types; // Number of particle types
+    std::vector<int> vec_particles; // Number of particles per type
+    std::vector<bool> isFermion;    // Fermion 1, Boson 0
+    std::vector<int> vec_orbitals;  // number of orbitals for each particle type
+    std::vector<int> vec_fer_bos;   // vector that maps the particle types vector. It counts fermions and bosons
     // to a "fermion -- boson count vector"
     // isFermion      = {1, 1, 0, 0, 1}
     // vec_fer_bos    = {0, 1, 0, 1, 2}
-    std::vector<unsigned int> vec_ini_state; // specify the initial state of the system.
+    std::vector<int> vec_ini_state; // specify the initial state of the system.
     const Lattice& lat;
     BaseParameters& model;
     std::vector<Index<NU1>> phys_indexes;
@@ -121,15 +121,13 @@ public:
     // isFermion = {1, 1, 0}
     // vec_orbitals = {42, 42, 42}
     {
-        //
         // Get all variables from the lattice
-        //
-        num_particle_types = boost::any_cast<std::size_t>(lat.get_prop_("num_particle_types"));
-        vec_particles = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_particles"));
-        isFermion = boost::any_cast<std::vector<bool>>(lat.get_prop_("isFermion"));
-        vec_orbitals = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_orbitals"));
-        vec_ini_state = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_ini_state"));
-        vec_fer_bos = boost::any_cast<std::vector<unsigned>>(lat.get_prop_("vec_fer_bos"));
+        num_particle_types = lat.template get_prop<int>("num_particle_types");
+        vec_particles = lat.template get_prop<std::vector<int>>("vec_particles");
+        isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
+        vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
+        vec_ini_state = lat.template get_prop<std::vector<int>>("vec_ini_state");
+        vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
         L = lat.size();
         // Checks that the code has been compiled properly
         NU1* NU1_value = new NU1;
