@@ -6,22 +6,22 @@
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -53,7 +53,7 @@ public:
 
     typedef typename Matrix::value_type value_type;
     typedef Lattice::pos_t pos_t;
-    
+
     FermiHubbardSU2(const Lattice& lat_, BaseParameters & parms_)
     : lat(lat_)
     , parms(parms_)
@@ -82,10 +82,10 @@ public:
         op_t fill_op;
         fill_op.insert_block(Matrix(1,1,1),  A, A);
         fill_op.insert_block(Matrix(1,1,1),  D, D);
-        fill_op.insert_block(Matrix(1,1,-1), B, B); 
-        fill_op.insert_block(Matrix(1,1,-1), C, C); 
-        fill_op.insert_block(Matrix(1,1,-1),  B, C); 
-        fill_op.insert_block(Matrix(1,1,-1),  C, B); 
+        fill_op.insert_block(Matrix(1,1,-1), B, B);
+        fill_op.insert_block(Matrix(1,1,-1), C, C);
+        fill_op.insert_block(Matrix(1,1,-1),  B, C);
+        fill_op.insert_block(Matrix(1,1,-1),  C, B);
 
         /*************************************************************/
 
@@ -130,9 +130,9 @@ public:
         /**********************************************************************/
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
-        
+
         #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-        
+
         REGISTER(identity,     tag_detail::bosonic)
         REGISTER(fill,         tag_detail::bosonic)
         REGISTER(create_fill,  tag_detail::fermionic)
@@ -141,7 +141,7 @@ public:
         REGISTER(destroy_fill, tag_detail::fermionic)
         REGISTER(count,        tag_detail::bosonic)
         REGISTER(doubly_occ,   tag_detail::bosonic)
-        
+
         #undef REGISTER
         /**********************************************************************/
 
@@ -165,7 +165,7 @@ public:
                 return term;
             }
         };
-        
+
         value_type U = parms["U"];
         std::pair<tag_type, value_type> ptag;
         for (int p=0; p<lat.size(); ++p) {
@@ -175,7 +175,7 @@ public:
                 term.push_back( boost::make_tuple(p, doubly_occ) );
                 this->terms_.push_back(term);
             }
-            
+
             std::vector<int> neighs = lat.forward(p);
             for (std::vector<int>::iterator hopto = neighs.begin();
                  hopto != neighs.end(); ++hopto)
@@ -193,24 +193,24 @@ public:
             }
         }
     }
-    
+
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
-    
+
     Index<SU2U1> const & phys_dim(size_t type) const
     {
         return phys;
     }
-    
+
     measurements_type measurements () const
     {
         typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
-        
+
         measurements_type meas;
 
         /*
@@ -226,7 +226,7 @@ public:
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_down))) );
         }
-        
+
         if (parms["ENABLE_MEASURE[Local density]"]) {
             meas.push_back( new measurements::local<Matrix, SU2U1>("Local density up", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
@@ -239,7 +239,7 @@ public:
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_down))) );
         }
-        
+
         if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_up)), true) );
@@ -259,7 +259,7 @@ public:
                                                                        ops, false, false) );
         }
         */
-        
+
         return meas;
     }
 
@@ -304,18 +304,18 @@ public:
     {
         return tag_handler;
     }
-    
+
 private:
     Index<SU2U1> phys;
 
     Lattice const & lat;
     BaseParameters & parms;
 
-    boost::shared_ptr<TagHandler<Matrix, SU2U1> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SU2U1> > tag_handler;
     tag_type create, create_fill, destroy, destroy_fill,
              count, doubly_occ,
              identity, fill;
-    
+
 
     double get_t (BaseParameters & parms, int i) const
     {

@@ -233,30 +233,30 @@ namespace maquis
             return multiplicities_[std::distance(project_names_.cbegin(), index_itr)];
         }
 
+
+        // Check if the project name and the state index are allowed
+        // (i.e. the project prefix and the state is present in the vectors with which the class has been initialised)
+        // If project name or state is not found, returns -1
+        // otherwise returns the index of the project name (we don't care about the state index for now)
+        // --- hope searching a vector of strings isn't too performance consuming ---
+        int allowed_names_states(const std::string & pname, int state)
+        {
+            // check if pname is allowed
+            auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
+            if (index_itr == project_names_.cend())
+                return -1;
+
+            int idx = std::distance(project_names_.cbegin(), index_itr);
+
+            // check if the state is found
+            auto index_st_itr = std::find_if(states_[idx].cbegin(), states_[idx].cend(), [&state](const int key)->bool{ return state == key; });
+            if (index_st_itr == states_[idx].cend())
+                return -1;
+
+            return idx;
+        }
+
         private:
-
-            // Check if the project name and the state index are allowed
-            // (i.e. the project prefix and the state is present in the vectors with which the class has been initialised)
-            // If project name or state is not found, returns -1
-            // otherwise returns the index of the project name (we don't care about the state index for now)
-            // --- hope searching a vector of strings isn't too performance consuming ---
-            int allowed_names_states(const std::string & pname, int state)
-            {
-                // check if pname is allowed
-                auto index_itr = std::find_if(project_names_.cbegin(), project_names_.cend(), [&pname](const std::string& key)->bool{ return pname == key; });
-                if (index_itr == project_names_.cend())
-                    return -1;
-
-                int idx = std::distance(project_names_.cbegin(), index_itr);
-
-                // check if the state is found
-                auto index_st_itr = std::find_if(states_[idx].cbegin(), states_[idx].cend(), [&state](const int key)->bool{ return state == key; });
-                if (index_st_itr == states_[idx].cend())
-                    return -1;
-
-                return idx;
-            }
-
             // State indexes for each project. E.g. if states_[0] is {0,3}, we are interested in states 0 and 3 of the first project
             // Each project has a different name, a typical use would be to use one project name for each multiplicity
             // or more general, results of a single DMRGSCF calculation
@@ -445,7 +445,9 @@ namespace maquis
 
             // Actually this does not matter, but we need to provide some Ms
             const auto& multiplicities = impl_->multiplicities();
-            int Ms = std::min(multiplicities[bra_state], multiplicities[ket_state]);
+            int bra_idx = impl_->allowed_names_states(bra_pname, bra_state);
+            int ket_idx = impl_->allowed_names_states(ket_pname, ket_state);
+            int Ms = std::min(multiplicities[bra_idx], multiplicities[ket_idx]);
 
             std::string ket_name = twou1_name(ket_pname, ket_state, Ms, rotated);
             std::string bra_name = twou1_name(bra_pname, bra_state, Ms, rotated);

@@ -42,7 +42,7 @@ struct simulation : public simulation_base {
 };
 
 struct simulation_traits {
-    typedef boost::shared_ptr<simulation_base> shared_ptr;
+    typedef std::shared_ptr<simulation_base> shared_ptr;
     template <class SymmGroup> struct F {
         typedef simulation<SymmGroup> type;
     };

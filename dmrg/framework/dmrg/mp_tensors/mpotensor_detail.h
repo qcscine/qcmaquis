@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -85,11 +85,11 @@ namespace MPOTensor_detail
             throw std::runtime_error("direct MPOTensor access via row iterators currently not implemented\n");
             return *it_;
         }
-        
+
     private:
-       internal_iterator it_; 
+       internal_iterator it_;
     };
-    
+
     template <class ConstIterator>
     class row_proxy : public std::pair<ConstIterator, ConstIterator>
     {
@@ -98,7 +98,7 @@ namespace MPOTensor_detail
 
     public:
         typedef IteratorWrapper<ConstIterator> const_iterator;
-        row_proxy(internal_iterator b, internal_iterator e) : base(b, e) { } 
+        row_proxy(internal_iterator b, internal_iterator e) : base(b, e) { }
 
         const_iterator begin() const { return const_iterator(base::first); }
         const_iterator end() const { return const_iterator(base::second); }
@@ -184,19 +184,19 @@ namespace MPOTensor_detail
     inline Hermitian operator * (Hermitian const & a, Hermitian const & b)
     {
         return Hermitian(a.LeftHerm, b.RightHerm, a.LeftPhase, b.RightPhase);
-    } 
+    }
 
     template <class Matrix, class SymmGroup>
-    typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+    symm_traits::disable_if_su2_t<SymmGroup, int> get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
                                                                                    typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
-    { 
+    {
         return 0;
     }
 
     template <class Matrix, class SymmGroup>
-    typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, int>::type get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
+    symm_traits::enable_if_su2_t<SymmGroup, int> get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
                                                                                   typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
-    { 
+    {
         if (left)
         return mpo.left_spin(k).get();
         else

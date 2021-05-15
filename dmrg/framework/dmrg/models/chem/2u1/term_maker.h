@@ -5,22 +5,22 @@
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -47,7 +47,7 @@ struct TermMaker {
 
     static term_descriptor two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -60,7 +60,7 @@ struct TermMaker {
 
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -86,7 +86,7 @@ struct TermMaker {
     // same, but multiply first two operators
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2, std::vector<tag_type> const & op3,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -116,7 +116,7 @@ struct TermMaker {
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      std::vector<tag_type> const & opb1, std::vector<tag_type> const & opb2,
                                      std::vector<tag_type> const & ops1, std::vector<tag_type> const & ops2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -140,16 +140,16 @@ struct TermMaker {
         else {
             ptag1 = op_table->get_product_tag(opb2[lat.get_prop<sc_t>("type", pb)], opb1[lat.get_prop<sc_t>("type", pb)]);
             boson_op = ptag1.first;
-            term.coeff *= ptag1.second; 
+            term.coeff *= ptag1.second;
         }
-        
+
         if (p1 < p2) {
-            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p1)], ops1[lat.get_prop<sc_t>("type", p1)]); 
+            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p1)], ops1[lat.get_prop<sc_t>("type", p1)]);
             op1 = ptag1.first;
             term.coeff *= ptag1.second;
         }
         else {
-            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p2)], ops2[lat.get_prop<sc_t>("type", p2)]); 
+            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p2)], ops2[lat.get_prop<sc_t>("type", p2)]);
             op2 = ptag1.first;
             term.coeff *= -ptag1.second;
         }
@@ -171,7 +171,7 @@ struct TermMaker {
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_j,
                                 std::vector<tag_type> const & op_k, std::vector<tag_type> const & op_l,
-                                boost::shared_ptr<TagHandler<M, S> > op_table,
+                                std::shared_ptr<TagHandler<M, S> > op_table,
                                 Lattice const & lat)
     {
         term_descriptor term;
@@ -199,7 +199,7 @@ struct TermMaker {
         ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", boost::tuples::get<0>(sterm[2]))], boost::tuples::get<1>(sterm[2]));
         boost::tuples::get<1>(sterm[2]) = ptag.first;
         term.coeff *= ptag.second;
-        
+
         if (inv_count % 2)
             term.coeff = -term.coeff;
 
