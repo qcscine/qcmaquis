@@ -150,29 +150,29 @@ class Orbitals : public lattice_impl
 public:
     typedef lattice_impl::pos_t pos_t;
 
-    Orbitals (BaseParameters & model)
-    : L(model["L"])
+    Orbitals (BaseParameters & parms)
+    : L(parms["L"])
     , irreps(L, 0)
     , order(L)
     {
-        if (!model.is_set("orbital_order"))
+        if (!parms.is_set("orbital_order"))
             for (pos_t p = 0; p < L; ++p)
                 order[p] = p;
         else {
-            order = model["orbital_order"].as<std::vector<pos_t> >();
+            order = parms["orbital_order"].as<std::vector<pos_t> >();
             if (order.size() != L)
                 throw std::runtime_error("Number of orbitals in the orbital order does not match the total number of orbitals");
 
             for (auto&& o: order) o--;
         }
 
-        if (model.is_set("integral_file")) {
-            std::string integral_file = model["integral_file"];
+        if (parms.is_set("integral_file")) {
+            std::string integral_file = parms["integral_file"];
             if (!boost::filesystem::exists(integral_file))
                 throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
 
             std::ifstream orb_file;
-            orb_file.open(model["integral_file"].c_str());
+            orb_file.open(parms["integral_file"].c_str());
             orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
             std::string line;
@@ -184,19 +184,19 @@ public:
             boost::split(split_line, line, boost::is_any_of("="));
 
             // record the site_types in parameters
-            model.set("site_types", split_line[1]);
+            parms.set("site_types", split_line[1]);
             irreps = parse_irreps(split_line[1]);
         }
-        else if (model.is_set("site_types"))
+        else if (parms.is_set("site_types"))
         {
-            std::vector<subcharge> symm_vec = model["site_types"];
+            std::vector<subcharge> symm_vec = parms["site_types"];
 
             assert(L == symm_vec.size());
             for (subcharge p = 0; p < L; ++p)
                 irreps[p] = symm_vec[order[p]];
         }
         else
-            throw std::runtime_error("\"integral_file\" in model input file or site_types is not set\n");
+            throw std::runtime_error("\"integral_file\" in parms input file or site_types is not set\n");
 
         maximum_vertex = *std::max_element(irreps.begin(), irreps.end());
     }
@@ -412,17 +412,17 @@ public:
     // -- Constructor --
     // In addition to a standard lattice constructor, it also loads the number
     // of basis function per mode
-    explicit PreBOLattice (BaseParameters & model)
+    explicit PreBOLattice (BaseParameters & parms)
     {
 
         // Populate variables:
-        auto vec_particles_str = model["PreBO_ParticleTypeVector"].as<std::string>();
-        auto isFermion_str = model["PreBO_FermionOrBosonVector"].as<std::string>();
-        auto orbitals_str = model["PreBO_OrbitalVector"].as<std::string>();
-        auto vec_ini_state_str = model["PreBO_InitialStateVector"].as<std::string>();
+        auto vec_particles_str = parms["PreBO_ParticleTypeVector"].as<std::string>();
+        auto isFermion_str = parms["PreBO_FermionOrBosonVector"].as<std::string>();
+        auto orbitals_str = parms["PreBO_OrbitalVector"].as<std::string>();
+        auto vec_ini_state_str = parms["PreBO_InitialStateVector"].as<std::string>();
         std::string max_m_str;
-        if (model.is_set("PreBO_MaxBondDimVector"))
-            max_m_str = model["PreBO_MaxBondDimVector"].as<std::string>();
+        if (parms.is_set("PreBO_MaxBondDimVector"))
+            max_m_str = parms["PreBO_MaxBondDimVector"].as<std::string>();
         // convert strings to vectors
         std::istringstream is( vec_particles_str );
         vec_particles.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
@@ -440,7 +440,7 @@ public:
         vec_ini_state.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
         is.str(std::string());
         is.clear();
-        if (model.is_set("PreBO_MaxBondDimVector")) {
+        if (parms.is_set("PreBO_MaxBondDimVector")) {
             is.str(max_m_str);
             vec_max_m.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
             is.str(std::string());
@@ -455,15 +455,15 @@ public:
         // the length of the lattice is determined by the number of different particle types and the number
         // of the basis functions of each particle type.
         L = std::accumulate(vec_orbitals.begin(), vec_orbitals.end(), 0);
-        model.set("L", L);
+        parms.set("L", L);
         std::vector<part_type> vec_abs_index_part_type;
         for (part_type i = 0; i < num_particle_types; i++) {
             for (std::size_t j = 0; j < vec_orbitals[i]; j++) {
                 vec_abs_index_part_type.push_back(i);
             }
         }
-        if (model.is_set("orbital_order")) {
-            m_order = model["orbital_order"].as<std::vector<pos_t> >();
+        if (parms.is_set("orbital_order")) {
+            m_order = parms["orbital_order"].as<std::vector<pos_t> >();
             vec_lattice_type.resize(L);
             m_inv_order.resize(L);
             if (m_order.size() != L)

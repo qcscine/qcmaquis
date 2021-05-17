@@ -57,6 +57,7 @@ option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated 
 option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
+option (BUILD_PREBO "Build PreBO model" OFF)
 
 option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
@@ -97,16 +98,34 @@ endif()
 ######################################################################
 # How to build
 ######################################################################
+
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  include("config/clang_fixes.cmake")
+    include("config/clang_fixes.cmake")
 endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
-  set(CMAKE_CXX_FLAGS_RELEASE "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "CMAKE_CXX_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "CMAKE_CXX_FLAGS_RELWITHDEBINFO: Flags used by the compiler during Release with Debug Info builds." FORCE)
-  set(CMAKE_C_FLAGS_RELEASE " ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
-message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+# Set a default build type if none was specified
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+            STRING "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+            "Debug" "Release" "RelWithDebugInfo")
+endif()
+set(CMAKE_CXX_FLAGS_RELEASE "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "CMAKE_CXX_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "CMAKE_CXX_FLAGS_RELWITHDEBINFO: Flags used by the compiler during Release with Debug Info builds." FORCE)
+set(CMAKE_C_FLAGS_RELEASE " ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
+
+# if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+#   include("config/clang_fixes.cmake")
+# endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+# if(NOT CMAKE_BUILD_TYPE)
+#   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
+#   set(CMAKE_CXX_FLAGS_RELEASE "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "CMAKE_CXX_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
+#   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-Wno-unknown-pragmas ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}" CACHE STRING "CMAKE_CXX_FLAGS_RELWITHDEBINFO: Flags used by the compiler during Release with Debug Info builds." FORCE)
+#   set(CMAKE_C_FLAGS_RELEASE " ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
+# endif(NOT CMAKE_BUILD_TYPE)
+# message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 
 
 ######################################################################
@@ -171,6 +190,7 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
+
 
 ##### Dependencies #####
 
@@ -353,7 +373,10 @@ if(QCMAQUIS_TESTS)
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
   add_test(NAME Test2 COMMAND test2)
-  add_test(NAME Test_PreBO COMMAND test_prebo)
+  if(BUILD_PREBO)
+    add_test(NAME PreBO_Test1 COMMAND prebo_test1)
+    add_test(NAME PreBO_Test2 COMMAND prebo_test2)
+  endif(BUILD_PREBO)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_HiRDM COMMAND test_hirdm)

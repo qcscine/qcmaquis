@@ -5,6 +5,7 @@
 #ifndef MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
 #define MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
 
+#if defined(HAVE_NU1)
 #include <dmrg/models/lattice.h>
 
 /**
@@ -310,5 +311,7 @@ private:
         m_SymOpStr = new_SymOpStr;
     }
 };
+
+#endif
 
 #endif //MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
