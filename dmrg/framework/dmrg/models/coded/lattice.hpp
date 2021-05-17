@@ -462,6 +462,14 @@ public:
                 vec_abs_index_part_type.push_back(i);
             }
         }
+        // initialize the orbital lattice as the identity
+        m_order.resize(L);
+        m_inv_order.resize(L);
+        for (pos_t i = 0; i < L; i++) {
+            m_order[i] = i;
+            m_inv_order[i] = i;
+        }
+        // If sites_order is given, permute the Hamiltonian MPO
         if (parms.is_set("orbital_order")) {
             m_order = parms["orbital_order"].as<std::vector<pos_t> >();
             vec_lattice_type.resize(L);
@@ -565,6 +573,10 @@ public:
             return boost::any(vec_ini_state);
         else if (property == "vec_fer_bos")
             return boost::any(vec_fer_bos);
+        else if (property == "order")
+            return boost::any(m_order);
+        else if (property == "inv_order")
+            return boost::any(m_inv_order);
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
