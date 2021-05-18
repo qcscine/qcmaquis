@@ -204,6 +204,9 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     optimizer.push_back("singlesite");
     optimizer.push_back("twosite");
 
+    // Measure RDMs
+    p.set("MEASURE[1rdm]","1");
+
     for (auto&& o: optimizer)
     {
         p.set("optimization", o);

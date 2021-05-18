@@ -35,6 +35,8 @@
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 
+#include "dmrg/models/coded/nu1_SymbolicJordanWigner.hpp"
+
 #include <map>
 
 namespace prebo {
@@ -70,8 +72,11 @@ namespace prebo {
         std::vector<int> vec_orbitals; // Number of orbitals per type
         std::vector<int> vec_fer_bos; // vector that maps the particle types vector to a "fermion -- boson count vector"
         // vec_fer_bos    = {0, 1, 0, 1, 2}
-        Lattice lat;
+        std::shared_ptr<Lattice> lat;
         std::vector<Index<NU1> > phys_indexes;
+    public:
+
+    private:
         std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler;
         std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag,
                 fer_dest_up_tag, fer_dest_down_tag, bos_ident_tag,
@@ -80,19 +85,17 @@ namespace prebo {
 
     public:
 
-        // Don't delete or the code doesn't compile... and don't ask me why
-        TagGenerator() {
+        //// Don't delete or the code doesn't compile... and don't ask me why
+        TagGenerator() = default;
 
-        }
-
-        TagGenerator(const Lattice &lat_, std::shared_ptr<TagHandler<Matrix, NU1>> &tag_handler_)
+        TagGenerator(std::shared_ptr<Lattice> &lat_, std::shared_ptr<TagHandler<Matrix, NU1>> &tag_handler_)
                 : lat(lat_), tag_handler(tag_handler_) {
 
-            num_particle_types = lat.template get_prop<int>("num_particle_types");
-            vec_particles = lat.template get_prop<std::vector<int>>("vec_particles");
-            isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
-            vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
-            vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
+            num_particle_types = lat->template get_prop<int>("num_particle_types");
+            vec_particles = lat->template get_prop<std::vector<int>>("vec_particles");
+            isFermion = lat->template get_prop<std::vector<bool>>("isFermion");
+            vec_orbitals = lat->template get_prop<std::vector<int>>("vec_orbitals");
+            vec_fer_bos = lat->template get_prop<std::vector<int>>("vec_fer_bos");
 
             //
             // Collect all fermions and all bosons in two different vectors.
@@ -413,7 +416,56 @@ namespace prebo {
             bos_create_tag = this->bos_create_tag;
             bos_count_tag = this->bos_count_tag;
         } // get_all_variables
+
+        auto get_tag_vector(const Type& type, const OpType& op, const Spin& spin) -> std::vector<tag_type>& {
+            switch (type) {
+                case Type::Fermion:
+                    switch (op) {
+                        case OpType::Create:
+                            switch (spin) {
+                                case Spin::Up:
+                                    return fer_create_up_tag;
+                                case Spin::Down:
+                                    return fer_create_down_tag;
+                            }
+                            break;
+                        case OpType::Annihilate:
+                            switch (spin) {
+                                case Spin::Up:
+                                    return fer_dest_up_tag;
+                                case Spin::Down:
+                                    return fer_dest_down_tag;
+                            }
+                            break;
+                        case OpType::Filling:
+                            return fer_filling_tag;
+                        case OpType::Ident:
+                            return fer_ident_tag;
+                    }
+                    break;
+                case Type::Boson:
+                    switch (op) {
+                        case OpType::Create:
+                            return bos_create_tag;
+                        case OpType::Annihilate:
+                            return bos_dest_tag;
+                        case OpType::Ident:
+                            return bos_ident_tag;
+                    }
+                    break;
+            }
+            throw std::runtime_error("Invalid combination of Type, OpType, and Spin!");
+        }
+
+        auto get_tag_handler() -> std::shared_ptr<TagHandler<Matrix, NU1>>& {
+            return tag_handler;
+        }
+
+        auto getPhysIndexes() -> std::vector<Index<NU1>>& {
+            return phys_indexes;
+        }
     };
+
 
 } // namespace prebo
 

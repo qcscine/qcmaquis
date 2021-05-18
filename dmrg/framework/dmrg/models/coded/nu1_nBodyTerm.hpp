@@ -60,7 +60,7 @@ private:
     std::vector<std::vector<SymbolicOperator>> m_vec_SymOpStr;
     size_t m_NpartTypes;
     std::map<part_type, size_t> m_opPairMap;
-    std::vector<std::vector<SymbolicOperator::m_SPIN>>
+    std::vector<std::vector<Spin>>
             m_spin_configs; // {SymbolicOperator::Down, SymbolicOperator::Up};
     std::vector<std::vector<std::vector<SymbolicOperator>>> m_allSymOpStr;
 
@@ -69,7 +69,7 @@ public:
     // | Constructor |
     // +-------------+
     NBodyTerm(std::vector<std::pair<part_type, pos_t>> nbody_term_,
-              const std::vector<bool> &isFermion_, std::vector<int>& vec_orbitals_,
+              const std::vector<bool> &isFermion_, const std::vector<int>& vec_orbitals_,
               const std::vector<pos_t> &order_) {
         m_nbody_term = nbody_term_;
         size_t m_term_length = m_nbody_term.size();
@@ -152,13 +152,13 @@ private:
                 orb_index = temp_nbody[i].second;
                 abs_index = retrieve_abs_index(orb_index, nt);
                 if (i < length / 2) {
-                    SymbolicOperator tempOp(abs_index, SymbolicOperator::Create, nt,
-                                            SymbolicOperator::Zero);
+                    SymbolicOperator tempOp(abs_index, OpType::Create, nt,
+                                            Spin::Zero);
                     tmp.push_back(tempOp);
                 }
                 if (i >= length / 2) {
-                    SymbolicOperator tempOp(abs_index, SymbolicOperator::Annihilate, nt,
-                                            SymbolicOperator::Zero);
+                    SymbolicOperator tempOp(abs_index, OpType::Annihilate, nt,
+                                            Spin::Zero);
                     tmp.push_back(tempOp);
                 }
             }
@@ -184,12 +184,12 @@ private:
                     abs_index = retrieve_abs_index(orb_index, nt);
                     // create
                     if (i < length / 2) {
-                        SymbolicOperator tempOp(abs_index, SymbolicOperator::Create, nt,
+                        SymbolicOperator tempOp(abs_index, OpType::Create, nt,
                                                 spin_config.at(i));
                         tmp.push_back(tempOp);
                     }
                     if (i >= length / 2) {
-                        SymbolicOperator tempOp(abs_index, SymbolicOperator::Annihilate, nt,
+                        SymbolicOperator tempOp(abs_index, OpType::Annihilate, nt,
                                                 spin_config.at(i));
                         tmp.push_back(tempOp);
                     }
@@ -206,12 +206,12 @@ private:
      * std::vector of spin configurations.
      */
     void AddToConfigs(std::vector<size_t> arr, int n) {
-        std::vector<SymbolicOperator::m_SPIN> temp_config;
+        std::vector<Spin> temp_config;
         for (int i = 0; i < n; i++) {
             if (arr[i] == 0)
-                temp_config.push_back(SymbolicOperator::Down);
+                temp_config.push_back(Spin::Down);
             else if (arr[i] == 1)
-                temp_config.push_back(SymbolicOperator::Up);
+                temp_config.push_back(Spin::Up);
         }
         m_spin_configs.push_back(temp_config);
     }

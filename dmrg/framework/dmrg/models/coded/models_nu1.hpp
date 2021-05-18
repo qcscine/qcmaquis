@@ -31,10 +31,11 @@
 /* internal includes */
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/models/prebo/prebo_TagGenerator.hpp"
+#include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 #include "nu1_nBodyTerm.hpp"
 #include "../prebo/prebo_parse_integrals.h"
 #include "../model_helper.hpp"
+#include "../measurements/prebo_particle_rdm.h"
 /* external includes */
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
@@ -93,22 +94,24 @@ private:
     // vec_fer_bos    = {0, 1, 0, 1, 2}
     std::vector<int> vec_ini_state; // specify the initial state of the system.
     const Lattice& lat;
-    BaseParameters& model;
+    BaseParameters& parms;
     std::vector<Index<NU1>> phys_indexes;
     std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler;
-    std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
-            fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag, bos_count_tag;
+    //std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
+    //        fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag, bos_count_tag;
     terms_type terms_temp;
     // terms_type terms1RDM_;
     std::vector<pos_t> m_order;         // Ordering of the sites. By default starting from 0 to (L-1)
     std::vector<pos_t> m_inv_order;     // Inverse permutation of the order
+
+    prebo::TermGenerator<Matrix, NU1> term_generator;
 public:
     // +----------------+
     //  Main constructor
     // +----------------+
-    PreBO(const Lattice& lat_, BaseParameters& model_)
+    PreBO(const Lattice& lat_, BaseParameters& parms_)
             : lat(lat_),
-              model(model_),
+              parms(parms_),
               tag_handler(new table_type()),
               phys_indexes(0),
               num_particle_types(0),
@@ -149,11 +152,14 @@ public:
         if (max_symm < MIN)
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
 
-        auto tag_container = prebo::TagGenerator<Matrix, NU1>(lat, tag_handler);
+        std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
+        term_generator = prebo::TermGenerator<Matrix, NU1>(ptr_lat, tag_handler);
 
-        tag_container.get_all_variables(phys_indexes, tag_handler, fer_ident_tag, fer_filling_tag, fer_create_up_tag,
-                                        fer_create_down_tag, fer_dest_up_tag, fer_dest_down_tag, bos_ident_tag,
-                                        bos_create_tag, bos_dest_tag, bos_count_tag);
+        //auto tag_container = prebo::TagGenerator<Matrix, NU1>(lat, tag_handler);
+
+        //tag_container.get_all_variables(phys_indexes, tag_handler, fer_ident_tag, fer_filling_tag, fer_create_up_tag,
+        //                                fer_create_down_tag, fer_dest_up_tag, fer_dest_down_tag, bos_ident_tag,
+        //                                bos_create_tag, bos_dest_tag, bos_count_tag);
 
     } // Main constructor
 
@@ -163,7 +169,8 @@ public:
      */
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
-        generate_Hamiltonian();
+        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double, NU1>(parms, lat);
+        this->terms_ = term_generator.generate_Hamiltonian(integrals);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
         std::cout << "Construction of the Hamiltonian took "
@@ -176,126 +183,7 @@ public:
     // | METHODS |
     // +=========+
     //
-    // +-------------------+
-    // | CLEAN_HAMILTONIAN |
-    // +-------------------+
-    /**! \brief
-     * The purpose of this function is to remove all duplicates of terms that
-     * appear more than one time in the Hamiltonian and add the coefficient if
-     * they belong to the same combination of operators.
-     *     => This drastically reduces the bond dimensions.
-     */
-    void clean_hamiltonian() {
-        std::cout << "======================================================" << std::endl;
-        std::cout << "Cleaning the Hamiltonian..." << std::endl;
-        std::unordered_map<term_descriptor, value_type, term_descriptor_hasher> count_map;
 
-        for (auto const& term1 : this->terms_temp) {
-            // If key not found in map iterator to end is returned
-            if (count_map.find(term1) == count_map.end()) {
-                count_map[term1] = term1.coeff;
-            }
-                // If key found then iterator to that key is returned
-            else {
-                count_map[term1] += term1.coeff;
-            }
-        }
-
-        std::cout << "======================================================" << std::endl;
-        std::cout << "The final size of the Hamiltonian is:" << std::endl << std::endl;
-        std::cout << count_map.size() << std::endl << std::endl;
-        std::cout << "======================================================" << std::endl;
-
-        this->terms_.reserve(count_map.size());
-        for (const auto& iter : count_map) {
-            auto term = iter.first;
-            term.coeff = iter.second;
-            this->terms_.push_back(std::move(term));
-        }
-
-    } // clean_hamiltonian
-
-    struct term_descriptor_hasher {
-        std::size_t operator()(const term_descriptor& key) const {
-            using boost::hash_combine;
-            using boost::hash_value;
-
-            // Start with a hash value of 0    .
-            std::size_t seed = 0;
-
-            // Modify 'seed' by XORing and bit-shifting in
-            // one member of 'Key' after the other:
-            for (unsigned int i = 0; i < key.size(); i++) {
-                hash_combine(seed, key.position(i));
-                hash_combine(seed, key.operator_tag(i));
-            }
-            // Return the result.
-            return seed;
-        }
-    };
-
-    /**
-     * This method takes the symbolic operator string and populates operators and
-     * positions vector.
-     * @param pos
-     * @param ops
-     * @param SymOpStr
-     */
-    void Symbols2Tag(positions_type& pos, operators_type& ops, const std::vector<SymbolicOperator>& SymOpStr) {
-        for (auto const& SymOp : SymOpStr) {
-            pos.push_back(SymOp.getSite());
-            if (SymOp.getOpType() == SymbolicOperator::Filling) {
-                ops.push_back(fer_filling_tag[vec_fer_bos[SymOp.getPartType()]]);
-            }
-            else if (SymOp.getOpType() == SymbolicOperator::Ident) {
-                if (isFermion[SymOp.getPartType()])
-                    ops.push_back(fer_ident_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else
-                    ops.push_back(bos_ident_tag[vec_fer_bos[SymOp.getPartType()]]);
-            }
-            else if (SymOp.getOpType() == SymbolicOperator::Create) {
-                if (SymOp.getSpin() == SymbolicOperator::Down)
-                    ops.push_back(fer_create_down_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::Up)
-                    ops.push_back(fer_create_up_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::Zero)
-                    ops.push_back(bos_create_tag[vec_fer_bos[SymOp.getPartType()]]);
-            }
-            else if (SymOp.getOpType() == SymbolicOperator::Annihilate) {
-                if (SymOp.getSpin() == SymbolicOperator::Down)
-                    ops.push_back(fer_dest_down_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::Up)
-                    ops.push_back(fer_dest_up_tag[vec_fer_bos[SymOp.getPartType()]]);
-                else if (SymOp.getSpin() == SymbolicOperator::Zero)
-                    ops.push_back(bos_dest_tag[vec_fer_bos[SymOp.getPartType()]]);
-            }
-        }
-    }
-
-    // +----------+
-    // | ADD TERM |
-    // +----------+
-    /**
-     * Adds a single term to the Hamiltonian object
-     * @param positions
-     * @param operators
-     * @param coeff
-     */
-    void add_term(positions_type const& positions, operators_type const& operators, value_type const& coeff) {
-        static int count = 0;
-        value_type scaling = 1.;
-        std::pair<term_descriptor, bool> ret = modelHelper<Matrix,NU1>::arrange_operators(positions, operators, scaling, tag_handler);
-        if (!ret.second) {
-            count++;
-            auto term = ret.first;
-            term.coeff = coeff * scaling;
-            this->terms_temp.push_back(term);
-            if (this->verbose) {
-                std::cout << term << std::endl;
-                std::cout << "Operator count = " << count << std::endl;
-            }
-        }
-    } //
 
     // +================+
     // | GETTER METHODS |
@@ -315,14 +203,16 @@ public:
      * @return
      */
     tag_type identity_matrix_tag(size_t type) const {
+        auto vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
         // recover identity of the according particle type
         if (isFermion[type]) {
             std::size_t fer = vec_fer_bos[type];
-            return fer_ident_tag[fer];
+            return term_generator.getTagContainer().get_tag_vector(Type::Fermion, OpType::Ident, Spin::None)[fer];
         }
         else {
             std::size_t bos = vec_fer_bos[type];
-            return bos_ident_tag[bos];
+            return term_generator.getTagContainer().get_tag_vector(Type::Boson, OpType::Ident, Spin::None)[bos];
+            //return bos_ident_tag[bos];
         }
     }
     /**
@@ -376,538 +266,35 @@ public:
     // TODO ALB Check if this really true, the index 0 has been hardcoded for the
     //         moment
     measurements_type measurements() const {
-        // typedef std::vector<op_t> op_vec;
-        // typedef std::vector<std::pair<op_vec, bool> > bond_element;
         measurements_type meas;
-        // if (model["MEASURE[Density]"]) {
-        //    std::string name = "Density";
-        //    meas.push_back( new measurements::average<Matrix, NU1>(name, lat,
-        //                                                           tag_handler->get_ops(ident),
-        //                                                           tag_handler->get_ops(ident),
-        //                                                           tag_handler->get_ops(count))
-        //                                                           ) ;
-        //}
-        // if (model["MEASURE[Local density]"]) {
-        //    std::string name = "Local density";
-        //    meas.push_back( new measurements::local<Matrix, NU1>(name, lat,
-        //                                                         tag_handler->get_ops(ident),
-        //                                                         tag_handler->get_ops(ident),
-        //                                                         tag_handler->get_ops(count))
-        //                                                         ) ;
-        //}
-        // if (model["MEASURE[Onebody density matrix]"]) {
-        //    std::string name = "Onebody density matrix";
-        //    bond_element ops;
-        //    ops.push_back( std::make_pair( tag_handler->get_ops(create), false) );
-        //    ops.push_back( std::make_pair( tag_handler->get_ops(destroy), false)
-        //    ); meas.push_back( new measurements::correlations<Matrix, NU1>(name,
-        //    lat,
-        //                                                   op_vec(1,this->identity_matrix(0)),
-        //                                                   op_vec(1,this->filling_matrix(0)),
-        //											       ops, true, false) )
-        //;
-        //}
+
+        std::vector<tag_type> identities;
+        std::vector<tag_type> fillings;
+
+        for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
+        {
+            identities.push_back(this->identity_matrix_tag(p));
+            fillings.push_back(this->filling_matrix_tag(p));
+        }
+
+        std::regex expression_1ParticleRDM("^MEASURE\\[1rdm\\]");
+        std::smatch what;
+
+        for (auto&& it: parms.get_range()) {
+            std::string lhs = it.first;
+            std::string name;
+            // 1-RDM and transition-1RDM
+            if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
+                name = "1ParticleRDM";
+                meas.push_back( new measurements::PreBOParticleRDM<Matrix, NU1>(parms, lat, identities, fillings, tag_handler));
+            }
+        }
+
         return meas;
     }
 
-    void generate_Hamiltonian() {
-        std::cout << "======================================================" << std::endl;
-        std::cout << "Starting to construct the Hamiltonian..." << std::endl;
-        std::vector<std::pair<part_type, pos_t>> nbody_term;
-
-        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double, NU1>(model, lat);
-
-        auto getTermOrder = [] (const chem::index_type<chem::Hamiltonian::PreBO>& indices) {
-            auto ans = std::count(indices.begin(), indices.end(), -1);
-            if (ans == 8)
-                return 0;
-            else if (ans == 4)
-                return 1;
-            else if (ans == 0)
-                return 2;
-            else {
-                throw std::runtime_error("Term has invlaid order");
-            }
-        };
-
-        unsigned termOrder=0;
-        for (auto line=0; line<integrals.first.size(); ++line) {
-            /// -- Initialization --
-            nbody_term.clear();
-            // Extract the order of the term:
-            termOrder = getTermOrder(integrals.first[line]);
-            // Nuclear repulsion:
-            const auto& indices = integrals.first[line];
-            const auto& integral = integrals.second[line];
-            if (termOrder==0) {
-                positions_type pos{0};
-                operators_type ops;
-                if (isFermion[lat.template get_prop<int>("type", pos)])
-                    ops.push_back(fer_ident_tag[lat.template get_prop<int>("type", pos)]);
-                else
-                    ops.push_back(bos_ident_tag[lat.template get_prop<int>("type", pos)]);
-                add_term(pos, ops, integral);
-                continue;
-            }
-            // 1-body and 2-body terms
-            for (auto i=0; i<termOrder*4; i+=2) {
-                nbody_term.push_back(std::make_pair(indices[i], indices[i+1]));
-            }
-            // Assert tat for a one-body term, the particle types are equal
-            // and that for a two-body term, the rule a(i)+ a(m)+ a(m) a(i) is
-            // followed.
-            assert((termOrder == 1 && nbody_term[0].first == nbody_term[1].first) ||
-                   (termOrder == 2 && nbody_term[0].first == nbody_term[3].first &&
-                    nbody_term[1].first == nbody_term[2].first));
-            // Assert that the particle type index is less than the number of particle
-            // types and that the orbital index is less than the number of orbitals of
-            // the given type
-            #ifndef NDEBUG
-            for (auto const& iter : nbody_term) {
-                assert(iter.first < num_particle_types);
-                assert(iter.second < vec_orbitals.at(iter.first));
-            }
-            #endif
-            // The nbody term is now ready to be transformed to the second quantized
-            // operators with proper symmetry and spin configurations.
-            NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, m_inv_order);
-
-            std::vector<std::vector<SymbolicOperator>> vec_SymOpStr = nBodyTerm.getVecSymOpStr();
-
-            for (auto const& OpStr : vec_SymOpStr) {
-                positions_type pos;
-                operators_type ops;
-                Symbols2Tag(pos, ops, OpStr);
-                add_term(pos, ops, integral);
-            }
-        }
-        //
-        // And finally ... tidy up the mess.
-        //
-        clean_hamiltonian();
-    }
 
 
-    /**!
-     *
-     *
-     */
-    auto generate_terms1RDM(const int& i, const int& mu, const int& nu) -> terms_type {
-        //
-        // < Psi | a+^i_mu a^j_nu | Psi> => Generate operator string for particle type i and sites mu and nu
-        //
-        terms_type res;
-        // the first element corresponds to the particle type, the second one is
-        // the orbital index.
-        std::vector<std::pair<part_type, pos_t>> nbody_term;
-        nbody_term.push_back(std::make_pair(i, mu));
-        nbody_term.push_back(std::make_pair(i, nu));
-
-        // Assert that the particle type index is less than the number of particle
-        // types and that the orbital index is less than the number of orbitals of
-        // the given type
-        for (auto const& iter : nbody_term) {
-            assert(iter.first < num_particle_types);
-            assert(iter.second < vec_orbitals.at(iter.first));
-        }
-
-        // The nbody term is now ready to be transformed to the second quantized
-        // operators with proper symmetry and spin configurations.
-        NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, m_inv_order);
-
-        std::vector<std::vector<SymbolicOperator>> vec_SymOpStr = nBodyTerm.getVecSymOpStr();
-
-        for (auto const& OpStr : vec_SymOpStr) {
-            positions_type pos;
-            operators_type ops;
-            Symbols2Tag(pos, ops, OpStr);
-            value_type scaling = 1.;
-            std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, tag_handler);
-            if (!ret.second) {
-                auto term = ret.first;
-                term.coeff = scaling;
-                res.push_back(term);
-                if (this->verbose) {
-                    std::cout << term << std::endl;
-                }
-            }
-        }
-        return res;
-    }
-
-    std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> multiply(
-            const std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> & lhs,
-            const std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> & rhs)
-    {
-        std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> res;
-        res.reserve(lhs.size()*rhs.size());
-        // Multiply the two strings of symbolic operators.
-        // Loop over terms on the left hand side and multiply for each term with every other term on the right hand side
-        for (auto const & itlhs: lhs)
-            for (auto const & itrhs: rhs) {
-                value_type val=itlhs.first*itrhs.first;
-                std::vector<SymbolicOperator> tmp_str = itlhs.second;
-                // Concatenate two strings of operators
-                tmp_str.insert(tmp_str.end(), itrhs.second.begin(), itrhs.second.end());
-                res.push_back(std::make_pair(val, tmp_str));
-            }
-        return res;
-    }
-
-    std::vector<std::pair<value_type, std::vector<SymbolicOperator>>>
-    generate_transitionOps(const part_type& i, const pos_t& mu, const int& which) {
-
-        std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> transition_op;
-        std::vector<SymbolicOperator> SymOp_temp;
-        positions_type pos{mu};
-        operators_type ops;
-        value_type scaling = 1.;
-
-        if (isFermion[i]) {
-            switch (which) {
-                case 1:
-                    //
-                    // Operator 1: 1 - n_up - n_down + n_up n_down
-                    //
-                    // 1
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Ident, i));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // + n_up n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 2:
-                    //
-                    // Operator 2: c_down  - n_up c_down
-                    //
-                    // F c_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_up c_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 3:
-                    //
-                    // Operator 3: c_up - n_down c_up
-                    //
-                    // c_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_down c_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 4:
-                    //
-                    // Operator 4:  c_down c_up
-                    //
-                    // c_down c_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 5:
-                    //
-                    // Operator 5: c+_down  - n_up c+_down
-                    //
-                    // c+_down F
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_up c+_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 6:
-                    //
-                    // Operator 6: n_down - n_up n_down
-                    //
-                    // n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_up n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 7:
-                    //
-                    // Operator 7:  c+_down c_up
-                    //
-                    transition_op.resize(0);
-                    // c+_down F c_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 8:
-                    //
-                    // Operator 8: - n_down c_up
-                    //
-                    transition_op.resize(0);
-                    // - n_down c_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 9:
-                    //
-                    // Operator 9: c+_up - n_down c+_up
-                    //
-                    // c+_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_down c+_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 10:
-                    //
-                    // Operator 10:  c_down c+_up
-                    //
-                    // c_down c+_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 11:
-                    //
-                    // Operator 11: n_up - n_up n_down
-                    //
-                    // n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    // - n_up n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 12:
-                    //
-                    // Operator 12: n_up c_down
-                    //
-                    // n_up c_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 13:
-                    //
-                    // Operator 13:  c+_down c+_up
-                    //
-                    // c+_down c+_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 14:
-                    //
-                    // Operator 14: - n_down c+_up
-                    //
-                    // - n_down c+_up
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    scaling = -1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 15:
-                    //
-                    // Operator 15: n_up c+_down
-                    //
-                    // n_up c+_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-                case 16:
-                    //
-                    // Operator 16: n_up n_down
-                    //
-                    // n_up n_down
-                    SymOp_temp.clear();
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Up));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Create, i, SymbolicOperator::Down));
-                    SymOp_temp.push_back(SymbolicOperator(mu, SymbolicOperator::Annihilate, i, SymbolicOperator::Down));
-                    scaling = 1.;
-                    transition_op.push_back(std::make_pair(scaling, SymOp_temp));
-                    break;
-            }
-        }
-        else {
-            std::cout << "Bosonic Transition Operators not implemented, yet." << std::endl;
-        }
-        return transition_op;
-    }
-
-
-    std::vector<std::pair<value_type, std::vector<SymbolicOperator>>>
-    generate_transitionOps(const part_type& i, const part_type& j, const pos_t& mu, const pos_t& nu, const int& which1,
-                           const int& which2) {
-
-        SymbolicJordanWigner JW;
-
-        std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops1 =
-                generate_transitionOps(i, mu, which1);
-        std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops2 =
-                generate_transitionOps(j, nu, which2);
-
-        if (i!=j) {
-            for (size_t it=0; it < transition_ops1.size(); it++) {
-                JW = SymbolicJordanWigner(transition_ops1.at(it).second);
-                transition_ops1.at(it).second = JW.getSymOpStr();
-            }
-            for (size_t it=0; it < transition_ops2.size(); it++) {
-                JW = SymbolicJordanWigner(transition_ops2.at(it).second);
-                transition_ops2.at(it).second = JW.getSymOpStr();
-            }
-        }
-        std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops_res = multiply(transition_ops1,
-                                                                                                       transition_ops2);
-        if (i==j) {
-            for (size_t it=0; it < transition_ops_res.size(); it++) {
-                JW = SymbolicJordanWigner(transition_ops_res.at(it).second);
-                transition_ops_res.at(it).second = JW.getSymOpStr();
-            }
-        }
-        return transition_ops_res;
-
-    }
-
-    auto generate_termsTransitionOp(const int& i, const int& mu, const int& which) -> terms_type {
-
-        terms_type res;
-
-        std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops =
-                generate_transitionOps(i, mu, which);
-
-        SymbolicJordanWigner JW;
-        for (size_t it=0; it < transition_ops.size(); it++) {
-            JW = SymbolicJordanWigner(transition_ops.at(it).second);
-            transition_ops.at(it).second = JW.getSymOpStr();
-        }
-
-        for (auto const& transOp : transition_ops ) {
-            positions_type pos;
-            operators_type ops;
-            Symbols2Tag(pos, ops, transOp.second);
-            value_type scaling = transOp.first;
-            std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, tag_handler);
-            if (!ret.second) {
-                auto term = ret.first;
-                term.coeff = scaling;
-                res.push_back(term);
-                if (this->verbose) {
-                    std::cout << term << std::endl;
-                }
-            }
-        }
-        return res;
-    }
-
-
-    auto generate_termsTransitionOp(const int& i, const int& j, const int& mu, const int& nu, const int& which1,
-                                    const int& which2) -> terms_type {
-
-        terms_type res;
-
-        std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops =
-                generate_transitionOps(i, j, mu, nu, which1, which2);
-
-        for (auto const& transOp : transition_ops ) {
-            positions_type pos;
-            operators_type ops;
-            Symbols2Tag(pos, ops, transOp.second);
-            value_type scaling = transOp.first;
-            std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, tag_handler);
-            if (!ret.second) {
-                auto term = ret.first;
-                term.coeff = scaling;
-                res.push_back(term);
-                if (this->verbose) {
-                    std::cout << term << std::endl;
-                }
-            }
-        }
-
-        return res;
-    }
 
 };
 

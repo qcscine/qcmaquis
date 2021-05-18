@@ -8,6 +8,10 @@
 #if defined(HAVE_NU1)
 #include <dmrg/models/lattice.h>
 
+enum class Type {Fermion, Boson};
+enum class Spin { Up, Down, Zero, None };
+enum class OpType { Create, Annihilate, Filling, Ident };
+
 /**
  * @class SymbolicOperator nu1_nBodyTerm.hpp
  * @brief Symbolic algebra implementation of a 2nd quantization operator. Needed for Jordan--Wigner transformation.
@@ -19,29 +23,27 @@ class SymbolicOperator {
     typedef typename Lattice::pos_t pos_t;
 
 public:
-    enum m_SPIN { Up, Down, Zero, None };
-    enum m_OPTYPES { Create, Annihilate, Filling, Ident };
 
 private:
     // +---------+
     // | Members |
     // +---------+
     part_type m_part_type;
-    m_SPIN m_spin;
+    Spin m_spin;
     pos_t m_site;
-    m_OPTYPES m_opType;
+    OpType m_opType;
 
 public:
     // Constructor
-    SymbolicOperator(pos_t site, m_OPTYPES opType, part_type pt,
-                     m_SPIN spin = None)
+    SymbolicOperator(pos_t site, OpType opType, part_type pt,
+                     Spin spin = Spin::None)
             : m_site(site), m_opType(opType), m_part_type(pt), m_spin(spin) {}
 
     // Constructor
-    SymbolicOperator(const SymbolicOperator &SymOp, m_OPTYPES opType) {
+    SymbolicOperator(const SymbolicOperator &SymOp, OpType opType) {
         m_part_type = SymOp.getPartType();
-        if (opType == Filling || opType == Ident)
-            m_spin = None;
+        if (opType == OpType::Filling || opType == OpType::Ident)
+            m_spin = Spin::None;
         else
             m_spin = SymOp.getSpin();
         m_site = SymOp.getSite();
@@ -58,9 +60,9 @@ public:
     // +---------+
     // | Getter |
     // +---------+
-    m_SPIN getSpin() const { return m_spin; }
+    Spin getSpin() const { return m_spin; }
     pos_t getSite() const { return m_site; }
-    m_OPTYPES getOpType() const { return m_opType; }
+    OpType getOpType() const { return m_opType; }
     part_type getPartType() const { return m_part_type; }
 
     // +---------+
@@ -71,15 +73,15 @@ public:
      */
     void print() const {
         std::string op_str;
-        if (m_opType == Filling)
+        if (m_opType == OpType::Filling)
             op_str.append("F");
-        else if (m_opType == Ident)
+        else if (m_opType == OpType::Ident)
             op_str.append("I");
-        else if (m_spin == Up || m_spin == Down)
+        else if (m_spin == Spin::Up || m_spin == Spin::Down)
             op_str.append("a");
-        else if (m_spin == Zero)
+        else if (m_spin == Spin::Zero)
             op_str.append("b");
-        if (m_opType == Create)
+        if (m_opType == OpType::Create)
             op_str.append("+");
         op_str.append("^");
         std::stringstream ss;
@@ -89,9 +91,9 @@ public:
         ss.str(std::string());
         ss << m_site;
         op_str.append(ss.str());
-        if (m_spin == Up)
+        if (m_spin == Spin::Up)
             op_str.append("-up");
-        else if (m_spin == Down)
+        else if (m_spin == Spin::Down)
             op_str.append("-down");
         std::cout << op_str;
     }
@@ -131,7 +133,7 @@ public:
         bool allIdent=true;
         for (auto const& Op : SymOpStr) {
             vec_pt_check.push_back(Op.getPartType());
-            if (allIdent && Op.getOpType()!=SymbolicOperator::Ident) allIdent=false;
+            if (allIdent && Op.getOpType()!=OpType::Ident) allIdent=false;
         }
         if (!(std::equal(vec_pt_check.begin() + 1, vec_pt_check.end(), vec_pt_check.begin())))
             throw std::runtime_error("JW must only be applied to operator strings containing equal particle types.");
@@ -144,7 +146,7 @@ public:
 
             // Identity removal
             for (auto it=m_SymOpStr.begin(); it!=m_SymOpStr.end();) {
-                if (it->getOpType() == SymbolicOperator::Ident)
+                if (it->getOpType() == OpType::Ident)
                     it = m_SymOpStr.erase(it);
                 else
                     ++it;
@@ -261,30 +263,30 @@ private:
         size_t count = 0;
         for (auto const &symOp : m_SymOpStr) {
             // fermion
-            if (symOp.getSpin() == SymbolicOperator::Down ||
-                symOp.getSpin() == SymbolicOperator::Up) {
+            if (symOp.getSpin() == Spin::Down ||
+                symOp.getSpin() == Spin::Up) {
 
                 // c-(d) := F a(d)
-                if (symOp.getSpin() == SymbolicOperator::Down &&
-                    symOp.getOpType() == SymbolicOperator::Annihilate)
+                if (symOp.getSpin() == Spin::Down &&
+                    symOp.getOpType() == OpType::Annihilate)
                     new_SymOpStr.push_back(
-                            SymbolicOperator(symOp, SymbolicOperator::Filling));
+                            SymbolicOperator(symOp, OpType::Filling));
 
                 if (lindex[count] == 1)
                     new_SymOpStr.push_back(
-                            SymbolicOperator(symOp, SymbolicOperator::Filling));
+                            SymbolicOperator(symOp, OpType::Filling));
 
                 new_SymOpStr.push_back(SymbolicOperator(symOp));
 
                 // c+(d) := a+(d) F
-                if (symOp.getSpin() == SymbolicOperator::Down &&
-                    symOp.getOpType() == SymbolicOperator::Create)
+                if (symOp.getSpin() == Spin::Down &&
+                    symOp.getOpType() == OpType::Create)
                     new_SymOpStr.push_back(
-                            SymbolicOperator(symOp, SymbolicOperator::Filling));
+                            SymbolicOperator(symOp, OpType::Filling));
 
                 if (rindex[count] == 1)
                     new_SymOpStr.push_back(
-                            SymbolicOperator(symOp, SymbolicOperator::Filling));
+                            SymbolicOperator(symOp, OpType::Filling));
             }
                 // boson
             else {
@@ -301,7 +303,7 @@ private:
                 break;
             if (i->getPartType() == n->getPartType() &&
                 i->getSite() == n->getSite() && i->getOpType() == n->getOpType() &&
-                i->getOpType() == SymbolicOperator::Filling) {
+                i->getOpType() == OpType::Filling) {
                 i = new_SymOpStr.erase(i);
                 i = new_SymOpStr.erase(i);
             } else {

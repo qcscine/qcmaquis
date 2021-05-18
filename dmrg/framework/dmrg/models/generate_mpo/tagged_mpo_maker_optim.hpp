@@ -181,43 +181,34 @@ namespace generate_mpo
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
 
-        /** @brief Method to generate an operator != from the Hamiltonian */
-        /*
-        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> & model, const std::string mode)
-            : lat(lat_), length(lat.size()), tag_handler(model.operators_table()), prempo(length),
-              trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
-              leftmost_right(length), rightmost_left(0), finalized(false), verbose(false), core_energy(0.)
+
+        /**
+         * @brief Class constructor from a lattice and a vector of terms
+         *
+         * This method should be used for constructing operators != from the Hamiltonian.
+         */
+        TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & f_,
+                       std::shared_ptr<TagHandler<Matrix, SymmGroup> > th_, typename Model<Matrix, SymmGroup>::terms_type const& terms)
+                : lat(lat_), identities(i_), fillings(f_), length(lat.size()), tag_handler(th_), prempo(length),
+                  trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right), leftmost_right(length),
+                  rightmost_left(0), finalized(false), verbose(false), core_energy(0.)
         {
-          // Loads the position of all the identity operators and all the fillings operators
-          for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
-          {
-            identities.push_back(model.identity_matrix_tag(p));
-            fillings.push_back(model.filling_matrix_tag(p));
-          }
-          // Add all the terms of the Hamiltonian that have been generated previously.
-          // Apply the method add_term to each term.
-          if (mode=="1rdm"){
-            typename Model<Matrix, SymmGroup>::terms_type const & terms = model.get_terms1RDM();
-            for (std::size_t idx = 0; idx < terms.size(); idx++)
-              this->add_term(terms[idx]) ;
-          }
-          else if (mode=="1ordm") {
-            typename Model<Matrix, SymmGroup>::terms_type const & terms = model.get_terms1oRDM();
-            for (std::size_t idx = 0; idx < terms.size(); idx++)
-              this->add_term(terms[idx]) ;
-          }
-          else if (mode=="2ordm") {
-            typename Model<Matrix, SymmGroup>::terms_type const & terms = model.get_terms2oRDM();
-            for (std::size_t idx = 0; idx < terms.size(); idx++)
-              this->add_term(terms[idx]) ;
-          }
-          else if (mode=="default"){
-            typename Model<Matrix, SymmGroup>::terms_type & terms = model.hamiltonian_terms();
-            for (std::size_t idx = 0; idx < terms.size(); idx++)
-              this->add_term(terms[idx]) ;
-          }
+            //for (size_t p = 0; p < length-1; ++p)
+            //    prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
+            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
-        */
+
+        ///** @brief Method to generate an operator != from the Hamiltonian */
+        //TaggedMPOMaker(Lattice const& lat_, typename Model<Matrix, SymmGroup>::terms_type const & terms, const tag_vec& identities, const tag_vec& fillings,
+        //               std::shared_ptr<TagHandler<Matrix, SymmGroup>>& tag_handler)
+        //    : lat(lat_), length(lat.size()), tag_handler(tag_handler), prempo(length),
+        //      trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
+        //      leftmost_right(length), rightmost_left(0), finalized(false), verbose(false), core_energy(0.)
+        //{
+        //  // Apply the method add_term to each term.
+        //    for (std::size_t idx = 0; idx < terms.size(); idx++)
+        //      this->add_term(terms[idx]) ;
+        //}
 
         /** @brief Method to add a single term to the prempo object */
         void add_term(term_descriptor term)

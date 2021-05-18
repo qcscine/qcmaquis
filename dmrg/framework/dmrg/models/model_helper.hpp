@@ -74,6 +74,37 @@ public:
         // std::cout << scaling << std::endl;
         return std::make_pair(term, FoundZero);
     } // arrange_operators
+
+
+
+
+    // +----------+
+    // | ADD TERM |
+    // +----------+
+    /**
+     * Adds a single term to the Hamiltonian object
+     * @param positions
+     * @param operators
+     * @param coeff
+     */
+    static void add_term(positions_type const& positions, operators_type const& operators, value_type const& coeff,
+                         const std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler, terms_type& terms) {
+        static int count = 0;
+        value_type scaling = 1.;
+        std::pair<term_descriptor, bool> ret = modelHelper<Matrix,NU1>::arrange_operators(positions, operators, scaling, tag_handler);
+        if (!ret.second) {
+            count++;
+            auto term = ret.first;
+            term.coeff = coeff * scaling;
+            terms.push_back(term);
+            //if (this->verbose) {
+            //    std::cout << term << std::endl;
+            //    std::cout << "Operator count = " << count << std::endl;
+            //}
+        }
+    } //
+
+
 };
 
 #endif //MAQUIS_DMRG_MODEL_HELPER_HPP
