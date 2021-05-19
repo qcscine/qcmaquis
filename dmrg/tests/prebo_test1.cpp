@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
         BOOST_CHECK_CLOSE(interface.energy(), -0.997454827563674, 1e-7);
 
         //// test 1-RDM
-        //const typename maquis::DMRGInterface<double>::meas_with_results_type& meas1 = interface.onerdm();
+        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas1 = interface.onerdm();
         //double value = 0.0;
 
         //// we don't have a map for the measurements yet, so we'll do it the stupid way

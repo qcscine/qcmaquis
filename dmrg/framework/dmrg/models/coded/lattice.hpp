@@ -601,6 +601,14 @@ private:
     int maximum_vertex;                        // Largest index for site types
     std::vector<int> vec_ibs;                  // Just in here for safety checks
     std::vector<int> vec_fer_bos;              // vector that maps the particle types vector
+                                                // to a "fermion -- boson count vector"
+                                                // isFermion      = {1, 1, 0, 0, 1}
+                                                // vec_fer_bos    = {0, 1, 0, 1, 2}
+    // example H2O:
+    // num_particle_types = 3
+    // vec_particles = {10, 2, 1}
+    // isFermion = {1, 1, 0}
+    // vec_orbitals = {42, 42, 42}
     std::vector<pos_t> m_order;                // ordering of the sites -> E.g. canonical or Fiedler
     std::vector<pos_t> m_inv_order;            // inverted ordering of the sites
     std::vector<std::size_t> vec_max_m;        // Stores max bond dim for all particle types

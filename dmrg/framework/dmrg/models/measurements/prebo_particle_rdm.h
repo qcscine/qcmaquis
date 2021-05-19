@@ -35,6 +35,7 @@
 #include "measurements_details.h"
 #include "dmrg/models/generate_mpo/utils.hpp"
 #include "dmrg/models/coded/models_nu1.hpp"
+#include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 /* external */
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
@@ -47,7 +48,8 @@ namespace measurements {
         typedef std::vector<tag_type> tag_vec;
     public:
         PreBOParticleRDM(BaseParameters& parms, Lattice const& lat_, const tag_vec& identities, const tag_vec& fillings,
-                         std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler) : parms(parms), lat(lat_), identities(identities) {
+                         std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator_) : parms(parms),
+                         lat(lat_), identities(identities), fillings(fillings), ptr_term_generator(ptr_term_generator_) {
 
         }
 
@@ -62,11 +64,11 @@ namespace measurements {
                 Eigen::MatrixXd rdm = Eigen::MatrixXd::Zero(vec_orbitals.at(nt), vec_orbitals.at(nt));
                 for (int mu = 0; mu < dim; mu++) {
                     for (int nu = 0; nu <= mu; nu++) {
-                        //auto terms = prebo::preBOHelper<Matrix, NU1>::generate_terms1RDM(nt, mu, nu, isFermion, vec_orbitals, inv_order, tag_handler);
-                        //generate_mpo::TaggedMPOMaker<Matrix, NU1> mpom(lat, identities, fillings, tag_handler, terms);
-                        //MPO<Matrix, NU1> mpo = mpom.create_mpo();
-                        //MPO<Matrix, NU1> mpoc = mpo;
-                        //rdm(mu, nu) = maquis::real(expval(ket_mps, mpoc));
+                        auto terms = ptr_term_generator->generate_terms1RDM(nt, mu, nu);
+                        generate_mpo::TaggedMPOMaker<Matrix, NU1> mpom(lat, identities, fillings, ptr_term_generator->getTagHandler(), terms);
+                        MPO<Matrix, NU1> mpo = mpom.create_mpo();
+                        MPO<Matrix, NU1> mpoc = mpo;
+                        rdm(mu, nu) = maquis::real(expval(ket_mps, mpoc));
                         if (nu != mu)
                             rdm(nu, mu) = rdm(mu, nu);
                     }
@@ -99,7 +101,7 @@ namespace measurements {
         BaseParameters& parms;
         const Lattice& lat;
         tag_vec identities, fillings;
-        std::shared_ptr<TagHandler<Matrix, NU1> > tag_handler;
+        std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator;
     };
 }
 

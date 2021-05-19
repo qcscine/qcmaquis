@@ -32,7 +32,7 @@ namespace prebo {
         //typedef typename base::op_t op_t;
         typedef typename std::vector<tag_type> operators_type;
         //typedef typename base::measurements_type measurements_type;
-        typedef typename Lattice::pos_t pos_t;                          // position on the lattice
+        typedef typename Lattice::pos_t pos_t;                          // position on the ptr_lattice
         typedef typename Lattice::part_type part_type;                  // unsigned integer denoting the particle type
         typedef typename std::vector<pos_t> positions_type;
         typedef typename Matrix::value_type value_type;
@@ -44,38 +44,44 @@ namespace prebo {
         std::vector<int>  vec_fer_bos;
         std::vector<pos_t>  inv_order;
 
-        std::shared_ptr<Lattice> lat;
-        std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler;
+        std::shared_ptr<Lattice> ptr_lat;
+        std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
+    private:
 
-        prebo::TermGenerator<Matrix, NU1> tag_container;
+        std::shared_ptr<prebo::TagGenerator<Matrix, NU1>> ptr_tag_container;
+
 
         std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
                 fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag;
+        std::vector<Index<NU1>> phys_indexes;
+
     public:
 
         TermGenerator() = default;
 
-        TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &tag_handler_ ) : lat(lat), tag_handler(tag_handler_) {
+        TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &ptr_tag_handler_ ) : ptr_lat(lat), ptr_tag_handler(ptr_tag_handler_) {
 
-            tag_container = prebo::TagGenerator<Matrix, NU1>(lat, tag_handler);
+            ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix, NU1>>(lat, ptr_tag_handler);
 
             // Fermion
-            fer_create_up_tag = tag_container.get_tag_vector(Type::Fermion, OpType::Create, Spin::Up);
-            fer_dest_up_tag = tag_container.get_tag_vector(Type::Fermion, OpType::Annihilate, Spin::Up);
-            fer_create_down_tag = tag_container.get_tag_vector(Type::Fermion, OpType::Create, Spin::Down);
-            fer_dest_down_tag = tag_container.get_tag_vector(Type::Fermion, OpType::Annihilate, Spin::Down);
-            fer_filling_tag = tag_container.get_tag_vector(Type::Fermion, OpType::Filling, Spin::None);
-            fer_ident_tag = tag_container.get_tag_vector(Type::Fermion, OpType::Ident, Spin::None);
+            fer_create_up_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Create, Spin::Up);
+            fer_dest_up_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Annihilate, Spin::Up);
+            fer_create_down_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Create, Spin::Down);
+            fer_dest_down_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Annihilate, Spin::Down);
+            fer_filling_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Filling, Spin::None);
+            fer_ident_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Ident, Spin::None);
             // Bosons
-            bos_create_tag = tag_container.get_tag_vector(Type::Boson, OpType::Create, Spin::Zero);
-            bos_dest_tag = tag_container.get_tag_vector(Type::Boson, OpType::Annihilate, Spin::Zero);
-            bos_ident_tag = tag_container.get_tag_vector(Type::Boson, OpType::Ident, Spin::None);
-
+            bos_create_tag = ptr_tag_container->get_tag_vector(Type::Boson, OpType::Create, Spin::Zero);
+            bos_dest_tag = ptr_tag_container->get_tag_vector(Type::Boson, OpType::Annihilate, Spin::Zero);
+            bos_ident_tag = ptr_tag_container->get_tag_vector(Type::Boson, OpType::Ident, Spin::None);
+            // tag handler
+            ptr_tag_handler = ptr_tag_container->get_tag_handler();
+            phys_indexes = ptr_tag_container->getPhysIndexes();
             //
-            isFermion = lat->template get_prop<std::vector<bool>>("isFermion");
-            vec_fer_bos = lat->template get_prop<std::vector<int>>("vec_fer_bos");
-            vec_orbitals = lat->template get_prop<std::vector<int>>("vec_orbitals");
-            inv_order = lat->template get_prop<std::vector<pos_t>>("inv_order");
+            isFermion = ptr_lat->template get_prop<std::vector<bool>>("isFermion");
+            vec_fer_bos = ptr_lat->template get_prop<std::vector<int>>("vec_fer_bos");
+            vec_orbitals = ptr_lat->template get_prop<std::vector<int>>("vec_orbitals");
+            inv_order = ptr_lat->template get_prop<std::vector<pos_t>>("inv_order");
         }
 
         auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>>& integrals) -> terms_type {
@@ -109,11 +115,11 @@ namespace prebo {
                 if (termOrder==0) {
                     positions_type pos{0};
                     operators_type ops;
-                    if (isFermion[lat->template get_prop<int>("type", pos)])
-                        ops.push_back(fer_ident_tag[lat->template get_prop<int>("type", pos)]);
+                    if (isFermion[ptr_lat->template get_prop<int>("type", pos)])
+                        ops.push_back(fer_ident_tag[ptr_lat->template get_prop<int>("type", pos)]);
                     else
-                        ops.push_back(bos_ident_tag[lat->template get_prop<int>("type", pos)]);
-                    modelHelper<Matrix, NU1>::add_term(pos, ops, integral, tag_handler, hamiltonian);
+                        ops.push_back(bos_ident_tag[ptr_lat->template get_prop<int>("type", pos)]);
+                    modelHelper<Matrix, NU1>::add_term(pos, ops, integral, ptr_tag_handler, hamiltonian);
                     continue;
                 }
                 // 1-body and 2-body terms
@@ -145,7 +151,7 @@ namespace prebo {
                     positions_type pos;
                     operators_type ops;
                     Symbols2Tag(pos, ops, OpStr);
-                    modelHelper<Matrix, NU1>::add_term(pos, ops, integral, tag_handler, hamiltonian);
+                    modelHelper<Matrix, NU1>::add_term(pos, ops, integral, ptr_tag_handler, hamiltonian);
                 }
             }
             //
@@ -291,7 +297,7 @@ namespace prebo {
                 operators_type ops;
                 Symbols2Tag(pos, ops, OpStr);
                 value_type scaling = 1.;
-                std::pair<term_descriptor, bool> ret = modelHelper<Matrix, NU1>::arrange_operators(pos, ops, scaling, tag_handler);
+                std::pair<term_descriptor, bool> ret = modelHelper<Matrix, NU1>::arrange_operators(pos, ops, scaling, ptr_tag_handler);
                 if (!ret.second) {
                     auto term = ret.first;
                     term.coeff = scaling;
@@ -638,7 +644,7 @@ namespace prebo {
                 operators_type ops;
                 Symbols2Tag(pos, ops, transOp.second);
                 value_type scaling = transOp.first;
-                std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, tag_handler);
+                std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, ptr_tag_handler);
                 if (!ret.second) {
                     auto term = ret.first;
                     term.coeff = scaling;
@@ -665,7 +671,7 @@ namespace prebo {
                 operators_type ops;
                 Symbols2Tag(pos, ops, transOp.second);
                 value_type scaling = transOp.first;
-                std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, tag_handler);
+                std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, ptr_tag_handler);
                 if (!ret.second) {
                     auto term = ret.first;
                     term.coeff = scaling;
@@ -675,7 +681,6 @@ namespace prebo {
                     }
                 }
             }
-
             return res;
         }
 
@@ -683,9 +688,15 @@ namespace prebo {
         //
         // Getter Methods
         //
-
-        const TermGenerator<Matrix, NU1> &getTagContainer() const {
-            return tag_container;
+    public:
+        const std::shared_ptr<TagGenerator<Matrix, NU1>> &getTagContainer() const {
+            return ptr_tag_container;
+        }
+        const std::vector<Index<NU1>> &getPhysIndexes() const {
+            return phys_indexes;
+        }
+        const std::shared_ptr<TagHandler<Matrix, NU1>> &getTagHandler() const {
+            return ptr_tag_handler;
         }
 
 

@@ -85,26 +85,13 @@ private:
     const bool verbose = false;
     pos_t L;                        // Size of the DMRG lattice
     std::size_t num_particle_types; // Number of particle types
-    std::vector<int> vec_particles; // Number of particles per type
     std::vector<bool> isFermion;    // Fermion 1, Boson 0
-    std::vector<int> vec_orbitals;  // number of orbitals for each particle type
-    std::vector<int> vec_fer_bos;   // vector that maps the particle types vector. It counts fermions and bosons
-    // to a "fermion -- boson count vector"
-    // isFermion      = {1, 1, 0, 0, 1}
-    // vec_fer_bos    = {0, 1, 0, 1, 2}
     std::vector<int> vec_ini_state; // specify the initial state of the system.
     const Lattice& lat;
     BaseParameters& parms;
     std::vector<Index<NU1>> phys_indexes;
-    std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler;
-    //std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
-    //        fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag, bos_count_tag;
-    terms_type terms_temp;
-    // terms_type terms1RDM_;
-    std::vector<pos_t> m_order;         // Ordering of the sites. By default starting from 0 to (L-1)
-    std::vector<pos_t> m_inv_order;     // Inverse permutation of the order
-
-    prebo::TermGenerator<Matrix, NU1> term_generator;
+    std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
+    std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator;
 public:
     // +----------------+
     //  Main constructor
@@ -112,28 +99,13 @@ public:
     PreBO(const Lattice& lat_, BaseParameters& parms_)
             : lat(lat_),
               parms(parms_),
-              tag_handler(new table_type()),
-              phys_indexes(0),
-              num_particle_types(0),
-              vec_particles(0),
-              isFermion(0),
-              vec_orbitals(0),
-              vec_ini_state(0)
-    // example H2O:
-    // num_particle_types = 3
-    // vec_particles = {10, 2, 1}
-    // isFermion = {1, 1, 0}
-    // vec_orbitals = {42, 42, 42}
+              ptr_tag_handler(new table_type()),
+              phys_indexes(0)
     {
-        // Get all variables from the lattice
+        // Get only required variables from the lattice
         num_particle_types = lat.template get_prop<int>("num_particle_types");
-        vec_particles = lat.template get_prop<std::vector<int>>("vec_particles");
         isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
-        vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
         vec_ini_state = lat.template get_prop<std::vector<int>>("vec_ini_state");
-        vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
-        m_order = lat.template get_prop<std::vector<int>>("order");
-        m_inv_order = lat.template get_prop<std::vector<int>>("inv_order");
         L = lat.size();
         // Checks that the code has been compiled properly
         NU1* NU1_value = new NU1;
@@ -153,13 +125,8 @@ public:
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
 
         std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
-        term_generator = prebo::TermGenerator<Matrix, NU1>(ptr_lat, tag_handler);
-
-        //auto tag_container = prebo::TagGenerator<Matrix, NU1>(lat, tag_handler);
-
-        //tag_container.get_all_variables(phys_indexes, tag_handler, fer_ident_tag, fer_filling_tag, fer_create_up_tag,
-        //                                fer_create_down_tag, fer_dest_up_tag, fer_dest_down_tag, bos_ident_tag,
-        //                                bos_create_tag, bos_dest_tag, bos_count_tag);
+        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix, NU1>>(ptr_lat, ptr_tag_handler);
+        phys_indexes = ptr_term_generator->getPhysIndexes();
 
     } // Main constructor
 
@@ -170,7 +137,7 @@ public:
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
         std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double, NU1>(parms, lat);
-        this->terms_ = term_generator.generate_Hamiltonian(integrals);
+        this->terms_ = ptr_term_generator->generate_Hamiltonian(integrals);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
         std::cout << "Construction of the Hamiltonian took "
@@ -206,13 +173,14 @@ public:
         auto vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
         // recover identity of the according particle type
         if (isFermion[type]) {
+            auto tag_vec = ptr_term_generator->getTagContainer()->get_tag_vector(Type::Fermion, OpType::Ident, Spin::None);
             std::size_t fer = vec_fer_bos[type];
-            return term_generator.getTagContainer().get_tag_vector(Type::Fermion, OpType::Ident, Spin::None)[fer];
+            return tag_vec[fer];
         }
         else {
+            auto tag_vec = ptr_term_generator->getTagContainer()->get_tag_vector(Type::Boson, OpType::Ident, Spin::None);
             std::size_t bos = vec_fer_bos[type];
-            return term_generator.getTagContainer().get_tag_vector(Type::Boson, OpType::Ident, Spin::None)[bos];
-            //return bos_ident_tag[bos];
+            return tag_vec[bos];
         }
     }
     /**
@@ -235,14 +203,17 @@ public:
      * @return
      */
     tag_type filling_matrix_tag(size_t type) const {
-        // recover filling of the according particle type
+        auto vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
+        // recover identity of the according particle type
         if (isFermion[type]) {
+            auto tag_vec = ptr_term_generator->getTagContainer()->get_tag_vector(Type::Fermion, OpType::Filling, Spin::None);
             std::size_t fer = vec_fer_bos[type];
-            return fer_filling_tag[fer];
+            return tag_vec[fer];
         }
         else {
+            auto tag_vec = ptr_term_generator->getTagContainer()->get_tag_vector(Type::Boson, OpType::Ident, Spin::None);
             std::size_t bos = vec_fer_bos[type];
-            return bos_ident_tag[bos];
+            return tag_vec[bos];
         }
     }
     /**
@@ -261,7 +232,7 @@ public:
     }
     //
     table_ptr operators_table() const {
-        return tag_handler;
+        return ptr_tag_handler;
     }
     // TODO ALB Check if this really true, the index 0 has been hardcoded for the
     //         moment
@@ -286,16 +257,12 @@ public:
             // 1-RDM and transition-1RDM
             if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
                 name = "1ParticleRDM";
-                meas.push_back( new measurements::PreBOParticleRDM<Matrix, NU1>(parms, lat, identities, fillings, tag_handler));
+                meas.push_back( new measurements::PreBOParticleRDM<Matrix, NU1>(parms, lat, identities, fillings, ptr_term_generator));
             }
         }
 
         return meas;
     }
-
-
-
-
 };
 
 #endif
