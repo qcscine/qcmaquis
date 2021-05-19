@@ -394,28 +394,6 @@ namespace prebo {
 
         } //create_tags
 
-        /*! \brief
-         *  This functions assigns all variables which have been created upon construction of an instance of the class.
-         */
-        void
-        get_all_variables(std::vector<Index<NU1>> &phys_indexes, std::shared_ptr<TagHandler<Matrix, NU1>> &tag_handler,
-                          std::vector<tag_type> &fer_ident_tag, std::vector<tag_type> &fer_filling_tag,
-                          std::vector<tag_type> &fer_create_up_tag, std::vector<tag_type> &fer_create_down_tag,
-                          std::vector<tag_type> &fer_dest_up_tag, std::vector<tag_type> &fer_dest_down_tag,
-                          std::vector<tag_type> &bos_ident_tag, std::vector<tag_type> &bos_create_tag,
-                          std::vector<tag_type> &bos_dest_tag, std::vector<tag_type> &bos_count_tag) {
-            phys_indexes = this->phys_indexes;
-            fer_ident_tag = this->fer_ident_tag;
-            fer_create_up_tag = this->fer_create_up_tag;
-            fer_dest_up_tag = this->fer_dest_up_tag;
-            bos_ident_tag = this->bos_ident_tag;
-            bos_dest_tag = this->bos_dest_tag;
-            fer_filling_tag = this->fer_filling_tag;
-            fer_create_down_tag = this->fer_create_down_tag;
-            fer_dest_down_tag = this->fer_dest_down_tag;
-            bos_create_tag = this->bos_create_tag;
-            bos_count_tag = this->bos_count_tag;
-        } // get_all_variables
 
         auto get_tag_vector(const Type& type, const OpType& op, const Spin& spin) -> std::vector<tag_type>& {
             switch (type) {

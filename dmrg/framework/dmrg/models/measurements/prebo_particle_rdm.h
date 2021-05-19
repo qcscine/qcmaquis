@@ -46,7 +46,16 @@ namespace measurements {
     class PreBOParticleRDM : public measurement<Matrix, NU1> {
         typedef typename generate_mpo::OperatorTagTerm<Matrix, NU1>::tag_type tag_type;
         typedef std::vector<tag_type> tag_vec;
+
     public:
+        /**
+         * Constructor
+         * @param parms
+         * @param lat_
+         * @param identities
+         * @param fillings
+         * @param ptr_term_generator_
+         */
         PreBOParticleRDM(BaseParameters& parms, Lattice const& lat_, const tag_vec& identities, const tag_vec& fillings,
                          std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator_) : parms(parms),
                          lat(lat_), identities(identities), fillings(fillings), ptr_term_generator(ptr_term_generator_) {
@@ -55,6 +64,11 @@ namespace measurements {
 
         ~PreBOParticleRDM()=default;
 
+        /**
+         * Implementation of virtual method in base class.
+         * @param ket_mps
+         * @param rmps
+         */
         void evaluate(MPS<Matrix, NU1> const& ket_mps, boost::optional<reduced_mps<Matrix, NU1> const&> rmps = boost::none) {
             auto vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
             auto isFermion = lat.template get_prop<std::vector<bool>>("isFermion");

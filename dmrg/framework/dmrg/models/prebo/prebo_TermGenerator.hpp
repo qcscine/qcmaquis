@@ -14,28 +14,27 @@
 
 namespace prebo {
 
-/**
- * @class TermGenerator prebo_TermGenerator.hpp
- * @brief This class handels the correct generation of all terms.
- * @tparam Matrix
- * @tparam NU1
- */
+    /**
+     * @class TermGenerator prebo_TermGenerator.hpp
+     * @brief This class handels the correct generation of all terms.
+     * @tparam Matrix
+     * @tparam NU1
+     */
     template<class Matrix, class NU1>
     class TermGenerator {
         // Types definition
         typedef model_impl<Matrix, NU1> base;
-        //typedef typename base::table_type table_type;
-        //typedef typename base::table_ptr table_ptr;
         typedef typename base::tag_type tag_type;
         typedef typename base::term_descriptor term_descriptor;
         typedef typename std::vector<term_descriptor> terms_type;
-        //typedef typename base::op_t op_t;
         typedef typename std::vector<tag_type> operators_type;
-        //typedef typename base::measurements_type measurements_type;
         typedef typename Lattice::pos_t pos_t;                          // position on the ptr_lattice
         typedef typename Lattice::part_type part_type;                  // unsigned integer denoting the particle type
         typedef typename std::vector<pos_t> positions_type;
         typedef typename Matrix::value_type value_type;
+
+        typedef typename std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> symbolic_terms;
+
     private:
         bool verbose=false;
 
@@ -59,6 +58,11 @@ namespace prebo {
 
         TermGenerator() = default;
 
+        /**
+         * Constructor
+         * @param lat
+         * @param ptr_tag_handler_
+         */
         TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &ptr_tag_handler_ ) : ptr_lat(lat), ptr_tag_handler(ptr_tag_handler_) {
 
             ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix, NU1>>(lat, ptr_tag_handler);
@@ -84,6 +88,11 @@ namespace prebo {
             inv_order = ptr_lat->template get_prop<std::vector<pos_t>>("inv_order");
         }
 
+        /**
+         * This method generates the terms of the pre-BO Hamiltonian. It is called inside the model.
+         * @param integrals
+         * @return
+         */
         auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>>& integrals) -> terms_type {
             terms_type hamiltonian;
             std::cout << "======================================================" << std::endl;
@@ -311,11 +320,8 @@ namespace prebo {
         }
 
 
-        std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> multiply(
-                const std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> & lhs,
-                const std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> & rhs)
-        {
-            std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> res;
+        auto multiply(const symbolic_terms & lhs, const symbolic_terms & rhs) -> symbolic_terms {
+            symbolic_terms res;
             res.reserve(lhs.size()*rhs.size());
             // Multiply the two strings of symbolic operators.
             // Loop over terms on the left hand side and multiply for each term with every other term on the right hand side
@@ -330,10 +336,10 @@ namespace prebo {
             return res;
         }
 
-        std::vector<std::pair<value_type, std::vector<SymbolicOperator>>>
-        generate_transitionOps(const part_type& i, const pos_t& mu, const int& which) {
 
-            std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> transition_op;
+        auto generate_transitionOps(const part_type& i, const pos_t& mu, const int& which) -> symbolic_terms {
+
+            symbolic_terms transition_op;
             std::vector<SymbolicOperator> SymOp_temp;
             positions_type pos{mu};
             operators_type ops;
@@ -593,15 +599,15 @@ namespace prebo {
         }
 
 
-        std::vector<std::pair<value_type, std::vector<SymbolicOperator>>>
-        generate_transitionOps(const part_type& i, const part_type& j, const pos_t& mu, const pos_t& nu, const int& which1,
-                               const int& which2) {
+
+        auto generate_transitionOps(const part_type& i, const part_type& j, const pos_t& mu, const pos_t& nu, const int& which1,
+                               const int& which2) -> symbolic_terms {
 
             SymbolicJordanWigner JW;
 
-            std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops1 =
+            symbolic_terms transition_ops1 =
                     generate_transitionOps(i, mu, which1);
-            std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops2 =
+            symbolic_terms transition_ops2 =
                     generate_transitionOps(j, nu, which2);
 
             if (i!=j) {
@@ -614,7 +620,7 @@ namespace prebo {
                     transition_ops2.at(it).second = JW.getSymOpStr();
                 }
             }
-            std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops_res = multiply(transition_ops1,
+            symbolic_terms transition_ops_res = multiply(transition_ops1,
                                                                                                            transition_ops2);
             if (i==j) {
                 for (size_t it=0; it < transition_ops_res.size(); it++) {
@@ -630,7 +636,7 @@ namespace prebo {
 
             terms_type res;
 
-            std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops =
+            symbolic_terms transition_ops =
                     generate_transitionOps(i, mu, which);
 
             SymbolicJordanWigner JW;
@@ -663,7 +669,7 @@ namespace prebo {
 
             terms_type res;
 
-            std::vector<std::pair<value_type,std::vector<SymbolicOperator>>> transition_ops =
+            symbolic_terms transition_ops =
                     generate_transitionOps(i, j, mu, nu, which1, which2);
 
             for (auto const& transOp : transition_ops ) {

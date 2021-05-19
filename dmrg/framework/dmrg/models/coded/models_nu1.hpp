@@ -130,9 +130,13 @@ public:
 
     } // Main constructor
 
+    //
+    // +=========+
+    // | METHODS |
+    // +=========+
+    //
     /**!
      * Create Hamiltonian terms
-     * @return
      */
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
@@ -143,13 +147,6 @@ public:
         std::cout << "Construction of the Hamiltonian took "
                   << duration.count() << " seconds" << std::endl << std::endl;
     }
-
-
-    //
-    // +=========+
-    // | METHODS |
-    // +=========+
-    //
 
 
     // +================+
@@ -191,8 +188,6 @@ public:
      * @return
      */
     typename NU1::charge total_quantum_numbers(BaseParameters& parms) const {
-        // Not actually used.
-        // int str = parms["PreBO_ParticleTypeVector"] ;
         // This is important:
         return NU1::charge(vec_ini_state);
     }
