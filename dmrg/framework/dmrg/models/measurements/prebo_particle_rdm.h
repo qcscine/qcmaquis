@@ -107,13 +107,13 @@ namespace measurements {
                 // save results and labels
                 {
                     this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+                    std::copy(dct.begin(), dct.end(), std::back_inserter(this->vector_results));
 
                     this->labels.reserve(this->labels.size() + dct.size());
-                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                    std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
 
                     this->labels_num.reserve(this->labels_num.size() + dct.size());
-                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
+                    std::copy(num_labels.begin(), num_labels.end(), std::back_inserter(this->labels_num));
                 }
                 std::cout << std::endl;
                 std::cout << "The one-body RDM is" << std::endl;

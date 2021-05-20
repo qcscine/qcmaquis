@@ -69,14 +69,14 @@ contains
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
       LOGICAL, external :: IS_NAN
-      PARAMETER (Zero=0.D00, KCOLP=5, KCOLN=8)
+      PARAMETER (ZERO=0.D00, KCOLP=5, KCOLN=8)
       PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
 !
       IF (ROWHI.LT.ROWLOW) GO TO 3
       IF (COLHI.LT.COLLOW) GO TO 3
 !
-      AMAX = Zero
+      AMAX = ZERO
       N_NAN = 0
       DO 10 J = COLLOW,COLHI
          DO 10 I = ROWLOW,ROWHI

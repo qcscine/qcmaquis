@@ -140,7 +140,7 @@ public:
      */
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
-        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double>(parms, lat);
+        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>> integrals = prebo::detail::parse_integrals<double>(parms, lat);
         this->terms_ = ptr_term_generator->generate_Hamiltonian(integrals);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
@@ -250,7 +250,6 @@ public:
             std::string name;
             // 1-RDM and transition-1RDM
             if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
-                name = "1ParticleRDM";
                 meas.push_back( new measurements::PreBOParticleRDM<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
             }
         }

@@ -202,7 +202,6 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     p.set("PreBO_InitialStateVector",        "1 1" );
 
     p.set("nsweeps",4);
-    //p.set("max_bond_dimension",1000);
 
     p.set("symmetry", "nu1");
 
@@ -210,6 +209,8 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     optimizer.push_back("singlesite");
     optimizer.push_back("twosite");
 
+    // Attention: const guess in test, so that the results are deterministic.
+    p.set("init_state", "const");
     // Measure RDMs
     p.set("MEASURE[1rdm]","1");
 
