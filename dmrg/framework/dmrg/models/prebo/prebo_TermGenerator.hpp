@@ -16,11 +16,14 @@ namespace prebo {
 
     /**
      * @class TermGenerator prebo_TermGenerator.hpp
+     * General info: the ordering of the lattice for Hamiltonian and particle RDM is handled by the nu1_nBodyTerm class.
+     * For the orbital-RDMs, it is handled here.
+     *
      * @brief This class handels the correct generation of all terms.
      * @tparam Matrix
      * @tparam NU1
      */
-    template<class Matrix, class NU1>
+    template<class Matrix>
     class TermGenerator {
         // Types definition
         typedef model_impl<Matrix, NU1> base;
@@ -47,7 +50,7 @@ namespace prebo {
         std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
     private:
 
-        std::shared_ptr<prebo::TagGenerator<Matrix, NU1>> ptr_tag_container;
+        std::shared_ptr<prebo::TagGenerator<Matrix>> ptr_tag_container;
 
 
         std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
@@ -59,13 +62,14 @@ namespace prebo {
         TermGenerator() = default;
 
         /**
-         * Constructor
+         * Constructor. Automatically updates the tag_handler, but the updated phys_indexes have to be retrieved
+         * after the constructor was called.
          * @param lat
          * @param ptr_tag_handler_
          */
         TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &ptr_tag_handler_ ) : ptr_lat(lat), ptr_tag_handler(ptr_tag_handler_) {
 
-            ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix, NU1>>(lat, ptr_tag_handler);
+            ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix>>(lat, ptr_tag_handler);
 
             // Fermion
             fer_create_up_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Create, Spin::Up);
@@ -463,7 +467,7 @@ namespace prebo {
                         // Operator 7:  c+_down c_up
                         //
                         transition_op.resize(0);
-                        // c+_down F c_up
+                        // c+_down c_up
                         SymOp_temp.clear();
                         SymOp_temp.push_back(SymbolicOperator(mu, OpType::Create, i, Spin::Down));
                         SymOp_temp.push_back(SymbolicOperator(mu, OpType::Annihilate, i, Spin::Up));
@@ -620,8 +624,7 @@ namespace prebo {
                     transition_ops2.at(it).second = JW.getSymOpStr();
                 }
             }
-            symbolic_terms transition_ops_res = multiply(transition_ops1,
-                                                                                                           transition_ops2);
+            symbolic_terms transition_ops_res = multiply(transition_ops1, transition_ops2);
             if (i==j) {
                 for (size_t it=0; it < transition_ops_res.size(); it++) {
                     JW = SymbolicJordanWigner(transition_ops_res.at(it).second);
@@ -633,6 +636,9 @@ namespace prebo {
         }
 
         auto generate_termsTransitionOp(const int& i, const int& mu, const int& which) -> terms_type {
+
+            // Orbital ordering is handled here:
+            mu = NBodyTerm::retrieve_abs_index(mu, i, vec_orbitals, inv_order);
 
             terms_type res;
 
@@ -667,6 +673,10 @@ namespace prebo {
         auto generate_termsTransitionOp(const int& i, const int& j, const int& mu, const int& nu, const int& which1,
                                         const int& which2) -> terms_type {
 
+            // Orbital ordering is handled here:
+            mu = NBodyTerm::retrieve_abs_index(mu, i, vec_orbitals, inv_order);
+            nu = NBodyTerm::retrieve_abs_index(nu, j, vec_orbitals, inv_order);
+
             terms_type res;
 
             symbolic_terms transition_ops =
@@ -695,7 +705,7 @@ namespace prebo {
         // Getter Methods
         //
     public:
-        const std::shared_ptr<TagGenerator<Matrix, NU1>> &getTagContainer() const {
+        const std::shared_ptr<TagGenerator<Matrix>> &getTagContainer() const {
             return ptr_tag_container;
         }
         const std::vector<Index<NU1>> &getPhysIndexes() const {

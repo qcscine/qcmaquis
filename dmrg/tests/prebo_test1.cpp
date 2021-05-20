@@ -181,11 +181,18 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
         {{0,3,0,3,0,3,0,3},0.2196551979193185}};
 
 
+    std::vector<std::vector<std::vector<double>>> RDM
+    {{{1.13103300179178,-2.52211470905664e-08,-0.0947313411126442,-9.1603632625322e-09},
+    {-2.52211470905664e-08,0.855019531445115,3.53874389777801e-08,-0.0716856100438375},
+    {-0.0947313411126442,3.53874389777801e-08,0.00793626405671728,-2.03230542773261e-09},
+    {-9.1603632625322e-09,-0.0716856100438375,-2.03230542773261e-09,0.00601120270638985}}};
+
 
     p.set("integrals_binary", maquis::serialize(integrals));
     p.set("L", 4);
     p.set("LATTICE", "preBO lattice");
     p.set("MODEL", "PreBO");
+    p.set("max_bond_dimension", 1000);
 
     p.set("PreBO_NumParticles",              2     );
     p.set("PreBO_NumParticleTypes",          1     );
@@ -193,7 +200,6 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     p.set("PreBO_FermionOrBosonVector",      "1"   );
     p.set("PreBO_OrbitalVector",             "4"   );
     p.set("PreBO_InitialStateVector",        "1 1" );
-    p.set("PreBO_MaxBondDimVector",        "1000 500" );
 
     p.set("nsweeps",4);
     //p.set("max_bond_dimension",1000);
@@ -221,28 +227,12 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
 
         //// test 1-RDM
         const typename maquis::DMRGInterface<double>::meas_with_results_type& meas1 = interface.onerdm();
-        //double value = 0.0;
-
-        //// we don't have a map for the measurements yet, so we'll do it the stupid way
-        //for (int i = 0; i < meas1.first.size(); i++)
-        //    if ((meas1.first[i] == std::vector<int>{0,0}) || (meas1.first[i] == std::vector<int>{1,1}))
-        //        value += meas1.second[i];
-        //BOOST_CHECK_CLOSE(value, 2.0 , 1e-7);
-
-
-        //// test 2-RDM
-        //const typename maquis::DMRGInterface<double>::meas_with_results_type& meas2 = interface.twordm();
-
-        //value = 0.0;
-
-        //for (int i = 0; i < meas2.first.size(); i++)
-        //    if (meas2.first[i] == std::vector<int>{0,0,0,0})
-        //    {
-        //        value = meas2.second[i];
-        //        break;
-        //    }
-
-        //BOOST_CHECK_CLOSE(value, 1.1796482258 , 1e-7);
+        for (auto i=0; i<meas1.first.size(); ++i) {
+            auto ref = RDM[meas1.first[i][0]][meas1.first[i][1]][meas1.first[i][2]];
+            auto val = meas1.second[i];
+            auto diff = ref-val;
+            BOOST_TEST(diff == 0.0, boost::test_tools::tolerance(1.0E-5));
+        }
     }
 
 

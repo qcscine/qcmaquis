@@ -91,7 +91,7 @@ private:
     BaseParameters& parms;
     std::vector<Index<NU1>> phys_indexes;
     std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
-    std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator;
+    std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
 public:
     // +----------------+
     //  Main constructor
@@ -125,7 +125,7 @@ public:
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
 
         std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
-        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix, NU1>>(ptr_lat, ptr_tag_handler);
+        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix>>(ptr_lat, ptr_tag_handler);
         phys_indexes = ptr_term_generator->getPhysIndexes();
 
     } // Main constructor
@@ -140,7 +140,7 @@ public:
      */
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
-        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double, NU1>(parms, lat);
+        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double> > integrals = prebo::detail::parse_integrals<double>(parms, lat);
         this->terms_ = ptr_term_generator->generate_Hamiltonian(integrals);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
@@ -252,7 +252,7 @@ public:
             // 1-RDM and transition-1RDM
             if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
                 name = "1ParticleRDM";
-                meas.push_back( new measurements::PreBOParticleRDM<Matrix, NU1>(parms, lat, identities, fillings, ptr_term_generator));
+                meas.push_back( new measurements::PreBOParticleRDM<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
             }
         }
 

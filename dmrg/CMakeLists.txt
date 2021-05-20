@@ -183,17 +183,18 @@ endforeach(SYMM)
 
 ##### Dependencies #####
 # Eigen
-find_package(Eigen3 3.2 NO_MODULE)
-if (NOT TARGET Eigen3::Eigen)
-    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-endif(NOT TARGET Eigen3::Eigen)
-if (TARGET Eigen3::Eigen)
-    include_directories(${EIGEN3_INCLUDE_DIR})
-    MESSAGE(STATUS "EIGEN include path: " ${EIGEN3_INCLUDE_DIR})
-else(TARGET Eigen3::Eigen)
-    message(FATAL_ERROR "Eigen3 not found! Required for compilation of QCMaquis.")
-endif (TARGET Eigen3::Eigen)
-
+if(DMRG_HAS_NU1)
+    find_package(Eigen3 3.2 NO_MODULE)
+    if (NOT TARGET Eigen3::Eigen)
+        find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+    endif(NOT TARGET Eigen3::Eigen)
+    if (TARGET Eigen3::Eigen)
+        include_directories(${EIGEN3_INCLUDE_DIR})
+        MESSAGE(STATUS "EIGEN include path: " ${EIGEN3_INCLUDE_DIR})
+    else(TARGET Eigen3::Eigen)
+        message(FATAL_ERROR "Eigen3 not found! Required for compilation of QCMaquis.")
+    endif (TARGET Eigen3::Eigen)
+endif()
 
 # GSL
 # find GNU Scientific Library if using SU2 Groups

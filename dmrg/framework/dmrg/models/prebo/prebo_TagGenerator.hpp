@@ -47,7 +47,7 @@ namespace prebo {
  * @tparam Matrix
  * @tparam NU1
  */
-    template<class Matrix, class NU1>
+    template<class Matrix>
     class TagGenerator {
         // Types definition
         typedef model_impl<Matrix, NU1> base;

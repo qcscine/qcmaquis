@@ -42,10 +42,11 @@
 
 namespace measurements {
 
-    template <class Matrix, class NU1, class = void>
+    template <class Matrix>
     class PreBOParticleRDM : public measurement<Matrix, NU1> {
         typedef typename generate_mpo::OperatorTagTerm<Matrix, NU1>::tag_type tag_type;
         typedef std::vector<tag_type> tag_vec;
+        typedef measurement<Matrix, NU1> base;
 
     public:
         /**
@@ -57,7 +58,7 @@ namespace measurements {
          * @param ptr_term_generator_
          */
         PreBOParticleRDM(BaseParameters& parms, Lattice const& lat_, const tag_vec& identities, const tag_vec& fillings,
-                         std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator_) : parms(parms),
+                         std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator_) : base("oneptdm"), parms(parms),
                          lat(lat_), identities(identities), fillings(fillings), ptr_term_generator(ptr_term_generator_) {
 
         }
@@ -70,6 +71,13 @@ namespace measurements {
          * @param rmps
          */
         void evaluate(MPS<Matrix, NU1> const& ket_mps, boost::optional<reduced_mps<Matrix, NU1> const&> rmps = boost::none) {
+
+            this->vector_results.clear();
+            this->labels.clear();
+            this->labels_num.clear();
+            std::vector<typename MPS<Matrix, NU1>::scalar_type> dct;
+            std::vector<std::vector<Lattice::pos_t>> num_labels;
+
             auto vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
             auto isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
             auto inv_order = lat.template get_prop<std::vector<Lattice::pos_t>>("inv_order");
@@ -85,8 +93,25 @@ namespace measurements {
                         rdm(mu, nu) = maquis::real(expval(ket_mps, mpoc));
                         if (nu != mu)
                             rdm(nu, mu) = rdm(mu, nu);
+                        // Experimental:
+                        num_labels.push_back({nt, mu, nu});
+                        dct.push_back(rdm(mu,nu));
                     }
                 }
+                // EXPERIMENTAL BEGIN
+                std::vector<std::string> lbt = label_strings(num_labels);
+                // save results and labels
+                {
+                    this->vector_results.reserve(this->vector_results.size() + dct.size());
+                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                    this->labels.reserve(this->labels.size() + dct.size());
+                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+
+                    this->labels_num.reserve(this->labels_num.size() + dct.size());
+                    std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
+                }
+                // EXPERIMENTAL END
                 std::cout << std::endl;
                 std::cout << "The one-body RDM is" << std::endl;
                 std::cout << rdm << std::endl;
@@ -103,6 +128,8 @@ namespace measurements {
                     file.close();
                 }
             }
+
+
         }
 
     protected:
@@ -115,7 +142,7 @@ namespace measurements {
         BaseParameters& parms;
         const Lattice& lat;
         tag_vec identities, fillings;
-        std::shared_ptr<prebo::TermGenerator<Matrix, NU1>> ptr_term_generator;
+        std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
     };
 }
 

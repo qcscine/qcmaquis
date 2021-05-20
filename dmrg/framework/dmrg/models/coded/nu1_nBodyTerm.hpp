@@ -274,7 +274,7 @@ private:
      * the orbital on the lattice. If the lattice is permuted the function takes
      * care of it.
      */
-    pos_t retrieve_abs_index(pos_t rel_orb_index, part_type type) {
+    pos_t retrieve_abs_index(const pos_t& rel_orb_index, const part_type& type) {
         pos_t abs_index = 0;
         for (size_t i = 0; i < type; i++) {
             abs_index += m_vec_orbitals[i];
@@ -282,6 +282,19 @@ private:
         abs_index += rel_orb_index;
         return m_inv_order[abs_index];
     }
+
+public:
+    static pos_t retrieve_abs_index(const pos_t& rel_orb_index, const part_type& type, const std::vector<int>& vec_orbitals,
+                                    const std::vector<pos_t>& inv_order) {
+        pos_t abs_index = 0;
+        for (size_t i = 0; i < type; i++) {
+            abs_index += vec_orbitals[i];
+        }
+        abs_index += rel_orb_index;
+        return inv_order[abs_index];
+    }
+
+
 };
 
 #endif // MAQUIS_DMRG_NU1_NBODYTERM_HPP

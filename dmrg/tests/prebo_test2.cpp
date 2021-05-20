@@ -225,6 +225,13 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
         {{1,2,1,2,1,2,1,1,},-0.01007161628234169},
         {{1,2,1,2,1,2,1,2,},0.5198660835489574}};
 
+    std::vector<std::vector<std::vector<double>>> RDM
+        {{{1.99573945023016,1.43856629964743e-08,0.0221270842938037},
+          {1.43856629964743e-08,1.99604905944069,-7.79043413373172e-07},
+          {0.0221270842938037,-7.79043413373172e-07,0.00821149032915387}},
+         {{0.999432938356942,-0.017827548471778,0.0017674307810403},
+          {-0.017827548471778,0.000563794660918822,-3.73478115008736e-05},
+          {0.0017674307810403,-3.73478115008736e-05,3.26698214054768e-06}}};
 
     p.set("integrals_binary", maquis::serialize(integrals));
     p.set("L", 6);
@@ -239,14 +246,18 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
     p.set("PreBO_OrbitalVector",             "3 3"   );
     p.set("PreBO_InitialStateVector",        "2 2 1 0" );
     p.set("orbital_order", "'1,2,0,4,3,5'");
+    p.set("PreBO_MaxBondDimVector",        "1000 500" );
 
-    p.set("nsweeps",4);
+    p.set("nsweeps",6);
     p.set("max_bond_dimension",1000);
     p.set("symmetry", "nu1");
 
     std::vector<std::string> optimizer;
     optimizer.push_back("singlesite");
     optimizer.push_back("twosite");
+
+    // Measure RDMs
+    p.set("MEASURE[1rdm]","1");
 
     for (auto&& o: optimizer)
     {
@@ -260,30 +271,16 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
         // test energy
         BOOST_CHECK_CLOSE(interface.energy(), -5.66634284989398, 1e-7);
 
-        //// test 1-RDM
+        // test 1-RDM
+        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas1 = interface.onerdm();
         //const typename maquis::DMRGInterface<double>::meas_with_results_type& meas1 = interface.onerdm();
         //double value = 0.0;
-
-        //// we don't have a map for the measurements yet, so we'll do it the stupid way
-        //for (int i = 0; i < meas1.first.size(); i++)
-        //    if ((meas1.first[i] == std::vector<int>{0,0}) || (meas1.first[i] == std::vector<int>{1,1}))
-        //        value += meas1.second[i];
-        //BOOST_CHECK_CLOSE(value, 2.0 , 1e-7);
-
-
-        //// test 2-RDM
-        //const typename maquis::DMRGInterface<double>::meas_with_results_type& meas2 = interface.twordm();
-
-        //value = 0.0;
-
-        //for (int i = 0; i < meas2.first.size(); i++)
-        //    if (meas2.first[i] == std::vector<int>{0,0,0,0})
-        //    {
-        //        value = meas2.second[i];
-        //        break;
-        //    }
-
-        //BOOST_CHECK_CLOSE(value, 1.1796482258 , 1e-7);
+        for (auto i=0; i<meas1.first.size(); ++i) {
+            auto ref = RDM[meas1.first[i][0]][meas1.first[i][1]][meas1.first[i][2]];
+            auto val = meas1.second[i];
+            auto diff = ref-val;
+            BOOST_TEST(diff == 0.0, boost::test_tools::tolerance(1.0E-5));
+        }
     }
 
 
