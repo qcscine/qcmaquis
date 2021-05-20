@@ -19,9 +19,8 @@ namespace prebo {
      * General info: the ordering of the lattice for Hamiltonian and particle RDM is handled by the nu1_nBodyTerm class.
      * For the orbital-RDMs, it is handled here.
      *
-     * @brief This class handels the correct generation of all terms.
+     * @brief This class handles the correct generation of all terms.
      * @tparam Matrix
-     * @tparam NU1
      */
     template<class Matrix>
     class TermGenerator {
@@ -217,6 +216,9 @@ namespace prebo {
 
         } // clean_hamiltonian
 
+        /**
+         * @breif hasher for the clean hamiltonian method.
+         */
         struct term_descriptor_hasher {
             std::size_t operator()(const term_descriptor& key) const {
                 using boost::hash_combine;
@@ -238,8 +240,9 @@ namespace prebo {
 
 
         /**
-         * This method takes the symbolic operator string and populates operators and
-         * positions vector.
+         * @brief This method takes the symbolic operator string and populates operators and positions vector.
+         * --> This method is the link between the symbolic algebra routine and the terms used for the MPO
+         *     construction.
          * @param pos
          * @param ops
          * @param SymOpStr
@@ -276,9 +279,13 @@ namespace prebo {
         }
 
 
-        /**!
-         *
-         *
+        /**
+         * @brief Returns the `terms` element that contains the RDM terms for a given particle type and two sites
+         * This function relies on the symbolic algebra routine but does not expose it.
+         * @param i --> particle type
+         * @param mu --> site index
+         * @param nu --> site index
+         * @return terms
          */
         auto generate_terms1RDM(const int& i, const int& mu, const int& nu) -> terms_type {
             //
@@ -294,11 +301,12 @@ namespace prebo {
             // Assert that the particle type index is less than the number of particle
             // types and that the orbital index is less than the number of orbitals of
             // the given type
-            //for (auto const& iter : nbody_term) {
-            //    assert(iter.first < num_particle_types);
-            //    assert(iter.second < vec_orbitals.at(iter.first));
-            //}
-
+            #ifndef NDEBUG
+            for (auto const& iter : nbody_term) {
+                assert(iter.first < vec_orbitals.size());
+                assert(iter.second < vec_orbitals.at(iter.first));
+            }
+            #endif
             // The nbody term is now ready to be transformed to the second quantized
             // operators with proper symmetry and spin configurations.
             NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, inv_order);
@@ -324,6 +332,12 @@ namespace prebo {
         }
 
 
+        /**
+         * Multiplies two `symbolic_terms` and returns their product.
+         * @param lhs
+         * @param rhs
+         * @return product
+         */
         auto multiply(const symbolic_terms & lhs, const symbolic_terms & rhs) -> symbolic_terms {
             symbolic_terms res;
             res.reserve(lhs.size()*rhs.size());
@@ -341,6 +355,15 @@ namespace prebo {
         }
 
 
+        /**
+         * @brief Generates the `symbolic_terms` of the transition operator for the evaluation of the orbital-RDMs.
+         * Note 1: that there are 16 transition operators for fermions.
+         * Note 2: Bosons are not implemented, yet.
+         * @param i --> particle type
+         * @param mu --> site index
+         * @param which  --> which transition operator {1, 2, ..., 16}
+         * @return symbolic_terms
+         */
         auto generate_transitionOps(const part_type& i, const pos_t& mu, const int& which) -> symbolic_terms {
 
             symbolic_terms transition_op;
@@ -604,6 +627,17 @@ namespace prebo {
 
 
 
+        /**
+         * Generates the symbolic transition operators for the two-orbital RDM and handles the JW transformation,
+         * and the two cases for the same and different particle types.
+         * @param i
+         * @param j
+         * @param mu
+         * @param nu
+         * @param which1
+         * @param which2
+         * @return symbolic_terms
+         */
         auto generate_transitionOps(const part_type& i, const part_type& j, const pos_t& mu, const pos_t& nu, const int& which1,
                                const int& which2) -> symbolic_terms {
 
@@ -635,6 +669,15 @@ namespace prebo {
 
         }
 
+        /**
+         * @brief Generates the actual `terms` of the one-orbital RDM. Takes care of the orbital ordering.
+         * This function relies on the symbolic algebra routine but does not expose it.
+         * ATTENTION: Insert !unordered! site index. In the first step here, the ordering is taken care of.
+         * @param i --> particle type
+         * @param mu --> !unordered! site index belonging to i
+         * @param which
+         * @return terms
+         */
         auto generate_termsTransitionOp(const int& i, const int& mu, const int& which) -> terms_type {
 
             // Orbital ordering is handled here:
@@ -670,6 +713,18 @@ namespace prebo {
         }
 
 
+        /**
+         * @brief Generates the actual `terms` of the two-orbital RDM. Takes care of the orbital ordering.
+         * This function relies on the symbolic algebra routine but does not expose it.
+         * ATTENTION: Insert !unordered! site index. In the first step here, the ordering is taken care of.
+         * @param i --> particle type
+         * @param j --> particle type
+         * @param mu --> !unordered! site index belonging to i
+         * @param nu --> !unordered! site index belonging to j
+         * @param which1
+         * @param which2
+         * @return terms
+         */
         auto generate_termsTransitionOp(const int& i, const int& j, const int& mu, const int& nu, const int& which1,
                                         const int& which2) -> terms_type {
 

@@ -68,7 +68,7 @@ public:
     // +-------------+
     // | Constructor |
     // +-------------+
-    NBodyTerm(std::vector<std::pair<part_type, pos_t>> nbody_term_,
+    NBodyTerm(const std::vector<std::pair<part_type, pos_t>>& nbody_term_,
               const std::vector<bool> &isFermion_, const std::vector<int>& vec_orbitals_,
               const std::vector<pos_t> &order_) {
         m_nbody_term = nbody_term_;
@@ -269,7 +269,7 @@ private:
     // +-------------------------+
     // | Retrieve Absolute Index |
     // +-------------------------+
-    /*! \brief
+    /**
      * This method uses the type and the orbital index to retrieve the index of
      * the orbital on the lattice. If the lattice is permuted the function takes
      * care of it.
@@ -284,6 +284,16 @@ private:
     }
 
 public:
+    /**
+     * This method uses the type and the orbital index to retrieve the index of
+     * the orbital on the lattice. If the lattice is permuted the function takes
+     * care of it.
+     * @param rel_orb_index
+     * @param type
+     * @param vec_orbitals
+     * @param inv_order
+     * @return
+     */
     static pos_t retrieve_abs_index(const pos_t& rel_orb_index, const part_type& type, const std::vector<int>& vec_orbitals,
                                     const std::vector<pos_t>& inv_order) {
         pos_t abs_index = 0;

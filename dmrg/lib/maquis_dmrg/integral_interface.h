@@ -30,8 +30,11 @@
 #ifndef INTEGRAL_INTERFACE_H
 #define INTEGRAL_INTERFACE_H
 
-#include <unordered_map>
+/* internal include */
 #include "dmrg/utils/align.h"
+
+/* external include */
+#include <unordered_map>
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -45,15 +48,6 @@
 namespace chem {
 
     enum class Hamiltonian {Electronic, Vibrational, PreBO};
-
-    // // Leon: TODO:
-    // // distinguish between electronic or vibrational
-    // // This way we can merge parse_integrals_vib.h here
-
-    // // The only thing that changes in electronic vs vibrational integrals is the
-    // // number of indices in the FCIDUMP file: 4 in the electronic and 6 in the vibrational
-    // const int Electronic = 4, Vibrational = 6;
-    //
 
     constexpr int getIndexDim (const Hamiltonian& type) {
         int indexDim=0;
@@ -75,8 +69,6 @@ namespace chem {
     using index_type = std::array<int, N>;
 
     // Classes to represent integrals
-
-    //typedef std::array<int, 4> index_type;
 
     template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
     using integral_tuple = std::pair<index_type<HamiltonianType>, V>;

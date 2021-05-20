@@ -198,18 +198,6 @@ namespace generate_mpo
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
 
-        ///** @brief Method to generate an operator != from the Hamiltonian */
-        //TaggedMPOMaker(Lattice const& lat_, typename Model<Matrix, SymmGroup>::terms_type const & terms, const tag_vec& identities, const tag_vec& fillings,
-        //               std::shared_ptr<TagHandler<Matrix, SymmGroup>>& tag_handler)
-        //    : lat(lat_), length(lat.size()), tag_handler(tag_handler), prempo(length),
-        //      trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
-        //      leftmost_right(length), rightmost_left(0), finalized(false), verbose(false), core_energy(0.)
-        //{
-        //  // Apply the method add_term to each term.
-        //    for (std::size_t idx = 0; idx < terms.size(); idx++)
-        //      this->add_term(terms[idx]) ;
-        //}
-
         /** @brief Method to add a single term to the prempo object */
         void add_term(term_descriptor term)
         {

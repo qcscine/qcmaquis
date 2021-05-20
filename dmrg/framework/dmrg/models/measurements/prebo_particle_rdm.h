@@ -42,6 +42,11 @@
 
 namespace measurements {
 
+    /**
+     * @class PreBOParticleRDM
+     * @brief Implementation of the virtual base class for the calculation of the particle RDM with the pre-BO model.
+     * @tparam Matrix
+     */
     template <class Matrix>
     class PreBOParticleRDM : public measurement<Matrix, NU1> {
         typedef typename generate_mpo::OperatorTagTerm<Matrix, NU1>::tag_type tag_type;
@@ -98,7 +103,6 @@ namespace measurements {
                         dct.push_back(rdm(mu,nu));
                     }
                 }
-                // EXPERIMENTAL BEGIN
                 std::vector<std::string> lbt = label_strings(num_labels);
                 // save results and labels
                 {
@@ -111,7 +115,6 @@ namespace measurements {
                     this->labels_num.reserve(this->labels_num.size() + dct.size());
                     std::copy(num_labels.rbegin(), num_labels.rend(), std::back_inserter(this->labels_num));
                 }
-                // EXPERIMENTAL END
                 std::cout << std::endl;
                 std::cout << "The one-body RDM is" << std::endl;
                 std::cout << rdm << std::endl;

@@ -28,15 +28,15 @@
 #ifndef MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 
+
+/* internal include */
+#include "dmrg/models/model.h"
+#include "dmrg/utils/BaseParameters.h"
+#include "dmrg/models/coded/nu1_SymbolicJordanWigner.hpp"
+/* external include */
 #include <dmrg/models/lattice.h>
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/matrix.hpp>
-
-#include "dmrg/models/model.h"
-#include "dmrg/utils/BaseParameters.h"
-
-#include "dmrg/models/coded/nu1_SymbolicJordanWigner.hpp"
-
 #include <map>
 
 namespace prebo {
@@ -45,7 +45,6 @@ namespace prebo {
  * @class TagGenerator nu1_tag_generation.hpp
  * @brief This class handels the correct generation of fermionic and bosonic tags.
  * @tparam Matrix
- * @tparam NU1
  */
     template<class Matrix>
     class TagGenerator {

@@ -135,7 +135,7 @@ public:
     // | METHODS |
     // +=========+
     //
-    /**!
+    /**
      * Create Hamiltonian terms
      */
     void create_terms() {
@@ -222,7 +222,6 @@ public:
     }
 
     void update(BaseParameters const& p) {
-        // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
     }
     //
@@ -255,7 +254,6 @@ public:
                 meas.push_back( new measurements::PreBOParticleRDM<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
             }
         }
-
         return meas;
     }
 };
