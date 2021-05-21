@@ -86,7 +86,7 @@ namespace measurements {
             auto inv_order = lat.template get_prop<std::vector<Lattice::pos_t>>("inv_order");
             for (int nt=0; nt<vec_orbitals.size(); ++nt) {
                 size_t dim = vec_orbitals.at(nt);
-                alps::numeric::matrix<double> rdm = alps::numeric::matrix<double>(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
+                Matrix rdm(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
                 for (int mu = 0; mu < dim; mu++) {
                     for (int nu = 0; nu <= mu; nu++) {
                         auto terms = ptr_term_generator->generate_terms1RDM(nt, mu, nu);
@@ -116,7 +116,7 @@ namespace measurements {
                 std::cout << "The one-body RDM is" << std::endl;
                 std::cout << rdm << std::endl;
                 std::cout << std::endl;
-                alps::numeric::matrix<double> evecs(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
+                Matrix evecs(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
                 alps::numeric::vector<double> evals(vec_orbitals.at(nt), 0.0);
                 alps::numeric::syev(rdm, evecs, evals);
                 std::cout << "The eigenvalues of the one-body RDM are:" << std::endl << evals << std::endl;
