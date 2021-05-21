@@ -249,7 +249,6 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
     p.set("orbital_order", "'1,2,0,4,3,5'");
     p.set("PreBO_MaxBondDimVector",        "1000 500" );
     p.set("nsweeps",6);
-    p.set("max_bond_dimension",1000);
     p.set("symmetry", "nu1");
 
     std::vector<std::string> optimizer;
@@ -279,8 +278,6 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
             auto ref = RDM[meas1.first[i][0]][meas1.first[i][1]][meas1.first[i][2]];
             auto val = meas1.second[i];
             auto diff = ref-val;
-            std::cout << "ref = " << ref << "\t" << "val =" << val << std::endl;
-            std::cout << "index: " << meas1.first[i][0] << " " << meas1.first[i][1] << " " << meas1.first[i][2] << std::endl;
             BOOST_TEST(diff == 0.0, boost::test_tools::tolerance(1.0E-5));
         }
     }

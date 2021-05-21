@@ -29,7 +29,6 @@
 
 
 /* internal */
-//#include "dmrg/block_matrix/symmetry/nu1.h"
 #include "dmrg/models/measurement.h"
 #include "dmrg/utils/checks.h"
 #include "measurements_details.h"
@@ -37,8 +36,7 @@
 #include "dmrg/models/coded/models_nu1.hpp"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 /* external */
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
+#include <alps/numeric/matrix/algorithms.hpp>
 
 namespace measurements {
 
@@ -88,7 +86,7 @@ namespace measurements {
             auto inv_order = lat.template get_prop<std::vector<Lattice::pos_t>>("inv_order");
             for (int nt=0; nt<vec_orbitals.size(); ++nt) {
                 size_t dim = vec_orbitals.at(nt);
-                Eigen::MatrixXd rdm = Eigen::MatrixXd::Zero(vec_orbitals.at(nt), vec_orbitals.at(nt));
+                alps::numeric::matrix<double> rdm = alps::numeric::matrix<double>(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
                 for (int mu = 0; mu < dim; mu++) {
                     for (int nu = 0; nu <= mu; nu++) {
                         auto terms = ptr_term_generator->generate_terms1RDM(nt, mu, nu);
@@ -98,7 +96,6 @@ namespace measurements {
                         rdm(mu, nu) = maquis::real(expval(ket_mps, mpoc));
                         if (nu != mu)
                             rdm(nu, mu) = rdm(mu, nu);
-                        // Experimental:
                         num_labels.push_back({nt, mu, nu});
                         dct.push_back(rdm(mu,nu));
                     }
@@ -119,20 +116,25 @@ namespace measurements {
                 std::cout << "The one-body RDM is" << std::endl;
                 std::cout << rdm << std::endl;
                 std::cout << std::endl;
-                Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> es(rdm);
-                std::cout << "The eigenvalues of the one-body RDM are:" << std::endl << es.eigenvalues() << std::endl;
-                std::cout << "The trace is:      " << rdm.trace() << std::endl;
+                alps::numeric::matrix<double> evecs(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
+                alps::numeric::vector<double> evals(vec_orbitals.at(nt), 0.0);
+                alps::numeric::syev(rdm, evecs, evals);
+                std::cout << "The eigenvalues of the one-body RDM are:" << std::endl << evals << std::endl;
+                std::cout << "The trace is:      " << alps::numeric::trace(rdm) << std::endl;
                 std::cout << "The norm is:    " << norm(ket_mps) << std::endl;
                 if (parms.is_set("rdmfile")) {
+                    std::string fname= parms["rdmfile"].str() + "_" + std::to_string(nt) + ".csv";
                     std::cout << "Writing 1-body rdm on disk ... " << std::endl;
-                    std::ofstream file(parms["rdmfile"].c_str());
-                    const static Eigen::IOFormat CSVFormat(Eigen::FullPrecision, Eigen::DontAlignCols, ",", "\n");
-                    file << rdm.format(CSVFormat);
+                    std::ofstream file(fname);
+                    for (auto row=0; row<vec_orbitals.at(nt); ++row) {
+                        for (auto col=0; col<vec_orbitals.at(nt); ++col) {
+                            file << rdm(row,col) << ",";
+                        }
+                        file << "\n";
+                    }
                     file.close();
                 }
             }
-
-
         }
 
     protected:

@@ -247,7 +247,6 @@ public:
 
         for (auto&& it: parms.get_range()) {
             std::string lhs = it.first;
-            std::string name;
             // 1-RDM and transition-1RDM
             if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
                 meas.push_back( new measurements::PreBOParticleRDM<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
