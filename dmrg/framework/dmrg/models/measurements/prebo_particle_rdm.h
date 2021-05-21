@@ -112,14 +112,20 @@ namespace measurements {
                     this->labels_num.reserve(this->labels_num.size() + dct.size());
                     std::copy(num_labels.begin(), num_labels.end(), std::back_inserter(this->labels_num));
                 }
-                std::cout << std::endl;
-                std::cout << "The one-body RDM is" << std::endl;
-                std::cout << rdm << std::endl;
-                std::cout << std::endl;
+
+                #ifndef NDEBUG
+                    std::cout << std::endl;
+                    std::cout << "The one-body RDM is" << std::endl;
+                    std::cout << rdm << std::endl;
+                    std::cout << std::endl;
+                #endif
                 Matrix evecs(vec_orbitals.at(nt), vec_orbitals.at(nt), 0.0);
                 alps::numeric::vector<double> evals(vec_orbitals.at(nt), 0.0);
                 alps::numeric::syev(rdm, evecs, evals);
-                std::cout << "The eigenvalues of the one-body RDM are:" << std::endl << evals << std::endl;
+                std::cout << "Eigenvalues of one-body RDM of type " << nt << " are:" << std::endl;
+                for (auto i=0; i< vec_orbitals.at(nt); ++i) {
+                    std::cout << std::setw(16) << evals(i) << std::endl;
+                }
                 std::cout << "The trace is:      " << alps::numeric::trace(rdm) << std::endl;
                 std::cout << "The norm is:    " << norm(ket_mps) << std::endl;
                 if (parms.is_set("rdmfile")) {
