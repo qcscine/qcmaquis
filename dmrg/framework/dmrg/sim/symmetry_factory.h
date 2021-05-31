@@ -107,8 +107,9 @@ namespace dmrg {
         if (symm_name == "") // dummy if in case all ifdefs are false (unlikely)
         {}
 #ifdef HAVE_NU1
-        else if (symm_name == "nu1")
+        else if (symm_name == "nu1") {
             ret.reset(new typename TR::template F<NU1>::type(args...));
+        }
 #endif
 #ifdef HAVE_TrivialGroup
         else if (symm_name == "none")

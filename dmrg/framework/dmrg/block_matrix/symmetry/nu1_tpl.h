@@ -43,7 +43,7 @@
 // =================
 // Identifies a quantum number for the NU1 symmetry point group,
 // which is defined in the following.
-// The NU1Charge is basically a vector of type S (defaul is integer)
+// The NU1Charge is basically a vector of type S (default is integer)
 // of N elements, where N is set in the CMake file. The i-th element
 // of the vector corresponds to the number of particles in the sites
 // of type i
