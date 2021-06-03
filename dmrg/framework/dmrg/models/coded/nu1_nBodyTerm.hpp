@@ -182,7 +182,6 @@ private:
                 for (size_t i = 0; i < temp_nbody.size(); i++) {
                     orb_index = temp_nbody[i].second;
                     abs_index = retrieve_abs_index(orb_index, nt);
-                    // create
                     if (i < length / 2) {
                         SymbolicOperator tempOp(abs_index, OpType::Create, nt,
                                                 spin_config.at(i));

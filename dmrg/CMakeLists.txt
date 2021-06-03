@@ -180,6 +180,9 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
+if((BUILD_PREBO) AND (NOT DMRG_HAS_NU1))
+    message(FATAL_ERROR "For pre-BO module, activate NU1 symmetry!")
+endif()
 
 ##### Dependencies #####
 # GSL
@@ -364,6 +367,7 @@ if(QCMAQUIS_TESTS)
   if(BUILD_PREBO)
     add_test(NAME PreBO_Test1 COMMAND prebo_test1)
     add_test(NAME PreBO_Test2 COMMAND prebo_test2)
+    add_test(NAME PreBO_Test_Model COMMAND prebo_test_model)
   endif(BUILD_PREBO)
   add_test(NAME Test_Relativistic COMMAND test_rel)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)

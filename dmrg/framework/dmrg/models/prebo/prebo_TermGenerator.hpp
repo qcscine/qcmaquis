@@ -672,16 +672,13 @@ namespace prebo {
         /**
          * @brief Generates the actual `terms` of the one-orbital RDM. Takes care of the orbital ordering.
          * This function relies on the symbolic algebra routine but does not expose it.
-         * ATTENTION: Insert !unordered! site index. In the first step here, the ordering is taken care of.
+         * ATTENTION: Insert already ordered site index!!
          * @param i --> particle type
          * @param mu --> !unordered! site index belonging to i
          * @param which
          * @return terms
          */
         auto generate_termsTransitionOp(const int& i, const int& mu, const int& which) -> terms_type {
-
-            // Orbital ordering is handled here:
-            mu = NBodyTerm::retrieve_abs_index(mu, i, vec_orbitals, inv_order);
 
             terms_type res;
 
@@ -699,13 +696,15 @@ namespace prebo {
                 operators_type ops;
                 Symbols2Tag(pos, ops, transOp.second);
                 value_type scaling = transOp.first;
-                std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, ptr_tag_handler);
+                std::pair<term_descriptor, bool> ret = modelHelper<Matrix, NU1>::arrange_operators(pos, ops, scaling, ptr_tag_handler);
                 if (!ret.second) {
                     auto term = ret.first;
                     term.coeff = scaling;
                     res.push_back(term);
                     if (this->verbose) {
                         std::cout << term << std::endl;
+                        for (int i=0; i<term.size(); ++i)
+                            std::cout << ptr_tag_handler->get_op(term.operator_tag(i)) << std::endl;
                     }
                 }
             }
@@ -716,7 +715,7 @@ namespace prebo {
         /**
          * @brief Generates the actual `terms` of the two-orbital RDM. Takes care of the orbital ordering.
          * This function relies on the symbolic algebra routine but does not expose it.
-         * ATTENTION: Insert !unordered! site index. In the first step here, the ordering is taken care of.
+         * ATTENTION: Insert already ordered site index!!
          * @param i --> particle type
          * @param j --> particle type
          * @param mu --> !unordered! site index belonging to i
@@ -728,10 +727,6 @@ namespace prebo {
         auto generate_termsTransitionOp(const int& i, const int& j, const int& mu, const int& nu, const int& which1,
                                         const int& which2) -> terms_type {
 
-            // Orbital ordering is handled here:
-            mu = NBodyTerm::retrieve_abs_index(mu, i, vec_orbitals, inv_order);
-            nu = NBodyTerm::retrieve_abs_index(nu, j, vec_orbitals, inv_order);
-
             terms_type res;
 
             symbolic_terms transition_ops =
@@ -742,7 +737,7 @@ namespace prebo {
                 operators_type ops;
                 Symbols2Tag(pos, ops, transOp.second);
                 value_type scaling = transOp.first;
-                std::pair<term_descriptor, bool> ret = arrange_operators(pos, ops, scaling, ptr_tag_handler);
+                std::pair<term_descriptor, bool> ret = modelHelper<Matrix, NU1>::arrange_operators(pos, ops, scaling, ptr_tag_handler);
                 if (!ret.second) {
                     auto term = ret.first;
                     term.coeff = scaling;

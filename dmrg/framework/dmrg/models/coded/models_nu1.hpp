@@ -36,6 +36,7 @@
 #include "../prebo/prebo_parse_integrals.h"
 #include "../model_helper.hpp"
 #include "../measurements/prebo_particle_rdm.h"
+#include "../measurements/prebo_mutual_information.h"
 /* external includes */
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
@@ -243,6 +244,7 @@ public:
         }
 
         std::regex expression_1ParticleRDM("^MEASURE\\[1rdm\\]");
+        std::regex expression_MutualInformation("^MEASURE\\[mutinf\\]");
         std::smatch what;
 
         for (auto&& it: parms.get_range()) {
@@ -250,6 +252,9 @@ public:
             // 1-RDM and transition-1RDM
             if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
                 meas.push_back( new measurements::PreBOParticleRDM<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
+            }
+            if (std::regex_match(lhs, what, expression_MutualInformation)) {
+                meas.push_back( new measurements::PreBOMutualInformation<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
             }
         }
         return meas;

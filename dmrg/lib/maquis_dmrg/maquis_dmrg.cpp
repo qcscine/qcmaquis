@@ -141,6 +141,12 @@ namespace maquis
         return measurements_;
     };
 
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::mutinf()
+    {
+        return measurements().at("mutinf");
+    }
+
     // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
     // Fix the model to recognise it!
     template <class V, Hamiltonian HamiltonianType>

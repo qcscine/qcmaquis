@@ -259,6 +259,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
     p.set("init_state", "const");
     // Measure RDMs
     p.set("MEASURE[1rdm]","1");
+    p.set("MEASURE[mutinf]","1");
 
     for (auto&& o: optimizer)
     {
@@ -280,6 +281,12 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
             auto diff = ref-val;
             BOOST_TEST(diff == 0.0, boost::test_tools::tolerance(1.0E-5));
         }
+
+        const typename maquis::DMRGInterface<double>::meas_with_results_type& meas2 = interface.mutinf();
+        for (auto i=0; i<meas2.first.size(); ++i) {
+            std::cout << meas2.first[i][0] << "-" << meas2.first[i][1] << "\t" << meas2.second[i] << std::endl;
+        }
+
     }
 
 

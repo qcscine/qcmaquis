@@ -81,6 +81,7 @@ namespace maquis
             // Get RDMs
             // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
             // Fix the model to recognise it!
+            const meas_with_results_type & mutinf();
             const meas_with_results_type & onerdm();
             const meas_with_results_type & onespdm();
             const meas_with_results_type & twordm();

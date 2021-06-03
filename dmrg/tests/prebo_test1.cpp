@@ -213,6 +213,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     p.set("init_state", "const");
     // Measure RDMs
     p.set("MEASURE[1rdm]","1");
+    p.set("MEASURE[mutinf]","1");
 
     for (auto&& o: optimizer)
     {
