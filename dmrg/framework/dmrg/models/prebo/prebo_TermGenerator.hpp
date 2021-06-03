@@ -1,6 +1,29 @@
-//
-// Created by robin on 18.05.21.
-//
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
+ *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
+ *               2021- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
+ *
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 #ifndef MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
@@ -38,20 +61,15 @@ namespace prebo {
         typedef typename std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> symbolic_terms;
 
     private:
-        bool verbose=false;
-
+        bool verbose_, termVerbose_=false;
         std::vector<bool> isFermion;
         std::vector<int>  vec_orbitals;
         std::vector<int>  vec_fer_bos;
         std::vector<pos_t>  inv_order;
-
         std::shared_ptr<Lattice> ptr_lat;
         std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
     private:
-
         std::shared_ptr<prebo::TagGenerator<Matrix>> ptr_tag_container;
-
-
         std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
                 fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag;
         std::vector<Index<NU1>> phys_indexes;
@@ -66,8 +84,9 @@ namespace prebo {
          * @param lat
          * @param ptr_tag_handler_
          */
-        TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &ptr_tag_handler_ ) : ptr_lat(lat), ptr_tag_handler(ptr_tag_handler_) {
-
+        TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &ptr_tag_handler_, bool verbose) 
+            : ptr_lat(lat), ptr_tag_handler(ptr_tag_handler_), verbose_(verbose)
+        {
             ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix>>(lat, ptr_tag_handler);
 
             // Fermion
@@ -96,10 +115,15 @@ namespace prebo {
          * @param integrals
          * @return
          */
-        auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>>& integrals) -> terms_type {
+        auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>>& integrals,
+                                  bool verbose=true) -> terms_type 
+        {
             terms_type hamiltonian;
-            std::cout << "======================================================" << std::endl;
-            std::cout << "Starting to construct the Hamiltonian..." << std::endl;
+            
+            if (verbose_) {
+                std::cout << "======================================================" << std::endl;
+                std::cout << "Starting to construct the Hamiltonian..." << std::endl;
+            }
             std::vector<std::pair<part_type, pos_t>> nbody_term;
 
             auto getTermOrder = [] (const chem::index_type<chem::Hamiltonian::PreBO>& indices) {
@@ -185,8 +209,11 @@ namespace prebo {
 
             terms_type result;
 
-            std::cout << "======================================================" << std::endl;
-            std::cout << "Cleaning the Hamiltonian..." << std::endl;
+            if (verbose_) {
+                std::cout << "======================================================" << std::endl;
+                std::cout << "Cleaning the Hamiltonian..." << std::endl;
+            }
+
             std::unordered_map<term_descriptor, value_type, term_descriptor_hasher> count_map;
 
             for (auto const& term1 : terms_temp) {
@@ -200,10 +227,12 @@ namespace prebo {
                 }
             }
 
-            std::cout << "======================================================" << std::endl;
-            std::cout << "The final size of the Hamiltonian is:" << std::endl << std::endl;
-            std::cout << count_map.size() << std::endl << std::endl;
-            std::cout << "======================================================" << std::endl;
+            if (verbose_) {
+                std::cout << "======================================================" << std::endl;
+                std::cout << "The final size of the Hamiltonian is:" << std::endl << std::endl;
+                std::cout << count_map.size() << std::endl << std::endl;
+                std::cout << "======================================================" << std::endl;
+            }
 
             result.reserve(count_map.size());
             for (const auto& iter : count_map) {
@@ -323,9 +352,8 @@ namespace prebo {
                     auto term = ret.first;
                     term.coeff = scaling;
                     res.push_back(term);
-                    if (this->verbose) {
+                    if (this->termVerbose_)
                         std::cout << term << std::endl;
-                    }
                 }
             }
             return res;
@@ -772,6 +800,7 @@ namespace prebo {
 
 
     };
-}
+
+} // namespace prebo
 
 #endif //MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
