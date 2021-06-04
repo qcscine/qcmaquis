@@ -80,6 +80,11 @@ namespace measurements {
                             double trace = 0;
                             auto site1 = NBodyTerm::retrieve_abs_index(mu, i, vec_orbitals, inv_order);
                             auto site2 = NBodyTerm::retrieve_abs_index(nu, j, vec_orbitals, inv_order);
+                            if (site2 > site1) {
+                                site1 = NBodyTerm::retrieve_abs_index(nu, j, vec_orbitals, inv_order);
+                                site2 = NBodyTerm::retrieve_abs_index(mu, i, vec_orbitals, inv_order);
+                            }
+
                             // **********
                             //   1o-RDM
                             // **********
@@ -590,7 +595,8 @@ namespace measurements {
             }
             if (parms.is_set("mutinffile")) {
                 std::string fname= parms["mutinffile"].str() + ".csv";
-                std::cout << "Writing 1-body rdm on disk ... " << std::endl;
+                std::cout << std::endl;
+                std::cout << "Writing mutual information on disk ... " << std::endl;
                 std::ofstream file(fname);
                 for (auto row=0; row<L; ++row) {
                     for (auto col=0; col<L; ++col) {
