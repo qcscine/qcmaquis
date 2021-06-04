@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#define BOOST_TEST_MODULE block_matrix
+#define BOOST_TEST_MODULE model_prebo
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/assert.hpp>
