@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
+ *               2017- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -28,7 +28,6 @@
 #ifndef MODELS_CODED_NU1_H
 #define MODELS_CODED_NU1_H
 
-/* internal includes */
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
@@ -40,68 +39,61 @@
 /* external includes */
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
-#include <boost/functional/hash.hpp>
 #include <map>
 #include <sstream>
 #include <unordered_map>
 #include <chrono>
-// ========================
-//  MODELS OF NU1 SYMMETRY
-// ========================
 
-
-// +----------------------------+
-// | PRE BORN OPPENHEIMER MODEL |
-// +----------------------------+
-// Robin Feldmann
 /**
- * @brief multicomponent DMRG calculation
+ * @brief Pre-Born Oppenheimer model class
  * @class preBO models_nu1.hpp
- * This class enables DMRG calculations with multiple indistinguishable fermionic (soon bosonic, too) particle types.
- * @tparam Matrix
+ * 
+ * This class enables DMRG calculations for Pre-Born-Oppenheimer Hamiltonians associated 
+ * with multiple indistinguishable fermionic particles.
+ * Bosonic particles will be implemented soon.
+ * 
+ * @tparam Matrix matrix type underlying the MPS definition
  */
 template<class Matrix>
 class PreBO : public model_impl<Matrix, NU1> {
     // Types definition
-    typedef model_impl<Matrix, NU1> base;
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
-    typedef typename base::tag_type tag_type;
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename std::vector<term_descriptor> terms_type;
-    typedef typename base::op_t op_t;
-    typedef typename std::vector<tag_type> operators_type;
-    typedef typename base::measurements_type measurements_type;
-    typedef typename Lattice::pos_t pos_t;                          // position on the lattice
-    typedef typename Lattice::part_type part_type;                  // unsigned integer denoting the particle type
-    typedef typename std::vector<pos_t> positions_type;
-    typedef typename Matrix::value_type value_type;
-    typedef typename NU1::charge charge_type;
-    typedef typename std::pair<std::vector<std::size_t>, value_type> H_terms_type;
+    using base = model_impl<Matrix, NU1>;
+    using table_type = typename base::table_type;
+    using table_ptr = typename base::table_ptr;
+    using tag_type = typename base::tag_type;
+    using term_descriptor = typename base::term_descriptor;
+    using op_t = typename base::op_t;
+    using measurements_type = typename base::measurements_type;
+    using pos_t = typename Lattice::pos_t;
+    using part_type = typename Lattice::part_type;
 
 private:
-    // +------------+
-    // | Attributes |
-    // +------------+
+    /** Verbosity flag */
     const bool verbose = false;
-    pos_t L;                        // Size of the DMRG lattice
-    std::size_t num_particle_types; // Number of particle types
-    std::vector<bool> isFermion;    // Fermion 1, Boson 0
-    std::vector<int> vec_ini_state; // specify the initial state of the system.
+    /** Size of the DMRG lattice */
+    pos_t L;
+    /** Overall number of particle types */
+    int num_particle_types;
+    /** Vector of size [num_particle_types] with true for fermions and false for bosons */
+    std::vector<bool> isFermion;
+    /** Symmetry sector for each U(1) charge */
+    std::vector<int> vec_ini_state;
+    /** Reference to the underlying lattice */
     const Lattice& lat;
+    /** Input parameters container */
     BaseParameters& parms;
+    /** Physical basis per particle type */
     std::vector<Index<NU1>> phys_indexes;
+    /** Tag handler */
     std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
+    /** Pointer to the term generator (helper class to generate the SQ Hamiltonian) */
     std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
 public:
     // +----------------+
     //  Main constructor
     // +----------------+
-    PreBO(const Lattice& lat_, BaseParameters& parms_)
-            : lat(lat_),
-              parms(parms_),
-              ptr_tag_handler(new table_type()),
-              phys_indexes(0)
+    PreBO(const Lattice& lat_, BaseParameters& parms_, bool verbose_=true) 
+        : lat(lat_), parms(parms_), ptr_tag_handler(new table_type()), phys_indexes(0), verbose(verbose_)
     {
         // Get only required variables from the lattice
         num_particle_types = lat.template get_prop<int>("num_particle_types");
@@ -126,47 +118,47 @@ public:
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
 
         std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
-        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix>>(ptr_lat, ptr_tag_handler);
+        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix>>(ptr_lat, ptr_tag_handler, verbose);
         phys_indexes = ptr_term_generator->getPhysIndexes();
 
-    } // Main constructor
+    }
 
-    //
-    // +=========+
-    // | METHODS |
-    // +=========+
-    //
     /**
-     * Create Hamiltonian terms
+     * @brief Hamiltonian terms creation
+     * 
+     * Note that, unlike the other classes, the term vector is *not* populated at construction level,
+     * and [create_terms] must be called externally to make terms_ get pupulated.
      */
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
-        std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>> integrals = prebo::detail::parse_integrals<double>(parms, lat);
+        auto integrals = prebo::detail::parse_integrals<double>(parms, lat);
         this->terms_ = ptr_term_generator->generate_Hamiltonian(integrals);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-        std::cout << "Construction of the Hamiltonian took "
-                  << duration.count() << " seconds" << std::endl << std::endl;
+        if (verbose)
+            std::cout << "Construction of the Hamiltonian took "
+                      << duration.count() << " seconds" << std::endl << std::endl;
     }
 
-
-    // +================+
-    // | GETTER METHODS |
-    // +================+
     /**
-     * --> called in the constructor of the MPS Tensor Network
-     * @param type
-     * @return
+     * @brief Getter for the physical (sigma) indices 
+     * Note that this method is called in the constructor of the MPS Tensor Network
      */
     Index<NU1> const& phys_dim(size_t type) const {
         return phys_indexes[type];
     }
+
     /**
-     * --> Also called in the constructor of the MPS Tensor Network
-     * The function recovers the identity or filling matrix.
-     * @param type
-     * @return
+     * @brief Getter for the QN associated with the calculation.
+     * 
+     * Returns the total quantum number associated to the Hamiltonian, i.e., the number of particles 
+     * per type and Sz value
      */
+    typename NU1::charge total_quantum_numbers(BaseParameters& parms) const {
+        return NU1::charge(vec_ini_state);
+    }
+
+    /** @brief Getter for the identity matrix tag */
     tag_type identity_matrix_tag(size_t type) const {
         auto vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
         // recover identity of the according particle type
@@ -181,23 +173,8 @@ public:
             return tag_vec[bos];
         }
     }
-    /**
-     * --> called in the constructor of the MPS Tensor Network
-     * Returns the total quantum number associated to the Hamiltonian.
-     * This means, the particle vector
-     * @param parms
-     * @return
-     */
-    typename NU1::charge total_quantum_numbers(BaseParameters& parms) const {
-        // This is important:
-        return NU1::charge(vec_ini_state);
-    }
-    /**
-     * --> Also called in the constructor of the MPS Tensor Network
-     * The function recovers the identity or filling matrix.
-     * @param type
-     * @return
-     */
+
+    /** @brief Getter for the filling matrix tag */
     tag_type filling_matrix_tag(size_t type) const {
         auto vec_fer_bos = lat.template get_prop<std::vector<int>>("vec_fer_bos");
         // recover identity of the according particle type
@@ -212,20 +189,18 @@ public:
             return tag_vec[bos];
         }
     }
-    /**
-     *
-     * @param name
-     * @param type
-     * @return
-     */
+
+    /** @brief Converts a string to an operator tag (NYI in this case ) */
     tag_type get_operator_tag(std::string const& name, size_t type) const {
         throw std::runtime_error("Operator not valid for this model.");
     }
 
+    /** @brief Update function */
     void update(BaseParameters const& p) {
         throw std::runtime_error("update() not yet implemented for this model.");
     }
-    //
+    
+    /** @brief Getter for the tag handler */
     table_ptr operators_table() const {
         return ptr_tag_handler;
     }
