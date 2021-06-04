@@ -39,8 +39,9 @@ namespace measurements {
          * @param ptr_term_generator_
          */
         PreBOMutualInformation(BaseParameters& parms, Lattice const& lat_, const tag_vec& identities, const tag_vec& fillings,
-                         std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator_) : base("mutinf"), parms(parms),
-                                                                                              lat(lat_), identities(identities), fillings(fillings), ptr_term_generator(ptr_term_generator_) {
+                         std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator_, bool verbose=true)
+                         : base("mutinf"), parms(parms), lat(lat_), identities(identities), fillings(fillings),
+                           ptr_term_generator(ptr_term_generator_), verbose_(verbose) {
 
         }
 
@@ -62,13 +63,14 @@ namespace measurements {
             auto vec_orbitals = lat.template get_prop<std::vector<int>>("vec_orbitals");
             auto isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
             auto inv_order = lat.template get_prop<std::vector<Lattice::pos_t>>("inv_order");
-
             auto L = std::accumulate(vec_orbitals.begin(), vec_orbitals.end(), 0);
             Matrix entropyTable(L, L, 0.0);
             // Loop over all sites.
-            std::cout << "\nCalulating orbital entropies:\n\n";
-            std::cout << "         i-mu         j-nu      Tr            S\n";
-            std::cout << "----------------------------------------------------------\n";
+            if (verbose_) {
+                std::cout << "\nCalulating orbital entropies:\n\n";
+                std::cout << "         i-mu         j-nu      Tr            S\n";
+                std::cout << "----------------------------------------------------------\n";
+            }
             for (size_t i=0; i<vec_orbitals.size(); i++) {
                 for (size_t j = 0; j < vec_orbitals.size(); j++) {
                     for (size_t mu = 0; mu < vec_orbitals.at(i); mu++) {
@@ -562,9 +564,11 @@ namespace measurements {
                                 // Finalize:
                                 entropyTable(site1, site2) = -entropy;
                             }
-                            std::cout << std::setw(10) << i << "-" << mu
-                                      << std::setw(10) << j << "-" << nu << std::setw(10) << trace
-                                      << std::setw(20) << entropyTable(site1, site2) << "\n";
+                            if (verbose_) {
+                                std::cout << std::setw(10) << i << "-" << mu
+                                          << std::setw(10) << j << "-" << nu << std::setw(10) << trace
+                                          << std::setw(20) << entropyTable(site1, site2) << "\n";
+                            }
                         }
                     }
                 }
@@ -619,6 +623,7 @@ namespace measurements {
         const Lattice& lat;
         tag_vec identities, fillings;
         std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
+        bool verbose_;
     };
 }
 

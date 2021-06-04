@@ -234,6 +234,15 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
           {-0.017827548471778,0.000563794660918822,-3.73478115008736e-05},
           {0.0017674307810403,-3.73478115008736e-05,3.26698214054768e-06}}};
 
+    std::vector<std::vector<double>> MutInf
+            {{    0.0183460667,    0.0013355130,    0.0149355767,    0.0007703220,    0.0007706595,    0.0000002699},
+             {    0.0013355130,    0.0142746700,    0.0128860821,    0.0000101430,    0.0000101362,    0.0000000141},
+             {    0.0149355767,    0.0128860821,    0.0299460169,    0.0007837109,    0.0007840622,    0.0000002797},
+             {    0.0007703220,    0.0000101430,    0.0007837109,    0.0048057107,    0.0036272786,    0.0000332957},
+             {    0.0007706595,    0.0000101362,    0.0007840622,    0.0036272786,    0.0047812823,    0.0000070624},
+             {    0.0000002699,    0.0000000141,    0.0000002797,    0.0000332957,    0.0000070624,    0.0000445343}};
+
+
     p.set("integrals_binary", maquis::serialize(integrals));
     p.set("L", 6);
     p.set("LATTICE", "preBO lattice");
@@ -247,6 +256,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
     p.set("PreBO_OrbitalVector",             "3 3"   );
     p.set("PreBO_InitialStateVector",        "2 2 1 0" );
     p.set("orbital_order", "'1,2,0,4,3,5'");
+    std::vector<int> order = {1,2,0,4,3,5};
     p.set("PreBO_MaxBondDimVector",        "1000 500" );
     p.set("nsweeps",6);
     p.set("symmetry", "nu1");
@@ -284,7 +294,10 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
 
         const typename maquis::DMRGInterface<double>::meas_with_results_type& meas2 = interface.mutinf();
         for (auto i=0; i<meas2.first.size(); ++i) {
-            std::cout << meas2.first[i][0] << "-" << meas2.first[i][1] << "\t" << meas2.second[i] << std::endl;
+            auto ref = MutInf[order[meas2.first[i][0]]][order[meas2.first[i][1]]];
+            auto val = meas2.second[i];
+            auto diff = ref-val;
+            BOOST_TEST(diff == 0.0, boost::test_tools::tolerance(1.0E-5));
         }
 
     }

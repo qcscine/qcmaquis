@@ -115,8 +115,8 @@ namespace prebo {
          * @param integrals
          * @return
          */
-        auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<double>>& integrals,
-                                  bool verbose=true) -> terms_type 
+        auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>,
+                                  std::vector<double>>& integrals) -> terms_type
         {
             terms_type hamiltonian;
             
@@ -729,7 +729,7 @@ namespace prebo {
                     auto term = ret.first;
                     term.coeff = scaling;
                     res.push_back(term);
-                    if (this->verbose) {
+                    if (termVerbose_) {
                         std::cout << term << std::endl;
                         for (int i=0; i<term.size(); ++i)
                             std::cout << ptr_tag_handler->get_op(term.operator_tag(i)) << std::endl;
@@ -770,7 +770,7 @@ namespace prebo {
                     auto term = ret.first;
                     term.coeff = scaling;
                     res.push_back(term);
-                    if (this->verbose) {
+                    if (termVerbose_) {
                         std::cout << term << std::endl;
                     }
                 }
