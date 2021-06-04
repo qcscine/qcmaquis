@@ -196,7 +196,7 @@ public:
         double energy;
 
         if (parms["MEASURE[Energy]"]) {
-            energy = maquis::real(expval(mps, mpoc));// + maquis::real(mpoc.getCoreEnergy());
+            energy = maquis::real(expval(mps, mpoc));
             maquis::cout << "Energy: " << energy << std::endl;
 
             if (!rfile().empty())
@@ -210,7 +210,7 @@ public:
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
             mpo2.compress(1e-12);
 
-            if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc));// + maquis::real(mpoc.getCoreEnergy());
+            if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc));
             double energy2 = maquis::real(expval(mps, mpo2, true));
 
             maquis::cout << "Energy^2: " << energy2 << std::endl;
@@ -269,7 +269,7 @@ public:
 
     typename Matrix::value_type get_energy()
     {
-        return expval(mps, mpo);// + mpo.getCoreEnergy();
+        return expval(mps, mpo);
     }
 
     void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
