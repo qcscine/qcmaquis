@@ -27,14 +27,14 @@
 #include "dmrg/models/coded/models_nu1.hpp"
 #include "dmrg/models/coded/factory.h"
 
-template<class Matrix>
-struct coded_model_factory<Matrix, NU1> {
-    static std::shared_ptr<model_impl<Matrix, NU1> > parse
+template<class Matrix, int N>
+struct coded_model_factory<Matrix, NU1_template<N>> {
+    static std::shared_ptr<model_impl<Matrix, NU1_template<N>> > parse
             (Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, NU1> > impl_ptr;
+        typedef std::shared_ptr<model_impl<Matrix, NU1_template<N>> > impl_ptr;
         if (parms["MODEL"] == std::string("PreBO"))
-            return impl_ptr( new PreBO<Matrix>(lattice, parms) );
+            return impl_ptr( new PreBO<Matrix, N>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();

@@ -38,7 +38,7 @@
 #endif
 
 // init MACROS
-#define impl_model_factory(MATRIX,SYMMGROUP)                                            \
+#define impl_model_factory(MATRIX,SYMMGROUP)                                          \
 template std::shared_ptr<model_impl<MATRIX, SYMMGROUP> >                              \
 model_factory<MATRIX,SYMMGROUP>(Lattice const&, BaseParameters &);
 

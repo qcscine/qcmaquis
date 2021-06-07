@@ -36,31 +36,32 @@
 #include "integral_interface.h"
 
 namespace prebo {
-
     /**
      * @class TermGenerator prebo_TermGenerator.hpp
      * General info: the ordering of the lattice for Hamiltonian and particle RDM is handled by the nu1_nBodyTerm class.
      * For the orbital-RDMs, it is handled here.
      *
      * @brief This class handles the correct generation of all terms.
-     * @tparam Matrix
+     * @tparam Matrix numeric matrix type
+     * @tparam N integer associated with the NU1 symmetry class
      */
-    template<class Matrix>
+    template<class Matrix, int N>
     class TermGenerator {
         // Types definition
-        typedef model_impl<Matrix, NU1> base;
-        typedef typename base::tag_type tag_type;
-        typedef typename base::term_descriptor term_descriptor;
-        typedef typename std::vector<term_descriptor> terms_type;
-        typedef typename std::vector<tag_type> operators_type;
-        typedef typename Lattice::pos_t pos_t;                          // position on the ptr_lattice
-        typedef typename Lattice::part_type part_type;                  // unsigned integer denoting the particle type
-        typedef typename std::vector<pos_t> positions_type;
-        typedef typename Matrix::value_type value_type;
-
-        typedef typename std::vector<std::pair<value_type, std::vector<SymbolicOperator>>> symbolic_terms;
+        using NU1 = NU1_template<N>;
+        using base = model_impl<Matrix, NU1>;
+        using tag_type = typename base::tag_type;
+        using term_descriptor = typename base::term_descriptor;
+        using terms_type = typename std::vector<term_descriptor>;
+        using operators_type = typename std::vector<tag_type>;
+        using pos_t = typename Lattice::pos_t;
+        using part_type = typename Lattice::part_type;
+        using positions_type = typename std::vector<pos_t>;
+        using value_type = typename Matrix::value_type;
+        using symbolic_terms = typename std::vector<std::pair<value_type, std::vector<SymbolicOperator>>>;
 
     private:
+        // Class members
         bool verbose_, termVerbose_=false;
         std::vector<bool> isFermion;
         std::vector<int>  vec_orbitals;
@@ -68,14 +69,16 @@ namespace prebo {
         std::vector<pos_t>  inv_order;
         std::shared_ptr<Lattice> ptr_lat;
         std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
+
     private:
-        std::shared_ptr<prebo::TagGenerator<Matrix>> ptr_tag_container;
+        std::shared_ptr<prebo::TagGenerator<Matrix, N>> ptr_tag_container;
         std::vector<tag_type> fer_ident_tag, fer_filling_tag, fer_create_up_tag, fer_create_down_tag, fer_dest_up_tag,
                 fer_dest_down_tag, bos_ident_tag, bos_create_tag, bos_dest_tag;
         std::vector<Index<NU1>> phys_indexes;
 
     public:
 
+        /** @brief Default constructor */
         TermGenerator() = default;
 
         /**
@@ -87,7 +90,7 @@ namespace prebo {
         TermGenerator(std::shared_ptr<Lattice> &lat, std::shared_ptr<TagHandler<Matrix, NU1>> &ptr_tag_handler_, bool verbose) 
             : ptr_lat(lat), ptr_tag_handler(ptr_tag_handler_), verbose_(verbose)
         {
-            ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix>>(lat, ptr_tag_handler);
+            ptr_tag_container = std::make_shared<prebo::TagGenerator<Matrix, N>>(lat, ptr_tag_handler);
 
             // Fermion
             fer_create_up_tag = ptr_tag_container->get_tag_vector(Type::Fermion, OpType::Create, Spin::Up);
@@ -171,12 +174,14 @@ namespace prebo {
                 // Assert that the particle type index is less than the number of particle
                 // types and that the orbital index is less than the number of orbitals of
                 // the given type
+
                 #ifndef NDEBUG
                 for (auto const& iter : nbody_term) {
                     //assert(iter.first < num_particle_types);
                     assert(iter.second < vec_orbitals.at(iter.first));
                 }
                 #endif
+
                 // The nbody term is now ready to be transformed to the second quantized
                 // operators with proper symmetry and spin configurations.
                 NBodyTerm nBodyTerm = NBodyTerm(nbody_term, isFermion, vec_orbitals, inv_order);
@@ -778,22 +783,21 @@ namespace prebo {
             return res;
         }
 
-
-        //
-        // Getter Methods
-        //
     public:
-        const std::shared_ptr<TagGenerator<Matrix>> &getTagContainer() const {
+        /** @brief Getter for the tag container */
+        const auto& getTagContainer() const {
             return ptr_tag_container;
         }
-        const std::vector<Index<NU1>> &getPhysIndexes() const {
+
+        /** @brief Getter for the physical indices */
+        const auto& getPhysIndexes() const {
             return phys_indexes;
         }
-        const std::shared_ptr<TagHandler<Matrix, NU1>> &getTagHandler() const {
+
+        /** @brief getter for the tag Handler */
+        const auto& getTagHandler() const {
             return ptr_tag_handler;
         }
-
-
     };
 
 } // namespace prebo

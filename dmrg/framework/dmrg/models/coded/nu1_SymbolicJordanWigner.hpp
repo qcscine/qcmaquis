@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021- by Michele Dolfi <robinfe@ethz.ch>
+ *               2021- by Robin Feldmann <robinfe@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under

@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
+ *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -32,21 +33,16 @@
 
 template <class Matrix, class SymmGroup>
 class modelHelper {
+    // Types definition
     typedef model_impl<Matrix, SymmGroup> base;
     typedef typename Matrix::value_type value_type;
-    // Types definition
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-
     typedef typename base::term_descriptor term_descriptor;
     typedef typename std::vector<term_descriptor> terms_type;
     typedef typename base::op_t op_t;
     typedef typename std::vector<tag_type> operators_type;
-    typedef typename base::measurements_type measurements_type;
-    typedef typename Lattice::pos_t pos_t;                          // position on the lattice
+    typedef typename Lattice::pos_t pos_t;
     typedef typename std::vector<pos_t> positions_type;
-
 
 public:
     // +-------------------+
@@ -61,10 +57,9 @@ public:
      * @param tag_handler
      * @return
      */
-     static std::pair<term_descriptor, bool> arrange_operators(positions_type const &positions,
-                                                               operators_type const &operators,
-                                                               value_type &scaling,
-                                                               std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler) {
+     static std::pair<term_descriptor, bool> arrange_operators(const positions_type& positions, const operators_type& operators,
+                                                               value_type scaling, 
+                                                               std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler) {
         // Safety check
         assert(positions.size() == operators.size());
         bool FoundZero = false;
@@ -96,25 +91,19 @@ public:
         // std::cout << "Overall scaling" << std::endl;
         // std::cout << scaling << std::endl;
         return std::make_pair(term, FoundZero);
-    } // arrange_operators
+    }
 
-
-
-
-    // +----------+
-    // | ADD TERM |
-    // +----------+
     /**
-     * Adds a single term to the Hamiltonian object
+     * @brief Adds a single term to the Hamiltonian object
      * @param positions
      * @param operators
      * @param coeff
      */
     static void add_term(positions_type const& positions, operators_type const& operators, value_type const& coeff,
-                         const std::shared_ptr<TagHandler<Matrix, NU1>> tag_handler, terms_type& terms) {
+                         const std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler, terms_type& terms) {
         static int count = 0;
         value_type scaling = 1.;
-        std::pair<term_descriptor, bool> ret = modelHelper<Matrix,NU1>::arrange_operators(positions, operators, scaling, tag_handler);
+        std::pair<term_descriptor, bool> ret = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tag_handler);
         if (!ret.second) {
             count++;
             auto term = ret.first;
@@ -125,9 +114,7 @@ public:
             //    std::cout << "Operator count = " << count << std::endl;
             //}
         }
-    } //
-
-
+    }
 };
 
 #endif //MAQUIS_DMRG_MODEL_HELPER_HPP

@@ -43,35 +43,38 @@ namespace measurements {
     /**
      * @class PreBOParticleRDM
      * @brief Implementation of the virtual base class for the calculation of the particle RDM with the pre-BO model.
-     * @tparam Matrix
+     * @tparam Matrix Matrix type underlying the MPS
+     * @tparam N integer associated with the NU1 Symm Group
      */
-    template <class Matrix>
-    class PreBOParticleRDM : public measurement<Matrix, NU1> {
-        typedef typename generate_mpo::OperatorTagTerm<Matrix, NU1>::tag_type tag_type;
-        typedef std::vector<tag_type> tag_vec;
-        typedef measurement<Matrix, NU1> base;
-
+    template <class Matrix, int N>
+    class PreBOParticleRDM : public measurement<Matrix, NU1_template<N>> {
     public:
+        // Types definition
+        using NU1 = NU1_template<N>;
+        using tag_type = typename generate_mpo::OperatorTagTerm<Matrix, NU1>::tag_type;
+        using tag_vec = std::vector<tag_type>;
+        using base = measurement<Matrix, NU1>;
+
         /**
-         * Constructor
-         * @param parms
-         * @param lat_
-         * @param identities
-         * @param fillings
-         * @param ptr_term_generator_
+         * @brief Class constructor
+         * @param parms parameter container
+         * @param lat_ lattice
+         * @param identities tags associated with the identity operators
+         * @param fillings tags associated with the filling operators
+         * @param ptr_term_generator_ term generator object (see prebo_TermGenerator.hpp)
          */
         PreBOParticleRDM(BaseParameters& parms, Lattice const& lat_, const tag_vec& identities, const tag_vec& fillings,
-                         std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator_) : base("oneptdm"), parms(parms),
-                         lat(lat_), identities(identities), fillings(fillings), ptr_term_generator(ptr_term_generator_) {
+                         std::shared_ptr<prebo::TermGenerator<Matrix, N>> ptr_term_generator_) 
+            : base("oneptdm"), parms(parms), lat(lat_), identities(identities), fillings(fillings), ptr_term_generator(ptr_term_generator_) 
+        { }
 
-        }
-
+        /** @brief Default destructor */
         ~PreBOParticleRDM()=default;
 
         /**
-         * Implementation of virtual method in base class.
-         * @param ket_mps
-         * @param rmps
+         * @brief Implementation of virtual method [evaluate] required by base class.
+         * @param ket_mps Input MPS
+         * @param rmps reduced MPS (needed to match the interface)
          */
         void evaluate(MPS<Matrix, NU1> const& ket_mps, boost::optional<reduced_mps<Matrix, NU1> const&> rmps = boost::none) {
 
@@ -153,12 +156,8 @@ namespace measurements {
         BaseParameters& parms;
         const Lattice& lat;
         tag_vec identities, fillings;
-        std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
+        std::shared_ptr<prebo::TermGenerator<Matrix, N>> ptr_term_generator;
     };
 }
-
-
-
-
 
 #endif //MAQUIS_DMRG_PREBO_PARTICLE_RDM_H
