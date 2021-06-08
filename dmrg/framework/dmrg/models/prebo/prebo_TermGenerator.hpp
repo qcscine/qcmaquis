@@ -790,12 +790,12 @@ namespace prebo {
         }
 
         /** @brief Getter for the physical indices */
-        const auto& getPhysIndexes() const {
+        const std::vector<Index<NU1>>& getPhysIndexes() const {
             return phys_indexes;
         }
 
         /** @brief getter for the tag Handler */
-        const auto& getTagHandler() const {
+        const std::shared_ptr<TagHandler<Matrix, NU1>>& getTagHandler() const {
             return ptr_tag_handler;
         }
     };

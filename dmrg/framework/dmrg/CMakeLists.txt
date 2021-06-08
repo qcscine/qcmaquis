@@ -11,8 +11,8 @@ endmacro(add_line_to)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/sim/symmetry_factory.h.in
                 ${CMAKE_CURRENT_BINARY_DIR}/sim/symmetry_factory.h )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h
-DESTINATION include/dmrg/block_matrix/symmetry)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sim/symmetry_factory.h
+DESTINATION include/dmrg/sim)
 
 # *** List all needed sources
 ## Lattice library

@@ -115,7 +115,6 @@ public:
         // The minimal number is twice the number of fermionic types plus the number
         // of bosonic types.
         MIN = 2 * fcount + num_particle_types - fcount;
-        std::cout << max_symm << " " << MIN << std::endl;
         if (max_symm != MIN)
             throw std::runtime_error("Error in DMRG_NUMSYMM philosophy0");
 
@@ -206,6 +205,7 @@ public:
     table_ptr operators_table() const {
         return ptr_tag_handler;
     }
+
     // TODO ALB Check if this really true, the index 0 has been hardcoded for the
     //         moment
     measurements_type measurements() const {

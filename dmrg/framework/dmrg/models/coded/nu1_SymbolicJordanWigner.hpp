@@ -144,7 +144,7 @@ private:
 
 public:
     /** @brief Default class constructor */
-    SymbolicJordanWigner() = default;
+    SymbolicJordanWigner() {};
 
     /** 
      * @brief Constructor from a vector of symbolic operators
