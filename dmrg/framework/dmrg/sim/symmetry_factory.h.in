@@ -33,6 +33,8 @@
 
 #undef tolower
 #undef toupper
+
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 #include <boost/tokenizer.hpp>
 #include <map>
 #include <string>
@@ -42,7 +44,31 @@
 #include "dmrg/utils/guess_symmetry.h"
 #include "dmrg/utils/checks.h"
 
+// Macro to be used later in conjunction with BOOST to expand the switch case
+#define DECLCASE(z, n, test) case n: ret.reset(new typename TR::template F<NU1_template<n>>::type(args...)); break;
+
 namespace dmrg {
+
+    /**
+     * @brief Factory class for the simulation object.
+     * 
+     * This factory class manages the creation of the simulation object.
+     * Note that the symmetry of the simulation is known only at runtime.
+     * For this reason, the DMRGInterface class has *not* SymmGroup among the template
+     * arguments.
+     * 
+     * Instead, we wrap insisde the trait class (here being TR, which corresponds to 
+     * [simulation_traits] defined in [maquis_dmrg.cpp]), which takes SymmGroup as a
+     * parameter, the definition of the type of the interface_sim object, and here we 
+     * instantiate all the possible symmetry groups.
+     * 
+     * @tparam TR Trait class that is used to obtain the type of the simulation object.
+     * @tparam Args Variadic template arguments 
+     * @param parms Parameter class (used to extract the proper symmetry group)
+     * @param args other parameters, that are funneled to the simulation constructor
+     * (this is, in practice, agains parms)
+     * @return TR::shared_ptr Smart pointer to the simulation object.
+     */
 
     template <class TR, typename... Args>
     typename TR::shared_ptr symmetry_factory(DmrgParameters & parms, Args& ... args)
@@ -108,7 +134,10 @@ namespace dmrg {
         {}
 #ifdef HAVE_NU1
         else if (symm_name == "nu1") {
-            ret.reset(new typename TR::template F<NU1>::type(args...));
+            int numberOfParticles = parms["particleNumber"].as<int>();
+            switch(numberOfParticles) { 
+                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~);
+            }
         }
 #endif
 #ifdef HAVE_TrivialGroup

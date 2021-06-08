@@ -1,45 +1,69 @@
-//
-// Created by robin on 11.05.21.
-//
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
+ *               2021- by Robin Feldmann <robinfe@ethz.ch>
+ *
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 #ifndef MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
 #define MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
 
-#if defined(HAVE_NU1)
+#ifdef HAVE_NU1
+
 #include <dmrg/models/lattice.h>
 
-enum class Type {Fermion, Boson};
+enum class Type { Fermion, Boson };
 enum class Spin { Up, Down, Zero, None };
 enum class OpType { Create, Annihilate, Filling, Ident };
 
 /**
- * @class SymbolicOperator nu1_nBodyTerm.hpp
- * @brief Symbolic algebra implementation of a 2nd quantization operator. Needed for Jordan--Wigner transformation.
+ * @class SymbolicOperator
+ * 
+ * This small class represents a generic second-quantization operator.
+ * This is needed to generate the proper terms based on the Jordan--Wigner transformation.
  */
 class SymbolicOperator {
-    // Types definition
-    typedef typename Lattice::part_type
-            part_type; // unsigned integer denoting the particle type
-    typedef typename Lattice::pos_t pos_t;
-
 public:
-
+    // Types definition
+    using part_type = typename Lattice::part_type;
+    using pos_t =  typename Lattice::pos_t;
 private:
-    // +---------+
-    // | Members |
-    // +---------+
+    // Class members
     part_type m_part_type;
     Spin m_spin;
     pos_t m_site;
     OpType m_opType;
 
 public:
-    // Constructor
-    SymbolicOperator(pos_t site, OpType opType, part_type pt,
-                     Spin spin = Spin::None)
+
+    /** @brief Constructor */
+    SymbolicOperator(pos_t site, OpType opType, part_type pt, Spin spin = Spin::None)
             : m_site(site), m_opType(opType), m_part_type(pt), m_spin(spin) {}
 
-    // Constructor
+    /**
+     * @brief Copy constructor + op type
+     * Note that in this case the operator type is given externally, and is not read
+     * from the SymOp object.
+     */
     SymbolicOperator(const SymbolicOperator &SymOp, OpType opType) {
         m_part_type = SymOp.getPartType();
         if (opType == OpType::Filling || opType == OpType::Ident)
@@ -50,27 +74,27 @@ public:
         m_opType = opType;
     }
 
-    // Copy Constructor
+    /** @brief Copy constructor */
     SymbolicOperator(const SymbolicOperator &SymOp) {
         m_part_type = SymOp.getPartType();
         m_spin = SymOp.getSpin();
         m_site = SymOp.getSite();
         m_opType = SymOp.getOpType();
     }
-    // +---------+
-    // | Getter |
-    // +---------+
+    
+    /** @brief Spin getter */
     Spin getSpin() const { return m_spin; }
+
+    /** @brief Site getter */
     pos_t getSite() const { return m_site; }
+
+    /** @brief Op getter */
     OpType getOpType() const { return m_opType; }
+
+    /** @brief Particle type getter */
     part_type getPartType() const { return m_part_type; }
 
-    // +---------+
-    // | Methods |
-    // +---------+
-    /**! \brief
-     *  This method prints the operator in an algebraic notation.
-     */
+    /** @brief This method prints the operator in an algebraic notation */
     void print() const {
         std::string op_str;
         if (m_opType == OpType::Filling)
@@ -104,46 +128,47 @@ public:
  * @class SymbolicJordanWigner nu1_SymbolicJordanWigner.hpp
  * @brief This class handels the Jordan-Wigner transformation, based on the `SymbolicOperator`.
  * @note This is the most important and delicate part of the pre-BO model.
- * For a description of the algorithm, see my Master's thesis:
+ * 
+ * For a description of the algorithm, see:
  * Correlation effects in Multicomponent Quantum Chemistry (2020), Robin Feldmann, Markus Reiher group ETH Zurich, p 27
  */
 class SymbolicJordanWigner {
-
-    typedef typename Lattice::part_type
-            part_type; // unsigned integer denoting the particle type
-    typedef typename Lattice::pos_t pos_t;
-
+    /** Types definition */
+    using part_type = typename Lattice::part_type;
+    using pos_t = typename Lattice::pos_t;
 private:
+    /** Class members */
     std::vector<SymbolicOperator> m_SymOpStr;
     std::vector<std::pair<part_type, pos_t>> m_nb_term;
     bool verbose = false;
 
 public:
-    // Default constructor
-    SymbolicJordanWigner() {
+    /** @brief Default class constructor */
+    SymbolicJordanWigner() = default;
 
-    }
-    // Constructor
+    /** 
+     * @brief Constructor from a vector of symbolic operators
+     * At construction, the object stores 
+     */
     explicit SymbolicJordanWigner(std::vector<SymbolicOperator> SymOpStr) {
 
-        if (SymOpStr.size()<1) throw std::runtime_error("Empty operator string in JW.");
+        if (SymOpStr.size() == 0)
+            throw std::runtime_error("Empty operator string in JW.");
         std::vector<part_type> vec_pt_check;
         // Identity check:
-        // If the operator string contains only identities, now JW has to be applied.
+        // If the operator string contains only identities, no JW has to be applied.
         bool allIdent=true;
         for (auto const& Op : SymOpStr) {
             vec_pt_check.push_back(Op.getPartType());
-            if (allIdent && Op.getOpType()!=OpType::Ident) allIdent=false;
+            if (allIdent && Op.getOpType()!=OpType::Ident)
+                allIdent=false;
         }
         if (!(std::equal(vec_pt_check.begin() + 1, vec_pt_check.end(), vec_pt_check.begin())))
             throw std::runtime_error("JW must only be applied to operator strings containing equal particle types.");
 
-        // Check passed.
-
         m_SymOpStr = SymOpStr;
 
         if (!allIdent) {
-
             // Identity removal
             for (auto it=m_SymOpStr.begin(); it!=m_SymOpStr.end();) {
                 if (it->getOpType() == OpType::Ident)
@@ -169,17 +194,13 @@ public:
         }
     }
 
-    /**! \brief
-     * This getter returns the symbolic operator string
-     * @return symbolic operator string
-     */
+    /** @brief Getter for the symbolic operator string */
     const std::vector<SymbolicOperator> &getSymOpStr() const { return m_SymOpStr; }
 
 private:
-    // +------------------------+
-    // | Jordan--Wigner Filling |
-    // +----------------------- +
-    /*! \brief
+    /**
+     * @brief Jordan--Wigner Filling
+     * 
      * This method is the HEART and BRAIN of the Jordan--Wigner transformation.
      * It evaluates which operator gets assigned a filling operator on the left
      * and right side.
@@ -288,7 +309,7 @@ private:
                     new_SymOpStr.push_back(
                             SymbolicOperator(symOp, OpType::Filling));
             }
-                // boson
+            // boson
             else {
                 new_SymOpStr.push_back(SymbolicOperator(symOp));
             }

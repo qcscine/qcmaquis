@@ -1,6 +1,28 @@
-//
-// Created by robin on 02.06.21.
-//
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
+ *               2021 by Robin Feldmann <robin.feldmann@phys.chem.ethz.ch>
+ *
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 #ifndef MAQUIS_DMRG_PREBO_MUTUAL_INFORMATION_H
 #define MAQUIS_DMRG_PREBO_MUTUAL_INFORMATION_H
@@ -19,38 +41,41 @@
 namespace measurements {
 
     /**
-     * @class
-     * @brief
-     * @tparam Matrix
+     * @brief Measurement class associated with the PreBO Mutual information
+     * @tparam Matrix numeric matrix class
+     * @tparam N integer associated with the NU1 symmetry class
      */
-    template <class Matrix>
-    class PreBOMutualInformation : public measurement<Matrix, NU1> {
-        typedef typename generate_mpo::OperatorTagTerm<Matrix, NU1>::tag_type tag_type;
-        typedef std::vector<tag_type> tag_vec;
-        typedef measurement<Matrix, NU1> base;
+    template <class Matrix, int N>
+    class PreBOMutualInformation : public measurement<Matrix, NU1_template<N>> {
+    public:
+        // Types definition
+        using NU1 = NU1_template<N>;
+        using tag_type = typename generate_mpo::OperatorTagTerm<Matrix, NU1_template<N>>::tag_type;
+        using tag_vec = std::vector<tag_type>;
+        using base = measurement<Matrix, NU1>;
 
     public:
         /**
-         * Constructor
-         * @param parms
-         * @param lat_
-         * @param identities
-         * @param fillings
-         * @param ptr_term_generator_
+         * @brief Class constructor
+         * @param parms Parameter container
+         * @param lat_ DMRG lattice
+         * @param identities vector with the tags associated with the identity operators
+         * @param fillings vector with the tags associated with the filling operators
+         * @param ptr_term_generator_ tag generator object (required by the MPO management in the NU1 class)
          */
         PreBOMutualInformation(BaseParameters& parms, Lattice const& lat_, const tag_vec& identities, const tag_vec& fillings,
-                         std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator_, bool verbose=true)
-                         : base("mutinf"), parms(parms), lat(lat_), identities(identities), fillings(fillings),
-                           ptr_term_generator(ptr_term_generator_), verbose_(verbose) {
+                         std::shared_ptr<prebo::TermGenerator<Matrix, N>> ptr_term_generator_, bool verbose=true)
+            : base("mutinf"), parms(parms), lat(lat_), identities(identities), fillings(fillings),
+              ptr_term_generator(ptr_term_generator_), verbose_(verbose)
+        { }
 
-        }
-
+        /** @brief Class destructor */
         ~PreBOMutualInformation()=default;
 
         /**
-         * Implementation of virtual method in base class.
-         * @param ket_mps
-         * @param rmps
+         * @brief Implementation of virtual method in base class.
+         * @param ket_mps input MPS.
+         * @param rmps reduced MPS (required by the virtual class interface).
          */
         void evaluate(MPS<Matrix, NU1> const& ket_mps, boost::optional<reduced_mps<Matrix, NU1> const&> rmps = boost::none) {
 
@@ -622,7 +647,7 @@ namespace measurements {
         BaseParameters& parms;
         const Lattice& lat;
         tag_vec identities, fillings;
-        std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
+        std::shared_ptr<prebo::TermGenerator<Matrix, N>> ptr_term_generator;
         bool verbose_;
     };
 }

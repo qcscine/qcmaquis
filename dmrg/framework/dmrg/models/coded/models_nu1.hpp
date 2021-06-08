@@ -54,9 +54,10 @@
  * 
  * @tparam Matrix matrix type underlying the MPS definition
  */
-template<class Matrix>
-class PreBO : public model_impl<Matrix, NU1> {
+template<class Matrix, int N>
+class PreBO : public model_impl<Matrix, NU1_template<N>> {
     // Types definition
+    using NU1 = NU1_template<N>;
     using base = model_impl<Matrix, NU1>;
     using table_type = typename base::table_type;
     using table_ptr = typename base::table_ptr;
@@ -87,7 +88,7 @@ private:
     /** Tag handler */
     std::shared_ptr<TagHandler<Matrix, NU1>> ptr_tag_handler;
     /** Pointer to the term generator (helper class to generate the SQ Hamiltonian) */
-    std::shared_ptr<prebo::TermGenerator<Matrix>> ptr_term_generator;
+    std::shared_ptr<prebo::TermGenerator<Matrix, N>> ptr_term_generator;
 public:
     // +----------------+
     //  Main constructor
@@ -118,7 +119,7 @@ public:
             throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
 
         std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
-        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix>>(ptr_lat, ptr_tag_handler, verbose);
+        ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix, N>>(ptr_lat, ptr_tag_handler, verbose);
         phys_indexes = ptr_term_generator->getPhysIndexes();
 
     }
@@ -155,7 +156,7 @@ public:
      * per type and Sz value
      */
     typename NU1::charge total_quantum_numbers(BaseParameters& parms) const {
-        return NU1::charge(vec_ini_state);
+        return typename NU1::charge(vec_ini_state);
     }
 
     /** @brief Getter for the identity matrix tag */
@@ -226,10 +227,10 @@ public:
             std::string lhs = it.first;
             // 1-RDM and transition-1RDM
             if (std::regex_match(lhs, what, expression_1ParticleRDM)) {
-                meas.push_back( new measurements::PreBOParticleRDM<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
+                meas.push_back( new measurements::PreBOParticleRDM<Matrix, N>(parms, lat, identities, fillings, ptr_term_generator));
             }
             if (std::regex_match(lhs, what, expression_MutualInformation)) {
-                meas.push_back( new measurements::PreBOMutualInformation<Matrix>(parms, lat, identities, fillings, ptr_term_generator));
+                meas.push_back( new measurements::PreBOMutualInformation<Matrix, N>(parms, lat, identities, fillings, ptr_term_generator));
             }
         }
         return meas;

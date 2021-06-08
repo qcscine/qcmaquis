@@ -44,23 +44,20 @@ namespace prebo {
 /**
  * @class TagGenerator nu1_tag_generation.hpp
  * @brief This class handels the correct generation of fermionic and bosonic tags.
- * @tparam Matrix
+ * @tparam Matrix numeric matrix class
+ * @tparam N integer associated with the NU1 symmetry class
  */
-    template<class Matrix>
+    template<class Matrix, int N>
     class TagGenerator {
+    public:
         // Types definition
-        typedef model_impl<Matrix, NU1> base;
-        typedef typename base::table_ptr table_ptr;
-        typedef typename base::tag_type tag_type;
-        typedef typename base::op_t op_t;
-        typedef typename std::vector<tag_type> operators_type;
-        typedef typename base::measurements_type measurements_type;
-        typedef typename Lattice::pos_t pos_t;
-        typedef typename std::vector<pos_t> positions_type;
-        typedef int term_type;
-        typedef typename Matrix::value_type value_type;
-        typedef typename NU1::charge charge_type;
-        typedef typename std::pair<std::vector<std::size_t>, value_type> H_terms_type;
+        using NU1 = NU1_template<N>;
+        using base = model_impl<Matrix, NU1>;
+        using tag_type = typename base::tag_type;
+        using op_t = typename base::op_t;
+        using value_type = typename Matrix::value_type;
+        using charge_type = typename NU1::charge;
+        using H_terms_type = typename std::pair<std::vector<std::size_t>, value_type>;
 
     private:
         bool verbose = false;
