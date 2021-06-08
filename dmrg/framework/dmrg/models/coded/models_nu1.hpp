@@ -115,8 +115,9 @@ public:
         // The minimal number is twice the number of fermionic types plus the number
         // of bosonic types.
         MIN = 2 * fcount + num_particle_types - fcount;
-        if (max_symm < MIN)
-            throw std::runtime_error("Recompile QCMaquis with a larger value for DMRG_NUMSYMM");
+        std::cout << max_symm << " " << MIN << std::endl;
+        if (max_symm != MIN)
+            throw std::runtime_error("Error in DMRG_NUMSYMM philosophy0");
 
         std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
         ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix, N>>(ptr_lat, ptr_tag_handler, verbose);

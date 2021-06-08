@@ -47,7 +47,7 @@
 struct PreBOModelUnitTestFixture {
   // Types 
   using IntegralMapType = maquis::integral_map<double, chem::Hamiltonian::PreBO>;
-  using ModelType = PreBO<tmatrix<double>>;
+  using ModelType = PreBO<tmatrix<double>, 2>;
 
   /** @brief Class constructor */
   PreBOModelUnitTestFixture() {
@@ -87,8 +87,8 @@ BOOST_TEST_GLOBAL_FIXTURE( PreBOModelUnitTestFixture );
 /** Checks consistency for the physical dimensions */
 BOOST_AUTO_TEST_CASE( PreBO_Test_Phys )
 {
-    auto preBOModel = PreBO<tmatrix<double>>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
-                                                             PreBOModelUnitTestFixture::parametersForH2, false);
+    auto preBOModel = PreBO<tmatrix<double>, 2>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
+                                                                PreBOModelUnitTestFixture::parametersForH2, false);
     preBOModel.create_terms();
     const auto& physicalDimensions0 = preBOModel.phys_dim(0);
     BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 4);
@@ -97,8 +97,8 @@ BOOST_AUTO_TEST_CASE( PreBO_Test_Phys )
 /** Checks consistency for the total QN vector */
 BOOST_AUTO_TEST_CASE( PreBO_Test_QN )
 {
-    auto preBOModel = PreBO<tmatrix<double>>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
-                                                             PreBOModelUnitTestFixture::parametersForH2, false);
+    auto preBOModel = PreBO<tmatrix<double>, 2>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
+                                                                PreBOModelUnitTestFixture::parametersForH2, false);
     auto qn = preBOModel.total_quantum_numbers(PreBOModelUnitTestFixture::parametersForH2);
     BOOST_CHECK_EQUAL(qn[0], 1);
     BOOST_CHECK_EQUAL(qn[1], 1);
@@ -107,17 +107,18 @@ BOOST_AUTO_TEST_CASE( PreBO_Test_QN )
 /** Simple check on tags */
 BOOST_AUTO_TEST_CASE( PreBO_Test_Tags )
 {
-    auto preBOModel = PreBO<tmatrix<double>>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
-                                                             PreBOModelUnitTestFixture::parametersForH2, false);
+    auto preBOModel = PreBO<tmatrix<double>, 2>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
+                                                                PreBOModelUnitTestFixture::parametersForH2, false);
     auto identityTag = preBOModel.identity_matrix_tag(0);
     auto fillingTag = preBOModel.filling_matrix_tag(0);
     BOOST_CHECK(identityTag != fillingTag);
 }
 
+/** Checks that the number of terms that are created are consistent with the input data */
 BOOST_AUTO_TEST_CASE( PreBO_Test_Terms )
 {
-    auto preBOModel = PreBO<tmatrix<double>>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
-                                                             PreBOModelUnitTestFixture::parametersForH2, false);
+    auto preBOModel = PreBO<tmatrix<double>, 2>(lattice_factory(PreBOModelUnitTestFixture::parametersForH2),
+                                                                PreBOModelUnitTestFixture::parametersForH2, false);
     BOOST_CHECK_EQUAL(preBOModel.hamiltonian_terms().size(), 0);
     preBOModel.create_terms();
     BOOST_CHECK_EQUAL(preBOModel.hamiltonian_terms().size(), 1);

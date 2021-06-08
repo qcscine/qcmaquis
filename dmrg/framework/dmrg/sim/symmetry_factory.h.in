@@ -45,7 +45,11 @@
 #include "dmrg/utils/checks.h"
 
 // Macro to be used later in conjunction with BOOST to expand the switch case
-#define DECLCASE(z, n, test) case n: ret.reset(new typename TR::template F<NU1_template<n>>::type(args...)); break;
+#define DECLCASE(z, nSymm, test)                                                  \
+    case nSymm:                                                                   \
+        std::cout << "Setting NU1 with N = " << nSymm << std::endl;               \
+      ret.reset(new typename TR::template F<NU1_template<nSymm>>::type(args...)); \
+      break;
 
 namespace dmrg {
 
@@ -134,9 +138,18 @@ namespace dmrg {
         {}
 #ifdef HAVE_NU1
         else if (symm_name == "nu1") {
-            int numberOfParticles = parms["particleNumber"].as<int>();
-            switch(numberOfParticles) { 
-                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~);
+            std::vector<bool> isFermion;
+            std::string isFermion_str = parms["PreBO_FermionOrBosonVector"].as<std::string>();
+            std::istringstream is( isFermion_str );
+            isFermion.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
+            int numberOfSymmetries = 0;
+            for (const auto iElement: isFermion)
+                numberOfSymmetries += (iElement) ? 2 : 1;
+            switch (numberOfSymmetries) { 
+                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~)
+                default:
+                    throw std::runtime_error("Please recompile QCMaquis with a higher DMRG_NUMSYMM value");
+                    break;
             }
         }
 #endif
