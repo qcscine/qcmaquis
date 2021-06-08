@@ -136,10 +136,10 @@ namespace measurements {
                     std::cout << "Writing 1-body rdm on disk ... " << std::endl;
                     std::ofstream file(fname);
                     for (auto row=0; row<vec_orbitals.at(nt); ++row) {
-                        for (auto col=0; col<vec_orbitals.at(nt); ++col) {
+                        for (auto col=0; col<vec_orbitals.at(nt)-1; ++col) {
                             file << rdm(row,col) << ",";
                         }
-                        file << "\n";
+                        file << rdm(row,vec_orbitals.at(nt)-1) << "\n";
                     }
                     file.close();
                 }

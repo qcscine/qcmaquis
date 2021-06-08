@@ -628,10 +628,10 @@ namespace measurements {
                 std::cout << "Writing mutual information on disk ... " << std::endl;
                 std::ofstream file(fname);
                 for (auto row=0; row<L; ++row) {
-                    for (auto col=0; col<L; ++col) {
+                    for (auto col=0; col<L-1; ++col) {
                         file << entropyTable(row,col) << ",";
                     }
-                    file << "\n";
+                    file << entropyTable(row,L-1) << ",\n";
                 }
                 file.close();
             }
