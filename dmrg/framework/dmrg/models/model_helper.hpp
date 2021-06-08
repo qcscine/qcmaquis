@@ -58,8 +58,8 @@ public:
      * @return
      */
      static std::pair<term_descriptor, bool> arrange_operators(const positions_type& positions, const operators_type& operators,
-                                                               value_type scaling, 
-                                                               std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler) {
+                                                               value_type& scaling, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler) {
+                                                               
         // Safety check
         assert(positions.size() == operators.size());
         bool FoundZero = false;
