@@ -50,11 +50,14 @@ struct PreBOModelUnitTestFixture {
   using ModelType = PreBO<tmatrix<double>, 2>;
 
   /** @brief Class constructor */
-  PreBOModelUnitTestFixture() {
+  explicit PreBOModelUnitTestFixture(bool useBinary=true) {
      // Generates the integral file
      integralsForH2 = IntegralMapType{{{-1,-1,-1,-1,-1,-1,-1,-1},0.1763923530387111}};
-     // Sets the parameters 
-     parametersForH2.set("integrals_binary", maquis::serialize(integralsForH2));
+     // Sets the parameters
+     if (useBinary)
+         parametersForH2.set("integrals_binary", maquis::serialize(integralsForH2));
+     else
+         parametersForH2.set("integral_file", "integral_file_test");
      parametersForH2.set("L", 4);
      parametersForH2.set("LATTICE", "preBO lattice");
      parametersForH2.set("MODEL", "PreBO");
@@ -123,3 +126,50 @@ BOOST_AUTO_TEST_CASE( PreBO_Test_Terms )
     preBOModel.create_terms();
     BOOST_CHECK_EQUAL(preBOModel.hamiltonian_terms().size(), 1);
 }
+
+/** Test for the integral parser */
+BOOST_AUTO_TEST_CASE( PreBO_Test_Parser )
+{
+
+    auto unitTest = PreBOModelUnitTestFixture(false);
+    auto parms = unitTest.parametersForH2;
+    std::ofstream integralfile;
+    integralfile.open ("integral_file_test");
+    integralfile << "                     1.145901278714102\n1-0         1-0                      2.30233235666604\n0-0         0-0         0-0         0-0                       0.310230908236689";
+    integralfile.close();
+
+    auto integrals = prebo::detail::parse_integrals<double>(parms, lattice_factory(parms));
+
+    BOOST_CHECK_CLOSE(1.145901278714102, integrals.second[0], 1e-12);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][0]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][1]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][2]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][3]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][4]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][5]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][6]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[0][7]);
+
+    BOOST_CHECK_CLOSE(2.30233235666604, integrals.second[1], 1e-12);
+    BOOST_CHECK_EQUAL(1, integrals.first[1][0]);
+    BOOST_CHECK_EQUAL(0, integrals.first[1][1]);
+    BOOST_CHECK_EQUAL(1, integrals.first[1][2]);
+    BOOST_CHECK_EQUAL(0, integrals.first[1][3]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[1][4]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[1][5]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[1][6]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[1][7]);
+
+    BOOST_CHECK_CLOSE(0.310230908236689, integrals.second[2], 1e-12);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][0]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][1]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][2]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][3]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][4]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][5]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][6]);
+    BOOST_CHECK_EQUAL(0, integrals.first[2][7]);
+
+    std::remove("integral_file_test");
+}
+
