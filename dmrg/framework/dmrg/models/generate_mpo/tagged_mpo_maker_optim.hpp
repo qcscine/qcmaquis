@@ -42,9 +42,9 @@
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"
 
-#include <boost/bind.hpp>
 #include <string>
 #include <sstream>
+#include <tuple>
 
 namespace generate_mpo
 {
@@ -160,9 +160,8 @@ namespace generate_mpo
                 try { identities_full.push_back(model.get_operator_tag("ident_full", p)); }
                 catch (std::runtime_error const & e) {}
             }
-
-            typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            for (const auto& iTerm: model.hamiltonian_terms())
+                this->add_term(iTerm);
         }
         
         /**
@@ -178,7 +177,8 @@ namespace generate_mpo
         {
             //for (size_t p = 0; p < length-1; ++p)
             //    prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
-            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            for (const auto& iTerm: terms)
+                this->add_term(iTerm);
         }
 
 
@@ -195,7 +195,8 @@ namespace generate_mpo
         {
             //for (size_t p = 0; p < length-1; ++p)
             //    prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
-            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            for (const auto& iTerm: terms)
+                this->add_term(iTerm);
         }
 
         /** @brief Method to add a single term to the prempo object */
@@ -270,7 +271,6 @@ namespace generate_mpo
 
                     index_type rr_dim = (p == length-1) ? 0 : rr->second;
                     pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
-
                     std::pair<int, int> phase;
                     prempo_key_type ck2;
                     boost::tie(ck2, phase) = conjugate_key(k2, p);
@@ -294,8 +294,8 @@ namespace generate_mpo
                 // Locates the hermitian conjugate pairs
                 std::vector<index_type> RightHerm(rcd.second);
                 std::vector<int> RightPhase(rcd.second, 1);
-                index_type z = 0, cnt = 0;
-                std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
+                index_type cnt = 0;
+                std::iota(RightHerm.begin(), RightHerm.end(), 0);
                 for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator
                                 h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
                 {
@@ -659,10 +659,8 @@ namespace generate_mpo
 				    typename prempo_map_type::iterator ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				else {
                     if (prempo[i].find(make_pair(k,k))->second != prempo_value_type(op, 1.))
-				    throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
-					                    + ". Needed "+boost::lexical_cast<std::string>(op)
-					                    + ", found "+boost::lexical_cast<std::string>(prempo[i].find(make_pair(k,k))->second.first));
-					                  //+ ", found "+boost::lexical_cast<std::string>(ret->second.first));
+				    throw std::runtime_error("Pre-existing term at site "+std::to_string(i)+ ". Needed "+std::to_string(op)
+					                            + ", found "+std::to_string(prempo[i].find(make_pair(k,k))->second.first));
                 }
 			}
 		}
