@@ -145,6 +145,8 @@ namespace dmrg {
             int numberOfSymmetries = 0;
             for (const auto iElement: isFermion)
                 numberOfSymmetries += (iElement) ? 2 : 1;
+            if (numberOfSymmetries < 3)
+                numberOfSymmetries = 3;
             switch (numberOfSymmetries) { 
                 BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~)
                 default:

@@ -101,23 +101,6 @@ public:
         isFermion = lat.template get_prop<std::vector<bool>>("isFermion");
         vec_ini_state = lat.template get_prop<std::vector<int>>("vec_ini_state");
         L = lat.size();
-        // Checks that the code has been compiled properly
-        NU1* NU1_value = new NU1;
-        int max_symm = NU1_value->get_dimension();
-        delete NU1_value;
-        // Checks whether the max symmetry number is sufficiently large
-        unsigned int MIN = 0;
-        unsigned int fcount = 0;
-        for (auto it = isFermion.begin(); it < isFermion.end(); it++) {
-            if (*it == 1)
-                fcount++;
-        }
-        // The minimal number is twice the number of fermionic types plus the number
-        // of bosonic types.
-        MIN = 2 * fcount + num_particle_types - fcount;
-        if (max_symm != MIN)
-            throw std::runtime_error("Error in DMRG_NUMSYMM philosophy0");
-
         std::shared_ptr<Lattice> ptr_lat = std::make_shared<Lattice>(lat);
         ptr_term_generator = std::make_shared<prebo::TermGenerator<Matrix, N>>(ptr_lat, ptr_tag_handler, verbose);
         phys_indexes = ptr_term_generator->getPhysIndexes();
