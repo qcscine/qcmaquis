@@ -36,10 +36,10 @@ struct coded_model_factory<Matrix, TwoU1> {
         typedef std::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
         if (parms["MODEL"] == std::string("fermion Hubbard"))
             return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
-
         else if (parms["MODEL"] == std::string("quantum_chemistry"))
             return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
-
+        else if (parms["MODEL"] == std::string("PreBO"))
+            return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();
