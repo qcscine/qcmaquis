@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/coded/models_2u1.hpp"
+#include "dmrg/models/coded/models_nu1.hpp"
 #include "dmrg/models/chem/2u1/model.h"
 #include "dmrg/models/coded/factory.h"
 
