@@ -62,8 +62,6 @@ struct PreBOModelUnitTestFixture {
      parametersForH2.set("LATTICE", "preBO lattice");
      parametersForH2.set("MODEL", "PreBO");
      parametersForH2.set("max_bond_dimension", 1000);
-     parametersForH2.set("PreBO_NumParticles", 2);
-     parametersForH2.set("PreBO_NumParticleTypes", 1);
      parametersForH2.set("PreBO_ParticleTypeVector", "2");
      parametersForH2.set("PreBO_FermionOrBosonVector", "1");
      parametersForH2.set("PreBO_OrbitalVector", "4");

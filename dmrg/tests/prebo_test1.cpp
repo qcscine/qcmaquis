@@ -193,8 +193,6 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     p.set("LATTICE", "preBO lattice");
     p.set("MODEL", "PreBO");
     p.set("max_bond_dimension", 1000);
-    p.set("PreBO_NumParticles",              2     );
-    p.set("PreBO_NumParticleTypes",          1     );
     p.set("PreBO_ParticleTypeVector",        "2"   );
     p.set("PreBO_FermionOrBosonVector",      "1"   );
     p.set("PreBO_OrbitalVector",             "4"   );

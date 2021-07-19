@@ -248,8 +248,6 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
     p.set("LATTICE", "preBO lattice");
     p.set("MODEL", "PreBO");
     p.set("optimization", "twosite");
-    p.set("PreBO_NumParticles",              5     );
-    p.set("PreBO_NumParticleTypes",          2     );
     p.set("PreBO_ParticleTypeVector",        "4 1"   );
     p.set("PreBO_FermionOrBosonVector",      "1 1"   );
     p.set("PreBO_OrbitalVector",             "3 3"   );
