@@ -25,9 +25,9 @@
  *****************************************************************************/
 
 #include "dmrg/models/coded/models_2u1.hpp"
-#include "dmrg/models/coded/models_nu1.hpp"
 #include "dmrg/models/chem/2u1/model.h"
-#include "dmrg/models/factory/factory.h"
+#include "dmrg/models/prebo/nu1/model.hpp"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1> {
