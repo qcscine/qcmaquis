@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/model.h"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/factories/factory.h"
 #include "dmrg/models/continuum/factory.h"
 #include "dmrg/models/initializer_factory.h"
 

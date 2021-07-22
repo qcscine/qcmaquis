@@ -30,8 +30,8 @@
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/op_handler.h"
-#include "dmrg/models/coded/nu1_nBodyTerm.hpp"
-#include "dmrg/models/model_helper.hpp"
+#include "nu1/nu1_nBodyTerm.hpp"
+#include "dmrg/models/prebo/model_helper.hpp"
 #include "prebo_TagGenerator.hpp"
 #include "integral_interface.h"
 

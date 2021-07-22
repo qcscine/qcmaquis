@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/lattice.h"
-#include "dmrg/models/coded/factory_lattice.hpp"
+#include "dmrg/models/factories/factory_lattice.hpp"
 #include "dmrg/models/continuum/factory_lattice.hpp"
 
 #ifdef ENABLE_ALPS_MODELS

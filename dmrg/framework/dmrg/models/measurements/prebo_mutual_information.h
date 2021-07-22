@@ -33,7 +33,7 @@
 #include "dmrg/utils/checks.h"
 #include "measurements_details.h"
 #include "dmrg/models/generate_mpo/utils.hpp"
-#include "dmrg/models/coded/models_nu1.hpp"
+#include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 /* external */
 #include <alps/numeric/matrix/algorithms.hpp>

@@ -26,7 +26,7 @@
 
 #include "dmrg/models/coded/models_u1.hpp"
 #include "dmrg/models/coded/models_bela.hpp"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {

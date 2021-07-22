@@ -28,7 +28,7 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/assert.hpp>
-#include "dmrg/models/coded/nu1_SymbolicJordanWigner.hpp"
+#include "dmrg/models/prebo/nu1/nu1_SymbolicJordanWigner.hpp"
 
 /** Checks that the constructor works */
 BOOST_AUTO_TEST_CASE( PreBO_SymbolicJW_BosonicOperator )

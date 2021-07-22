@@ -32,11 +32,11 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 #include "nu1_nBodyTerm.hpp"
-#include "../prebo/prebo_parse_integrals.h"
-#include "../model_helper.hpp"
-#include "../measurements/prebo_particle_rdm.h"
-#include "../measurements/prebo_mutual_information.h"
-/* external includes */
+#include "dmrg/models/prebo/prebo_parse_integrals.h"
+#include "dmrg/models/prebo/model_helper.hpp"
+#include "dmrg/models/measurements/prebo_particle_rdm.h"
+#include "dmrg/models/measurements/prebo_mutual_information.h"
+
 #include <algorithm>
 #include <alps/hdf5/pair.hpp>
 #include <map>

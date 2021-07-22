@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_nu1.hpp"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/prebo/nu1/model.hpp"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix, int N>
 struct coded_model_factory<Matrix, NU1_template<N>> {

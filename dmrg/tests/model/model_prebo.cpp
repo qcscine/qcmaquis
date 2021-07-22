@@ -31,7 +31,7 @@
 #include "utils/fpcomparison.h"
 #include "utils/io.hpp"
 #include "dmrg/models/coded/lattice.hpp"
-#include "dmrg/models/coded/models_nu1.hpp"
+#include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/sim/matrix_types.h"
 #include <iostream>
 
