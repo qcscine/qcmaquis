@@ -3,7 +3,8 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2012      by Jan Gukelberger <gukelberger@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,24 +25,22 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_2u1.hpp"
-#include "dmrg/models/chem/2u1/model.h"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/coded/models_none.hpp"
+#include "dmrg/models/coded/super_models_none.hpp"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
-struct coded_model_factory<Matrix, TwoU1> {
-    static std::shared_ptr<model_impl<Matrix, TwoU1> > parse
-    (Lattice const & lattice, BaseParameters & parms)
+struct coded_model_factory<Matrix, TrivialGroup> {
+    static std::shared_ptr<model_impl<Matrix, TrivialGroup> > parse
+    (Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
-        if (parms["MODEL"] == std::string("fermion Hubbard"))
-            return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
-
-        else if (parms["MODEL"] == std::string("quantum_chemistry"))
-            return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
-
+        typedef std::shared_ptr<model_impl<Matrix, TrivialGroup> > impl_ptr;
+        if (parms["MODEL"] == std::string("boson Hubbard"))
+            return impl_ptr( new BoseHubbardNone<Matrix>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("super boson Hubbard"))
+            return impl_ptr( new SuperBoseHubbardNone<Matrix>(lattice, parms) );
         else {
-            throw std::runtime_error("Don't know this model!");
+            throw std::runtime_error("Don't know this model with None symmetry group!");
             return impl_ptr();
         }
     }

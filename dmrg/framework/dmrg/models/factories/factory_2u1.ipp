@@ -24,28 +24,23 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_u1.hpp"
-#include "dmrg/models/coded/models_bela.hpp"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/coded/models_2u1.hpp"
+#include "dmrg/models/chem/2u1/model.h"
+#include "dmrg/models/prebo/nu1/model.hpp"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
-struct coded_model_factory<Matrix, U1> {
-    static std::shared_ptr<model_impl<Matrix, U1> > parse
-    (Lattice const& lattice, BaseParameters & parms)
+struct coded_model_factory<Matrix, TwoU1> {
+    static std::shared_ptr<model_impl<Matrix, TwoU1> > parse
+    (Lattice const & lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
-        if (parms["MODEL"] == std::string("heisenberg"))
-            return impl_ptr( new Heisenberg<Matrix>(lattice, parms["Jxy"], parms["Jz"]) );
-        else if (parms["MODEL"] == std::string("HCB"))
-            return impl_ptr( new HCB<Matrix>(lattice) );
-        else if (parms["MODEL"] == std::string("boson Hubbard"))
-            return impl_ptr( new BoseHubbard<Matrix>(lattice, parms) );
-//        else if (parms["MODEL"] == std::string("fermion Hubbard"))
-//            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, parms) );
-        else if (parms["MODEL"] == std::string("FreeFermions"))
-            return impl_ptr( new FreeFermions<Matrix>(lattice, parms["t"]) );
-        else if (parms["MODEL"] == std::string("bela_chiral_ext"))
-            return impl_ptr( new Chiral_ext<Matrix>(lattice, parms) );
+        typedef std::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
+        if (parms["MODEL"] == std::string("fermion Hubbard"))
+            return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("quantum_chemistry"))
+            return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("PreBO"))
+            return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();
