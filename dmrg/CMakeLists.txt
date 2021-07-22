@@ -162,15 +162,17 @@ macro(get_symm_files TYPE RET FILEBASE)
   endforeach(SYMM)
 endmacro(get_symm_files)
 
+# Note that here we assume that NU1 is managed with a special treatment
 macro(configure_symm_file INPUT OUTBASE VARNAME)
   foreach(SYMM ${BUILD_SYMMETRIES})
-    get_symm_suffix(SYMM_SUFFIX ${SYMM})
-    get_symm_group_name(${VARNAME} ${SYMM})
-    string(REPLACE "{SYMM}" ${SYMM_SUFFIX} SYMM_FILE ${OUTBASE})
-    configure_file(${INPUT} ${SYMM_FILE})
+    if (NOT "${SYMM}" STREQUAL "NU1")
+      get_symm_suffix(SYMM_SUFFIX ${SYMM})
+      get_symm_group_name(${VARNAME} ${SYMM})
+      string(REPLACE "{SYMM}" ${SYMM_SUFFIX} SYMM_FILE ${OUTBASE})
+      configure_file(${INPUT} ${SYMM_FILE})
+    endif()
   endforeach(SYMM)
 endmacro(configure_symm_file)
-
 
 # Adding symmetries definitions
 message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
