@@ -213,7 +213,7 @@ struct heevd_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
         // (as implemented by Leon Freitag in the SVD)
         auto real_opt_work = std::max(traits::detail::to_int( opt_size_work ),
                                       min_size_work(jobz, bindings::size_column(a)));
-        auto real_opt_iwork = std::max( opt_size_iwork ,
+        auto real_opt_iwork = std::max( static_cast<long int>(opt_size_iwork) ,
                                         min_size_iwork(jobz, bindings::size_column(a)));
         bindings::detail::array< real_type > tmp_work( real_opt_work );
         bindings::detail::array< fortran_int_t > tmp_iwork( real_opt_iwork );
