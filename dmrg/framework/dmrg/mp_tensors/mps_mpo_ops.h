@@ -75,11 +75,11 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     if (d == 0) {
         std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
         assert( check_real(left_[mps.length()][0].trace()) );
-        return maquis::real(left_[mps.length()][0].trace());
+        return maquis::real(left_[mps.length()][0].trace()) + mpo.getCoreEnergy();
     } else {
         std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
         assert( check_real(right_[0][0].trace()) );
-        return maquis::real(right_[0][0].trace());
+        return maquis::real(right_[0][0].trace()) + mpo.getCoreEnergy();
     }
 }
 
@@ -122,7 +122,7 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
     }
 
     // MD: if bra and ket are different, result might be complex!
-    return left.traces()[0];
+    return left.traces()[0] + mpo.getCoreEnergy();
 }
 
 

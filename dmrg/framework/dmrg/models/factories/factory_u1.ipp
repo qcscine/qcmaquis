@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,24 +24,30 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/2u1/model.h"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/coded/models_u1.hpp"
+#include "dmrg/models/coded/models_bela.hpp"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
-struct coded_model_factory<Matrix, TwoU1PG> {
-    static std::shared_ptr<model_impl<Matrix, TwoU1PG> > parse
-    (Lattice const & lattice, BaseParameters & parms)
+struct coded_model_factory<Matrix, U1> {
+    static std::shared_ptr<model_impl<Matrix, U1> > parse
+    (Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, TwoU1PG> > impl_ptr;
-        if (parms["MODEL"] == std::string("quantum_chemistry")) {
-            if (parms.is_set("LATTICE") && parms["LATTICE"] != std::string("orbitals"))
-                throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
-
-            return impl_ptr( new qc_model<Matrix, TwoU1PG>(lattice, parms) );
-        }
-
+        typedef std::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
+        if (parms["MODEL"] == std::string("heisenberg"))
+            return impl_ptr( new Heisenberg<Matrix>(lattice, parms["Jxy"], parms["Jz"]) );
+        else if (parms["MODEL"] == std::string("HCB"))
+            return impl_ptr( new HCB<Matrix>(lattice) );
+        else if (parms["MODEL"] == std::string("boson Hubbard"))
+            return impl_ptr( new BoseHubbard<Matrix>(lattice, parms) );
+//        else if (parms["MODEL"] == std::string("fermion Hubbard"))
+//            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("FreeFermions"))
+            return impl_ptr( new FreeFermions<Matrix>(lattice, parms["t"]) );
+        else if (parms["MODEL"] == std::string("bela_chiral_ext"))
+            return impl_ptr( new Chiral_ext<Matrix>(lattice, parms) );
         else {
-            throw std::runtime_error("Don't know this model: " + parms.get<std::string>("MODEL") + "\n");
+            throw std::runtime_error("Don't know this model!");
             return impl_ptr();
         }
     }

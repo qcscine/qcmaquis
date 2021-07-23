@@ -11,6 +11,20 @@ target_link_libraries(test1 ${DMRG_APP_LIBRARIES})
 add_executable(test2 test2.cpp)
 target_link_libraries(test2 ${DMRG_APP_LIBRARIES})
 
+if(BUILD_PREBO)
+    add_executable(prebo_test1 prebo_test1.cpp)
+    target_link_libraries(prebo_test1 ${DMRG_APP_LIBRARIES})
+    add_executable(prebo_test2 prebo_test2.cpp)
+    target_link_libraries(prebo_test2 ${DMRG_APP_LIBRARIES})
+    add_executable(prebo_test_model model/model_prebo.cpp)
+    target_link_libraries(prebo_test_model ${DMRG_APP_LIBRARIES})
+    # Unit tests
+    add_executable(test_prebo_symbolic_operator prebo/symbolicoperator_test.cpp)
+    target_link_libraries(test_prebo_symbolic_operator ${DMRG_APP_LIBRARIES})
+    add_executable(test_prebo_symbolic_jw prebo/SymbolicJordanWignerTest.cpp)
+    target_link_libraries(test_prebo_symbolic_jw ${DMRG_APP_LIBRARIES})
+endif(BUILD_PREBO)
+
 add_executable(test_integral_map test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
 

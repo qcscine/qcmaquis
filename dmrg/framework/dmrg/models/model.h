@@ -73,7 +73,7 @@ public:
 
     virtual typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const=0;
 
-    virtual terms_type const& hamiltonian_terms() const { return terms_; }
+    virtual terms_type const & hamiltonian_terms() const { return terms_; }
     virtual measurements_type measurements() const=0;
 
     virtual op_t const& get_operator(std::string const & name, size_t type) const { return operators_table()->get_op( get_operator_tag(name, type) ); }

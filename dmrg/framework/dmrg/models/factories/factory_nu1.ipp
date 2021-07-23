@@ -3,8 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -25,18 +24,17 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/su2u1/model.h"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/prebo/nu1/model.hpp"
+#include "dmrg/models/factories/factory.h"
 
-template<class Matrix>
-struct coded_model_factory<Matrix, SU2U1PG> {
-    static std::shared_ptr<model_impl<Matrix, SU2U1PG > > parse
-    (Lattice const & lattice, BaseParameters & parms)
+template<class Matrix, int N>
+struct coded_model_factory<Matrix, NU1_template<N>> {
+    static std::shared_ptr<model_impl<Matrix, NU1_template<N>> > parse
+            (Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, SU2U1PG> > impl_ptr;
-        if (parms["MODEL"] == std::string("quantum_chemistry"))
-            return impl_ptr( new qc_su2<Matrix, SU2U1PG>(lattice, parms) );
-
+        typedef std::shared_ptr<model_impl<Matrix, NU1_template<N>> > impl_ptr;
+        if (parms["MODEL"] == std::string("PreBO"))
+            return impl_ptr( new PreBO<Matrix, N>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();

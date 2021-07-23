@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *               2019 by Leon Freitag <lefreita@ethz.ch>
+ *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -30,9 +31,11 @@
 
 #include "maquis_dmrg_detail.h"
 
+using chem::Hamiltonian;
 
 namespace maquis
 {
+
     // Types for measurement results
     // meas_with_results_type: one measurement = pair of vectors with labels and results
     template <class V>
@@ -42,7 +45,7 @@ namespace maquis
     template <class V>
     using results_map_type = std::map<std::string, meas_with_results_type<V> >;
 
-    template <class V> // real or complex
+    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic> // real or complex
     class DMRGInterface
     {
         public:
@@ -78,6 +81,7 @@ namespace maquis
             // Get RDMs
             // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
             // Fix the model to recognise it!
+            const meas_with_results_type & mutinf();
             const meas_with_results_type & onerdm();
             const meas_with_results_type & onespdm();
             const meas_with_results_type & twordm();

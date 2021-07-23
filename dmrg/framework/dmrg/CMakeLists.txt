@@ -8,10 +8,11 @@ endmacro(add_line_to)
 
 
 # *** Configure ALPS SymmGroup
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/block_matrix/symmetry/nu1.h.in
-                ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h )
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h
-DESTINATION include/dmrg/block_matrix/symmetry)
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/sim/symmetry_factory.h.in
+                ${CMAKE_CURRENT_BINARY_DIR}/sim/symmetry_factory.h )
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sim/symmetry_factory.h
+DESTINATION include/dmrg/sim)
 
 # *** List all needed sources
 ## Lattice library
@@ -23,7 +24,7 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(GROUP_NAME ${SYMM})
   set(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME})
 
-  set(TRIAL_INCLUDE_FACTORY "models/coded/factory_${SYMM_SUFFIX}.ipp")
+  set(TRIAL_INCLUDE_FACTORY "models/factories/factory_${SYMM_SUFFIX}.ipp")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${TRIAL_INCLUDE_FACTORY}")
     add_line_to(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} "#include \"dmrg/${TRIAL_INCLUDE_FACTORY}\"")
   endif()
@@ -32,7 +33,9 @@ foreach(SYMM ${BUILD_SYMMETRIES})
     add_line_to(MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} "#include \"dmrg/${TRIAL_INCLUDE_FACTORY}\"")
   endif()
 endforeach(SYMM)
+
 configure_symm_file("models/model_factory_symm/model_factory_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_{SYMM}.cpp" CMAKE_SYMM_GROUP)
+configure_file("models/model_factory_symm/model_factory_tpl_nu1.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_nu1.cpp")
 get_symm_files(APPEND DMRG_MODELS_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/models/model_factory_symm/model_factory_{SYMM}.cpp")
 
 ## ALPS model library (disabled)
