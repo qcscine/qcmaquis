@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
+ *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,19 +24,14 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_H
-#define SYMMETRY_H
+#include "dmrg/sim/matrix_types.h"
+#include "dmrg/models/model_factory.ipp"
+#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
-#include "dmrg/block_matrix/symmetry/none.h"
-#include "dmrg/block_matrix/symmetry/u1.h"
-#include "dmrg/block_matrix/symmetry/2u1.h"
-#include "dmrg/block_matrix/symmetry/nu1pg.h"
-#include "dmrg/block_matrix/symmetry/nu1dg.h"
-#include "dmrg/block_matrix/symmetry/z2.h"
-#include "dmrg/block_matrix/symmetry/zq.h"
-#include "dmrg/block_matrix/symmetry/su2u1.h"
+${MAQUIS_INCLUDE_FACTORIES_NU1}
 
-#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
-#include "dmrg/block_matrix/symmetry/spin_descriptor.h"
+#define IMPL_MODEL_REAL(z, nOfSymm, test) impl_model_factory(matrix, NU1_template<nOfSymm>)
+#define IMPL_MODEL_COMPLEX(z, nOfSymm, test) impl_model_factory(cmatrix, NU1_template<nOfSymm>)
 
-#endif
+BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, IMPL_MODEL_REAL, ~)
+BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, IMPL_MODEL_COMPLEX, ~)

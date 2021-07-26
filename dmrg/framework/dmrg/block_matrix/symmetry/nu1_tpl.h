@@ -38,16 +38,37 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 
+// =================
+//  NU1Charge class
+// =================
+// Identifies a quantum number for the NU1 symmetry point group,
+// which is defined in the following.
+// The NU1Charge is basically a vector of type S (default is integer)
+// of N elements, where N is set in the CMake file. The i-th element
+// of the vector corresponds to the number of particles in the sites
+// of type i
 
 template<int N, class S = int>
 class NU1Charge
 {
 public:
+    // N is the dimension of the vector (i.e. of the group). It is made
+    // both static and const
     static const int static_size = N;
-
+    // -- Constructors --
     NU1Charge(S init = 0)
     {
-        for (S i = 0; i < N; ++i) (*this)[i] = init;
+        for (S i = 0; i < N; ++i)
+            (*this)[i] = init;
+    }
+    NU1Charge(std::vector<S> const & rhs) : NU1Charge(0)
+    {
+        std::copy(rhs.begin(), rhs.end(), this->begin());
+    }
+    NU1Charge(std::vector<unsigned int> const & temp) : NU1Charge(0)
+    {
+        std::vector<int> rhs(temp.begin(), temp.end());
+        std::copy(rhs.begin(), rhs.end(), this->begin());
     }
 
     NU1Charge(boost::array<S, N> const & rhs)
@@ -60,35 +81,28 @@ public:
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
 
-    // will this work?
-    // NU1Charge(std::array<S, N> && rhs)
-    // {
-    //     this->data_ = std::move(rhs.data());
-    // }
-
+    // -- Access methods --
     S * begin() { return &data_[0]; }
     S * end() { return &data_[N]; }
-
     S const * begin() const { return &data_[0]; }
     S const * end() const { return &data_[N]; }
-
     S & operator[](std::size_t p) { return data_[p]; }
     S const & operator[](std::size_t p) const { return data_[p]; }
-
+    // -- Extracts info from archive
     template<class Archive>
     void save(Archive & ar) const
     {
         for (int i = 0; i < N; ++i)
             ar[boost::lexical_cast<std::string>(i)] << (*this)[i];
     }
-
+    //
     template<class Archive>
     void load(Archive & ar)
     {
         for (int i = 0; i < N; ++i)
             ar[boost::lexical_cast<std::string>(i)] >> (*this)[i];
     }
-
+    //
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
@@ -96,6 +110,8 @@ public:
     }
 
 private:
+    // -- MEMBERS --
+    // The only member is the vector with the QN
     S data_[N];
 };
 
@@ -252,7 +268,7 @@ inline bool operator!=(NU1Charge<N, S> const & a, NU1Charge<N, S> const & b)
 
 template<int N, class S>
 NU1Charge<N, S> operator+(NU1Charge<N, S> const & a,
-                       NU1Charge<N, S> const & b)
+                          NU1Charge<N, S> const & b)
 {
     NU1Charge<N, S> ret;
     tpl_ops_<N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
@@ -277,6 +293,10 @@ NU1Charge<N, S> operator/(NU1Charge<N, S> const & a, int n)
 template<int N, class S>
 NU1Charge<N, S> operator/(int n, NU1Charge<N, S> const & a) { return a/n; }
 
+// ====================
+//  NU1_TEMPLATE CLASS
+// ====================
+// Class associated to the NU1 symmetry point group.
 
 template<int N, class S = int>
 class NU1_template
@@ -303,6 +323,16 @@ public:
             ret = fuse(ret, v[i]);
         return ret;
     }
+
+    static charge revert(charge& input)
+    {
+        charge output = charge(0) ;
+        for (std::size_t idx = 0; idx < N; idx++)
+            output[idx] = input[N-idx-1] ;
+        return output ;
+    }
+
+    int get_dimension() { return N ; }
 };
 
 

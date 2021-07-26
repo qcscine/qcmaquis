@@ -1,0 +1,25 @@
+image: gitlab.chab.ethz.ch:4567/reiher/docker/qcmaquis-gcc:latest
+
+build:
+  stage: build
+  tags:
+    - default_docker
+  script:
+    - mkdir build && cd build
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5  ../dmrg
+    - make -j4
+  artifacts:
+    paths:
+      - build/
+    expire_in: 6h
+    when: always
+
+
+test:
+  stage: test
+  tags:
+    - default_docker
+  script:
+    - cd build
+    - make test
+

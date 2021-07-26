@@ -15,6 +15,7 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
     - MPS state interaction (MPS-SI) for the calculation of spin-orbit coupling matrix elements, electronic and magnetic properties
     - state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
   - The current release version can be used together with SCINE autoCAS
+  - Pre-Born--Oppenheimer Hamiltonian with multicomponent MPS including one-particle RDM and mutual information
 
 ## QCMaquis compilation and installation
 ### Prerequisites:
@@ -43,6 +44,7 @@ where `<CMAKE_COMPILE_OPTIONS>` can be (optionally) one of the following:
 - `TESTS`: Compile tests.
 - `LAPACK_64_BIT`: Enable if you use a linear algebra library configured with 64-bit integers (ILP64).
 - `BLAS_LAPACK_SELECTOR`: Set the vendor of the linear algebra library: `openblas`,`mkl_sequential`, `mkl_parallel`, `veclib` for Accelerate on Mac OS X, `auto` for autodetection and `manual` for setting the linking directories manually are supported. Default is autodetection, which usually does a good job.
+- `BUILD_PREBO`: Build the pre-BO related model. It is mandatory to activate the `NU1` symmetry. 
 - `BUILD_*`: Build (legacy) utility binaries to perform various operations with matrix product state (MPS) checkpoint files.
 
 A more detailed installation guide can be found in Section 3.1 of our manual.

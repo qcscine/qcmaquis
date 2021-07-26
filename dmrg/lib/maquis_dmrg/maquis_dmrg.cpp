@@ -7,6 +7,7 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2018-2019    Leon Freitag <lefreita@ethz.ch>
+*               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -52,8 +53,8 @@ namespace maquis
         };
     };
 
-    template <class V>
-    struct DMRGInterface<V>::Impl
+    template <class V, Hamiltonian HamiltonianType>
+    struct DMRGInterface<V, HamiltonianType>::Impl
     {
         typedef typename simulation_traits<V>::shared_ptr sim_ptr;
         sim_ptr sim;
@@ -62,12 +63,12 @@ namespace maquis
         ~Impl() = default;
     };
 
-    template <class V>
-    DMRGInterface<V>::DMRGInterface(DmrgParameters & parms_)
+    template <class V, Hamiltonian HamiltonianType>
+    DMRGInterface<V, HamiltonianType>::DMRGInterface(DmrgParameters & parms_)
         : parms(parms_), impl_(new Impl(::dmrg::symmetry_factory<simulation_traits<V> >(parms_, parms_))) {};
 
-    template <class V>
-    void DMRGInterface<V>::optimize()
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::optimize()
     {
         try
         {
@@ -85,8 +86,8 @@ namespace maquis
         }
     }
 
-    template <class V>
-    void DMRGInterface<V>::run_measure()
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::run_measure()
     {
         try
         {
@@ -100,38 +101,38 @@ namespace maquis
         }
     }
 
-    template <class V>
-    V DMRGInterface<V>::energy()
+    template <class V, Hamiltonian HamiltonianType>
+    V DMRGInterface<V, HamiltonianType>::energy()
     {
         return impl_->sim->get_energy();
     }
 
-    template <class V>
-    results_collector& DMRGInterface<V>::get_iteration_results()
+    template <class V, Hamiltonian HamiltonianType>
+    results_collector& DMRGInterface<V, HamiltonianType>::get_iteration_results()
     {
         return impl_->sim->get_iteration_results();
     }
 
-    template <class V>
-    int DMRGInterface<V>::get_last_sweep()
+    template <class V, Hamiltonian HamiltonianType>
+    int DMRGInterface<V, HamiltonianType>::get_last_sweep()
     {
         return impl_->sim->get_last_sweep();
     }
 
-    template <class V>
-    void DMRGInterface<V>::measure()
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::measure()
     {
         measurements_ = impl_->sim->measure_out();
     }
 
-    template <class V>
-    void DMRGInterface<V>::update_integrals(const integral_map<V> & integrals)
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::update_integrals(const integral_map<V> & integrals)
     {
         impl_->sim->update_integrals(integrals);
     }
 
-    template <class V>
-    const typename DMRGInterface<V>::results_map_type& DMRGInterface<V>::measurements()
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::results_map_type& DMRGInterface<V, HamiltonianType>::measurements()
     {
         if (measurements_.empty())
             measure();
@@ -140,35 +141,41 @@ namespace maquis
         return measurements_;
     };
 
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::mutinf()
+    {
+        return measurements().at("mutinf");
+    }
+
     // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
     // Fix the model to recognise it!
-    template <class V>
-    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::onerdm()
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::onerdm()
     {
         return measurements().at("oneptdm");
     }
 
-    template <class V>
-    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::onespdm()
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::onespdm()
     {
         return measurements().at("oneptspdm");
     }
 
-    template <class V>
-    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::twordm()
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::twordm()
     {
         return measurements().at("twoptdm");
     }
 
-    template <class V>
-    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::threerdm()
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::threerdm()
     {
         parms.set("MEASURE[3rdm]", 1); // required for 3-RDM measurement
         return measurements().at("threeptdm");
     }
 
-    template <class V>
-    const typename DMRGInterface<V>::meas_with_results_type& DMRGInterface<V>::fourrdm()
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::fourrdm()
     {
         parms.set("MEASURE[4rdm]", 1); // required for 4-RDM measurement
         return measurements().at("fourptdm");
@@ -182,14 +189,14 @@ namespace maquis
         parms.erase_measurements(); \
         parms << meas_parms
 
-    template <class V>
-    void DMRGInterface<V>::measure_and_save_3rdm()
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::measure_and_save_3rdm()
     {
         measure_and_save_rdm(3);
     }
 
-    template <class V>
-    void DMRGInterface<V>::measure_and_save_4rdm()
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::measure_and_save_4rdm()
     {
         // Clear all unnecessary measurements before running 4-RDM measurement
         // FIXME: clearing parms here has NO EFFECT on the measurements! This has to be changed in another way!
@@ -200,8 +207,8 @@ namespace maquis
 
     #undef measure_and_save_rdm
 
-    template <class V>
-    void DMRGInterface<V>::measure_and_save_trans3rdm(const std::string & bra_name)
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::measure_and_save_trans3rdm(const std::string & bra_name)
     {
         BaseParameters meas_parms = parms.measurements();
         parms.erase_measurements();
@@ -211,17 +218,17 @@ namespace maquis
         parms << meas_parms;
     }
 
-    template <class V>
-    DMRGInterface<V>::~DMRGInterface() = default;
+    template <class V, Hamiltonian HamiltonianType>
+    DMRGInterface<V, HamiltonianType>::~DMRGInterface() = default;
 
-    template <class V>
-    V DMRGInterface<V>::overlap(const std::string& aux_mps_name)
+    template <class V, Hamiltonian HamiltonianType>
+    V DMRGInterface<V, HamiltonianType>::overlap(const std::string& aux_mps_name)
     {
         return impl_->sim->get_overlap(aux_mps_name);
     }
 
-    template <class V>
-    void DMRGInterface<V>::dump_parameters(const std::string & file)
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::dump_parameters(const std::string & file)
     {
         std::ofstream fs(file);
         fs << parms;
@@ -229,4 +236,5 @@ namespace maquis
 
     template class DMRGInterface<double>;
     template class DMRGInterface<std::complex<double> >;
+    template class DMRGInterface<double, Hamiltonian::PreBO>;
 }

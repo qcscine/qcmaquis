@@ -7,6 +7,7 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2019         Leon Freitag <lefreita@ethz.ch>
+*               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -43,26 +44,34 @@
 
 namespace chem {
 
-    // // Leon: TODO:
-    // // distinguish between electronic or vibrational
-    // // This way we can merge parse_integrals_vib.h here
+    enum class Hamiltonian {Electronic, Vibrational, PreBO};
 
-    // // The only thing that changes in electronic vs vibrational integrals is the
-    // // number of indices in the FCIDUMP file: 4 in the electronic and 6 in the vibrational
-    // const int Electronic = 4, Vibrational = 6;
-    //
-    // template <int N = Electronic>
-    // using index_type = std::array<int, N>;
+    constexpr int getIndexDim (const Hamiltonian& type) {
+        int indexDim=0;
+        switch (type) {
+            case Hamiltonian::Electronic:
+                indexDim = 4;
+                break;
+            case Hamiltonian::Vibrational:
+                indexDim = 6;
+                break;
+            case Hamiltonian::PreBO:
+                indexDim = 8;
+                break;
+        }
+        return indexDim;
+    }
+
+    template <Hamiltonian HamiltonianType=Hamiltonian::Electronic, int N = getIndexDim(HamiltonianType)>
+    using index_type = std::array<int, N>;
 
     // Classes to represent integrals
 
-    typedef std::array<int, 4> index_type;
+    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+    using integral_tuple = std::pair<index_type<HamiltonianType>, V>;
 
-    template <class V>
-    using integral_tuple = std::pair<index_type, V>;
-
-    template <class V>
-    using integrals = std::vector<integral_tuple<V> >; // TODO: use a map later
+    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+    using integrals = std::vector<integral_tuple<V, HamiltonianType> >; // TODO: use a map later
 
     // structs needed for distinguishing whether we have a complex type or not
     // required for proper integral permutation rules in the integral_map
@@ -71,10 +80,12 @@ namespace chem {
     template<typename T>
     struct is_complex_t<std::complex<T> > : public std::true_type {};
 
+
+    template <Hamiltonian HamiltonianType=Hamiltonian::Electronic>
     struct integral_hash
     {
         public:
-            std::size_t operator()(const index_type& id) const
+            std::size_t operator()(const index_type<HamiltonianType>& id) const
             {
                 return boost::hash_range(id.begin(), id.end());
             }
@@ -87,11 +98,11 @@ namespace chem {
     // 1e integrals use the first two indices and 0,0 as the 3rd and the 4th index
     // Nuclear repulsion energy uses an index 0,0,0,0
 
-    template <class V>
+    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
     class integral_map
     {
         public:
-            typedef std::unordered_map<index_type, V, integral_hash> map_t;
+            typedef std::unordered_map<index_type<HamiltonianType>, V, integral_hash<HamiltonianType>> map_t;
             typedef typename map_t::size_type size_type;
 
             // Type which returns std::abs(V), for the integral cutoff
@@ -102,13 +113,13 @@ namespace chem {
 
             // Explicit copy using this->operator[]() to avoid potential doubling due to symmetry permutation
             // Not implementing it in the move constructor yet
-            integral_map(const map_t & map, value_type cutoff=0.0) : cutoff_(cutoff)
+            explicit integral_map(const map_t & map, value_type cutoff=0.0) : cutoff_(cutoff)
             {
                 for (auto&& it: map)
                     (*this)[it->first] = it->second;
             }
 
-            integral_map(map_t && map, value_type cutoff=0.0) : map_(map), cutoff_(cutoff) {};
+            explicit integral_map(map_t && map, value_type cutoff=0.0) : map_(map), cutoff_(cutoff) {};
 
             // allow initializer lists for construction
             integral_map(std::initializer_list<typename map_t::value_type> l, value_type cutoff=0.0) : integral_map(map_t(l), cutoff) {};
@@ -123,10 +134,10 @@ namespace chem {
 
             // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation
             // Maybe these two properties should be decoupled in the future
-            V& operator[](const index_type & key) { return map_[maquis::detail::align<is_complex_t<V>::value>(key)]; };
-            const V& operator[](const index_type & key) const { return map_[maquis::detail::align<is_complex_t<V>::value>(key)]; };
-            V& at(const index_type & key) { return map_.at(maquis::detail::align<is_complex_t<V>::value>(key)); };
-            const V& at(const index_type & key) const { return map_.at(maquis::detail::align<is_complex_t<V>::value>(key)); };
+            V& operator[](const index_type<HamiltonianType> & key) { return map_[maquis::detail::align<is_complex_t<V>::value>(key)]; };
+            const V& operator[](const index_type<HamiltonianType> & key) const { return map_[maquis::detail::align<is_complex_t<V>::value>(key)]; };
+            V& at(const index_type<HamiltonianType> & key) { return map_.at(maquis::detail::align<is_complex_t<V>::value>(key)); };
+            const V& at(const index_type<HamiltonianType> & key) const { return map_.at(maquis::detail::align<is_complex_t<V>::value>(key)); };
 
             size_type size() const { return map_.size(); }
         private:
@@ -146,8 +157,8 @@ namespace chem {
 
     // Serialize the integral into a string
 
-    template <class V>
-    std::string serialize(const integral_map<V>& ints)
+    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+    std::string serialize(const integral_map<V, HamiltonianType>& ints)
     {
         std::stringstream ss;
         boost::archive::text_oarchive oa{ss};
