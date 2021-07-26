@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,39 +24,22 @@
  *
  *****************************************************************************/
 
+#ifndef MAQUIS_DMRG_MODELS_CODED_FACTORY_H
+#define MAQUIS_DMRG_MODELS_CODED_FACTORY_H
+
+#include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/lattice.h"
-#include "dmrg/models/factories/factory_lattice.hpp"
-#include "dmrg/models/continuum/factory_lattice.hpp"
+#include "dmrg/models/model.h"
 
-#ifdef ENABLE_ALPS_MODELS
-#include "dmrg/models/alps/lattice.hpp"
-#endif
-
-#ifdef ENABLE_LL_MODELS
-#include "dmrg/models/ll/ll_models.h"
-#endif
-
-/// lattice factory
-std::shared_ptr<lattice_impl>
-lattice_factory(BaseParameters & parms)
-{
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
-
-    if (parms["lattice_library"] == "coded") {
-        return coded_lattice_factory(parms);
-    } else if (parms["lattice_library"] == "alps") {
-#ifdef ENABLE_ALPS_MODELS
-        return impl_ptr( new alps_lattice(parms) );
-#else
-        throw std::runtime_error("This code was compiled without alps lattice.");
-#endif
-    } else if (parms["lattice_library"] == "continuum") {
-        return cont_lattice_factory(parms);
-#ifdef ENABLE_LL_MODELS
-    } else if (parms["lattice_library"] == "ll") {
-        return ll_lattice_factory(parms);
-#endif
-    } else {
-        throw std::runtime_error("Don't know this lattice_library!");
+template<class Matrix, class SymmGroup>
+struct coded_model_factory {
+    static std::shared_ptr<model_impl<Matrix, SymmGroup> >
+    parse(Lattice const &, BaseParameters &)
+    {
+        typedef std::shared_ptr<model_impl<Matrix, SymmGroup> > impl_ptr;
+        throw std::runtime_error("Don't know any model with this symmetry group!");
+        return impl_ptr();
     }
-}
+};
+
+#endif

@@ -100,7 +100,7 @@ public:
             return boost::any();
         }
     }
-    
+
     pos_t size() const
     {
         return L*N;
