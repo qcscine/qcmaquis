@@ -2,9 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -25,24 +24,25 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_su2.hpp"
-#include "dmrg/models/chem/su2u1/model.h"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/chem/rel/model.h"
+#include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
-struct coded_model_factory<Matrix, SU2U1> {
-    static std::shared_ptr<model_impl<Matrix, SU2U1 > > parse
+struct coded_model_factory<Matrix, U1DG> {
+    static std::shared_ptr<model_impl<Matrix, U1DG> > parse
     (Lattice const & lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, SU2U1> > impl_ptr;
-        if (parms["MODEL"] == std::string("fermion Hubbard"))
-            return impl_ptr( new FermiHubbardSU2<Matrix>(lattice, parms) );
+		typedef std::shared_ptr<model_impl<Matrix, U1DG> > impl_ptr;
 
-        else if (parms["MODEL"] == std::string("quantum_chemistry"))
-            return impl_ptr( new qc_su2<Matrix, SU2U1>(lattice, parms) );
+        if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
+            if (parms["LATTICE"] != std::string("spinors"))
+                throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry\n");
+
+            return impl_ptr( new rel_qc_model<Matrix, U1DG>(lattice, parms) );
+        }
 
         else {
-            throw std::runtime_error("Don't know this model!");
+            throw std::runtime_error("Don't know this model!\n");
             return impl_ptr();
         }
     }

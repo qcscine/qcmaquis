@@ -102,8 +102,7 @@ namespace detail {
         // *** Parse orbital data *********************************************
         // ********************************************************************
 
-        std::vector<index_type> indices;
-
+        std::vector<index_type<Hamiltonian::Electronic>> indices;
 
         // Stream used to load FCIDUMP file/FCIDUMP string
         std::unique_ptr<std::istream> orb_string;

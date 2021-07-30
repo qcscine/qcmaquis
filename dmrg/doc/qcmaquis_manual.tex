@@ -1556,6 +1556,91 @@ MEASURE[ChemEntropy]
 %\clearpage
 \clearpage
 \newpage
+
+
+\subsection{QCMaquis pre-Born--Oppenheimer module}\label{sec:preBO}
+
+The pre-Born--Oppenheimer (pre-BO) module within QCMaquis provides a tool to perform
+DMRG-CASCI calculations of \textit{multicomponent} systems consisting of multiple spin-$\frac12$
+particle types.
+
+QCMaquis follows the formatting of the integral file shown in
+Listing~\ref{lst:prebodump}. The first line with only a single float,
+contains a constant shift in energy, e.g., point-charge repulsion of classical
+nuclei.
+The following lines contain the terms in the Hamiltonian where pairs of numbers
+$m-n$ describe a single second-quantization operator. The first number denotes
+the particle type (starting with 0) and the second number the orbital index of
+the given particle type (also starting with 0 for all types). 
+We assume physics notation and normal-ordering, i.e., the following would be a
+valid term
+\begin{equation}
+  \left(\int \phi_{1-1}(1)\phi_{0-1}(2)g(1,2)\phi_{1-0}(1)\phi_{0-1}(2)\right)
+  a^\dagger_{1-1} a^\dagger_{0-1} a_{0-1} a_{1-0}\,.
+\end{equation}
+The second and third lines contain single-paricle type \textit{hopping} terms.
+The fourth line stands for a single-particle type interaction, and the fifth
+line for an interaction between different particle types. 
+Note here that the aforementioned convention implies that operators belonging to
+the same particle types in a given string of operators must be either at
+positions 1 and 4 or 2 and 3. 
+
+\begin{lstlisting}[language=qcmaquis,caption={Pre-BO integral file
+format.},label=lst:prebodump]
+1.145901278714102                       
+   0-0         0-0                                      -2.451508889071943
+   1-0         1-0                                      2.30233235666604
+   0-2         0-0         0-1         0-1              -0.08690785254423253
+   1-1         0-1         0-1         1-0              4.887021698358933e-05
+\end{lstlisting}
+
+Listing~\ref{lst:qcm} shows an input example for a pre-BO DMRG-FCI calculation. 
+It assumes that a pre-BO integral file with has been generated. Additionally,
+the 1-particle RDM and the mutual information can be measured and printed to a
+file.
+
+\begin{lstlisting}[language=qcmaquis,caption={Input example for a pre-BO DMRG-FCI
+calculation},label=lst:preboinput]
+nsweeps                         = 6
+max_bond_dimension              = 1000
+
+// Pre-BO specific input
+// String with the number of parciles for each type
+PreBO_ParticleTypeVector        = "4 1"
+// Spin-1/2 fermion (1) or spin-0 boson (0)
+// Attention: the boson-related functionality has not been fully tested, yet.
+PreBO_FermionOrBosonVector      = "1 1"
+// Number of orbitals for each type.
+PreBO_OrbitalVector             = "3 3"
+// Number of alpha-beta particles for each type
+// Note: for spin-0 bosons it would be a single number.
+PreBO_InitialStateVector        = "2 2 1 0"
+
+optimization                    = twosite 
+symmetry                        = nu1
+
+model_library                   = coded
+lattice_library                 = coded
+LATTICE                         = "preBO lattice" 
+
+// Your model
+MODEL                           = PreBO
+init_state                      = 'default'
+
+// Hamiltonian file
+integral_file                   = FCIDUMP.E_4_H1_1
+integral_cutoff                 = 1.0E-10
+
+MEASURE[1rdm]          = 1
+MEASURE[mutinf]        = 1
+\end{lstlisting}
+
+
+%\clearpage
+\clearpage
+\newpage
+
+
 \section{Additional Considerations}
 
 

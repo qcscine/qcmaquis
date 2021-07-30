@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,32 +25,21 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_DMRG_MODELS_CODED_FACTORY_LATTICE_H
-#define MAQUIS_DMRG_MODELS_CODED_FACTORY_LATTICE_H
+#include "dmrg/models/chem/su2u1/model.h"
+#include "dmrg/models/factories/factory.h"
 
-#include "dmrg/models/coded/lattice.hpp"
+template<class Matrix>
+struct coded_model_factory<Matrix, SU2U1PG> {
+    static std::shared_ptr<model_impl<Matrix, SU2U1PG > > parse
+    (Lattice const & lattice, BaseParameters & parms)
+    {
+        typedef std::shared_ptr<model_impl<Matrix, SU2U1PG> > impl_ptr;
+        if (parms["MODEL"] == std::string("quantum_chemistry"))
+            return impl_ptr( new qc_su2<Matrix, SU2U1PG>(lattice, parms) );
 
-inline std::shared_ptr<lattice_impl>
-coded_lattice_factory(BaseParameters & parms)
-{
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
-    if (parms["LATTICE"] == std::string("periodic chain lattice"))
-        return impl_ptr(new ChainLattice(parms, true));
-    else if (parms["LATTICE"] == std::string("chain lattice"))
-        return impl_ptr(new ChainLattice(parms, false));
-    else if (parms["LATTICE"] == std::string("open chain lattice"))
-        return impl_ptr(new ChainLattice(parms, false));
-    else if (parms["LATTICE"] == std::string("square lattice"))
-        return impl_ptr(new SquareLattice(parms));
-    else if (parms["LATTICE"] == std::string("open square lattice"))
-        return impl_ptr(new SquareLattice(parms));
-    else if (parms["LATTICE"] == std::string("orbitals"))
-        return impl_ptr(new Orbitals(parms));
-    else if (parms["LATTICE"] == std::string("spinors"))
-        return impl_ptr(new Orbitals(parms));
-    else {
-        throw std::runtime_error("Don't know this lattice!");
+        else {
+            throw std::runtime_error("Don't know this model!");
+            return impl_ptr();
+        }
     }
-}
-
-#endif
+};

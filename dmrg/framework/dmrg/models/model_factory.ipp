@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/model.h"
-#include "dmrg/models/coded/factory.h"
+#include "dmrg/models/factories/factory.h"
 #include "dmrg/models/continuum/factory.h"
 #include "dmrg/models/initializer_factory.h"
 
@@ -38,7 +38,7 @@
 #endif
 
 // init MACROS
-#define impl_model_factory(MATRIX,SYMMGROUP)                                            \
+#define impl_model_factory(MATRIX,SYMMGROUP)                                          \
 template std::shared_ptr<model_impl<MATRIX, SYMMGROUP> >                              \
 model_factory<MATRIX,SYMMGROUP>(Lattice const&, BaseParameters &);
 
