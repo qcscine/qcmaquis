@@ -140,7 +140,7 @@ namespace generate_mpo
         typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
         typedef std::vector<tag_type> tag_vec;
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
-        typedef std::pair<tag_type, double> prempo_value_type;
+        typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
         typedef std::multimap<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
                               compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
@@ -384,7 +384,7 @@ namespace generate_mpo
                 mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1]));
-                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), maquis::real(term.coeff)), detach);
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                   v_nferm[v_part_type[i]] -= 1;
                 v_trivial_fill[v_part_type[i]] = (v_nferm[v_part_type[i]] % 2 == 0);
@@ -570,7 +570,7 @@ namespace generate_mpo
                 ops_right.push_back(to_pair(term[j]));
             k2 = prempo_key_type(ops_right);
             mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(thresh))).spin());
-            k1 = insert_operator(term.position(thresh), make_pair(k1, k2), prempo_value_type(term.operator_tag(thresh), maquis::real(term.coeff)), detach);
+            k1 = insert_operator(term.position(thresh), make_pair(k1, k2), prempo_value_type(term.operator_tag(thresh), term.coeff), detach);
             // Extract position and then type
             if (tag_handler->is_fermionic(term.operator_tag(thresh)))
                 v_nferm[v_part_type[thresh]] -= 1;
@@ -626,7 +626,7 @@ namespace generate_mpo
 
             {
                 int i = 0;
-                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), maquis::real(term.coeff)), detach);
+                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
                 k1 = k2;
 
                 if (i < nops-1 && term.position(i)+1 != term.position(i+1))
