@@ -1,25 +1,70 @@
 image: gitlab.chab.ethz.ch:4567/reiher/docker/qcmaquis-gcc:latest
 
-build:
+build-electronic:
   stage: build
   tags:
     - default_docker
   script:
-    - mkdir build && cd build
+    - mkdir buildElectronic && cd buildElectronic
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" ../dmrg
+    - make -j4
+  artifacts:
+    paths:
+      - buildElectronic/
+    expire_in: 6h
+    when: always
+
+build-relativistic:
+  stage: build
+  tags:
+    - default_docker
+  script:
+    - mkdir buildRelativistic && cd buildRelativistic
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" ../dmrg
+    - make -j4
+  artifacts:
+    paths:
+      - buildRelativistic/
+    expire_in: 6h
+    when: always
+
+build-with-nu1:
+  stage: build
+  tags:
+    - default_docker
+  script:
+    - mkdir buildNU1 && cd buildNU1
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5  ../dmrg
     - make -j4
   artifacts:
     paths:
-      - build/
+      - buildNU1/
     expire_in: 6h
     when: always
 
-
-test:
+testElectronic:
   stage: test
+  needs: ["build-electronic"]
   tags:
     - default_docker
   script:
-    - cd build
+    - cd buildElectronic
     - make test
 
+testRelativistic:
+  stage: test
+  needs: ["build-relativistic"]
+  tags:
+    - default_docker
+  script:
+    - cd buildRelativistic
+    - make test
+
+testNU1:
+  stage: test
+  needs: ["build-with-nu1"]
+  tags:
+    - default_docker
+  script:
+    - cd buildNU1
+    - make test
