@@ -139,12 +139,20 @@ namespace dmrg {
 #ifdef HAVE_NU1
         else if (symm_name == "nu1") {
             std::vector<bool> isFermion;
+            std::vector<int> vec_ini_state;
             std::string isFermion_str = parms["PreBO_FermionOrBosonVector"].as<std::string>();
             std::istringstream is( isFermion_str );
             isFermion.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
+            std::string vec_ini_state_str = parms["PreBO_InitialStateVector"].as<std::string>();
+            is.clear();
+            is.str(vec_ini_state_str);
+            vec_ini_state.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
             int numberOfSymmetries = 0;
             for (const auto iElement: isFermion)
                 numberOfSymmetries += (iElement) ? 2 : 1;
+            if (vec_ini_state.size() != numberOfSymmetries) {
+                throw std::runtime_error("PreBO_InitialStateVector input Error.");
+            }
             switch (numberOfSymmetries) { 
                 BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~)
                 default:
