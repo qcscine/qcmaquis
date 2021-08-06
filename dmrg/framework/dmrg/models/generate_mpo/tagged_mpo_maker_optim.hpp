@@ -441,7 +441,7 @@ namespace generate_mpo
                 mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1])); // k2: future operators
-                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), maquis::real(term.coeff)), detach);
 
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
@@ -493,7 +493,7 @@ namespace generate_mpo
                 mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[3]));
-                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), maquis::real(term.coeff)), detach);
 
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;

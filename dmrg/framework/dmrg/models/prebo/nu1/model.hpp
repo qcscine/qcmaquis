@@ -44,6 +44,8 @@
 #include <unordered_map>
 #include <chrono>
 
+#ifdef HAVE_NU1
+
 /**
  * @brief Pre-Born Oppenheimer model class
  * @class preBO models_nu1.hpp
@@ -220,5 +222,7 @@ public:
         return meas;
     }
 };
+
+#endif // HAVE_NU1
 
 #endif
