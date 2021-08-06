@@ -35,7 +35,10 @@
 #include "prebo_TagGenerator.hpp"
 #include "integral_interface.h"
 
+#ifdef HAVE_NU1
+
 namespace prebo {
+
     /**
      * @class TermGenerator prebo_TermGenerator.hpp
      * General info: the ordering of the lattice for Hamiltonian and particle RDM is handled by the nu1_nBodyTerm class.
@@ -802,4 +805,6 @@ namespace prebo {
 
 } // namespace prebo
 
-#endif //MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
+#endif // HAVE_NU1
+
+#endif // MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP

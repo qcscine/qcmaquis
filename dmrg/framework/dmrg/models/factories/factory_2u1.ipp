@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -39,8 +40,10 @@ struct coded_model_factory<Matrix, TwoU1> {
             return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
         else if (parms["MODEL"] == std::string("quantum_chemistry"))
             return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
+#ifdef HAVE_NU1
         else if (parms["MODEL"] == std::string("PreBO"))
             return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
+#endif
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();

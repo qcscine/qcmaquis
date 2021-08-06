@@ -5,7 +5,6 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2012-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Sebastian Keller <sebkelle@phys.ethz.ch>
- *
  *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS

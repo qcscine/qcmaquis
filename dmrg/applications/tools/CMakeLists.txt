@@ -28,11 +28,11 @@ create_tools_symm_target("mps_overlap_none" "NONE"   "mps_overlap.cpp"  "${DMRG_
 endif (BUILD_MPS_OVERLAP)
 #create_tools_symm_target("mps_reflect_u1"   "U1"     "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
 #create_tools_symm_target("mps_reflect_2u1"  "TWOU1"  "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
-# create_tools_symm_target("mps_reflect_none" "NONE"   "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
+# create_tools_symm_target("mps_reflect_none" "None"   "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
 
 #create_tools_symm_target("mps_join_u1"   "U1"     "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
 # create_tools_symm_target("mps_join_2u1"  "TWOU1"  "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
-# create_tools_symm_target("mps_join_none" "NONE"   "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
+# create_tools_symm_target("mps_join_none" "None"   "mps_join.cpp"  "${DMRG_APP_LIBRARIES}")
 
 
 #create_tools_symm_target("mps_stats_u1"      "U1"      "mps_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
@@ -54,7 +54,7 @@ endif (BUILD_MPS_OVERLAP)
 
 #create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 #create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
-#create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
+#create_tools_symm_target("mps_upgrade_none" "None"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 if (BUILD_ONETDM_DIAG)
 create_tools_symm_target("onetdm_diag_2u1"     "TWOU1"   "onetdm_diag.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("onetdm_diag_2u1pg"  "TWOU1PG"  "onetdm_diag.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")

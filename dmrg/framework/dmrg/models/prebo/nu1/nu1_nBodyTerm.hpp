@@ -28,11 +28,10 @@
 #ifndef MAQUIS_DMRG_NU1_NBODYTERM_HPP
 #define MAQUIS_DMRG_NU1_NBODYTERM_HPP
 
+#ifdef HAVE_NU1
 
 #include "nu1_SymbolicJordanWigner.hpp"
-
 #include <map>
-
 
 /**
  * @class NBodyTerm nu1_nBodyTerm.hpp
@@ -305,5 +304,7 @@ public:
 
 
 };
+
+#endif // HAVE_NU1
 
 #endif // MAQUIS_DMRG_NU1_NBODYTERM_HPP
