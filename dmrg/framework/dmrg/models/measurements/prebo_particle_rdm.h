@@ -27,7 +27,6 @@
 #ifndef MAQUIS_DMRG_PREBO_PARTICLE_RDM_H
 #define MAQUIS_DMRG_PREBO_PARTICLE_RDM_H
 
-
 /* internal */
 #include "dmrg/models/measurement.h"
 #include "dmrg/utils/checks.h"
@@ -37,6 +36,8 @@
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 /* external */
 #include <alps/numeric/matrix/algorithms.hpp>
+
+#ifdef HAVE_NU1
 
 namespace measurements {
 
@@ -160,4 +161,6 @@ namespace measurements {
     };
 }
 
-#endif //MAQUIS_DMRG_PREBO_PARTICLE_RDM_H
+#endif // HAVE_NU1
+
+#endif // MAQUIS_DMRG_PREBO_PARTICLE_RDM_H

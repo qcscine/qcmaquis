@@ -39,6 +39,8 @@
 #include <alps/numeric/matrix/matrix.hpp>
 #include <map>
 
+#ifdef HAVE_NU1
+
 namespace prebo {
 
 /**
@@ -443,4 +445,6 @@ namespace prebo {
 
 } // namespace prebo
 
-#endif //MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
+#endif // HAVE_NU1
+
+#endif // MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
