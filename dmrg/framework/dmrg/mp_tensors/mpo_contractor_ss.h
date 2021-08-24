@@ -30,31 +30,13 @@
 #include <boost/random.hpp>
 
 #include "dmrg/optimize/ietl_lanczos_solver.h"
+
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
 #ifdef HAVE_ARPACK
 #include "dmrg/optimize/arpackpp_solver.h"
 #endif
-
+#include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/utils/BaseParameters.h"
-
-
-template<class Matrix, class SymmGroup>
-struct SiteProblem
-{
-    SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : ket_tensor(ket_tensor_)
-    , left(left_)
-    , right(right_)
-    , mpo(mpo_) { }
-
-    MPSTensor<Matrix, SymmGroup> const & ket_tensor;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
-    MPOTensor<Matrix, SymmGroup> const & mpo;
-};
 
 #define BEGIN_TIMING(name) \
 now = std::chrono::high_resolution_clock::now();

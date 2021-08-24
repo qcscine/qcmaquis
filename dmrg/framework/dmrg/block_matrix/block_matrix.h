@@ -89,6 +89,11 @@ public:
     Index<SymmGroup> right_basis() const;
     DualIndex<SymmGroup> const & basis() const;
 
+    charge get_left_charge(std::size_t idx) const ;
+    charge get_right_charge(std::size_t idx) const ;
+    size_type get_left_dim(std::size_t idx) const ;
+    size_type get_right_dim(std::size_t idx) const ;
+
     void shift_basis(charge diff);
 
     std::string description() const;
@@ -144,6 +149,9 @@ public:
                       size_type new_r, size_type new_c,
                       bool pretend = false);
 
+    void add_block_to_row(block_matrix & rhs, charge r, charge c);
+    void add_block_to_column(block_matrix & rhs, charge r, charge c);
+
     friend void swap(block_matrix & x, block_matrix & y)
     {
         swap(x.data_, y.data_);
@@ -176,12 +184,20 @@ public:
 
     bool reasonable() const;
 
+    /** 
+     * @brief Calculates the overlap between block matrices
+     * 
+     * Note that the overlap is calculated by "vectorizing" the block matrix
+     */
+    scalar_type scalar_overlap(block_matrix<Matrix, SymmGroup> const & rhs) const;
+
 private:
     DualIndex<SymmGroup> basis_;
     boost::ptr_vector<Matrix> data_;
 };
 
 #include "dmrg/block_matrix/block_matrix.hpp"
+
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> operator*(const typename block_matrix<Matrix,SymmGroup>::scalar_type& v,
                                           block_matrix<Matrix, SymmGroup> bm)
@@ -195,6 +211,22 @@ block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
                                           const typename block_matrix<Matrix,SymmGroup>::scalar_type& v)
 {
     bm *= v;
+    return bm;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> operator/(const typename block_matrix<Matrix,SymmGroup>::scalar_type& v,
+                                          block_matrix<Matrix, SymmGroup> bm)
+{
+    bm /= v;
+    return bm;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> operator/(block_matrix<Matrix, SymmGroup> bm,
+                                          const typename block_matrix<Matrix,SymmGroup>::scalar_type& v)
+{
+    bm /= v;
     return bm;
 }
 

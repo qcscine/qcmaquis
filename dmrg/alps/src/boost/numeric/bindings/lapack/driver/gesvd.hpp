@@ -384,8 +384,11 @@ struct gesvd_impl< Value, typename boost::enable_if< is_complex< Value > >::type
                 bindings::begin_value(u), bindings::stride_major(u),
                 bindings::begin_value(vt), bindings::stride_major(vt),
                 &opt_size_work, -1, bindings::begin_value(tmp_rwork) );
-        bindings::detail::array< value_type > tmp_work(
-                traits::detail::to_int( opt_size_work ) );
+        // Workaround for MKL which reports too small work arrays on query sometimes
+        auto cmplx_opt_work = std::max(traits::detail::to_int( opt_size_work ),
+                                       min_size_work(jobu, jobvt, bindings::size_row(a),
+                                                     bindings::size_column(a), minmn));
+        bindings::detail::array< value_type > tmp_work(cmplx_opt_work);
         return invoke( jobu, jobvt, a, s, u, vt, workspace( tmp_work,
                 tmp_rwork ) );
     }

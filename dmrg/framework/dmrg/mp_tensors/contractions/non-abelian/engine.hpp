@@ -151,10 +151,10 @@ namespace contraction {
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
                                     Boundary<OtherMatrix, SymmGroup> const & right,
-                                    double alpha, double cutoff, std::size_t Mmax)
+                                    double alpha, double cutoff, std::size_t Mmax, bool perturbDM)
         {
             return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
-                   (mps, mpo, left, right, alpha, cutoff, Mmax);
+                   (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM);
         }
 
         static MPSTensor<Matrix, SymmGroup>
@@ -170,10 +170,10 @@ namespace contraction {
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
                                     Boundary<OtherMatrix, SymmGroup> const & right,
-                                    double alpha, double cutoff, std::size_t Mmax)
+                                    double alpha, double cutoff, std::size_t Mmax, bool perturbDM)
         {
             return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
-                   (mps, mpo, left, right, alpha, cutoff, Mmax);
+                   (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM);
         }
 
         static MPSTensor<Matrix, SymmGroup>
@@ -184,15 +184,40 @@ namespace contraction {
             return common::predict_lanczos_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
         }
 
+        static Boundary<OtherMatrix, SymmGroup>
+        generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                                Boundary<OtherMatrix, SymmGroup> const & left, MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return common::generate_left_mpo_basis<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>(bra_tensor, ket_tensor, left, mpo);
+        }
+
+        static Boundary<OtherMatrix, SymmGroup>
+        generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                                 Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return common::generate_right_mpo_basis<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>(bra_tensor, ket_tensor, right, mpo);
+        }
+
         static MPSTensor<Matrix, SymmGroup>
         site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
                     MPOTensor<Matrix, SymmGroup> const & mpo);
+
+        static block_matrix<Matrix, SymmGroup>
+        zerosite_hamil2(block_matrix<Matrix, SymmGroup> bra_tensor, block_matrix<Matrix, SymmGroup> ket_tensor, 
+                        Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
+                        MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right);
+
+        static block_matrix<Matrix, SymmGroup>
+        zerosite_hamil2(block_matrix<Matrix, SymmGroup> ket_tensor, Boundary<OtherMatrix, SymmGroup> const & left,
+                        Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left,
+                        MPOTensor<Matrix, SymmGroup> const & mpo_right);
     };
 
 } // namespace contraction
 
 #include "dmrg/mp_tensors/contractions/non-abelian/site_hamil.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/zero_site_hamil.hpp"
 
 #endif

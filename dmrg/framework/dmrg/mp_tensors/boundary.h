@@ -102,6 +102,58 @@ public:
     void save(Archive & ar) const {
         ar["data"] << data_;
     }
+
+    Boundary const & operator+=(Boundary const & rhs)
+    {
+        assert (this->data_.size() == rhs.data_.size()) ;
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] += rhs.data_[i] ;
+        return *this;
+    };
+    //
+    Boundary const & operator-=(Boundary const & rhs)
+    {
+        assert (this->data_.size() == rhs.data_.size()) ;
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] -= rhs.data_[i] ;
+        return *this;
+    };
+    //
+    Boundary const & operator*=(scalar_type const & rhs)
+    {
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] *= rhs ;
+        return *this;
+    };
+    //
+    Boundary const & operator/=(scalar_type const & rhs)
+    {
+        for(size_t i = 0; i < this->data_.size(); ++i)
+            this->data_[i] /= rhs ;
+        return *this;
+    };
+    //
+    friend Boundary operator*(scalar_type const & rhs, const Boundary& b_rhs)
+    {
+        Boundary res(b_rhs);
+        for(size_t i = 0; i < res.data_.size(); ++i)
+            res.data_[i] *= rhs ;
+        return res;
+    };
+    //
+    friend Boundary operator/(scalar_type const & rhs, const Boundary& b_rhs)
+    {
+      Boundary res(b_rhs);
+      for(size_t i = 0; i < res.data_.size(); ++i)
+            res.data_[i] /= rhs ;
+      return res;
+    };
+
+    void print() const
+    {
+      for (auto x : data_)
+        std::cout << x << std::endl;
+    };
     
     block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
     block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
