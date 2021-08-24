@@ -257,8 +257,8 @@ endif()
 ######################################################################
 set(DMRG_YEAR 2021)
 set(DMRG_VERSION_MAJOR 3)
-set(DMRG_VERSION_MINOR 0)
-set(DMRG_VERSION_PATCH 6)
+set(DMRG_VERSION_MINOR 1)
+set(DMRG_VERSION_PATCH 0)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
