@@ -28,40 +28,60 @@
 #define IETL_LANCZOS_SOLVER_H
 
 #include "dmrg/utils/BaseParameters.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/contractions/engine.h"
 
-namespace ietl
+namespace ietl {
+
+template<class Matrix, class SymmGroup, class Generator> void generate(MPSTensor<Matrix, SymmGroup> & m, Generator g)
 {
-    template<class Matrix, class SymmGroup, class Generator> void generate(MPSTensor<Matrix, SymmGroup> & m, Generator g)
-    {
-        m.data().generate(g);
-    }
-
-    template<class Matrix, class SymmGroup> void generate(MPSTensor<Matrix, SymmGroup> & m, MPSTensor<Matrix, SymmGroup> const & m2)
-    {
-        m = m2;
-    }
-
-    template<class Matrix, class SymmGroup> void swap(MPSTensor<Matrix, SymmGroup> & x, MPSTensor<Matrix, SymmGroup> & y)
-    {
-        x.swap_with(y);
-    }
-
-    template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::scalar_type
-    dot(MPSTensor<Matrix, SymmGroup> const & x, MPSTensor<Matrix, SymmGroup> const & y)
-    {
-        return x.scalar_overlap(y);
-    }
-
-    template<class Matrix, class SymmGroup>
-    typename MPSTensor<Matrix, SymmGroup>::real_type
-    two_norm(MPSTensor<Matrix, SymmGroup> const & x)
-    {
-        return x.scalar_norm();
-    }
+    m.data().generate(g);
 }
 
-template<class Matrix, class SymmGroup, class SymmType = void> struct SiteProblem;
+template<class Matrix, class SymmGroup> void generate(MPSTensor<Matrix, SymmGroup> & m, MPSTensor<Matrix, SymmGroup> const & m2)
+{
+    m = m2;
+}
+
+template<class Matrix, class SymmGroup> void swap(MPSTensor<Matrix, SymmGroup> & x, MPSTensor<Matrix, SymmGroup> & y)
+{
+    x.swap_with(y);
+}
+
+template<class Matrix, class SymmGroup>
+typename MPSTensor<Matrix, SymmGroup>::scalar_type
+dot(MPSTensor<Matrix, SymmGroup> const & x, MPSTensor<Matrix, SymmGroup> const & y)
+{
+    return x.scalar_overlap(y);
+}
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::scalar_type
+dot(block_matrix<Matrix, SymmGroup> const & x, block_matrix<Matrix, SymmGroup> const & y)
+{
+    return x.scalar_overlap(y);
+}
+
+template<class Matrix, class SymmGroup>
+typename MPSTensor<Matrix, SymmGroup>::real_type
+two_norm(MPSTensor<Matrix, SymmGroup> const & x)
+{
+    return x.scalar_norm();
+}
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::real_type
+two_norm(block_matrix<Matrix, SymmGroup> const & x)
+{
+    return x.norm();
+}
+
+} // ietl
+
+// Forward declaration of the SiteProblem
+template<class Matrix, class SymmGroup> 
+struct SiteProblem;
 
 template<class Matrix, class SymmGroup>
 class SingleSiteVS

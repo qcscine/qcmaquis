@@ -1,0 +1,44 @@
+// +---------------------------------------------------+
+//  EXAMPLE 1: Real-time DMRG with CAS(6,6) for benzene 
+// +---------------------------------------------------+
+
+// -- General parameters --
+L                        = 6
+max_bond_dimension       = 100
+nsweeps                  = 40
+irrep                    = 0
+nelec                    = 6
+spin                     = 0
+symmetry                 = 'su2u1pg'
+LATTICE                  = "orbitals"
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+MODEL                    = "quantum_chemistry"
+integral_file            = "FCIDUMP_Benzene_631Gs_CAS6-6"
+lattice_library          = "coded"
+model_library            = "coded"
+optimization             = singlesite
+use_compressed           = 0
+conv_thresh              = 0.100000E-40
+
+// -- SVD truncation --
+truncation_initial       = 1e-50
+truncation_final         = 1e-50
+
+// -- Initialization and storage information --
+init_state               = 'default'
+chkpfile                 = 'Benzene_6e6o.TD.SS.checkpoint_state.0.h5'
+resultfile               = 'Benzene_6e6o.TD.SS.results_state.0.h5'
+
+// -- Jacobi-Davidson parameters --
+ietl_jcd_maxiter         = 10
+ietl_jcd_tol             = 1e-8
+conv_thresh              = -1
+integral_cutoff          = 1e-300
+
+// -- Time-dependent simulation --
+simulation_type          = TD
+propagator_accuracy      = 1.0E-10
+propagator_maxiter       = 10
+time_step                = 1 
+hamiltonian_units        = "Hartree"
+time_units               = "as"

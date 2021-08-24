@@ -47,7 +47,7 @@ option(ENABLE_OMP "Enable OpenMP" ON)
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
-# Standalone utility binaries, mostly deprecated by the binary interface
+# DMRG-related flags
 option (BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
 option (BUILD_CIDEAS "Build CIDEAS binary (deprecated)" OFF)
 option (BUILD_MPS_ROTATE "Build mps_rotate binary for RASSI counterrotation (deprecated)" OFF)
@@ -57,7 +57,14 @@ option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated 
 option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
+option (BUILD_DMRG_EVOLVE "Builds the time-evolution DMRG module" OFF)
 option (BUILD_PREBO "Build PreBO model" OFF)
+
+# Time-evolution TD-DMRG
+if(BUILD_DMRG_EVOLVE)
+  list(APPEND DMRG_DEFINITIONS -DDMRG_TD)
+  set(DMRG_TD TRUE)
+endif(BUILD_DMRG_EVOLVE)
 
 option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
@@ -182,8 +189,13 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
-if((BUILD_PREBO) AND (NOT DMRG_HAS_NU1))
+if((BUILD_PREBO))
+  if((NOT DMRG_HAS_NU1))
     message(FATAL_ERROR "For pre-BO module, activate NU1 symmetry!")
+  else()
+    list(APPEND DMRG_DEFINITIONS -DDMRG_PREBO)
+    set(DMRG_PREBO TRUE)
+  endif()
 endif()
 
 ##### Dependencies #####
@@ -229,6 +241,11 @@ endif(Boost_FOUND)
 add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
 
+# Eigen
+# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+# message("Eigen directory " ${EIGEN3_INCLUDE_DIR})
+# list(APPEND DMRG_LIBRARIES Eigen3::Eigen)
+
 # OpenMolcas interface
 if (BUILD_OPENMOLCAS_INTERFACE)
     project (MAQUIS_DMRG CXX C Fortran)
@@ -241,7 +258,7 @@ endif()
 set(DMRG_YEAR 2021)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 0)
-set(DMRG_VERSION_PATCH 5)
+set(DMRG_VERSION_PATCH 6)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -377,13 +394,18 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_HiRDM COMMAND test_hirdm)
   add_test(NAME Test_MPS_MPO_Ops COMMAND test_mps_mpo_ops)
+  add_test(NAME Test_SiteProblem COMMAND test_siteproblem)
   add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
   add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
+  if(BUILD_DMRG_EVOLVE)
+    add_test(NAME Test_Time_Evolver COMMAND test_time_evolvers)
+    add_test(NAME Test_Site_Shifter COMMAND test_site_shifter)
+    add_test(NAME Test_Time_Evolution_Sweep COMMAND test_time_evolution_sweep)
+    add_test(NAME Test_RealTime_Evolution COMMAND test_realtime)
+    add_test(NAME Test_ImaginaryTime_Evolution COMMAND test_imaginarytime)
+  endif(BUILD_DMRG_EVOLVE)
 endif(QCMAQUIS_TESTS)
-
-
-
 
 ######################################################################
 # DMRG exports

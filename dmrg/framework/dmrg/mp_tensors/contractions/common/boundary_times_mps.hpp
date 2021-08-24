@@ -95,43 +95,80 @@ namespace contraction {
     class BoundaryMPSProduct
     {
     public:
+        // Types definition
         typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
         typedef typename Matrix::value_type value_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-
+        /** @brief Constructor from a mpstensor */
         BoundaryMPSProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
                            Boundary<OtherMatrix, SymmGroup> const & left_,
                            MPOTensor<Matrix, SymmGroup> const & mpo_,
-                           Index<SymmGroup> const & ref_left_basis_)
-                            : mps(mps_), left(left_), mpo(mpo_), data_(left_.aux_dim()), ref_left_basis(ref_left_basis_)
+                           Index<SymmGroup> const & ref_left_basis_,
+                           bool correctConjugate_=true)
+            : left(left_), mpo(mpo_), data_(left_.aux_dim()), ref_left_basis(ref_left_basis_),
+              correctConjugate(correctConjugate_)
         {
-            parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
+            mps_.make_right_paired();
+            bm = mps_.data();
+            populateData();
+        }
 
+        /** @brief Constructor from a block_matrix */
+        BoundaryMPSProduct(block_matrix<Matrix, SymmGroup> const & bm_,
+                           Boundary<OtherMatrix, SymmGroup> const & left_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_,
+                           Index<SymmGroup> const & ref_left_basis_,
+                           bool correctConjugate_=true)
+            : bm(bm_), left(left_), mpo(mpo_), data_(left_.aux_dim()), ref_left_basis(ref_left_basis_),
+              correctConjugate(correctConjugate_)
+        {
+            populateData();
+        }
+
+        /** @brief Constructor not taking a specific left basis */
+        BoundaryMPSProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
+                           Boundary<OtherMatrix, SymmGroup> const & left_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_,
+                           bool correctConjugate_=true) 
+            : BoundaryMPSProduct(mps_, left_, mpo_, mps_.row_dim(), correctConjugate_) 
+        {}
+
+        /** @brief Constructor not taking a specific left basis */
+        BoundaryMPSProduct(block_matrix<Matrix, SymmGroup> const & bm_,
+                           Boundary<OtherMatrix, SymmGroup> const & left_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_,
+                           bool correctConjugate_=true) 
+            : BoundaryMPSProduct(bm_, left_, mpo_, bm_.left_basis(), correctConjugate_)
+        {}
+
+        /** @brief Populates the vector of block_matrix objects */
+        void populateData() {
             int loop_max = left.aux_dim();
-            mps.make_right_paired();
-            omp_for(int b1, parallel::range(0,loop_max), {
-
+            parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
+            // Loop over the elements
+             omp_for(int b1, parallel::range(0,loop_max), {
                 // exploit single use sparsity (delay multiplication until the object is used)
-                if (mpo.num_row_non_zeros(b1) == 1) continue;
+                if (mpo.num_row_non_zeros(b1) == 1)
+                    continue;
                 // exploit hermiticity if available
-                if (mpo.herm_info.left_skip(b1))
-                {
+                if (mpo.herm_info.left_skip(b1)) {
                     parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
-                    typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), mps.data(), data_[b1], ref_left_basis, scales);
+                    if (correctConjugate) {
+                        std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
+                        typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1], ref_left_basis, scales);
+                    }
+                    else {
+                        typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1], ref_left_basis);
+                    }
                 }
                 else {
-                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), data_[b1], ref_left_basis);
+                    typename Gemm::gemm_trim_left()(transpose(left[b1]), bm, data_[b1], ref_left_basis);
                 }
             });
         }
 
-        BoundaryMPSProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
-                           Boundary<OtherMatrix, SymmGroup> const & left_,
-                           MPOTensor<Matrix, SymmGroup> const & mpo_) : BoundaryMPSProduct(mps_, left_, mpo_, mps_.row_dim()) {}
-
+        /** @brief Gets the overall dimension of the BoundaryTimesMPS object */
         std::size_t aux_dim() const {
             return data_.size();
         }
@@ -149,36 +186,33 @@ namespace contraction {
         block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
         block_matrix<Matrix, SymmGroup> const & operator[](std::size_t k) const { return data_[k]; }
 
-        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
-        {
-            if (mpo.num_row_non_zeros(k) == 1)
-            {
-                if (mpo.herm_info.left_skip(k))
-                {
-                    //parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    //typename Gemm::gemm_trim_left()(left[mpo.herm_info.left_conj(k)], mps.data(), storage);
-                    std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(k)], mpo, k, true, false);
-                    typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(k)]), mps.data(), storage, ref_left_basis, scales);
+        block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const {
+            if (mpo.num_row_non_zeros(k) == 1) {
+                if (mpo.herm_info.left_skip(k)) {
+                    if (correctConjugate) {
+                        std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(k)], mpo, k, true, false);
+                        typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(k)]), bm, storage, ref_left_basis, scales);
+                    }
+                    else {
+                        typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(k)]), bm, storage, ref_left_basis);
+                    }
                 }
                 else {
-                    //parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_left()(transpose(left[k]), mps.data(), storage, ref_left_basis);
+                    typename Gemm::gemm_trim_left()(transpose(left[k]), bm, storage, ref_left_basis);
                 }
-
                 return storage;
             }
-
             else
                 return data_[k];
         }
 
     private:
         std::vector<block_matrix<Matrix, SymmGroup> > data_;
-
-        MPSTensor<Matrix, SymmGroup> const & mps;
+        block_matrix<Matrix, SymmGroup> bm;
         Boundary<OtherMatrix, SymmGroup> const & left;
         MPOTensor<Matrix, SymmGroup> const & mpo;
-        Index<SymmGroup> const & ref_left_basis;
+        Index<SymmGroup> ref_left_basis;
+        bool correctConjugate;
     };
 
 
@@ -191,45 +225,73 @@ namespace contraction {
     class MPSBoundaryProduct
     {
     public:
+        // Types definition
         typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
         typedef typename Matrix::value_type value_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-
-        MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
-                           Boundary<OtherMatrix, SymmGroup> const & right_,
-                           MPOTensor<Matrix, SymmGroup> const & mpo_,
-                           Index<SymmGroup> const& ref_right_basis_) : mps(mps_), right(right_), mpo(mpo_), data_(right_.aux_dim())
-                                                                      , pop_(right_.aux_dim(), 0), ref_right_basis(ref_right_basis_)
+        /** @brief Constructor from a MPS tensor */
+        MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_, Boundary<OtherMatrix, SymmGroup> const & right_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_, Index<SymmGroup> const& ref_right_basis_,
+                           bool correctConjugate_=true) 
+            : right(right_), mpo(mpo_), data_(right_.aux_dim()), pop_(right_.aux_dim(), 0),
+              ref_right_basis(ref_right_basis_), correctConjugate(correctConjugate_)
         {
-            parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
+            mps_.make_left_paired();
+            bm = mps_.data();
+            populateData();
+        }
 
+        /** @brief Constructor from a block_matrix */
+        MPSBoundaryProduct(block_matrix<Matrix, SymmGroup> const & bm_, Boundary<OtherMatrix, SymmGroup> const & right_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_, Index<SymmGroup> const& ref_right_basis_,
+                           bool correctConjugate_=true) 
+            : right(right_), mpo(mpo_), data_(right_.aux_dim()), pop_(right_.aux_dim(), 0),
+              ref_right_basis(ref_right_basis_), bm(bm_), correctConjugate(correctConjugate_)
+        {
+            populateData();
+        }
+
+        /** @brief Constructor without index */
+        MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_, Boundary<OtherMatrix, SymmGroup> const & right_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_, bool correctConjugate_=true) 
+            : MPSBoundaryProduct(mps_, right_, mpo_, mps_.col_dim(), correctConjugate_) 
+        {}
+
+        /** @brief Constructor without index */
+        MPSBoundaryProduct(block_matrix<Matrix, SymmGroup> const & bm_, Boundary<OtherMatrix, SymmGroup> const & right_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_, bool correctConjugate_=true) 
+            : MPSBoundaryProduct(bm_, right_, mpo_, bm_.right_basis(), correctConjugate_)
+        {}
+
+        /** @brief Core method called by the constructor */
+        void populateData() {
+            // Preliminary operations
             int loop_max = right.aux_dim();
-            mps.make_left_paired();
+            parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
             omp_for(int b2, parallel::range(0,loop_max), {
-
                 // exploit single use sparsity (delay multiplication until the object is used)
-                if (mpo.num_col_non_zeros(b2) == 1) continue;
-
+                if (mpo.num_col_non_zeros(b2) == 1)
+                    continue;
                 // exploit hermiticity if available
                 if (mpo.herm_info.right_skip(b2))
                 {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(b2)]);
-                    std::vector<value_type> scales = conjugate_phases(trv, mpo, b2, false, true);
-
-                    typename Gemm::gemm_trim_right()(mps.data(), trv, data_[b2], ref_right_basis, scales);
+                    block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(b2)]);
+                    if (correctConjugate) {
+                        std::vector<value_type> scales = conjugate_phases(trv, mpo, b2, false, true);
+                        typename Gemm::gemm_trim_right()(bm, trv, data_[b2], ref_right_basis, scales);
+                    }
+                    else {
+                        typename Gemm::gemm_trim_right()(bm, trv, data_[b2], ref_right_basis);
+                    }
                 }
                 else {
                     parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    typename Gemm::gemm_trim_right()(mps.data(), right[b2], data_[b2], ref_right_basis);
+                    typename Gemm::gemm_trim_right()(bm, right[b2], data_[b2], ref_right_basis);
                 }
             });
         }
-
-        MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_,
-                           Boundary<OtherMatrix, SymmGroup> const & right_,
-                           MPOTensor<Matrix, SymmGroup> const & mpo_) : MPSBoundaryProduct(mps_, right_, mpo_, mps_.col_dim()) {}
 
         std::size_t aux_dim() const {
             return data_.size();
@@ -255,14 +317,14 @@ namespace contraction {
                 if (mpo.herm_info.right_skip(k))
                 {
                     //parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                    block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
+                    block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(k)]);
                     //return typename Gemm::gemm_trim_right()(mps.data(), trv);
-                    return SU2::gemm_trim_right_pretend(mps.data(), trv);
+                    return SU2::gemm_trim_right_pretend(bm, trv);
                 }
                 else {
                     //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                     //return typename Gemm::gemm_trim_right_pretend()(mps.data(), right[k]);
-                    return SU2::gemm_trim_right_pretend(mps.data(), right[k]);
+                    return SU2::gemm_trim_right_pretend(bm, right[k]);
                 }
             }
             else
@@ -280,15 +342,20 @@ namespace contraction {
                     {
                         //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                         //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
-                        block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> trv = transpose(right[mpo.herm_info.right_conj(k)]);
-                        std::vector<value_type> scales = conjugate_phases(trv, mpo, k, false, true);
-                        //typename Gemm::gemm_trim_right()(mps.data(), trv, storage, scales);
-                        typename Gemm::gemm_trim_right()(mps.data(), trv, data_[k], ref_right_basis, scales);
+                        block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(k)]);
+                        if (correctConjugate) {
+                            std::vector<value_type> scales = conjugate_phases(trv, mpo, k, false, true);
+                            //typename Gemm::gemm_trim_right()(mps.data(), trv, storage, scales);
+                            typename Gemm::gemm_trim_right()(bm, trv, data_[k], ref_right_basis, scales);
+                        }
+                        else {
+                            typename Gemm::gemm_trim_right()(bm, trv, data_[k], ref_right_basis);
+                        }
                     }
                     else {
                         //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                         //typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
-                        typename Gemm::gemm_trim_right()(mps.data(), right[k], data_[k], ref_right_basis);
+                        typename Gemm::gemm_trim_right()(bm, right[k], data_[k], ref_right_basis);
                     }
                     pop_[k] = 1;
                 }
@@ -301,29 +368,29 @@ namespace contraction {
 
         void free(index_type b1) const
         {
-            for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2)
-                if (mpo.num_col_non_zeros(b2) == 1)
+            for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2) {
+                if (mpo.num_col_non_zeros(b2) == 1) {
                     if (mpo.has(b1,b2))
                     {
                         data_[b2].clear();
                         break;
                     }
+                }
+            }
         }
 
     private:
         mutable std::vector<block_matrix<Matrix, SymmGroup> > data_;
         mutable std::vector<char> pop_;
-
-        MPSTensor<Matrix, SymmGroup> const & mps;
+        bool correctConjugate;
+        block_matrix<Matrix, SymmGroup> bm;
         Boundary<OtherMatrix, SymmGroup> const & right;
         MPOTensor<Matrix, SymmGroup> const & mpo;
-        Index<SymmGroup> const & ref_right_basis;
+        Index<SymmGroup> ref_right_basis;
     };
 
     template <class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-    void MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b2)
-    {
-    }
+    void MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm>::multiply(index_type b2) {}
 
     } // namespace common
 } // namespace contraction

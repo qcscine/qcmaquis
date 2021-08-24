@@ -33,80 +33,93 @@
 
 using chem::Hamiltonian;
 
-namespace maquis
+namespace maquis {
+    
+// Types for measurement results
+// meas_with_results_type: one measurement = pair of vectors with labels and results
+template <class V>
+using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<V> >;
+
+// All measurements -- a map with measurement names as keys and results as values
+template <class V>
+using results_map_type = std::map<std::string, meas_with_results_type<V> >;
+
+template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic> // real or complex
+class DMRGInterface
 {
+public:
+    typedef maquis::meas_with_results_type<V> meas_with_results_type;
+    typedef maquis::results_map_type<V> results_map_type;
 
-    // Types for measurement results
-    // meas_with_results_type: one measurement = pair of vectors with labels and results
-    template <class V>
-    using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<V> >;
+    /** @brief Class constructor */
+    DMRGInterface(DmrgParameters& parms_);
 
-    // All measurements -- a map with measurement names as keys and results as values
-    template <class V>
-    using results_map_type = std::map<std::string, meas_with_results_type<V> >;
+    /** @brief Class destructor */
+    ~DMRGInterface();
 
-    template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic> // real or complex
-    class DMRGInterface
-    {
-        public:
-            typedef maquis::meas_with_results_type<V> meas_with_results_type;
-            typedef maquis::results_map_type<V> results_map_type;
+    /** @brief Run a DMRG optimization */
+    void optimize();
 
-            DMRGInterface(DmrgParameters& parms_);
-            ~DMRGInterface();
+    /** @brief Run a DMRG propagation */
+    void evolve();
 
-            // Run DMRG optimization
-            void optimize();
-            // Get energy after the optimization
-            V energy();
+    /** @brief Gets the energy at the end of the simulation */
+    V energy();
 
-            // Get sweep statistics
-            results_collector& get_iteration_results();
-            int get_last_sweep();
+    /** @brief Getter for an obtject storing the statistics of the optimization */
+    results_collector& get_iteration_results();
+            
+    /** @brief Gets how many sweeps have been run */
+    int get_last_sweep();
 
-            // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
-            // Do not store the measurements in a map
-            void run_measure();
+    // Run dmrg_meas (measure all measurements and save them to a HDF5 file specified in parameters)
+    // Do not store the measurements in a map.
+    void run_measure();
 
-            // Run all measurements and save them as a map
-            // Currently, all measurements must be added via parameters first, and then measure() may be executed
-            // In the future, we should support single measurements directly from the interface
-            void measure();
+    // Run all measurements and save them as a map
+    // Currently, all measurements must be added via parameters first, and then measure() may be executed
+    // In the future, we should support single measurements directly from the interface
+    void measure();
 
-            const results_map_type & measurements();
+    /** @brief Getter for the measurements */
+    const results_map_type & measurements();
 
-            //update the integrals and re-initialize the model
-            void update_integrals(const integral_map<V> & integrals);
+    /** @brief Updates the integrals and re-initialize the model */
+    void update_integrals(const integral_map<V> & integrals);
 
-            // Get RDMs
-            // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
-            // Fix the model to recognise it!
-            const meas_with_results_type & mutinf();
-            const meas_with_results_type & onerdm();
-            const meas_with_results_type & onespdm();
-            const meas_with_results_type & twordm();
-            const meas_with_results_type & threerdm();
-            const meas_with_results_type & fourrdm();
+    // Get RDMs
+    // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
+    // Fix the model to recognise it!
+    const meas_with_results_type & onerdm();
+    const meas_with_results_type & onespdm();
+    const meas_with_results_type & twordm();
+    const meas_with_results_type & threerdm();
+    const meas_with_results_type & fourrdm();
 
-            // Measure 3 and 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file (which should be set with parms["rfile"])
-            void measure_and_save_3rdm();
-            void measure_and_save_4rdm();
+    // Measure 3 and 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file (which should be set with parms["rfile"])
+    void measure_and_save_3rdm();
+    void measure_and_save_4rdm();
 
-            // The same for transition 3-RDM. bra_name provides the name of the bra checkpoint
-            // (doesn't matter if it is in SU2U1 or 2U1, as in the former case it will be transformed)
-            void measure_and_save_trans3rdm(const std::string & bra_name);
+    /** @brief Getter for the mutual information */
+    const meas_with_results_type& mutinf();
 
-            // Load an MPS from a given checkpoint and measure the overlap with the current MPS
-            V overlap(const std::string& aux_mps_name);
+    // The same for transition 3-RDM. bra_name provides the name of the bra checkpoint
+    // (doesn't matter if it is in SU2U1 or 2U1, as in the former case it will be transformed)
+    void measure_and_save_trans3rdm(const std::string & bra_name);
 
-            // Dump parameters into text file
-            void dump_parameters(const std::string & file);
-        private:
-            DmrgParameters& parms;
-            results_map_type measurements_;
+    // Load an MPS from a given checkpoint and measure the overlap with the current MPS
+    V overlap(const std::string& aux_mps_name);
 
-            struct Impl;
-            std::unique_ptr<Impl> impl_;
-    };
-}
+    // Dump parameters into text file
+    void dump_parameters(const std::string & file);
+
+private:
+    DmrgParameters& parms;
+    results_map_type measurements_;
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
+};
+
+} // maquis
+
 #endif

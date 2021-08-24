@@ -34,7 +34,7 @@
 #include <stdexcept>
 #include <numeric>
 #include <alps/numeric/matrix/matrix_concept_check.hpp>
-
+#include <boost/numeric/bindings/remove_imaginary.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesvd.hpp>
 #include <boost/numeric/bindings/lapack/driver/gesdd.hpp>
 #include <boost/numeric/bindings/lapack/driver/syevd.hpp>
@@ -351,13 +351,32 @@ namespace alps {
         }
 
         template<typename T, class MemoryBlock>
-        matrix<T, MemoryBlock> exp_hermitian (matrix<T, MemoryBlock> M, T const & alpha=1)
+        matrix<T, MemoryBlock> exp_hermitian (matrix<T, MemoryBlock> M, T const & alpha=1,
+                                              bool doShift=false)
         {
             matrix<T, MemoryBlock> N, tmp;
             typename associated_real_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
-
+            typedef typename boost::numeric::bindings::remove_imaginary< T >::type real_type;
+            //
             heev(M, N, Sv);
-
+            // Finds the maximum value of the eigevalues and subtract it
+            if (doShift) {
+                real_type maxEigen;
+                if (std::real(alpha) > 0.) {
+                    maxEigen = 0.;
+                    for (int iElement = 0; iElement < num_rows(M); iElement++)
+                        if (std::real(Sv[iElement]) > maxEigen)
+                            maxEigen = std::real(Sv[iElement]);
+                }
+                else {
+                    maxEigen = std::real(Sv[0]);
+                    for (int iElement = 1; iElement < num_rows(M); iElement++)
+                        if (std::real(Sv[iElement]) < maxEigen)
+                            maxEigen = std::real(Sv[iElement]);
+                }
+                for (int iElement = 0; iElement < num_rows(M); iElement++)
+                    Sv[iElement] -= maxEigen;
+            }
             typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
             S = exp(alpha*S);
             gemm(N, S, tmp);

@@ -2,9 +2,9 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- *               2020 by Robin Feldmann <robinfe@student.ethz.ch>
+ * Copyright (C) 2020 Institute for Theoretical Physics, ETH Zurich
+ *               2020- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
+ *               2020- by Robin Feldmann <robinfe@student.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -87,17 +87,14 @@ namespace prebo {
         TagGenerator() = default;
 
         TagGenerator(std::shared_ptr<Lattice> &lat_, std::shared_ptr<TagHandler<Matrix, NU1>> &tag_handler_)
-                : lat(lat_), tag_handler(tag_handler_) {
-
+                : lat(lat_), tag_handler(tag_handler_)
+        {
             num_particle_types = lat->template get_prop<int>("num_particle_types");
             vec_particles = lat->template get_prop<std::vector<int>>("vec_particles");
             isFermion = lat->template get_prop<std::vector<bool>>("isFermion");
             vec_orbitals = lat->template get_prop<std::vector<int>>("vec_orbitals");
             vec_fer_bos = lat->template get_prop<std::vector<int>>("vec_fer_bos");
-
-            //
             // Collect all fermions and all bosons in two different vectors.
-            //
             int num_fer_types = 0; // Number of different fermions
             std::vector<int> fer_vec;
             int num_bos_types = 0; // Number of different bosons
@@ -111,17 +108,13 @@ namespace prebo {
                     bos_vec.push_back(vec_particles[it]);
                 }
             }
-            if (num_fer_types == 0 && num_bos_types == 0) throw std::runtime_error("No Fermions or Bosons?");
-
+            if (num_fer_types == 0 && num_bos_types == 0)
+                throw std::runtime_error("No Fermions or Bosons?");
             std::vector<std::vector<charge_type> > fer_excited_states_array;
             std::vector<std::vector<charge_type> > bos_excited_states_array;
             charge_type empty_state(0);
-
-            //
-            //  filling the excited states arrays...
-            //
+            // Filling the excited states arrays...
             construct_excited_states(fer_excited_states_array, bos_excited_states_array);
-
             // All operators are collected in vectors
             // identity, creation operator (up, down), annihilation operator (up,down), occupation number operator.
             // Fermionic operators
@@ -136,17 +129,10 @@ namespace prebo {
             bos_create_tag.reserve(num_bos_types);
             bos_dest_tag.reserve(num_bos_types);
             bos_count_tag.reserve(num_bos_types);
-
-            //
-            // filling the tags...
-            //
+            // Filling the tags...
             create_tags(fer_excited_states_array, bos_excited_states_array, num_fer_types, num_bos_types);
-
-            //
             // Next step is loading the types of physical indices.
-            //
             phys_indexes.reserve(num_particle_types);
-
             if (num_fer_types > 0) {
                 for (std::size_t it = 0; it < num_fer_types; it++) {
                     Index<NU1> phys;

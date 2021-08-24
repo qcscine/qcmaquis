@@ -1,70 +1,131 @@
 image: gitlab.chab.ethz.ch:4567/reiher/docker/qcmaquis-gcc:latest
 
+# Pipeline that compiles the code with increasingly complex models
+
+stages:
+  - buildBasic
+  - testBasic  
+  - buildAdvanced
+  - testAdvanced
+  - buildFinal
+  - testFinal
+
 build-electronic:
-  stage: build
+  stage: buildBasic
   tags:
     - default_docker
   script:
     - mkdir buildElectronic && cd buildElectronic
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" ../dmrg
-    - make -j4
+    - make -j2
   artifacts:
     paths:
       - buildElectronic/
     expire_in: 6h
     when: always
 
+testElectronic:
+  stage: testBasic
+  needs: ["build-electronic"]
+  tags:
+    - default_docker
+  script:
+    - cd buildElectronic
+    - make test -j2
+
 build-relativistic:
-  stage: build
+  stage: buildAdvanced
+  needs: ["testElectronic"]
   tags:
     - default_docker
   script:
     - mkdir buildRelativistic && cd buildRelativistic
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" ../dmrg
-    - make -j4
+    - make -j2
   artifacts:
     paths:
       - buildRelativistic/
     expire_in: 6h
     when: always
 
+testRelativistic:
+  stage: testAdvanced
+  needs: ["build-relativistic"]
+  tags:
+    - default_docker
+  script:
+    - cd buildRelativistic
+    - make test -j2
+
 build-with-nu1:
-  stage: build
+  stage: buildFinal
+  needs: ["testRelativistic"]
   tags:
     - default_docker
   script:
     - mkdir buildNU1 && cd buildNU1
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5  ../dmrg
-    - make -j4
+    - make -j2
   artifacts:
     paths:
       - buildNU1/
     expire_in: 6h
     when: always
 
-testElectronic:
-  stage: test
-  needs: ["build-electronic"]
-  tags:
-    - default_docker
-  script:
-    - cd buildElectronic
-    - make test
-
-testRelativistic:
-  stage: test
-  needs: ["build-relativistic"]
-  tags:
-    - default_docker
-  script:
-    - cd buildRelativistic
-    - make test
-
 testNU1:
-  stage: test
+  stage: testFinal
   needs: ["build-with-nu1"]
   tags:
     - default_docker
   script:
     - cd buildNU1
-    - make test
+    - make test -j4
+
+# Pipeline for the TD-DMRG case
+
+build-TD-conventional:
+  stage: buildBasic
+  tags:
+    - default_docker
+  script:
+    - mkdir buildTDConventional && cd buildTDConventional
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DBUILD_DMRG_EVOLVE=ON ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildTDConventional/
+    expire_in: 6h
+    when: always
+
+testTDConventional:
+  stage: testBasic
+  needs: ["build-TD-conventional"]
+  tags:
+    - default_docker
+  script:
+    - cd buildTDConventional
+    - make test -j2
+
+build-TD-with-all-symmetries:
+  stage: buildAdvanced
+  needs: ["testTDConventional"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildTDAllSymmetries && cd buildTDAllSymmetries
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildTDAllSymmetries/
+    expire_in: 6h
+    when: always
+
+testTDAllSymmetries:
+  stage: testAdvanced
+  needs: ["build-TD-with-all-symmetries"]
+  tags:
+    - default_docker
+  script:
+    - cd buildTDAllSymmetries
+    - make test -j2

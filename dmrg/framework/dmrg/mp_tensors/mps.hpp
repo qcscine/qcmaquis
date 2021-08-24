@@ -242,7 +242,7 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     truncation_results trunc;
 
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, true);
 
     (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
                                                     (*this)[l], new_mps);
@@ -263,7 +263,7 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     truncation_results trunc;
 
     boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, true);
 
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
