@@ -7,7 +7,8 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2018-2019    Leon Freitag <lefreita@ethz.ch>
-*               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
+*               2020-        Robin Feldmann <robinfe@phys.chem.ethz.ch>
+*               2021-        Alberto Baiardi <abaiardi@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -38,11 +39,11 @@
 namespace maquis
 {
     #if defined(HAVE_SU2U1PG)
-                typedef SU2U1PG SU2U1grp;
-                typedef TwoU1PG TwoU1grp;
+    typedef SU2U1PG SU2U1grp;
+    typedef TwoU1PG TwoU1grp;
     #elif defined(HAVE_SU2U1)
-                typedef SU2U1 SU2U1grp;
-                typedef TwoU1 TwoU1grp;
+    typedef SU2U1 SU2U1grp;
+    typedef TwoU1 TwoU1grp;
     #endif
 
     template<class V>
@@ -70,16 +71,27 @@ namespace maquis
     template <class V, Hamiltonian HamiltonianType>
     void DMRGInterface<V, HamiltonianType>::optimize()
     {
-        try
-        {
+        try {
             //std::cout << "start optimization inside interface --> " <<std::endl;
             //std::cout << " parms are -> " << std::endl;
             //std::cout << parms << std::endl;
             //sim->run();
-            impl_->sim->run();
+            impl_->sim->run("optimize");
         }
-        catch (std::exception & e)
-        {
+        catch (std::exception & e) {
+            maquis::cerr << "Exception thrown!" << std::endl;
+            maquis::cerr << e.what() << std::endl;
+            exit(1);
+        }
+    }
+
+    template <class V, Hamiltonian HamiltonianType>
+    void DMRGInterface<V, HamiltonianType>::evolve()
+    {
+        try {
+            impl_->sim->run("evolve");
+        }
+        catch (std::exception & e) {
             maquis::cerr << "Exception thrown!" << std::endl;
             maquis::cerr << e.what() << std::endl;
             exit(1);

@@ -37,8 +37,18 @@
 class abstract_sim {
 public:
     virtual ~abstract_sim() {}
-    virtual void run() =0;
+    virtual void run(std::string runType) = 0;
 };
+
+/**
+ * @brief Virtual class defining the scheleton of a simulation object.
+ * 
+ * This virtual class defines the skeleton of a simulation object 
+ * that runs a DMRG calculation.
+ * 
+ * @tparam Matrix class defining the types of the matrix entering the definition
+ * of the block_matrix.
+ */
 
 template <class Matrix>
 class abstract_interface_sim {
@@ -48,8 +58,8 @@ public:
     typedef std::map<std::string, meas_with_results_type> results_map_type;
 
     virtual ~abstract_interface_sim() {}
-    virtual void run() =0;
-    virtual void run_measure() =0;
+    virtual void run(std::string runType) = 0;
+    virtual void run_measure() = 0;
     virtual typename Matrix::value_type get_energy() = 0;
     virtual results_collector& get_iteration_results() = 0;
     virtual int get_last_sweep() = 0;

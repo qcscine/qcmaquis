@@ -84,10 +84,12 @@ public:
         // type == site for lattice = spinors
         return phys_indices[type];
     }
+    
     tag_type identity_matrix_tag(size_t type) const
     {
         return ident[type];
     }
+
     tag_type filling_matrix_tag(size_t type) const
     {
         return fill[type];
@@ -96,9 +98,9 @@ public:
     bool is_term_allowed(int i, int j, int k, int l)
     {
         typename SymmGroup::charge I(0), J(0), K(0), L(0), tmp(0);
-        typename SymmGroup::charge charges[] = {I,J,K,L};
-        std::size_t site[] = {i, j, k, l};
-        for (int ii=0; ii<4; ++ii) {
+        std::vector< typename SymmGroup::charge > charges = {I, J, K, L};
+        std::vector< int > site = {i, j, k, l};
+        for (int ii = 0; ii < 4; ++ii) {
             charges[ii][1] = lat.get_prop<int>("type", site[ii]);
             charges[ii][0] = 1;
         	if (ii%2 == 0) {
@@ -106,9 +108,13 @@ public:
         	else if (ii%2 == 1) {
             	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
         }
-
-        if (tmp[0] == 0 && tmp[1] != parms["type"]) {return false;}
-        else {return true;}
+        //
+        if (tmp[0] == 0 && tmp[1] != parms["type"]) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const

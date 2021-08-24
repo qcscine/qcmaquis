@@ -48,26 +48,7 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
-
-
-template<class Matrix, class SymmGroup>
-
-struct SiteProblem<Matrix, SymmGroup>
-{
-    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : left(left_)
-    , right(right_)
-    , mpo(mpo_)
-    {
-    }
-
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
-    MPOTensor<Matrix, SymmGroup> const & mpo;
-    double ortho_shift;
-};
+#include "dmrg/mp_tensors/siteproblem.h"
 
 #define BEGIN_TIMING(name) \
 now = std::chrono::high_resolution_clock::now();
