@@ -20,6 +20,7 @@ namespace maquis { namespace traits {
     template<class T> const std::complex<T> imag_identity<std::complex<T> >::value = std::complex<T>(0,1);
 
     template <class Matrix> struct transpose_view { typedef Matrix type; };
+    template <class Matrix> struct adjoint_view { typedef Matrix type; };
 
 } }
 

@@ -83,7 +83,7 @@ namespace contraction {
             abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), ket_tensor.data().left_basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
             if (mpo.herm_info.right_skip(b2))
-                gemm(contr_grid(0,0), transpose(right[mpo.herm_info.right_conj(b2)]), tmp);
+                gemm(contr_grid(0,0), adjoint(right[mpo.herm_info.right_conj(b2)]), tmp);
             else
                 gemm(contr_grid(0,0), right[b2], tmp);
             contr_grid(0,0).clear();

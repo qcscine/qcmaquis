@@ -77,6 +77,9 @@ public:
     void replace_right_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
     void replace_left_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
 
+    void add_block_to_row(block_matrix<Matrix, SymmGroup> & bm);
+    void add_block_to_column(block_matrix<Matrix, SymmGroup> & bm);
+
     // these are not const because after a numerical test
     // they may update the status
     bool isleftnormalized(bool test = false) const;

@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2017- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
+ * Copyright (C) 2020 Institute for Theoretical Physics, ETH Zurich
+ *               2020- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -69,6 +69,7 @@ class PreBO : public model_impl<Matrix, NU1_template<N>> {
     using measurements_type = typename base::measurements_type;
     using pos_t = typename Lattice::pos_t;
     using part_type = typename Lattice::part_type;
+    using ValueType = typename Matrix::value_type;
 
 private:
     /** Verbosity flag */
@@ -117,7 +118,7 @@ public:
      */
     void create_terms() {
         auto start = std::chrono::high_resolution_clock::now();
-        auto integrals = prebo::detail::parse_integrals<double>(parms, lat);
+        auto integrals = prebo::detail::parse_integrals<ValueType>(parms, lat);
         this->terms_ = ptr_term_generator->generate_Hamiltonian(integrals);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(stop - start);

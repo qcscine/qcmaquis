@@ -198,6 +198,34 @@ template<class Matrix, class SymmGroup>
 DualIndex<SymmGroup> const & block_matrix<Matrix, SymmGroup>::basis() const { return basis_; }
 
 template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::charge block_matrix<Matrix, SymmGroup>::get_left_charge(std::size_t idx) const
+{
+    assert(idx < this->n_blocks()) ;
+    return basis_[idx].lc ;
+}
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::charge block_matrix<Matrix, SymmGroup>::get_right_charge(std::size_t idx) const
+{
+    assert(idx < this->n_blocks()) ;
+    return basis_[idx].rc ;
+}
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::get_left_dim(std::size_t idx) const
+{
+    assert(idx < this->n_blocks()) ;
+    return basis_[idx].ls ;
+}
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::get_right_dim(std::size_t idx) const
+{
+    assert(idx < this->n_blocks()) ;
+    return basis_[idx].rs ;
+}
+
+template<class Matrix, class SymmGroup>
 typename Matrix::size_type block_matrix<Matrix, SymmGroup>::n_blocks() const { return data_.size(); }
 
 template<class Matrix, class SymmGroup>
@@ -559,4 +587,77 @@ std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
     for (size_t k = 0; k < n_blocks(); ++k)
         ret += num_rows(data_[k])*num_cols(data_[k]);
     return ret;
+}
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::scalar_type
+block_matrix<Matrix, SymmGroup>::scalar_overlap(block_matrix<Matrix, SymmGroup> const & rhs) const
+{
+    Index<SymmGroup> i1 = this->left_basis();
+    Index<SymmGroup> i2 = rhs.left_basis();
+    common_subset(i1, i2);
+    std::vector<scalar_type> vt;
+    vt.reserve(i1.size());
+    for (int b = 0; b < i1.size(); ++b) {
+        typename SymmGroup::charge c = i1[b].first;
+        size_type l = this->find_block(c, c);
+        size_type r = rhs.find_block(c, c);
+        assert( l != this->n_blocks() && r != rhs.n_blocks() );
+        vt.push_back(overlap((*this)[l], rhs[r]));
+    }
+    return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
+}
+
+// +----------------+
+//  ADD_BLOCK_TO_ROW
+// +----------------+
+// "Merges" a given symmetry block of a block_matrix given in input with the corresponding block
+// of the object
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::add_block_to_row(block_matrix & rhs, charge r, charge c)
+{
+    // Check coherence in the dimensions of the rows (the columns might be, in principle, different
+    size_type match = this->find_block(r, c);
+    if (match < this->n_blocks()) {
+        //
+        assert (num_cols(rhs(r, c)) == num_cols((*this)(r, c))) ;
+        size_t num_row_toadd    = num_rows(rhs(r, c)) ;
+        size_t num_row_original = num_rows((*this)(r, c)) ;
+        size_t num_cols_common  = num_cols((*this)(r, c)) ;
+        //
+        this->resize_block(r, c, num_row_original+num_row_toadd, num_cols_common, false);
+        for (std::size_t idx1 = 0; idx1 < num_row_toadd; idx1++)
+            for (std::size_t idx2 = 0; idx2 < num_cols_common; idx2++)
+                (*this)(r, c)(idx1 + num_row_original, idx2) = rhs(r, c)(idx1, idx2);
+    } else {
+        insert_block(rhs(r,c), r, c);
+    }
+}
+
+// +-------------------+
+//  ADD_BLOCK_TO_COLUMN
+// +-------------------+
+// "Merges" a given symmetry block of a block_matrix given in input with the corresponding block
+// of the object. If the requested symmetry block is not present,
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::add_block_to_column(block_matrix & rhs, charge r, charge c)
+{
+    // Check coherence in the dimensions of the rows (the columns might be, in principle, different
+    size_type match = this->find_block(r, c);
+    if (match < this->n_blocks()) {
+        //
+        assert (num_rows(rhs(r, c)) == num_rows((*this)(r, c))) ;
+        size_t num_col_toadd    = num_cols(rhs(r, c)) ;
+        size_t num_col_original = num_cols((*this)(r, c)) ;
+        size_t num_rows_common  = num_rows((*this)(r, c));
+        //
+        this->resize_block(r, c, num_rows((*this)(r, c)), num_col_toadd+num_col_original, false);
+        for (std::size_t idx1 = 0; idx1 < num_rows_common; idx1++)
+            for (std::size_t idx2 = 0; idx2 < num_col_toadd; idx2++)
+                (*this)(r, c)(idx1, idx2 + num_col_original) = rhs(r, c)(idx1, idx2);
+    } else {
+        insert_block(rhs(r,c), r, c);
+    }
 }

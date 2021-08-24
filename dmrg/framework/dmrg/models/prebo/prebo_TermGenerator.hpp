@@ -62,6 +62,7 @@ namespace prebo {
         using positions_type = typename std::vector<pos_t>;
         using value_type = typename Matrix::value_type;
         using symbolic_terms = typename std::vector<std::pair<value_type, std::vector<SymbolicOperator>>>;
+        using ValueType = typename Matrix::value_type;
 
     private:
         // Class members
@@ -122,7 +123,7 @@ namespace prebo {
          * @return
          */
         auto generate_Hamiltonian(const std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>,
-                                  std::vector<double>>& integrals) -> terms_type
+                                  const std::vector<value_type>>& integrals) -> terms_type
         {
             terms_type hamiltonian;
             

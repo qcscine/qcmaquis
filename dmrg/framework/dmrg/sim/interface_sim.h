@@ -7,6 +7,7 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2018         Leon Freitag <lefreita@ethz.ch>
+*               2021         Alberto Baiardi <abaiardi@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -26,8 +27,10 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
+
 #ifndef INTERFACE_SIM_H
 #define INTERFACE_SIM_H
+
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -35,6 +38,7 @@
 
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
+#include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/models/chem/measure_transform.hpp"
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
@@ -43,15 +47,16 @@
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
 class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_sim<Matrix> {
+    // Types definition
+    using base = sim<Matrix, SymmGroup>;
+    using interface_base = abstract_interface_sim<Matrix>;
+    using opt_base_t = optimizer_base<Matrix, SymmGroup, storage::disk>;
+    using status_type = typename base::status_type;
+    using measurements_type = typename base::measurements_type;
+    using meas_with_results_type = typename interface_base::meas_with_results_type;
+    using results_map_type = typename interface_base::results_map_type;
 
-    typedef sim<Matrix, SymmGroup> base;
-    typedef abstract_interface_sim<Matrix> interface_base;
-    typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
-    typedef typename base::status_type status_type;
-    typedef typename base::measurements_type measurements_type;
-    typedef typename interface_base::meas_with_results_type meas_with_results_type;
-    typedef typename interface_base::results_map_type results_map_type;
-
+    // Class inheritance from the sim object
     using base::mps;
     using base::mpo;
     using base::parms;
@@ -66,38 +71,49 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
 
 public:
 
-    interface_sim (DmrgParameters & parms_)
-    : base(parms_), last_sweep_(init_sweep-1)
+    /**
+     * @brief Class constructor
+     * 
+     * Note that the base class is here the [sim] object, and we call the constructor 
+     * for that object.
+     * 
+     * @param parms_ parameter container
+     */
+    interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1)
     { }
 
-    void run()
+    /**
+     * @brief Wrapper around all the possible operations supported by the simulation object.
+     */
+    void run(std::string runType)
     {
-        optimize();
-        // or whatever
-        // throw std::runtime_error("run() shouldn't be called from interface_sim");
+        if (runType == "optimize")
+            optimize();
+        else if (runType == "evolve")
+            evolve();
+        else
+            throw std::runtime_error("run() argument not recognized");
     }
 
+    /** @brief Runs an optimization calculation */
     void optimize()
     {
+        // Reads in input parameters
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
-
-        /// MPO creation
+        // MPO creation
         if (parms["MODEL"] == std::string("quantum_chemistry") && parms["use_compressed"])
             throw std::runtime_error("chem compression has been disabled");
         MPO<Matrix, SymmGroup> mpoc = mpo;
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
-
-        /// Optimizer initialization
+        // Optimizer initialization
         std::shared_ptr<opt_base_t> optimizer;
-        if (parms["optimization"] == "singlesite")
-        {
+        if (parms["optimization"] == "singlesite") {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
                             (mps, mpoc, parms, stop_callback, lat, init_site) );
         }
-        else if(parms["optimization"] == "twosite")
-        {
+        else if(parms["optimization"] == "twosite") {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
                             (mps, mpoc, parms, stop_callback, lat, init_site) );
         }
@@ -182,40 +198,108 @@ public:
         }
     }
 
+    /** @brief Runs a propagation calculation */
+    //AB For now it's mostly copy-pasted from optimize, should be rewritten in a cleaner way.
+    void evolve()
+    {
+#ifdef DMRG_TD
+        // Types definition
+        using EvolverType = TimeEvolutionSweep<Matrix, SymmGroup, storage::disk>;
+        using SSEvolverType = SingleSiteTimeEvolution<Matrix, SymmGroup, storage::disk>;
+        using TSEvolverType = TwoSiteTimeEvolution<Matrix, SymmGroup, storage::disk>;
+        // Reads in input parameters
+        int meas_each = parms["measure_each"];
+        int chkp_each = parms["chkp_each"];
+        // Optimizer initialization
+        std::shared_ptr<EvolverType> evolver;
+        if (parms["optimization"] == "singlesite") {
+            evolver = std::make_shared<SSEvolverType>(mps, mpo, parms, stop_callback, init_site);
+        }
+        else if(parms["optimization"] == "twosite") {
+            evolver = std::make_shared<TSEvolverType>(mps, mpo, parms, stop_callback, init_site);
+        }
+        else {
+            throw std::runtime_error("Evolution modality not recognized");
+        }
+        measurements_type always_measurements = this->iteration_measurements(init_sweep);
+        int nSweeps = parms["nsweeps"];
+        try {
+            for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
+                evolver->evolve_sweep(sweep);
+                storage::disk::sync();
+                // Do measurements on the MPS after the time evolution
+                if ((sweep + 1) % meas_each == 0 || (sweep + 1) == nSweeps) {
+                    // Measure energy
+                    auto energy = evolver->get_energy();
+                    iteration_results_ = evolver->iteration_results();
+                    // Measure observables specified in 'always_measure'
+                    if (!rfile().empty())
+                    {
+                        measurements_type always_measure = this->iteration_measurements(sweep);
+                        if (!parms["ALWAYS_MEASURE"].empty())
+                            this->measure(this->results_archive_path(sweep) + "/results/", always_measure);
+                        // Write iteration results
+                        {
+                            storage::archive ar(rfile(), "w");
+                            ar[this->results_archive_path(sweep) + "/results"] << evolver->iteration_results();
+                            ar[this->results_archive_path(sweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
+                        }
+                    }
+                }
+                // Dump data in
+                last_sweep_ = sweep;
+                bool stopped = stop_callback();
+                if (stopped || (sweep + 1) % chkp_each == 0 || (sweep + 1) == parms["nsweeps"])
+                    checkpoint_simulation(mps, sweep, -1);
+                if (stopped)
+                    break;
+            }
+        }
+        catch (dmrg::time_limit const& e) {
+            maquis::cout << e.what() << " checkpointing partial result." << std::endl;
+            checkpoint_simulation(mps, e.sweep(), e.site());
+            {
+                iteration_results_ = evolver->iteration_results();
+                if (!rfile().empty())
+                {
+                    storage::archive ar(rfile(), "w");
+                    ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
+                    ar[results_archive_path(e.sweep()) + "/results"] << iteration_results_;
+                    // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                }
+            }
+        }
+#endif // DMRG_TD
+    }
+
+    /** @brief Runs a measurement calculation */
     void run_measure()
     {
         if (this->get_last_sweep() < 0)
             throw std::runtime_error("Tried to measure before a sweep");
         this->measure("/spectrum/results/", all_measurements);
-
-        /// MPO creation
+        // MPO creation
         MPO<Matrix, SymmGroup> mpoc = mpo;
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
-
         double energy;
-
         if (parms["MEASURE[Energy]"]) {
             energy = maquis::real(expval(mps, mpoc));
             maquis::cout << "Energy: " << energy << std::endl;
-
             if (!rfile().empty())
             {
                 storage::archive ar(rfile(), "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
             }
         }
-
         if (parms["MEASURE[EnergyVariance]"] > 0) {
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
             mpo2.compress(1e-12);
 
             if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc));
             double energy2 = maquis::real(expval(mps, mpo2, true));
-
             maquis::cout << "Energy^2: " << energy2 << std::endl;
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
-
             if (!rfile().empty())
             {
                 storage::archive ar(rfile(), "w");
@@ -267,6 +351,7 @@ public:
         return ret;
     }
 
+    /** @brief Gets the energy for the mps that is stored in the sim object */
     typename Matrix::value_type get_energy()
     {
         return expval(mps, mpo);
@@ -274,7 +359,7 @@ public:
 
     void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
     {
-        if (parms.is_set("integral_file")||parms.is_set("integrals"))
+        if (parms.is_set("integral_file") || parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
         parms.set("integrals_binary", chem::serialize(integrals));
 
@@ -337,6 +422,7 @@ public:
         return overlap(aux_mps, this->mps);
     }
 
+    /** @brief Getter for the number of sweeps that have been run */
     int get_last_sweep() { return last_sweep_; };
 
     ~interface_sim()

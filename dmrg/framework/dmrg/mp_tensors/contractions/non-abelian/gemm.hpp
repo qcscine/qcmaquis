@@ -37,37 +37,31 @@ namespace SU2 {
     {
         assert( SymmGroup::spin(lc) >= 0);
         assert( SymmGroup::spin(rc) >= 0);
-
         typename SymmGroup::subcharge S = std::min(SymmGroup::spin(rc), SymmGroup::spin(lc));
         typename SymmGroup::subcharge spin_diff = SymmGroup::spin(rc) - SymmGroup::spin(lc);
-
-        if (tensor_spin == 0)
-        {
-            return 1.;
+        T ret = 0.;
+        if (tensor_spin == 0) {
+            ret = T(1.);
         }
-        else if (tensor_spin == 1)
-        {
+        else if (tensor_spin == 1) {
             if (spin_diff > 0)
-                return -T( sqrt((S + 1.)/(S + 2.)) );
+                ret = -T( sqrt((S + 1.)/(S + 2.)) );
 
             else if (spin_diff < 0)
-                return T( sqrt((S + 2.)/(S + 1.)) );
+                ret = T( sqrt((S + 2.)/(S + 1.)) );
         }
-        else if (tensor_spin == 2)
-        {
+        else if (tensor_spin == 2) {
             if (spin_diff > 0)
-                return -T( sqrt( (S + 1.) / (S + 3.)) );
-
+                ret = -T( sqrt( (S + 1.) / (S + 3.)) );
             else if (spin_diff < 0)
-                return -T( sqrt((S + 3.) / (S + 1.)) );
-
+                ret = -T( sqrt((S + 3.) / (S + 1.)) );
             else
-                return 1.;
+                ret = T(1.);
         }
         else {
             throw std::runtime_error("hermitian conjugate for reduced tensor operators only implemented up to rank 1");
         }
-        return -1;
+        return ret;
     }
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
