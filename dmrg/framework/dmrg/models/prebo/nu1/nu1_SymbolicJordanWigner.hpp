@@ -29,7 +29,7 @@
 
 #ifdef DMRG_PREBO
 
-#include <dmrg/models/lattice.h>
+#include "dmrg/models/lattice/lattice.h"
 
 enum class Type { Fermion, Boson };
 enum class Spin { Up, Down, Zero, None };

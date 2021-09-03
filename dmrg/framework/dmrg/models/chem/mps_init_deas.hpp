@@ -30,7 +30,7 @@
 #ifndef MPS_INIT_DEAS_HPP
 #define MPS_INIT_DEAS_HPP
 
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
 #include "dmrg/utils/DmrgParameters.h"

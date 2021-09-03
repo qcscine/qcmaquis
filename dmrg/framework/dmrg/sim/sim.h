@@ -67,12 +67,10 @@ protected:
     measurements_type iteration_measurements(int sweep);
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
-
     virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
 
 protected:
     DmrgParameters& parms;
-
     int init_sweep, init_site;
     bool restore;
     bool dns;
@@ -84,9 +82,7 @@ protected:
         else
             return std::string();
     };
-
     time_stopper stop_callback;
-
     Lattice lat;
     Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;

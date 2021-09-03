@@ -27,7 +27,7 @@
 #ifndef APP_ALPS_LATTICE_H
 #define APP_ALPS_LATTICE_H
 
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 
 #include <vector>
 #include <map>
