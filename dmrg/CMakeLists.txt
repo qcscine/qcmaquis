@@ -57,8 +57,9 @@ option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated 
 option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
-option (BUILD_DMRG_EVOLVE "Builds the time-evolution DMRG module" OFF)
+option (BUILD_DMRG_EVOLVE "Build the time-evolution DMRG module" OFF)
 option (BUILD_PREBO "Build PreBO model" OFF)
+option (BUILD_VIBRATIONAL "Build the vDMRG code" OFF)
 
 # Time-evolution TD-DMRG
 if(BUILD_DMRG_EVOLVE)
@@ -71,7 +72,7 @@ mark_as_advanced(ENABLE_COLLECTOR)
 
 option (BUILD_MANUAL "Enable pdf manual building. Requires pdflatex" OFF)
 set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
-option(QCMAQUIS_TESTS      "Build and run tests" OFF)
+option(QCMAQUIS_TESTS "Build and run tests" OFF)
 
 # OpenMOLCAS interface
 option (BUILD_OPENMOLCAS_INTERFACE "Build OpenMOLCAS interface" OFF)
@@ -189,12 +190,23 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
+# PreBO-specific flags
 if((BUILD_PREBO))
   if((NOT DMRG_HAS_NU1))
     message(FATAL_ERROR "For pre-BO module, activate NU1 symmetry!")
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_PREBO)
     set(DMRG_PREBO TRUE)
+  endif()
+endif()
+
+# Vibrational-specific flag
+if((BUILD_PREBO))
+  if((NOT DMRG_HAS_NU1) AND (NOT DMRG_HAS_NONE))
+    message(FATAL_ERROR "At least one between the NONE and NU1 symmetries should be activated for vibrational calculations")
+  else()
+    list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
+    set(DMRG_VIBRATIONAL TRUE)
   endif()
 endif()
 

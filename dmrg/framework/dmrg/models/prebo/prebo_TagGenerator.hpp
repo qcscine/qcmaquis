@@ -28,13 +28,10 @@
 #ifndef MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 
-/* internal include */
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "nu1/nu1_SymbolicJordanWigner.hpp"
-
-/* external include */
-#include <dmrg/models/lattice.h>
+#include <dmrg/models/lattice/lattice.h>
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/matrix.hpp>
 #include <map>

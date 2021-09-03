@@ -31,17 +31,13 @@
 #define GENERATE_MPO_TAGGED_MPO_MAKER_H
 
 #include "dmrg/models/generate_mpo/utils.hpp"
-
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
-
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
-
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
-
 #include <string>
 #include <sstream>
 #include <tuple>

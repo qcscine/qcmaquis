@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/factories/factory_lattice.hpp"
 #include "dmrg/models/continuum/factory_lattice.hpp"
 

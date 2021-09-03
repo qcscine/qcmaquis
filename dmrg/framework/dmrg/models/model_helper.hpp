@@ -34,27 +34,29 @@
 template <class Matrix, class SymmGroup>
 class modelHelper {
     // Types definition
-    typedef model_impl<Matrix, SymmGroup> base;
-    typedef typename Matrix::value_type value_type;
-    typedef typename base::tag_type tag_type;
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename std::vector<term_descriptor> terms_type;
-    typedef typename base::op_t op_t;
-    typedef typename std::vector<tag_type> operators_type;
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename std::vector<pos_t> positions_type;
+    using base = model_impl<Matrix, SymmGroup>;
+    using value_type = typename Matrix::value_type;
+    using tag_type = typename base::tag_type;
+    using term_descriptor = typename base::term_descriptor;
+    using terms_type = typename std::vector<term_descriptor>;
+    using op_t = typename base::op_t;
+    using operators_type = typename std::vector<tag_type>;
+    using pos_t = typename Lattice::pos_t;
+    using positions_type = typename std::vector<pos_t>;
 
 public:
-    // +-------------------+
-    // | ARRANGE_OPERATORS |
-    // +-------------------+
+
     /**
+     * @brief SQ multiplication routine.
+     * 
      * This routine is used to take a list of SQ operators and get the
-     * corresponding list of tags. Operators centered on the same center are
-     * merged together.
-     * @param positions
-     * @param operators
-     * @param tag_handler
+     * tag corresponding to the product of all SQ operators.
+     * Note that operators sitting on the same site are merged together.
+     * Note also that zero operators are not added.
+     * 
+     * @param positions vector with the position where each operator acts.
+     * @param operators vector with the operators.
+     * @param tag_handler map keeping track of the operator <--> tag association
      * @return
      */
      static std::pair<term_descriptor, bool> arrange_operators(const positions_type& positions, const operators_type& operators,
@@ -88,16 +90,14 @@ public:
             term.push_back(boost::make_tuple(pos_ops[opnr].first, product));
             opnr = range_end;
         }
-        // std::cout << "Overall scaling" << std::endl;
-        // std::cout << scaling << std::endl;
         return std::make_pair(term, FoundZero);
     }
 
     /**
      * @brief Adds a single term to the Hamiltonian object
-     * @param positions
-     * @param operators
-     * @param coeff
+     * @param positions vector with the position where each operator acts.
+     * @param operators vector with the operators.
+     * @param coeff Scaling factor for the Hamiltonian
      */
     static void add_term(positions_type const& positions, operators_type const& operators, value_type const& coeff,
                          const std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler, terms_type& terms) {
@@ -115,6 +115,26 @@ public:
             //}
         }
     }
+
+    /**
+     * @brief Register all the operators contained in a given vector
+     * @param ops vector with the opeerator to be registered
+     * @param kind fermioni/bosoonic
+     * @param tag_handler map keeping track of the operator <--> tag association
+     * @return std::vector<tag_type> vector of the tags associated with ops
+     */
+    static std::vector<tag_type> register_all_types(const std::vector<op_t> & ops, tag_detail::operator_kind kind,
+                                                    std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler)
+    {
+        std::vector<tag_type> ret;
+        for (std::size_t idx = 0; idx < ops.size(); idx++) {
+            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[idx], kind);
+            assert( newtag.first < tag_handler->size() );
+            assert( std::abs(newtag.second - value_type(1.)) == value_type() );
+            ret.push_back(newtag.first);
+        }
+        return ret;
+    }
 };
 
-#endif //MAQUIS_DMRG_MODEL_HELPER_HPP
+#endif // MAQUIS_DMRG_MODEL_HELPER_HPP

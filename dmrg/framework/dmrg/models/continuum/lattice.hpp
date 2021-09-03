@@ -27,11 +27,9 @@
 #ifndef CONTINUOUS_LATTICE_H
 #define CONTINUOUS_LATTICE_H
 
-#include "dmrg/models/lattice.h"
-
+#include "dmrg/models/lattice/lattice.h"
 #include <sstream>
 #include <boost/lexical_cast.hpp>
-
 #include "dmrg/utils/BaseParameters.h"
 
 class ContChain : public lattice_impl

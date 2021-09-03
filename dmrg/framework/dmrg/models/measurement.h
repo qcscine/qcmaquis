@@ -31,9 +31,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
-
-#include "dmrg/models/lattice.h"
-
+#include "dmrg/models/lattice/lattice.h"
 #include <alps/parser/xmlstream.h>
 
 #include <vector>

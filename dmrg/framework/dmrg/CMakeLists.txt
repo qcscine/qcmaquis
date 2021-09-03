@@ -16,7 +16,7 @@ DESTINATION include/dmrg/sim)
 
 # *** List all needed sources
 ## Lattice library
-set(DMRG_MODELS_SOURCES "models/lattice_factory.cpp")
+set(DMRG_MODELS_SOURCES "models/lattice/lattice_factory.cpp")
 ## Model library
 ## Set the variable MAQUIS_INCLUDE_FACTORIES_${GROUP_NAME} for each symmetry
 foreach(SYMM ${BUILD_SYMMETRIES})

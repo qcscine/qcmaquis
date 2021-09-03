@@ -91,6 +91,10 @@ private:
         add_option("entanglement_spectra", "", value(0));
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
+        // vDMRG-related parameters
+        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
+        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator");
+
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
