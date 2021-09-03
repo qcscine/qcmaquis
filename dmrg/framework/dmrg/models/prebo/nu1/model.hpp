@@ -44,7 +44,7 @@
 #include <unordered_map>
 #include <chrono>
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 /**
  * @brief Pre-Born Oppenheimer model class
@@ -224,6 +224,6 @@ public:
     }
 };
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif
