@@ -28,7 +28,7 @@
 #ifndef MAQUIS_DMRG_NU1_NBODYTERM_HPP
 #define MAQUIS_DMRG_NU1_NBODYTERM_HPP
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 #include "nu1_SymbolicJordanWigner.hpp"
 #include <map>
@@ -305,6 +305,6 @@ public:
 
 };
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif // MAQUIS_DMRG_NU1_NBODYTERM_HPP

@@ -27,7 +27,7 @@
 #ifndef MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
 #define MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 #include <dmrg/models/lattice.h>
 
@@ -335,6 +335,6 @@ private:
     }
 };
 
-#endif
+#endif // DMRG_PREBO
 
-#endif //MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
+#endif // MAQUIS_DMRG_NU1_SYMBOLICJORDANWIGNER_HPP
