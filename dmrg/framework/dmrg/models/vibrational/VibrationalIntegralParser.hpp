@@ -5,7 +5,6 @@
  * Copyright (C) 2014 Laboratory for Physical Chemistry, ETH Zurich
  *               2017-2017 by Alberto Baiardi <abaiardi@phys.ethz.ch>
  *
- * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
@@ -47,20 +46,20 @@ namespace VibrationalIntegralParser {
  */
 template <class T >
 inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
-std::pair< std::vector< std::size_t > , T >
+std::pair< std::vector< Lattice::pos_t > , T >
 NModeIntegralParser(BaseParameters & parms, Lattice const & lat, std::string line_string)
 {
     using pos_t = Lattice::pos_t;
-    std::pair< std::vector< post_t > , T >  result ;
+    std::pair< std::vector< pos_t > , T >  result ;
     int max_nbody = parms["nmode_max_coupling"] ;
     // -- Main data parsing --
-    std::vector< std::size_t > size_vec ;
-    std::vector< std::string > line_splitted ;
+    std::vector< pos_t > size_vec;
+    std::vector< std::string > line_splitted;
     // Trim leading and final spaces in the string.
     line_string.erase(line_string.begin(), std::find_if(line_string.begin(), line_string.end(),
                                                         [&](int ch) { return !std::isspace(ch); } ) ) ;
     line_string.erase(std::find_if(line_string.rbegin(), line_string.rend(),
-                                   [&](int ch) { return !std::isspace(ch); } ).base(), line_string.end()
+                                   [&](int ch) { return !std::isspace(ch); } ).base(), line_string.end());
     // Split the string into i-n, i-m, float_1 or i-n, i-m, j-p, j-q, float_2 etc etc
     boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on) ;
     T scalar_res = atof(line_splitted[line_splitted.size()-1].c_str()) ;

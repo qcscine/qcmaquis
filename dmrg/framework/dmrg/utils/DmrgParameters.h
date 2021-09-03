@@ -94,6 +94,7 @@ private:
         // vDMRG-related parameters
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator");
+        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));

@@ -10,6 +10,8 @@ stages:
   - buildFinal
   - testFinal
 
+# Conventional electronic-structure tests
+
 build-electronic:
   stage: buildBasic
   tags:
@@ -32,6 +34,8 @@ testElectronic:
   script:
     - cd buildElectronic
     - make test -j2
+
+# Relativistic electronic-structure tests
 
 build-relativistic:
   stage: buildAdvanced
@@ -57,7 +61,9 @@ testRelativistic:
     - cd buildRelativistic
     - make test -j2
 
-build-with-nu1:
+# Non-electronic-structure tests
+
+buildPreBO:
   stage: buildFinal
   needs: ["testRelativistic"]
   tags:
@@ -72,7 +78,31 @@ build-with-nu1:
     expire_in: 6h
     when: always
 
-testNU1:
+testPreBO:
+  stage: testFinal
+  needs: ["build-with-nu1"]
+  tags:
+    - default_docker
+  script:
+    - cd buildNU1
+    - make test -j4
+
+buildVibrationalHamiltonians:
+  stage: buildFinal
+  needs: ["testRelativistic"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildVibrational && cd buildVibrational
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;NONE" -DBUILD_VIBRATIONAL=ON -DDMRG_NUMSYMM=5  ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildVibrational/
+    expire_in: 6h
+    when: always
+
+testVibrationalHamiltonians:
   stage: testFinal
   needs: ["build-with-nu1"]
   tags:

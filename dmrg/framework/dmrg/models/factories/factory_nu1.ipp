@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
+ * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
+ *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/prebo/nu1/model.hpp"
+#include "dmrg/models/vibrational/nu1/model.hpp"
 #include "dmrg/models/factories/factory.h"
 
 template<class Matrix, int N>
@@ -41,7 +42,7 @@ struct coded_model_factory<Matrix, NU1_template<N>> {
         }
         else if (parms["MODEL"] == std::string("nmode")) {
 #ifdef DMRG_VIBRATIONAL
-            return impl_ptr( new NMode<Matrix>(lattice, parms, verbose) );
+            return impl_ptr( new NMode<Matrix, N>(lattice, parms, false) );
 #else
             throw std::runtime_error("Don't know this model!");
 #endif

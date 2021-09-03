@@ -29,6 +29,8 @@
 #ifndef MAQUIS_DMRG_NMODE_LATTICE
 #define MAQUIS_DMRG_NMODE_LATTICE
 
+#ifdef DMRG_VIBRATIONAL
+
 #include "dmrg/models/lattice/lattice.h"
 #include <sstream>
 #include <vector>
@@ -38,31 +40,38 @@
 #include <numeric>
 #include "dmrg/utils/BaseParameters.h"
 
-// +-------------+
-//  NMODE LATTICE
-// +-------------+
-//TODO ALB Maybe move the setup of the orbital order here. When doing it, remember to change also get_prop_
+/**
+ * @brief NMode lattice class.
+ * 
+ * Lattice representing a n-mode vibrational Hamiltonian.
+ * Each site is mapped to a modal which is, in turn, associated with a mode.
+ * The lattice is, therefore, partition in sublattices, one associated with
+ * each mode.
+ */
 
 class NModeLattice : public lattice_impl
 {
 public:
     // Types definition
-    typedef lattice_impl::pos_t   pos_t;
-    //
-    // -- Constructor --
-    // In addition to a standard lattice constructor, it also loads the number
-    // of basis function per mode
-    NModeLattice (BaseParameters & model) : L(0), vector_bases(0), vector_types(0)
+    using post_t = lattice_impl::pos_t;
+    
+    /**
+     * @brief Class constructor for the lattice
+     * @param parameters parameter container
+     */
+    NModeLattice(BaseParameters& parameters) : L(0), vector_bases(0), vector_types(0)
     {
-        // Loads in input parameters
-        int num_modes = model["nmode_num_modes"] ;
-        L = model["L"] ;
-        vector_types.resize(L) ;
-        vector_bases.reserve(L) ;
-        std::string jnk = model["nmode_num_basis"];
-        maximum_vertex = num_modes-1 ;
-        std::vector<std::string>  size_vec ;
-        boost::split(size_vec, jnk, boost::is_any_of(",")) ;
+        int num_modes = parameters["nmode_num_modes"];
+        L = parameters["L"] ;
+        vector_types.resize(L);
+        vector_bases.reserve(L);
+        std::string jnk = parameters["nmode_num_basis"];
+        maximum_vertex = num_modes-1;
+        std::vector<std::string> size_vec;
+        boost::split(size_vec, jnk, boost::is_any_of(","));
+        assert(size_vec.size() == num_modes);
+        // Loops over the number of basis functions and calculates the index
+        // of the first site associated with a given mode
         for (std::size_t idx = 0; idx < size_vec.size(); idx++) {
             if (idx == 0) {
                 vector_bases.push_back(0);
@@ -74,24 +83,21 @@ public:
                     vector_bases.push_back(vector_bases[idx-1] + mod);
             }
         }
-        int count = vector_bases[size_vec.size()-1] + stoi(size_vec[size_vec.size()-1])  ;
+        int count = vector_bases[size_vec.size()-1] + stoi(size_vec[size_vec.size()-1]);
         if (count != L)
             throw std::runtime_error("Inconsistent number of basis functions") ;
         // Now populates the vector with the type of each site (i.e., the mode to
         // which they belong
-        std::size_t jcont=0 ;
-        for (std::size_t idx1 = 0; idx1 < size_vec.size(); idx1++) {
-            for (std::size_t idx2 = 0; idx2 < stoi(size_vec[idx1]); idx2++) {
-                vector_types[jcont] = static_cast<int>(idx1) ;
-                ++jcont ;
+        int jcont=0 ;
+        for (int idx1 = 0; idx1 < size_vec.size(); idx1++) {
+            for (int idx2 = 0; idx2 < stoi(size_vec[idx1]); idx2++) {
+                vector_types[jcont] = idx1;
+                ++jcont;
             }
         }
     }
-    //
-    // -- METHODS --
-    // The following methods are the same as for the Orbital and the Open Chain Lattice.
-    // The only difference is the way in which the lattice site type is extracted, which
-    // is taken from the orbital lattice
+    
+    /** @brief Returns the next position in the lattice */
     std::vector<pos_t> forward(pos_t i) const
     {
         std::vector<pos_t> ret;
@@ -99,7 +105,8 @@ public:
             ret.push_back(i+1);
         return ret;
     }
-    //
+    
+    /** @brief Returns the neighbors of a given site */
     std::vector<pos_t> all(pos_t i) const
     {
         std::vector<pos_t> ret;
@@ -109,13 +116,18 @@ public:
             ret.push_back(i-1);
         return ret;
     }
-    //
-    int get_basis_previous(int const& idx) const
-    {
-        assert (idx >= 0 && idx < L) ;
-        return vector_bases[idx] ;
-    }
 
+    /**
+     * @brief Getter for the property
+     * 
+     * Note that, in additional to the usual properties of a lattice, we code
+     * the additional property "sublatticePos" which states where the sublattice
+     * associated with a given mode is starting
+     * 
+     * @param property string identifier for the property
+     * @param pos vector of positions 
+     * @return boost::any requested property
+     */
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
         if (property == "label" && pos.size() == 1)
@@ -126,6 +138,10 @@ public:
             return boost::any(vector_types[pos[0]]);
         else if (property == "type" && pos.size() == 2)
             return boost::any(0);
+        else if (property == "sublatticePos" && pos.size() == 1) {
+            assert (pos[0] >= 0 && pos[0] < L);
+            return boost::any(vector_bases[pos[0]]);
+        }
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
@@ -133,25 +149,33 @@ public:
             return boost::any();
         }
     }
-    //
-    pos_t size()                const { return L; } 
-    int   maximum_vertex_type() const { return maximum_vertex; }
+    
+    /** @brief Getter for the lattice size */
+    pos_t size() const { return L; } 
+
+    /** @brief Getter for the number of types of sites */
+    int maximum_vertex_type() const { return maximum_vertex; }
+
 private:
-    //
-    // -- ATTRIBUTES --
-    //
-    pos_t L;                                  // Size of the DMRG lattice
-    int maximum_vertex;                       // Largest index for site types
-    std::vector<int> vector_types ;           // Sites type vector
-    std::vector<int> vector_bases ;           // The i-th element returns the number of basis that have been used
-                                              // before the i-th mode. Used as offset in vectors
-    //
-    // Printing routines
+    /** Size of the DMRG lattice */
+    pos_t L;
+    /** Largest index for site types */
+    int maximum_vertex;
+    /** Sites type vector */
+    std::vector<int> vector_types;
+    /** 
+     * The i-th element returns the number of basis that have been used
+     * before the i-th mode. Used as offset in vectors
+     */
+    std::vector<int> vector_bases;
+    
+    /** @brief Prints the label of a given site */
     std::string site_label (int i) const
     {
         return "( " + boost::lexical_cast<std::string>(i) + " )";
     }
-    //
+    
+    /** @brief Prints the label of a given bond */
     std::string bond_label (int i, int j) const
     {
         return (  "( " + boost::lexical_cast<std::string>(i) + " )"
@@ -159,5 +183,7 @@ private:
                 + "( " + boost::lexical_cast<std::string>(j) + " )");
     }
 };
+
+#endif // DMRG_VIBRATIONAL
 
 #endif // MAQUIS_DMRG_NMODE_LATTICE

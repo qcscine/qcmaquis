@@ -32,6 +32,12 @@ if(BUILD_PREBO)
     target_link_libraries(test_prebo_symbolic_jw ${DMRG_APP_LIBRARIES})
 endif(BUILD_PREBO)
 
+if(BUILD_VIBRATIONAL)
+    # Unit test
+    add_executable(test_vibrational_lattice vibrational/test_vibrational_lattice.cpp)
+    target_link_libraries(test_vibrational_lattice ${DMRG_APP_LIBRARIES})
+endif(BUILD_VIBRATIONAL)
+
 add_executable(test_integral_map test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
 
