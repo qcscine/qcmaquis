@@ -46,7 +46,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/coded/lattice.hpp"
+#include "dmrg/models/lattice/ChainLattice.hpp"
 
 typedef TwoU1PG SymmGroup;
 typedef alps::numeric::matrix<double> matrix;
