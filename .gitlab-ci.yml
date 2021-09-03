@@ -80,7 +80,7 @@ buildPreBO:
 
 testPreBO:
   stage: testFinal
-  needs: ["build-with-nu1"]
+  needs: ["buildPreBO"]
   tags:
     - default_docker
   script:
@@ -104,7 +104,7 @@ buildVibrationalHamiltonians:
 
 testVibrationalHamiltonians:
   stage: testFinal
-  needs: ["build-with-nu1"]
+  needs: ["buildVibrationalHamiltonians"]
   tags:
     - default_docker
   script:
