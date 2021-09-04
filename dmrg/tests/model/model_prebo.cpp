@@ -30,7 +30,7 @@
 #include <boost/mpl/assert.hpp>
 #include "utils/fpcomparison.h"
 #include "utils/io.hpp"
-#include "dmrg/models/coded/lattice.hpp"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/sim/matrix_types.h"
 #include <iostream>

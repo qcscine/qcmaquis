@@ -58,8 +58,10 @@ inline std::shared_ptr<lattice_impl> coded_lattice_factory(BaseParameters & parm
         return impl_ptr(new Orbitals(parms));
     else if (parms["LATTICE"] == std::string("spinors"))
         return impl_ptr(new Orbitals(parms));
+#ifdef DMRG_PREBO
     else if (parms["LATTICE"] == std::string("preBO lattice"))
         return impl_ptr(new PreBOLattice(parms));
+#endif
 #ifdef DMRG_VIBRATIONAL
     else if (parms["LATTICE"] == std::string("nmode lattice"))
         return impl_ptr(new NModeLattice(parms));
