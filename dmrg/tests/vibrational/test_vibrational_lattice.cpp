@@ -33,10 +33,35 @@
 #include "Fixtures/NModeFixture.h"
 
 /** @brief Checks the size of the lattice */
-BOOST_FIXTURE_TEST_CASE(Test_Lattice_2ModeSystem, NModeFixture)
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 {
     auto lattice = NModeLattice(parametersTwoMode);
     auto size = lattice.size();
     BOOST_CHECK_EQUAL(size, 24);
 }
 
+/** @brief Checks the size of the lattice */
+BOOST_FIXTURE_TEST_CASE(Test_Site_Types_2ModeSystem, NModeFixture)
+{
+    auto lattice = NModeLattice(parametersTwoMode);
+    auto typeOfSites = lattice.maximum_vertex_type();
+    BOOST_CHECK_EQUAL(typeOfSites, 1);
+}
+
+/** @brief Checks the size of the lattice for the 4-mode input */
+BOOST_FIXTURE_TEST_CASE(Test_Site_Types_4ModeSystem, NModeFixture)
+{
+    auto lattice = NModeLattice(parametersFourMode);
+    auto typeOfSites = lattice.maximum_vertex_type();
+    BOOST_CHECK_EQUAL(typeOfSites, 3);
+}
+
+/** @brief Checks the partition of the lattice for the 4-mode input */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Partition_4ModeSystem, NModeFixture)
+{
+    auto lattice = NModeLattice(parametersFourMode);
+    int posOfFirstType = lattice.get_prop<int>("sublatticePos", 0);
+    BOOST_CHECK_EQUAL(posOfFirstType, 0);
+    posOfFirstType = lattice.get_prop<int>("sublatticePos", 2);
+    BOOST_CHECK_EQUAL(posOfFirstType, 7);
+}
