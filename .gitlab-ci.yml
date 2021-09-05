@@ -108,7 +108,7 @@ testVibrationalHamiltonians:
   tags:
     - default_docker
   script:
-    - cd buildNU1
+    - cd buildVibrational
     - make test -j4
 
 # Pipeline for the TD-DMRG case
