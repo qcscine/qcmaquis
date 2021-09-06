@@ -35,7 +35,7 @@
 #include "dmrg/sim/matrix_types.h"
 
 /** Test for the integral parser with the one-body Hamiltonian */
-BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser, NModeFixture)
+BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_OneBody, NModeFixture)
 {
     auto integrals = Vibrational::detail::NModeIntegralParser<double>(parametersFADOneBody, lattice_factory(parametersFADOneBody));
     // Checks sizes
@@ -56,6 +56,30 @@ BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser, NModeFixture)
     BOOST_CHECK_EQUAL(-1, integrals.first[0][9]);
     BOOST_CHECK_EQUAL(-1, integrals.first[0][10]);
     BOOST_CHECK_EQUAL(-1, integrals.first[0][11]);
+}
+
+/** Test for the integral parser with the two-body Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_TwoBody, NModeFixture)
+{
+    auto integrals = Vibrational::detail::NModeIntegralParser<double>(parametersFADTwoBody, lattice_factory(parametersFADTwoBody));
+    // Checks sizes
+    BOOST_CHECK_EQUAL(integrals.first.size(), 4845);
+    BOOST_CHECK_EQUAL(integrals.second.size(), 4845);
+    // Check numeric values
+    int idx = 4844;
+    BOOST_CHECK_CLOSE(2.904591355839877e+04, integrals.second[idx], 1e-12);
+    BOOST_CHECK_EQUAL(1,  integrals.first[idx][0]);
+    BOOST_CHECK_EQUAL(10, integrals.first[idx][1]);
+    BOOST_CHECK_EQUAL(1,  integrals.first[idx][2]);
+    BOOST_CHECK_EQUAL(10, integrals.first[idx][3]);
+    BOOST_CHECK_EQUAL(2,  integrals.first[idx][4]);
+    BOOST_CHECK_EQUAL(10, integrals.first[idx][5]);
+    BOOST_CHECK_EQUAL(2,  integrals.first[idx][6]);
+    BOOST_CHECK_EQUAL(10, integrals.first[idx][7]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[idx][8]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[idx][9]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[idx][10]);
+    BOOST_CHECK_EQUAL(-1, integrals.first[idx][11]);
 }
 
 /** Test for the threshold functionality of the integral parser */
@@ -91,6 +115,17 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_OneMode, NModeFixture)
     BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 2);
 }
 
+/** Checks consistency for the physical dimensions for a 1-mode system */
+BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_TwoMode, NModeFixture)
+{
+    auto lattice = Lattice(parametersFADTwoBody);
+    auto nModeModel = NMode<tmatrix<double>, 2>(lattice, parametersFADTwoBody, false);
+    const auto& physicalDimensions0 = nModeModel.phys_dim(0);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 2);
+    const auto& physicalDimensions1 = nModeModel.phys_dim(1);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 2);
+}
+
 /** Checks consistency for the overall QN for a 1-mode system */
 BOOST_FIXTURE_TEST_CASE(Test_Model_TotalQN_OneMode, NModeFixture)
 {
@@ -100,8 +135,24 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_TotalQN_OneMode, NModeFixture)
     BOOST_CHECK_EQUAL(totalQN[0], 1);
 }
 
+/** Checks consistency for the overall QN for a 1-mode system */
+BOOST_FIXTURE_TEST_CASE(Test_Model_TotalQN_TwoMode, NModeFixture)
+{
+    auto lattice = Lattice(parametersFADTwoBody);
+    auto nModeModel = NMode<tmatrix<double>, 2>(lattice, parametersFADTwoBody, false);
+    auto totalQN = nModeModel.total_quantum_numbers(parametersFADTwoBody);
+    BOOST_CHECK_EQUAL(totalQN[0], 1);
+    BOOST_CHECK_EQUAL(totalQN[1], 1);
+    // Now we use a larger lattice
+    auto nModeModelWrongDim = NMode<tmatrix<double>, 3>(lattice, parametersFADTwoBody, false);
+    auto totalQNWrongDim = nModeModelWrongDim.total_quantum_numbers(parametersFADTwoBody);
+    BOOST_CHECK_EQUAL(totalQNWrongDim[0], 1);
+    BOOST_CHECK_EQUAL(totalQNWrongDim[1], 1);
+    BOOST_CHECK_EQUAL(totalQNWrongDim[2], 0);
+}
+
 /** Simple check on tags */
-BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck, NModeFixture)
+BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_OneMode, NModeFixture)
 {
     auto lattice = Lattice(parametersFADOneBody);
     auto nModeModel = NMode<tmatrix<double>, 1>(lattice, parametersFADOneBody, false);
@@ -111,12 +162,31 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck, NModeFixture)
     BOOST_CHECK(identityTag == fillingTag);
 }
 
+/** Simple check on tags for the two-mode Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_TwoMode, NModeFixture)
+{
+    auto lattice = Lattice(parametersFADTwoBody);
+    auto nModeModel = NMode<tmatrix<double>, 2>(lattice, parametersFADTwoBody, false);
+    auto identityTag = nModeModel.filling_matrix_tag(0);
+    auto fillingTag = nModeModel.filling_matrix_tag(1);
+    BOOST_CHECK(identityTag != fillingTag);
+}
+
 /** Check on symbolic operator getter */
-BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator, NModeFixture)
+BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_OneMode, NModeFixture)
 {
     auto lattice = Lattice(parametersFADOneBody);
     auto nModeModel = NMode<tmatrix<double>, 1>(lattice, parametersFADOneBody, false);
     BOOST_CHECK(nModeModel.filling_matrix_tag(0) == nModeModel.get_operator_tag("fill", 0));
+}
+
+/** Check on symbolic operator getter for a two-mode Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_TwoMode, NModeFixture)
+{
+    auto lattice = Lattice(parametersFADOneBody);
+    auto nModeModel = NMode<tmatrix<double>, 2>(lattice, parametersFADOneBody, false);
+    BOOST_CHECK(nModeModel.filling_matrix_tag(0) == nModeModel.get_operator_tag("fill", 0));
+    BOOST_CHECK(nModeModel.identity_matrix_tag(1) == nModeModel.get_operator_tag("id", 1));
 }
 
 /** Check on operator table getter */
