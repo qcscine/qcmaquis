@@ -65,3 +65,10 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Partition_4ModeSystem, NModeFixture)
     posOfFirstType = lattice.get_prop<int>("sublatticePos", 2);
     BOOST_CHECK_EQUAL(posOfFirstType, 7);
 }
+
+/** @brief Checks that the lattice is contruscted correctly from parameters data */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_From_Parameters, NModeFixture)
+{
+    auto lattice = lattice_factory(parametersFADOneBody);
+    BOOST_CHECK_EQUAL(lattice->size(), 39);
+}

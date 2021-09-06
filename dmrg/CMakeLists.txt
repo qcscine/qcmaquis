@@ -428,6 +428,7 @@ if(QCMAQUIS_TESTS)
   # Vibrational tests
   if(BUILD_VIBRATIONAL)
     add_test(NAME Vibrational_Lattice COMMAND test_vibrational_lattice)
+    add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
   endif(BUILD_VIBRATIONAL)
 endif(QCMAQUIS_TESTS)
 

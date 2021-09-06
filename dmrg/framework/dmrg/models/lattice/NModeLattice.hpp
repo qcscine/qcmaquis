@@ -151,7 +151,7 @@ public:
     }
     
     /** @brief Getter for the lattice size */
-    pos_t size() const { return L; } 
+    pos_t size() const { return L; }
 
     /** @brief Getter for the number of types of sites */
     int maximum_vertex_type() const { return maximum_vertex; }

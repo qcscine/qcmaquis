@@ -81,6 +81,7 @@ public:
     virtual pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {return 0;};
 
     virtual pos_t size() const = 0;
+    
     virtual int maximum_vertex_type() const = 0;
 
 };
@@ -132,8 +133,8 @@ public:
     { return impl_->get_abs_position(pt, rel_pos) ; }
 
     pos_t size() const { return impl_->size(); }
-    int maximum_vertex_type() const { return impl_->maximum_vertex_type(); };
 
+    int maximum_vertex_type() const { return impl_->maximum_vertex_type(); };
 
 private:
     impl_ptr impl_;

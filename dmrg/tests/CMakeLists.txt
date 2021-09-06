@@ -23,9 +23,10 @@ if(BUILD_PREBO)
     target_link_libraries(prebo_test1 ${DMRG_APP_LIBRARIES})
     add_executable(prebo_test2 prebo_test2.cpp)
     target_link_libraries(prebo_test2 ${DMRG_APP_LIBRARIES})
-    add_executable(prebo_test_model model/model_prebo.cpp)
+    # Unit tests for the model class
+    add_executable(prebo_test_model prebo/PreBOModel.cpp)
     target_link_libraries(prebo_test_model ${DMRG_APP_LIBRARIES})
-    # Unit tests
+    # Unit tests for the helper classes
     add_executable(test_prebo_symbolic_operator prebo/symbolicoperator_test.cpp)
     target_link_libraries(test_prebo_symbolic_operator ${DMRG_APP_LIBRARIES})
     add_executable(test_prebo_symbolic_jw prebo/SymbolicJordanWignerTest.cpp)
@@ -36,6 +37,8 @@ if(BUILD_VIBRATIONAL)
     # Unit test
     add_executable(test_vibrational_lattice vibrational/test_vibrational_lattice.cpp)
     target_link_libraries(test_vibrational_lattice ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_nu1_model vibrational/NU1VibrationalModel.cpp)
+    target_link_libraries(test_vibrational_nu1_model ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 add_executable(test_integral_map test_integral_map.cpp)

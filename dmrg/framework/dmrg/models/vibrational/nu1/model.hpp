@@ -63,7 +63,6 @@ class NMode : public model_impl<Matrix, NU1_template<N>> {
     using positions_type = typename std::vector<pos_t>;
     using value_type = typename Matrix::value_type;
     using charge_type = typename NU1::charge;
-    using H_terms_type = typename std::pair<std::vector<pos_t>, value_type>;
 public:
     
     /**
@@ -123,34 +122,23 @@ public:
         create = modelHelper<Matrix, NU1>::register_all_types(create_op, tag_detail::bosonic, tag_handler);
         destroy = modelHelper<Matrix, NU1>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler);
         count = modelHelper<Matrix, NU1>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
-        //
-        // ==  DEFINITION OF THE SQ HAMILTONIAN ==
-        // Open the integral file and do a loop over this file
-        std::string integral_file = parameters["integral_file"];
-        if (!boost::filesystem::exists(integral_file))
-          throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-        std::ifstream orb_file;
-        std::string line_string;
-        positions_type positions;
-        operators_type operators;
-        orb_file.open(integral_file.c_str());
-        while (getline(orb_file, line_string)) {
-          // Resets the vector
-          positions.resize(0);
-          operators.resize(0);
-          // Extract the data 
-          auto Hamiltonian_term = VibrationalIntegralParser::NModeIntegralParser<value_type>(parameters, lattice, line_string);
-          if (Hamiltonian_term.first.size() == 0 || std::fabs(Hamiltonian_term.second) < parameters["integral_cutoff"])
-            continue;
-          convertLineToOperators(Hamiltonian_term, positions, operators);
-          modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second, tag_handler, this->terms_);
-        }
     }
 
     /** @brief Update the model with the new parameters */
     void update(BaseParameters const &p) {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
+    }
+
+    void create_terms() override {
+        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<value_type>(parameters, lattice);
+        int hamiltonianSize = Hamiltonian_term.first.size();
+        for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
+            positions_type positions;
+            operators_type operators;
+            convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
+            modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
+        }
     }
 
     /** @brief Getter for the physical dimension of a given type */
@@ -177,7 +165,7 @@ public:
      * @param type site type for which the operator is returned
      * @return tag_type tag associated with the requested operator
      */
-    tag_type get_operator_tag(std::string const &name, size_t type) const {
+    tag_type get_operator_tag(const std::string& name, size_t type) const {
         if (name == "n")
             return count[type];
         else if (name == "bdag")
@@ -380,28 +368,29 @@ private:
      * with the second mode and so on.
      * Generic sortings are NYI.
      * 
-     * @param ham_term term to be parsed
+     * @param ham_term term to be parsed (array of integer numbers)
      * @param pos (output) vector with the position where operator are acting
      * @param ops (output) vector with the operators
      */
-    void convertLineToOperators(const H_terms_type& ham_term, positions_type& pos, operators_type& ops)
+    template<class IntegralContainer>
+    void convertLineToOperators(const IntegralContainer& ham_term, positions_type& pos, operators_type& ops)
     {
-        std::size_t size_term = ham_term.first.size(), nmode_order ;
-        assert (size_term % 2 == 0) ;
-        nmode_order = size_term / 2 ;
-        for (std::size_t jj = 0; jj < nmode_order; jj++) {
-           // Retrieves matrix element
-           auto offset = lattice.get_prop<int>("sublatticePos", ham_term.first[2*jj]-1);
-           auto index  = ham_term.first[2*jj+1] + offset;
-           assert(index < lattice_size);
-           int i_type = lattice.get_prop<int>("type", index);
-           pos.push_back(index);
-           if (jj % 2 == 0)
+        assert (ham_term.size() % 2 == 0);
+        int jCont = 0;
+        do {
+            // Retrieves matrix element
+            auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
+            auto index  = ham_term[2*jCont+1] + offset;
+            assert(index < lattice_size);
+            int i_type = lattice.get_prop<int>("type", index);
+            pos.push_back(index);
+            if (jCont % 2 == 0)
                ops.push_back(create[i_type]);
-           else
+            else
                ops.push_back(destroy[i_type]);
+            jCont += 1;
         }
-
+        while (jCont < ham_term.size() && ham_term[2*jCont] != -1);
     }
 
 private:

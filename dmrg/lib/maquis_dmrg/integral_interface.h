@@ -8,6 +8,7 @@
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2019         Leon Freitag <lefreita@ethz.ch>
 *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
+*               2021- by Alberto Baiardi <abaiardi@phys.chem.ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
