@@ -61,7 +61,7 @@ public:
      */
     NModeLattice(BaseParameters& parameters) : L(0), vector_bases(0), vector_types(0)
     {
-        int num_modes = parameters["nmode_num_modes"];
+        num_modes = parameters["nmode_num_modes"];
         L = parameters["L"] ;
         vector_types.resize(L);
         vector_bases.reserve(L);
@@ -142,6 +142,12 @@ public:
             assert (pos[0] >= 0 && pos[0] < L);
             return boost::any(vector_bases[pos[0]]);
         }
+        else if (property == "ParticleType" && pos.size() == 1) {
+            assert (pos[0] >= 0 && pos[0] < L);
+            return vector_types[pos[0]];
+        }
+        else if (property == "NumTypes")
+            return num_modes;
         else {
             std::ostringstream ss;
             ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
@@ -161,6 +167,8 @@ private:
     pos_t L;
     /** Largest index for site types */
     int maximum_vertex;
+    /** Number of modes (== number of site types) */
+    int num_modes;
     /** Sites type vector */
     std::vector<int> vector_types;
     /** 
