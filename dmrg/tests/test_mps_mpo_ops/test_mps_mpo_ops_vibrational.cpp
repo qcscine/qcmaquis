@@ -35,7 +35,6 @@
 #include "Fixtures/NModeFixture.h"
 #include "dmrg/sim/matrix_types.h"
 
-
 #ifdef DMRG_VIBRATIONAL
 
 #ifdef HAVE_NU1

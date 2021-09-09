@@ -41,6 +41,8 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_vibrational_nu1_model ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_mpo_ops_vibrational test_mps_mpo_ops/test_mps_mpo_ops_vibrational.cpp)
     target_link_libraries(test_mps_mpo_ops_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_initializers_vibrational mps_initializers/test_mps_initializers_vibrational.cpp)
+    target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 add_executable(test_integral_map test_integral_map.cpp)
