@@ -44,6 +44,9 @@ target_link_libraries(test_hirdm ${DMRG_APP_LIBRARIES})
 add_executable(test_mps_mpo_ops test_mps_mpo_ops/test_mps_mpo_ops.cpp)
 target_link_libraries(test_mps_mpo_ops ${DMRG_APP_LIBRARIES})
 
+add_executable(test_mps_overlap_electronic test_mps_mpo_ops/test_mps_overlap_electronic.cpp)
+target_link_libraries(test_mps_overlap_electronic ${DMRG_APP_LIBRARIES})
+
 add_executable(test_siteproblem test_mps_mpo_ops/test_siteproblem.cpp)
 target_link_libraries(test_siteproblem ${DMRG_APP_LIBRARIES})
 
