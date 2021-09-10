@@ -42,7 +42,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
-//#include "dmrg/mp_tensors/mps_initializers_helper.h"
+#include "dmrg/mp_tensors/mps_initializers_helper.h"
 
 // ========================================
 //  IMPLEMENTATION OF THE MPS INITIALIZERS
@@ -57,10 +57,8 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
     /** 
      * @brief Class constructor 
      */
-    default_mps_init(BaseParameters & parms,
-                     std::vector<Index<SymmGroup> > const& phys_dims_,
-                     typename SymmGroup::charge right_end_,
-                     std::vector<int> const& site_type_)
+    default_mps_init(BaseParameters & parms, std::vector<Index<SymmGroup> > const& phys_dims_,
+                     typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
     : init_bond_dimension(parms["init_bond_dimension"])
     , phys_dims(phys_dims_)
     , right_end(right_end_)
@@ -482,43 +480,35 @@ template<class Matrix, class SymmGroup>
 class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
 {
 public:
-
+    // Types definition
     typedef std::vector<boost::tuple<typename SymmGroup::charge, size_t> > state_type;
-    /** @brief Class constructor */
-    basis_mps_init_generic(BaseParameters & params,
-                           std::vector<Index<SymmGroup> > const& phys_dims_,
-                           typename SymmGroup::charge right_end_,
-                           std::vector<int> const& site_type_)
-    : basis_index(params["init_basis_state"].as<std::vector<int> >())
-    , phys_dims(phys_dims_)
-    , right_end(right_end_)
-    , site_type(site_type_)
+
+    /** 
+     * @brief Class constructor from a parameter object
+     * @param params Parameter container.
+     * @param phys_dims_ Vector with the physical index per site type.
+     * @param right_end_ Overall symmetry sector to which the MPS belongs.
+     * @param site_type_ Vector with size == the lattice size, with the type of each site.
+     */
+    basis_mps_init_generic(BaseParameters & params, const std::vector<Index<SymmGroup> >& phys_dims_,
+                           typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
+        : basis_index(params["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_),
+          right_end(right_end_), site_type(site_type_)
     { }
     
-    basis_mps_init_generic(state_type const& state_,
-                           std::vector<Index<SymmGroup> > const& phys_dims_,
-                           typename SymmGroup::charge right_end_,
-                           std::vector<int> const& site_type_)
-    : phys_dims(phys_dims_)
-    , right_end(right_end_)
-    , site_type(site_type_)
-    , state(state_)
-    { }
-    
+    /** @brief Operator (), called when the MPS is constructed */
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        if (state.size() == 0) {
-            assert(basis_index.size() == mps.length());
-            state.resize(mps.length());
-            maquis::cout << "state: ";
-            for (int i=0; i<mps.length(); ++i) {
-                state[i] = phys_dims[site_type[i]].element(basis_index[i]);
-                maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
-            }
-            maquis::cout << "\n";
-        }
-        
+        // assert(basis_index.size() == mps.length());
+        auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(basis_index, phys_dims, site_type, mps.length());
         mps = state_mps<Matrix>(state, phys_dims, site_type);
+#ifndef NDEBUG
+        for (int i = 0 ; i < basis_index.size() ; i++ ) {
+          maquis::cout << "state: ";
+          maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
+          maquis::cout << "\n";
+        }
+#endif
         if (mps[mps.length()-1].col_dim()[0].first != right_end)
             throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
     }
@@ -528,8 +518,6 @@ private:
     std::vector<Index<SymmGroup> > phys_dims;
     typename SymmGroup::charge right_end;
     std::vector<int> site_type;
-    state_type state;
 };
-
 
 #endif

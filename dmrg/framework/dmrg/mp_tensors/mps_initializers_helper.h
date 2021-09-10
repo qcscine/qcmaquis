@@ -42,17 +42,30 @@
  * which is populated upon construction, while the int is the position *within*
  * the symmetry block that is populated.
  * 
+ * By default, the [GenerateIndexFromString] method is deactivated.
+ * 
  * @tparam SymmGroup Symmetry group (for now we implement None and NU1 symmetry group)
  */
 template<class SymmGroup>
-class HelperClassBasisVectorConverter { };
+class HelperClassBasisVectorConverter {
+public:
+  using ChargeType = typename SymmGroup::charge;
+  using indexType = Index<SymmGroup>;
+  using state_type = std::vector<boost::tuple<ChargeType, std::size_t> >;
+  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
+                                            const std::vector<int>& siteType, int size)
+  {
+    throw std::runtime_error("GenerateIndexFromString method not available for this symmetry group");
+  }
+};
 
+/** @brief Overload for the None class (to be used for vDMRG) */
 template<>
 class HelperClassBasisVectorConverter<TrivialGroup> {
 public:
   // Types definition
   using indexType = Index<TrivialGroup>;
-  using state_type = std::vector<boost::tuple<typename TrivialGroup::charge, int> >;
+  using state_type = std::vector<boost::tuple<typename TrivialGroup::charge, std::size_t> >;
   // General implementation
   static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
@@ -81,7 +94,7 @@ public:
   using NU1 = NU1_template<N>;
   using indexType = Index<NU1>;
   using ChargeType = typename NU1::charge;
-  using state_type = std::vector<boost::tuple<ChargeType, int> >;
+  using state_type = std::vector<boost::tuple<ChargeType, std::size_t> >;
 
   /** @brief Parser for the NU1 symmetry group */
   static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 

@@ -37,40 +37,60 @@
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps_initializers_helper.h"
 #include "dmrg/sim/matrix_types.h"
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/models/generate_mpo.hpp"
 
-BOOST_FIXTURE_TEST_CASE(Test_Initializer_Fixture_NU1, NModeFixture)
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
 {
-    using Symmetry = NU1_template<2>;
-    using IndexType = Index<Symmetry>;
-    std::vector<IndexType> physCharges;
-    std::vector<int> inputVec(2), siteTypes;
-    inputVec[0] = 1;
-    inputVec[1] = 2;
-    // Populates the physical indices
-    auto lattice = Lattice(parametersFADTwoBody);
-    int latticeSize = lattice.size();
-    auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
-    for (int iSite = 0; iSite < latticeSize; iSite++)
-      siteTypes.push_back(lattice.get_prop<int>("type", iSite));
-    for (int iType = 0; iType <= lattice.maximum_vertex_type(); iType++)
-      physCharges.push_back(nModeModel.phys_dim(iType));
-    auto outputVector = HelperClassBasisVectorConverter<Symmetry>::GenerateIndexFromString(inputVec, physCharges,
-                                                                                           siteTypes, latticeSize);
-    for (int iSite = 0; iSite < outputVector.size(); iSite++) {
-      if (iSite == 1) {
-        BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 1);
-        BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
-      }
-      else if (iSite == 13) {
-        BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
-        BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 1);
-      }
-      else {
-        BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
-        BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
-      }
-      BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite]), 0);
+  using Symmetry = NU1_template<2>;
+  using IndexType = Index<Symmetry>;
+  std::vector<IndexType> physCharges;
+  std::vector<int> inputVec(2), siteTypes;
+  inputVec[0] = 1;
+  inputVec[1] = 2;
+  // Populates the physical indices
+  auto lattice = Lattice(parametersFADTwoBody);
+  int latticeSize = lattice.size();
+  auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
+  for (int iSite = 0; iSite < latticeSize; iSite++)
+    siteTypes.push_back(lattice.get_prop<int>("type", iSite));
+  for (int iType = 0; iType <= lattice.maximum_vertex_type(); iType++)
+    physCharges.push_back(nModeModel.phys_dim(iType));
+  auto outputVector = HelperClassBasisVectorConverter<Symmetry>::GenerateIndexFromString(inputVec, physCharges,
+                                                                                         siteTypes, latticeSize);
+  for (int iSite = 0; iSite < outputVector.size(); iSite++) {
+    if (iSite == 1) {
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 1);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
     }
+    else if (iSite == 13) {
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 1);
+    }
+    else {
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
+    }
+    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite]), 0);
+  }
+}
+
+/** @brief Verifies that the energy obtained initializing the MPS with an ONV is correct */
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_NU1, NModeFixture)
+{
+  using Symmetry = NU1_template<1>;
+  parametersFADOneBody.set("init_state", "basis_state_generic");
+  parametersFADOneBody.set("init_basis_state", "0");
+  // Populates the physical indices
+  auto lattice = Lattice(parametersFADOneBody);
+  int latticeSize = lattice.size();
+  auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADOneBody);
+  auto mps = MPS<matrix, Symmetry>(latticeSize, *(nModeModel.initializer(lattice, parametersFADOneBody)));
+  auto mpo = make_mpo(lattice, nModeModel);
+  auto energy = expval(mps, mpo)/norm(mps);
+  // The energy is taken from the integral provides as input in the fixture class.
+  BOOST_CHECK_CLOSE(energy, -2.359242429009664e+03, 1.0E-10);
 }
 
 #endif // HAVE_NU1
