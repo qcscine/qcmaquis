@@ -48,13 +48,13 @@ overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
     if (localop != NULL)
         throw std::runtime_error("Not implemented!");
     assert(ket_tensor.phys_i == bra_tensor.phys_i);
-    bra_tensor.make_left_paired();
     block_matrix<OtherMatrix, SymmGroup> t1;
     block_matrix<Matrix, SymmGroup> t3;
     ket_tensor.make_right_paired();
     typename Gemm::gemm()(left, ket_tensor.data(), t1);
     reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
                               t1, t3);
+    bra_tensor.make_left_paired();
     typename Gemm::gemm()(transpose(conjugate(bra_tensor.data())), t3, t1);
     return t1;
     // original:
@@ -73,12 +73,12 @@ overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
     if (localop != NULL)
         throw std::runtime_error("Not implemented!");
     assert(ket_tensor.phys_i == bra_tensor.phys_i);
-    bra_tensor.make_right_paired();
     ket_tensor.make_left_paired();
     block_matrix<OtherMatrix, SymmGroup> t1;
     block_matrix<Matrix, SymmGroup> t3;
     typename Gemm::gemm()(ket_tensor.data(), transpose(right), t1);
     reshape_left_to_right_new(ket_tensor.site_dim(), ket_tensor.row_dim(), bra_tensor.col_dim(), t1, t3);
+    bra_tensor.make_right_paired();
     typename Gemm::gemm()(conjugate(bra_tensor.data()), transpose(t3), t1);
     return t1;
 }
