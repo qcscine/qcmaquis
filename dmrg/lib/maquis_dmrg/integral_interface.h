@@ -33,7 +33,6 @@
 #define INTEGRAL_INTERFACE_H
 
 #include "dmrg/utils/align.h"
-
 #include <unordered_map>
 #include <boost/serialization/serialization.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -94,7 +93,6 @@ constexpr int getIndexDim (const Hamiltonian& type) {
 template <Hamiltonian HamiltonianType=Hamiltonian::Electronic, int N = getIndexDim(HamiltonianType)>
 using index_type = std::array<int, N>;
 
-    
 /** @brief Class associated with a single entry of the Hamiltonian */
 template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
 using integral_tuple = std::pair<index_type<HamiltonianType>, V>;

@@ -93,6 +93,23 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_NU1, NModeFi
   BOOST_CHECK_CLOSE(energy, -2.359242429009664e+03, 1.0E-10);
 }
 
+/** @brief Verifies that the energy obtained initializing the MPS with an ONV is correct */
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_FromBinary_NU1, NModeFixture)
+{
+  using Symmetry = NU1_template<1>;
+  parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
+  parametersFADOneBodyBinary.set("init_basis_state", "10");
+  // Populates the physical indices
+  auto lattice = Lattice(parametersFADOneBodyBinary);
+  int latticeSize = lattice.size();
+  auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADOneBodyBinary);
+  auto mps = MPS<matrix, Symmetry>(latticeSize, *(nModeModel.initializer(lattice, parametersFADOneBodyBinary)));
+  auto mpo = make_mpo(lattice, nModeModel);
+  auto energy = expval(mps, mpo)/norm(mps);
+  // The energy is taken from the integral provides as input in the fixture class.
+  BOOST_CHECK_CLOSE(energy, 1.408367346423375e+03, 1.0E-10);
+}
+
 /** @brief Same as above, but for the two-mode PESs */
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_Energy_NU1, NModeFixture)
 {

@@ -28,12 +28,15 @@
 #define TEST_NMODE_FIXTURE_H
 
 #include "dmrg/utils/DmrgParameters.h"
+#include "maquis_dmrg.h"
 
 /**
  * @brief Fixture class for the test of the n-mode vibrational DMRG code.
  */
 struct NModeFixture
 {
+    // Types definition
+    using MaquisIntegralType = maquis::integral_map<double, chem::Hamiltonian::VibrationalNMode>;
     /** @brief Constructor for the fixture class */
     NModeFixture() {
         // == PARAMETERS FOR DUMMY CALCULATIONS ==
@@ -147,6 +150,47 @@ struct NModeFixture
         integralFileOneBodyFAD << "      1-38      1-37   2.676992294828838e-13\n";
         integralFileOneBodyFAD << "      1-38      1-38   3.133897924626650e+03\n";
         integralFileOneBodyFAD.close();
+        //
+        integralsOneBodyFAD = MaquisIntegralType {
+            { { 1,  0, 1,  0, -1, -1, -1, -1, -1, -1, -1, -1},  -2.359242429009664e+03 },
+            { { 1,  1, 1,  1, -1, -1, -1, -1, -1, -1, -1, -1},  -2.358797386438359e+03 },
+            { { 1,  2, 1,  2, -1, -1, -1, -1, -1, -1, -1, -1},  -1.444541233850135e+03 },
+            { { 1,  3, 1,  3, -1, -1, -1, -1, -1, -1, -1, -1},  -1.437160009122911e+03 },
+            { { 1,  4, 1,  4, -1, -1, -1, -1, -1, -1, -1, -1},  -6.657064784181758e+03 },
+            { { 1,  5, 1,  5, -1, -1, -1, -1, -1, -1, -1, -1},  -6.128584661601011e+03 },
+            { { 1,  6, 1,  6, -1, -1, -1, -1, -1, -1, -1, -1},  -3.441604675890336e+03 },
+            { { 1,  7, 1,  7, -1, -1, -1, -1, -1, -1, -1, -1},   1.538026675462226e+03 },
+            { { 1,  8, 1,  8, -1, -1, -1, -1, -1, -1, -1, -1},   6.026905892315631e+03 },
+            { { 1,  9, 1,  9, -1, -1, -1, -1, -1, -1, -1, -1},   9.519079627438325e+03 },
+            { { 1, 10, 1, 10, -1, -1, -1, -1, -1, -1, -1, -1},   1.408367346423375e+03 },
+            { { 1, 11, 1, 11, -1, -1, -1, -1, -1, -1, -1, -1},   1.877962833530346e+03 },
+            { { 1, 12, 1, 12, -1, -1, -1, -1, -1, -1, -1, -1},   2.406532356803376e+03 },
+            { { 1, 13, 1, 13, -1, -1, -1, -1, -1, -1, -1, -1},   2.974933802551137e+03 },
+            { { 1, 14, 1, 14, -1, -1, -1, -1, -1, -1, -1, -1},   3.590607405365762e+03 },
+            { { 1, 15, 1, 15, -1, -1, -1, -1, -1, -1, -1, -1},   4.250019051366812e+03 },
+            { { 1, 16, 1, 16, -1, -1, -1, -1, -1, -1, -1, -1},   4.954168295956210e+03 },
+            { { 1, 17, 1, 17, -1, -1, -1, -1, -1, -1, -1, -1},   5.702284980641777e+03 },
+            { { 1, 18, 1, 18, -1, -1, -1, -1, -1, -1, -1, -1},   6.494407879568767e+03 },
+            { { 1, 19, 1, 19, -1, -1, -1, -1, -1, -1, -1, -1},   7.330063654159827e+03 },
+            { { 1, 20, 1, 20, -1, -1, -1, -1, -1, -1, -1, -1},   8.209556409406479e+03 },
+            { { 1, 21, 1, 21, -1, -1, -1, -1, -1, -1, -1, -1},   9.132461752263011e+03 },
+            { { 1, 22, 1, 22, -1, -1, -1, -1, -1, -1, -1, -1},   1.009901501528866e+03 },
+            { { 1, 23, 1, 23, -1, -1, -1, -1, -1, -1, -1, -1},   1.110869147300428e+03 },
+            { { 1, 24, 1, 24, -1, -1, -1, -1, -1, -1, -1, -1},   1.216206565203700e+03 },
+            { { 1, 25, 1, 25, -1, -1, -1, -1, -1, -1, -1, -1},   1.325854103259667e+03 },
+            { { 1, 26, 1, 26, -1, -1, -1, -1, -1, -1, -1, -1},   1.439864696031767e+03 },
+            { { 1, 27, 1, 27, -1, -1, -1, -1, -1, -1, -1, -1},   1.558157142548529e+03 },
+            { { 1, 28, 1, 28, -1, -1, -1, -1, -1, -1, -1, -1},   1.680827752856561e+03 },
+            { { 1, 29, 1, 29, -1, -1, -1, -1, -1, -1, -1, -1},   1.807804326901167e+03 },
+            { { 1, 30, 1, 30, -1, -1, -1, -1, -1, -1, -1, -1},   1.939221830929778e+03 },
+            { { 1, 31, 1, 31, -1, -1, -1, -1, -1, -1, -1, -1},   2.074605464868975e+03 },
+            { { 1, 32, 1, 32, -1, -1, -1, -1, -1, -1, -1, -1},   2.214735474735023e+03 },
+            { { 1, 33, 1, 33, -1, -1, -1, -1, -1, -1, -1, -1},   2.359908634757324e+03 },
+            { { 1, 34, 1, 34, -1, -1, -1, -1, -1, -1, -1, -1},   2.503011884645919e+03 },
+            { { 1, 35, 1, 35, -1, -1, -1, -1, -1, -1, -1, -1},   2.651668901080508e+03 },
+            { { 1, 36, 1, 36, -1, -1, -1, -1, -1, -1, -1, -1},   2.861283145084534e+03 },
+            { { 1, 37, 1, 37, -1, -1, -1, -1, -1, -1, -1, -1},   2.946541753544523e+03 },
+            { { 1, 38, 1, 38, -1, -1, -1, -1, -1, -1, -1, -1},   3.133897924626650e+03 }};
         // For the two-body FCIDUMP, we kept only the constants > 1 cm-1 for convenience
         integralFileTwoBodyFAD.open("integral_file_test_TwoBodyFAD");
         integralFileTwoBodyFAD << "       1-0       1-0  -4.999867107589869e+02 \n"; 
@@ -4995,6 +5039,15 @@ struct NModeFixture
         integralFileTwoBodyFAD << "      1-10      1-10      2-10       2-9   -7.434249539143888e+02 \n"; 
         integralFileTwoBodyFAD << "      1-10      1-10      2-10      2-10    2.904591355839877e+04 \n";
         integralFileTwoBodyFAD.close();
+        // Sets it now because integralsOneBodyFAD has to be populated before passing it to the parameter container.
+        parametersFADOneBodyBinary.set("L", 39);
+        parametersFADOneBodyBinary.set("nmode_num_modes", 1);
+        parametersFADOneBodyBinary.set("nmode_max_coupling", 1);
+        parametersFADOneBodyBinary.set("nmode_num_basis", "39");
+        parametersFADOneBodyBinary.set("symmetry", "nu1");
+        parametersFADOneBodyBinary.set("LATTICE", "nmode lattice");
+        parametersFADOneBodyBinary.set("MODEL", "nmode");
+        parametersFADOneBodyBinary.set("integrals_binary", maquis::serialize(integralsOneBodyFAD));
     }
 
     /** @brief Class destructor (removes tmp files) */
@@ -5004,8 +5057,10 @@ struct NModeFixture
     }
 
     // Class members
-    DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody, parametersFADTwoBody;
+    DmrgParameters parametersTwoMode, parametersFourMode, parametersFADOneBody, parametersFADTwoBody,
+        parametersFADOneBodyBinary;
     std::ofstream integralFileOneBodyFAD, integralFileTwoBodyFAD;
+    MaquisIntegralType integralsOneBodyFAD;
 };
 
 #endif
