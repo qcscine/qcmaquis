@@ -155,7 +155,7 @@ namespace dmrg {
                     throw std::runtime_error("PreBO_InitialStateVector input Error.");
                 }
             }
-            else if (parms["NODEL"] == std::string("nmode")) {
+            else if (parms["MODEL"] == std::string("nmode")) {
                 numberOfSymmetries = parms["nmode_num_modes"];
             }
             else {

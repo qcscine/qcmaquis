@@ -431,6 +431,7 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
     add_test(NAME Test_MPS_MPO_Ops_Vibrational COMMAND test_mps_mpo_ops_vibrational)
     add_test(NAME Test_MPS_Initializers_Vibrational COMMAND test_mps_initializers_vibrational)
+    add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
   endif(BUILD_VIBRATIONAL)
 endif(QCMAQUIS_TESTS)
 
