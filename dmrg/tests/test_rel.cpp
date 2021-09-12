@@ -39,13 +39,13 @@ BOOST_FIXTURE_TEST_CASE( Test_Relativistic, RelativisticFixture )
 {
     // only enable the test if we compile the support for the U1DG symmetry
 #ifdef HAVE_U1DG
-    maquis::DMRGInterface<Complex> interface(parametersComplex);
+    maquis::DMRGInterface<std::complex<double>> interface(parametersComplex);
     interface.optimize();
     // Checks energy
     BOOST_CHECK_CLOSE(std::real(interface.energy()), -1.0780470133e+02 , 1e-7);
-    const typename maquis::DMRGInterface<Complex>::meas_with_results_type& meas = interface.onerdm();
+    const typename maquis::DMRGInterface<std::complex<double>>::meas_with_results_type& meas = interface.onerdm();
     // Calculate the trace of the 1-RDM and check if it adds up to the number of electrons
-    Complex value = 0.0;
+    std::complex<double> value = 0.0;
     for (int i = 0; i < meas.first.size(); i++)
         if (meas.first[i][0] == meas.first[i][1]) // sum up diagonal elements for the trace
             value += meas.second[i];
