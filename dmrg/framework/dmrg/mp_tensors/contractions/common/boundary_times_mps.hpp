@@ -144,14 +144,23 @@ namespace contraction {
             populateData();
         }
 
-        /** 
-         * @brief Constructor not taking a specific left basis 
-         * Note that in this case 
-         */
+        /** @brief Constructor from a block_matrix not taking a specific left basis */
         BoundaryMPSProduct(block_matrix<Matrix, SymmGroup> const & bm_, Boundary<OtherMatrix, SymmGroup> const & left_,
                            MPOTensor<Matrix, SymmGroup> const & mpo_, bool isHermitian=true, bool correctConjugate_=true)
             : BoundaryMPSProduct(bm_, left_, mpo_, bm_.left_basis(), isHermitian, correctConjugate_)
         {}
+        
+        /** @brief Constructor from a mps_tensor not taking a specific left basis */
+        BoundaryMPSProduct(MPSTensor<Matrix, SymmGroup> const & mps_, Boundary<OtherMatrix, SymmGroup> const & left_,
+                           MPOTensor<Matrix, SymmGroup> const & mpo_, bool isHermitian=true, bool correctConjugate_=true)
+            : left(left_), mpo(mpo_), data_(left_.aux_dim()),
+                 correctConjugate(correctConjugate_), isHermitian_(isHermitian)
+        {
+            mps_.make_right_paired();
+            bm = mps_.data();
+            ref_left_basis = mps_.data().left_basis();
+            populateData();
+        }
 
         /** @brief Gets the overall dimension of the BoundaryTimesMPS object */
         std::size_t aux_dim() const {

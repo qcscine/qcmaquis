@@ -296,7 +296,8 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
         if (mpo.herm_info.right_skip(b2))
             continue;
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-        Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, left_i, right_i, out_left_i, in_right_pb, out_left_pb);
+        Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, ket_basis_transpose, right_i, out_left_i,
+                 in_right_pb, out_left_pb, true);
         // Final contraction with the MPS
         ret[b2] = contr_grid(0,0);
     });
@@ -337,7 +338,7 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.left_skip(b1))
             continue;
-        Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), right_i, left_i, out_right_i, in_left_pb, out_right_pb);
+        Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, true);
     });
     return ret;
 }
