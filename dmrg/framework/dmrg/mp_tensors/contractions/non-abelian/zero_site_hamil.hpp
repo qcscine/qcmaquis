@@ -38,6 +38,12 @@ zerosite_hamil_lbtm(block_matrix<Matrix, SymmGroup> bra_tensor, block_matrix<Mat
 
 template<class Matrix, class OtherMatrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>
+zerosite_hamil_lbtm(block_matrix<Matrix, SymmGroup> ket_tensor, Boundary<OtherMatrix, SymmGroup> const & left, 
+                    Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right,
+                    bool isHermitian);
+
+template<class Matrix, class OtherMatrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>
 Engine<Matrix, OtherMatrix, SymmGroup, typename symm_traits::enable_if_su2_t<SymmGroup>>::
 zerosite_hamil2(block_matrix<Matrix, SymmGroup> bra_tensor, block_matrix<Matrix, SymmGroup> ket_tensor, Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right,
@@ -52,7 +58,7 @@ Engine<Matrix, OtherMatrix, SymmGroup, typename symm_traits::enable_if_su2_t<Sym
 zerosite_hamil2(block_matrix<Matrix, SymmGroup> ket_tensor, Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right, bool isHermitian)
 {
-    return zerosite_hamil_lbtm(ket_tensor, ket_tensor, left, right, mpo_left, mpo_right, isHermitian);
+    return zerosite_hamil_lbtm(ket_tensor, left, right, mpo_left, mpo_right, isHermitian);
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup>

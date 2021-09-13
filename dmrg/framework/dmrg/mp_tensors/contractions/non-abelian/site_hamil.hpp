@@ -144,7 +144,7 @@ site_hamil_lbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
             swap(contr_grid(0,0), tmp2);
         }
         else {
-            SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_basis_transpose, bra_basis, right_i, out_left_i, in_right_pb, out_left_pb);
+            SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_basis_transpose, right_i, out_left_i, in_right_pb, out_left_pb);
         }
         if (mpo.herm_info.right_skip(b2) && isHermitian) {
             std::vector<value_type> phases = ::contraction::common::conjugate_phases(adjoint(right[mpo.herm_info.right_conj(b2)]), mpo, b2, false, true);

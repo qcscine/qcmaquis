@@ -102,7 +102,7 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
                     Index<SymmGroup> const & refIndex,
                     std::vector<typename Matrix1::value_type> conj_scales = std::vector<typename Matrix1::value_type>())
 {
-    using charge = typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     using value_type = typename Matrix3::value_type;
 

@@ -37,6 +37,15 @@
 #include "utils/traits.hpp"
 #include "mps_mpo_detail.h"
 
+// Forward declaration
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
+                                   MPO<Matrix, SymmGroup> const & mpo);
+
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type expvalFromRight(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
+                                            MPO<Matrix, SymmGroup> const & mpo);
+
 /**
  * @brief Method to calculate the expectation value choosing the starting site.
  *
@@ -48,12 +57,12 @@
  * @param mps Input MPS
  * @param mpo Input MPO
  * @param d If == 0, starts from the first site, otherwise, starts from the last site.
- * @return double Expectation value < mps | H | mps > 
+ * @return Matrix::value_type Expectation value < mps | H | mps > 
  */
 template<class Matrix, class SymmGroup>
-double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
+auto expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
 {
-    return (d == 0) ? expval(mps, mpo) : expvalFromRight(mps, mpo);
+    return (d == 0) ? expval(mps, mps, mpo) : expvalFromRight(mps, mps, mpo);
 }
 
 /**
@@ -91,7 +100,7 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra, MPS<Matri
  */
 template<class Matrix, class SymmGroup>
 typename Matrix::value_type expvalFromRight(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
-                                            MPO<Matrix, SymmGroup> const & mpo, bool verbose = false)
+                                            MPO<Matrix, SymmGroup> const & mpo)
 {
     parallel::scheduler_balanced scheduler(bra.length());
     assert(mpo.length() == bra.length() && bra.length() == ket.length());
