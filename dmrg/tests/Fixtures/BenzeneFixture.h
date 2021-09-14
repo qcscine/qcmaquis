@@ -30,7 +30,6 @@
 #include "maquis_dmrg.h"
 #include "dmrg/block_matrix/symmetry.h"
 
-
 /**
  * @brief Fixture class for benzene.
  * 
