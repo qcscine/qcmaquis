@@ -49,6 +49,9 @@ target_link_libraries(test_mps_mpo_ops_TwoU1 ${DMRG_APP_LIBRARIES})
 add_executable(test_mps_mpo_ops_electronic test_mps_mpo_ops/test_mps_mpo_ops_electronic.cpp)
 target_link_libraries(test_mps_mpo_ops_electronic ${DMRG_APP_LIBRARIES})
 
+add_executable(test_mpo_times_mps_TwoU1 test_mps_mpo_ops/test_mpo_times_mps_TwoU1.cpp)
+target_link_libraries(test_mpo_times_mps_TwoU1 ${DMRG_APP_LIBRARIES})
+
 add_executable(test_mps_overlap_electronic test_mps_mpo_ops/test_mps_overlap_electronic.cpp)
 target_link_libraries(test_mps_overlap_electronic ${DMRG_APP_LIBRARIES})
 
