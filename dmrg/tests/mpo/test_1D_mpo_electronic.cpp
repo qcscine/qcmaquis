@@ -54,27 +54,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, H2Fi
     auto model = Model<matrix, S>(lattice, parametersH2);
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersH2)));
     // Creates the destructor operator
-    auto totalQN = model.total_quantum_numbers(parametersH2);
-    totalQN[0] -= 1;
-    int max_site_type = 0;
-    std::vector<int> site_types(lattice.size(), 0);
-    for (int p = 0; p < lattice.size(); ++p) {
-      site_types[p] = lattice.template get_prop<int>("type", p);
-      max_site_type = std::max(site_types[p], max_site_type);
-    }
-    std::vector<Index<S> > site_bases(max_site_type+1);
-    for (int type = 0; type < site_bases.size(); ++type)
-      site_bases[type] = model.phys_dim(type);
-    auto destructorOperator = generate_mpo::make_destroy_mpo(lattice, model, 0);
-    std::vector<typename S::charge> charges = {S::IdentityCharge};
-    std::map<int, Index<S> > mapTrackingBlocks;
-    Index<S> tmp;
-    tmp.insert(std::make_pair(S::IdentityCharge, 1));
-    mapTrackingBlocks[0] = tmp;
-    MPS<matrix, S> ionizedMPS(lattice.size());
-    auto indexAllowed = allowed_sectors(site_types, site_bases, totalQN, parametersH2["max_bond_dimension"]);
-    for (int iMPS = 0; iMPS < ionizedMPS.length(); iMPS++)
-      ionizedMPS[iMPS] = MPOTimesMPSTraitClass<matrix, S>::mpo_times_mps(destructorOperator, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
+    auto traitClass = MPOTimesMPSTraitClass<matrix, S>(mpsHF, model, lattice, 
+                                                       model.total_quantum_numbers(parametersH2),
+                                                       parametersH2["max_bond_dimension"]);
+    auto ionizedMPS = traitClass.ionizeMPS(0, generate_mpo::IonizedOrbital::Up);
     // Creates the ionized MPS from the mps_intializer
     parametersH2.set("hf_occ", "2,1");
     parametersH2.set("u1_total_charge1", 0);

@@ -5,7 +5,7 @@
  * Copyright (C) 2016 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2016-2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *               2020-2020 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2020- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -53,9 +53,9 @@ public:
      * @param model Model class
      * @param lattice DMRG lattice
      */
-    MPOTimesMPSTraitClass(const MPSType& mps, const MPOType& mpo, const ModelType& model, const Lattice& lattice,
+    MPOTimesMPSTraitClass(const MPSType& mps, ModelType& model, const Lattice& lattice,
                           ChargeType overallQN, int bondDimension_)
-        : mpsRef(mps), mpoRef(mpo), modelRef(model), latticeRef(lattice), totalQN(overallQN), bondDimension(bondDimension_)
+        : mpsRef(mps), modelRef(model), latticeRef(lattice), totalQN(overallQN), bondDimension(bondDimension_)
     {
         // Sets up some data required for mpo_times_mp
         int max_site_type = 0;
@@ -85,13 +85,31 @@ public:
         resetCharges();
         MPS<Matrix, SymmGroup> ionizedMPS(latticeRef.size());
         for (int iMPS = 0; iMPS < ionizedMPS.length(); iMPS++)
-          ionizedMPS[iMPS] = mpo_times_mps(destructorOperator, mpsRef, iMPS, charges, mapTrackingBlocks, indexAllowed);
+          ionizedMPS[iMPS] = mpo_times_mps(destructorOperator, mpsRef, iMPS, charges, indexAllowed);
+        return ionizedMPS;
     }
 
-    /** @brief Resets the charge tracker */
+    /**
+     * @brief Apply an MPO onto the MPS stored in the class.
+     * @param mpo Matrix Product Operator to be applied onto the MPS.
+     * @return Result of mpo*mpsRef
+     */
+    MPSType applyMPO(const MPOType& mpo) {
+        auto indexAllowed = allowed_sectors(siteTypes, siteBases, totalQN, bondDimension);
+        resetCharges();
+        MPS<Matrix, SymmGroup> finalMPS(latticeRef.size());
+        for (int iMPS = 0; iMPS < finalMPS.length(); iMPS++)
+          finalMPS[iMPS] = mpo_times_mps(mpo, mpsRef, iMPS, charges, indexAllowed);
+        return finalMPS;
+    }
+
+    /**
+     * @brief Resets the charge tracker 
+     * To be run before a new MPO is applied.
+     */
     void resetCharges() {
         charges = {SymmGroup::IdentityCharge};
-        mapTrackingBlocks.resize(0);
+        mapTrackingBlocks.clear();
         Index<SymmGroup> tmp;
         tmp.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
         mapTrackingBlocks[0] = tmp;
@@ -149,15 +167,13 @@ public:
      * @param mps MPSTensor object.
      * @param site site for which the MPO/MPS multiplication is applied.
      * @param in_delta Charge difference that is "brought" by the left index of the MPO.
-     * @param new_left_i_map map between old and new left indices of the MPS.
      * @param allowed_sectors Index with the physically allowed symmetry sectors per site
      * (see mps_sectors.h for more details).
      * @return MPSTensor<Matrix, SymmGroup> result of the MPOTensor x MPSTensor operation.
      */
-    static MPSTensor<Matrix, SymmGroup> mpo_times_mps(MPO<Matrix, SymmGroup> const & mpo, MPS<Matrix, SymmGroup> const & mps,
-                                                      int site, std::vector< typename SymmGroup::charge> & in_delta,
-                                                      std::map<int, Index<SymmGroup> >& new_left_i_map,
-                                                      std::vector<Index<SymmGroup>> const& allowed_sectors)
+    MPSTensor<Matrix, SymmGroup> mpo_times_mps(MPO<Matrix, SymmGroup> const & mpo, MPS<Matrix, SymmGroup> const & mps,
+                                               int site, std::vector< typename SymmGroup::charge> & in_delta,
+                                               std::vector<Index<SymmGroup>> const& allowed_sectors)
     {
         // Aliases for derived types
         using MPOTensor_detail::term_descriptor;
@@ -211,7 +227,7 @@ public:
                         // We extract the right index by difference of the ProductBasis and the input
                         // physical index (times -1.).
                         charge out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
-                        if (! charge_detail::physical<SymmGroup>(out_l_charge) || !new_left_i_map[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
+                        if (! charge_detail::physical<SymmGroup>(out_l_charge) || !mapTrackingBlocks[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
                             continue;
                         if (!mps[site].site_dim().has(phys_in))
                             continue;
@@ -237,15 +253,15 @@ public:
         }
         // == POPULATES THE FINAL, OVERALL MPS ==
         // Prepares the data structure
-        Index<SymmGroup> finalLeft = new_left_i_map[0], 
+        Index<SymmGroup> finalLeft = mapTrackingBlocks[0], 
                          finalRight = new_right_i_map[0],
                          finalPhys = mps[site].site_dim();
         for (int iRow = 1; iRow < mpo[site].row_dim(); iRow++)
-            for (int iCharge = 0; iCharge < new_left_i_map[iRow].size(); iCharge++)
-                if (finalLeft.has(new_left_i_map[iRow][iCharge].first))
-                    finalLeft[finalLeft.position(new_left_i_map[iRow][iCharge].first)].second += new_left_i_map[iRow][iCharge].second;
+            for (int iCharge = 0; iCharge < mapTrackingBlocks[iRow].size(); iCharge++)
+                if (finalLeft.has(mapTrackingBlocks[iRow][iCharge].first))
+                    finalLeft[finalLeft.position(mapTrackingBlocks[iRow][iCharge].first)].second += mapTrackingBlocks[iRow][iCharge].second;
                 else
-                    finalLeft.insert(std::make_pair(new_left_i_map[iRow][iCharge].first, new_left_i_map[iRow][iCharge].second));
+                    finalLeft.insert(std::make_pair(mapTrackingBlocks[iRow][iCharge].first, mapTrackingBlocks[iRow][iCharge].second));
 
         for (int iCol = 1; iCol < mpo[site].col_dim(); iCol++)
             for (int iCharge = 0; iCharge < new_right_i_map[iCol].size(); iCharge++)
@@ -273,8 +289,8 @@ public:
             for (auto& iCharge: thresholdLeft) {
                 iCharge.second[iRow] = (iRow == 0) ? 0 : iCharge.second[iRow-1];
                 if (iRow > 0)
-                    if (new_left_i_map[iRow-1].has(iCharge.first))
-                        iCharge.second[iRow] += new_left_i_map[iRow-1].size_of_block(iCharge.first);    
+                    if (mapTrackingBlocks[iRow-1].has(iCharge.first))
+                        iCharge.second[iRow] += mapTrackingBlocks[iRow-1].size_of_block(iCharge.first);    
             }
         }
 
@@ -314,7 +330,7 @@ public:
                             charge phys_in = W.basis().left_charge(w_block);
                             charge phys_out = W.basis().right_charge(w_block);
                             charge out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
-                            if (!charge_detail::physical<SymmGroup>(out_l_charge) || !new_left_i_map[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
+                            if (!charge_detail::physical<SymmGroup>(out_l_charge) || !mapTrackingBlocks[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
                                 continue;
                             if (!mps[site].site_dim().has(phys_in))
                                 continue;
@@ -349,7 +365,7 @@ public:
         }
         // Modifies the input delta/map for the indexes.
         std::swap(in_delta, out_delta);
-        std::swap(new_left_i_map, new_right_i_map);
+        std::swap(mapTrackingBlocks, new_right_i_map);
         return finalMPS;
     }
 
@@ -489,11 +505,11 @@ public:
     
         return ret;
     }
+
 private:
     // Class members
     const MPSType& mpsRef;
-    const MPOType& mpoRef;
-    const ModelType& modelRef;
+    ModelType& modelRef;
     const Lattice& latticeRef;
     std::vector<Index<SymmGroup> > siteBases;           // Physical basis per site
     std::vector<int> siteTypes;                         // Type of each site

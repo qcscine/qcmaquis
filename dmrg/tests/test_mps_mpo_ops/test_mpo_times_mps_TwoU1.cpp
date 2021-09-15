@@ -55,25 +55,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, Benz
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersBenzene)));
     auto mpo = make_mpo(lattice, modelHF);
     // Calculates the MPS-MPO contraction
-    int max_site_type = 0;
-    std::vector<int> site_types(lattice.size(), 0);
-    for (int p = 0; p < lattice.size(); ++p) {
-      site_types[p] = lattice.template get_prop<int>("type", p);
-      max_site_type = std::max(site_types[p], max_site_type);
-    }
-    std::vector<Index<S> > site_bases(max_site_type+1);
-    for (int type = 0; type < site_bases.size(); ++type)
-      site_bases[type] = modelHF.phys_dim(type);
-    auto totalQN = modelHF.total_quantum_numbers(parametersBenzene);
-    std::vector<typename S::charge> charges = {S::IdentityCharge};
-    std::map<int, Index<S> > mapTrackingBlocks;
-    Index<S> tmp;
-    tmp.insert(std::make_pair(S::IdentityCharge, 1));
-    mapTrackingBlocks[0] = tmp;
-    MPS<matrix, S> outputMPS(lattice.size());
-    auto indexAllowed = allowed_sectors(site_types, site_bases, totalQN, parametersBenzene["max_bond_dimension"]);
-    for (int iMPS = 0; iMPS < mpsHF.length(); iMPS++)
-      outputMPS[iMPS] = MPOTimesMPSTraitClass<matrix, S>::mpo_times_mps(mpo, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
+    auto traitClass = MPOTimesMPSTraitClass<matrix, S>(mpsHF, modelHF, lattice, 
+                                                       modelHF.total_quantum_numbers(parametersBenzene),
+                                                       parametersBenzene["max_bond_dimension"]);
+    auto outputMPS = traitClass.applyMPO(mpo);
     // Calculates the energy in two ways
     auto energyFromMPSTimesMPO = overlap(mpsHF, outputMPS)/norm(mpsHF) + mpo.getCoreEnergy();
     auto energyFromExpVal = expval(mpsHF, mpo)/norm(mpsHF);
@@ -115,27 +100,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersBenzene)));
     auto mpo = make_mpo(lattice, model);
     // Creates the destructor operator
-    auto totalQN = model.total_quantum_numbers(parametersBenzene);
-    totalQN[0] -= 1;
-    int max_site_type = 0;
-    std::vector<int> site_types(lattice.size(), 0);
-    for (int p = 0; p < lattice.size(); ++p) {
-      site_types[p] = lattice.template get_prop<int>("type", p);
-      max_site_type = std::max(site_types[p], max_site_type);
-    }
-    std::vector<Index<S> > site_bases(max_site_type+1);
-    for (int type = 0; type < site_bases.size(); ++type)
-      site_bases[type] = model.phys_dim(type);
-    auto destructorOperator = generate_mpo::make_destroy_mpo(lattice, model, 0);
-    std::vector<typename S::charge> charges = {S::IdentityCharge};
-    std::map<int, Index<S> > mapTrackingBlocks;
-    Index<S> tmp;
-    tmp.insert(std::make_pair(S::IdentityCharge, 1));
-    mapTrackingBlocks[0] = tmp;
-    MPS<matrix, S> ionizedMPS(lattice.size());
-    auto indexAllowed = allowed_sectors(site_types, site_bases, totalQN, parametersBenzene["max_bond_dimension"]);
-    for (int iMPS = 0; iMPS < ionizedMPS.length(); iMPS++)
-      ionizedMPS[iMPS] = MPOTimesMPSTraitClass<matrix, S>::mpo_times_mps(destructorOperator, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
+    auto traitClass = MPOTimesMPSTraitClass<matrix, S>(mpsHF, model, lattice, 
+                                                       model.total_quantum_numbers(parametersBenzene),
+                                                       parametersBenzene["max_bond_dimension"]);
+    auto ionizedMPS = traitClass.ionizeMPS(0, generate_mpo::IonizedOrbital::Up);
     // "By hand" optimization
     auto stop_callback = time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
     std::shared_ptr<opt_base_t> optimizer;
