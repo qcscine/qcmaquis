@@ -42,7 +42,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_state", "const");
     parametersFADTwoBody.set("nsweeps", 20);
     parametersFADTwoBody.set("max_bond_dimension",100);
     parametersFADTwoBody.set("MODEL", "nmode");
