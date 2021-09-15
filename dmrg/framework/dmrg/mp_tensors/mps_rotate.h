@@ -211,7 +211,7 @@ namespace mps_rotate
             typename SymmGroup::charge delta = SymmGroup::IdentityCharge;
             MPS<Matrix, SymmGroup> product(mps.size());
             for (int p = 0; p < mps.size(); ++p)
-                product[p] =  MPOTimesMPSTraitClass<Matrix, Matrix, SymmGroup>::mpo_times_mps_singleop(mpo_vec[i][p], mps[p], delta);
+                product[p] =  MPOTimesMPSTraitClass<Matrix, SymmGroup>::mpo_times_mps_singleop(mpo_vec[i][p], mps[p], delta);
 
             clean_mps(product);
             assert(sensible(product));

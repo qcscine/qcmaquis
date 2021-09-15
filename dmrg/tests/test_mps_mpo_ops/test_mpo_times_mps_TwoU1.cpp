@@ -35,6 +35,8 @@
 #include "dmrg/models/lattice.h"
 #include "dmrg/sim/matrix_types.h"
 #include "Fixtures/BenzeneFixture.h"
+#include "dmrg/utils/time_stopper.h"
+#include "dmrg/optimize/optimize.h"
 
 typedef boost::mpl::list<
 #ifdef HAVE_TwoU1PG
@@ -71,9 +73,76 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, Benz
     MPS<matrix, S> outputMPS(lattice.size());
     auto indexAllowed = allowed_sectors(site_types, site_bases, totalQN, parametersBenzene["max_bond_dimension"]);
     for (int iMPS = 0; iMPS < mpsHF.length(); iMPS++)
-      outputMPS[iMPS] = MPOTimesMPSTraitClass<matrix, matrix, S>::mpo_times_mps(mpo, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
+      outputMPS[iMPS] = MPOTimesMPSTraitClass<matrix, S>::mpo_times_mps(mpo, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
     // Calculates the energy in two ways
     auto energyFromMPSTimesMPO = overlap(mpsHF, outputMPS)/norm(mpsHF) + mpo.getCoreEnergy();
     auto energyFromExpVal = expval(mpsHF, mpo)/norm(mpsHF);
     BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
+};
+
+/**
+ * @brief Checks consistency of the optimization of the benzene cation.
+ * In this test we optimize the ground state of the benzene cation in two ways:
+ * 1) With a standard optimization
+ * 2) By ionizing the innermost orbital and, then, running a TS optimization.
+ * The two strategies should give the same energy
+ */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, BenzeneFixture ) 
+{
+    // Types declaration
+    using opt_base_t = optimizer_base<matrix, S, storage::disk>;
+    // Conventional calculation
+    parametersBenzene.set("hf_occ", "4,4,2,1,1,1");
+    parametersBenzene.set("u1_total_charge1", 2);
+    parametersBenzene.set("u1_total_charge2", 3);
+    parametersBenzene.set("symmetry", "2u1pg");
+    maquis::DMRGInterface<double> interfaceCation(parametersBenzene);
+    interfaceCation.optimize();
+    auto cationicEnergy = interfaceCation.energy();
+    // "By-hand" ionize-then-optimize
+    parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
+    parametersBenzene.set("u1_total_charge1", 3);
+    parametersBenzene.set("u1_total_charge2", 3);
+    // Add noise to "move" the optimization away from the local energy minimum
+    parametersBenzene.set("twosite_truncation", "heev_truncation");
+    parametersBenzene.set("ngrowsweeps", 20);
+    parametersBenzene.set("nmainsweeps", 10);
+    parametersBenzene.set("alpha_initial", 1.0E-6);
+    parametersBenzene.set("alpha_main", 1.0E-10);
+    parametersBenzene.set("alpha_final", 0.);
+    auto lattice = Lattice(parametersBenzene);
+    auto model = Model<matrix, S>(lattice, parametersBenzene);
+    auto mpsHF = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersBenzene)));
+    auto mpo = make_mpo(lattice, model);
+    // Creates the destructor operator
+    auto totalQN = model.total_quantum_numbers(parametersBenzene);
+    totalQN[0] -= 1;
+    int max_site_type = 0;
+    std::vector<int> site_types(lattice.size(), 0);
+    for (int p = 0; p < lattice.size(); ++p) {
+      site_types[p] = lattice.template get_prop<int>("type", p);
+      max_site_type = std::max(site_types[p], max_site_type);
+    }
+    std::vector<Index<S> > site_bases(max_site_type+1);
+    for (int type = 0; type < site_bases.size(); ++type)
+      site_bases[type] = model.phys_dim(type);
+    auto destructorOperator = generate_mpo::make_destroy_mpo(lattice, model, 0);
+    std::vector<typename S::charge> charges = {S::IdentityCharge};
+    std::map<int, Index<S> > mapTrackingBlocks;
+    Index<S> tmp;
+    tmp.insert(std::make_pair(S::IdentityCharge, 1));
+    mapTrackingBlocks[0] = tmp;
+    MPS<matrix, S> ionizedMPS(lattice.size());
+    auto indexAllowed = allowed_sectors(site_types, site_bases, totalQN, parametersBenzene["max_bond_dimension"]);
+    for (int iMPS = 0; iMPS < ionizedMPS.length(); iMPS++)
+      ionizedMPS[iMPS] = MPOTimesMPSTraitClass<matrix, S>::mpo_times_mps(destructorOperator, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
+    // "By hand" optimization
+    auto stop_callback = time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
+    std::shared_ptr<opt_base_t> optimizer;
+    optimizer.reset( new ts_optimize<matrix, S, storage::disk>(ionizedMPS, mpo, parametersBenzene, stop_callback, lattice, 0) );
+    for (int sweep=0; sweep < 40; ++sweep)
+      optimizer->sweep(sweep);
+    auto energyByHand = expval(ionizedMPS, mpo)/norm(ionizedMPS);
+    // This check could be made stricter, but with more sweeps
+    BOOST_CHECK_CLOSE(cationicEnergy, energyByHand, 1.0E-8);
 };

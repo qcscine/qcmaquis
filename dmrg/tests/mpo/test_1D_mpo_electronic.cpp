@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, H2Fi
     MPS<matrix, S> ionizedMPS(lattice.size());
     auto indexAllowed = allowed_sectors(site_types, site_bases, totalQN, parametersH2["max_bond_dimension"]);
     for (int iMPS = 0; iMPS < ionizedMPS.length(); iMPS++)
-      ionizedMPS[iMPS] = MPOTimesMPSTraitClass<matrix, matrix, S>::mpo_times_mps(destructorOperator, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
+      ionizedMPS[iMPS] = MPOTimesMPSTraitClass<matrix, S>::mpo_times_mps(destructorOperator, mpsHF, iMPS, charges, mapTrackingBlocks, indexAllowed);
     // Creates the ionized MPS from the mps_intializer
     parametersH2.set("hf_occ", "2,1");
     parametersH2.set("u1_total_charge1", 0);

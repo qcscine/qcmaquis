@@ -7,7 +7,6 @@
  *               2016-2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2020-2020 by Alberto Baiardi <abaiardi@ethz.ch>
  *
- * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
@@ -31,12 +30,72 @@
 #define MAQUIS_DMRG_MPO_TIMES_MPS_HPP
 
 #include <map>
+#include "dmrg/models/model.h"
+#include "dmrg/models/lattice.h"
+#include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_sectors.h"
 
-template <class MPOMatrix, class MPSMatrix, class SymmGroup, class SymmType = void>
-struct MPOTimesMPSTraitClass {
+template <class Matrix, class SymmGroup, class SymmType = void>
+class MPOTimesMPSTraitClass {
+public:
+    // Types definition 
+    using MPSType = MPS<Matrix, SymmGroup>;
+    using MPOType = MPO<Matrix, SymmGroup>;
+    using ModelType = Model<Matrix, SymmGroup>;
+    using ChargeType = typename SymmGroup::charge;
+
+    /**
+     * @brief Class constructor
+     * @param mps Reference Matrix Product State
+     * @param mpo Reference Matrix Product Operator
+     * @param model Model class
+     * @param lattice DMRG lattice
+     */
+    MPOTimesMPSTraitClass(const MPSType& mps, const MPOType& mpo, const ModelType& model, const Lattice& lattice,
+                          ChargeType overallQN, int bondDimension_)
+        : mpsRef(mps), mpoRef(mpo), modelRef(model), latticeRef(lattice), totalQN(overallQN), bondDimension(bondDimension_)
+    {
+        // Sets up some data required for mpo_times_mp
+        int max_site_type = 0;
+        siteTypes.resize(latticeRef.size());
+        std::fill(siteTypes.begin(), siteTypes.end(), 0);
+        for (int p = 0; p < lattice.size(); ++p) {
+          siteTypes[p] = lattice.template get_prop<int>("type", p);
+          max_site_type = std::max(siteTypes[p], max_site_type);
+        }
+        siteBases.resize(max_site_type+1);
+        for (int type = 0; type < siteBases.size(); ++type)
+          siteBases[type] = modelRef.phys_dim(type);    
+    }
+
+    /**
+     * @brief Remove an electron from the
+     * @param siteToIonize Orbital from where the electron is ionized.
+     * @param upOrDown Enum class indicating whether to ionize an alpha or a beta electron.
+     * @return MPSType MPS representation of the ionized wave function.
+     */
+    MPSType ionizeMPS(int siteToIonize, generate_mpo::IonizedOrbital upOrDown) {
+        auto ionizedQN = totalQN;
+        ionizedQN[0] -= 1;
+        auto indexAllowed = allowed_sectors(siteTypes, siteBases, ionizedQN, bondDimension);
+        auto destructorOperator = generate_mpo::make_destroy_mpo(latticeRef, modelRef, siteToIonize, upOrDown);
+        //
+        resetCharges();
+        MPS<Matrix, SymmGroup> ionizedMPS(latticeRef.size());
+        for (int iMPS = 0; iMPS < ionizedMPS.length(); iMPS++)
+          ionizedMPS[iMPS] = mpo_times_mps(destructorOperator, mpsRef, iMPS, charges, mapTrackingBlocks, indexAllowed);
+    }
+
+    /** @brief Resets the charge tracker */
+    void resetCharges() {
+        charges = {SymmGroup::IdentityCharge};
+        mapTrackingBlocks.resize(0);
+        Index<SymmGroup> tmp;
+        tmp.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+        mapTrackingBlocks[0] = tmp;
+    }
 
     /**
      * @brief Multiplication between a MPOTensor and an MPSTensor
@@ -83,8 +142,8 @@ struct MPOTimesMPSTraitClass {
      * 4) all the resulting blocks are then "stacked" one over the other columnwise.
      *    Again, we can recycle the column index now.
      * 
-     * @tparam MPOMatrix Class of the matrix in which the elements of the MPOTensor are stored.
-     * @tparam MPSMatrix Class of the matrix in which the elements of the MPSTensor are stored.
+     * @tparam Matrix Class of the matrix in which the elements of the MPOTensor are stored.
+     * @tparam Matrix Class of the matrix in which the elements of the MPSTensor are stored.
      * @tparam SymmGroup Symmetry group of the Hamiltonian.
      * @param mpo MPOTensor object.
      * @param mps MPSTensor object.
@@ -93,22 +152,23 @@ struct MPOTimesMPSTraitClass {
      * @param new_left_i_map map between old and new left indices of the MPS.
      * @param allowed_sectors Index with the physically allowed symmetry sectors per site
      * (see mps_sectors.h for more details).
-     * @return MPSTensor<MPSMatrix, SymmGroup> result of the MPOTensor x MPSTensor operation.
+     * @return MPSTensor<Matrix, SymmGroup> result of the MPOTensor x MPSTensor operation.
      */
-    static MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPO<MPOMatrix, SymmGroup> const & mpo, MPS<MPSMatrix, SymmGroup> const & mps,
-                                                  int site, std::vector< typename SymmGroup::charge> & in_delta,
-                                                  std::map<int, Index<SymmGroup> >& new_left_i_map, std::vector<Index<SymmGroup>> const& allowed_sectors)
+    static MPSTensor<Matrix, SymmGroup> mpo_times_mps(MPO<Matrix, SymmGroup> const & mpo, MPS<Matrix, SymmGroup> const & mps,
+                                                      int site, std::vector< typename SymmGroup::charge> & in_delta,
+                                                      std::map<int, Index<SymmGroup> >& new_left_i_map,
+                                                      std::vector<Index<SymmGroup>> const& allowed_sectors)
     {
         // Aliases for derived types
         using MPOTensor_detail::term_descriptor;
         using boost::tuples::get;
         using charge = typename SymmGroup::charge;
-        using value_type = typename MPSMatrix::value_type;
-        using row_proxy = typename MPOTensor<MPSMatrix, SymmGroup>::row_proxy;
-        using col_proxy = typename MPOTensor<MPSMatrix, SymmGroup>::col_proxy;
+        using value_type = typename Matrix::value_type;
+        using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+        using col_proxy = typename MPOTensor<Matrix, SymmGroup>::col_proxy;
         // We transform the MPS to the right-paired representation and construct the respective basis.
         mps[site].make_right_paired();
-        block_matrix<MPSMatrix, SymmGroup> const & data = mps[site].data();
+        block_matrix<Matrix, SymmGroup> const & data = mps[site].data();
         Index<SymmGroup> const & right_i = mps[site].col_dim();
         ProductBasis<SymmGroup> right_pb(mps[site].site_dim(), mps[site].col_dim(),
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -125,8 +185,8 @@ struct MPOTimesMPSTraitClass {
             for (typename row_proxy::const_iterator row_it = row_b2.begin(); row_it != row_b2.end(); ++row_it) {
                 // Access to the specific MPO element
                 int iCol = row_it.index();
-                term_descriptor<MPOMatrix, SymmGroup, true> access = mpo[site].at(iRow, iCol);
-                typename operator_selector<MPOMatrix, SymmGroup>::type const & W = access.op();
+                term_descriptor<Matrix, SymmGroup, true> access = mpo[site].at(iRow, iCol);
+                typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
                 // Calculates the difference in symmetry that is "generated" by the operator.
                 // Here we must remember that, in an MPS, the rows and the columns will have the same symmetry.
                 // This is not true for the MPO, since the local operator can "induce" a change in the symmetry.
@@ -194,7 +254,7 @@ struct MPOTimesMPSTraitClass {
                 else
                     finalRight.insert(std::make_pair(new_right_i_map[iCol][iCharge].first, new_right_i_map[iCol][iCharge].second));
 
-        auto finalMPS = MPSTensor<MPSMatrix, SymmGroup>(finalPhys, finalLeft, finalRight, false, 0.);
+        auto finalMPS = MPSTensor<Matrix, SymmGroup>(finalPhys, finalLeft, finalRight, false, 0.);
         finalMPS.make_right_paired();
         Index<SymmGroup> finalPhysAndRight = adjoin(finalPhys)*finalRight;
         common_subset(finalLeft, finalPhysAndRight);
@@ -237,14 +297,14 @@ struct MPOTimesMPSTraitClass {
             bool beginOuter = true;
             for (int iRow = 0; iRow < mpo[site].row_dim(); iRow++) {
                 // == POPULATES NEW MPS ==
-                block_matrix<MPSMatrix, SymmGroup>& prod = finalMPS.data();
+                block_matrix<Matrix, SymmGroup>& prod = finalMPS.data();
                 // Checks if the pair of (b_{i-1}, b_i) is present (if not, we just load the matrix with zeros).
                 std::vector<int> availableRows;
                 for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
                     availableRows.push_back(col_it.index());
                 if (std::find(availableRows.begin(), availableRows.end(), iRow) != availableRows.end()) {
-                    term_descriptor<MPOMatrix, SymmGroup, true> access = mpo[site].at(iRow, iCol);
-                    typename operator_selector<MPOMatrix, SymmGroup>::type const & W = access.op();
+                    term_descriptor<Matrix, SymmGroup, true> access = mpo[site].at(iRow, iCol);
+                    typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
                     for (size_t b = 0; b < data.n_blocks(); ++b)
                     {
                         charge lc = data.basis().left_charge(b);
@@ -270,11 +330,11 @@ struct MPOTimesMPSTraitClass {
                             size_t out_right_offset = out_right_pb(phys_out, out_r_charge); 
                             size_t l_size = data.basis().left_size(b);
                             size_t r_size = right_i.size_of_block(in_r_charge);
-                            MPSMatrix const & iblock = data[b];
+                            Matrix const & iblock = data[b];
                             size_t o = prod.find_block(out_l_charge, out_l_charge);
                             if (o == prod.n_blocks())
                                 throw std::runtime_error("Block not found in the MPS");
-                            MPSMatrix & oblock = prod[o];
+                            Matrix & oblock = prod[o];
                             value_type alfa = access.scale() * W[w_block](0,0);
                             for(size_t rr = 0; rr < r_size; ++rr) {
                                 maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
@@ -302,19 +362,19 @@ struct MPOTimesMPSTraitClass {
      * @param mpo Input Matrix Product operator
      * @param mps Input Matrix Product State
      * @param in_delta Charge difference "accumulated" by the MPO
-     * @return MPSTensor<MPSMatrix, SymmGroup> 
+     * @return MPSTensor<Matrix, SymmGroup> 
      */
-    static MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps_singleop(MPOTensor<MPOMatrix, SymmGroup> const & mpo,
-                                                                  MPSTensor<MPSMatrix, SymmGroup> const & mps,
+    static MPSTensor<Matrix, SymmGroup> mpo_times_mps_singleop(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                                  MPSTensor<Matrix, SymmGroup> const & mps,
                                                                   typename SymmGroup::charge & in_delta)
     {
         using MPOTensor_detail::term_descriptor;
         using boost::tuples::get;
         using charge = typename SymmGroup::charge;
-        using value_type = typename MPSMatrix::value_type;
+        using value_type = typename Matrix::value_type;
     
         mps.make_right_paired();
-        block_matrix<MPSMatrix, SymmGroup> const & data = mps.data();
+        block_matrix<Matrix, SymmGroup> const & data = mps.data();
     
         Index<SymmGroup> const & right_i = mps.col_dim();
         //maquis::cout << "      mps.site_dim: " << mps.site_dim() << std::endl;
@@ -323,8 +383,8 @@ struct MPOTimesMPSTraitClass {
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                             -boost::lambda::_1, boost::lambda::_2));
     
-        term_descriptor<MPOMatrix, SymmGroup, true> access = mpo.at(0,0);
-        typename operator_selector<MPOMatrix, SymmGroup>::type const & W = access.op();
+        term_descriptor<Matrix, SymmGroup, true> access = mpo.at(0,0);
+        typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
     
         charge W_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
         charge out_delta = SymmGroup::fuse(in_delta, W_delta);
@@ -369,7 +429,7 @@ struct MPOTimesMPSTraitClass {
         ProductBasis<SymmGroup> out_right_pb(new_phys_i, new_right_i,
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                                      -boost::lambda::_1, boost::lambda::_2));
-        block_matrix<MPSMatrix, SymmGroup> prod;
+        block_matrix<Matrix, SymmGroup> prod;
     
         for (size_t b = 0; b < data.n_blocks(); ++b)
         {
@@ -397,13 +457,13 @@ struct MPOTimesMPSTraitClass {
                 size_t l_size = data.basis().left_size(b);
                 size_t r_size = right_i.size_of_block(in_r_charge);
     
-                MPSMatrix const & iblock = data[b];
+                Matrix const & iblock = data[b];
     
                 size_t o = prod.find_block(out_l_charge, out_l_charge); // out_l_charge = out_r_charge right-paired
                 if (o == prod.n_blocks())
-                    o = prod.insert_block(MPSMatrix(l_size, out_right_pb.size(-phys_out, out_r_charge)), out_l_charge, out_l_charge);
+                    o = prod.insert_block(Matrix(l_size, out_right_pb.size(-phys_out, out_r_charge)), out_l_charge, out_l_charge);
     
-                MPSMatrix & oblock = prod[o];
+                Matrix & oblock = prod[o];
     
                 value_type alfa = access.scale() * W[w_block](0,0);
                 //maquis::cout << " access.scale()  ... " << alfa << std::endl;
@@ -420,7 +480,7 @@ struct MPOTimesMPSTraitClass {
         } 
         std::swap(in_delta, out_delta);
     
-        MPSTensor<MPSMatrix, SymmGroup> ret;
+        MPSTensor<Matrix, SymmGroup> ret;
         ret.make_right_paired();
         ret.left_i = new_left_i;
         ret.right_i = new_right_i;
@@ -429,14 +489,26 @@ struct MPOTimesMPSTraitClass {
     
         return ret;
     }
+private:
+    // Class members
+    const MPSType& mpsRef;
+    const MPOType& mpoRef;
+    const ModelType& modelRef;
+    const Lattice& latticeRef;
+    std::vector<Index<SymmGroup> > siteBases;           // Physical basis per site
+    std::vector<int> siteTypes;                         // Type of each site
+    std::vector<ChargeType> charges;                    // Charges of the MPS that is currently constructed
+    std::map<int, Index<SymmGroup> > mapTrackingBlocks; // Symmetry tracker
+    ChargeType totalQN;
+    int bondDimension;
 };
 
 /** @brief Overload for the SU2U1 class, yet to be implemented */
-template <class MPOMatrix, class MPSMatrix, class SymmGroup>
-struct MPOTimesMPSTraitClass<MPOMatrix, MPSMatrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>> {
-
+template <class Matrix, class SymmGroup>
+class MPOTimesMPSTraitClass<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>> {
+public:
     /** @brief General overload */
-    static MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps(MPO<MPOMatrix, SymmGroup> const & mpo, MPS<MPSMatrix, SymmGroup> const & mps,
+    static MPSTensor<Matrix, SymmGroup> mpo_times_mps(MPO<Matrix, SymmGroup> const & mpo, MPS<Matrix, SymmGroup> const & mps,
                                                   int site, std::vector< typename SymmGroup::charge> & in_delta,
                                                   std::map<int, Index<SymmGroup> >& new_left_i_map,
                                                   std::vector<Index<SymmGroup>> const& allowed_sectors)
@@ -445,8 +517,8 @@ struct MPOTimesMPSTraitClass<MPOMatrix, MPSMatrix, SymmGroup, symm_traits::enabl
     }
 
     /** @brief Single-operator specialization */
-    static MPSTensor<MPSMatrix, SymmGroup> mpo_times_mps_singleop(MPOTensor<MPOMatrix, SymmGroup> const & mpo,
-                                                           MPSTensor<MPSMatrix, SymmGroup> const & mps,
+    static MPSTensor<Matrix, SymmGroup> mpo_times_mps_singleop(MPOTensor<Matrix, SymmGroup> const & mpo,
+                                                           MPSTensor<Matrix, SymmGroup> const & mps,
                                                            typename SymmGroup::charge & in_delta)
     {
         throw std::runtime_error("[mpo_times_mps_singleop] not yet implemented for SU2U1 symmetry");
