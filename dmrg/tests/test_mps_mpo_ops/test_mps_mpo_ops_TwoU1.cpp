@@ -32,13 +32,11 @@
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
 #include <boost/mpl/list.hpp>
-
 #include "utils/io.hpp" // has to be first include because of impi
 #include <iostream>
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
 #include "dmrg/sim/matrix_types.h"
-
 #include "test_mps.h"
 
 typedef boost::mpl::list<

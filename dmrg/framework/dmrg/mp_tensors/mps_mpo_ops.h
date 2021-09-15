@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -30,107 +31,98 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/twositetensor.h"
-
 #include "dmrg/mp_tensors/special_mpos.h"
 #include "dmrg/mp_tensors/contractions.h"
-
 #include "dmrg/utils/utils.hpp"
 #include "utils/traits.hpp"
+#include "mps_mpo_detail.h"
+
+// Forward declaration
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
+                                   MPO<Matrix, SymmGroup> const & mpo);
 
 template<class Matrix, class SymmGroup>
-std::vector<Boundary<Matrix, SymmGroup> >
-left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
+typename Matrix::value_type expvalFromRight(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
+                                            MPO<Matrix, SymmGroup> const & mpo);
+
+/**
+ * @brief Method to calculate the expectation value choosing the starting site.
+ *
+ * The expectation value is calculated by contracting the full MPS/MPO network.
+ * This can be done starting either from the first or from the last site of the 
+ * lattice. The first option is activated with d == 0, the second one with
+ * d != 0
+ * 
+ * @param mps Input MPS
+ * @param mpo Input MPO
+ * @param d If == 0, starts from the first site, otherwise, starts from the last site.
+ * @return Matrix::value_type Expectation value < mps | H | mps > 
+ */
+template<class Matrix, class SymmGroup>
+auto expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
 {
-    assert(mpo.length() == mps.length());
-    std::size_t L = mps.length();
-    
-    std::vector<Boundary<Matrix, SymmGroup> > left_(L+1);
-    left_[0] = mps.left_boundary();
-    
-    for (int i = 0; i < L; ++i) {
-        left_[i+1] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left_[i], mpo[i]);
-    }
-    return left_;
+    return (d == 0) ? expval(mps, mps, mpo) : expvalFromRight(mps, mps, mpo);
 }
 
+/**
+ * @brief Method to calculate the matrix element of an operator between two different MPSs
+ *
+ * @param bra Input MPS representing the bra
+ * @param ket Input MPS representing the ket
+ * @param mpo Input MPO
+ * @return Matrix::value_type  < bra | mpo | ket >
+ */
 template<class Matrix, class SymmGroup>
-std::vector<Boundary<Matrix, SymmGroup> >
-right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
-{
-    assert(mpo.length() == mps.length());
-    std::size_t L = mps.length();
-    
-    std::vector<Boundary<Matrix, SymmGroup> > right_(L+1);
-    right_[L] = mps.right_boundary();
-    
-    for (int i = L-1; i >= 0; --i) {
-        right_[i] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps[i], mps[i], right_[i+1], mpo[i]);
-    }
-    return right_;
-}
-
-template<class Matrix, class SymmGroup>
-double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
-{
-    if (d == 0) {
-        std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
-        assert( check_real(left_[mps.length()][0].trace()) );
-        return maquis::real(left_[mps.length()][0].trace()) + mpo.getCoreEnergy();
-    } else {
-        std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
-        assert( check_real(right_[0][0].trace()) );
-        return maquis::real(right_[0][0].trace()) + mpo.getCoreEnergy();
-    }
-}
-
-namespace mps_mpo_detail {
-
-    template<class Matrix, class SymmGroup>
-    Boundary<Matrix, SymmGroup>
-    mixed_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket)
-    {
-        assert(ket.length() == bra.length());
-        Index<SymmGroup> i = ket[0].row_dim();
-        Index<SymmGroup> j = bra[0].row_dim();
-        Boundary<Matrix, SymmGroup> ret(i, j, 1);
-
-        for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
-            for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
-                ret[0](*it1, *it2) = 1;
-
-        return ret;
-    }
-}
-
-template<class Matrix, class SymmGroup>
-typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
-              MPS<Matrix, SymmGroup> const & ket,
-              MPO<Matrix, SymmGroup> const & mpo,
-              bool verbose = false)
+typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
+                                   MPO<Matrix, SymmGroup> const & mpo)
 {
     parallel::scheduler_balanced scheduler(bra.length());
     assert(mpo.length() == bra.length() && bra.length() == ket.length());
     std::size_t L = bra.length();
-
     Boundary<Matrix, SymmGroup> left = mps_mpo_detail::mixed_left_boundary(bra, ket);
-
     for (int i = 0; i < L; ++i) {
         parallel::guard proc(scheduler(i));
-        if (verbose)
-            std::cout << "expval site " << i << std::endl;
-        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
+        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i], false);
     }
-
-    // MD: if bra and ket are different, result might be complex!
     return left.traces()[0] + mpo.getCoreEnergy();
 }
 
-
+/**
+ * @brief Method to calculate the matrix element of an operator between two different MPSs
+ * 
+ * Unlike [expVal], this method contracts the network starting from the last site.
+ *
+ * @param bra Input MPS representing the bra
+ * @param ket Input MPS representing the ket
+ * @param mpo Input MPO
+ * @return Matrix::value_type  < bra | mpo | ket >
+ */
 template<class Matrix, class SymmGroup>
-typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-              bool verbose = false)
+typename Matrix::value_type expvalFromRight(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket,
+                                            MPO<Matrix, SymmGroup> const & mpo)
 {
-    return expval(mps, mps, mpo, verbose);
+    parallel::scheduler_balanced scheduler(bra.length());
+    assert(mpo.length() == bra.length() && bra.length() == ket.length());
+    std::size_t L = bra.length();
+    Boundary<Matrix, SymmGroup> right = mps_mpo_detail::mixed_right_boundary(bra, ket);
+    for (int i = L-1; i >= 0; --i) {
+        parallel::guard proc(scheduler(i));
+        right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(bra[i], ket[i], right, mpo[i], false);
+    }
+    return right.traces()[0];
+}
+
+/**
+ * @brief Calculates the expectation value of an MPS over an MPO.
+ * @param mps Input MPS
+ * @param mpo Input MPO
+ * @return Matrix::value_type < mps | mpo | mps >
+ */
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
+{
+    return expval(mps, mps, mpo);
 }
 
 template<class Matrix, class SymmGroup>
