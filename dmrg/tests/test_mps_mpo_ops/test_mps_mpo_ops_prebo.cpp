@@ -24,8 +24,8 @@
 *
 *****************************************************************************/
 
-// This files contains the tests that check the functionality of the 
-// methods stored in the [mps_mpo_ops] files and that are generic, 
+// This files contains the tests that check the functionality of the
+// methods stored in the [mps_mpo_ops] files and that are generic,
 // meaning that they can be tested for both the TwoU1 and the SU2U1
 // group.
 
@@ -39,37 +39,32 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
 #include "dmrg/sim/matrix_types.h"
-#include "Fixtures/BenzeneFixture.h"
+#include "Fixtures/PreBOTimeEvolversFixture.h"
 #include "test_mps.h"
 
 typedef boost::mpl::list<
-#ifdef HAVE_TwoU1PG
-TwoU1PG
-#endif
-#ifdef HAVE_SU2U1PG
-, SU2U1PG
-#endif
+NU1_template<4>
 > symmetries;
 
 /**
- * @brief Checks that the MPO-MPS contraction fulfill the Hermitianity of the Hamiltonian 
+ * @brief Checks that the MPO-MPS contraction fulfill the Hermitianity of the Hamiltonian
  * Note that this test uses the "standard" implementation of the expval function, which uses the left boundary.
  */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Left_Electronic, S, symmetries, BenzeneFixture )
+BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Left_Electronic, S, symmetries, PreBOTestTimeEvolverFixture )
 {
     // Generates the HF MPS
-    auto lattice = Lattice(parametersBenzene);
-    auto modelHF = Model<matrix, S>(lattice, parametersBenzene);
-    auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersBenzene)));
-    // Generates the const guess. Note that the bond dimension will be != than that of the HF 
+    auto lattice = Lattice(parametersPreBOReal);
+    auto modelHF = Model<matrix, S>(lattice, parametersPreBOReal);
+    auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal)));
+    // Generates the const guess. Note that the bond dimension will be != than that of the HF
     // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersBenzene.set("init_state", "const");
-    auto modelConst = Model<matrix, S>(lattice, parametersBenzene);
-    auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersBenzene)));
+    parametersPreBOReal.set("init_state", "const");
+    auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
+    auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal)));
     // Generates the default guess
-    parametersBenzene.set("init_state", "default");
-    auto modelDefault = Model<matrix, S>(lattice, parametersBenzene);
-    auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersBenzene)));
+    parametersPreBOReal.set("init_state", "default");
+    auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
+    auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal)));
     // Calculates the MPO (any model would work here)
     auto mpo = make_mpo(lattice, modelConst);
     // Check 1
@@ -87,21 +82,21 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Left_Electronic, S, sym
 }
 
 /** @brief Same as above, but with the right boundaries */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Right_Electronic, S, symmetries, BenzeneFixture )
+BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Right_Electronic, S, symmetries, PreBOTestTimeEvolverFixture )
 {
     // Generates the HF MPS
-    auto lattice = Lattice(parametersBenzene);
-    auto modelHF = Model<matrix, S>(lattice, parametersBenzene);
-    auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersBenzene)));
-    // Generates the const guess. Note that the bond dimension will be != than that of the HF 
+    auto lattice = Lattice(parametersPreBOReal);
+    auto modelHF = Model<matrix, S>(lattice, parametersPreBOReal);
+    auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal)));
+    // Generates the const guess. Note that the bond dimension will be != than that of the HF
     // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersBenzene.set("init_state", "const");
-    auto modelConst = Model<matrix, S>(lattice, parametersBenzene);
-    auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersBenzene)));
+    parametersPreBOReal.set("init_state", "const");
+    auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
+    auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal)));
     // Generates the default guess
-    parametersBenzene.set("init_state", "default");
-    auto modelDefault = Model<matrix, S>(lattice, parametersBenzene);
-    auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersBenzene)));
+    parametersPreBOReal.set("init_state", "default");
+    auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
+    auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal)));
     // Calculates the MPO (any model would work here)
     auto mpo = make_mpo(lattice, modelConst);
     // Check 1
@@ -117,3 +112,4 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Right_Electronic, S, sy
     expVal2 = expvalFromRight(mpsHF, mpsDefault, mpo);
     BOOST_CHECK_CLOSE(expVal1, expVal2, 1.E-10);
 }
+

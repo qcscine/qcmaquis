@@ -45,52 +45,46 @@
 
 #include "dmrg/utils/parallel.hpp"
 
+/** @brief Struct storing the results of an MPS truncation */
 struct truncation_results {
     std::size_t bond_dimension;     // new bond dimension
     double      truncated_weight;   // sum of discarded eigenvalues (square of singuler values)
     double      truncated_fraction; // sum of discarded singular values
     double      smallest_ev;        // smallest eigenvalue kept
 
+    /** @brief Empty constructor */
     truncation_results() { }
 
+    /** @brief Constructor taking input data */
     truncation_results(std::size_t m, double tw, double tf, double se)
-    : bond_dimension(m)
-    , truncated_weight(tw)
-    , truncated_fraction(tf)
-    , smallest_ev(se)
+        : bond_dimension(m), truncated_weight(tw), truncated_fraction(tf), smallest_ev(se)
     { }
 };
 
-//template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Scheduler = parallel::scheduler_nop>
+/** @brief Multiplication between block matrices */
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Scheduler>
-void gemm(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C,
-          const Scheduler& scheduler = Scheduler())
+void gemm(block_matrix<Matrix1, SymmGroup> const & A, block_matrix<Matrix2, SymmGroup> const & B,
+          block_matrix<Matrix3, SymmGroup> & C, const Scheduler& scheduler = Scheduler())
 {
+    // Types definition
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+    // 
     C.clear();
     assert(B.basis().is_sorted());
-
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
     const_iterator B_begin = B.basis().begin();
     const_iterator B_end = B.basis().end();
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-
+    for (int k = 0; k < A.n_blocks(); ++k) {
         charge ar = A.basis().right_charge(k);
         const_iterator it = B.basis().left_lower_bound(ar);
-
-        for ( ; it != B_end && it->lc == ar; ++it)
-        {
-            std::size_t matched_block = std::distance(B_begin, it);
+        for ( ; it != B_end && it->lc == ar; ++it) {
+            auto matched_block = std::distance(B_begin, it);
             Matrix3 tmp(num_rows(A[k]), it->rs);
-
             parallel::guard proc(scheduler(k));
             gemm(A[k], B[matched_block], tmp);
             C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
         }
     }
-
     if(scheduler.propagate()){
         Index<SymmGroup> B_left_basis = B.left_basis();
         C.size_index.resize(C.n_blocks()); // propagating A size_index onto C - otherwise might C.index_sizes();
@@ -102,6 +96,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     }
 }
 
+/** @brief Wrapper around gemm that avoids setting the scheduler */
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix2, SymmGroup> const & B,
@@ -110,8 +105,18 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     gemm(A, B, C, parallel::scheduler_nop());
 }
 
-// ref_left_basis: basis of B equivalent in the bra for contractions where bra != ket
-// for bra == ket it is equal to the left basis of B
+/**
+ * @brief Matrix-matrix multiplication with left basis trimming.
+ *
+ * In addition to performing the matrix-matrix multiplication, this routine
+ * also "trims" the row index by keeping only the blocks that are present
+ * in [ref_left_basis].
+ * 
+ * @param A First input matrix
+ * @param B Second input matrix
+ * @param C Output matrix
+ * @param ref_left_basis Index used as a reference for trimming
+ */
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
                     block_matrix<Matrix2, SymmGroup> const & B,
@@ -120,29 +125,33 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
 {
     parallel::scheduler_size_indexed scheduler(A);
     C.clear();
-
-    typedef typename SymmGroup::charge charge;
     Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
-
+        auto matched_block = B_left_basis.position(A.basis().right_charge(k));
         // Match right basis of A with left basis of B
         if ( matched_block == B.n_blocks() )
             continue;
-
         if ( !ref_left_basis.has(A.basis().left_charge(k)) )
              continue;
-
-        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                               A.basis().left_charge(k), B.basis().right_charge(matched_block));
-
+        auto new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
+                                                    A.basis().left_charge(k), B.basis().right_charge(matched_block));
         parallel::guard proc(scheduler(k));
         gemm(A[k], B[matched_block], C[new_block]);
     }
 }
 
-// ref_right_basis: basis of A equivalent in the bra for contractions where bra != ket
-// for bra == ket it is equal to the right basis of A
+/**
+ * @brief Matrix-matrix multiplication with right basis trimming.
+ *
+ * In addition to performing the matrix-matrix multiplication, this routine
+ * also "trims" the column index by keeping only the blocks that are present
+ * in [ref_right_basis].
+ * 
+ * @param A First input matrix
+ * @param B Second input matrix
+ * @param C Output matrix
+ * @param ref_left_basis Index used as a reference for trimming
+ */
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
                      block_matrix<Matrix2, SymmGroup> const & B,
@@ -154,21 +163,16 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
 
     typedef typename SymmGroup::charge charge;
     Index<SymmGroup> A_right_basis = A.right_basis();
-    for (std::size_t k = 0; k < B.n_blocks(); ++k) {
-        std::size_t matched_block = A_right_basis.position(B.basis().left_charge(k));
-
+    for (int k = 0; k < B.n_blocks(); ++k) {
+        auto matched_block = A_right_basis.position(B.basis().left_charge(k));
         // Match right basis of A with left basis of B
         if ( matched_block == A.n_blocks() )
             continue;
-
         // Also match right_basis of bra with B.right_basis()
-
         if ( !ref_right_basis.has(B.basis().right_charge(k)) )
             continue;
-
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
-                                               A.basis().left_charge(matched_block), B.basis().right_charge(k));
-
+                                                           A.basis().left_charge(matched_block), B.basis().right_charge(k));
         parallel::guard proc(scheduler(k));
         gemm(A[matched_block], B[k], C[new_block]);
     }
