@@ -122,6 +122,8 @@ public:
         create = modelHelper<Matrix, NU1>::register_all_types(create_op, tag_detail::bosonic, tag_handler);
         destroy = modelHelper<Matrix, NU1>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler);
         count = modelHelper<Matrix, NU1>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
+        // Registers the hermitian pairs 
+        modelHelper<Matrix, NU1>::registerHermitianConjugates(create, destroy, tag_handler);
     }
 
     /** @brief Update the model with the new parameters */

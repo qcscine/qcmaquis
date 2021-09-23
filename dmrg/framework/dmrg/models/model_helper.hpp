@@ -109,10 +109,6 @@ public:
             auto term = ret.first;
             term.coeff = coeff * scaling;
             terms.push_back(term);
-            //if (this->verbose) {
-            //    std::cout << term << std::endl;
-            //    std::cout << "Operator count = " << count << std::endl;
-            //}
         }
     }
 
@@ -134,6 +130,25 @@ public:
             ret.push_back(newtag.first);
         }
         return ret;
+    }
+
+    /**
+     * @brief Register a given pair of Hermitian operators
+     * 
+     * Note that this call implicitly changes the internal structure of the tag_handler.
+     * 
+     * @param ops vector with the first set of operators
+     * @param hermOps vector with the hermitian conjugates of [ops]
+     * @param tag_handler map keeping track of the operator <--> tag association
+     * @return std::vector<tag_type> vector of the tags associated with ops
+     */
+    static void registerHermitianConjugates(const std::vector<tag_type> & ops,
+                                            const std::vector<tag_type> & hermOps,
+                                            std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler)
+    {
+        assert(ops.size() == hermOps.size());
+        for (int idx = 0; idx < ops.size(); idx++)
+            tag_handler->hermitian_pair(ops[idx], hermOps[idx]);
     }
 };
 
