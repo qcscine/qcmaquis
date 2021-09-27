@@ -156,26 +156,6 @@ namespace prebo {
 
         }
 
-        // +--------------------+
-        // | REGISTER_ALL_TYPES |
-        // +--------------------+
-        /*! \brief
-         *  This method is used to register all the operators contained in a given vector
-         */
-        std::vector<tag_type> register_all_types(std::vector<op_t> const &ops,   // -> vector of operators
-                                                 tag_detail::operator_kind kind)  // -> bosonic or fermionic
-        {
-            //TODO use the function from the model helper
-            std::vector<tag_type> ret;
-            for (std::size_t idx = 0; idx < ops.size(); idx++) {
-                std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[idx], kind);
-                assert(newtag.first < tag_handler->size());
-                assert(std::abs(newtag.second - value_type(1.)) == value_type());
-                ret.push_back(newtag.first);
-            }
-            return ret;
-        }
-
         // +--------------------------+
         // | CONSTRUCT EXCITED STATES |
         // +--------------------------+
