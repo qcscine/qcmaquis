@@ -135,6 +135,9 @@ private:
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
 
+        // Watson Hamiltonian-based simulations
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES");
+
         // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
         add_option("PreBO_ParticleTypeVector", "Number of particles per type");

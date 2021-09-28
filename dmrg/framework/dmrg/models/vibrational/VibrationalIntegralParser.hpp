@@ -148,6 +148,92 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     return std::make_pair(indices, matrix_elements);
 }
 
+template <class T, class SymmGroup >
+inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
+std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
+WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
+{
+    // Types and variables definition
+    typedef Lattice::pos_t pos_t;
+    std::vector<pos_t> inv_order;
+    std::vector<T> matrix_elements;
+    alps::numeric::matrix<pos_t> idx_;
+    // Load ordering and determine inverse ordering
+    std::vector<pos_t> order(lat.size());
+    if (!parms.is_set("sites_order")) {
+        for (pos_t p = 0; p < lat.size(); ++p)
+            order[p] = p+1;
+    } else {
+        order = parms["sites_order"].as<std::vector<pos_t> >();
+    }
+    if (order.size() != lat.size())
+        throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
+    // Removes 1 (to fullfill the C++ convetion) and calculates the inverse map
+    // (which is the one that is actually used in )
+    std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+    inv_order.resize(order.size());
+    for (int p = 0; p < order.size(); ++p)
+        inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
+    // -- Parses orbital data --
+    std::string integral_file = parms["integral_file"];
+    if (!boost::filesystem::exists(integral_file))
+        throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+    std::ifstream orb_file;
+    orb_file.open(integral_file.c_str());
+    std::vector<double> raw;
+    std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
+                std::back_inserter(raw));
+    idx_.resize(raw.size()/7, 6);
+    auto it = raw.begin();
+    // Determines the maximum many-body coupling degree
+    std::vector<bool> doCoupling(6, false);
+    doCoupling[0] = true;
+    int upperBound = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : 6;
+    for (int iActive = 0; iActive < upperBound; iActive++)
+        doCoupling[iActive] = true;
+    int row = 0;
+    while (it != raw.end()) 
+    {
+        // Computes the coupling degree of the Hamiltonian term
+        std::vector<int> tmp2;
+        std::vector<int>::iterator jnk_iter ;
+        std::transform(it+1, it+7, std::back_inserter(tmp2), boost::lambda::_1-1) ;
+        if (tmp2[2] == -1)
+            tmp2.resize(2);
+        else if (tmp2[3] == -1)
+            tmp2.resize(3);
+        else if (tmp2[4] == -1)
+            tmp2.resize(4);
+        else if (tmp2[5] == -1)
+            tmp2.resize(5);
+        std::sort(tmp2.begin(), tmp2.end());
+        jnk_iter = std::unique(tmp2.begin(), tmp2.end());
+        long coupl = std::distance(tmp2.begin(), jnk_iter);
+        if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] )
+        {
+            matrix_elements.push_back(*it++);
+            std::vector<int> tmp;
+            std::transform(it, it+6, std::back_inserter(tmp), boost::lambda::_1-1);
+            for (std::size_t idx=0; idx<6; idx++)
+                if (tmp[idx] > -1)
+                    tmp[idx] = inv_order[tmp[idx]] ;
+            idx_(row, 0) = tmp[0];
+            idx_(row, 1) = tmp[1];
+            idx_(row, 2) = tmp[2];
+            idx_(row, 3) = tmp[3];
+            idx_(row, 4) = tmp[4];
+            idx_(row, 5) = tmp[5];
+        }
+        else {
+            ++it;
+            idx_.remove_rows(row--);
+        }
+        it += 6;
+        row++;
+    }
+    return std::make_pair(idx_, matrix_elements);
+}
+
 } // namespace detail
 } // namespace vibrational
 
