@@ -219,29 +219,30 @@ inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<Trivia
     int row = 0;
     while (it != raw.end()) {
         // Computes the coupling degree of the Hamiltonian term
-        std::vector<int> tmp2;
+        std::vector<int> tmp2(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, 0);
         std::vector<int>::iterator jnk_iter;
-        std::transform(it+1, it+7, std::back_inserter(tmp2), boost::lambda::_1-1);
-        if (tmp2[2] == -1)
+        std::copy(it+1, it+7, tmp2.begin());
+        if (tmp2[2] == 0)
             tmp2.resize(2);
-        else if (tmp2[3] == -1)
+        else if (tmp2[3] == 0)
             tmp2.resize(3);
-        else if (tmp2[4] == -1)
+        else if (tmp2[4] == 0)
             tmp2.resize(4);
-        else if (tmp2[5] == -1)
+        else if (tmp2[5] == 0)
             tmp2.resize(5);
         std::sort(tmp2.begin(), tmp2.end());
         jnk_iter = std::unique(tmp2.begin(), tmp2.end());
         long coupl = std::distance(tmp2.begin(), jnk_iter);
-        if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] )
-        {
+        if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] ) {
             T coefficient = *it++;
             KeyType tmp;
             for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
-                tmp[idx] = *(it+idx)-1;
+                tmp[idx] = *(it+idx);
             for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
-                if (tmp[idx] > -1)
+                if (tmp[idx] > 0)
                     tmp[idx] = inv_order[tmp[idx]];
+                else if (tmp[idx] < 0)
+                    tmp[idx] = -inv_order[-tmp[idx]];
             ret.push_back(std::make_pair(tmp, coefficient));
         }
         else {

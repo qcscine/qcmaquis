@@ -50,17 +50,16 @@ template<class Matrix>
 class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
     // Types definition
     using base = model_impl<Matrix, TrivialGroup>;
-    using table_type = typename base::table_type;
     using table_ptr = typename base::table_ptr;
+    using table_type = typename base::table_type;
     using tag_type = typename base::tag_type;
     using term_descriptor = typename base::term_descriptor;
     using terms_type = typename std::vector<term_descriptor>;
     using op_t = typename base::op_t;
     using measurements_type = typename base::measurements_type;
-    using pos_t = typename Lattice::pos_t;
-    using positions_type = typename std::vector<pos_t>;
+    using positions_type = typename std::vector<typename Lattice::pos_t>;
+    using operators_type = typename std::vector<tag_type>;
     using value_type = typename Matrix::value_type;
-    using charge_type = typename TrivialGroup::charge;
 public:
     
     /**
@@ -74,9 +73,12 @@ public:
     {
         // Model parameters
         nMax = parameters_["Nmax"];
-        op_t ident_op, create_op, destroy_op, count_op, position_op, momentum_op ;
+        op_t ident_op, create_op, destroy_op, count_op, position_op, momentum_op;
+        std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
-        int overallDimension = nMax /*+ VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings*/;
+        int overallDimension = nMax + VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
+        momentumPowers.resize(nMax);
+        momentumPowers.resize(nMax);
         // Here it's where the "physical" basis is defined
         physIndices.insert(std::make_pair(C, nMax));
         Matrix mcount(overallDimension, overallDimension, 0.),
@@ -86,17 +88,17 @@ public:
                mmom(overallDimension, overallDimension, 0.),
                mident(overallDimension, overallDimension, 0.);
         // Loads the matrices
-        mident(0,0) = 1.;
+        mident(0, 0) = 1.;
         //create annihilation, creation, position, momentum operators
         for (int n = 1; n < overallDimension; n++) {
-            mcount(n,n) = n;
-            mident(n,n) = 1.;
-            mcreate(n-1,n) = std::sqrt(value_type(n));
-            mdestroy(n,n-1) = std::sqrt(value_type(n));
-            mpos(n-1,n) = std::sqrt(value_type(n));
-            mpos(n,n-1) = std::sqrt(value_type(n));
-            mmom(n-1,n) = std::sqrt(value_type(n));
-            mmom(n,n-1) = -std::sqrt(value_type(n));
+            mcount(n, n) = n;
+            mident(n, n) = 1.;
+            mcreate(n-1, n) = std::sqrt(value_type(n));
+            mdestroy(n, n-1) = std::sqrt(value_type(n));
+            mpos(n-1, n) = std::sqrt(value_type(n));
+            mpos(n, n-1) = std::sqrt(value_type(n));
+            mmom(n-1, n) = std::sqrt(value_type(n));
+            mmom(n,n- 1) = -std::sqrt(value_type(n));
         }
         count_op.insert_block(mcount, C,C);
         create_op.insert_block(mcreate, C,C);
@@ -104,6 +106,25 @@ public:
         position_op.insert_block(mpos, C,C);
         momentum_op.insert_block(mmom, C,C);
         ident_op.insert_block(mident, C,C);
+        // -- Creates the powers of the position/momentum operator --
+        powersOfPositions_op.resize(maxCoupling+1);
+        powersOfMomentum_op.resize(maxCoupling+1);
+        powersOfPositions_op[0] = ident_op;
+        powersOfMomentum_op[0] = ident_op;
+        op_t q = ident_op, p = ident_op;
+        for (int iOrder = 0; iOrder < maxCoupling; iOrder++) {
+            op_t tmpQ, tmpP;
+            gemm(q, position_op, tmpQ);
+            gemm(p, momentum_op, tmpP);
+            powersOfPositions_op[iOrder+1] = tmpQ;
+            powersOfMomentum_op[iOrder+1] = tmpP;
+            q = tmpQ;
+            p = tmpP;
+            assert(powersOfPositions_op[iOrder+1].n_blocks() == 1);
+            assert(powersOfMomentum_op[iOrder+1].n_blocks() == 1);
+            powersOfPositions_op[iOrder+1].resize_block(0, nMax, nMax);
+            powersOfMomentum_op[iOrder+1].resize_block(0, nMax, nMax);
+        }
         // -- Create operator tag table --
         ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
         create = tag_handler->register_op(create_op, tag_detail::bosonic);
@@ -111,9 +132,17 @@ public:
         count = tag_handler->register_op(count_op, tag_detail::bosonic);
         position = tag_handler->register_op(position_op, tag_detail::bosonic);
         momentum = tag_handler->register_op(momentum_op, tag_detail::bosonic);
-        //op_t tmp;
-        //gemm(fill_op, create_down_op, tmp);
-        //create_down_op = tmp;
+        //
+        positionPowers.resize(maxCoupling);
+        momentumPowers.resize(maxCoupling);
+        positionPowers[0] = ident;
+        momentumPowers[0] = ident;
+        positionPowers[1] = position;
+        momentumPowers[1] = momentum;
+        for (int iOrder = 2; iOrder < maxCoupling; iOrder++) {
+            positionPowers[iOrder] = tag_handler->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
+            momentumPowers[iOrder] = tag_handler->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
+        }
     }
 
     /** @brief Update the model with the new parameters */
@@ -122,17 +151,30 @@ public:
         throw std::runtime_error("update() not yet implemented for this model.");
     }
 
+    /**
+     * @brief Method to load the terms.
+     * This method populates the [terms_] member with the Hamiltonian coefficients
+     */
     void create_terms() override {
-        auto Hamiltonian_term = Vibrational::detail::WatsonIntegralParser<value_type>(parameters, lattice);
-        /*
-        int hamiltonianSize = Hamiltonian_term.first.size();
-        for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
+        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters, lattice);
+        for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
-            convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
-            modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
+            auto uniqueCoefficients = std::set<int>(iTerms.first.begin(), iTerms.first.end());
+            for (const auto& iSite: uniqueCoefficients) {
+                if (iSite != 0) {
+                    positions.push_back(abs(iSite)-1);
+                    auto numberOfOccurrences = std::count(iTerms.first.begin(), iTerms.first.end(), iSite);
+                    assert(numberOfOccurrences > 0 && numberOfOccurrences < maxCoupling);
+                    if (iSite < 0)
+                        operators.push_back(positionPowers[numberOfOccurrences]);
+                    else if (iSite > 0)
+                        operators.push_back(momentumPowers[numberOfOccurrences]);
+                }
+            }
+            // Final addition of the terms
+            modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_);
         }
-        */
     }
 
     /** @brief Getter for the physical dimension of a given type */
@@ -188,12 +230,21 @@ public:
     }
 
 private:
+    /** Static class member indicating the highest value of the Taylor operator */
+    static constexpr int maxCoupling = VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
+    /** Ref to the lattice object */
     const Lattice& lattice;
-    int lattice_size, num_modes, nMax;
+    /** Max excitation degree (assumed constant for all modes for the moment) */
+    int nMax;
+    /** Parameter container */
     BaseParameters& parameters;
+    /** Physical basis */
     Index<TrivialGroup> physIndices;
+    /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler;
+    /** Tags of the elementary operators */
     tag_type ident, create, destroy, count, position, momentum;
+    /** Tag for the powers of the position/momentum operators */
     std::vector<tag_type> positionPowers, momentumPowers;
 };
 

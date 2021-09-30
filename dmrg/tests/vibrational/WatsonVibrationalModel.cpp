@@ -78,8 +78,26 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixt
     BOOST_CHECK_EQUAL(integrals.size(), 24);
     for (const auto iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
-            BOOST_CHECK_EQUAL(iElements.first[iSite], -1);
+            BOOST_CHECK_EQUAL(iElements.first[iSite], 0);
     }
+}
+
+/** Check consistency in the dimension of the integral container */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_TermsSize, WatsonFixture) 
+{
+    auto lattice = lattice_factory(parametersEthyleneWatson);
+    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    watsonModel.create_terms();
+    BOOST_CHECK_EQUAL(watsonModel.hamiltonian_terms().size(), 24);
+}
+
+/** Check consistency in the dimension of the integral container */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture) 
+{
+    auto lattice = Lattice(parametersEthyleneWatson);
+    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    const auto& physicalDimensions0 = watsonModel.phys_dim(0);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), parametersEthyleneWatson["Nmax"]);
 }
 
 #endif // HAVE_TrivialGroup

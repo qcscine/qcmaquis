@@ -115,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_OneMode, NModeFixture)
     BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 2);
 }
 
-/** Checks consistency for the physical dimensions for a 1-mode system */
+/** Checks consistency for the physical dimensions for a 2-mode system */
 BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_TwoMode, NModeFixture)
 {
     auto lattice = Lattice(parametersFADTwoBody);
