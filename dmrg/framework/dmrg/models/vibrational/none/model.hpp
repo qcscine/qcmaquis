@@ -35,6 +35,7 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/model_helper.hpp"
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
+#include "dmrg/models/vibrational/VibrationalModelTraitClass.hpp"
 
 /**
  * @brief Class implementing the canonical quantization-based vibrational Hamiltonian.
@@ -75,23 +76,19 @@ public:
         nMax = parameters_["Nmax"];
         op_t ident_op, create_op, destroy_op, count_op, position_op, momentum_op ;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
+        int overallDimension = nMax /*+ VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings*/;
         // Here it's where the "physical" basis is defined
         physIndices.insert(std::make_pair(C, nMax));
-        Matrix mcount(nMax, nMax), mcreate(nMax, nMax), mdestroy(nMax, nMax), mpos(nMax, nMax),
-               mmom(nMax, nMax), mident(nMax, nMax);
-        for (int n = 0; n < nMax; n++) {
-            for (int j = 0; j < nMax; j++) {
-                mcount(n,j)   = 0.;
-                mcreate(n,j)  = 0.;
-                mdestroy(n,j) = 0.;
-                mpos(n,j)     = 0.;
-                mmom(n,j)     = 0.;
-                mident(n,j)   = 0.;
-            }
-        }
+        Matrix mcount(overallDimension, overallDimension, 0.),
+               mcreate(overallDimension, overallDimension, 0.),
+               mdestroy(overallDimension, overallDimension, 0.), 
+               mpos(overallDimension, overallDimension, 0.),
+               mmom(overallDimension, overallDimension, 0.),
+               mident(overallDimension, overallDimension, 0.);
+        // Loads the matrices
         mident(0,0) = 1.;
         //create annihilation, creation, position, momentum operators
-        for (int n=1; n < nMax; n++) {
+        for (int n = 1; n < overallDimension; n++) {
             mcount(n,n) = n;
             mident(n,n) = 1.;
             mcreate(n-1,n) = std::sqrt(value_type(n));
@@ -114,6 +111,9 @@ public:
         count = tag_handler->register_op(count_op, tag_detail::bosonic);
         position = tag_handler->register_op(position_op, tag_detail::bosonic);
         momentum = tag_handler->register_op(momentum_op, tag_detail::bosonic);
+        //op_t tmp;
+        //gemm(fill_op, create_down_op, tmp);
+        //create_down_op = tmp;
     }
 
     /** @brief Update the model with the new parameters */

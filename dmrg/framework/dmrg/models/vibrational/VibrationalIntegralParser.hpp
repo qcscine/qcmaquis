@@ -30,6 +30,7 @@
 #ifdef DMRG_VIBRATIONAL
 
 #include "integral_interface.h"
+#include "VibrationalModelTraitClass.hpp"
 
 namespace Vibrational {
 namespace detail {
@@ -164,18 +165,22 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
  *  - i*(b_{-i}^\dagger - b_{-i}) if i < 0
  *  - the identity if i == 0
  * 
+ * Note that the dimension of the array depends on the maximum allowed coupling degree, which is 
+ * set in the TrivialGroup vibrational model trait class.
+ * 
  * @tparam T scalar type associated with the Hamiltonian (real for most vibrational calculations)
  * @param parms parameter container
  * @param lat DMRG lattice object
- * @return std::vector< std::pair< std::array<int, 6>, T > > vector containing the coefficients
+ * @return std::vector< std::pair< std::array<int, maxCoupling>, T > > vector containing the coefficients
  */
 
 template<class T>
-inline std::vector< std::pair< std::array<int, 6>, T > > WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
+inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings>, T > > 
+    WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
 {
     // Types definition
     using pos_t = Lattice::pos_t;
-    using KeyType = std::array<int, 6>;
+    using KeyType = std::array<int, VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings>;
     using RetType = std::vector< std::pair< KeyType, T> > ;
     // Load ordering and determine inverse ordering
     std::vector<pos_t> inv_order;
@@ -204,7 +209,7 @@ inline std::vector< std::pair< std::array<int, 6>, T > > WatsonIntegralParser(Ba
                 std::back_inserter(raw));
     auto it = raw.begin();
     // Determines the maximum many-body coupling degree
-    std::vector<bool> doCoupling(6, false);
+    std::vector<bool> doCoupling(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, false);
     doCoupling[0] = true;
     int upperBound = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : 6;
     for (int iActive = 0; iActive < upperBound; iActive++)
@@ -232,9 +237,9 @@ inline std::vector< std::pair< std::array<int, 6>, T > > WatsonIntegralParser(Ba
         {
             T coefficient = *it++;
             KeyType tmp;
-            for (int idx = 0; idx < 6; idx++)
+            for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
                 tmp[idx] = *(it+idx)-1;
-            for (int idx = 0; idx < 6; idx++)
+            for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
                 if (tmp[idx] > -1)
                     tmp[idx] = inv_order[tmp[idx]];
             ret.push_back(std::make_pair(tmp, coefficient));
@@ -242,7 +247,7 @@ inline std::vector< std::pair< std::array<int, 6>, T > > WatsonIntegralParser(Ba
         else {
             ++it;
         }
-        it += 6;
+        it += VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
         row++;
     }
     return ret;
