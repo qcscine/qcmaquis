@@ -33,9 +33,28 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
 #include "Fixtures/NModeFixture.h"
+#include "Fixtures/WatsonFixture.h"
 #include "dmrg/sim/matrix_types.h"
 
 #ifdef DMRG_VIBRATIONAL
+
+#ifdef HAVE_TrivialGroup
+
+BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_HarmonicEnergy, WatsonFixture)
+{
+    parametersEthyleneWatson.set("init_state", "basis_state_generic");
+    parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
+    auto lattice = Lattice(parametersEthyleneWatson);
+    auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatson);
+    auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
+    std::cout << watsonHarmonicMPO.size() << std::endl;
+    auto mps = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+    BOOST_CHECK_CLOSE(norm(mps), 1., 1.0E-15);
+    auto energy = expval(mps, watsonHarmonicMPO)/norm(mps);
+    BOOST_CHECK_CLOSE(referenceHarmonicEnergy, energy, 1e-7);
+}
+
+#endif // HAVE_TrivialGroup
 
 #ifdef HAVE_NU1
 

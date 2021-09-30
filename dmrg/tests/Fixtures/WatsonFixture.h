@@ -41,6 +41,10 @@ struct WatsonFixture
 
     /** @brief Constructor for the fixture class */
     WatsonFixture() {
+        // == REFERENCE DATA ==
+        referenceHarmonicEnergy = (2.06242167E+02 + 2.37547247E+02 + 2.41596974E+02 + 2.62702319E+02 +
+                                   3.11690974E+02 + 3.42345676E+02 + 3.69620153E+02 + 4.18142252E+02 +
+                                   7.85228686E+02 + 7.89209319E+02 + 8.05722986E+02 + 8.12177325E+02)*2.;
         // == INPUT FILE CREATIONS ==
         integralFileEthyleneHarmonic.open("integral_file_test_Watson_Ethylene_Harmonic");
         integralFileEthyleneHarmonic << " 2.06242167E+02   1   1  0  0  0  0  " << std::endl;
@@ -85,6 +89,7 @@ struct WatsonFixture
     // Class members
     DmrgParameters parametersEthyleneWatson;
     std::ofstream integralFileEthyleneHarmonic;
+    double referenceHarmonicEnergy;
 };
 
 #endif

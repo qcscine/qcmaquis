@@ -81,25 +81,29 @@ public:
         momentumPowers.resize(nMax);
         // Here it's where the "physical" basis is defined
         physIndices.insert(std::make_pair(C, nMax));
-        Matrix mcount(overallDimension, overallDimension, 0.),
-               mcreate(overallDimension, overallDimension, 0.),
-               mdestroy(overallDimension, overallDimension, 0.), 
+        std::cout << physIndices << std::endl;
+        Matrix mcount(nMax, nMax, 0.),
+               mcreate(nMax, nMax, 0.),
+               mdestroy(nMax, nMax, 0.), 
                mpos(overallDimension, overallDimension, 0.),
                mmom(overallDimension, overallDimension, 0.),
                mident(overallDimension, overallDimension, 0.);
         // Loads the matrices
         mident(0, 0) = 1.;
-        //create annihilation, creation, position, momentum operators
         for (int n = 1; n < overallDimension; n++) {
-            mcount(n, n) = n;
-            mident(n, n) = 1.;
-            mcreate(n-1, n) = std::sqrt(value_type(n));
-            mdestroy(n, n-1) = std::sqrt(value_type(n));
             mpos(n-1, n) = std::sqrt(value_type(n));
             mpos(n, n-1) = std::sqrt(value_type(n));
             mmom(n-1, n) = std::sqrt(value_type(n));
             mmom(n,n- 1) = -std::sqrt(value_type(n));
+            mident(n, n) = 1.;
         }
+        //
+        for (int n = 1; n < nMax; n++) {
+            mcount(n, n) = n;
+            mcreate(n-1, n) = std::sqrt(value_type(n));
+            mdestroy(n, n-1) = std::sqrt(value_type(n));
+        }
+        //
         count_op.insert_block(mcount, C,C);
         create_op.insert_block(mcreate, C,C);
         destroy_op.insert_block(mdestroy, C,C);
@@ -111,6 +115,8 @@ public:
         powersOfMomentum_op.resize(maxCoupling+1);
         powersOfPositions_op[0] = ident_op;
         powersOfMomentum_op[0] = ident_op;
+        powersOfPositions_op[0].resize_block(0, nMax, nMax);
+        powersOfMomentum_op[0].resize_block(0, nMax, nMax);
         op_t q = ident_op, p = ident_op;
         for (int iOrder = 0; iOrder < maxCoupling; iOrder++) {
             op_t tmpQ, tmpP;
@@ -126,20 +132,18 @@ public:
             powersOfMomentum_op[iOrder+1].resize_block(0, nMax, nMax);
         }
         // -- Create operator tag table --
-        ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
         create = tag_handler->register_op(create_op, tag_detail::bosonic);
         destroy = tag_handler->register_op(destroy_op, tag_detail::bosonic);
         count = tag_handler->register_op(count_op, tag_detail::bosonic);
-        position = tag_handler->register_op(position_op, tag_detail::bosonic);
-        momentum = tag_handler->register_op(momentum_op, tag_detail::bosonic);
+        // 
+        ident_op.resize_block(0, nMax, nMax);
+        ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
         //
         positionPowers.resize(maxCoupling);
         momentumPowers.resize(maxCoupling);
         positionPowers[0] = ident;
         momentumPowers[0] = ident;
-        positionPowers[1] = position;
-        momentumPowers[1] = momentum;
-        for (int iOrder = 2; iOrder < maxCoupling; iOrder++) {
+        for (int iOrder = 1; iOrder < maxCoupling; iOrder++) {
             positionPowers[iOrder] = tag_handler->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
             momentumPowers[iOrder] = tag_handler->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
         }
@@ -167,10 +171,13 @@ public:
                     auto numberOfOccurrences = std::count(iTerms.first.begin(), iTerms.first.end(), iSite);
                     assert(numberOfOccurrences > 0 && numberOfOccurrences < maxCoupling);
                     if (iSite < 0)
-                        operators.push_back(positionPowers[numberOfOccurrences]);
-                    else if (iSite > 0)
                         operators.push_back(momentumPowers[numberOfOccurrences]);
+                    else if (iSite > 0)
+                        operators.push_back(positionPowers[numberOfOccurrences]);
                 }
+            }
+            for (int idx = 0; idx < positions.size(); idx++) {
+                std::cout << positions[idx] << " " << operators[idx] << std::endl;
             }
             // Final addition of the terms
             modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_);

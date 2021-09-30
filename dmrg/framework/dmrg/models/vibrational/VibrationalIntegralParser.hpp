@@ -240,9 +240,9 @@ inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<Trivia
                 tmp[idx] = *(it+idx);
             for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
                 if (tmp[idx] > 0)
-                    tmp[idx] = inv_order[tmp[idx]];
+                    tmp[idx] = inv_order[tmp[idx]-1]+1;
                 else if (tmp[idx] < 0)
-                    tmp[idx] = -inv_order[-tmp[idx]];
+                    tmp[idx] = -inv_order[-tmp[idx]-1]-1;
             ret.push_back(std::make_pair(tmp, coefficient));
         }
         else {
