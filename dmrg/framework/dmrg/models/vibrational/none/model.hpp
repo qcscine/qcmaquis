@@ -94,11 +94,11 @@ public:
         for (int n=1; n < nMax; n++) {
             mcount(n,n) = n;
             mident(n,n) = 1.;
-            mcreate(n-1,n) =  std::sqrt(value_type(n));
-            mdestroy(n,n-1) =  std::sqrt(value_type(n));
-            mpos(n-1,n) =  std::sqrt(value_type(n));
-            mpos(n,n-1) =  std::sqrt(value_type(n));
-            mmom(n-1,n) =  std::sqrt(value_type(n));
+            mcreate(n-1,n) = std::sqrt(value_type(n));
+            mdestroy(n,n-1) = std::sqrt(value_type(n));
+            mpos(n-1,n) = std::sqrt(value_type(n));
+            mpos(n,n-1) = std::sqrt(value_type(n));
+            mmom(n-1,n) = std::sqrt(value_type(n));
             mmom(n,n-1) = -std::sqrt(value_type(n));
         }
         count_op.insert_block(mcount, C,C);
@@ -123,8 +123,8 @@ public:
     }
 
     void create_terms() override {
+        auto Hamiltonian_term = Vibrational::detail::WatsonIntegralParser<value_type>(parameters, lattice);
         /*
-        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<value_type>(parameters, lattice);
         int hamiltonianSize = Hamiltonian_term.first.size();
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
@@ -194,6 +194,7 @@ private:
     Index<TrivialGroup> physIndices;
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler;
     tag_type ident, create, destroy, count, position, momentum;
+    std::vector<tag_type> positionPowers, momentumPowers;
 };
 
 #endif // DMRG_VIBRATIONAL

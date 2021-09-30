@@ -70,4 +70,16 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_Ethylene, WatsonFixture)
     BOOST_CHECK(watsonModel.filling_matrix_tag(0) == watsonModel.get_operator_tag("fill", 0));
 }
 
+/** Check consistency in the dimension of the integral container */
+BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixture) 
+{
+    auto lattice = lattice_factory(parametersEthyleneWatson);
+    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatson, lattice);
+    BOOST_CHECK_EQUAL(integrals.size(), 24);
+    for (const auto iElements: integrals) {
+        for (int iSite = 2; iSite < 6; iSite++)
+            BOOST_CHECK_EQUAL(iElements.first[iSite], -1);
+    }
+}
+
 #endif // HAVE_TrivialGroup

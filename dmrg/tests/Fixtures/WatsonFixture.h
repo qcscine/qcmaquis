@@ -37,108 +37,54 @@
 struct WatsonFixture
 {
     // Types definition
-    //using MaquisIntegralType = maquis::integral_map<double, chem::Hamiltonian::VibrationalNMode>;
+    using MaquisIntegralType = maquis::integral_map<double, chem::Hamiltonian::VibrationalCanonical>;
+
     /** @brief Constructor for the fixture class */
     WatsonFixture() {
         // == INPUT FILE CREATIONS ==
-        /*
-        integralFileOneBodyFAD.open("integral_file_test_OneBodyFAD");
-        integralFileOneBodyFAD << "       1-0       1-0  -2.359242429009664e+03\n";
-        integralFileOneBodyFAD << "       1-1       1-1  -2.358797386438359e+03\n";
-        integralFileOneBodyFAD << "       1-2       1-2  -1.444541233850135e+03\n";
-        integralFileOneBodyFAD << "       1-3       1-3  -1.437160009122911e+03\n";
-        integralFileOneBodyFAD << "       1-4       1-4  -6.657064784181758e+03\n";
-        integralFileOneBodyFAD << "       1-5       1-5  -6.128584661601011e+03\n";
-        integralFileOneBodyFAD << "       1-6       1-6  -3.441604675890336e+03\n";
-        integralFileOneBodyFAD << "       1-7       1-7   1.538026675462226e+03\n";
-        integralFileOneBodyFAD << "       1-8       1-8   6.026905892315631e+03\n";
-        integralFileOneBodyFAD << "       1-9       1-9   9.519079627438325e+03\n";
-        integralFileOneBodyFAD << "      1-10      1-10   1.408367346423375e+03\n";
-        integralFileOneBodyFAD << "      1-11      1-11   1.877962833530346e+03\n";
-        integralFileOneBodyFAD << "      1-12      1-12   2.406532356803376e+03\n";
-        integralFileOneBodyFAD << "      1-13      1-13   2.974933802551137e+03\n";
-        integralFileOneBodyFAD << "      1-14      1-14   3.590607405365762e+03\n";
-        integralFileOneBodyFAD << "      1-15      1-15   4.250019051366812e+03\n";
-        integralFileOneBodyFAD << "      1-16      1-16   4.954168295956210e+03\n";
-        integralFileOneBodyFAD << "      1-17      1-17   5.702284980641777e+03\n";
-        integralFileOneBodyFAD << "      1-18      1-18   6.494407879568767e+03\n";
-        integralFileOneBodyFAD << "      1-19      1-19   7.330063654159827e+03\n";
-        integralFileOneBodyFAD << "      1-20      1-20   8.209556409406479e+03\n";
-        integralFileOneBodyFAD << "      1-21      1-21   9.132461752263011e+03\n";
-        integralFileOneBodyFAD << "      1-22      1-22   1.009901501528866e+03\n";
-        integralFileOneBodyFAD << "      1-23      1-23   1.110869147300428e+03\n";
-        integralFileOneBodyFAD << "      1-24      1-24   1.216206565203700e+03\n";
-        integralFileOneBodyFAD << "      1-25      1-25   1.325854103259667e+03\n";
-        integralFileOneBodyFAD << "      1-26      1-26   1.439864696031767e+03\n";
-        integralFileOneBodyFAD << "      1-27      1-27   1.558157142548529e+03\n";
-        integralFileOneBodyFAD << "      1-28      1-28   1.680827752856561e+03\n";
-        integralFileOneBodyFAD << "      1-29      1-29   1.807804326901167e+03\n";
-        integralFileOneBodyFAD << "      1-30      1-30   1.939221830929778e+03\n";
-        integralFileOneBodyFAD << "      1-31      1-31   2.074605464868975e+03\n";
-        integralFileOneBodyFAD << "      1-32      1-32   2.214735474735023e+03\n";
-        integralFileOneBodyFAD << "      1-33      1-33   2.359908634757324e+03\n";
-        integralFileOneBodyFAD << "      1-34      1-34   2.503011884645919e+03\n";
-        integralFileOneBodyFAD << "      1-35      1-35   2.651668901080508e+03\n";
-        integralFileOneBodyFAD << "      1-36      1-36   2.861283145084534e+03\n";
-        integralFileOneBodyFAD << "      1-37      1-37   2.946541753544523e+03\n";
-        integralFileOneBodyFAD << "      1-37      1-38   2.795969730154564e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-0  -4.721452208883015e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-1   9.167304342968547e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-2   3.627696363978469e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-3   2.368394571952736e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-4  -1.389061557427853e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-5   1.503577338928864e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-6  -3.152902036131743e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-7   2.076156246433921e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-8   2.296264501786515e-13\n";
-        integralFileOneBodyFAD << "      1-38       1-9   8.566375343452281e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-10   2.391446450047095e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-11   2.260571271188797e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-12   6.781713813566390e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-13   2.974435883143153e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-14  -1.998820913472199e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-15   4.568733516507884e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-16   3.331368189120332e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-17  -7.138646119543568e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-18   2.569912603035684e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-19  -2.450935167709958e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-20   5.472962024983402e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-21   4.259392184660996e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-22   7.043464171282988e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-23   1.142183379126971e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-24  -7.923897192693361e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-25   5.663325921504564e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-26  -3.640709520967220e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-27  -1.832252504016183e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-28   1.903638965211618e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-29   2.141593835863070e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-30  -3.093413318468879e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-31  -6.377190533458921e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-32  -4.402165107051867e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-33  -3.854868904553527e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-34   8.685352778778008e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-35   1.182635707137718e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-36  -3.593118546836929e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-37   2.676992294828838e-13\n";
-        integralFileOneBodyFAD << "      1-38      1-38   3.133897924626650e+03\n";
-        integralFileOneBodyFAD.close();
-        */
+        integralFileEthyleneHarmonic.open("integral_file_test_Watson_Ethylene_Harmonic");
+        integralFileEthyleneHarmonic << " 2.06242167E+02   1   1  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-2.06242167E+02  -1  -1  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 2.37547247E+02   2   2  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-2.37547247E+02  -2  -2  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 2.41596974E+02   3   3  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-2.41596974E+02  -3  -3  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 2.62702319E+02   4   4  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-2.62702319E+02  -4  -4  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 3.11690974E+02   5   5  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-3.11690974E+02  -5  -5  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 3.42345676E+02   6   6  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-3.42345676E+02  -6  -6  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 3.69620153E+02   7   7  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-3.69620153E+02  -7  -7  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 4.18142252E+02   8   8  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-4.18142252E+02  -8  -8  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 7.85228686E+02   9   9  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-7.85228686E+02  -9  -9  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 7.89209319E+02  10  10  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-7.89209319E+02 -10 -10  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 8.05722986E+02  11  11  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-8.05722986E+02 -11 -11  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << " 8.12177325E+02  12  12  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic << "-8.12177325E+02 -12 -12  0  0  0  0  " << std::endl;
+        integralFileEthyleneHarmonic.close();
+        //
         parametersEthyleneWatson.set("L", 12);
         parametersEthyleneWatson.set("symmetry", "none");
         parametersEthyleneWatson.set("LATTICE", "watson");
         parametersEthyleneWatson.set("MODEL", "watson");
         parametersEthyleneWatson.set("Nmax", 6);
-        //parametersFADOneBodyBinary.set("integrals_binary", maquis::serialize(integralsOneBodyFAD));
+        parametersEthyleneWatson.set("integral_file", "integral_file_test_Watson_Ethylene_Harmonic");
     }
 
     /** @brief Class destructor (removes tmp files) */
     ~WatsonFixture() {
-        //std::remove("integral_file_test_OneBodyFAD");
-        //std::remove("integral_file_test_TwoBodyFAD");
+        std::remove("integral_file_test_Watson_Ethylene_Harmonic");
     }
 
     // Class members
     DmrgParameters parametersEthyleneWatson;
+    std::ofstream integralFileEthyleneHarmonic;
 };
 
 #endif

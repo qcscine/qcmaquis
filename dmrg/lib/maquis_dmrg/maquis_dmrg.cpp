@@ -251,4 +251,5 @@ namespace maquis
     template class DMRGInterface<std::complex<double> >;
     template class DMRGInterface<double, Hamiltonian::PreBO>;
     template class DMRGInterface<double, Hamiltonian::VibrationalNMode>;
+    template class DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
 }

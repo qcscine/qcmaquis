@@ -148,24 +148,43 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     return std::make_pair(indices, matrix_elements);
 }
 
-template <class T, class SymmGroup >
-inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
-std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
-WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
+/**
+ * @brief Integral file parser for the PES expressed as a Taylor expansion.
+ * 
+ * This routine expects to parse an integral file that is written in the following format:
+ * 
+ * coefficient    i   j   k   l   m   n 
+ * 
+ * Each line of the file is associated with a SQ operator expressed as:
+ * 
+ * coeff * o_i * o_j * o_k * o_l * o_m * o_n
+ * 
+ * where the operator o_i is:
+ *  - (b_i^\dagger + b_i) if i > 0
+ *  - i*(b_{-i}^\dagger - b_{-i}) if i < 0
+ *  - the identity if i == 0
+ * 
+ * @tparam T scalar type associated with the Hamiltonian (real for most vibrational calculations)
+ * @param parms parameter container
+ * @param lat DMRG lattice object
+ * @return std::vector< std::pair< std::array<int, 6>, T > > vector containing the coefficients
+ */
+
+template<class T>
+inline std::vector< std::pair< std::array<int, 6>, T > > WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
 {
-    // Types and variables definition
-    typedef Lattice::pos_t pos_t;
-    std::vector<pos_t> inv_order;
-    std::vector<T> matrix_elements;
-    alps::numeric::matrix<pos_t> idx_;
+    // Types definition
+    using pos_t = Lattice::pos_t;
+    using KeyType = std::array<int, 6>;
+    using RetType = std::vector< std::pair< KeyType, T> > ;
     // Load ordering and determine inverse ordering
+    std::vector<pos_t> inv_order;
     std::vector<pos_t> order(lat.size());
-    if (!parms.is_set("sites_order")) {
+    if (!parms.is_set("sites_order"))
         for (pos_t p = 0; p < lat.size(); ++p)
             order[p] = p+1;
-    } else {
+    else
         order = parms["sites_order"].as<std::vector<pos_t> >();
-    }
     if (order.size() != lat.size())
         throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
     // Removes 1 (to fullfill the C++ convetion) and calculates the inverse map
@@ -183,7 +202,6 @@ WatsonIntegralParser(BaseParameters & parms, Lattice const & lat)
     std::vector<double> raw;
     std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
                 std::back_inserter(raw));
-    idx_.resize(raw.size()/7, 6);
     auto it = raw.begin();
     // Determines the maximum many-body coupling degree
     std::vector<bool> doCoupling(6, false);
@@ -191,13 +209,14 @@ WatsonIntegralParser(BaseParameters & parms, Lattice const & lat)
     int upperBound = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : 6;
     for (int iActive = 0; iActive < upperBound; iActive++)
         doCoupling[iActive] = true;
+    // == Main loop ==
+    RetType ret;
     int row = 0;
-    while (it != raw.end()) 
-    {
+    while (it != raw.end()) {
         // Computes the coupling degree of the Hamiltonian term
         std::vector<int> tmp2;
-        std::vector<int>::iterator jnk_iter ;
-        std::transform(it+1, it+7, std::back_inserter(tmp2), boost::lambda::_1-1) ;
+        std::vector<int>::iterator jnk_iter;
+        std::transform(it+1, it+7, std::back_inserter(tmp2), boost::lambda::_1-1);
         if (tmp2[2] == -1)
             tmp2.resize(2);
         else if (tmp2[3] == -1)
@@ -211,27 +230,22 @@ WatsonIntegralParser(BaseParameters & parms, Lattice const & lat)
         long coupl = std::distance(tmp2.begin(), jnk_iter);
         if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] )
         {
-            matrix_elements.push_back(*it++);
-            std::vector<int> tmp;
-            std::transform(it, it+6, std::back_inserter(tmp), boost::lambda::_1-1);
-            for (std::size_t idx=0; idx<6; idx++)
+            T coefficient = *it++;
+            KeyType tmp;
+            for (int idx = 0; idx < 6; idx++)
+                tmp[idx] = *(it+idx)-1;
+            for (int idx = 0; idx < 6; idx++)
                 if (tmp[idx] > -1)
-                    tmp[idx] = inv_order[tmp[idx]] ;
-            idx_(row, 0) = tmp[0];
-            idx_(row, 1) = tmp[1];
-            idx_(row, 2) = tmp[2];
-            idx_(row, 3) = tmp[3];
-            idx_(row, 4) = tmp[4];
-            idx_(row, 5) = tmp[5];
+                    tmp[idx] = inv_order[tmp[idx]];
+            ret.push_back(std::make_pair(tmp, coefficient));
         }
         else {
             ++it;
-            idx_.remove_rows(row--);
         }
         it += 6;
         row++;
     }
-    return std::make_pair(idx_, matrix_elements);
+    return ret;
 }
 
 } // namespace detail
