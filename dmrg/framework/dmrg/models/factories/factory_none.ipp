@@ -37,7 +37,7 @@ struct coded_model_factory<Matrix, TrivialGroup> {
     // Factory class
     static PointerType parse(Lattice const& lattice, BaseParameters & parms)
     {
-        if (parms["MODEL"] == std::string("Watson"))
+        if (parms["MODEL"] == std::string("watson"))
             return PointerType( new WatsonHamiltonian<Matrix>(lattice, parms, false));
         else {
             throw std::runtime_error("Don't know this model with None symmetry group!");

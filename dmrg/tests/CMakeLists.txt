@@ -47,6 +47,8 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_mps_mpo_ops_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_initializers_vibrational mps_initializers/test_mps_initializers_vibrational.cpp)
     target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
+    target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
     # Executable tests
     add_executable(test_FAD_2Mode test_FAD_2Mode.cpp)
     target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})

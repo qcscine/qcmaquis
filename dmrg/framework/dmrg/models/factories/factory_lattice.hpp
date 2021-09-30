@@ -66,7 +66,7 @@ inline std::shared_ptr<lattice_impl> coded_lattice_factory(BaseParameters & parm
 #ifdef DMRG_VIBRATIONAL
     else if (parms["LATTICE"] == std::string("nmode lattice"))
         return impl_ptr(new NModeLattice(parms));
-    else if (parms["LATTICE"] == std::string("watson"))
+    else if (parms["LATTICE"] == std::string("watson lattice"))
         return impl_ptr(new WatsonLattice(parms));
 #endif
     else {

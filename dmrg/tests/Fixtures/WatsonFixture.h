@@ -71,7 +71,7 @@ struct WatsonFixture
         //
         parametersEthyleneWatson.set("L", 12);
         parametersEthyleneWatson.set("symmetry", "none");
-        parametersEthyleneWatson.set("LATTICE", "watson");
+        parametersEthyleneWatson.set("LATTICE", "watson lattice");
         parametersEthyleneWatson.set("MODEL", "watson");
         parametersEthyleneWatson.set("Nmax", 6);
         parametersEthyleneWatson.set("integral_file", "integral_file_test_Watson_Ethylene_Harmonic");
