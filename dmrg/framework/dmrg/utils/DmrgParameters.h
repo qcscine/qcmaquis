@@ -137,6 +137,7 @@ private:
 
         // Watson Hamiltonian-based simulations
         add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES");
+        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
 
         // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
@@ -208,7 +209,6 @@ private:
         add_option("twist", "");
         add_option("move", "");
 
-        add_option("Nmax", "");
         add_option("mu", "", value(0));
         add_option("mu0", "", value(0));
         add_option("h", "", value(1));
