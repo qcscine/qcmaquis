@@ -52,6 +52,8 @@ if(BUILD_VIBRATIONAL)
     # Executable tests
     add_executable(test_FAD_2Mode test_FAD_2Mode.cpp)
     target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})
+    add_executable(test_Ethylene_Sextic test_Ethylene_Sextic.cpp)
+    target_link_libraries(test_Ethylene_Sextic ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 add_executable(test_integral_map test_integral_map.cpp)

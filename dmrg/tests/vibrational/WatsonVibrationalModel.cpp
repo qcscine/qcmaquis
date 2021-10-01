@@ -41,8 +41,8 @@
 BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
-    auto lattice = Lattice(parametersEthyleneWatson);
-    auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     int siteType = 0;
     const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
     BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 6);
@@ -54,8 +54,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
 /** Simple check on tags */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_Ethylene, WatsonFixture)
 {
-    auto lattice = Lattice(parametersEthyleneWatson);
-    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     auto identityTag = watsonModel.identity_matrix_tag(0);
     auto fillingTag = watsonModel.filling_matrix_tag(0);
     // The nMode Hamiltonian is bosonic, so the tag should be the same
@@ -65,16 +65,16 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_Ethylene, WatsonFixture)
 /** Check on symbolic operator getter */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_Ethylene, WatsonFixture)
 {
-    auto lattice = Lattice(parametersEthyleneWatson);
-    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     BOOST_CHECK(watsonModel.filling_matrix_tag(0) == watsonModel.get_operator_tag("fill", 0));
 }
 
 /** Check consistency in the dimension of the integral container */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixture) 
 {
-    auto lattice = lattice_factory(parametersEthyleneWatson);
-    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatson, lattice);
+    auto lattice = lattice_factory(parametersEthyleneWatsonHarmonic);
+    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice);
     BOOST_CHECK_EQUAL(integrals.size(), 24);
     for (const auto iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
@@ -85,8 +85,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixt
 /** Check consistency in the dimension of the integral container */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_TermsSize, WatsonFixture) 
 {
-    auto lattice = lattice_factory(parametersEthyleneWatson);
-    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    auto lattice = lattice_factory(parametersEthyleneWatsonHarmonic);
+    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     watsonModel.create_terms();
     BOOST_CHECK_EQUAL(watsonModel.hamiltonian_terms().size(), 24);
 }
@@ -94,10 +94,10 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_TermsSize, WatsonFixture)
 /** Check consistency in the dimension of the integral container */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture) 
 {
-    auto lattice = Lattice(parametersEthyleneWatson);
-    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatson, false);
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), parametersEthyleneWatson["Nmax"]);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), parametersEthyleneWatsonHarmonic["Nmax"]);
 }
 
 #endif // HAVE_TrivialGroup

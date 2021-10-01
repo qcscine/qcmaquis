@@ -139,11 +139,11 @@ public:
         ident_op.resize_block(0, nMax, nMax);
         ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
         //
-        positionPowers.resize(maxCoupling);
-        momentumPowers.resize(maxCoupling);
+        positionPowers.resize(maxCoupling+1);
+        momentumPowers.resize(maxCoupling+1);
         positionPowers[0] = ident;
         momentumPowers[0] = ident;
-        for (int iOrder = 1; iOrder < maxCoupling; iOrder++) {
+        for (int iOrder = 1; iOrder <= maxCoupling; iOrder++) {
             positionPowers[iOrder] = tag_handler->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
             momentumPowers[iOrder] = tag_handler->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
         }
@@ -169,15 +169,12 @@ public:
                 if (iSite != 0) {
                     positions.push_back(abs(iSite)-1);
                     auto numberOfOccurrences = std::count(iTerms.first.begin(), iTerms.first.end(), iSite);
-                    assert(numberOfOccurrences > 0 && numberOfOccurrences < maxCoupling);
+                    assert(numberOfOccurrences > 0 && numberOfOccurrences <= maxCoupling);
                     if (iSite < 0)
                         operators.push_back(momentumPowers[numberOfOccurrences]);
                     else if (iSite > 0)
                         operators.push_back(positionPowers[numberOfOccurrences]);
                 }
-            }
-            for (int idx = 0; idx < positions.size(); idx++) {
-                std::cout << positions[idx] << " " << operators[idx] << std::endl;
             }
             // Final addition of the terms
             modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_);
