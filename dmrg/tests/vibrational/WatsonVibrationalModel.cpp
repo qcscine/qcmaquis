@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
     auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     int siteType = 0;
     const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 6);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8);
 #endif // HAVE_TrivialGroup
 }
 
