@@ -38,11 +38,11 @@
 
 #ifdef DMRG_VIBRATIONAL
 
-#ifdef HAVE_TrivialGroup
 
 /** @brief Checks that overlap between two ONV is zero for the TrivialGroup case */
 BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Vibrational, WatsonFixture )
 {
+#ifdef HAVE_TrivialGroup
     // ONV1 
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
@@ -60,7 +60,10 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Vibrational, WatsonFixture )
     double overlapHF2 = overlap(mpsHF2, mpsHF1);
     BOOST_CHECK_CLOSE(overlapHF1, overlapHF2, 1.E-10);
     BOOST_CHECK_CLOSE(overlapHF1, 0., 1.E-10);
+#endif // HAVE_TrivialGroup
 }
+
+#ifdef HAVE_TrivialGroup
 
 /** @brief Checks Hermitianity of the overlap calculation for the real-valued TrivialGroup case */
 BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Hermitian_Vibrational, WatsonFixture )
