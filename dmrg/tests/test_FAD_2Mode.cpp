@@ -41,6 +41,7 @@
  */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 {
+#ifdef HAVE_NU1
     // Adds the final input parameters
     parametersFADTwoBody.set("init_state", "const");
     parametersFADTwoBody.set("nsweeps", 20);
@@ -50,6 +51,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
     maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
     interface.optimize();
     BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
+#endif // HAS_NU1
 }
 
 #endif // DMRG_VIBRATIONAL
