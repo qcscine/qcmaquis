@@ -109,7 +109,6 @@ public:
           ident_op_loc.insert_block(Matrix(1, 1, 1), excited_states[idx], excited_states[idx]);
           create_op_loc.insert_block(Matrix(1, 1, 1), empty_state, excited_states[idx]);
           destroy_op_loc.insert_block(Matrix(1, 1, 1), excited_states[idx], empty_state);
-          count_op_loc.insert_block(Matrix(1, 1, 0), empty_state, empty_state);
           count_op_loc.insert_block(Matrix(1, 1, 1), excited_states[idx], excited_states[idx]);
           // Updates the vectors
           ident_op.push_back(ident_op_loc);
@@ -392,7 +391,7 @@ private:
                ops.push_back(destroy[i_type]);
             jCont += 1;
         }
-        while (jCont < ham_term.size() && ham_term[2*jCont] != -1);
+        while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
     }
 
 private:

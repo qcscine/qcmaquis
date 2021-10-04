@@ -266,7 +266,7 @@ public:
                 std::pair<int, int> phase;
                 prempo_key_type ck2;
                 boost::tie(ck2, phase) = conjugate_key(k2, p);
-                if (!(k2 == ck2)){
+                if (!(k2 == ck2)) {
                     HermKeyPairs[k2] = ck2;
                     HermitianPhases[k2] = phase;
                 }
@@ -287,6 +287,7 @@ public:
             std::vector<index_type> RightHerm(rcd.second);
             std::vector<int> RightPhase(rcd.second, 1);
             index_type cnt = 0;
+            // For starting, everything is its own hermitian conjugate
             std::iota(RightHerm.begin(), RightHerm.end(), 0);
             for (typename std::map<prempo_key_type, prempo_key_type>::const_iterator
                             h_it = HermKeyPairs.begin(); h_it != HermKeyPairs.end(); ++h_it)
@@ -693,6 +694,7 @@ private:
      */
     std::pair<prempo_key_type, std::pair<int, int> > conjugate_key(prempo_key_type k, pos_t p)
     {
+        // Defines a function to get the number of particles of a given symmetry charge
         typename SymmGroup::subcharge (*np)(typename SymmGroup::charge) = &SymmGroup::particleNumber;
         //if (k.pos_op.size() > 1)
         //    return std::make_pair(k, std::make_pair(1,1));
@@ -701,8 +703,8 @@ private:
         // Hermitian conjugate. Note that it is sufficient that one of the key has no correpsonding 
         // conjugate to not register the hermitian conjugate.
         for (tag_type i = 0; i < k.pos_op.size(); ++i) {
-            if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
-                return std::make_pair(k, std::make_pair(1,1));
+            //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))
+            //    return std::make_pair(k, std::make_pair(1,1));
             conj.pos_op[i].second = tag_handler->herm_conj(k.pos_op[i].second);
         }
         // Calculates the phase correction for the hermitian conjugate of SU(2) operators.
@@ -740,6 +742,7 @@ private:
                )
                 phase = std::make_pair(-1,-1);
         }
+        phase = std::make_pair(1, 1);
         return std::make_pair(conj, phase);
     }
 

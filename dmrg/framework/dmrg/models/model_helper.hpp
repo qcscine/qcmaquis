@@ -60,8 +60,8 @@ public:
      * @return
      */
      static std::pair<term_descriptor, bool> arrange_operators(const positions_type& positions, const operators_type& operators,
-                                                               value_type& scaling, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler) {
-                                                               
+                                                               value_type& scaling, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler)
+     {
         // Safety check
         assert(positions.size() == operators.size());
         bool FoundZero = false;
@@ -100,12 +100,11 @@ public:
      * @param coeff Scaling factor for the Hamiltonian
      */
     static void add_term(positions_type const& positions, operators_type const& operators, value_type const& coeff,
-                         const std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler, terms_type& terms) {
-        static int count = 0;
+                         const std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler, terms_type& terms)
+    {
         value_type scaling = 1.;
         std::pair<term_descriptor, bool> ret = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tag_handler);
         if (!ret.second) {
-            count++;
             auto term = ret.first;
             term.coeff = coeff * scaling;
             terms.push_back(term);
