@@ -742,7 +742,6 @@ private:
                )
                 phase = std::make_pair(-1,-1);
         }
-        phase = std::make_pair(1, 1);
         return std::make_pair(conj, phase);
     }
 
