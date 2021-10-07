@@ -83,7 +83,9 @@ public:
                 value_type scale = 1.0;
                 if (tag_handler->product_is_null(pos_ops[range_end].second, product))
                     FoundZero = true;
-                boost::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
+                std::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
+                // At the very end, registers the Hermitian conjugate as well
+                registerNewHermitianConjugate(product, tag_handler);
                 scaling *= scale;
                 range_end++;
             }
@@ -148,6 +150,32 @@ public:
         assert(ops.size() == hermOps.size());
         for (int idx = 0; idx < ops.size(); idx++)
             tag_handler->hermitian_pair(ops[idx], hermOps[idx]);
+    }
+
+    /**
+     * @brief Registers the Hermitian Conjugate of an operator
+     * 
+     * Note that this method assumes that, if an operator is registered in the tag_handler, also the hermitian conjugate
+     * is. The method raises an assertion exception otherwise.
+     * 
+     * @param tag Tag for which the hermitian conjugate should be registered
+     * @param tag_handler std::shared_ptr<TagHandler> pointer carrying the operator table.
+     */
+    static void registerNewHermitianConjugate(const tag_type& tag, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler) 
+    {
+        auto operatorType = (tag_handler->is_fermionic(tag)) ? tag_detail::fermionic : tag_detail::bosonic;
+        auto hermitianOperator = tag_handler->get_op(tag);
+        hermitianOperator.adjoint_inplace();
+        bool alreadyPresent = tag_handler->hasRegistered(hermitianOperator);
+        // If already present, it may be either the same or they are already in the table
+        if (alreadyPresent) {
+            auto newTag = tag_handler->checked_register(hermitianOperator, operatorType);
+            assert(newTag.first == tag || tag_handler->herm_conj(tag) == newTag.first);
+        }
+        else {
+            auto newTag = tag_handler->register_op(hermitianOperator, operatorType);
+            tag_handler->hermitian_pair(tag, newTag);
+        }
     }
 };
 

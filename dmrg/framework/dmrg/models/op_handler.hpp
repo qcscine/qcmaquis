@@ -52,12 +52,24 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
         if (cmp_result.first)
             break;
     }
-
     if (it_pt == this->end()) {
         return std::make_pair(this->register_op(sample), 1.0);
     } else
         return std::make_pair(it_pt - this->begin(), cmp_result.second);
 
+}
+
+template <class Matrix, class SymmGroup>
+bool OPTable<Matrix, SymmGroup>::hasRegistered(const op_t& sample)
+{
+    std::pair<bool, mvalue_type> cmp_result;
+    typename std::vector<op_t>::iterator it_pt = this->begin();
+    for (; it_pt != this->end(); ++it_pt) {
+        cmp_result = tag_detail::equal(*it_pt, sample);
+        if (cmp_result.first)
+            break;
+    }
+    return !(it_pt == this->end());
 }
 
 // **************************************************************************
@@ -113,6 +125,12 @@ register_op(const op_t & op_, tag_detail::operator_kind kind)
     assert(hermitian.size() == operator_table->size());
     assert(ret < operator_table->size());
     return ret;
+}
+
+template <class Matrix, class SymmGroup>
+bool TagHandler<Matrix, SymmGroup>::hasRegistered(const op_t& sample)
+{
+    return operator_table->hasRegistered(sample);
 }
 
 template <class Matrix, class SymmGroup>

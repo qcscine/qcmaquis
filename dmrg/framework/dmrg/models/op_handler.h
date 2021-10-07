@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -33,12 +34,10 @@
 #include <stdexcept>
 
 #include <boost/shared_ptr.hpp>
-
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/site_operator.h"
 #include "dmrg/block_matrix/site_operator_algorithms.h"
-
 #include "dmrg/models/tag_detail.h"
 
 template <class Matrix, class SymmGroup>
@@ -53,7 +52,8 @@ private:
 
 public:
     tag_type register_op(op_t const & op_);
-    std::pair<tag_type, mvalue_type> checked_register(op_t const& sample);
+    std::pair<tag_type, mvalue_type> checked_register(const op_t& sample);
+    bool hasRegistered(const op_t& sample);
 };
 
 template <class Matrix, class SymmGroup>
@@ -84,6 +84,7 @@ public:
     // register new operators
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
     std::pair<tag_type, value_type> checked_register(op_t const& sample, tag_detail::operator_kind kind);
+    bool hasRegistered(const op_t& sample);
 
     void hermitian_pair(tag_type pair_tag1, tag_type pair_tag2);
 
