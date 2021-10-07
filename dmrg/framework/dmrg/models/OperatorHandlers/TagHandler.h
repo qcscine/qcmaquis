@@ -25,8 +25,8 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_DMRG_MODELS_OP_HANDLER_H
-#define MAQUIS_DMRG_MODELS_OP_HANDLER_H
+#ifndef TAG_HANDLER_H
+#define TAG_HANDLER_H
 
 #include <vector>
 #include <map>
@@ -39,22 +39,6 @@
 #include "dmrg/block_matrix/site_operator.h"
 #include "dmrg/block_matrix/site_operator_algorithms.h"
 #include "dmrg/models/tag_detail.h"
-
-template <class Matrix, class SymmGroup>
-class OPTable : public std::vector<typename operator_selector<Matrix, SymmGroup>::type>
-{
-public:
-    typedef tag_detail::tag_type tag_type;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
-
-private:
-    typedef typename Matrix::value_type mvalue_type;
-
-public:
-    tag_type register_op(op_t const & op_);
-    std::pair<tag_type, mvalue_type> checked_register(const op_t& sample);
-    bool hasRegistered(const op_t& sample);
-};
 
 template <class Matrix, class SymmGroup>
 class TagHandler
@@ -114,38 +98,6 @@ private:
     std::vector<tag_type> hermitian;
 };
 
-template <class Matrix, class SymmGroup>
-class KronHandler : public TagHandler<Matrix, SymmGroup>
-{
-    typedef TagHandler<Matrix, SymmGroup> base;
-    typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-    typedef typename base::op_t op_t;
-
-public:
-
-    KronHandler(std::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_)
-    :   base(tbl_)
-      , kronecker_table(new OPTable<Matrix, SymmGroup>()) { }
-
-    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2,
-                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
-                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
-                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin);
-
-    typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
-    typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }
-
-    std::shared_ptr<OPTable<Matrix, SymmGroup> > get_kronecker_table() { return kronecker_table; }
-
-    /* Diagnostics *************************************/
-    tag_type get_num_kron_products() const;
-
-private:
-    std::shared_ptr<OPTable<Matrix, SymmGroup> > kronecker_table;
-    typename base::pair_map_t kron_tags;
-};
-
-
-#include "dmrg/models/op_handler.hpp"
+#include "TagHandler.hpp"
 
 #endif

@@ -30,8 +30,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
-
-#include "dmrg/models/op_handler.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 #include "dmrg/models/lattice/lattice.h"
 
 #include <string>

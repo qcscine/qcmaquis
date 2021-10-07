@@ -33,7 +33,8 @@
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/lattice/lattice.h"
-#include "dmrg/models/op_handler.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 #include <string>
 #include <sstream>

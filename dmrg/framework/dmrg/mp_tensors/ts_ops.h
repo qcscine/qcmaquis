@@ -35,7 +35,7 @@
 #include "dmrg/block_matrix/multi_index.h"
 #include "dmrg/block_matrix/site_operator.h"
 #include "dmrg/block_matrix/site_operator_algorithms.h"
-
+#include "dmrg/models/OperatorHandlers/KronHandler.h"
 
 namespace ts_ops_detail
 {
