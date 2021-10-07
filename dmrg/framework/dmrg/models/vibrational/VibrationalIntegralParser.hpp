@@ -199,57 +199,69 @@ inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<Trivia
     for (int p = 0; p < order.size(); ++p)
         inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
     // -- Parses orbital data --
-    std::string integral_file = parms["integral_file"];
-    if (!boost::filesystem::exists(integral_file))
-        throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-    std::ifstream orb_file;
-    orb_file.open(integral_file.c_str());
-    std::vector<double> raw;
-    std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
-                std::back_inserter(raw));
-    auto it = raw.begin();
-    // Determines the maximum many-body coupling degree
-    std::vector<bool> doCoupling(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, false);
-    doCoupling[0] = true;
-    int upperBound = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : 6;
-    for (int iActive = 0; iActive < upperBound; iActive++)
-        doCoupling[iActive] = true;
-    // == Main loop ==
     RetType ret;
-    int row = 0;
-    while (it != raw.end()) {
-        // Computes the coupling degree of the Hamiltonian term
-        std::vector<int> tmp2(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, 0);
-        std::vector<int>::iterator jnk_iter;
-        std::copy(it+1, it+7, tmp2.begin());
-        if (tmp2[2] == 0)
-            tmp2.resize(2);
-        else if (tmp2[3] == 0)
-            tmp2.resize(3);
-        else if (tmp2[4] == 0)
-            tmp2.resize(4);
-        else if (tmp2[5] == 0)
-            tmp2.resize(5);
-        std::sort(tmp2.begin(), tmp2.end());
-        jnk_iter = std::unique(tmp2.begin(), tmp2.end());
-        long coupl = std::distance(tmp2.begin(), jnk_iter);
-        if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] ) {
-            T coefficient = *it++;
-            KeyType tmp;
-            for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
-                tmp[idx] = *(it+idx);
-            for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
-                if (tmp[idx] > 0)
-                    tmp[idx] = inv_order[tmp[idx]-1]+1;
-                else if (tmp[idx] < 0)
-                    tmp[idx] = -inv_order[-tmp[idx]-1]-1;
-            ret.push_back(std::make_pair(tmp, coefficient));
+    if (parms.is_set("integral_file")) {
+        std::string integral_file = parms["integral_file"];
+        if (!boost::filesystem::exists(integral_file))
+            throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+        std::ifstream orb_file;
+        orb_file.open(integral_file.c_str());
+        std::vector<double> raw;
+        std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
+                    std::back_inserter(raw));
+        auto it = raw.begin();
+        // Determines the maximum many-body coupling degree
+        std::vector<bool> doCoupling(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, false);
+        doCoupling[0] = true;
+        int upperBound = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : 6;
+        for (int iActive = 0; iActive < upperBound; iActive++)
+            doCoupling[iActive] = true;
+        // == Main loop ==
+        int row = 0;
+        while (it != raw.end()) {
+            // Computes the coupling degree of the Hamiltonian term
+            std::vector<int> tmp2(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, 0);
+            std::vector<int>::iterator jnk_iter;
+            std::copy(it+1, it+7, tmp2.begin());
+            if (tmp2[2] == 0)
+                tmp2.resize(2);
+            else if (tmp2[3] == 0)
+                tmp2.resize(3);
+            else if (tmp2[4] == 0)
+                tmp2.resize(4);
+            else if (tmp2[5] == 0)
+                tmp2.resize(5);
+            std::sort(tmp2.begin(), tmp2.end());
+            jnk_iter = std::unique(tmp2.begin(), tmp2.end());
+            long coupl = std::distance(tmp2.begin(), jnk_iter);
+            if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] ) {
+                T coefficient = *it++;
+                KeyType tmp;
+                for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
+                    tmp[idx] = *(it+idx);
+                for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
+                    if (tmp[idx] > 0)
+                        tmp[idx] = inv_order[tmp[idx]-1]+1;
+                    else if (tmp[idx] < 0)
+                        tmp[idx] = -inv_order[-tmp[idx]-1]-1;
+                ret.push_back(std::make_pair(tmp, coefficient));
+            }
+            else {
+                ++it;
+            }
+            it += VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
+            row++;
         }
-        else {
-            ++it;
-        }
-        it += VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
-        row++;
+    }
+    else if (parms.is_set("integrals_binary")) {
+        // parse serialized integrals
+        chem::integral_map<T, chem::Hamiltonian::VibrationalCanonical> ints;
+        std::stringstream ss(parms["integrals_binary"].as<std::string>());
+        boost::archive::text_iarchive ia{ss};
+        ia >> ints;
+        for (auto&& t: ints)
+            if (std::abs(t.second) > parms["integral_cutoff"])
+                ret.push_back(std::make_pair(t.first, t.second));
     }
     return ret;
 }

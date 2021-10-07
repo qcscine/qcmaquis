@@ -437,6 +437,7 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Test_MPS_Overlap_Vibrational COMMAND test_mps_overlap_vibrational)
     add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
+    add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
   endif(BUILD_VIBRATIONAL)
 endif(QCMAQUIS_TESTS)
 

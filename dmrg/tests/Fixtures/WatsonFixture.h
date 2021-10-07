@@ -2750,6 +2750,37 @@ struct WatsonFixture
         integralFileEthylene << "  6.78568236E-02  11  11  12  12  12  12  " << std::endl;
         integralFileEthylene << "  4.76300768E-03  12  12  12  12  12  12  " << std::endl;
         integralFileEthylene.close();
+        // Note that the 4. factor arises from a 1/2 term coming from the Harmonic hamiltonian
+        // and a 1/2 term coming from the two sqrt(2) factors
+        integralsBilinearly = MaquisIntegralType {
+            { {  1,  1,   0,   0,   0,   0},   std::sqrt(1./2.)/4. },
+            { {  2,  2,   0,   0,   0,   0},   std::sqrt(2./2.)/4. },
+            { {  3,  3,   0,   0,   0,   0},   std::sqrt(3./2.)/4. },
+            { {  4,  4,   0,   0,   0,   0},   std::sqrt(4./2.)/4. },
+            { {  5,  5,   0,   0,   0,   0},   std::sqrt(5./2.)/4. },
+            { {  6,  6,   0,   0,   0,   0},   std::sqrt(6./2.)/4. },
+            { { -1, -1,   0,   0,   0,   0},  -std::sqrt(1./2.)/4. },
+            { { -2, -2,   0,   0,   0,   0},  -std::sqrt(2./2.)/4. },
+            { { -3, -3,   0,   0,   0,   0},  -std::sqrt(3./2.)/4. },
+            { { -4, -4,   0,   0,   0,   0},  -std::sqrt(4./2.)/4. },
+            { { -5, -5,   0,   0,   0,   0},  -std::sqrt(5./2.)/4. },
+            { { -6, -6,   0,   0,   0,   0},  -std::sqrt(6./2.)/4. },
+            { {  1,  2,   0,   0,   0,   0},  0.1/2. },
+            { {  1,  3,   0,   0,   0,   0},  0.1/2. },
+            { {  1,  4,   0,   0,   0,   0},  0.1/2. },
+            { {  1,  5,   0,   0,   0,   0},  0.1/2. },
+            { {  1,  6,   0,   0,   0,   0},  0.1/2. },
+            { {  2,  3,   0,   0,   0,   0},  0.1/2. },
+            { {  2,  4,   0,   0,   0,   0},  0.1/2. },
+            { {  2,  5,   0,   0,   0,   0},  0.1/2. },
+            { {  2,  6,   0,   0,   0,   0},  0.1/2. },
+            { {  3,  4,   0,   0,   0,   0},  0.1/2. },
+            { {  3,  5,   0,   0,   0,   0},  0.1/2. },
+            { {  3,  6,   0,   0,   0,   0},  0.1/2. },
+            { {  4,  5,   0,   0,   0,   0},  0.1/2. },
+            { {  4,  6,   0,   0,   0,   0},  0.1/2. },
+            { {  5,  6,   0,   0,   0,   0},  0.1/2. }
+        };
         //
         parametersEthyleneWatsonHarmonic.set("L", 12);
         parametersEthyleneWatsonHarmonic.set("symmetry", "none");
@@ -2764,6 +2795,13 @@ struct WatsonFixture
         parametersEthyleneWatson.set("MODEL", "watson");
         parametersEthyleneWatson.set("Nmax", 7);
         parametersEthyleneWatson.set("integral_file", "integral_file_test_Watson_Ethylene_Sextic");
+        //
+        parametersBilinearly.set("L", 6);
+        parametersBilinearly.set("symmetry", "none");
+        parametersBilinearly.set("LATTICE", "watson lattice");
+        parametersBilinearly.set("MODEL", "watson");
+        parametersBilinearly.set("Nmax", 10);
+        parametersBilinearly.set("integrals_binary", maquis::serialize(integralsBilinearly));
     }
 
     /** @brief Class destructor (removes tmp files) */
@@ -2773,9 +2811,10 @@ struct WatsonFixture
     }
 
     // Class members
-    DmrgParameters parametersEthyleneWatsonHarmonic, parametersEthyleneWatson;
+    DmrgParameters parametersEthyleneWatsonHarmonic, parametersEthyleneWatson, parametersBilinearly;
     std::ofstream integralFileEthyleneHarmonic, integralFileEthylene;
     double referenceHarmonicEnergy;
+    MaquisIntegralType integralsBilinearly;
 };
 
 #endif
