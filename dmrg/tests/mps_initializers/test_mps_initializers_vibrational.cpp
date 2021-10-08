@@ -28,8 +28,6 @@
 
 #ifdef DMRG_VIBRATIONAL
 
-#ifdef HAVE_NU1
-
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
@@ -43,6 +41,7 @@
 
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
 {
+#ifdef HAVE_NU1
   using Symmetry = NU1_template<2>;
   using IndexType = Index<Symmetry>;
   std::vector<IndexType> physCharges;
@@ -74,7 +73,10 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
     }
     BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite]), 0);
   }
+#endif
 }
+
+#ifdef HAVE_NU1
 
 /** @brief Verifies that the energy obtained initializing the MPS with an ONV is correct */
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_NU1, NModeFixture)

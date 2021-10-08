@@ -208,7 +208,7 @@ endif()
 
 # Vibrational-specific flag
 if((BUILD_VIBRATIONAL))
-  if((NOT DMRG_HAS_NU1) AND (NOT DMRG_HAS_NONE))
+  if((NOT DMRG_HAS_NU1) AND (NOT DMRG_HAS_TrivialGroup))
     message(FATAL_ERROR "At least one between the NONE and NU1 symmetries should be activated for vibrational calculations")
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
