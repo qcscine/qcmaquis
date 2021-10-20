@@ -54,6 +54,7 @@ int main(int argc, char ** argv)
               << std::endl;
 
     DmrgOptions opt(argc, argv);
+    std::cout << "Hello" << std::endl;
     if (opt.valid) {
         maquis::cout.precision(10);
 
