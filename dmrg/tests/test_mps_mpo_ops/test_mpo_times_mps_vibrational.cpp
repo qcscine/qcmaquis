@@ -53,7 +53,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
   auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
   auto mps = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatsonHarmonic)));
   // Calculates the MPS-MPO contraction
-  auto traitClass = MPOTimesMPSTraitClass<matrix, TrivialGroup>(mps, watsonModel, lattice, watsonModel.total_quantum_numbers(parametersBenzene),
+  auto traitClass = MPOTimesMPSTraitClass<matrix, TrivialGroup>(mps, watsonModel, lattice, watsonModel.total_quantum_numbers(parametersEthyleneWatsonHarmonic),
                                                                 parametersEthyleneWatsonHarmonic["max_bond_dimension"]);
   auto outputMPS = traitClass.applyMPO(watsonHarmonicMPO);
   // Calculates the energy in two ways and check that the results are coherent
