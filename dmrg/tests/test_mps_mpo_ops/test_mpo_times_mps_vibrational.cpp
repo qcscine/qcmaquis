@@ -57,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
                                                                 parametersEthyleneWatsonHarmonic["max_bond_dimension"]);
   auto outputMPS = traitClass.applyMPO(watsonHarmonicMPO);
   // Calculates the energy in two ways and check that the results are coherent
-  auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + mpo.getCoreEnergy();
+  auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + watsonHarmonicMPO.getCoreEnergy();
   auto energyFromExpVal = expval(mps, watsonHarmonicMPO)/norm(mps);
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
   // 
