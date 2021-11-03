@@ -73,6 +73,9 @@ target_link_libraries(test_mps_mpo_ops_TwoU1 ${DMRG_APP_LIBRARIES})
 add_executable(test_mps_mpo_ops_electronic test_mps_mpo_ops/test_mps_mpo_ops_electronic.cpp)
 target_link_libraries(test_mps_mpo_ops_electronic ${DMRG_APP_LIBRARIES})
 
+add_executable(test_mpo_times_mps_TwoU1 test_mps_mpo_ops/test_mpo_times_mps_TwoU1.cpp)
+target_link_libraries(test_mpo_times_mps_TwoU1 ${DMRG_APP_LIBRARIES})
+
 add_executable(test_mps_overlap_electronic test_mps_mpo_ops/test_mps_overlap_electronic.cpp)
 target_link_libraries(test_mps_overlap_electronic ${DMRG_APP_LIBRARIES})
 
@@ -88,6 +91,9 @@ target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
+
+add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
+target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
 
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_time_evolvers TimeEvolvers/TimeEvolvers.cpp)
