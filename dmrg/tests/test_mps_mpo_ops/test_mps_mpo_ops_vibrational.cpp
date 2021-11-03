@@ -38,10 +38,9 @@
 
 #ifdef DMRG_VIBRATIONAL
 
-#ifdef HAVE_TrivialGroup
-
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_HarmonicEnergy, WatsonFixture)
 {
+#ifdef HAVE_TrivialGroup
     parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
     parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
     auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
@@ -51,7 +50,10 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_HarmonicEnergy, WatsonFixture)
     BOOST_CHECK_CLOSE(norm(mps), 1., 1.0E-15);
     auto energy = expval(mps, watsonHarmonicMPO)/norm(mps);
     BOOST_CHECK_CLOSE(referenceHarmonicEnergy, energy, 1e-7);
+#endif // HAVE_TrivialGroup
 }
+
+#ifdef HAVE_TrivialGroup
 
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_BraKetHermitian, WatsonFixture)
 {
@@ -72,10 +74,9 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_BraKetHermitian, WatsonFixture)
 
 #endif // HAVE_TrivialGroup
 
-#ifdef HAVE_NU1
-
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_NU1_SameBraKet, NModeFixture)
 {
+#ifdef HAVE_NU1
     parametersFADTwoBody.set("init_state", "default");
     auto lattice = Lattice(parametersFADTwoBody);
     auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
@@ -87,8 +88,7 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_NU1_SameBraKet, NModeFixture)
     mps[0] /= mpsNorm;
     auto energyAfterNormalization = expval(mps, nModeMPO);
     BOOST_CHECK_CLOSE(energyBeforeNormalization, energyAfterNormalization, 1e-7);
-}
-
 #endif // HAVE_NU1
+}
 
 #endif // DMRG_VIBRATIONAL

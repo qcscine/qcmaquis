@@ -33,8 +33,8 @@
 #include "dmrg/models/model.h"
 #include "dmrg/models/term_descriptor.h"
 #include "dmrg/models/generate_mpo/utils.hpp"
-#include "dmrg/models/lattice.h"
-#include "dmrg/models/op_handler.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 namespace generate_mpo
 {

@@ -37,6 +37,7 @@
 /** Test for the integral parser with the one-body Hamiltonian */
 BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_OneBody, NModeFixture)
 {
+#ifdef HAVE_NU1
     auto integrals = Vibrational::detail::NModeIntegralParser<double>(parametersFADOneBody, lattice_factory(parametersFADOneBody));
     // Checks sizes
     BOOST_CHECK_EQUAL(integrals.first.size(), 78);
@@ -56,7 +57,10 @@ BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_OneBody, NModeFixture)
     BOOST_CHECK_EQUAL(-1, integrals.first[0][9]);
     BOOST_CHECK_EQUAL(-1, integrals.first[0][10]);
     BOOST_CHECK_EQUAL(-1, integrals.first[0][11]);
+#endif // HAVE_NU1
 }
+
+#ifdef HAVE_NU1
 
 /** Test for the integral parser with the two-body Hamiltonian */
 BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_TwoBody, NModeFixture)
@@ -205,3 +209,5 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Operator_Table, NModeFixture)
     auto differenceOperator = siteOperatorCount - siteOperatorCountFromTable;
     BOOST_CHECK_CLOSE(differenceOperator.norm(), 0., 1.0E-16);
 }
+
+#endif // HAVE_NU1

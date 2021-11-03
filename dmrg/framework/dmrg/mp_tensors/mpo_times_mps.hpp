@@ -31,7 +31,7 @@
 
 #include <map>
 #include "dmrg/models/model.h"
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/generate_mpo/1D_mpo_maker.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"

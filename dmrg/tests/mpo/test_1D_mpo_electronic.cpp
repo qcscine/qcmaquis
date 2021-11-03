@@ -32,7 +32,7 @@
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/sim/matrix_types.h"
 #include "Fixtures/H2Fixture.h"
 
