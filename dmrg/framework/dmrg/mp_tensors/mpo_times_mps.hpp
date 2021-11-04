@@ -321,60 +321,63 @@ public:
                 // Check if the pair is available
                 if (std::find(availableRows.begin(), availableRows.end(), iRow) != availableRows.end()) {
                     term_descriptor<Matrix, SymmGroup, true> access = mpo[site].at(iRow, iCol);
-                    typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
-                    // Loop over the MPS blocks (remember that the MPS is right paired)
-                    for (size_t b = 0; b < data.n_blocks(); ++b)
+                    for (size_t oi = 0; oi < access.size(); ++oi)
                     {
-                        auto lc = data.basis().left_charge(b);
-                        auto rc = data.basis().right_charge(b);
-                        auto out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
-                        for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                        typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(oi);
+                        // Loop over the MPS blocks (remember that the MPS is right paired)
+                        for (size_t b = 0; b < data.n_blocks(); ++b)
                         {
-                            auto phys_in = W.basis().left_charge(w_block);
-                            auto phys_out = W.basis().right_charge(w_block);
-                            if (!charge_detail::physical<SymmGroup>(out_l_charge) || 
-                                !mapTrackingBlocks[iRow].has(out_l_charge) ||
-                                !allowed_sectors[site].has(out_l_charge))
-                                continue;
-                            if (!mps[site].site_dim().has(phys_in))
-                                continue;
-                            auto in_r_charge = SymmGroup::fuse(rc, phys_in);
-                            if (!right_i.has(in_r_charge))
-                                continue;
-                            auto out_r_charge = SymmGroup::fuse(out_l_charge, phys_out);
-                            if (!allowed_sectors[site+1].has(out_r_charge))
-                                continue;
-                            size_t in_right_offset  = right_pb(phys_in, in_r_charge);
-                            size_t out_right_offset = out_right_pb(phys_out, out_r_charge);
-                            size_t l_size = data.basis().left_size(b);
-                            size_t r_size = right_i.size_of_block(in_r_charge);
-                            Matrix const & iblock = data[b];
-                            size_t o = prod.find_block(out_l_charge, out_l_charge);
-                            if (o == prod.n_blocks())
-                                throw std::runtime_error("Block not found in the MPS");
-                            Matrix & oblock = prod[o];
-                            value_type alfa = access.scale() * W[w_block](0,0);
-                            /*
-                            for(size_t rr = 0; rr < r_size; ++rr) {
-                                maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
-                                                                    &iblock(0, in_right_offset + rr) + l_size,
-                                                                    &oblock(thresholdLeft[out_l_charge][iRow], thresholdRight[std::make_pair(phys_out, out_r_charge)][iCol] + out_right_offset + rr),
-                                                                    alfa);
-                            }
-                            */
-                            for (int iRowPhys = 0; iRowPhys < W.basis().left_size(w_block); iRowPhys++) {
-                                for (int iColPhys = 0; iColPhys < W.basis().right_size(w_block); iColPhys++) {
-                                    value_type alfa = access.scale() * W[w_block](iRowPhys, iColPhys);
-                                    auto thresholdRightElement = thresholdRight[std::make_pair(phys_out, out_r_charge)][iCol];
-                                    for(int rr = 0; rr < r_size; ++rr) {
-                                        maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + iRowPhys*r_size + rr),
-                                                                            &iblock(0, in_right_offset + iRowPhys*r_size + rr) + l_size,
-                                                                            &oblock(thresholdLeft[out_l_charge][iRow],
-                                                                                    out_right_offset                    // Offset given by the product basis
-                                                                                  + iColPhys*r_size                     // (sigma*m) values for all preceding sigma values
-                                                                                  + thresholdRightElement               // Threshold induced by b
-                                                                                  + rr),                                // Different m values for the columns of the tensor
-                                                                            alfa);
+                            auto lc = data.basis().left_charge(b);
+                            auto rc = data.basis().right_charge(b);
+                            auto out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
+                            for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                            {
+                                auto phys_in = W.basis().left_charge(w_block);
+                                auto phys_out = W.basis().right_charge(w_block);
+                                if (!charge_detail::physical<SymmGroup>(out_l_charge) || 
+                                    !mapTrackingBlocks[iRow].has(out_l_charge) ||
+                                    !allowed_sectors[site].has(out_l_charge))
+                                    continue;
+                                if (!mps[site].site_dim().has(phys_in))
+                                    continue;
+                                auto in_r_charge = SymmGroup::fuse(rc, phys_in);
+                                if (!right_i.has(in_r_charge))
+                                    continue;
+                                auto out_r_charge = SymmGroup::fuse(out_l_charge, phys_out);
+                                if (!allowed_sectors[site+1].has(out_r_charge))
+                                    continue;
+                                size_t in_right_offset  = right_pb(phys_in, in_r_charge);
+                                size_t out_right_offset = out_right_pb(phys_out, out_r_charge);
+                                size_t l_size = data.basis().left_size(b);
+                                size_t r_size = right_i.size_of_block(in_r_charge);
+                                Matrix const & iblock = data[b];
+                                size_t o = prod.find_block(out_l_charge, out_l_charge);
+                                if (o == prod.n_blocks())
+                                    throw std::runtime_error("Block not found in the MPS");
+                                Matrix & oblock = prod[o];
+                                value_type alfa = access.scale() * W[w_block](0,0);
+                                /*
+                                for(size_t rr = 0; rr < r_size; ++rr) {
+                                    maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
+                                                                        &iblock(0, in_right_offset + rr) + l_size,
+                                                                        &oblock(thresholdLeft[out_l_charge][iRow], thresholdRight[std::make_pair(phys_out, out_r_charge)][iCol] + out_right_offset + rr),
+                                                                        alfa);
+                                }
+                                */
+                                for (int iRowPhys = 0; iRowPhys < W.basis().left_size(w_block); iRowPhys++) {
+                                    for (int iColPhys = 0; iColPhys < W.basis().right_size(w_block); iColPhys++) {
+                                        value_type alfa = access.scale(oi) * W[w_block](iRowPhys, iColPhys);
+                                        auto thresholdRightElement = thresholdRight[std::make_pair(phys_out, out_r_charge)][iCol];
+                                        for(int rr = 0; rr < r_size; ++rr) {
+                                            maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + iRowPhys*r_size + rr),
+                                                                                &iblock(0, in_right_offset + iRowPhys*r_size + rr) + l_size,
+                                                                                &oblock(thresholdLeft[out_l_charge][iRow],
+                                                                                        out_right_offset                    // Offset given by the product basis
+                                                                                      + iColPhys*r_size                     // (sigma*m) values for all preceding sigma values
+                                                                                      + thresholdRightElement               // Threshold induced by b
+                                                                                      + rr),                                // Different m values for the columns of the tensor
+                                                                                alfa);
+                                        }
                                     }
                                 }
                             }
