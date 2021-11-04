@@ -355,7 +355,6 @@ public:
                                 if (o == prod.n_blocks())
                                     throw std::runtime_error("Block not found in the MPS");
                                 Matrix & oblock = prod[o];
-                                value_type alfa = access.scale() * W[w_block](0,0);
                                 /*
                                 for(size_t rr = 0; rr < r_size; ++rr) {
                                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
