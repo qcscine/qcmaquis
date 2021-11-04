@@ -206,8 +206,7 @@ public:
                 // Calculates the difference in symmetry that is "generated" by the operator.
                 // Here we must remember that, in an MPS, the rows and the columns will have the same symmetry.
                 // This is not true for the MPO, since the local operator can "induce" a change in the symmetry.
-                // This also means that, after the application of the MPO, the charges will undergo a
-                // "shift".
+                // This also means that, after the application of the MPO, the charges will undergo a "shift".
                 charge W_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
                 out_delta[iCol] = SymmGroup::fuse(in_delta[iRow], W_delta);
                 // Loop over the symmetry blocks of the input MPS (that is now right paired).
@@ -290,7 +289,7 @@ public:
                 iCharge.second[iRow] = (iRow == 0) ? 0 : iCharge.second[iRow-1];
                 if (iRow > 0)
                     if (mapTrackingBlocks[iRow-1].has(iCharge.first))
-                        iCharge.second[iRow] += mapTrackingBlocks[iRow-1].size_of_block(iCharge.first);    
+                        iCharge.second[iRow] += mapTrackingBlocks[iRow-1].size_of_block(iCharge.first);
             }
         }
 
@@ -298,7 +297,7 @@ public:
             for (auto& iCharge: thresholdRight) {
                 iCharge.second[iCol] = (iCol == 0) ? 0 : iCharge.second[iCol-1];
                 if (iCol > 0 && finalPhys.has(iCharge.first.first) && new_right_i_map[iCol-1].has(iCharge.first.second))
-                    iCharge.second[iCol] += finalPhys.size_of_block(iCharge.first.first) * new_right_i_map[iCol-1].size_of_block(iCharge.first.second);
+                    iCharge.second[iCol] += /*finalPhys.size_of_block(iCharge.first.first) *  */new_right_i_map[iCol-1].size_of_block(iCharge.first.second);
             }
         }
 
@@ -306,44 +305,47 @@ public:
         ProductBasis<SymmGroup> out_right_pb(finalPhys, finalRight,
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                             -boost::lambda::_1, boost::lambda::_2));
+        // Loop over the columns of the MPO
         for (int iCol = 0; iCol < mpo[site].col_dim(); iCol++)
         {
             // This will store the MPS obtained by blocking all values of b_i.
             col_proxy col_b2 = mpo[site].column(iCol);
-            bool beginOuter = true;
-            for (int iRow = 0; iRow < mpo[site].row_dim(); iRow++) {
-                // == POPULATES NEW MPS ==
+            // Load the available (b_{i-1}, b_i) pairs.
+            std::vector<int> availableRows;
+            for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
+                availableRows.push_back(col_it.index());
+            // Loop over the rows of the MPO
+            for (int iRow = 0; iRow < mpo[site].row_dim(); iRow++) 
+            {
                 block_matrix<Matrix, SymmGroup>& prod = finalMPS.data();
-                // Checks if the pair of (b_{i-1}, b_i) is present (if not, we just load the matrix with zeros).
-                std::vector<int> availableRows;
-                for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
-                    availableRows.push_back(col_it.index());
+                // Check if the pair is available
                 if (std::find(availableRows.begin(), availableRows.end(), iRow) != availableRows.end()) {
                     term_descriptor<Matrix, SymmGroup, true> access = mpo[site].at(iRow, iCol);
                     typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
+                    // Loop over the MPS blocks (remember that the MPS is right paired)
                     for (size_t b = 0; b < data.n_blocks(); ++b)
                     {
-                        charge lc = data.basis().left_charge(b);
-                        charge rc = data.basis().right_charge(b);
+                        auto lc = data.basis().left_charge(b);
+                        auto rc = data.basis().right_charge(b);
+                        auto out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
                         for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                         {
-                            charge phys_in = W.basis().left_charge(w_block);
-                            charge phys_out = W.basis().right_charge(w_block);
-                            charge out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
-                            if (!charge_detail::physical<SymmGroup>(out_l_charge) || !mapTrackingBlocks[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
+                            auto phys_in = W.basis().left_charge(w_block);
+                            auto phys_out = W.basis().right_charge(w_block);
+                            if (!charge_detail::physical<SymmGroup>(out_l_charge) || 
+                                !mapTrackingBlocks[iRow].has(out_l_charge) ||
+                                !allowed_sectors[site].has(out_l_charge))
                                 continue;
                             if (!mps[site].site_dim().has(phys_in))
                                 continue;
-                            charge in_r_charge = SymmGroup::fuse(rc, phys_in);
+                            auto in_r_charge = SymmGroup::fuse(rc, phys_in);
                             if (!right_i.has(in_r_charge))
                                 continue;
-                            charge out_r_charge = SymmGroup::fuse(out_l_charge, phys_out);
+                            auto out_r_charge = SymmGroup::fuse(out_l_charge, phys_out);
                             if (!allowed_sectors[site+1].has(out_r_charge))
                                 continue;
-                            // source     -> data[b](·, in_right_offset + 1:rsize)
-                            // destination -> prod[o](·, out_right_offset + 1:rsize)
-                            size_t in_right_offset  = right_pb(phys_in,  in_r_charge);
-                            size_t out_right_offset = out_right_pb(phys_out, out_r_charge); 
+                            size_t in_right_offset  = right_pb(phys_in, in_r_charge);
+                            size_t out_right_offset = out_right_pb(phys_out, out_r_charge);
                             size_t l_size = data.basis().left_size(b);
                             size_t r_size = right_i.size_of_block(in_r_charge);
                             Matrix const & iblock = data[b];
@@ -352,11 +354,29 @@ public:
                                 throw std::runtime_error("Block not found in the MPS");
                             Matrix & oblock = prod[o];
                             value_type alfa = access.scale() * W[w_block](0,0);
+                            /*
                             for(size_t rr = 0; rr < r_size; ++rr) {
                                 maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
                                                                     &iblock(0, in_right_offset + rr) + l_size,
                                                                     &oblock(thresholdLeft[out_l_charge][iRow], thresholdRight[std::make_pair(phys_out, out_r_charge)][iCol] + out_right_offset + rr),
                                                                     alfa);
+                            }
+                            */
+                            for (int iRowPhys = 0; iRowPhys < W.basis().left_size(w_block); iRowPhys++) {
+                                for (int iColPhys = 0; iColPhys < W.basis().right_size(w_block); iColPhys++) {
+                                    value_type alfa = access.scale() * W[w_block](iRowPhys, iColPhys);
+                                    auto thresholdRightElement = thresholdRight[std::make_pair(phys_out, out_r_charge)][iCol];
+                                    for(int rr = 0; rr < r_size; ++rr) {
+                                        maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + iRowPhys*r_size + rr),
+                                                                            &iblock(0, in_right_offset + iRowPhys*r_size + rr) + l_size,
+                                                                            &oblock(thresholdLeft[out_l_charge][iRow],
+                                                                                    out_right_offset                    // Offset given by the product basis
+                                                                                  + iColPhys*r_size                     // (sigma*m) values for all preceding sigma values
+                                                                                  + thresholdRightElement               // Threshold induced by b
+                                                                                  + rr),                                // Different m values for the columns of the tensor
+                                                                            alfa);
+                                    }
+                                }
                             }
                         }
                     }
@@ -486,8 +506,6 @@ public:
                 //maquis::cout << " W[w_block](0,0) ... " << W[w_block](0,0) << "for block " << w_block << std::endl;
                 //maquis::cout << " alfa            ... " << access.scale() << std::endl;
                 for(size_t rr = 0; rr < r_size; ++rr)
-    
-    
                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + rr),
                                                         &iblock(0, in_right_offset + rr) + l_size,
                                                         &oblock(0, out_right_offset + rr),
@@ -523,11 +541,24 @@ private:
 template <class Matrix, class SymmGroup>
 class MPOTimesMPSTraitClass<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>> {
 public:
+
+    // Types definition 
+    using MPSType = MPS<Matrix, SymmGroup>;
+    using MPOType = MPO<Matrix, SymmGroup>;
+    using ModelType = Model<Matrix, SymmGroup>;
+    using ChargeType = typename SymmGroup::charge;
+
+    /** @brief Class constructor */
+    MPOTimesMPSTraitClass(const MPSType& mps, ModelType& model, const Lattice& lattice,
+                          ChargeType overallQN, int bondDimension_) 
+    {
+        throw std::runtime_error("MPOTimesMPSTraitClass not available for spin-adapted Hamiltonians");
+    }
+
     /** @brief General overload */
-    static MPSTensor<Matrix, SymmGroup> mpo_times_mps(MPO<Matrix, SymmGroup> const & mpo, MPS<Matrix, SymmGroup> const & mps,
-                                                  int site, std::vector< typename SymmGroup::charge> & in_delta,
-                                                  std::map<int, Index<SymmGroup> >& new_left_i_map,
-                                                  std::vector<Index<SymmGroup>> const& allowed_sectors)
+    MPSTensor<Matrix, SymmGroup> mpo_times_mps(MPO<Matrix, SymmGroup> const & mpo, MPS<Matrix, SymmGroup> const & mps,
+                                               int site, std::vector< typename SymmGroup::charge> & in_delta,
+                                               std::vector<Index<SymmGroup>> const& allowed_sectors)
     {
         throw std::runtime_error("[mpo_times_mps] not yet implemented for SU2U1 symmetry");
     }
@@ -538,6 +569,12 @@ public:
                                                            typename SymmGroup::charge & in_delta)
     {
         throw std::runtime_error("[mpo_times_mps_singleop] not yet implemented for SU2U1 symmetry");
+    }
+
+    /** @brief AppplyOp method */
+    MPSType applyMPO(const MPOType& mpo) 
+    {
+        throw std::runtime_error("[applyMPO] not available for SU2U1 symmetry");
     }
 };
 
