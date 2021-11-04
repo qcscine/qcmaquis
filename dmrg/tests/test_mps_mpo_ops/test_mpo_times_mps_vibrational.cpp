@@ -48,6 +48,8 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
   // Generates the HF MPS
   parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
   parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
+  parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
+  parametersEthyleneWatsonHarmonic.set("Nmax", 6);
   auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
   auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatsonHarmonic);
   auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
