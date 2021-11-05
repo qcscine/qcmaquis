@@ -67,6 +67,30 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 
 #ifdef HAVE_TrivialGroup
 
+/** @brief Same as above, but with the const guess (and, therefore, m>1) */
+BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
+{
+#ifdef HAVE_TrivialGroup
+  // Generates the HF MPS
+  parametersEthyleneWatsonHarmonic.set("init_state", "const");
+  parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
+  parametersEthyleneWatsonHarmonic.set("Nmax", 4);
+  auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+  auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatsonHarmonic);
+  auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
+  auto mps = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatsonHarmonic)));
+  // Calculates the MPS-MPO contraction
+  auto traitClass = MPOTimesMPSTraitClass<matrix, TrivialGroup>(mps, watsonModel, lattice, watsonModel.total_quantum_numbers(parametersEthyleneWatsonHarmonic),
+                                                                parametersEthyleneWatsonHarmonic["max_bond_dimension"]);
+  auto outputMPS = traitClass.applyMPO(watsonHarmonicMPO);
+  // Calculates the energy in two ways and check that the results are coherent
+  auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + watsonHarmonicMPO.getCoreEnergy();
+  auto energyFromExpVal = expval(mps, watsonHarmonicMPO)/norm(mps);
+  BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
+  // 
+#endif
+};
+
 /**
  * @brief Checks that [mpo_times_mps] gives results that are coherent with expval for the squared operator.
  */
