@@ -35,11 +35,13 @@
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/sim/matrix_types.h"
 #include "Fixtures/WatsonFixture.h"
+#include "Fixtures/NModeFixture.h"
 
 #ifdef DMRG_VIBRATIONAL
 
 /**
  * @brief Checks that [mpo_times_mps] gives results that are coherent with expval.
+ * Note that here we use 1) the harmonic MPS and 2) the harmonic Hamiltonian.
  */
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 {
@@ -61,7 +63,6 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
   auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + watsonHarmonicMPO.getCoreEnergy();
   auto energyFromExpVal = expval(mps, watsonHarmonicMPO)/norm(mps);
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
-  // 
 #endif
 };
 
@@ -70,7 +71,6 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 /** @brief Same as above, but with the const guess (and, therefore, m>1) */
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
 {
-#ifdef HAVE_TrivialGroup
   // Generates the HF MPS
   parametersEthyleneWatsonHarmonic.set("init_state", "const");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
@@ -87,12 +87,10 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
   auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + watsonHarmonicMPO.getCoreEnergy();
   auto energyFromExpVal = expval(mps, watsonHarmonicMPO)/norm(mps);
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
-  // 
-#endif
 };
 
 /**
- * @brief Checks that [mpo_times_mps] gives results that are coherent with expval for the squared operator.
+ * @brief Checks that the H^2 expectation value, caluclated via [mpo_times_mps] and expva, gives coherent results.
  */
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Variance_None, WatsonFixture)
 {
@@ -116,5 +114,29 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Variance_None, WatsonFixture)
 };
 
 #endif
+
+/**
+ * @brief Checks that [mpo_times_mps] gives results that are coherent with expval.
+ * Note that here we use the NU1 symmetry group and the default guess.
+ */
+BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_NU1, NModeFixture)
+{
+#ifdef HAVE_NU1
+  parametersFADTwoBody.set("init_state", "default");
+  parametersFADTwoBody.set("max_bond_dimension", 10);
+  auto lattice = Lattice(parametersFADTwoBody);
+  auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
+  auto nModeMPO = make_mpo(lattice, nModeModel);
+  auto mps = MPS<matrix, NU1_template<2>>(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBody)));
+  // Calculates the MPS-MPO contraction
+  auto traitClass = MPOTimesMPSTraitClass<matrix, NU1_template<2>>(mps, nModeModel, lattice, nModeModel.total_quantum_numbers(parametersFADTwoBody),
+                                                                   parametersFADTwoBody["max_bond_dimension"]);
+  auto outputMPS = traitClass.applyMPO(nModeMPO);
+  // Calculates the energy in two ways and check that the results are coherent
+  auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + nModeMPO.getCoreEnergy();
+  auto energyFromExpVal = expval(mps, nModeMPO)/norm(mps);
+  BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
+#endif
+};
 
 #endif // DMRG_VIBRATIONAL
