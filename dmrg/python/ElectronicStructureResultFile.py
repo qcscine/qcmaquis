@@ -17,6 +17,13 @@ class ElectronicStructureResultFile:
             oneParticleRdmMatrix[i[1], i[0]] = mapContainer[0][idx]
         return oneParticleRdmMatrix
 
+    def getNaturalOrbitalOccupationNumber(self, rdm = None):
+        if rdm is None:
+            rdm = self.getOneParticleRdm()
+        eigenvalues, eigenvectors = np.linalg.eig(rdm)
+        eigenvalues[::-1].sort()
+	return eigenvalues
+
 if __name__ == "__main__":
     #
     parser = argparse.ArgumentParser()
@@ -25,3 +32,4 @@ if __name__ == "__main__":
     resFileName = args.result
     resultFileObject = ElectronicStructureResultFile(resFileName)
     rdm = resultFileObject.getOneParticleRdm()
+    occ = resultFileObject.getNaturalOrbitalOccupationNumber(rdm = rdm)
