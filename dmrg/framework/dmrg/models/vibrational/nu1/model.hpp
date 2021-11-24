@@ -75,6 +75,7 @@ public:
             : lattice(lattice_), parameters(parameters_), tag_handler(new table_type()), phys_indexes(0) {
         // Loads in the relevant parameters
         num_modes = parameters["nmode_num_modes"];
+        maxCouplingDegree = parameters["nmode_max_coupling"];
         lattice_size = parameters["L"];
         // == BUILDS ALL THE RELEVANT CHARGES ==
         // The ones we are interested in are:
@@ -92,6 +93,10 @@ public:
           phys.insert(std::make_pair(excited_states[idx], 1));
           phys_indexes.push_back(phys);
         }
+        // Loads the vector with the site types
+        siteTypes.reserve(lattice_size);
+        for (int iSite = 0; iSite < lattice_size; iSite++)
+            siteTypes.push_back(lattice.get_prop<int>("type", iSite));
         //
         // == DEFINITION OF THE ELEMENTARY OPERATORS ==
         // For each mode, we define the identity, the creation, the annihilation, and the count operator.
@@ -132,14 +137,18 @@ public:
     }
 
     void create_terms() override {
+        std::cout << "Parsing integral file" << std::endl;
         auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<value_type>(parameters, lattice);
         int hamiltonianSize = Hamiltonian_term.first.size();
+        std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
             operators_type operators;
             convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
-            modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
+            if (positions.size()/2 <= maxCouplingDegree)
+                modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
         }
+        std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
     }
 
     /** @brief Getter for the physical dimension of a given type */
@@ -378,17 +387,18 @@ private:
     {
         assert (ham_term.size() % 2 == 0);
         int jCont = 0;
+        ops.reserve(ham_term.size());
+        pos.reserve(ham_term.size());
         do {
             // Retrieves matrix element
             auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
             auto index  = ham_term[2*jCont+1] + offset;
             assert(index < lattice_size);
-            int i_type = lattice.get_prop<int>("type", index);
             pos.push_back(index);
             if (jCont % 2 == 0)
-               ops.push_back(create[i_type]);
+               ops.push_back(create[siteTypes[index]]);
             else
-               ops.push_back(destroy[i_type]);
+               ops.push_back(destroy[siteTypes[index]]);
             jCont += 1;
         }
         while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
@@ -396,11 +406,12 @@ private:
 
 private:
     const Lattice& lattice;
-    int lattice_size, num_modes;
+    int lattice_size, num_modes, maxCouplingDegree;
     BaseParameters& parameters;
     std::vector<Index<NU1> > phys_indexes;
     std::shared_ptr<TagHandler<Matrix, NU1> >  tag_handler;
     operators_type ident, create, destroy, count;
+    std::vector<int> siteTypes;
 };
 
 #endif // DMRG_VIBRATIONAL

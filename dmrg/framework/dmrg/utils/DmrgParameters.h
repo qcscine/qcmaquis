@@ -94,8 +94,10 @@ private:
 
         // vDMRG-related parameters
         add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization");
+
+        // n-mode vDMRG related parameters
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
-        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator");
+        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
         add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
         // TD-related parameters

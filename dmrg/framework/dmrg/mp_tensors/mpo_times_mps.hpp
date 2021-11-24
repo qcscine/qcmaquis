@@ -226,7 +226,7 @@ public:
                         // We extract the right index by difference of the ProductBasis and the input
                         // physical index (times -1.).
                         charge out_l_charge = SymmGroup::fuse(lc, in_delta[iRow]);
-                        if (! charge_detail::physical<SymmGroup>(out_l_charge) || !mapTrackingBlocks[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
+                        if (! ChargeDetailClass<SymmGroup>::physical(out_l_charge) || !mapTrackingBlocks[iRow].has(out_l_charge) || !allowed_sectors[site].has(out_l_charge))
                             continue;
                         if (!mps[site].site_dim().has(phys_in))
                             continue;
@@ -334,7 +334,7 @@ public:
                             {
                                 auto phys_in = W.basis().left_charge(w_block);
                                 auto phys_out = W.basis().right_charge(w_block);
-                                if (!charge_detail::physical<SymmGroup>(out_l_charge) || 
+                                if (!ChargeDetailClass<SymmGroup>::physical(out_l_charge) || 
                                     !mapTrackingBlocks[iRow].has(out_l_charge) ||
                                     !allowed_sectors[site].has(out_l_charge))
                                     continue;
@@ -448,7 +448,7 @@ public:
     
                 // add the operator deltas from previous sites to the left charge
                 charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
-                if (! charge_detail::physical<SymmGroup>(out_l_charge)) continue;
+                if (! ChargeDetailClass<SymmGroup>::physical(out_l_charge)) continue;
     
                 charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
                 if (!right_i.has(in_r_charge)) continue; // do we have phys_in in block b?
@@ -480,7 +480,7 @@ public:
                 charge phys_out = W.basis().right_charge(w_block);
     
                 charge out_l_charge = SymmGroup::fuse(lc, in_delta); // unpaired
-                if (! charge_detail::physical<SymmGroup>(out_l_charge)) continue;
+                if (! ChargeDetailClass<SymmGroup>::physical(out_l_charge)) continue;
     
                 charge in_r_charge = SymmGroup::fuse(rc, phys_in); // unpaired
                 if (!mps.site_dim().has(phys_in)) continue; // do we have phys_in in block b ?
