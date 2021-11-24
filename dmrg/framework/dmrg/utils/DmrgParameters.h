@@ -93,7 +93,7 @@ private:
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
         // vDMRG-related parameters
-        add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization");
+        add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization", value(6));
 
         // n-mode vDMRG related parameters
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
