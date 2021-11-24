@@ -67,6 +67,7 @@ private:
         add_option("alpha_main", "", value(1e-4));
         add_option("alpha_final", "", value(1e-8));
 
+        // Jacobi-Davidson-related options
         add_option("eigensolver", "", value("IETL_JCD"));
         add_option("ietl_jcd_tol", "", value(1e-8));
         add_option("ietl_jcd_gmres", "", value(0));
@@ -92,6 +93,7 @@ private:
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
         // vDMRG-related parameters
+        add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization");
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator");
         add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");

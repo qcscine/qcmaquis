@@ -73,6 +73,7 @@ public:
     {
         // Model parameters
         nMax = parameters_["Nmax"];
+        maxManyBodyCoupling = parameters_["watson_max_coupling"];
         op_t ident_op, create_op, destroy_op, count_op, position_op, momentum_op;
         std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
@@ -165,19 +166,21 @@ public:
             positions_type positions;
             operators_type operators;
             auto uniqueCoefficients = std::set<int>(iTerms.first.begin(), iTerms.first.end());
-            for (const auto& iSite: uniqueCoefficients) {
-                if (iSite != 0) {
-                    positions.push_back(abs(iSite)-1);
-                    auto numberOfOccurrences = std::count(iTerms.first.begin(), iTerms.first.end(), iSite);
-                    assert(numberOfOccurrences > 0 && numberOfOccurrences <= maxCoupling);
-                    if (iSite < 0)
-                        operators.push_back(momentumPowers[numberOfOccurrences]);
-                    else if (iSite > 0)
-                        operators.push_back(positionPowers[numberOfOccurrences]);
+            if (uniqueCoefficients.size() <= maxManyBodyCoupling) {
+                for (const auto& iSite: uniqueCoefficients) {
+                    if (iSite != 0) {
+                        positions.push_back(abs(iSite)-1);
+                        auto numberOfOccurrences = std::count(iTerms.first.begin(), iTerms.first.end(), iSite);
+                        assert(numberOfOccurrences > 0 && numberOfOccurrences <= maxCoupling);
+                        if (iSite < 0)
+                            operators.push_back(momentumPowers[numberOfOccurrences]);
+                        else if (iSite > 0)
+                            operators.push_back(positionPowers[numberOfOccurrences]);
+                    }
                 }
+                // Final addition of the terms
+                modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_);
             }
-            // Final addition of the terms
-            modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_);
         }
     }
 
@@ -240,6 +243,8 @@ private:
     const Lattice& lattice;
     /** Max excitation degree (assumed constant for all modes for the moment) */
     int nMax;
+    /** Maximum order of the many-body coupling term */
+    int maxManyBodyCoupling;
     /** Parameter container */
     BaseParameters& parameters;
     /** Physical basis */
