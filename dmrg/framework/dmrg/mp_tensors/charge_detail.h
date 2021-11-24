@@ -63,7 +63,7 @@ class ChargeDetailClass<NU1_template<N>> {
 public:
     using ChargeType = typename NU1_template<N>::charge;
     static bool physical(ChargeType c) {
-        return std::all_of(c.begin(), c.end(), [&](int tmp) { return (tmp <= 1 && tmp >= 0); });
+        return std::all_of(c.begin(), c.end(), [&](int tmp) { return (/*tmp <= 1 &&*/ tmp >= 0); });
     }
 };
 
