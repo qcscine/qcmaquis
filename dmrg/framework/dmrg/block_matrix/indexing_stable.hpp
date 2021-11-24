@@ -533,6 +533,20 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
 }
 
 template<class SymmGroup>
+void extract_common_subset(Index<SymmGroup> & a, Index<SymmGroup> & b)
+{
+    a.erase(std::remove_if(a.begin(), a.end(),
+                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
+                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            a.end());
+
+    b.erase(std::remove_if(b.begin(), b.end(),
+                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
+                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            b.end());
+}
+
+template<class SymmGroup>
 Index<SymmGroup> common_subset(Index<SymmGroup> & a,
                                Index<SymmGroup> & b)
 {

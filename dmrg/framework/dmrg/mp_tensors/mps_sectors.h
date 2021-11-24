@@ -94,7 +94,6 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
             }
         }
     }
-    
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
@@ -115,6 +114,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 ++it;
             }
         }
+        extract_common_subset(left_allowed[i], right_allowed[i]);
     }
     
     for (int i = 0; i < L+1; ++i) {
