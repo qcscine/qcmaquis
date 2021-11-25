@@ -6,7 +6,6 @@
 \usepackage{bm}
 \usepackage{booktabs}
 \usepackage[bf,singlelinecheck=off]{caption}
-\usepackage{chemformula}
 \usepackage[T1]{fontenc}
 \usepackage{framed}
 \usepackage{graphicx}
@@ -744,7 +743,7 @@ OMP parallelization. To speedup calculations the user can thus set at runtime th
 \subsubsection{Input Examples}
 
 \begin{lstlisting}[language=molcas,caption={(File \texttt{001.input} in the test directory) 
-				   Input example for a DMRG-SCF calculation with the \kwd{DMRGSCF} module (\ch{N2}, 6 orbitals, with symmetry).},label=lst:dmrgscf]
+				   Input example for a DMRG-SCF calculation with the \kwd{DMRGSCF} module (N$_2$, 6 orbitals, with symmetry).},label=lst:dmrgscf]
 &GATEWAY
  coord
  2
@@ -767,7 +766,7 @@ OOptimizationSettings
 EndOOptimizationSettings
 \end{lstlisting}
 \vspace{-0.5em}
-\begin{lstlisting}[language=molcas,caption={Input example for a DMRG-SCF calculation with the \kwd{RASSCF} module (\ch{N2}, 6 orbitals, with symmetry)},label=lst:rasscf]
+\begin{lstlisting}[language=molcas,caption={Input example for a DMRG-SCF calculation with the \kwd{RASSCF} module (N$_2$, 6 orbitals, with symmetry)},label=lst:rasscf]
 &GATEWAY
  coord
  2
@@ -834,10 +833,10 @@ An MPS-SI calculation requires reference DMRG-SCF or NEVPT2 wave functions as ob
  By contrast, if there is more than one set of input states of different spin symmetry, the \kwd{MPS-SI} module supports only calculations in C$_1$\ symmetry. The latter restriction will be removed in a forthcoming release.
 \end{framed}
 
-Listing~\ref{lst:mpssi} shows an input example for an MPS-SI calculation (a calculation of spin-orbit coupling matrix elements for the \ch{CH2} molecule) where the important keywords are highlighted in blue. 
+Listing~\ref{lst:mpssi} shows an input example for an MPS-SI calculation (a calculation of spin-orbit coupling matrix elements for the CH$_2$ molecule) where the important keywords are highlighted in blue. 
 A detailed explanation of the input is given here below.
 
-\begin{lstlisting}[language=molcas,caption={(File \texttt{007.input} in the QCMaquis test directory) Input example for a one-shot MPS-SI spin-orbit calculation (Singlet and triplet state, \ch{CH2} molecule, 6 electrons in 6 orbitals, C1 symmetry).},label=lst:mpssi]
+\begin{lstlisting}[language=molcas,caption={(File \texttt{007.input} in the QCMaquis test directory) Input example for a one-shot MPS-SI spin-orbit calculation (Singlet and triplet state, CH$_2$ molecule, 6 electrons in 6 orbitals, C1 symmetry).},label=lst:mpssi]
 &GATEWAY
   coord
   3
@@ -949,7 +948,7 @@ Prior to running a NEVPT2 calculation, one must obtain a reference wavefunction 
 
 Currently, the implementation supports \emph{only} QCMaquis DMRG reference wavefunctions (support for CASSCF reference wavefunctions will be added in the near future). It is nevertheless possible to run NEVPT2 with a CASSCF reference wavefunction by performing a DMRG-CI calculation with a sufficiently large $m$ value using the CASSCF converged orbitals. For example, an $m$ value of 2000 recovers the exact CASCI energy up to $5\times{}10^{-8}$\,a.\,u. for active spaces of up to 14 orbitals. Listing~\ref{lst:nevpt2} shows an input example for a NEVPT2 calculation, the important keywords are highlighted in \textcolor{green!20!blue}{blue}, and below we will explain the input example in more detail.
 
-\begin{lstlisting}[language=molcas,caption={(\texttt{009.input} in the QCMaquis test subdirectory) Input example for a one-shot NEVPT2 calculation (Singlet \ch{CH2}, 6 electrons in 6 orbitals, RICD)},label=lst:nevpt2]
+\begin{lstlisting}[language=molcas,caption={(\texttt{009.input} in the QCMaquis test subdirectory) Input example for a one-shot NEVPT2 calculation (Singlet CH$_2$, 6 electrons in 6 orbitals, RICD)},label=lst:nevpt2]
 &GATEWAY
   coord
   3
@@ -1676,9 +1675,9 @@ The resulting form of the vibrational Hamiltonian is then converted in the MPO f
   L                               = 12
   // == vDMRG-specific input ==
   symmetry                        = none
-  LATTICE                         = ``watson lattice''
-  MODEL                           = ``watson''
-  Nmax                            = 20
+  LATTICE                         = 'watson lattice'
+  MODEL                           = 'watson'
+  Nmax                            = 10
 \end{lstlisting}
 
 We report in Listing~\ref{lst:canonicalVibInput} an example input for a vDMRG calculation relying on the canonical-quantization based formalism.
@@ -1818,7 +1817,7 @@ The corresponding input file is given in Listing~\ref{lst:nModeVibInput}
   // The symmetry group is nu1 for all n-mode vDMRG calculations
   symmetry                        = nu1
   // This is the only lattice associated with the n-mode vDMRG method
-  LATTICE                         = "preBO lattice" 
+  LATTICE                         = "nmode lattice" 
   // n-mode vDMRG model
   MODEL                           = nMode
   // String with the overall number of modals
@@ -1833,6 +1832,14 @@ Note that the size of the vector given as input for the \texttt{nmode\_num\_basi
 
 \subsection{Pratical considerations}
 \label{sec:Practical-vDMRG}
+
+% Informations on how to compile the vibrational module of QCMaquis
+The vDMRG library is not activated if the default CMake settings are used when compiling \qcm.
+In order to run vDMRG simulation, the \texttt{BUILD\_VIBRATIONAL} CMake flag should be set to \texttt{ON}.
+This is, however, not sufficient.
+In fact, the Hamiltonians supported by \qcm\ are classified based on their symmetry properties.
+The symmetry of the Hamiltonians to be studied with \qcm\ must be included, at compile time, in the \texttt{BUILD\_SYMMETRIES} CMake keyword.
+By default, \texttt{BUILD\_SYMMETRIES} includes \texttt{TwoU1PG} (\textit{i.e.}, the symmetry of the non spin-adapted non-relativistic Hamiltonian, with the possibility of including point group symmetry) and \texttt{SU2U1PG}
 
 \section{QCMaquis pre-Born--Oppenheimer module}
 \label{sec:preBO}
@@ -1908,6 +1915,8 @@ MEASURE[1rdm]          = 1
 MEASURE[mutinf]        = 1
 \end{lstlisting}
 
+\subsection{Practical considerations}
+
 \section{\qcm\ examples library}
 \label{sec:examples}
 
@@ -1927,8 +1936,8 @@ These example calculations are organized in different folder, one per feature pr
  \item \texttt{vDMRG}: example of a vDMRG calculation based on the $n$-mode second-quantization (\texttt{FAD\_2Mode\_TS.inp}).
  The integral file is generated for a two-mode potential describing the formic acid dimer based on a discrete variable representation primitive basis set.
  For each mode, 10 modal basis functions are included. \\
- The same folder also contains an example calculation for the canonical second-quantization (\texttt{C2H4.vDMRG.m50.SS.input}).
- The PES is taken from Ref.~\citenum{Berkelback2021_vHBCI} and describes the vibrations of ethylene.
+ The same folder also contains an example calculation for the canonical second-quantization, based on the single-site (\texttt{C2H4.vDMRG.m50.SS.input}) and on the two-site (\texttt{C2H4.vDMRG.m50.TS.input}) optimization algorithm.
+ The PES is taken from Ref.~\citenum{Berkelback2021_vHBCI} and represents the potential energy surface of ethylene as a sixth-order force field.
  The calculation uses the single-site optimizer and is initiated from the ONV associated with the ground-state wave function. \\
  Note that the calculations should be run with the executable \texttt{applications/dmrg/dmrg}, which is automatically generated by each \qcm\ compilation configuration. \\
 \end{itemize}

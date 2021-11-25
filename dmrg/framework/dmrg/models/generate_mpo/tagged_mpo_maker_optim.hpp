@@ -629,8 +629,8 @@ private:
 			    typename prempo_map_type::iterator ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 			else {
                 if (prempo[i].find(make_pair(k,k))->second != prempo_value_type(op, 1.))
-			    throw std::runtime_error("Pre-existing term at site "+std::to_string(i)+ ". Needed "+std::to_string(op)
-				                            + ", found "+std::to_string(prempo[i].find(make_pair(k,k))->second.first));
+			        throw std::runtime_error("Pre-existing term at site "+std::to_string(i)+ ". Needed "+std::to_string(op)
+				                                + ", found "+std::to_string(prempo[i].find(make_pair(k,k))->second.first));
             }
 		}
 	}
