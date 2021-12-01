@@ -36,6 +36,7 @@
 #include "dmrg/models/model_helper.hpp"
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
 #include "dmrg/models/vibrational/VibrationalModelTraitClass.hpp"
+#include "dmrg/models/vibrational/VibrationalHelperClass.hpp"
 
 /**
  * @brief Class implementing the canonical quantization-based vibrational Hamiltonian.
@@ -78,11 +79,11 @@ public:
         std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         int overallDimension = nMax + VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
+        int maxCoupling = VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
         momentumPowers.resize(nMax);
         momentumPowers.resize(nMax);
         // Here it's where the "physical" basis is defined
         physIndices.insert(std::make_pair(C, nMax));
-        std::cout << physIndices << std::endl;
         Matrix mcount(nMax, nMax, 0.),
                mcreate(nMax, nMax, 0.),
                mdestroy(nMax, nMax, 0.), 
@@ -112,26 +113,8 @@ public:
         momentum_op.insert_block(mmom, C,C);
         ident_op.insert_block(mident, C,C);
         // -- Creates the powers of the position/momentum operator --
-        powersOfPositions_op.resize(maxCoupling+1);
-        powersOfMomentum_op.resize(maxCoupling+1);
-        powersOfPositions_op[0] = ident_op;
-        powersOfMomentum_op[0] = ident_op;
-        powersOfPositions_op[0].resize_block(0, nMax, nMax);
-        powersOfMomentum_op[0].resize_block(0, nMax, nMax);
-        op_t q = ident_op, p = ident_op;
-        for (int iOrder = 0; iOrder < maxCoupling; iOrder++) {
-            op_t tmpQ, tmpP;
-            gemm(q, position_op, tmpQ);
-            gemm(p, momentum_op, tmpP);
-            powersOfPositions_op[iOrder+1] = tmpQ;
-            powersOfMomentum_op[iOrder+1] = tmpP;
-            q = tmpQ;
-            p = tmpP;
-            assert(powersOfPositions_op[iOrder+1].n_blocks() == 1);
-            assert(powersOfMomentum_op[iOrder+1].n_blocks() == 1);
-            powersOfPositions_op[iOrder+1].resize_block(0, nMax, nMax);
-            powersOfMomentum_op[iOrder+1].resize_block(0, nMax, nMax);
-        }
+        powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_op, position_op);
+        powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_op, position_op);
         // -- Create operator tag table --
         create = tag_handler->register_op(create_op, tag_detail::bosonic);
         destroy = tag_handler->register_op(destroy_op, tag_detail::bosonic);
