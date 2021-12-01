@@ -36,7 +36,7 @@
 
 #ifdef HAVE_TrivialGroup
 
-/** @brief Checks that the constructor for the Watson-based Hamiltonian */
+/** @brief Checks that the constructor for the Watson-based Hamiltonian works properly */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Watson_Ethylene, WatsonFixture)
 {
     auto lattice = WatsonLattice(parametersEthyleneWatson);
@@ -44,7 +44,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Watson_Ethylene, WatsonFixture)
     BOOST_CHECK_EQUAL(size, 12);
 }
 
-/** @brief Checks that the constructor for the Watson-based Hamiltonian */
+/** @brief Checks that the constructor for the Watson-based Hamiltonian works properly */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_MaxVertexType_Watson_Ethylene, WatsonFixture)
 {
     auto lattice = WatsonLattice(parametersEthyleneWatson);

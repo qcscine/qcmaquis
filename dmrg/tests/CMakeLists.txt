@@ -60,6 +60,12 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_BilinearlyCoupled ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
+if(BUILD_VIBRONIC)
+    # Unit test
+    add_executable(test_vibronic_lattice vibronic/test_vibronic_lattice.cpp)
+    target_link_libraries(test_vibronic_lattice ${DMRG_APP_LIBRARIES})
+endif(BUILD_VIBRONIC)
+
 add_executable(test_integral_map test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
 

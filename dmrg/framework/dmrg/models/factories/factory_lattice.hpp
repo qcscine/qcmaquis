@@ -35,6 +35,7 @@
 #include "dmrg/models/lattice/PreBOLattice.hpp"
 #include "dmrg/models/lattice/NModeLattice.hpp"
 #include "dmrg/models/lattice/WatsonLattice.hpp"
+#include "dmrg/models/lattice/VibronicLattice.hpp"
 
 /**
  * @brief Factory method returning the requested lattice
@@ -68,6 +69,10 @@ inline std::shared_ptr<lattice_impl> coded_lattice_factory(BaseParameters & parm
         return impl_ptr(new NModeLattice(parms));
     else if (parms["LATTICE"] == std::string("watson lattice"))
         return impl_ptr(new WatsonLattice(parms));
+#endif
+#ifdef DMRG_VIBRONIC
+    else if (parms["LATTICE"] == std::string("vibronic lattice"))
+        return impl_ptr(new VibronicLattice(parms));
 #endif
     else {
         throw std::runtime_error("Don't know this lattice!");

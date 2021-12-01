@@ -100,6 +100,11 @@ private:
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
         add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
+        // Vibronic-related parameters
+        add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
+        add_option("vibronic_nmodes", "Number of vibrational modes entering the vibronic Hamiltonian");
+        add_option("vibronic_sorting", "Mapping for the vibronic lattice", value("firstele"));
+
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");

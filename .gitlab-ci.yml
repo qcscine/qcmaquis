@@ -94,7 +94,7 @@ buildVibrationalHamiltonians:
     - default_docker
   script:
     - mkdir buildVibrational && cd buildVibrational
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;NONE" -DBUILD_VIBRATIONAL=ON -DDMRG_NUMSYMM=5  ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;NONE;U1" -DBUILD_VIBRATIONAL=ON -DBUILD_VIBRONIC=ON -DDMRG_NUMSYMM=5 ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -143,7 +143,7 @@ build-TD-with-all-symmetries:
     - default_docker
   script:
     - mkdir buildTDAllSymmetries && cd buildTDAllSymmetries
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1;U1" -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON -DBUILD_VIBRONIC=ON ../dmrg
     - make -j2
   artifacts:
     paths:

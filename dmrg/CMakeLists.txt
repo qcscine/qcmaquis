@@ -60,18 +60,13 @@ option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation to
 option (BUILD_DMRG_EVOLVE "Build the time-evolution DMRG module" OFF)
 option (BUILD_PREBO "Build PreBO model" OFF)
 option (BUILD_VIBRATIONAL "Build the vDMRG code" OFF)
+option (BUILD_VIBRONIC "Activates the support for vibronic Hamiltonians" OFF)
 
 # Time-evolution TD-DMRG
 if(BUILD_DMRG_EVOLVE)
   list(APPEND DMRG_DEFINITIONS -DDMRG_TD)
   set(DMRG_TD TRUE)
 endif(BUILD_DMRG_EVOLVE)
-
-# vDMRG
-if(BUILD_VIBRATIONAL)
-  list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
-  set(DMRG_VIBRATIONAL TRUE)
-endif(BUILD_VIBRATIONAL)
 
 option (ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 mark_as_advanced(ENABLE_COLLECTOR)
@@ -215,6 +210,16 @@ if((BUILD_VIBRATIONAL))
     set(DMRG_VIBRATIONAL TRUE)
   endif()
 endif()
+
+# Vibronic-specific flag
+if(BUILD_VIBRONIC)
+  if (NOT DMRG_HAS_U1)
+    message(FATAL_ERROR "U1 symmetry should be activated for vibrational calculations")
+  else()
+    list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRONIC)
+    set(DMRG_VIBRONIC TRUE)
+  endif()
+endif(BUILD_VIBRONIC)
 
 ##### Dependencies #####
 # GSL
@@ -442,6 +447,10 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
     add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
   endif(BUILD_VIBRATIONAL)
+  # Vibronic tests
+  if(BUILD_VIBRONIC)
+    add_test(NAME Vibronic_Lattice COMMAND test_vibronic_lattice)
+  endif(BUILD_VIBRONIC)
 endif(QCMAQUIS_TESTS)
 
 ######################################################################
