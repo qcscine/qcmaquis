@@ -114,7 +114,7 @@ public:
         ident_op.insert_block(mident, C,C);
         // -- Creates the powers of the position/momentum operator --
         powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_op, position_op);
-        powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_op, position_op);
+        powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_op, momentum_op);
         // -- Create operator tag table --
         create = tag_handler->register_op(create_op, tag_detail::bosonic);
         destroy = tag_handler->register_op(destroy_op, tag_detail::bosonic);
