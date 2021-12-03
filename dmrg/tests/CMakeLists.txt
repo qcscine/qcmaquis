@@ -64,6 +64,8 @@ if(BUILD_VIBRONIC)
     # Unit test
     add_executable(test_vibronic_lattice vibronic/test_vibronic_lattice.cpp)
     target_link_libraries(test_vibronic_lattice ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibronic_u1_model vibronic/VibronicModel.cpp)
+    target_link_libraries(test_vibronic_u1_model ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRONIC)
 
 add_executable(test_integral_map test_integral_map.cpp)

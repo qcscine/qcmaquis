@@ -29,6 +29,7 @@
 #ifndef MAQUIS_DMRG_MODEL_HELPER_HPP
 #define MAQUIS_DMRG_MODEL_HELPER_HPP
 
+#include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/model.h"
 
 template <class Matrix, class SymmGroup>

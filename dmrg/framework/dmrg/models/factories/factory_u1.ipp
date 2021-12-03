@@ -24,9 +24,8 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_u1.hpp"
-#include "dmrg/models/coded/models_bela.hpp"
 #include "dmrg/models/factories/factory.h"
+#include "dmrg/models/vibrational/u1/VibronicModel.hpp"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {
@@ -34,18 +33,8 @@ struct coded_model_factory<Matrix, U1> {
     (Lattice const& lattice, BaseParameters & parms)
     {
         typedef std::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
-        if (parms["MODEL"] == std::string("heisenberg"))
-            return impl_ptr( new Heisenberg<Matrix>(lattice, parms["Jxy"], parms["Jz"]) );
-        else if (parms["MODEL"] == std::string("HCB"))
-            return impl_ptr( new HCB<Matrix>(lattice) );
-        else if (parms["MODEL"] == std::string("boson Hubbard"))
-            return impl_ptr( new BoseHubbard<Matrix>(lattice, parms) );
-//        else if (parms["MODEL"] == std::string("fermion Hubbard"))
-//            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, parms) );
-        else if (parms["MODEL"] == std::string("FreeFermions"))
-            return impl_ptr( new FreeFermions<Matrix>(lattice, parms["t"]) );
-        else if (parms["MODEL"] == std::string("bela_chiral_ext"))
-            return impl_ptr( new Chiral_ext<Matrix>(lattice, parms) );
+        if (parms["MODEL"] == std::string("vibronic"))
+            return impl_ptr( new VibronicModel<Matrix>(lattice, parms));
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();

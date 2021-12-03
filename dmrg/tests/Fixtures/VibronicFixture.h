@@ -54,10 +54,35 @@ struct VibronicFixture
         parametersVibronic.set("Nmax", 6);
         parametersVibronic.set("vibronic_nstates", 2);
         parametersVibronic.set("vibronic_nmodes", 24);
+        // "Fake" vibronic Hamiltonian with only a single state, with an Harmonic PES.
+        parametersFakeVibronic.set("L", 4);
+        parametersFakeVibronic.set("symmetry", "u1");
+        parametersFakeVibronic.set("LATTICE", "vibronic lattice");
+        parametersFakeVibronic.set("MODEL", "vibronic");
+        parametersFakeVibronic.set("Nmax", 6);
+        parametersFakeVibronic.set("vibronic_nstates", 1);
+        parametersFakeVibronic.set("vibronic_nmodes", 3);
+        parametersFakeVibronic.set("integral_file", "integral_file_VibronicFile");
+        //
+        integralFileFakeVibronic.open("integral_file_VibronicFile");
+        integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
+        integralFileFakeVibronic << " 1.0000   1   1  " << std::endl;
+        integralFileFakeVibronic << "-1.0000  -1  -1  " << std::endl;
+        integralFileFakeVibronic << " 2.0000   2   2  " << std::endl;
+        integralFileFakeVibronic << "-2.0000  -2  -2  " << std::endl;
+        integralFileFakeVibronic << " 3.0000   3   3  " << std::endl;
+        integralFileFakeVibronic << "-3.0000  -3  -3  " << std::endl;
+        integralFileFakeVibronic.close();
+    }
+
+    /** @brief Class destructor */
+    ~VibronicFixture() {
+        std::remove("integral_file_VibronicFile");
     }
 
     // Class members
-    DmrgParameters parametersVibronic, parametersExcitonic;
+    DmrgParameters parametersVibronic, parametersExcitonic, parametersFakeVibronic;
+    std::ofstream integralFileFakeVibronic;
 };
 
 #endif

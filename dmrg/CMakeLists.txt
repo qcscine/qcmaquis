@@ -450,6 +450,7 @@ if(QCMAQUIS_TESTS)
   # Vibronic tests
   if(BUILD_VIBRONIC)
     add_test(NAME Vibronic_Lattice COMMAND test_vibronic_lattice)
+    add_test(NAME Vibronic_Model COMMAND test_vibronic_u1_model)
   endif(BUILD_VIBRONIC)
 endif(QCMAQUIS_TESTS)
 

@@ -46,7 +46,7 @@
 namespace chem {
 
 /** @brief Enum class distinguishing the possible types of Hamiltonians */
-enum class Hamiltonian {Electronic, VibrationalCanonical, VibrationalNMode, PreBO};
+enum class Hamiltonian {Electronic, VibrationalCanonical, VibrationalNMode, PreBO, Vibronic, Excitonic};
 
 /** 
  * @brief Constexpr function returning the index of the Hamiltonian map
@@ -80,6 +80,15 @@ constexpr int getIndexDim (const Hamiltonian& type) {
         // Note that we support so-far only up to 3-body terms
         case Hamiltonian::VibrationalNMode:
             indexDim = 12;
+            break;
+        // We support up to 2-mode coupling for the vibronic case.
+        // The index is, however, 4 because we also include the electronic
+        // state index (same fore the excitonic case)
+        case Hamiltonian::Vibronic:
+            indexDim = 4;
+            break;
+        case Hamiltonian::Excitonic:
+            indexDim = 4;
             break;
         case Hamiltonian::PreBO:
             indexDim = 8;
