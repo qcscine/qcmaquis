@@ -206,9 +206,10 @@ struct heevd_impl< Value, typename boost::enable_if< is_real< Value > >::type > 
         typedef typename result_of::uplo_tag< MatrixA >::type uplo;
         real_type opt_size_work = 0;
         fortran_int_t opt_size_iwork = 0;
-        auto iTmp = detail::heevd( jobz, uplo(), bindings::size_column(a),
-                                   bindings::begin_value(a), bindings::stride_major(a),
-                                   bindings::begin_value(w), &opt_size_work, -1, &opt_size_iwork, -1 );
+        std::ptrdiff_t iTmp = detail::heevd( jobz, uplo(), bindings::size_column(a),
+                                             bindings::begin_value(a), bindings::stride_major(a),
+                                             bindings::begin_value(w), &opt_size_work, -1, &opt_size_iwork,
+                                             -1 );
         // Workaround for MKL which reports too small work arrays on query sometimes
         // (as implemented by Leon Freitag in the SVD)
         auto real_opt_work = std::max(traits::detail::to_int( opt_size_work ),
@@ -331,17 +332,18 @@ struct heevd_impl< Value, typename boost::enable_if< is_complex< Value > >::type
         typedef typename result_of::uplo_tag< MatrixA >::type uplo;
         value_type opt_size_work;
         real_type opt_size_rwork;
-        fortran_int_t opt_size_iwork;
-        detail::heevd( jobz, uplo(), bindings::size_column(a),
-                bindings::begin_value(a), bindings::stride_major(a),
-                bindings::begin_value(w), &opt_size_work, -1, &opt_size_rwork,
-                -1, &opt_size_iwork, -1 );
+        fortran_int_t opt_size_iwork = 0;
+        std::ptrdiff_t iTmp = detail::heevd( jobz, uplo(), bindings::size_column(a),
+                                             bindings::begin_value(a), bindings::stride_major(a),
+                                             bindings::begin_value(w), &opt_size_work, -1, &opt_size_rwork,
+                                             -1, &opt_size_iwork, -1 );
         bindings::detail::array< value_type > tmp_work(
                 traits::detail::to_int( opt_size_work ) );
         bindings::detail::array< real_type > tmp_rwork(
                 traits::detail::to_int( opt_size_rwork ) );
-        bindings::detail::array< fortran_int_t > tmp_iwork(
-                opt_size_iwork );
+        auto iDim = std::max(min_size_iwork( jobz, bindings::size_column(a)),
+                             static_cast<long int>(opt_size_iwork));
+        bindings::detail::array< fortran_int_t > tmp_iwork(iDim);
         return invoke( jobz, a, w, workspace( tmp_work, tmp_rwork,
                 tmp_iwork ) );
     }

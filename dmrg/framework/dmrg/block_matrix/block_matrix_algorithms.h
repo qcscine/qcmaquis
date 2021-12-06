@@ -583,10 +583,14 @@ block_matrix<Matrix, SymmGroup> conjugate(block_matrix<Matrix, SymmGroup> m)
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> adjoint(block_matrix<Matrix, SymmGroup> m)
+block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> adjoint(block_matrix<Matrix, SymmGroup> const & m)
 {
-    m.adjoint_inplace();
-    return m;
+    block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> ret;
+    for (int k = 0; k < m.n_blocks(); k++)
+        ret.insert_block(adjoint(m[k]), m.basis().right_charge(k), m.basis().left_charge(k));
+    if (!m.size_index.empty())
+        ret.index_sizes();
+    return ret;
 }
 
 template<class Matrix, class SymmGroup>
