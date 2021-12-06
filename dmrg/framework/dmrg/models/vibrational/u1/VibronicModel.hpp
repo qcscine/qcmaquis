@@ -185,7 +185,7 @@ public:
     // Total quantum number which must be obtained at the end of the MPS. Should be 1 in all cases.
     typename U1::charge total_quantum_numbers(BaseParameters & parms) const
     {
-        return static_cast<int>(parameters["u1_total_charge"]);
+        return 1;
     }
 
     /** @brief Getter for the operator associated with a given string */
@@ -196,9 +196,9 @@ public:
         else if (name == "p")
             return momentumPowers[1];
         else if (name == "aplus")
-            return create_ele ;
+            return create_ele;
         else if (name == "a")
-            return destroy_ele ;
+            return destroy_ele;
         else if (name == "id")
             return identity_matrix_tag(type);
         else if (name == "fill")
