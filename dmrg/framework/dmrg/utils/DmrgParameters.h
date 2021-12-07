@@ -227,11 +227,6 @@ private:
         add_option("orbital_order", "comma separated list of orbital numbers");
         add_option("hf_occ", "comma separated list of orbital occupancies for Hartree Fock initial state");
 
-        add_option("MEASURE_CONTINUUM[Psi energy]", "", value(false));
-        add_option("MEASURE_CONTINUUM[Density]", "", value(true));
-        add_option("MEASURE_CONTINUUM[Local density]", "", value(true));
-        add_option("MEASURE_CONTINUUM[Onebody density matrix]", "", value(false));
-
         add_option("MEASURE[Density]", "", value(false));
         add_option("MEASURE[Local density]", "", value(false));
         add_option("MEASURE[Local density^2]", "", value(false));
