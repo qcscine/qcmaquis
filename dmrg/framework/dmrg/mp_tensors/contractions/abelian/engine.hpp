@@ -49,39 +49,32 @@ namespace contraction {
 
         struct lbtm_functor
         {
-            void operator()(size_t b2,
-                            contraction::ContractionGrid<Matrix, SymmGroup>& contr_grid,
+            void operator()(size_t b2, contraction::ContractionGrid<Matrix, SymmGroup>& contr_grid,
                             Boundary<OtherMatrix, SymmGroup> const & left,
                             BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> const & left_mult_mps,
                             MPOTensor<Matrix, SymmGroup> const & mpo,
-                            DualIndex<SymmGroup> const & ket_basis,
-                            Index<SymmGroup> const & ref_left_basis,
-                            Index<SymmGroup> const & right_i,
-                            Index<SymmGroup> const & out_left_i,
-                            ProductBasis<SymmGroup> const & in_right_pb,
-                            ProductBasis<SymmGroup> const & out_left_pb)
+                            DualIndex<SymmGroup> const & ket_basis, DualIndex<SymmGroup> const & bra_basis,
+                            Index<SymmGroup> const & right_i, Index<SymmGroup> const & out_left_i,
+                            ProductBasis<SymmGroup> const & in_right_pb, ProductBasis<SymmGroup> const & out_left_pb,
+                            bool isHermitian)
             {
-                abelian::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, ref_left_basis,
-                                             right_i, out_left_i, in_right_pb, out_left_pb);
+                abelian::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, bra_basis,
+                                             right_i, out_left_i, in_right_pb, out_left_pb, isHermitian);
             }
         };
 
         struct rbtm_functor
         {
-            void operator()(size_t b1,
-                            block_matrix<Matrix, SymmGroup> & ret,
-                            Boundary<OtherMatrix, SymmGroup> const & right,
+            void operator()(size_t b1, block_matrix<Matrix, SymmGroup> & ret, Boundary<OtherMatrix, SymmGroup> const & right,
                             MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> const & right_mult_mps,
                             MPOTensor<Matrix, SymmGroup> const & mpo,
-                            DualIndex<SymmGroup> const & ket_basis,
-                            Index<SymmGroup> const & ref_right_basis,
-                            Index<SymmGroup> const & left_i,
-                            Index<SymmGroup> const & out_right_i,
-                            ProductBasis<SymmGroup> const & in_left_pb,
-                            ProductBasis<SymmGroup> const & out_right_pb)
+                            DualIndex<SymmGroup> const & ket_basis, DualIndex<SymmGroup> const & bra_basis,
+                            Index<SymmGroup> const & left_i, Index<SymmGroup> const & out_right_i,
+                            ProductBasis<SymmGroup> const & in_left_pb, ProductBasis<SymmGroup> const & out_right_pb,
+                            bool isHermitian)
             {
-                abelian::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis, ref_right_basis,
-                                             left_i, out_right_i, in_left_pb, out_right_pb);
+                abelian::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis, bra_basis,
+                                             left_i, out_right_i, in_left_pb, out_right_pb, isHermitian);
             }
         };
 
@@ -130,20 +123,22 @@ namespace contraction {
         overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                               MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                               Boundary<OtherMatrix, SymmGroup> const & left,
-                              MPOTensor<Matrix, SymmGroup> const & mpo)
+                              MPOTensor<Matrix, SymmGroup> const & mpo, 
+                              bool isHermitian=true)
         {
             return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, lbtm_functor>
-                   (bra_tensor, ket_tensor, left, mpo);
+                   (bra_tensor, ket_tensor, left, mpo, isHermitian);
         }
 
         static Boundary<OtherMatrix, SymmGroup>
         overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                                MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                                Boundary<OtherMatrix, SymmGroup> const & right,
-                               MPOTensor<Matrix, SymmGroup> const & mpo)
+                               MPOTensor<Matrix, SymmGroup> const & mpo,
+                               bool isHermitian=true)
         {
             return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, rbtm_functor>
-                   (bra_tensor, ket_tensor, right, mpo);
+                   (bra_tensor, ket_tensor, right, mpo, isHermitian);
         }
 
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
@@ -206,16 +201,27 @@ namespace contraction {
         site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left,
                     Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo);
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    bool isHermitian=true);
+
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                    bool isHermitian=true);
 
         // Zero-site Hamiltonian
         static block_matrix<Matrix, SymmGroup>
         zerosite_hamil2(block_matrix<Matrix, SymmGroup> ket_tensor, Boundary<OtherMatrix, SymmGroup> const & left,
-                        Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right);
+                        Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right,
+                        bool isHermitian=true);
 
         static block_matrix<Matrix, SymmGroup>
         zerosite_hamil2_kernel(block_matrix<Matrix, SymmGroup> ket_tensor, Boundary<OtherMatrix, SymmGroup> const & left,
-                               Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right);
+                               Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right,
+                               bool isHermitian=true);
 
     };
 

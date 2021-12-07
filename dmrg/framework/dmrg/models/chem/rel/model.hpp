@@ -114,7 +114,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
+            term.push_back( std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -127,7 +127,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                term.push_back( boost::make_tuple(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
+                term.push_back( std::make_pair(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
                 this->terms_.push_back(term);
             }
             used_elements[m] += 1;
