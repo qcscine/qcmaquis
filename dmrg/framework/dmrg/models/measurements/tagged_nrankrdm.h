@@ -419,16 +419,17 @@ namespace measurements {
                     std::vector<pos_t> positions = {p1, p2};
 
                     std::vector<term_descriptor> terms;
-                    if (p1 != p2)
+                    if (p1 != p2) {
                         // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                         terms.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
                             true, op_collection.ident.no_couple, std::sqrt(2.), p1, p2, op_collection.create.couple_down, op_collection.create.fill_couple_up,
                                                               op_collection.destroy.couple_down, op_collection.destroy.fill_couple_up, lattice
                         ));
+                    }
                     else {
                         term_descriptor term;
                         term.coeff = 1.;
-                        term.push_back( boost::make_tuple(p1, op_collection.count.no_couple[lattice.get_prop<typename SymmGroup::subcharge>("type", p1)]) );
+                        term.push_back( std::make_pair(p1, op_collection.count.no_couple[lattice.get_prop<typename SymmGroup::subcharge>("type", p1)]) );
                         terms.push_back(term);
                     }
 

@@ -26,7 +26,6 @@
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/factories/factory_lattice.hpp"
-#include "dmrg/models/continuum/factory_lattice.hpp"
 
 #ifdef ENABLE_ALPS_MODELS
 #include "dmrg/models/alps/lattice.hpp"
@@ -50,8 +49,6 @@ lattice_factory(BaseParameters & parms)
 #else
         throw std::runtime_error("This code was compiled without alps lattice.");
 #endif
-    } else if (parms["lattice_library"] == "continuum") {
-        return cont_lattice_factory(parms);
 #ifdef ENABLE_LL_MODELS
     } else if (parms["lattice_library"] == "ll") {
         return ll_lattice_factory(parms);

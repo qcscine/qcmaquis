@@ -25,20 +25,15 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_su2.hpp"
 #include "dmrg/models/chem/su2u1/model.h"
 #include "dmrg/models/factories/factory.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, SU2U1> {
-    static std::shared_ptr<model_impl<Matrix, SU2U1 > > parse
-    (Lattice const & lattice, BaseParameters & parms)
+    static std::shared_ptr<model_impl<Matrix, SU2U1 > > parse(Lattice const & lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, SU2U1> > impl_ptr;
-        if (parms["MODEL"] == std::string("fermion Hubbard"))
-            return impl_ptr( new FermiHubbardSU2<Matrix>(lattice, parms) );
-
-        else if (parms["MODEL"] == std::string("quantum_chemistry"))
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, SU2U1> >;
+        if (parms["MODEL"] == std::string("quantum_chemistry"))
             return impl_ptr( new qc_su2<Matrix, SU2U1>(lattice, parms) );
 
         else {
