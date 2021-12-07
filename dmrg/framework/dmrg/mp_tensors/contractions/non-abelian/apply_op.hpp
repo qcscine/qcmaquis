@@ -93,7 +93,8 @@ namespace SU2 {
 
                     charge out_l_charge = SymmGroup::fuse(lc, phys_out);
                     if (!::SU2::triangle(SymmGroup::spin(out_r_charge), ap, SymmGroup::spin(out_l_charge))) continue;
-                    if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
+                    if (!out_left_i.has(out_l_charge))
+                        continue;
 
                     size_t r_size = right_i[rb].second;
 
@@ -182,7 +183,7 @@ namespace SU2 {
 
                         charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
                         if (!::SU2::triangle(SymmGroup::spin(out_l_charge), a, SymmGroup::spin(out_r_charge))) continue;
-                        if (!left_i.has(out_r_charge)) continue;
+                        if (!out_right_i.has(out_r_charge)) continue;
 
                         size_t l_size = left_i[lb].second;
 

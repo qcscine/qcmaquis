@@ -168,10 +168,12 @@ namespace measurements {
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            //MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
+            #pragma omp parallel for schedule(dynamic) firstprivate(ket_mps_local, bra_mps)
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
@@ -197,7 +199,7 @@ namespace measurements {
                         if(measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                         {
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                            value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                            value += operator_terms[synop].second * expval(bra_mps, ket_mps_local, mpo);
                         }
 
                     }
@@ -231,7 +233,10 @@ namespace measurements {
         {
             // Test if a separate bra state has been specified bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+
+            //MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
 
             // Obtain the total number of RDM elements and the list of all indices (eventually for a given slice)
             auto indices = measurements_details::iterate_nrdm<N>(lattice.size(), bra_neq_ket, positions_first);
@@ -242,7 +247,7 @@ namespace measurements {
 
             // Loop over all indices
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
+            #pragma omp parallel for schedule(dynamic) firstprivate(bra_mps, ket_mps_local)
             #endif
 
             for (int i = 0; i < indices.size(); i++)
@@ -260,7 +265,7 @@ namespace measurements {
                 std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 // Setup MPO and calculate the expectation value for a given indices set
-                this->vector_results[i] = nrdm_expval(N, bra_mps, ket_mps, positions, tag_handler_local);
+                this->vector_results[i] = nrdm_expval(N, bra_mps, ket_mps_local, positions, tag_handler_local);
             } // iterator loop
         }
 
@@ -397,10 +402,11 @@ namespace measurements {
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
-
+            //MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
+            #pragma omp parallel for schedule(dynamic) firstprivate(bra_mps, ket_mps_local)
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
@@ -413,16 +419,17 @@ namespace measurements {
                     std::vector<pos_t> positions = {p1, p2};
 
                     std::vector<term_descriptor> terms;
-                    if (p1 != p2)
+                    if (p1 != p2) {
                         // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                         terms.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
                             true, op_collection.ident.no_couple, std::sqrt(2.), p1, p2, op_collection.create.couple_down, op_collection.create.fill_couple_up,
                                                               op_collection.destroy.couple_down, op_collection.destroy.fill_couple_up, lattice
                         ));
+                    }
                     else {
                         term_descriptor term;
                         term.coeff = 1.;
-                        term.push_back( boost::make_tuple(p1, op_collection.count.no_couple[lattice.get_prop<typename SymmGroup::subcharge>("type", p1)]) );
+                        term.push_back( std::make_pair(p1, op_collection.count.no_couple[lattice.get_prop<typename SymmGroup::subcharge>("type", p1)]) );
                         terms.push_back(term);
                     }
 
@@ -433,7 +440,7 @@ namespace measurements {
                     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
                                                                           op_collection.fill.no_couple, tag_handler_local, terms);
                     MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
-                    typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
+                    typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps_local, mpo);
 
                     dct.push_back(value);
 
@@ -467,7 +474,9 @@ namespace measurements {
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            //MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
 
             // get all the labels ahead of the measurement and initialise the result arrays with the correct size
             auto indices = measurements_details::iterate_nrdm<2>(lattice.size(), bra_neq_ket);
@@ -476,7 +485,7 @@ namespace measurements {
             this->vector_results.resize(indices.size());
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
+            #pragma omp parallel for schedule(dynamic) firstprivate(ket_mps_local, bra_mps)
             #endif
             for (int i = 0; i < indices.size(); i++)
             {
@@ -502,7 +511,7 @@ namespace measurements {
                 generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
                                                                         op_collection.fill.no_couple, tag_handler_local, terms);
                 MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
-                typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
+                typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps_local, mpo);
 
                 // save results
                 this->vector_results[i] = value;
@@ -606,10 +615,12 @@ namespace measurements {
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            //MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for schedule(dynamic)
+            #pragma omp parallel for schedule(dynamic) firstprivate(ket_mps_local, bra_mps)
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
@@ -631,7 +642,7 @@ namespace measurements {
                     //if(measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                     {
                         MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                        typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+                        typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps_local, mpo);
 
                         dct.push_back(value);
                         num_labels.push_back(order_labels(lattice, positions));
@@ -666,10 +677,12 @@ namespace measurements {
         {
             // Test if a separate bra state has been specified
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            //MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+            MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(1) schedule(dynamic)
+            #pragma omp parallel for collapse(1) schedule(dynamic) firstprivate(ket_mps_local, bra_mps)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
@@ -718,7 +731,8 @@ namespace measurements {
                             measured = true;
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                             //value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                            value += (this->cast_to_real) ?  maquis::real(operator_terms[synop].second * expval(bra_mps, ket_mps, mpo)) :  operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                            value += (this->cast_to_real) ? maquis::real(operator_terms[synop].second * expval(bra_mps, ket_mps_local, mpo)) 
+                                                          : operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
                         }
 
                         if(measured)

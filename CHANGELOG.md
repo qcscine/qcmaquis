@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 3.1.1
+
+- Fixed bug raising the "pre-existing term" message when constructing the MPO 
+- Enhancement of the overlap calculation in MPS-SI
+
 ## Release 3.1.0
 
 - Added support for TD-DMRG with time-independent Hamiltonian
