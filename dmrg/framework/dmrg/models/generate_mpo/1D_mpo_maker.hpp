@@ -132,7 +132,7 @@ namespace generate_mpo
                 range_end++;
             }
 
-            term.push_back( boost::make_tuple(pos_ops[opnr].first, product) );
+            term.push_back( std::make_pair(pos_ops[opnr].first, product) );
 
             opnr = range_end;
         }
@@ -163,8 +163,6 @@ namespace generate_mpo
         typedef term_descriptor<typename Matrix::value_type> term_descriptor;
         typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
 
-        using boost::tuples::get;
-
         MPO<Matrix, SymmGroup> ret(lat.size());
 
         bool carry_sign = false;
@@ -173,9 +171,9 @@ namespace generate_mpo
             typename MPOTensor<Matrix, SymmGroup>::prempo_t prempo;
 
             // check if there is a non-trivial operator on site p
-            typename term_descriptor::const_iterator
-                it = std::find_if(term.begin(), term.end(),
-                    boost::bind(detail::get<0, typename term_descriptor::value_type>, boost::lambda::_1) == p);
+            auto it = std::find_if(term.begin(), term.end(), [&p](const auto& iInput) {
+                return iInput.first == p;
+            });
 
             if (it != term.end()) // if yes
             {

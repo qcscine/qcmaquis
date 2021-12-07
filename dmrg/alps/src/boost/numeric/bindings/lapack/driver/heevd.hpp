@@ -113,6 +113,10 @@ inline std::ptrdiff_t heevd( const char jobz, const UpLo,
     fortran_int_t info(0);
     LAPACK_ZHEEVD( &jobz, &lapack_option< UpLo >::value, &n, a, &lda, w, work,
             &lwork, rwork, &lrwork, iwork, &liwork, &info );
+    // std::cout << "ALB" << std::endl;
+    // std::cout << *work << std::endl;
+    // std::cout << *rwork << std::endl;
+    // std::cout << *iwork << std::endl;
     return info;
 }
 

@@ -101,8 +101,8 @@ namespace detail {
             term_descriptor term;
             term.is_fermionic = false;
             term.coeff = scale * ptag1.second * ptag2.second;
-            term.push_back(boost::make_tuple(p1, ptag1.first));
-            term.push_back(boost::make_tuple(p2, ptag2.first));
+            term.push_back(std::make_pair(p1, ptag1.first));
+            term.push_back(std::make_pair(p2, ptag2.first));
 
             IndexTuple id(p1, p2, ptag1.first, ptag2.first);
 

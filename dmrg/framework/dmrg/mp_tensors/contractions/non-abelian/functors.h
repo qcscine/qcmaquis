@@ -54,7 +54,7 @@ namespace SU2 {
                         block_matrix<Matrix3, SymmGroup> & C,
                         std::vector<typename Matrix1::value_type> scales = std::vector<typename Matrix1::value_type>())
         {
-            SU2::gemm_trim_left(A,B,C, scales);
+            SU2::gemm_trim_left(A, B, C, scales);
         }
 
         template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
@@ -64,7 +64,7 @@ namespace SU2 {
                         Index<SymmGroup> const & ref_left_basis,
                         std::vector<typename Matrix1::value_type> scales = std::vector<typename Matrix1::value_type>())
         {
-            SU2::gemm_trim_left(A,B,C, scales);
+            SU2::gemm_trim_left(A, B, C, ref_left_basis, scales);
         }
     };
 
@@ -86,7 +86,7 @@ namespace SU2 {
                         Index<SymmGroup> const & ref_right_basis,
                         std::vector<typename Matrix1::value_type> scales = std::vector<typename Matrix1::value_type>())
         {
-            SU2::gemm_trim_right(A,B,C, scales);
+            SU2::gemm_trim_right(A, B, C, ref_right_basis, scales);
         }
     };
 
