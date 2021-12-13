@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef VIB_PARSE_INTEGRALS_H
-#define VIB_PARSE_INTEGRALS_H
+#ifndef VIBRONIC_PARSE_INTEGRALS_H
+#define VIBRONIC_PARSE_INTEGRALS_H
 
 #ifdef DMRG_VIBRATIONAL
 
@@ -82,7 +82,9 @@ struct term_input {
  * @brief Parser for a vibronic Hamiltonian
  * @param parms parameters container
  * @param lat lattice
- * @return std::vector< std::vector< std::vector< vib_detail::term_input<T> > > > 
+ * @return std::pair<std::vector<chem::index_type<chem::Hamiltonian::Vibronic>>, std::vector<T> >
+ * Pair where the first element identifies the term of the Hamiltonian and the second one
+ * identifies the coefficient. 
  */
 
 template<class T>
@@ -131,6 +133,55 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
             matrix_elements.push_back(t.second);
             indices.push_back(t.first);
         }
+    }
+    return std::make_pair(indices, matrix_elements);
+}
+
+/**
+ * @brief Parser for the integral file associated with the excitonic HH Hamiltonian.
+ * 
+ * The integral file is expected to be given in the following format:
+ * 
+ *  i   i  coeff --> harmonic potential term
+ * ...
+ * -i  -i  coeff --> harmonic kinetic term
+ * ...
+ *  i   0  coeff --> LVC coupling term
+ * 
+ * @tparam T Scalar Type underlying the definition of the wave function.
+ * @param parms Parameter container
+ * @param lat DMRG lattice
+ * @return std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> > 
+ */
+template<class T>
+inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, std::vector<T> >
+    parseIntegralExcitonic(BaseParameters& parms, const Lattice& lat)
+{
+    // Types and variables definition
+    using pos_t = Lattice::pos_t;
+    std::vector<T> matrix_elements;
+    std::vector<chem::index_type<chem::Hamiltonian::Excitonic>> indices;
+    std::string integral_file = parms["integral_file"];
+    if (!boost::filesystem::exists(integral_file))
+        throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+    //
+    std::ifstream orb_file;
+    orb_file.open(integral_file.c_str());
+    std::vector<double> raw;
+    std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(), std::back_inserter(raw));
+    auto it = raw.begin();
+    while (it != raw.end()) {
+        // Computes the coupling degree of the Hamiltonian term
+        std::vector<int> tmp;
+        chem::integral_tuple<T, chem::Hamiltonian::Excitonic> t;
+        t.second = *it;
+        it++;
+        std::transform(it, it+2, std::back_inserter(tmp), boost::lambda::_1) ;
+        t.first[0] = tmp[0];
+        t.first[1] = tmp[1];
+        it += 2;
+        matrix_elements.push_back(t.second);
+        indices.push_back(t.first);
     }
     return std::make_pair(indices, matrix_elements);
 }

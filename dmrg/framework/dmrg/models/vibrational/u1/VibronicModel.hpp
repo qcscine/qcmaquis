@@ -38,7 +38,10 @@
 /**
  * @brief Class representing an ab-initio vibronic Hamiltonian.
  * 
- * The Hamiltonian is defined by providing as input, 
+ * The Hamiltonian is defined by providing as input the parameters
+ * entering the definition of the vibronic Hamiltonian.
+ * So far, coupling terms only up to the second-order can be given
+ * as input (therefore, only the LVC and the QVC models are supported)
  */
 
 template<class Matrix>
@@ -95,12 +98,12 @@ public:
         // Loads the matrices (code repetition can be in principle avoided with the 
         // "none" vibrational Hamiltonian here)
         mident(0, 0) = 1.;
-        for (int n = 1; n < nMax; ++n) {
-            mident(n,n) = 1.;
-            mpos(n-1,n) = std::sqrt(value_type(n))/std::sqrt(value_type(2.));
-            mpos(n,n-1) = std::sqrt(value_type(n))/std::sqrt(value_type(2.));
-            mmom(n-1,n) = std::sqrt(value_type(n))/std::sqrt(value_type(2.));
-            mmom(n,n-1) = -std::sqrt(value_type(n))/std::sqrt(value_type(2.));
+        for (int n=1; n < nMax; ++n) {
+            mident(n, n) = 1.;
+            mpos(n-1, n) =  std::sqrt(value_type(n))/std::sqrt(value_type(2.));
+            mpos(n, n-1) =  std::sqrt(value_type(n))/std::sqrt(value_type(2.));
+            mmom(n-1, n) =  std::sqrt(value_type(n))/std::sqrt(value_type(2.));
+            mmom(n, n-1) = -std::sqrt(value_type(n))/std::sqrt(value_type(2.));
         }
         position_vib_op.insert_block(mpos, 0, 0);
         momentum_vib_op.insert_block(mmom, 0, 0);
@@ -119,7 +122,7 @@ public:
         }
     }
 
-    /** @brief Creates the Hamiltonian terms, i.e. fill the terms_ vector */
+    /** @brief Creates the Hamiltonian terms, i.e. fills the terms_ vector */
     void create_terms() override {
         auto hamiltonianTerms = Vibrational::detail::parseIntegralVibronic<value_type>(parameters, lat);
         for (int iSize = 0; iSize < hamiltonianTerms.first.size(); iSize++) {

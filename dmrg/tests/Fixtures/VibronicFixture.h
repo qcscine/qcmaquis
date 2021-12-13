@@ -30,9 +30,7 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "maquis_dmrg.h"
 
-/**
- * @brief Fixture class for the test of the Vibronic DMRG
- */
+/** @brief Fixture class for the test of the Vibronic DMRG */
 struct VibronicFixture
 {
     /** @brief Constructor for the fixture class */
@@ -46,6 +44,18 @@ struct VibronicFixture
         parametersExcitonic.set("vibronic_nstates", 2);
         parametersExcitonic.set("vibronic_nmodes", 10);
         parametersExcitonic.set("n_excitons", 6);
+        // Single-excited state excitonic model
+        parametersExcitonicAggregate.set("L", 66);
+        parametersExcitonicAggregate.set("symmetry", "u1");
+        parametersExcitonicAggregate.set("LATTICE", "vibronic lattice");
+        parametersExcitonicAggregate.set("MODEL", "excitonic");
+        parametersExcitonicAggregate.set("Nmax", 8);
+        parametersExcitonicAggregate.set("vibronic_nstates", 1);
+        parametersExcitonicAggregate.set("vibronic_nmodes", 10);
+        parametersExcitonicAggregate.set("n_excitons", 6);
+        parametersExcitonicAggregate.set("J_coupling", -500);
+        parametersExcitonicAggregate.set("J_interaction", "nn");
+        parametersExcitonicAggregate.set("integral_file", "integral_file_Excitonic");
         // Vibronic models for S1/S2 states of pyrazine --> L=26
         parametersVibronic.set("L", 26);
         parametersVibronic.set("symmetry", "u1");
@@ -73,16 +83,50 @@ struct VibronicFixture
         integralFileFakeVibronic << " 3.0000   3   3  " << std::endl;
         integralFileFakeVibronic << "-3.0000  -3  -3  " << std::endl;
         integralFileFakeVibronic.close();
+        //
+        integralFileExcitonic.open("integral_file_Excitonic");
+        integralFileExcitonic << " 103.00      1     1" << std::endl;
+        integralFileExcitonic << "-103.00     -1    -1" << std::endl;
+        integralFileExcitonic << " 105.50      2     2" << std::endl;
+        integralFileExcitonic << "-105.50     -2    -2" << std::endl;
+        integralFileExcitonic << " 270.00      3     3" << std::endl;
+        integralFileExcitonic << "-270.00     -3    -3" << std::endl;
+        integralFileExcitonic << " 276.00      4     4" << std::endl;
+        integralFileExcitonic << "-276.00     -4    -4" << std::endl;
+        integralFileExcitonic << " 375.50      5     5" << std::endl;
+        integralFileExcitonic << "-375.50     -5    -5" << std::endl;
+        integralFileExcitonic << " 662.50      6     6" << std::endl;
+        integralFileExcitonic << "-662.50     -6    -6" << std::endl;
+        integralFileExcitonic << " 685.50      7     7" << std::endl;
+        integralFileExcitonic << "-685.50     -7    -7" << std::endl;
+        integralFileExcitonic << " 734.50      8     8" << std::endl;
+        integralFileExcitonic << "-734.50     -8    -8" << std::endl;
+        integralFileExcitonic << " 785.50      9     9" << std::endl;
+        integralFileExcitonic << "-785.50     -9    -9" << std::endl;
+        integralFileExcitonic << " 814.50     10    10" << std::endl;
+        integralFileExcitonic << "-814.50    -10   -10" << std::endl;
+        integralFileExcitonic << " 129.30      1     0" << std::endl;
+        integralFileExcitonic << " 138.36      2     0" << std::endl;
+        integralFileExcitonic << " 105.26      3     0" << std::endl;
+        integralFileExcitonic << " 150.16      4     0" << std::endl;
+        integralFileExcitonic << " 192.93      5     0" << std::endl;
+        integralFileExcitonic << " 187.38      6     0" << std::endl;
+        integralFileExcitonic << " 884.27      7     0" << std::endl;
+        integralFileExcitonic << " 425.76      8     0" << std::endl;
+        integralFileExcitonic << " 639.67      9     0" << std::endl;
+        integralFileExcitonic << " 454.68     10     0" << std::endl;
+        integralFileExcitonic.close();
     }
 
     /** @brief Class destructor */
     ~VibronicFixture() {
         std::remove("integral_file_VibronicFile");
+        std::remove("integral_file_Excitonic");
     }
 
     // Class members
-    DmrgParameters parametersVibronic, parametersExcitonic, parametersFakeVibronic;
-    std::ofstream integralFileFakeVibronic;
+    DmrgParameters parametersVibronic, parametersExcitonic, parametersFakeVibronic, parametersExcitonicAggregate;
+    std::ofstream integralFileFakeVibronic, integralFileExcitonic;
 };
 
 #endif

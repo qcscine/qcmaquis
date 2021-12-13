@@ -34,7 +34,7 @@
 
 #ifdef HAVE_U1
 
-/** @brief Checks that the constructor for the vibronic lattice */
+/** @brief Checks that the constructor for the vibronic lattice work properly */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Vibronic_Pyrazine, VibronicFixture)
 {
     auto lattice = VibronicLattice(parametersVibronic);
@@ -42,7 +42,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Vibronic_Pyrazine, VibronicFixture)
     BOOST_CHECK_EQUAL(size, 26);
 }
 
-/** @brief Checks that the constructor for the vibronic lattice */
+/** @brief Checks that the constructor for the excitonic lattice works properly*/
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Vibronic_Excitonic, VibronicFixture)
 {
     auto lattice = VibronicLattice(parametersExcitonic);

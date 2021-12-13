@@ -66,6 +66,8 @@ if(BUILD_VIBRONIC)
     target_link_libraries(test_vibronic_lattice ${DMRG_APP_LIBRARIES})
     add_executable(test_vibronic_u1_model vibronic/VibronicModel.cpp)
     target_link_libraries(test_vibronic_u1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_excitonic_u1_model vibronic/ExcitonicModel.cpp)
+    target_link_libraries(test_excitonic_u1_model ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRONIC)
 
 add_executable(test_integral_map test_integral_map.cpp)
