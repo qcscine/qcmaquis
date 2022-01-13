@@ -28,7 +28,7 @@
 #ifndef QC_MODEL_HPP
 #define QC_MODEL_HPP
 
-#include "framework/dmrg/models/JordanWignerManager.h"
+#include "dmrg/models/JordanWignerManager.h"
 
 template <class Matrix, class SymmGroup>
 qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
