@@ -99,6 +99,15 @@ private:
         add_option("imaginary_time", "Equal to yes for iTD-DMRG, no for TD-DMRG", value("no"));
         add_option("TD_backpropagation", "Equal to yes if the back-propagation step should be done, no otherwise", value("yes"));
 
+        // Parameters related to the Fermi-Hubbard model
+        add_option("U_FermiHubbard", "Potential term entering the Fermi-Hubbard model", value(0.));
+        add_option("t_FermiHubbard", "Hopping term entering the Fermi-Hubbard model", value(1.));
+        add_option("width_FermiHubbard", "Width of the Fermi-Hubbard lattice");
+        add_option("height_FermiHubbard", "Height of the Fermi-Hubbard lattice");
+
+        // Parameters related to the transcorrelation
+        add_option("transcorrelated_hamiltonian", "If yes, transcorrelates (if possible) the Hamiltonian", value("no"));
+
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
 
@@ -112,7 +121,6 @@ private:
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
         add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
-
 
         //Default values for lattice, model etc. for quantum chemistry calculations
         add_option("LATTICE", "", value("orbitals"));
@@ -179,11 +187,6 @@ private:
         add_option("Jz1", "");
         add_option("J1", "");
         add_option("J2", "");
-
-        add_option("U", "");
-        add_option("t", "");
-        add_option("t1", "");
-        add_option("t2", "");
 
         add_option("theta", "");
         add_option("h0", "");

@@ -11,6 +11,9 @@ target_link_libraries(test1 ${DMRG_APP_LIBRARIES})
 add_executable(test2 test2.cpp)
 target_link_libraries(test2 ${DMRG_APP_LIBRARIES})
 
+add_executable(test_FH_RealSpace test_FH_RealSpace.cpp)
+target_link_libraries(test_FH_RealSpace ${DMRG_APP_LIBRARIES})
+
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_imaginarytime test_imaginarytime.cpp)
     target_link_libraries(test_imaginarytime ${DMRG_APP_LIBRARIES})

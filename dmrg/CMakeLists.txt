@@ -367,22 +367,23 @@ if(ENABLE_COLLECTOR)
   list(APPEND DMRG_LIBRARIES maquis_collector)
 endif(ENABLE_COLLECTOR)
 
-# *** libraries / utilities
+# *** Libraries / Utilities
 add_subdirectory(framework/dmrg)
 
-# *** shared library
+# *** Shared Library
 add_subdirectory(lib/maquis_dmrg)
 
-# *** applications
+# *** Applications
 add_subdirectory(applications)
 
-# *** tests
+# *** Tests
 if(QCMAQUIS_TESTS)
   message(STATUS "Enabling tests")
   enable_testing()
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
   add_test(NAME Test2 COMMAND test2)
+  add_test(NAME TestFHRealSpace COMMAND test_FH_RealSpace)
   if(BUILD_PREBO)
     add_test(NAME PreBO_Test1 COMMAND prebo_test1)
     add_test(NAME PreBO_Test2 COMMAND prebo_test2)
