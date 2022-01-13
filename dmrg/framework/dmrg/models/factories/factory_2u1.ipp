@@ -29,6 +29,7 @@
 #include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/models/factories/factory.h"
 #include "dmrg/models/FermiHubbardModels/2u1/RealSpaceFermiHubbardModel.h"
+#include "dmrg/models/FermiHubbardModels/2u1/MomentumSpaceFermiHubbardModel.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1> 
@@ -44,6 +45,10 @@ struct coded_model_factory<Matrix, TwoU1>
             return (parms["transcorrelated_hamiltonian"] == "yes") ?
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, true)) :
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, false));
+        else if (parms["MODEL"] == std::string("fermi_hubbard_momentum"))
+            return (parms["transcorrelated_hamiltonian"] == "yes") ?
+                    impl_ptr(new FermiHubbardMomentumTwoU1<Matrix>(lattice, parms, true)) :
+                    impl_ptr(new FermiHubbardMomentumTwoU1<Matrix>(lattice, parms, false));
 #ifdef HAVE_NU1
         else if (parms["MODEL"] == std::string("PreBO"))
             return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
