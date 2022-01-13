@@ -161,12 +161,12 @@ struct TermMaker {
     }
 
     static bool compare_tag(pos_op_t p1, pos_op_t p2) {
-        return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
+        return std::get<0>(p1) < std::get<0>(p2);
     }
 
     static term_descriptor two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -178,9 +178,8 @@ struct TermMaker {
     }
 
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
-                                     std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
-                                     Lattice const & lat)
+                                               std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
+                                               std::shared_ptr<TagHandler<M, S> > op_table, Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = sign;
@@ -205,7 +204,7 @@ struct TermMaker {
     // same, but multiply first two operators
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2, std::vector<tag_type> const & op3,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -235,7 +234,7 @@ struct TermMaker {
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      std::vector<tag_type> const & opb1, std::vector<tag_type> const & opb2,
                                      std::vector<tag_type> const & ops1, std::vector<tag_type> const & ops2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     std::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -290,7 +289,7 @@ struct TermMaker {
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_j,
                                 std::vector<tag_type> const & op_k, std::vector<tag_type> const & op_l,
-                                boost::shared_ptr<TagHandler<M, S> > op_table,
+                                std::shared_ptr<TagHandler<M, S> > op_table,
                                 Lattice const & lat)
     {
         term_descriptor term;
@@ -312,11 +311,11 @@ struct TermMaker {
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         std::pair<tag_type, value_type> ptag;
-        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", boost::tuples::get<0>(sterm[0]))], boost::tuples::get<1>(sterm[0]));
-        boost::tuples::get<1>(sterm[0]) = ptag.first;
+        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", std::get<0>(sterm[0]))], std::get<1>(sterm[0]));
+        std::get<1>(sterm[0]) = ptag.first;
         term.coeff *= ptag.second;
-        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", boost::tuples::get<0>(sterm[2]))], boost::tuples::get<1>(sterm[2]));
-        boost::tuples::get<1>(sterm[2]) = ptag.first;
+        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", std::get<0>(sterm[2]))], std::get<1>(sterm[2]));
+        std::get<1>(sterm[2]) = ptag.first;
         term.coeff *= ptag.second;
         
         if (inv_count % 2)
