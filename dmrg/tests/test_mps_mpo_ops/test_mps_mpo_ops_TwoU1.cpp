@@ -36,6 +36,7 @@
 #include <iostream>
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/sim/matrix_types.h"
 #include "test_mps.h"
 
@@ -94,24 +95,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Test_MPS_Rotate, S, symmetries )
     Fixture<S> f;
     // Test MPS rotation
     f.mps.canonize(0);
-    matrix t = matrix(6,6, {1.0000000000000588, -3.0567539950976905e-14, 2.760512847099443e-07, -2.7058888747042958e-14, -2.0386219974666109e-07, -3.5550050708240602e-13, 3.0567531716797842e-14, 1,
-    -1.913451608258381e-14, 2.3600317316650584e-21, 1.448071040659122e-14, 1.0559927431889349e-16, -2.760512719947314e-07, 1.9134523617605794e-14, 0.99999999999996381, -8.5930036151948383e-15, -6.237152668522358e-08,
-    -1.0907976004561944e-13, 2.7058886172869296e-14, -2.360032375940198e-21, 8.5930102972685836e-15, 1, 1.2627019978663527e-14, 2.1938496646804564e-20, 2.0386219974664904e-07, -1.4480716638155465e-14, 6.2371582961645389e-08,
-    -1.2627026030907235e-14, 0.99999999999997713, 8.5518084530118431e-14, 3.5550050708238511e-13, -1.0559927432976027e-16, 1.0907985818199059e-13, -2.1938507203576664e-20, -8.5518163806719196e-14, 1});
-
+    matrix t = matrix(6,6, {1.0000000000000588e+00, -3.0567539950976905e-14,  2.760512847099443e-07, -2.7058888747042958e-14, -2.038621997466611e-07, -3.5550050708240602e-13, 
+                            3.0567531716797842e-14,  1.0000000000000588e+00, -1.913451608258381e-14,  2.3600317316650584e-21,  1.448071040659122e-14,  1.0559927431889349e-16, 
+                           -2.7605127199473140e-07,  1.9134523617605794e-14,  0.99999999999996381,   -8.5930036151948383e-15, -6.237152668522358e-08, -1.0907976004561944e-13,
+                            2.7058886172869296e-14, -2.360032375940198e-21,   8.5930102972685836e-15, 1.0000000000000000e+00,  1.2627019978663527e-14, 2.1938496646804564e-20,
+                            2.0386219974664904e-07, -1.4480716638155465e-14, 6.2371582961645389e-08, -1.2627026030907235e-14,  0.99999999999997713,    8.5518084530118431e-14,
+                            3.5550050708238511e-13, -1.0559927432976027e-16, 1.0907985818199059e-13, -2.1938507203576664e-20, -8.5518163806719196e-14, 1.0000000000000000e+00});
     int scale_inactive = 1;
-
+    auto initialNorm = norm(f.mps);
     mps_rotate::rotate_mps(f.mps, t, scale_inactive);
-
-    // check some random values. Reference values are obtained from the aforementioned OpenMOLCAS calculation
-    BOOST_CHECK_CLOSE(f.mps[1].data()[4](0,0), -0.61380217712623453, 1e-8);
-    BOOST_CHECK_CLOSE(f.mps[1].data()[4](3,0), -0.78945987064212642, 1e-8);
+    auto finalNorm = norm(f.mps);
+    // Checks that the norm is preserved
+    BOOST_CHECK_CLOSE(initialNorm, finalNorm, 1.0E-10);
+    // Checks some random values.
+    // Reference values are obtained from the aforementioned OpenMOLCAS calculation
+    BOOST_CHECK_CLOSE(f.mps[1].data()[4](0,0), -0.61380217712623453, 1.0e-4);
+    BOOST_CHECK_CLOSE(f.mps[1].data()[4](3,0), -0.78945987064212642, 1.0e-4);
     BOOST_CHECK_EQUAL(f.mps[1].data().n_blocks(), 9);
     BOOST_CHECK_EQUAL(f.mps[1].data()[3].num_rows(), 2);
-    BOOST_CHECK_CLOSE(f.mps[3].data()[0](0,0), -0.34947974240673951, 1e-8);
-    BOOST_CHECK_CLOSE(std::abs(f.mps[3].data()[0](3,0)), std::abs(-0.001800346670096781), 1e-8);
+    BOOST_CHECK_CLOSE(f.mps[3].data()[0](0,0), -0.34947974240673951, 1.0E-4);
+    BOOST_CHECK_CLOSE(std::abs(f.mps[3].data()[0](3,0)), std::abs(-0.001800346670096781), 1.0E-4);
     BOOST_CHECK_CLOSE(f.mps[3].data()[3](2,1), -1.4831922467019456e-07, 10);
-    BOOST_CHECK_CLOSE(f.mps[3].data()[0](11,0), 0.93692334071306171, 1e-8);
-    BOOST_CHECK_CLOSE(std::abs(f.mps[4].data()[2](1,0)), 0.083918122130324874, 1e-4); // TODO: check if sign is correct
-    BOOST_CHECK_CLOSE(std::abs(f.mps[4].data()[2](3,0)), 1.0322307057313466e-06, 1e-2);
+    BOOST_CHECK_CLOSE(f.mps[3].data()[0](11,0), 0.93692334071306171, 1.0E-4);
+    BOOST_CHECK_CLOSE(std::abs(f.mps[4].data()[2](1,0)), 0.083918122130324874, 1.0E-4);
+    BOOST_CHECK_CLOSE(std::abs(f.mps[4].data()[2](3,0)), 1.0322307057313466e-06, 1.0E-4);
 }

@@ -51,26 +51,29 @@
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
 {
-    typedef model_impl<Matrix, SymmGroup> base;
-
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
-    typedef typename base::tag_type tag_type;
-
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename base::terms_type terms_type;
-    typedef typename base::op_t op_t;
-    typedef typename base::measurements_type measurements_type;
-
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename Matrix::value_type value_type;
-    typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
-
+    // Types definition
+    using base = model_impl<Matrix, SymmGroup>;
+    using table_type = typename base::table_type;
+    using table_ptr = typename base::table_ptr;
+    using tag_type = typename base::tag_type;
+    using term_descriptor= typename base::term_descriptor;
+    using terms_type = typename base::terms_type;
+    using op_t = typename base::op_t;
+    using measurements_type = typename base::measurements_type;
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename Matrix::value_type;
+    using one_matrix = typename alps::numeric::associated_one_matrix<Matrix>::type;
+    using MapOfOperatorsType = std::unordered_map< std::vector< std::pair< int, unsigned int> >, value_type, 
+                                                   boost::hash< std::vector< std::pair< int, unsigned int> > > >;
 public:
 
     qc_model(Lattice const & lat_, BaseParameters & parms_);
 
+    /** @brief Generates the Hamiltonian terms */
     void create_terms();
+
+    /** @brief Updates the map with the operator definition */
+    void addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const;
 
     void update(BaseParameters const& p)
     {
@@ -104,10 +107,14 @@ public:
             return create_up[type];
         else if (name == "create_down")
             return create_down[type];
+        else if (name == "create_down_for_meas")
+            return create_down_for_meas[type];
         else if (name == "destroy_up")
             return destroy_up[type];
         else if (name == "destroy_down")
             return destroy_down[type];
+        else if (name == "destroy_down_for_meas")
+            return destroy_down_for_meas[type];
         else if (name == "count_up")
             return count_up[type];
         else if (name == "count_down")
@@ -137,9 +144,9 @@ public:
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
         std::vector<tag_type> swap_d2u              = (tag_handler->get_product_tags(destroy_down, create_up)).first;
-        std::vector<tag_type> swap_u2d              = (tag_handler->get_product_tags(destroy_up, create_down)).first;
+        std::vector<tag_type> swap_u2d              = (tag_handler->get_product_tags(destroy_up, create_down_for_meas)).first;
         std::vector<tag_type> create_up_count_down  = (tag_handler->get_product_tags(count_down, create_up)  ).first;
-        std::vector<tag_type> create_down_count_up  = (tag_handler->get_product_tags(count_up, create_down)  ).first;
+        std::vector<tag_type> create_down_count_up  = (tag_handler->get_product_tags(count_up, create_down_for_meas)  ).first;
         std::vector<tag_type> destroy_up_count_down = (tag_handler->get_product_tags(count_down, destroy_up) ).first;
         std::vector<tag_type> destroy_down_count_up = (tag_handler->get_product_tags(count_up, destroy_down) ).first;
 
@@ -291,25 +298,25 @@ public:
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 half_only = true;
@@ -341,8 +348,8 @@ public:
                     name = "transition_twoptdm_abba";
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
 		        }
@@ -350,10 +357,10 @@ public:
 
                     name = "transition_twoptdm_baab";
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
 
 		        }
@@ -361,10 +368,10 @@ public:
 
                     name = "transition_twoptdm_bbbb";
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
 
 		        }
@@ -406,72 +413,72 @@ public:
                 }
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                }
-                {
-                    bond_tag_element meas_operators;
-                    meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 value = it.second;
@@ -525,14 +532,14 @@ public:
                 // synop 1
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 // synop 2 - collapsing with synop 6 --> factor 2
@@ -541,11 +548,11 @@ public:
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 // synop 3 - collapsing with synop 7 --> factor 2
@@ -553,11 +560,11 @@ public:
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
@@ -565,11 +572,11 @@ public:
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
@@ -577,11 +584,11 @@ public:
                 // synop 5 - collapsing with synop 9 --> factor 2
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
@@ -591,53 +598,53 @@ public:
                 // synop 6
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 // synop 7
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 // synop 8
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 // synop 9
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
 
@@ -646,24 +653,24 @@ public:
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
 
                 // synop 11
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
@@ -673,26 +680,26 @@ public:
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
 
                 // synop 13
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
@@ -701,12 +708,12 @@ public:
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
@@ -714,14 +721,14 @@ public:
                 // synop 15
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
 
@@ -795,8 +802,8 @@ public:
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 nearest_neighbors_only = false;
@@ -823,7 +830,7 @@ public:
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down_for_meas);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 nearest_neighbors_only = false;
@@ -849,7 +856,7 @@ public:
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down_for_meas);
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
@@ -896,13 +903,13 @@ public:
                     {
                         bond_tag_element meas_operators;
                         meas_operators.push_back(create_up);
-                        meas_operators.push_back(destroy_down);
+                        meas_operators.push_back(destroy_down_for_meas);
                         synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                     }
 
                     {
                         bond_tag_element meas_operators;
-                        meas_operators.push_back(create_down);
+                        meas_operators.push_back(create_down_for_meas);
                         meas_operators.push_back(destroy_up);
                         synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                     }
@@ -910,8 +917,8 @@ public:
 
                 {
                     bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(create_down_for_meas);
+                    meas_operators.push_back(destroy_down_for_meas);
                     // distinguish whether we want to measure spin density or normal RDM
                     // if spin density, we need the second term with a negative prefactor (measure Nup-Ndown)
                     // instead of Nup + Ndown
@@ -1028,14 +1035,17 @@ public:
     }
 
 private:
+    // Conventional class members
     Lattice const & lat;
     BaseParameters & parms;
     std::vector<Index<SymmGroup> > phys_indices;
-
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    bool isTranscorrelated_=false;
+
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,
+                          create_down_for_meas, destroy_down_for_meas,
                           count_up, count_down, count_up_down, docc, e2d, d2e,
                           d2u, u2d;
 

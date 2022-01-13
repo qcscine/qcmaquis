@@ -4,22 +4,23 @@
  *
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
+ *               2020- by Alberto Baiardi <abaiardi@ethz.ch>
+ * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- *
+ * 
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -29,23 +30,143 @@
 
 template <class M, class S>
 struct TermMaker {
+    // == Types declaration ==
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename M::value_type;
+    using term_descriptor = ::term_descriptor<value_type>;
+    using tag_type = typename TagHandler<M, S>::tag_type;
+    using pos_op_t = typename term_descriptor::value_type;
+    using sc_t = typename S::subcharge;
 
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename M::value_type value_type;
-    typedef ::term_descriptor<value_type> term_descriptor;
-
-    typedef typename TagHandler<M, S>::tag_type tag_type;
-    typedef typename term_descriptor::value_type pos_op_t;
-    typedef typename S::subcharge sc_t;
-
-    static bool compare_tag(const pos_op_t& p1, const pos_op_t& p2)
+    /**
+     * @brief Generates the non-equivalent indexes for a given one-electron integral.
+     */
+    static std::vector< std::array<int, 2> > generateTwofoldSymmetricIndex(int i, int j) 
     {
-        return p1.first < p2.first;
+        using RetType = std::array<int, 2>;
+        RetType ret = {i, j};
+        // Generates the permutation
+        std::array<int, 2> ret1 = {ret[0], ret[1]},
+                           ret2 = {ret[1], ret[0]};
+        std::set< std::array<int, 2> > tmp = {ret1, ret2};
+        return std::vector<RetType>(tmp.begin(), tmp.end());
+    }
+
+    /**
+     * @brief Generates the non-equivalent indexes for a given two-electron integral.
+     * Note that the input is assumed to be given in chemical notation, i.e.
+     * (ij,kl) == <ik||jl>.
+     */
+    static std::vector< std::array<int, 4> > generateEightfoldSymmetricIndex(int i, int j, int k, int l) 
+    {
+        using RetType = std::array<int, 4>;
+        RetType ret = {i, j, k, l};
+        // Generates the permutation
+        std::array<int, 4> ret1 = {ret[0], ret[1], ret[3], ret[2]},
+                           ret2 = {ret[1], ret[0], ret[2], ret[3]},
+                           ret3 = {ret[1], ret[0], ret[3], ret[2]},
+                           ret4 = {ret[2], ret[3], ret[0], ret[1]},
+                           ret5 = {ret[2], ret[3], ret[1], ret[0]},
+                           ret6 = {ret[3], ret[2], ret[0], ret[1]},
+                           ret7 = {ret[3], ret[2], ret[1], ret[0]};
+        std::set< std::array<int, 4> > tmp = {ret, ret1, ret2, ret3, ret4, ret5, ret6, ret7};
+        return std::vector<RetType>(tmp.begin(), tmp.end());
+    }
+
+    /**
+     * @brief Generates the non-equivalent indexes for a given three-electron integral.
+     * Note that the input is assumed to be given in chemical notation, i.e.
+     * (ij,kl,mn), where ij --> r1, kl --> r2, mn --> r3
+     */
+    static std::vector< std::array<int, 6> > generateThreeBodySymmetricIndex(int i, int j, int k, int l, int m, int n) 
+    {
+        using RetType = std::array<int, 6>;
+        RetType ret = {i, j, k, l, m, n};
+        // Generates the permutation
+        std::vector< std::array<int, 6> > terms =  
+        { 
+            // 123
+            {ret[0], ret[1], ret[2], ret[3], ret[4], ret[5]},
+            {ret[0], ret[1], ret[2], ret[3], ret[5], ret[4]},
+            {ret[0], ret[1], ret[3], ret[2], ret[4], ret[5]},
+            {ret[0], ret[1], ret[3], ret[2], ret[5], ret[4]},
+            {ret[1], ret[0], ret[2], ret[3], ret[4], ret[5]},
+            {ret[1], ret[0], ret[2], ret[3], ret[5], ret[4]},
+            {ret[1], ret[0], ret[3], ret[2], ret[4], ret[5]},
+            {ret[1], ret[0], ret[3], ret[2], ret[5], ret[4]},
+            // 213
+            {ret[2], ret[3], ret[0], ret[1], ret[4], ret[5]},
+            {ret[2], ret[3], ret[0], ret[1], ret[5], ret[4]},
+            {ret[3], ret[2], ret[0], ret[1], ret[4], ret[5]},
+            {ret[3], ret[2], ret[0], ret[1], ret[5], ret[4]},
+            {ret[2], ret[3], ret[1], ret[0], ret[4], ret[5]},
+            {ret[2], ret[3], ret[1], ret[0], ret[5], ret[4]},
+            {ret[3], ret[2], ret[1], ret[0], ret[4], ret[5]},
+            {ret[3], ret[2], ret[1], ret[0], ret[5], ret[4]},
+            // 132
+            {ret[0], ret[1], ret[4], ret[5], ret[2], ret[3]},
+            {ret[0], ret[1], ret[5], ret[4], ret[2], ret[3]},
+            {ret[0], ret[1], ret[4], ret[5], ret[3], ret[2]},
+            {ret[0], ret[1], ret[5], ret[4], ret[3], ret[2]},
+            {ret[1], ret[0], ret[4], ret[5], ret[2], ret[3]},
+            {ret[1], ret[0], ret[5], ret[4], ret[2], ret[3]},
+            {ret[1], ret[0], ret[4], ret[5], ret[3], ret[2]},
+            {ret[1], ret[0], ret[5], ret[4], ret[3], ret[2]},
+            // 231
+            {ret[2], ret[3], ret[4], ret[5], ret[0], ret[1]},
+            {ret[2], ret[3], ret[5], ret[4], ret[0], ret[1]},
+            {ret[3], ret[2], ret[4], ret[5], ret[0], ret[1]},
+            {ret[3], ret[2], ret[5], ret[4], ret[0], ret[1]},
+            {ret[2], ret[3], ret[4], ret[5], ret[1], ret[0]},
+            {ret[2], ret[3], ret[5], ret[4], ret[1], ret[0]},
+            {ret[3], ret[2], ret[4], ret[5], ret[1], ret[0]},
+            {ret[3], ret[2], ret[5], ret[4], ret[1], ret[0]},
+            // 312
+            {ret[4], ret[5], ret[0], ret[1], ret[2], ret[3]},
+            {ret[5], ret[4], ret[0], ret[1], ret[2], ret[3]},
+            {ret[4], ret[5], ret[0], ret[1], ret[3], ret[2]},
+            {ret[5], ret[4], ret[0], ret[1], ret[3], ret[2]},
+            {ret[4], ret[5], ret[1], ret[0], ret[2], ret[3]},
+            {ret[5], ret[4], ret[1], ret[0], ret[2], ret[3]},
+            {ret[4], ret[5], ret[1], ret[0], ret[3], ret[2]},
+            {ret[5], ret[4], ret[1], ret[0], ret[3], ret[2]},
+            // 321
+            {ret[4], ret[5], ret[2], ret[3], ret[0], ret[1]},
+            {ret[5], ret[4], ret[2], ret[3], ret[0], ret[1]},
+            {ret[4], ret[5], ret[3], ret[2], ret[0], ret[1]},
+            {ret[5], ret[4], ret[3], ret[2], ret[0], ret[1]},
+            {ret[4], ret[5], ret[2], ret[3], ret[1], ret[0]},
+            {ret[5], ret[4], ret[2], ret[3], ret[1], ret[0]},
+            {ret[4], ret[5], ret[3], ret[2], ret[1], ret[0]},
+            {ret[5], ret[4], ret[3], ret[2], ret[1], ret[0]}
+        };
+        std::set< std::array<int, 6> > tmp;
+        for (const auto& iTerm: terms)
+            tmp.insert(iTerm);
+        return std::vector<RetType>(tmp.begin(), tmp.end());
+    }
+
+    /**
+     * @brief Generates the non-equivalent indexes based on two-fold symmetry.
+     * The only symmetry exploited is (ij|kl) = (kl|ij).
+     */
+    static std::vector< std::array<int, 4> > generateTwofoldSymmetricIndex(int i, int j, int k, int l) 
+    {
+        using RetType = std::array<int, 4>;
+        RetType ret = {i, j, k, l};
+        // Generates the permutation
+        std::array<int, 4> ret1 = {ret[2], ret[3], ret[0], ret[1]};
+        std::set< std::array<int, 4> > tmp = {ret, ret1};
+        return std::vector<RetType>(tmp.begin(), tmp.end());
+    }
+
+    static bool compare_tag(pos_op_t p1, pos_op_t p2) {
+        return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
 
     static term_descriptor two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
-                                     std::shared_ptr<TagHandler<M, S> > op_table,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -58,7 +179,7 @@ struct TermMaker {
 
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
-                                     std::shared_ptr<TagHandler<M, S> > op_table,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -84,7 +205,7 @@ struct TermMaker {
     // same, but multiply first two operators
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2, std::vector<tag_type> const & op3,
-                                     std::shared_ptr<TagHandler<M, S> > op_table,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -114,7 +235,7 @@ struct TermMaker {
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      std::vector<tag_type> const & opb1, std::vector<tag_type> const & opb2,
                                      std::vector<tag_type> const & ops1, std::vector<tag_type> const & ops2,
-                                     std::shared_ptr<TagHandler<M, S> > op_table,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
                                      Lattice const & lat)
     {
         term_descriptor term;
@@ -138,16 +259,16 @@ struct TermMaker {
         else {
             ptag1 = op_table->get_product_tag(opb2[lat.get_prop<sc_t>("type", pb)], opb1[lat.get_prop<sc_t>("type", pb)]);
             boson_op = ptag1.first;
-            term.coeff *= ptag1.second;
+            term.coeff *= ptag1.second; 
         }
-
+        
         if (p1 < p2) {
-            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p1)], ops1[lat.get_prop<sc_t>("type", p1)]);
+            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p1)], ops1[lat.get_prop<sc_t>("type", p1)]); 
             op1 = ptag1.first;
             term.coeff *= ptag1.second;
         }
         else {
-            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p2)], ops2[lat.get_prop<sc_t>("type", p2)]);
+            ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", p2)], ops2[lat.get_prop<sc_t>("type", p2)]); 
             op2 = ptag1.first;
             term.coeff *= -ptag1.second;
         }
@@ -169,7 +290,7 @@ struct TermMaker {
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_j,
                                 std::vector<tag_type> const & op_k, std::vector<tag_type> const & op_l,
-                                std::shared_ptr<TagHandler<M, S> > op_table,
+                                boost::shared_ptr<TagHandler<M, S> > op_table,
                                 Lattice const & lat)
     {
         term_descriptor term;
@@ -191,13 +312,13 @@ struct TermMaker {
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         std::pair<tag_type, value_type> ptag;
-        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", sterm[0].first)], sterm[0].second);
-        sterm[0].second = ptag.first;
+        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", boost::tuples::get<0>(sterm[0]))], boost::tuples::get<1>(sterm[0]));
+        boost::tuples::get<1>(sterm[0]) = ptag.first;
         term.coeff *= ptag.second;
-        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", sterm[2].first)], sterm[2].second);
-        sterm[2].second = ptag.first;
+        ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", boost::tuples::get<0>(sterm[2]))], boost::tuples::get<1>(sterm[2]));
+        boost::tuples::get<1>(sterm[2]) = ptag.first;
         term.coeff *= ptag.second;
-
+        
         if (inv_count % 2)
             term.coeff = -term.coeff;
 

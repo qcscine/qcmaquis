@@ -136,8 +136,8 @@ namespace mps_rotate
                         std::vector<tag_type> operators_up, operators_down;
                         operators_up.push_back(model.get_operator_tag("create_up", lat.get_prop<sc_t>("type", i)));
                         operators_up.push_back(model.get_operator_tag("destroy_up", lat.get_prop<sc_t>("type", j)));
-                        operators_down.push_back(model.get_operator_tag("create_down", lat.get_prop<sc_t>("type", i)));
-                        operators_down.push_back(model.get_operator_tag("destroy_down", lat.get_prop<sc_t>("type", j)));
+                        operators_down.push_back(model.get_operator_tag("create_down_for_meas", lat.get_prop<sc_t>("type", i)));
+                        operators_down.push_back(model.get_operator_tag("destroy_down_for_meas", lat.get_prop<sc_t>("type", j)));
 
                         ret.push_back(generate_mpo::make_1D_mpo(positions, operators_up, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
                         ret.push_back(generate_mpo::make_1D_mpo(positions, operators_down, ident, fill, model.operators_table(), lat, t(i,j)/t(j,j)));
