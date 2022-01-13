@@ -68,6 +68,15 @@ public:
     /** @brief Class constructor */
     term_descriptor() : base(), coeff(1.), is_fermionic(false) { }
     
+    /** @brief Class constructor providing as input the vector of terms */
+    term_descriptor(const base& vector, T coeff_, bool isFermionic) 
+      : base(vector), coeff(coeff_), is_fermionic(isFermionic) {}
+
+    /** @brief Gets the underlying vector */
+    base getBase() const {
+        return base(this->begin(), this->end());
+    }
+    
     /** @brief Getter for the position */
     pos_type position(size_type i) const { return this->operator[](i).first; }
 
