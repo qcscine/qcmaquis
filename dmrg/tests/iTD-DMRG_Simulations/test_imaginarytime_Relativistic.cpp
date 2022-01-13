@@ -31,48 +31,7 @@
 #include "utils/io.hpp"
 #include <iostream>
 #include "maquis_dmrg.h"
-#include "Fixtures/BenzeneFixture.h"
 #include "Fixtures/TimeEvolversFixture.h"
-#include "Fixtures/PreBOTimeEvolversFixture.h"
-
-/**
- * @brief Tests that iTD-DMRG and TI-DMRG give the same energy.
- * 
- * The data are obtained for CAS(6, 6) and based on the cc-pVDZ basis set.
- * The data are stored in the BenzeneFixture class.
- */
-BOOST_FIXTURE_TEST_CASE( TestImaginaryTime, BenzeneFixture )
-{
-    std::vector<std::string> symmetries;
-    #ifdef HAVE_SU2U1PG
-    symmetries.push_back("su2u1pg");
-    #endif
-    #ifdef HAVE_SU2U1
-    symmetries.push_back("su2u1");
-    #endif
-    #ifdef HAVE_TwoU1PG
-    symmetries.push_back("2u1pg");
-    #endif
-    #ifdef HAVE_TwoU1
-    symmetries.push_back("2u1");
-    #endif
-
-    for (auto&& s: symmetries) {
-        maquis::cout << "Running imaginary-time evolution test for symmetry " << s << std::endl;
-        parametersBenzeneImaginaryTime.set("symmetry", s);
-        parametersBenzene.set("symmetry", s);
-        maquis::DMRGInterface<double> realInterface(parametersBenzene);
-        maquis::DMRGInterface<std::complex<double>> complexInterface(parametersBenzeneImaginaryTime);
-        realInterface.optimize();
-        complexInterface.evolve();
-        // Test energy conservation
-        auto TIEnergy = std::real(realInterface.energy());
-        auto iTDEnergy = std::real(complexInterface.energy());
-        BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
-    }
-}
-
-#ifdef HAVE_U1DG
 
 /**
  * @brief Tests that the energy is conserved along a relativistic TD-DMRG propagation.
@@ -80,6 +39,7 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTime, BenzeneFixture )
  */
 BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
 {
+#ifdef HAVE_U1DG
     // Two-site evolutions
     parametersRelativistic.set("optimization", "twosite");
     parametersRelativistic.set("time_step", 10.);
@@ -94,30 +54,5 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
     auto energyTI = std::real(interfaceTI.energy());
     // The threshold is here a bit looser because the iTD-DMRG convergence is rather slow
     BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
-}
-
 #endif // HAVE_U1DG
-
-#ifdef DMRG_PREBO
-
-/**
- * @brief Tests that the energy is conserved along a "true" PreBO TD-DMRG propagation.
- */
-BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
-{
-    // Generic settings
-    parametersPreBOComplex.set("optimization", "twosite");
-    parametersPreBOReal.set("optimization", "twosite");
-    maquis::DMRGInterface<double> realInterface(parametersPreBOReal);
-    maquis::DMRGInterface<std::complex<double>> complexInterface(parametersPreBOComplex);
-    maquis::cout << "Running conventional DMRG optimization test for PreBO model" << std::endl;
-    realInterface.optimize();
-    maquis::cout << "Running imaginary-time evolution for PreBO model " << std::endl;
-    complexInterface.evolve();
-    // Test energy conservation
-    auto TIEnergy = std::real(realInterface.energy());
-    auto iTDEnergy = std::real(complexInterface.energy());
-    BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
 }
-
-#endif // DMRG_PREBO
