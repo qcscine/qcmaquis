@@ -68,7 +68,7 @@ enum class Hamiltonian {Electronic, VibrationalCanonical, VibrationalNMode, PreB
  *   equal to the max. order of the Taylor expansion of the PES. Here we include
  *   up to sixth-order force constants.
  */
-constexpr int getIndexDim (const Hamiltonian& type) {
+constexpr int getIndexDim(const Hamiltonian& type) {
     int indexDim=0;
     switch (type) {
         case Hamiltonian::Electronic:
@@ -88,7 +88,7 @@ constexpr int getIndexDim (const Hamiltonian& type) {
             indexDim = 4;
             break;
         case Hamiltonian::Excitonic:
-            indexDim = 4;
+            indexDim = 2;
             break;
         case Hamiltonian::PreBO:
             indexDim = 8;

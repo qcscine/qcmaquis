@@ -44,8 +44,6 @@ namespace detail {
  * i-n i-m j-p j-q           float_2   --> 2-body term (again, the indexes of the mode are the same).
  * i-n i-m j-p j-q k-v k-w   float_3   --> 3-body term.
  * 
- * note that 
- * 
  * @param parms  Parameter container
  * @param lat DMRG lattice
  * @param line_string string to be parsed 
@@ -75,31 +73,43 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
             // initialize splitted line
             std::vector<std::string> line_splitted;
             std::vector<std::size_t> size_vec;
-            std::istringstream iss(line_string, std::istringstream::in);
+            // -- Main data parsing --
+            // Trim leading and final spaces in the string.
+            line_string.erase(line_string.begin(),
+                              std::find_if(line_string.begin(), line_string.end(),
+                                           [&](int ch) { return !std::isspace(ch); }));
+            line_string.erase(
+                    std::find_if(line_string.rbegin(), line_string.rend(),
+                                 [&](int ch) { return !std::isspace(ch); }).base(),
+                    line_string.end());
             // Split the string
-            std::string word;
-            while (iss >> word)
-                line_splitted.emplace_back(std::move(word));
-            //boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on);
+            boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on);
             // Last value in string is assigned to the integral value
             integral = atof(line_splitted[line_splitted.size() - 1].c_str());
             chem::integral_tuple<T, chem::Hamiltonian::VibrationalNMode> t;
             t.second = integral;
             // Remove integral value from vector
             line_splitted.pop_back();
-            assert(line_splitted.size() == 4 || line_splitted.size() == 8 || line_splitted.size() == 12);
+            std::vector<std::string> indices_str;
+            // loop over all 2nd quant. operators in vector.
+            for (const auto &sq_op_str : line_splitted) {
+                std::vector<std::string> temp;
+                boost::split(temp, sq_op_str, boost::is_any_of("-"));
+                indices_str.insert(indices_str.end(), std::make_move_iterator(temp.begin()),
+                                    std::make_move_iterator(temp.end()));
+            }
+            assert(indices_str.size() == 4 || indices_str.size() == 8 || line_splitted.size() == 12);
             for (auto i = 0; i < 12; ++i) {
-                if (i < line_splitted.size()) {
-                    t.first[i] = std::stoul(line_splitted[i]);
+                if (i < indices_str.size()) {
+                    t.first[i] = std::stoul(indices_str[i]);
                     assert(t.first[i] < lat.size());
-                }
-                else {
+                } else {
                     t.first[i] = -1;
                 }
             }
             if (std::abs(t.second) > parms["integral_cutoff"]) {
-                matrix_elements.emplace_back(std::move(t.second));
-                indices.emplace_back(std::move(t.first));
+                matrix_elements.push_back(t.second);
+                indices.push_back(t.first);
             }
         }
     }
