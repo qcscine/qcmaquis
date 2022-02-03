@@ -111,6 +111,30 @@ testVibrationalHamiltonians:
     - cd buildVibrational
     - make test -j4
 
+buildVibronicHamiltonians:
+  stage: buildFinal
+  needs: ["testRelativistic"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildVibronic && cd buildVibronic
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;U1" -DBUILD_VIBRONIC=ON ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildVibronic/
+    expire_in: 6h
+    when: always
+
+testVibronicHamiltonians:
+  stage: testFinal
+  needs: ["buildVibronicHamiltonians"]
+  tags:
+    - default_docker
+  script:
+    - cd buildVibronic
+    - make test -j4
+
 # Pipeline for the TD-DMRG case
 
 build-TD-conventional:
