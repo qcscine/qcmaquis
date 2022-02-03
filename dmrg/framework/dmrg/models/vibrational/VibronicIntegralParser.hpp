@@ -27,7 +27,7 @@
 #ifndef VIBRONIC_PARSE_INTEGRALS_H
 #define VIBRONIC_PARSE_INTEGRALS_H
 
-#ifdef DMRG_VIBRATIONAL
+//#ifdef DMRG_VIBRATIONAL
 
 #include "integral_interface.h"
 #include "VibrationalModelTraitClass.hpp"
@@ -189,6 +189,6 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, st
 } // detail
 } // Vibrational
 
-#endif // DMRG_VIBRATIONAL
+// #endif // DMRG_VIBRATIONAL
 
 #endif // VIB_PARSE_INTEGRALS_H
