@@ -38,7 +38,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_Excitonic, VibronicFixture)
 {
 #ifdef HAVE_U1
-    auto lattice = Lattice(parametersExcitonic);
+    auto lattice = Lattice(parametersExcitonicAggregate);
     auto integrals = Vibrational::detail::parseIntegralExcitonic<double>(parametersExcitonicAggregate, lattice);
     // Checks sizes
     BOOST_CHECK_EQUAL(integrals.first.size(), 30);

@@ -53,12 +53,15 @@ public:
         : L(0), vector_types(0), nElecStates(parameters["vibronic_nstates"].as<int>()), 
           nModes(parameters["vibronic_nmodes"].as<int>()), nParticles(0), eleFirst(false)
     {
+        // Checks consistency
         // Determines the number of particles. Note that here by number of particles
         // we mean number of monomer with a manifold of excited states.
         if (parameters["MODEL"] == "vibronic") {
             nParticles = 1;
         }
         else if (parameters["MODEL"] == "excitonic") {
+            if (nElecStates != 1)
+                throw std::runtime_error("Excitonic model currently supports only 1 electronic state");
             nParticles = parameters["n_excitons"].as<int>();
         }
         else {

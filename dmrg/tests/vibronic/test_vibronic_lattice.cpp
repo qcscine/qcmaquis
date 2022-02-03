@@ -42,12 +42,12 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Vibronic_Pyrazine, VibronicFixture)
     BOOST_CHECK_EQUAL(size, 26);
 }
 
-/** @brief Checks that the constructor for the excitonic lattice works properly*/
+/** @brief Checks that the constructor for the excitonic lattice works properly */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Vibronic_Excitonic, VibronicFixture)
 {
-    auto lattice = VibronicLattice(parametersExcitonic);
+    auto lattice = VibronicLattice(parametersExcitonicAggregate);
     auto size = lattice.size();
-    BOOST_CHECK_EQUAL(size, 72);
+    BOOST_CHECK_EQUAL(size, 66);
 }
 
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_GetProp_Vibronic_Pyrazine, VibronicFixture)
@@ -64,21 +64,21 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_GetProp_Vibronic_Pyrazine, VibronicFixture)
 
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_GetProp_Excitonic, VibronicFixture)
 {
-    parametersExcitonic.set("vibronic_sorting", "intertwined");
-    auto lattice = VibronicLattice(parametersExcitonic);
+    parametersExcitonicAggregate.set("vibronic_sorting", "intertwined");
+    auto lattice = VibronicLattice(parametersExcitonicAggregate);
     auto posOfSecondModeOfSecondMonomer = lattice.get_prop<int>("vibindex", 1, 2);
-    // Indices 0-1 are excited states of the first monomer, then 2-11 are the next modes,
-    // then 12-13 are the excited states of the second monomer.
-    BOOST_CHECK_EQUAL(posOfSecondModeOfSecondMonomer, 16);
+    // The index 0 is the first excite state of the first monomer, then 1-10 are the next modes,
+    // then 11 is the excited states of the second monomer.
+    BOOST_CHECK_EQUAL(posOfSecondModeOfSecondMonomer, 14);
     auto posOfExcitedStates = lattice.get_prop<int>("eleindex", 5, 0);
-    BOOST_CHECK_EQUAL(posOfExcitedStates, 60);
+    BOOST_CHECK_EQUAL(posOfExcitedStates, 55);
     // Now changes the sorting
-    parametersExcitonic.set("vibronic_sorting", "firstele");
-    auto newLattice = VibronicLattice(parametersExcitonic);
+    parametersExcitonicAggregate.set("vibronic_sorting", "firstele");
+    auto newLattice = VibronicLattice(parametersExcitonicAggregate);
     posOfSecondModeOfSecondMonomer = newLattice.get_prop<int>("vibindex", 1, 2);
-    BOOST_CHECK_EQUAL(posOfSecondModeOfSecondMonomer, 24);
+    BOOST_CHECK_EQUAL(posOfSecondModeOfSecondMonomer, 18);
     posOfExcitedStates = newLattice.get_prop<int>("eleindex", 5, 0);
-    BOOST_CHECK_EQUAL(posOfExcitedStates, 10);
+    BOOST_CHECK_EQUAL(posOfExcitedStates, 5);
 
 }
 

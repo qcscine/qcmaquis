@@ -35,15 +35,6 @@ struct VibronicFixture
 {
     /** @brief Constructor for the fixture class */
     VibronicFixture() {
-        // Excitonic models with 6 monomers, 2 electronic states, 10 modes --> L=72 
-        parametersExcitonic.set("L", 72);
-        parametersExcitonic.set("symmetry", "u1");
-        parametersExcitonic.set("LATTICE", "vibronic lattice");
-        parametersExcitonic.set("MODEL", "excitonic");
-        parametersExcitonic.set("Nmax", 6);
-        parametersExcitonic.set("vibronic_nstates", 2);
-        parametersExcitonic.set("vibronic_nmodes", 10);
-        parametersExcitonic.set("n_excitons", 6);
         // Single-excited state excitonic model
         parametersExcitonicAggregate.set("L", 66);
         parametersExcitonicAggregate.set("symmetry", "u1");
@@ -125,7 +116,7 @@ struct VibronicFixture
     }
 
     // Class members
-    DmrgParameters parametersVibronic, parametersExcitonic, parametersFakeVibronic, parametersExcitonicAggregate;
+    DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic;
 };
 
