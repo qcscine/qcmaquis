@@ -1830,8 +1830,8 @@ The corresponding input file is given in Listing~\ref{lst:nModeVibInput}
 
 Note that the size of the vector given as input for the \texttt{nmode\_num\_basis} basis must be equal to the integer given as \texttt{nmode\_num\_modes} parameter.
 
-\subsection{DMRG for vibronic Hamiltonians}
-\label{sec:vibronic}
+\subsection{DMRG for excitonic Hamiltonians}
+\label{sec:excitonic}
 
 \qcm\ can be applied also to simulate vibronic processes, \textit{i.e.} phenomena that are tuned simultaneously by electronic and vibrational effects.
 Specifically, \qcm\ implements two classes of Hamiltonians: the Holstein-Hubbard Hamiltonian and \textit{ab initio} vibronic Hamiltonians based on the linear vibronic coupling (LVC) model.
@@ -1839,11 +1839,11 @@ Specifically, \qcm\ implements two classes of Hamiltonians: the Holstein-Hubbard
 The Holstein-Hubbard Hamiltonian is defined by the following parameters:
 
 \begin{itemize}
-  \item The number $N_\text{mol}$ of monomers forming the aggregate.
-  \item The number of vibrations $N_\text{vib}$ of vibrational degrees of freedom that are included per aggregate.
-  \item The harmonic frequencies $\omega_i$ associated with the $N_\text{vib}$ vibrations.
-  \item The $N_\text{vib}$ parameters $g_j$ of the LVC Hamiltonian.
-  \item The Coulomb coupling $J$.
+  \item The number $N_\text{mol}$ of monomers forming the aggregate (input parameter \texttt{n\_excitons}).
+  \item The number of vibrations $N_\text{vib}$ of vibrational degrees of freedom that are included per aggregate (input parameter \texttt{vibronic\_nmodes}).
+  \item The harmonic frequencies $\omega_i$ associated with the $N_\text{vib}$ vibrations (defined in the \texttt{integral\_file}, as described below).
+  \item The $N_\text{vib}$ parameters $g_j$ of the LVC Hamiltonian (defined in the \texttt{integral\_file}, as described below).
+  \item The Coulomb coupling $J$ (keyword \texttt{J\_coupling}).
 \end{itemize}
 
 The Holstein-Hubbard Hamiltonian $\mathcal{H}_\text{Hol}$ reads, in practice:
@@ -1867,7 +1867,90 @@ The Holstein-Hubbard Hamiltonian $\mathcal{H}_\text{Hol}$ reads, in practice:
 
 In Eq.~(\ref{eq:HolsteinHubbard}), $| 0_1 0_2 \cdots 0_{N_\text{mol}} \rangle$ represents the electronic configuration, where all the molecules are in their ground-state electronic state, while $| 0_1 \cdots 1_i \cdots 0_{N_\text{mol}} \rangle$ represents the configuration in which the $i$-th molecule of the aggregate has been excited.
 
+In order to apply DMRG to the Hamiltonian defined by Eq.~(\ref{eq:HolsteinHubbard}), the degrees of freedom must be mapped onto an appropriate one-dimensional lattice.
+Following Ref.~\citenum{Baiardi2019_TDDMMRG}, we construct a DMRG lattice that includes $N_\text{mol}$ electronic sites, each one describing a different molecule of the aggregate, and $N_\text{vib}$ vibrational sites per molecule.
+The overall number of sites is, therefore, $N_\text{mol} \times (N_\text{vib}+1)$.
+Currently, \qcm\ supports two different choices for sorting these sites into the DMRG lattice, that can be specified \textit{via} the \texttt{vibronic\_sorting} keyword:
+
+\begin{itemize}
+  \item The first sorting is obtained as follows: the first site is the electronic site associated with the first molecule of the aggregate. The following $N_\text{vib}$ sites are associated with the vibrations of the first molecule. The next site is then mapped to the electronic site associated with the second molecule, and the following $N_\text{vib}$ sites are used to represent the corresponding vibrational degrees of freedom. This procedure is repeated until all the molecules of the aggregate have been included. This mapping is obtained by setting the keyword \texttt{vibronic\_sorting} to \texttt{intertwined}.
+  \item Alternatively, it is possible to map the electronic degrees of freedom onto the first $N_\text{mol}$ sites of the lattice, and use the remaining ones for the vibrational parts.
+  Such a mapping is obtained by setting the \texttt{vibronic\_sorting} keyword to \texttt{firstele}.
+\end{itemize}
+
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for a vibronic DMRG calculation},
+				   label=lst:vibronicInput]
+  // == Generic input section ==
+  nsweeps                         = 6
+  max_bond_dimension              = 20
+  model_library                   = coded
+  lattice_library                 = coded
+  optimization                    = singlesite
+  integral_file                   = FCIDUMP_Vibronic
+  init_state                      = 'default'
+  // The symmetry group is u1 for all vibronic DMRG calculations
+  symmetry                        = u1
+  // This is lattice is used for both vibronic and excitonic calculations.
+  LATTICE                         = "vibronic lattice" 
+  // Vibronic model
+  MODEL                           = vibronic
+  J_coupling                      = -500
+  // This could have been also 'firstele'
+  vibronic_sorting                = 'intertwined'
+  nmode_max_coupling              = 2
+  // Number of modes and of molecules
+  vibronic_nmodes                 = 10
+  n_excitons                      = 6
+\end{lstlisting}
+
+We report in Listing~\ref{lst:vibronicInput} an examples of an input file for running a DMRG calculation on an excitonic Hamiltonian composed by 6 molecules, each one with 10 vibrational modes, coupled by a Coulomb coupling of -500.
+
+\begin{lstlisting}[language=qcmaquis,caption={Excitonic integral file format.},
+				   label=lst:excitonicDump]
+	 103.00      1     1
+	-103.00     -1    -1
+	 105.50      2     2
+	-105.50     -2    -2
+	 270.00      3     3
+	-270.00     -3    -3
+	 276.00      4     4
+	-276.00     -4    -4
+	 375.50      5     5
+	-375.50     -5    -5
+	 662.50      6     6
+	-662.50     -6    -6
+	 685.50      7     7
+	-685.50     -7    -7
+	 734.50      8     8
+	-734.50     -8    -8
+	 785.50      9     9
+	-785.50     -9    -9
+	 814.50     10    10
+	-814.50    -10   -10
+	 129.30      1     0
+	 138.36      2     0
+	 105.26      3     0
+	 150.16      4     0
+	 192.93      5     0
+	 187.38      6     0
+	 884.27      7     0
+	 425.76      8     0
+	 639.67      9     0
+	 454.68     10     0
+\end{lstlisting}
+
+The parameters defining the excitonic Hamiltonian must be included in the integral file, as shown in Listing~\ref{lst:vibdump}.
+The first 20 lines of the file define the Harmonic component of (see Eq.~(\ref{eq:HolsteinHubbard})).
+The terms are encoded as for the canonical quantization-based Hamiltonian of vDMRG.
+The last 10 lines of the file define the $g_j$ parameter of Eq.~(\ref{eq:HolsteinHubbard}).
+Also in this case, we follow the same encoding as for the canonical quantization vDMRG.
+
 % PUT INFO REGARDING TD 
+
+%\subsection{DMRG for vibronic Hamiltonians}
+%\label{sec:vibronic}
 
 \subsection{Pratical considerations}
 \label{sec:Practical-vDMRG}
