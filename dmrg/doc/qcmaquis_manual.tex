@@ -1947,8 +1947,6 @@ The terms are encoded as for the canonical quantization-based Hamiltonian of vDM
 The last 10 lines of the file define the $g_j$ parameter of Eq.~(\ref{eq:HolsteinHubbard}).
 Also in this case, we follow the same encoding as for the canonical quantization vDMRG.
 
-% PUT INFO REGARDING TD 
-
 %\subsection{DMRG for vibronic Hamiltonians}
 %\label{sec:vibronic}
 
@@ -1959,9 +1957,17 @@ Also in this case, we follow the same encoding as for the canonical quantization
 The vDMRG library is not activated if the default CMake settings are used when compiling \qcm.
 In order to run vDMRG simulation, the \texttt{BUILD\_VIBRATIONAL} CMake flag should be set to \texttt{ON}.
 This is, however, not sufficient.
-In fact, the Hamiltonians supported by \qcm\ are classified based on their symmetry properties.
-The symmetry of the Hamiltonians to be studied with \qcm\ must be included, at compile time, in the \texttt{BUILD\_SYMMETRIES} CMake keyword.
-By default, \texttt{BUILD\_SYMMETRIES} includes \texttt{TwoU1PG} (\textit{i.e.}, the symmetry of the non spin-adapted non-relativistic Hamiltonian, with the possibility of including point group symmetry) and \texttt{SU2U1PG}
+In fact, the Hamiltonians supported by \qcm\ are classified based on the symmetry group to which they belong.
+These groups must be included, at compile time, in the \texttt{BUILD\_SYMMETRIES} CMake keyword.
+By default, \texttt{BUILD\_SYMMETRIES} includes \texttt{TwoU1PG} (\textit{i.e.}, the symmetry of the non spin-adapted non-relativistic Hamiltonian, with the possibility of including point group symmetry) and \texttt{SU2U1PG} (the spin-adapted counterpart).
+The \texttt{NONE} point group must be added in order to compile the canonical quantization version of vDMRG, and the \texttt{NU1} one must be added to compile the $n$-mode variant.
+
+Similarly, in order to enable the support for vibronic and excitonic Hamiltonians, two parameters must be changed when the \texttt{Makefile} is generated.
+First, the \texttt{BUILD\_VIBRONIC} CMake flag should be set to \texttt{ON}.
+Second, the \texttt{U1} group should be added to the list of compiled symmetries, under the \texttt{BUILD\_SYMMETRIES} keyword.
+
+In conclusion, we note that both excitonic and vibronic Hamiltonians are mostly applied to quantum dynamics simulations of non-equilibrium processes.
+We will discuss in the following how to run quantum dynamics simulations with \qcm.
 
 \section{QCMaquis pre-Born--Oppenheimer module}
 \label{sec:preBO}
