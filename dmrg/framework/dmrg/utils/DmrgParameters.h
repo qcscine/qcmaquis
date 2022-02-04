@@ -155,6 +155,10 @@ private:
         add_option("PreBO_OrbitalVector", "Number of orbitals for each type");
         add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
 
+        // Vibronic
+        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
+        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(1.));
+        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
     }
 
 };

@@ -107,17 +107,41 @@ struct VibronicFixture
         integralFileExcitonic << " 639.67      9     0" << std::endl;
         integralFileExcitonic << " 454.68     10     0" << std::endl;
         integralFileExcitonic.close();
+        //
+        integralFileExcitonicHarmonic.open("integral_file_Excitonic_Harmonic");
+        integralFileExcitonicHarmonic << " 103.00      1     1" << std::endl;
+        integralFileExcitonicHarmonic << "-103.00     -1    -1" << std::endl;
+        integralFileExcitonicHarmonic << " 105.50      2     2" << std::endl;
+        integralFileExcitonicHarmonic << "-105.50     -2    -2" << std::endl;
+        integralFileExcitonicHarmonic << " 270.00      3     3" << std::endl;
+        integralFileExcitonicHarmonic << "-270.00     -3    -3" << std::endl;
+        integralFileExcitonicHarmonic << " 276.00      4     4" << std::endl;
+        integralFileExcitonicHarmonic << "-276.00     -4    -4" << std::endl;
+        integralFileExcitonicHarmonic << " 375.50      5     5" << std::endl;
+        integralFileExcitonicHarmonic << "-375.50     -5    -5" << std::endl;
+        integralFileExcitonicHarmonic << " 662.50      6     6" << std::endl;
+        integralFileExcitonicHarmonic << "-662.50     -6    -6" << std::endl;
+        integralFileExcitonicHarmonic << " 685.50      7     7" << std::endl;
+        integralFileExcitonicHarmonic << "-685.50     -7    -7" << std::endl;
+        integralFileExcitonicHarmonic << " 734.50      8     8" << std::endl;
+        integralFileExcitonicHarmonic << "-734.50     -8    -8" << std::endl;
+        integralFileExcitonicHarmonic << " 785.50      9     9" << std::endl;
+        integralFileExcitonicHarmonic << "-785.50     -9    -9" << std::endl;
+        integralFileExcitonicHarmonic << " 814.50     10    10" << std::endl;
+        integralFileExcitonicHarmonic << "-814.50    -10   -10" << std::endl;
+        integralFileExcitonicHarmonic.close();
     }
 
     /** @brief Class destructor */
     ~VibronicFixture() {
         std::remove("integral_file_VibronicFile");
         std::remove("integral_file_Excitonic");
+        std::remove("integral_file_Excitonic_Harmonic");
     }
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate;
-    std::ofstream integralFileFakeVibronic, integralFileExcitonic;
+    std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic;
 };
 
 #endif

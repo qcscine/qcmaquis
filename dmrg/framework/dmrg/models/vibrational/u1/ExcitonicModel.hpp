@@ -36,15 +36,19 @@
 #include "dmrg/models/vibrational/VibronicIntegralParser.hpp"
 
 /**
- * @brief Class representing an ab-initio vibronic Hamiltonian.
+ * @brief Class representing the Holstein-Hubbard Hamiltonian.
  * 
- * The Hamiltonian is defined by providing as input, 
+ * This Hamiltonian describes an excitonic system composed
+ * by N excitons, each one with the ground electronic state
+ * and one electronically excited state, and a Coulomb term
+ * that couples them via nearest-neighbour couplings.
+ * 
+ * The Hamiltonian is defined by three components:
+ *  1) The Harmonic ground-state PES of each monomer.
+ *  2) The LVC component of each excited state.
+ *  3) The (vibrationally independent) Coulomb coupling.
  */
 
-//    EXCITONIC HAMILTONIAN MODEL
-//  +-----------------------------+
-//  Note that, since we have two different types of sites, we also have different sets of
-//  creation/annhilation operators (one for electrons and the other one for nuclei)
 template<class Matrix>
 class HolsteinHubbardExcitonicHamiltonian : public model_impl<Matrix, U1>
 {
@@ -64,14 +68,15 @@ public:
      * @brief Model representing an Holstein-Hubbard Hamiltonian
      * In the Holstein-Hubbard Hamiltonian, we have multiple monomers, each one described by
      * Harmonic PESs, where the excited states are modelled with the LVC model.
-     * Moreover, off-diagonal coordinate-independent electronic coupling terms are presetn.
+     * Moreover, off-diagonal coordinate-independent electronic coupling terms are present.
      */
     HolsteinHubbardExcitonicHamiltonian (const Lattice& lat_, BaseParameters & model_) 
         : lat(lat_), model(model_), tag_handler(new table_type()), L_(model["L"]), n_ele_states_(model["vibronic_nstates"]),
           n_vib_states_(model["vibronic_nmodes"]), n_particles_(model["n_excitons"]), phys_indexes(0), J_(0.),
           epsilon_(1.), only_nn_(false)
     {
-        // Maximum order of the coupling terms that are supported
+        // Maximum order of the coupling terms that are supported.
+        // For the excitonic Hamiltonian, this will be 
         maxCoupling = VibrationalModelTraitClass<U1>::maximumNumberOfCouplings;
         // Vibronic interaction definition
         J_ = model["J_coupling"].as<value_type>();
@@ -81,11 +86,10 @@ public:
         // Variable definition
         std::size_t nMax = model["Nmax"];
         op_t ident_vib_op, ident_ele_op;
-        op_t create_ele_op, destroy_ele_op;
-        op_t count_ele_op;
+        op_t create_ele_op, destroy_ele_op, count_ele_op;
         op_t position_vib_op, momentum_vib_op;
-        // Definition of the physical dimensions. First we manage the dimensions for the vibrations, the the ones
-        // of the nuclei
+        // Definition of the physical dimensions.
+        // First we manage the dimensions for the vibrations, the the ones of the nuclei.
         phys_indexes.resize(2) ;
         phys_indexes[0].insert(std::make_pair(0, nMax));
         phys_indexes[1].insert(std::make_pair(0, 1));
@@ -96,6 +100,11 @@ public:
         create_ele_op.insert_block(Matrix(1, 1, 1), 0, 1);
         destroy_ele_op.insert_block(Matrix(1, 1, 1), 1, 0);
         count_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
+        //
+        ident_ele = tag_handler->register_op(ident_ele_op, tag_detail::bosonic);
+        create_ele = tag_handler->register_op(create_ele_op, tag_detail::bosonic);
+        destroy_ele = tag_handler->register_op(destroy_ele_op, tag_detail::bosonic);
+        count_ele = tag_handler->register_op(count_ele_op, tag_detail::bosonic);
         // Registering the vibrational operators
         Matrix mpos(nMax, nMax, 0.), mmom(nMax, nMax, 0.), mident(nMax, nMax, 0.);
         mident(0,0) = 1.;
@@ -109,6 +118,7 @@ public:
         position_vib_op.insert_block(mpos, 0, 0);
         momentum_vib_op.insert_block(mmom, 0, 0);
         ident_vib_op.insert_block(mident, 0, 0);
+        ident_vib = tag_handler->register_op(ident_vib_op, tag_detail::bosonic);
         // -- Creates the powers of the position/momentum operator --
         auto powersOfPositions_op = VibrationalHelpers<Matrix, U1>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_vib_op, position_vib_op);
         auto powersOfMomentum_op = VibrationalHelpers<Matrix, U1>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_vib_op, momentum_vib_op);
@@ -127,6 +137,8 @@ public:
         // == Definition of the Hamiltonian ==
         auto hamiltonianTerms = Vibrational::detail::parseIntegralExcitonic<value_type>(model, lat);
         // == Main loop over the monomers ==
+        // We first loop over the number of molecules of the aggregate, and then over the
+        // terms entering the vibronic Hamiltonian.
         for (int i_body = 0; i_body < n_particles_; i_body++) {
             std::vector<int> vec_jnk(maxCoupling);
             vec_jnk[0] = i_body;
@@ -137,12 +149,12 @@ public:
                 for (int op_vib = 0; op_vib < maxCoupling; op_vib++) {
                     // Chooses between position and momentum operators
                     if (hamiltonianTerms.first[idx][op_vib] < 0) {
-                        operators.push_back(momentum_vib);
+                        operators.push_back(momentumPowers[1]);
                         vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                     }
                     else if (hamiltonianTerms.first[idx][op_vib] > 0) {
-                        operators.push_back(position_vib);
+                        operators.push_back(positionPowers[1]);
                         vec_jnk[1] = hamiltonianTerms.first[idx][op_vib]-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                         //positions.push_back(i_body*(n_ele_states_ + n_vib_states_)+i_indexes(idx, op_vib));
@@ -172,10 +184,7 @@ public:
                     positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
                     operators.push_back(create_ele);
                     operators.push_back(destroy_ele);
-                    auto term = arrange_operators(positions, operators, tag_handler);
-                    term.coeff = J_;
-                    std::cout << term << std::endl;
-                    this->terms_.push_back(term);
+                    modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_);
                 }
             }
             std::vector<tag_type> operators;
@@ -224,7 +233,8 @@ public:
     /** @brief Identity matrix getter */
     typename U1::charge total_quantum_numbers(BaseParameters & parms) const
     {
-        // ALB Note that here we allow at most 1 particle to be excited
+        // ALB Note that here we allow at most 1 particle to be excited.
+
         return 1;
     }
 
@@ -255,12 +265,12 @@ public:
     measurements_type measurements() const
     {
         // Types definition
-        using op_vec       = std::vector<op_t> ;
-        using bond_element = std::vector<std::pair<op_vec, bool> > ;
+        using op_vec = std::vector<op_t>;
+        using bond_element = std::vector<std::pair<op_vec, bool> >;
         // Variable declaration
         measurements_type meas;
         // Ground state population
-        if (model["MEASURE[Population]"]) {
+        if (model.is_set("MEASURE[Population]")) {
             for (std::size_t idx = 0; idx < n_particles_; idx++) {
                 std::string name = "PopulationState"+std::to_string(idx);
                 // Generates vectors for the position operators
@@ -294,8 +304,8 @@ private:
     BaseParameters& model;
     std::size_t L_, n_ele_states_, n_vib_states_, n_particles_;
     std::vector< Index<U1> > phys_indexes;
-    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
-    tag_type ident_vib, position_vib, momentum_vib;
+    std::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
+    tag_type ident_vib;
     tag_type ident_ele, count_ele, create_ele, destroy_ele;
     /** Tag for the powers of the position/momentum operators */
     std::vector<tag_type> positionPowers, momentumPowers;

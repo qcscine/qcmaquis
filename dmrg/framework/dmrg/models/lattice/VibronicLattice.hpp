@@ -55,7 +55,7 @@ public:
     {
         // Checks consistency
         // Determines the number of particles. Note that here by number of particles
-        // we mean number of monomer with a manifold of excited states.
+        // we mean number of monomer with a manifold of excited states
         if (parameters["MODEL"] == "vibronic") {
             nParticles = 1;
         }
@@ -125,22 +125,21 @@ public:
      */
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {
-        if (property == "label" && pos.size() == 1) {
+        if (property == "label" && pos.size() == 1)
             return boost::any(site_label(pos[0]));
-        }
-        else if (property == "label" && pos.size() == 2) {
+        else if (property == "label" && pos.size() == 2)
             return boost::any(bond_label(pos[0], pos[1]));
-        }
-        else if (property == "type" && pos.size() == 1) {
+        else if (property == "type" && pos.size() == 1)
             return boost::any(vector_types[pos[0]]);
-        }
-        else if (property == "type" && pos.size() == 2) {
+        else if (property == "ParticleType" && pos.size() == 1)
+            return boost::any(vector_types[pos[0]]);
+        else if (property == "type" && pos.size() == 2)
             return boost::any(0);
-        }
-        else if (property == "vibindex" && pos.size() == 2) {
+        else if (property == "NumTypes")
+            return boost::any(2);
+        else if (property == "vibindex" && pos.size() == 2)
             return (eleFirst) ? boost::any(nParticles*nElecStates+pos[0]*nModes+pos[1]) :
                                 boost::any((nElecStates+nModes)*pos[0]+nElecStates+pos[1]);
-        }
         else if (property == "eleindex" && pos.size() == 2)
             return (eleFirst) ? boost::any(nElecStates*pos[0]+pos[1]) :
                                 boost::any((nElecStates+nModes)*pos[0]+pos[1]); 
