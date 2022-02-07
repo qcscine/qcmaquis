@@ -103,13 +103,16 @@ public:
      * @param coeff Scaling factor for the Hamiltonian
      */
     static void add_term(positions_type const& positions, operators_type const& operators, value_type const& coeff,
-                         const std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler, terms_type& terms)
+                         const std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler, terms_type& terms,
+                         bool verbose=false)
     {
         value_type scaling = 1.;
         std::pair<term_descriptor, bool> ret = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tag_handler);
         if (!ret.second) {
             auto term = ret.first;
             term.coeff = coeff * scaling;
+            if (verbose)
+                std::cout << term << std::endl;
             terms.push_back(term);
         }
     }
