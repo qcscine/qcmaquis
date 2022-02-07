@@ -351,6 +351,8 @@ private:
             for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
             {
                 charge pc = f(it1->first, it2->first);
+                if (size_.find(pc) == size_.end())
+                    size_[pc] = 0.;
                 keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc];
           //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc]));
                 size_[pc] += it1->second * it2->second;
