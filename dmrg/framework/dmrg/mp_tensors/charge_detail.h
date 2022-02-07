@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -33,6 +33,13 @@ template<class SymmGroup>
 class ChargeDetailClass {
 public:
     static bool physical(typename SymmGroup::charge c) { return true; }
+};
+
+/** @brief U1 specialization */
+template<>
+class ChargeDetailClass<U1> {
+public:
+    static bool physical(U1::charge c) { return c >= 0; }
 };
 
 /** @brief TwoU1PG specialization */
