@@ -160,7 +160,7 @@ private:
         add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(1.));
         add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
         add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
-        add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "intertwined");
+        add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
         add_option("n_excitons", "Number of molecule composing the molecular aggregate");
     }
 
