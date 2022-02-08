@@ -53,7 +53,6 @@ public:
     using table_type = typename base::table_type;
     using table_ptr = typename base::table_ptr;
     using tag_type = typename base::tag_type;
-    using term_descriptor = typename base::term_descriptor;
     using op_t = typename base::op_t;
     using measurements_type = typename base::measurements_type;
     using value_type = typename Matrix::value_type;
@@ -161,10 +160,10 @@ public:
     // Type physical basis depends on the type of the site (0 --> nuclear, 1 --> electron)
     Index<U1> const& phys_dim(size_t type) const { return phys[type]; }
 
-
+    /** @brief Getter for the identity matrix */
     tag_type identity_matrix_tag(size_t type) const
     {
-        tag_type ret ;
+        tag_type ret;
         if (type == 0)
             ret = ident_vib;
         else if (type == 1)
@@ -173,23 +172,22 @@ public:
             throw std::runtime_error("Site type not recognized");
         return ret;
     }
+
+    /** @brief Getter for the filling matrix */
     tag_type filling_matrix_tag(size_t type) const
     {
-        tag_type ret ;
+        tag_type ret;
         if (type == 0)
             ret = ident_vib;
         else if (type == 1)
             ret = ident_ele;
         else
             throw std::runtime_error("Site type not recognized");
-        return ret ;
+        return ret;
     }
 
     // Total quantum number which must be obtained at the end of the MPS. Should be 1 in all cases.
-    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
-    {
-        return 1;
-    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return 1; }
 
     /** @brief Getter for the operator associated with a given string */
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -218,8 +216,8 @@ public:
     measurements_type measurements() const
     {
         // Types definition
-        using op_vec       = std::vector<op_t> ;
-        using bond_element = std::vector<std::pair<op_vec, bool> > ;
+        using op_vec = std::vector<op_t>;
+        using bond_element = std::vector<std::pair<op_vec, bool> >;
         // Variable declaration
         measurements_type meas;
         // Ground state population

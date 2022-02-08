@@ -147,7 +147,6 @@ public:
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
                 for (int op_vib = 0; op_vib < maxCoupling; op_vib++) {
-                    // Chooses between position and momentum operators
                     if (hamiltonianTerms.first[idx][op_vib] < 0) {
                         operators.push_back(momentumPowers[1]);
                         vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
@@ -157,17 +156,14 @@ public:
                         operators.push_back(positionPowers[1]);
                         vec_jnk[1] = hamiltonianTerms.first[idx][op_vib]-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
-                        //positions.push_back(i_body*(n_ele_states_ + n_vib_states_)+i_indexes(idx, op_vib));
                     }
                 }
-                // TODO This should be always true
-                if (operators.size() == 1) {
-                    vec_jnk[1] = 0;
-                    positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
-                    operators.push_back(count_ele);
-                }
+                // Add the count operator for the specific excited states.
+                vec_jnk[1] = 0;
+                positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
+                operators.push_back(count_ele);
                 // Builds the term of the Hamiltonian
-                modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_);
+                modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
             }
         }
         // Add the J term to the Hamiltonian
@@ -187,9 +183,14 @@ public:
                     modelHelper<Matrix, U1>::add_term(positions, operators, J_, tag_handler, this->terms_);
                 }
             }
+        }
+        // On-site term (for now not used, because we have only one electronic state, but this would be
+        // crucial when we have more than a single excited state).
+        for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
+            vec_jnk[0] = i1_body;
             std::vector<tag_type> operators;
             std::vector<pos_t> positions;
-            positions.push_back(i1_body * (n_ele_states_ + n_vib_states_));
+            positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
             operators.push_back(count_ele);
             modelHelper<Matrix, U1>::add_term(positions, operators, epsilon_, tag_handler, this->terms_);
         }
@@ -234,7 +235,6 @@ public:
     typename U1::charge total_quantum_numbers(BaseParameters & parms) const
     {
         // ALB Note that here we allow at most 1 particle to be excited.
-
         return 1;
     }
 

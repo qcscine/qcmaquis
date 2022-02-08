@@ -79,7 +79,6 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_GetProp_Excitonic, VibronicFixture)
     BOOST_CHECK_EQUAL(posOfSecondModeOfSecondMonomer, 18);
     posOfExcitedStates = newLattice.get_prop<int>("eleindex", 5, 0);
     BOOST_CHECK_EQUAL(posOfExcitedStates, 5);
-
 }
 
 #endif // HAVE_U1
