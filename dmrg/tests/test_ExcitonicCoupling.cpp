@@ -36,7 +36,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_SingleSite, VibronicFixture)
 {
 #ifdef HAVE_U1
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Vibronic>;
+    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Excitonic>;
     // Adds the final input parameters
     parametersExcitonicAggregate.set("init_state", "default");
     //parametersExcitonicAggregate.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_SingleSite, VibronicFixture)
     InterfaceType interface(parametersExcitonicAggregate);
     interface.optimize();
     // The reference value can be calculated based on the Harmonic approximation.
-    auto refEnergy = 4812.5*6;
+    auto refEnergy = 4812.5;
     BOOST_CHECK_CLOSE(interface.energy(), refEnergy, 1.0E-5);
 #endif
 }
@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_SingleSite, VibronicFixture)
 /** @brief Watson-based calculation on an excitonic Hamiltonian. */
 BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_TwoSite, VibronicFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Vibronic>;
+    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Excitonic>;
     // Adds the final input parameters
     parametersExcitonicAggregate.set("init_state", "default");
     //parametersExcitonicAggregate.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
@@ -79,8 +79,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_TwoSite, VibronicFixture)
     InterfaceType interface(parametersExcitonicAggregate);
     interface.optimize();
     // The reference value can be calculated based on the Harmonic approximation.
-    // Note that here we must add the vertical energy
-    auto refEnergy = 4812.5*6 + 1000;
+    // Note that here we must add the vertical energy.
+    auto refEnergy = 4812.5 + 1000;
     BOOST_CHECK_CLOSE(interface.energy(), refEnergy, 1.0E-5);
 }
 
