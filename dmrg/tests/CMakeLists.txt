@@ -71,6 +71,8 @@ if(BUILD_VIBRONIC)
     # Executable test
     add_executable(test_Excitonic test_ExcitonicCoupling.cpp)
     target_link_libraries(test_Excitonic ${DMRG_APP_LIBRARIES})
+    add_executable(test_Vibronic test_VibronicCoupling.cpp)
+    target_link_libraries(test_Vibronic ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRONIC)
 
 add_executable(test_integral_map test_integral_map.cpp)

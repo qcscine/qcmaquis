@@ -453,6 +453,7 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Vibronic_Model COMMAND test_vibronic_u1_model)
     add_test(NAME Excitonic_Model COMMAND test_excitonic_u1_model)
     add_test(NAME Excitonic_Optimization COMMAND test_Excitonic)
+    add_test(NAME Vibronic_Optimization COMMAND test_Vibronic)
   endif(BUILD_VIBRONIC)
 endif(QCMAQUIS_TESTS)
 

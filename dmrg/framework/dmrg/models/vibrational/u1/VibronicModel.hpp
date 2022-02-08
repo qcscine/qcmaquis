@@ -135,19 +135,24 @@ public:
             // Skips the first two elements, they are the electronic states
             auto uniqueCoefficients = std::set<int>(hamiltonianTerms.first[iSize].begin()+2,
                                                     hamiltonianTerms.first[iSize].end());
-            for (const auto& iSite: uniqueCoefficients) {
-                auto vibrationalIndex = lat.get_prop<int>("vibindex", 0, std::abs(iSite-1));
-                positions.push_back(vibrationalIndex);
-                auto numberOfOccurrences = std::count(hamiltonianTerms.first[iSize].begin()+2,
-                                                      hamiltonianTerms.first[iSize].end(), iSite);
-                // Hardcoded so far max 2-body coupling elements
-                assert(numberOfOccurrences > 0 && numberOfOccurrences <= 2);
-                if (iSite < 0)
-                    operators.push_back(momentumPowers[numberOfOccurrences]);
-                else if (iSite > 0)
-                    operators.push_back(positionPowers[numberOfOccurrences]);
+            // Manages separately the vertical energy 
+            bool isConstantTerm = uniqueCoefficients.size() == 1 && hamiltonianTerms.first[iSize][2] == 0;
+            if (!isConstantTerm) {
+                for (const auto& iSite: uniqueCoefficients) {
+                    // Note that here the index of the 
+                    auto vibrationalIndex = lat.get_prop<int>("vibindex", 0, std::abs(iSite)-1);
+                    positions.push_back(vibrationalIndex);
+                    auto numberOfOccurrences = std::count(hamiltonianTerms.first[iSize].begin()+2,
+                                                          hamiltonianTerms.first[iSize].end(), iSite);
+                    // Hardcoded so far max 2-body coupling elements
+                    assert(numberOfOccurrences > 0 && numberOfOccurrences <= 2);
+                    if (iSite < 0)
+                        operators.push_back(momentumPowers[numberOfOccurrences]);
+                    else if (iSite > 0)
+                        operators.push_back(positionPowers[numberOfOccurrences]);
+                }
             }
-            modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[iSize], tag_handler, this->terms_);
+            modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[iSize], tag_handler, this->terms_, true);
         }
     }
 
@@ -221,7 +226,7 @@ public:
         // Variable declaration
         measurements_type meas;
         // Ground state population
-        if (parameters["MEASURE[Population]"]) {
+        if (parameters.is_set("MEASURE[Population]")) {
             for (std::size_t idx = 0; idx < n_ele_states_; idx++) {
                 std::string name = "PopulationState"+std::to_string(idx);
                 // Generates vectors for the position operators
