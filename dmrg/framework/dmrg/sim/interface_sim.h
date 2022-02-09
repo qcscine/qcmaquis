@@ -39,6 +39,7 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
+#include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/models/chem/measure_transform.hpp"
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
@@ -275,29 +276,34 @@ public:
     /** @brief Runs a measurement calculation */
     void run_measure()
     {
-        if (this->get_last_sweep() < 0)
-            throw std::runtime_error("Tried to measure before a sweep");
+        //if (this->get_last_sweep() < 0)
+        //    throw std::runtime_error("Tried to measure before a sweep");
         this->measure("/spectrum/results/", all_measurements);
         // MPO creation
         MPO<Matrix, SymmGroup> mpoc = mpo;
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
         double energy;
-        if (parms["MEASURE[Energy]"]) {
-            energy = maquis::real(expval(mps, mpoc));
+        // Measures the energy
+        if (parms["MEASURE[Energy]"]) 
+        {
+            energy = maquis::real(expval(mps, mpoc))/maquis::real(overlap(mps, mps));
             maquis::cout << "Energy: " << energy << std::endl;
-            if (!rfile().empty())
-            {
+            maquis::cout << "MPS norm: " << maquis::real(overlap(mps, mps)) << std::endl;
+            if (!rfile().empty()) {
                 storage::archive ar(rfile(), "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
             }
         }
-        if (parms["MEASURE[EnergyVariance]"] > 0) {
-            MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
-            mpo2.compress(1e-12);
-
-            if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc));
-            double energy2 = maquis::real(expval(mps, mpo2, true));
+        // Measures the energy variance
+        if (parms["MEASURE[EnergyVariance]"] > 0)
+        {
+            if (!parms["MEASURE[Energy]"])
+                energy = maquis::real(expval(mps, mpoc));
+            auto traitClass = MPOTimesMPSTraitClass<Matrix, SymmGroup>(mps, model, base::lat, model.total_quantum_numbers(parms),
+                                                                       parms["max_bond_dimension"]);
+            auto outputMPS = traitClass.applyMPO(mpoc);
+            auto energy2 = maquis::real(overlap(outputMPS, outputMPS)/norm(mps));
             maquis::cout << "Energy^2: " << energy2 << std::endl;
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
             if (!rfile().empty())
@@ -326,8 +332,8 @@ public:
         results_map_type ret;
 
         // Do not measure before a sweep
-        if (this->get_last_sweep() < 0)
-            throw std::runtime_error("Tried to measure before a sweep");
+        //if (this->get_last_sweep() < 0)
+        //    throw std::runtime_error("Tried to measure before a sweep");
 
         // Run all measurements and fill the result map
         for(auto&& meas: all_measurements)

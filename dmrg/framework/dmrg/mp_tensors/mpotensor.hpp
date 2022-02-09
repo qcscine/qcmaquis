@@ -28,33 +28,20 @@
 #include "dmrg/mp_tensors/reshapes.h"
 
 template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld
-                                       ,index_type rd
-                                       ,prempo_t tags
-                                       ,op_table_ptr tbl_
-                                       ,MPOTensor_detail::Hermitian h_
-                                       ,spin_index const & lspins
-                                       ,spin_index const & rspins)
-: left_i(ld)
-, right_i(rd)
-, left_spins(lspins)
-, right_spins(rspins)
-, col_tags(ld, rd)
-, operator_table(tbl_)
-, herm_info(ld, rd)
+MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t tags,
+                                        op_table_ptr tbl_, MPOTensor_detail::Hermitian h_,
+                                        spin_index const & lspins, spin_index const & rspins)
+    : left_i(ld), right_i(rd), left_spins(lspins), right_spins(rspins), col_tags(ld, rd),
+      operator_table(tbl_), herm_info(ld, rd)
 {
     using namespace boost::tuples;
     row_index.resize(ld);
-
     if (tags.size() > 0 && operator_table.get() != NULL) {
-
         // sort tags in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
-
         for (typename prempo_t::const_iterator it = tags.begin(); it != tags.end(); ++it) {
             internal_value_type & element = col_tags(get<0>(*it), get<1>(*it)).ref();
-            if (element.size() == 0)
-            {
+            if (element.size() == 0) {
                 element = internal_value_type(1, std::make_pair(get<2>(*it), get<3>(*it)));
                 row_index[get<0>(*it)].insert(get<1>(*it));
             }
