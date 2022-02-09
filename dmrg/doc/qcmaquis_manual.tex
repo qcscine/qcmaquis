@@ -1878,17 +1878,16 @@ Currently, \qcm\ supports two different choices for sorting these sites into the
   Such a mapping is obtained by setting the \texttt{vibronic\_sorting} keyword to \texttt{firstele}.
 \end{itemize}
 
-
 \begin{lstlisting}[language=qcmaquis,
-				   caption={Input example for a vibronic DMRG calculation},
-				   label=lst:vibronicInput]
+				   caption={Input example for an excitonic DMRG calculation},
+				   label=lst:excitonicInput]
   // == Generic input section ==
   nsweeps                         = 6
   max_bond_dimension              = 20
   model_library                   = coded
   lattice_library                 = coded
   optimization                    = singlesite
-  integral_file                   = FCIDUMP_Vibronic
+  integral_file                   = FCIDUMP_Excitonic
   init_state                      = 'default'
   // The symmetry group is u1 for all vibronic DMRG calculations
   symmetry                        = u1
@@ -1899,13 +1898,12 @@ Currently, \qcm\ supports two different choices for sorting these sites into the
   J_coupling                      = -500
   // This could have been also 'firstele'
   vibronic_sorting                = 'intertwined'
-  nmode_max_coupling              = 2
   // Number of modes and of molecules
   vibronic_nmodes                 = 10
   n_excitons                      = 6
 \end{lstlisting}
 
-We report in Listing~\ref{lst:vibronicInput} an examples of an input file for running a DMRG calculation on an excitonic Hamiltonian composed by 6 molecules, each one with 10 vibrational modes, coupled by a Coulomb coupling of -500.
+We report in Listing~\ref{lst:excitonicInput} an examples of an input file for running a DMRG calculation on an excitonic Hamiltonian composed by 6 molecules, each one with 10 vibrational modes, coupled by a Coulomb coupling of -500.
 
 \begin{lstlisting}[language=qcmaquis,caption={Excitonic integral file format.},
 				   label=lst:excitonicDump]
@@ -1947,8 +1945,170 @@ The terms are encoded as for the canonical quantization-based Hamiltonian of vDM
 The last 10 lines of the file define the $g_j$ parameter of Eq.~(\ref{eq:HolsteinHubbard}).
 Also in this case, we follow the same encoding as for the canonical quantization vDMRG.
 
-%\subsection{DMRG for vibronic Hamiltonians}
-%\label{sec:vibronic}
+\subsection{DMRG for vibronic Hamiltonians}
+\label{sec:vibronic}
+
+\qcm\ can apply DMRG also to \textit{ab-initio} vibronic Hamiltonians beyond the excitonic approximation to study the excited-state dynamics of isolated molecular systems.
+The specific form of the Hamiltonian that \qcm\ supports is the following:
+
+\begin{equation}
+  \mathcal{H} =
+    \begin{bmatrix}
+	   \mathcal{H}_1(Q_1,\ldots,Q_{N_\text{vib}})
+	     & \mathcal{V}_{12}(Q_1,\ldots,Q_{N_\text{vib}}) 
+         & \cdots 
+		 & \mathcal{V}_{1 N_\text{ele}}(Q_1,\ldots,Q_{N_\text{vib}}) \\
+	   \mathcal{V}_{21}(Q_1,\ldots,Q_{N_\text{vib}})
+	     & \mathcal{H}_2(Q_1,\ldots,Q_{N_\text{vib}})
+         &  
+		 & \\
+	  \vdots
+	     & 
+         & \ddots 
+		 & \\
+	  \mathcal{V}_{N_\text{ele} 1}(Q_1,\ldots,Q_{N_\text{vib}})
+	     &
+         &  
+		 & \mathcal{H}_{N_\text{ele}}(Q_1,\ldots,Q_{N_\text{vib}}) \\
+   \end{bmatrix}
+  \label{eq:VibronicHamiltonian}
+\end{equation}
+%
+for a system with $N_\text{ele}$ electronic states and $N_\text{vib}$ vibrational degrees of freedom.
+$\mathcal{H}_{i}(Q_1,\ldots,Q_{N_\text{vib}})$ represents the vibrational Hamiltonian associated with the $i$-th electronic state, and is expressed as:
+
+\begin{equation}
+  \mathcal{H}_{i}(Q_1,\ldots,Q_{N_\text{vib}}) = E_i^{(eq)}
+	+ \sum_{j=1}^{N_\text{vib}} \omega_j^{(i),2} \left( Q_j^2  + P_j^2 \right) \, ,
+  \label{eq:DiagonalVibronic}
+\end{equation}
+%
+where $E_i^{(eq)}$ is the electronic energy of the equilibrium position, and $Q_j$ and $P_j$ are the $j$-th dimensionless  normal coordinate and the corresponding conjugate momentum, respectively, with harmonic frequency $\omega_j$.
+$\mathcal{V}_{ij}(Q_1,\ldots,Q_{N_\text{vib}})$ is the non-adiabatic coupling between the $i$-th and the $j$-th electronic state, and is expressed as:
+
+\begin{equation}
+  \mathcal{V}_{ij}(Q_1,\ldots,Q_{N_\text{vib}}) =
+   \sum_{k=1}^{N_\text{vib}} g_k^{(i,j)} Q_k
+	+ \sum_{k,l=1}^{N_\text{vib}} h_{k,l}^{(i,j)} Q_k Q_l \, ,
+  \label{eq:OffDiagonalVibronic}
+\end{equation}
+%
+where $g_k^{(i,j)}$ and $h_{k,l}^{(i,j)}$ are the first- and second-order coupling non-adiabatic coupling terms, respectively.
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for a vibronic DMRG calculation},
+				   label=lst:vibronicInput]
+  nsweeps                         = 6
+  max_bond_dimension              = 20
+  model_library                   = coded
+  lattice_library                 = coded
+  optimization                    = singlesite
+  integral_file                   = FCIDUMP_Vibronic
+  init_state                      = 'default'
+  symmetry                        = u1
+  LATTICE                         = "vibronic lattice"
+  MODEL                           = vibronic
+  // Note that here the [n_excitons] parameter is replaced 
+  // by the [vibronic_nstates] one
+  vibronic_nmodes                 = 4
+  vibronic_nstates                = 2
+\end{lstlisting}
+
+A sample input file for a DMRG calculation on a vibronic Hamiltonian is given in Listing~\ref{lst:vibronicInput}.
+The key difference between the input for the excitonic calculation, reported in Listing~\ref{lst:excitonicInput}, is that the \texttt{n\_excitons} parameter is replaced by the \texttt{vibronic\_nstates} one, which corresponds to the $N_\text{ele}$ parameter introduced above.
+The integral file \texttt{FCIDUMP\_Vibronic} should contain the definition of the parameters entering the vibronic Hamiltonian, \textit{i.e.}, $\omega_j^{(i)}$, $g_k^{(i,j)}$, and $h_{k,l}^{(i,j)}$.
+We show in Listing~\ref{lst:vibronicDump} the format of the integral file for the case of the 4-mode vibronic Hamiltonian of pyrazine that describes the S$_1$ and S$_2$ electronic states, taken from Ref.~\citenum{Raab1999_Pyrazine}.
+
+\begin{lstlisting}[language=qcmaquis,caption={Vibronic integral file format.},
+				   label=lst:vibronicDump]
+EL_ST 0 0
+-4114.23                0      0
+  325.84799             1      1     
+ -325.84799            -1     -1
+  559.34550             2      2     
+ -559.34550            -2     -2
+  674.68277             3      3     
+ -674.68277            -3     -3     
+  518.21124             4      4     
+ -518.21124            -4     -4     
+EL_ST 1 1
+ 4114.23                0      0
+  325.84799             1      1     
+ -325.84799            -1     -1
+  559.34550             2      2     
+ -559.34550            -2     -2
+  674.68277             3      3     
+ -674.68277            -3     -3     
+  518.21124             4      4     
+ -518.21124            -4     -4     
+EL_ST 0 0
+ -791.22989             1      0
+ -405.69687             2      0
+ 1171.11703             3      0
+EL_ST 1 1
+ 1092.881251            1      0
+-1379.877165            2      0
+  302.457910            3      0
+EL_ST 0 0
+   0.16131088           1      1
+   8.71078783           1      2
+ -16.45371035           1      3
+   8.71078783           2      1
+ -65.33090875           2      2
+  38.23067993           2      3
+ -16.45371035           3      1
+  38.23067993           3      2
+  -9.35603137           3      3
+ -93.47965832           4      4
+EL_ST 1 1 
+ -73.96104114           1      1
+ -24.03532198           1      2
+ -15.24387871           1      3
+ -24.03532198           2      1
+  39.35985614           2      2
+   9.27537593           2      3
+ -15.24387871           3      1
+   9.27537593           3      2
+   1.77441974           3      3
+ -93.47965832           4      4
+EL_ST 0 1
+ 1677.63321200          4      0
+  -80.65544294          4      1
+  -44.44114904          4      2
+   10.24324125          4      3
+   50.65161814          1      4
+  -44.44114904          2      4
+   10.24324125          3      4
+EL_ST 1 0
+ 1677.63321200          4      0
+  -80.65544294          4      1
+  -44.44114904          4      2
+   10.24324125          4      3
+   50.65161814          1      4
+  -44.44114904          2      4
+   10.24324125          3      4
+\end{lstlisting}
+
+Note that the constants entering the vibronic Hamiltonian are represented as in the excitonic case.
+The header \texttt{EL\_ST X Y}, where \texttt{X} and \texttt{Y} are integer smaller than $N_\text{ele}$, indicates the electronic states to which the vibrational constants are associated with.
+For instance, the header \texttt{EL\_ST 0 0} indicates that the constants in lines 2-10 are associated with the 0-0 block of Eq.~\ref{eq:VibronicHamiltonian}.
+Therefore, they represent, in practice, the vibrational Hamiltonian for the S$_0$ state.
+Note that the coefficients associated with the \texttt{0   0} pair of indices (line 3) is the constant energy shift $E_i^{(eq)}$ of Eq.~(\ref{eq:DiagonalVibronic}) (also referred to as $\Delta$ in Ref.~(\citenum{Raab1999_Pyrazine})).
+Each block of Listing~\ref{lst:vibronicDump} corresponds to a class of terms entering Eq.~(1) of Ref.~(\citenum{Raab1999_Pyrazine}).
+Specifically:
+
+\begin{enumerate}
+  \item Lines 3-10 are the $\omega_i$ coefficients for the S$_1$ state.
+  \item Lines 13-20 are the $\omega_i$ coefficients for the S$_2$ state.
+  \item Lines 22-24 are the $a_i$ coefficients.
+  \item Lines 26-28 are the $b_i$ coefficients.
+  \item Lines 30-39 are the $a_{ij}$ coefficients.
+  \item Lines 41-50 are the $b_{ij}$ coefficients.
+  \item Lines 52-58 and 60-66 collect the $c_i$ and $c_{ij}$ coefficients.
+\end{enumerate}
+
+Note that the vibronic Hamiltonian is Hermitian and, therefore, the $\mathcal{V}_{ij}$ and $\mathcal{V}_{ji}$ operators form a hermitian conjugate pair.
+However, this hermiticity is not exploited in the integral file, where both the $\mathcal{V}_{01}$ and $\mathcal{V}_{10}$ operators are explicitly given.
 
 \subsection{Pratical considerations}
 \label{sec:Practical-vDMRG}
