@@ -4,7 +4,7 @@
  *
  * ALPS Libraries
  *
- * Copyright (C) 2019 by Alberto Baiardi <abaiardi@ethz.ch>
+ * Copyright (C) 2019- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS libraries, published under the ALPS
  * Library License; you can use, redistribute it and/or modify it under
@@ -42,6 +42,7 @@
 #include "TimeEvolutionAlgorithm.h"
 #include "LanczosEvolver.h"
 #include "RKEvolver.h"
+#include "ArnoldiEvolver.h"
 
 /** @brief Wrapper class for time-evolution methods */
 template<class Matrix, class SymmGroup, class ParameterType>
@@ -53,6 +54,7 @@ class TimeEvolver {
   using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
   using time_evolution_algorithm = TimeEvolutionAlgorithm<Matrix, SymmGroup>;
   using time_type = double;
+  using ArnoldiEvolverType = ArnoldiEvolver<Matrix, SymmGroup>;
   using LanczosTI = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::Standard>;
   using LanczosEMR = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::ExponentialMidpoint>;
   using LanczosFourthOrder = LanczosEvolver<Matrix, SymmGroup, TimeStepDistributor::FourthOrderMagnus>;

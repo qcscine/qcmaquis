@@ -108,6 +108,7 @@ private:
 
         // Parameters related to the transcorrelation
         add_option("transcorrelated_hamiltonian", "If yes, transcorrelates (if possible) the Hamiltonian", value("no"));
+        add_option("J_Transcorrelated", "Scalar factor for the Jastrow exponent", value(0.));
 
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));

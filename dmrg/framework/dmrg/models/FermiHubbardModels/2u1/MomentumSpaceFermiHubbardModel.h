@@ -145,9 +145,9 @@ public:
         int kxMax = (height%2 == 0) ? height/2 : height/2;
         int kyMin = (width%2 == 0) ? -width/2+1 : -width/2;
         int kyMax = (width%2 == 0) ?  width/2 : width/2;
-        value_type J = parms.is_set("J") ? parms["J"] : 0.;
-        if (isTranscorrelated && !parms.is_set("J"))
+        if (isTranscorrelated && !parms.is_set("J_Transcorrelated"))
             throw std::runtime_error("Please set the transcorrelation parameter");
+        value_type J = parms.is_set("J_Transcorrelated") ? parms["J_Transcorrelated"] : 0.;
         // Orbital sorting
         if (!parms.is_set("orbital_order")) {
             for (pos_t p = 0; p < width*height; ++p) {

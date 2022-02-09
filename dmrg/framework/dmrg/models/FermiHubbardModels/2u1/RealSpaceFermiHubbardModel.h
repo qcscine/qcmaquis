@@ -3,7 +3,7 @@
  * QCMaquis DMRG Project
  *
  * Copyright (C) 2021 Laboratory for Physical Chemistry, ETH Zurich
- *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021-2022 by Alberto Baiardi <abaiardi@ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -93,9 +93,9 @@ public:
         value_type t = parms["t_FermiHubbard"];
         int width = parms["width_FermiHubbard"];
         int height = parms["height_FermiHubbard"];
-        value_type J = parms.is_set("J") ? parms["J"] : 0.;
-        if (isTranscorrelated && !parms.is_set("J"))
+        if (isTranscorrelated && !parms.is_set("J_Transcorrelated"))
             throw std::runtime_error("Please set the transcorrelation parameter");
+        value_type J = parms.is_set("J_Transcorrelated") ? parms["J_Transcorrelated"] : 0.;
         // == HAMILTONIAN CREATION ==
         auto jw = JordanWignerHandler<Matrix, TwoU1>(lat, fill, create_up, create_down, destroy_up, destroy_down);
         // Potential energy term

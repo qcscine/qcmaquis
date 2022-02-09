@@ -66,22 +66,20 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
   if (parms.is_set("TD_perturbation")) {
     has_td_part_ = true;
     std::string intAlgo = parms["TD_integration_algorithm"];
-    if (intAlgo == "RungeKutta") {
+    if (intAlgo == "RungeKutta")
       time_evolution_algorithm_ = std::make_unique< RKEvolver<Matrix, SymmGroup> >(time_step_, has_td_part_, is_imag_);
-    }
-    else if (intAlgo == "EMR2") {
+    else if (intAlgo == "EMR2")
       time_evolution_algorithm_ = std::make_unique< LanczosEMR >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-      // This must be decommented once it works.
-      //useExtrapolated_ = true;
-    }
-    else if (intAlgo == "CF4") {
+    else if (intAlgo == "CF4")
       time_evolution_algorithm_ = std::make_unique< LanczosFourthOrder>(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-    }
-    else {
+    else
       throw std::runtime_error("TD integration algorithm not recognized");
-    }
-  } else {
-    time_evolution_algorithm_ = std::make_unique< LanczosTI >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
+  }
+  else {
+    if (parms["transcorrelated_hamiltonian"] == "yes")
+      time_evolution_algorithm_ = std::make_unique< ArnoldiEvolverType >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
+    else
+      time_evolution_algorithm_ = std::make_unique< LanczosTI >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
   }
 };
 

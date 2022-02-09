@@ -114,7 +114,7 @@ namespace alps {
         template<class Matrix>
         Matrix inverse(Matrix M)
         {
-            std::vector<int> ipiv(num_rows(M));
+            std::vector<long int> ipiv(num_rows(M));
 
             int info = boost::numeric::bindings::lapack::getrf(M,ipiv);
             if (info != 0)
@@ -325,20 +325,39 @@ namespace alps {
         }
 
         template<typename T, class MemoryBlock>
-        matrix<T, MemoryBlock> exp (matrix<T, MemoryBlock> M, T const & alpha=1)
+        matrix<T, MemoryBlock> exp (matrix<T, MemoryBlock> M, T const & alpha=1, bool doShift=false)
         {
             BOOST_STATIC_ASSERT( boost::is_complex<T>::value );
+            typedef typename boost::numeric::bindings::remove_imaginary< T >::type real_type;
             assert(num_rows(M) == num_cols(M));
             std::size_t n = num_cols(M);
             matrix<T, MemoryBlock> Nr(n, n), Nl(n, n);
             typename associated_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
             int info;
-
+            //
             info = boost::numeric::bindings::lapack::geev('N', 'V', M, Sv, Nl, Nr);
             if (info != 0)
               throw std::runtime_error("Error in GEEV !");
 
             matrix<T, MemoryBlock> Nrinv = inverse(Nr);
+            // Finds the maximum value of the eigevalues and subtract it
+            if (doShift) {
+                real_type maxEigen;
+                if (std::real(alpha) > 0.) {
+                    maxEigen = 0.;
+                    for (int iElement = 0; iElement < num_rows(M); iElement++)
+                        if (std::real(Sv[iElement]) > maxEigen)
+                            maxEigen = std::real(Sv[iElement]);
+                }
+                else {
+                    maxEigen = std::real(Sv[0]);
+                    for (int iElement = 1; iElement < num_rows(M); iElement++)
+                        if (std::real(Sv[iElement]) < maxEigen)
+                            maxEigen = std::real(Sv[iElement]);
+                }
+                for (int iElement = 0; iElement < num_rows(M); iElement++)
+                    Sv[iElement] -= maxEigen;
+            }
 
             typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
             S = exp(alpha*S);
