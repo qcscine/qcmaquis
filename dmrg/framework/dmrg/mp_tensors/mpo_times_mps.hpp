@@ -371,10 +371,10 @@ public:
                                             maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + iRowPhys*r_size + rr),
                                                                                 &iblock(0, in_right_offset + iRowPhys*r_size + rr) + l_size,
                                                                                 &oblock(thresholdLeft[out_l_charge][iRow],
-                                                                                        out_right_offset                                 // Offset given by the product basis
-                                                                                      + iColPhys*finalRight.size_of_block(in_r_charge)  // (sigma*m) values for all preceding sigma values
-                                                                                      + thresholdRightElement                            // Threshold induced by b
-                                                                                      + rr),                                             // Different m values for the columns of the tensor
+                                                                                        out_right_offset                                  // Offset given by the product basis
+                                                                                      + iColPhys*finalRight.size_of_block(out_r_charge)   // (sigma*m) values for all preceding sigma values
+                                                                                      + thresholdRightElement                             // Threshold induced by b
+                                                                                      + rr),                                              // Different m values for the columns of the tensor
                                                                                 alfa);
                                         }
                                     }

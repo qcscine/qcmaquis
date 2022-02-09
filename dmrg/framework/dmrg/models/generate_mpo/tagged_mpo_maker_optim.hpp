@@ -94,12 +94,6 @@ std::ostream& operator << (std::ostream& os, detail::prempo_key<pos_t, tag_type,
     return os;
 }
 
-template <typename T, typename U>
-std::pair<T,U> to_pair(boost::tuple<T,U> const& t)
-{
-    return std::make_pair( boost::get<0>(t), boost::get<1>(t) );
-}
-
 /**
  * @brief TaggedMPOMaker class
  *
@@ -158,7 +152,7 @@ public:
         for (const auto& iTerm: model.hamiltonian_terms())
             this->add_term(iTerm);
     }
-    
+
     /**
      * @brief Class constructor from a lattice and a vector of terms 
      *
@@ -211,32 +205,30 @@ public:
                 //add_nterm(term); /// here filling has to be done manually
                 break;
         }
-        leftmost_right = std::min(leftmost_right, boost::get<0>(*term.rbegin()));
-        rightmost_left = std::max(rightmost_left, boost::get<0>(*term.begin()));
+        leftmost_right = std::min(leftmost_right, term.rbegin()->first);
+        rightmost_left = std::max(rightmost_left, term.begin()->first);
     }
-    
-    /** @brief Creates the MPO based on the tagged MPO object */
+
+    /** @bref Creates the MPO based on the tagged MPO object */
     MPO<Matrix, SymmGroup> create_mpo()
     {
-        if (!finalized) finalize();
-        MPO<Matrix, SymmGroup> mpo; mpo.reserve(length);
-
+        if (!finalized)
+            finalize();
+        MPO<Matrix, SymmGroup> mpo;
+        mpo.reserve(length);
         typedef std::map<prempo_key_type, index_type> index_map;
         typedef typename index_map::iterator index_iterator;
         index_map left;
         left[trivial_left] = 0;
-
         typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
         std::vector<spin_desc_t> left_spins(1);
         std::vector<index_type> LeftHerm(1);
         std::vector<int> LeftPhase(1,1);
-
+        // Main loop over sites
         for (pos_t p = 0; p < length; ++p) {
             std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
-
             std::map<prempo_key_type, prempo_key_type> HermKeyPairs;
             std::map<prempo_key_type, std::pair<int,int> > HermitianPhases;
-
             index_map right;
             index_type r = 2;
             for (typename prempo_map_type::const_iterator it = prempo[p].begin(); it != prempo[p].end(); ++it) {
@@ -261,12 +253,13 @@ public:
                     boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, 1) );
                 else if (rr == right.end())
                     boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
+                // Finalization
                 index_type rr_dim = (p == length-1) ? 0 : rr->second;
                 pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
                 std::pair<int, int> phase;
                 prempo_key_type ck2;
                 boost::tie(ck2, phase) = conjugate_key(k2, p);
-                if (!(k2 == ck2)) {
+                if (!(k2 == ck2)){
                     HermKeyPairs[k2] = ck2;
                     HermitianPhases[k2] = phase;
                 }
@@ -376,14 +369,14 @@ private:
             int i = 0;
             mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
             prempo_key_type k2;
-            k2.pos_op.push_back(to_pair(term[i+1]));
+            k2.pos_op.push_back(term[i+1]);
             k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
             if (tag_handler->is_fermionic(term.operator_tag(i)))
               v_nferm[v_part_type[i]] -= 1;
             v_trivial_fill[v_part_type[i]] = (v_nferm[v_part_type[i]] % 2 == 0);
         }
         bool trivial_fill = !tag_handler->is_fermionic(term.operator_tag(1));
-        insert_filling(term.position(0)+1, term.position(1), k1, v_trivial_fill, (mpo_spin.get() > 1) ? term.full_identity : -1);
+        insert_filling(term.position(0)+1, term.position(1), k1, v_trivial_fill, mpo_spin.get() > 1);
         // Second term
         {
             int i = 1;
@@ -500,7 +493,8 @@ private:
      * When the boolean prefer_fork is true, if the number of operators is odd uses
      * one additional fork label, otherwise uses the merge one.
      */
-    void add_generic_term(const term_descriptor& term, bool const& prefer_fork=true) {
+    void add_generic_term(const term_descriptor& term, bool const& prefer_fork=true)
+    {
         std::size_t nops = term.size();
         // Case nops == 2 is managed separately, inside [add_2term]
         assert ( nops != 2 ) ;
@@ -529,7 +523,7 @@ private:
         prempo_key_type k1 = trivial_left;
         for (std::size_t i = 0; i < thresh; ++i) {
           mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
-          ops_left.push_back(to_pair(term[i]));
+          ops_left.push_back(term[i]);
           prempo_key_type k2(ops_left);
           k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
           // Checks how many fermionic operators are left - if the number is odd, will insert the filling, 
@@ -538,14 +532,13 @@ private:
             v_nferm[v_part_type[i]] -= 1;
           v_trivial_fill[v_part_type[i]] = (v_nferm[v_part_type[i]] % 2 == 0);
           // -> if types at  term.position(i) and  term.position(i+1) are different insert trivial fill
-          insert_filling(term.position(i)+1, term.position(i+1), k1, v_trivial_fill, (mpo_spin.get() > 1) ?
-                                                                                     term.full_identity : -1);
+          insert_filling(term.position(i)+1, term.position(i+1), k1, v_trivial_fill, mpo_spin.get() > 1);
         }
         // == MIDDLE OPERATOR ==
         // Note that in this case we use the detach modality
         prempo_key_type k2;
         for (std::size_t j = thresh+1; j < nops; j++)
-            ops_right.push_back(to_pair(term[j]));
+            ops_right.push_back(term[j]);
         k2 = prempo_key_type(ops_right);
         mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(thresh))).spin());
         k1 = insert_operator(term.position(thresh), make_pair(k1, k2), prempo_value_type(term.operator_tag(thresh), term.coeff), detach);
@@ -553,8 +546,7 @@ private:
         if (tag_handler->is_fermionic(term.operator_tag(thresh)))
             v_nferm[v_part_type[thresh]] -= 1;
         v_trivial_fill[v_part_type[thresh]] = (v_nferm[v_part_type[thresh]] % 2 == 0);
-        insert_filling(term.position(thresh)+1, term.position(thresh+1), k1, v_trivial_fill, (mpo_spin.get() > 1) ?
-                                                                                              term.full_identity : -1);
+        insert_filling(term.position(thresh)+1, term.position(thresh+1), k1, v_trivial_fill, mpo_spin.get() > 1);
         // == MERGE OPERATOR == 
         for (std::size_t i = thresh+1; i < nops; i++) {
             // Extract position and then type
@@ -564,7 +556,7 @@ private:
                 k2 = trivial_right;
             } else {
                 for (int j = i+1; j < nops; j++)
-                    ops_right.push_back(to_pair(term[j]));
+                    ops_right.push_back(term[j]);
                 k2 = prempo_key_type(ops_right);
             }
             mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
@@ -574,21 +566,18 @@ private:
                 v_nferm[v_part_type[i]] -= 1;
             if ( i != nops-1 ) {
                 v_trivial_fill[v_part_type[i]] = (v_nferm[v_part_type[i]] % 2 == 0);
-                insert_filling(term.position(i)+1, term.position(i+1), k1, v_trivial_fill, (mpo_spin.get() > 1) ?
-                                                                                          term.full_identity : -1);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, v_trivial_fill, mpo_spin.get() > 1);
             }
         }
         // Final term, the only one where the coefficient is actually employed
         assert(mpo_spin.get() == 0); // H is a spin 0 operator
     }
 
-
     /** 
      * @brief Adds a term to the MPO using the naive construction
      *
      * Note that in this case the filling operators must be included in the terms_,
      * since they are not added by the `tagged_mpo_maker`.
-     * The resulting MPO bond dimension will not be optimal.
      */
     void add_nterm(term_descriptor const& term)
     {
@@ -598,7 +587,7 @@ private:
         index_type current_offset = (next_offset++);
         prempo_key_type k1 = trivial_left;
         prempo_key_type k2(prempo_key_type::bulk_no_merge, current_offset);
-        k2.pos_op.push_back( to_pair(term[nops-1]) );
+        k2.pos_op.push_back(term[nops-1]);
         {
             int i = 0;
             insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
@@ -606,34 +595,45 @@ private:
             if (i < nops-1 && term.position(i)+1 != term.position(i+1))
                 throw std::runtime_error("for n > 4 operators filling is assumed to be done manually. the list of operators contains empty sites.");
         }
+        //
         for (int i = 1; i < nops; ++i) {
             if (i == nops-1)
                 k2 = trivial_right;
+            //
             insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), detach);
             if (i < nops-1 && term.position(i)+1 != term.position(i+1))
                 throw std::runtime_error("for n > 4 operators filling is assumed to be done manually. the list of operators contains empty sites.");
         }
     }
 
-    /** @brief Inserts the filling operator between two elementary operators */
-	void insert_filling(pos_t i, pos_t j, prempo_key_type k, std::vector<bool> trivial_fill, int custom_ident = -1)
-	{
-		for (; i < j; ++i) {
+    /**
+     * @brief Insert proper the filling operators between sites i and j.
+     * @param i starting site
+     * @param j ending site
+     * @param k prempo_key_type associated with the operator to be propagated
+     * @param trivial_fill vector of bool with size == number of particle types indicating whether the identity or
+     * the filling operator should be used
+     * @param isSpinLargerThanOne if true, uses the identity full operator instead of the "simpler" identity
+     */
+    void insert_filling(pos_t i, pos_t j, prempo_key_type k, std::vector<bool> trivial_fill, bool isSpinLargerThanOne)
+    {
+        for (; i < j; ++i) {
             auto typei = lat.get_prop<int>("type", i);
             auto particleTypei = lat.get_prop<int>("ParticleType", i);
-            tag_type use_ident = (custom_ident != -1) ? identities_full[typei] : identities[typei];
+            tag_type use_ident = (isSpinLargerThanOne) ? identities_full[typei] : identities[typei];
             tag_type op = (trivial_fill[particleTypei]) ? use_ident : fillings[typei];
-			//std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
-			//if (!ret.second && ret.first->second.first != op)
-			if (prempo[i].count(make_pair(k,k)) == 0)
-			    typename prempo_map_type::iterator ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
-			else {
-                if (prempo[i].find(make_pair(k,k))->second != prempo_value_type(op, 1.))
-			        throw std::runtime_error("Pre-existing term at site "+std::to_string(i)+ ". Needed "+std::to_string(op)
-				                                + ", found "+std::to_string(prempo[i].find(make_pair(k,k))->second.first));
+            //std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
+            //if (!ret.second && ret.first->second.first != op)
+            if (prempo[i].count(make_pair(k,k)) == 0) {
+                auto ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
             }
-		}
-	}
+            else {
+                if (prempo[i].find(make_pair(k,k))->second != prempo_value_type(op, 1.))
+                throw std::runtime_error("Pre-existing term at site "+std::to_string(i)+ ". Needed "+std::to_string(op)
+                                            + ", found "+std::to_string(prempo[i].find(make_pair(k,k))->second.first));
+            }
+        }
+    }
 
     /**
      * @brief Method to insert an element in the prempo objecj
@@ -642,18 +642,18 @@ private:
      * @param prempo_value_type val: element to be added on site p
      * @param merge_kind merge_behaviour: detach if a new branch should not be created, attach otherwise
      */
-	prempo_key_type insert_operator(pos_t p, std::pair<prempo_key_type, prempo_key_type> kk, prempo_value_type val,
+    prempo_key_type insert_operator(pos_t p, std::pair<prempo_key_type, prempo_key_type> kk, prempo_value_type val,
                                     merge_kind merge_behavior=detach)
-	{
-		/// merge_behavior == detach: a new branch will be created, in case op already exist, an offset is used
-		/// merge_behavior == attach: if operator tags match, keep the same branch
+    {
+        /// merge_behavior == detach: a new branch will be created, in case op already exist, an offset is used
+        /// merge_behavior == attach: if operator tags match, keep the same branch
         if (merge_behavior == detach)
             prempo[p].insert( make_pair(kk, val) );
         else
             if (prempo[p].count(kk) == 0)
                 prempo[p].insert( make_pair(kk, val) );
         return kk.second;
-	}
+    }
 
     /**
      * @brief Performs final operations on the prempo object.
@@ -668,10 +668,10 @@ private:
         for (typename std::map<pos_t, op_t>::const_iterator it = site_terms.begin();
              it != site_terms.end(); ++it) {
             tag_type site_tag = tag_handler->register_op(it->second, tag_detail::bosonic);
-			//std::pair<typename prempo_map_type::iterator,bool> ret;
+            //std::pair<typename prempo_map_type::iterator,bool> ret;
             //ret = prempo[it->first].insert( make_pair( kk, prempo_value_type(site_tag,1.) ) );
-			typename prempo_map_type::iterator ret;
-            ret = prempo[it->first].insert( make_pair( kk, prempo_value_type(site_tag,1.) ) );
+            typename prempo_map_type::iterator ret;
+            ret = prempo[it->first].insert( make_pair( kk, prempo_value_type(site_tag, 1.) ) );
             if (prempo[it->first].count(ret->first) != 1)
                 throw std::runtime_error("another site term already existing!");
         }
@@ -758,6 +758,6 @@ private:
     double core_energy;
 };
 
-}
+} // namespace generate_mpo
 
 #endif

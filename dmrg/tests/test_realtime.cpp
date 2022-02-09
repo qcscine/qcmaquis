@@ -181,10 +181,15 @@ BOOST_FIXTURE_TEST_CASE( TestRealTimeExcitonic, VibronicFixture )
     // Generic settings
     parametersExcitonicAggregate.set("imaginary_time", "no");
     parametersExcitonicAggregate.set("TD_backpropagation", "yes");
+    parametersExcitonicAggregate.set("propagator_maxiter", 10);
     parametersExcitonicAggregate.set("time_units", "as");
-    parametersExcitonicAggregate.set("time_step", 1.0E+00);
+    parametersExcitonicAggregate.set("time_step", 0.01);
+    parametersExcitonicAggregate.set("nsweeps", 10);
+    parametersExcitonicAggregate.set("max_bond_dimension", 10);
+    parametersExcitonicAggregate.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregate.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     // Single-site evolution
-    maquis::cout << "Running SS real-time evolution test for PreBO model " << std::endl;
+    maquis::cout << "Running SS real-time evolution test for Excitonic model " << std::endl;
     parametersExcitonicAggregate.set("optimization", "singlesite");
     maquis::DMRGInterface<std::complex<double>> interfaceSS(parametersExcitonicAggregate);
     auto initialEnergy = std::real(interfaceSS.energy());
@@ -192,7 +197,7 @@ BOOST_FIXTURE_TEST_CASE( TestRealTimeExcitonic, VibronicFixture )
     auto finalEnergy = std::real(interfaceSS.energy());
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
     // Two-site evolutions
-    maquis::cout << "Running TS real-time evolution test for PreBO model" << std::endl;
+    maquis::cout << "Running TS real-time evolution test for Excitonic model" << std::endl;
     parametersExcitonicAggregate.set("optimization", "twosite");
     maquis::DMRGInterface<std::complex<double>> interfaceTS(parametersExcitonicAggregate);
     initialEnergy = std::real(interfaceTS.energy());

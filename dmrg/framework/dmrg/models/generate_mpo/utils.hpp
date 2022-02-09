@@ -349,10 +349,10 @@ private:
     }
 
     struct pos_tag_lt {
-        typedef boost::tuple<int, unsigned int> value_type;
+        typedef std::pair<int, unsigned int> value_type;
         inline bool operator() (value_type const& lhs, value_type const& rhs)
         {
-            return (boost::get<0>(lhs) < boost::get<0>(rhs));
+            return (lhs.first < rhs.first);
         }
     };
 }

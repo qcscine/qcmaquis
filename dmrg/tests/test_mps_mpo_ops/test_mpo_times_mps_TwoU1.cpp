@@ -81,6 +81,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     parametersBenzene.set("u1_total_charge1", 2);
     parametersBenzene.set("u1_total_charge2", 3);
     parametersBenzene.set("symmetry", "2u1pg");
+    parametersBenzene.set("nsweeps", 10);
     maquis::DMRGInterface<double> interfaceCation(parametersBenzene);
     interfaceCation.optimize();
     auto cationicEnergy = interfaceCation.energy();
@@ -108,9 +109,9 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     auto stop_callback = time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
     std::shared_ptr<opt_base_t> optimizer;
     optimizer.reset( new ts_optimize<matrix, S, storage::disk>(ionizedMPS, mpo, parametersBenzene, stop_callback, lattice, 0) );
-    for (int sweep=0; sweep < 40; ++sweep)
+    for (int sweep=0; sweep < 20; ++sweep)
       optimizer->sweep(sweep);
     auto energyByHand = expval(ionizedMPS, mpo)/norm(ionizedMPS);
     // This check could be made stricter, but with more sweeps
-    BOOST_CHECK_CLOSE(cationicEnergy, energyByHand, 1.0E-8);
+    BOOST_CHECK_CLOSE(cationicEnergy, energyByHand, 1.0E-7);
 };

@@ -90,7 +90,7 @@ public:
                 scaling *= scale;
                 range_end++;
             }
-            term.push_back(boost::make_tuple(pos_ops[opnr].first, product));
+            term.push_back(std::make_pair(pos_ops[opnr].first, product));
             opnr = range_end;
         }
         return std::make_pair(term, FoundZero);
