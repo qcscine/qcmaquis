@@ -77,6 +77,32 @@ public:
   }
 };
 
+/** @brief Overload for the U1 class (to be used for vibronic Hamiltonians) */
+template<>
+class HelperClassBasisVectorConverter<U1> {
+public:
+  // Types definition
+  using indexType = Index<U1>;
+  using state_type = std::vector<boost::tuple<typename U1::charge, std::size_t> >;
+  // General implementation
+  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
+                                            const std::vector<int>& siteType, int size) {
+    assert(inputVec.size() == size);
+    auto state = state_type(size);
+    // Note that here we have two possibilities: either a site is electronic site, or it is a vibrational one.
+    for (int j = 0 ; j < size; ++j) {
+      if (siteType[j] == 1) {
+        auto posOfCharge = physDim[siteType[j]].position(inputVec[j]);
+        state[j] = physDim[siteType[j]].element(posOfCharge);
+      }
+      else {
+        state[j] = physDim[siteType[j]].element(inputVec[j]);
+      }
+    }
+    return state;
+  }
+};
+
 /**
  * @brief Overload of the previous class for the NU1 symmetry group.
  * 

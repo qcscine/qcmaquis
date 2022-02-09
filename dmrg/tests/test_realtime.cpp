@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021-2022 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -34,6 +34,7 @@
 #include "Fixtures/BenzeneFixture.h"
 #include "Fixtures/TimeEvolversFixture.h"
 #include "Fixtures/PreBOTimeEvolversFixture.h"
+#include "Fixtures/VibronicFixture.h"
 
 /**
  * @brief Tests that the energy is conserved along a TD-DMRG propagation.
@@ -170,3 +171,35 @@ BOOST_FIXTURE_TEST_CASE( TestRealTimePreBO, PreBOTestTimeEvolverFixture )
 }
 
 #endif // DMRG_PREBO
+
+#ifdef DMRG_VIBRONIC
+
+/** @brief Tests that the energy is conserved along an Excitonic TD-DMRG propagation. */
+BOOST_FIXTURE_TEST_CASE( TestRealTimeExcitonic, VibronicFixture )
+{
+#ifdef HAVE_U1
+    // Generic settings
+    parametersExcitonicAggregate.set("imaginary_time", "no");
+    parametersExcitonicAggregate.set("TD_backpropagation", "yes");
+    parametersExcitonicAggregate.set("time_units", "as");
+    parametersExcitonicAggregate.set("time_step", 1.0E+00);
+    // Single-site evolution
+    maquis::cout << "Running SS real-time evolution test for PreBO model " << std::endl;
+    parametersExcitonicAggregate.set("optimization", "singlesite");
+    maquis::DMRGInterface<std::complex<double>> interfaceSS(parametersExcitonicAggregate);
+    auto initialEnergy = std::real(interfaceSS.energy());
+    interfaceSS.evolve();
+    auto finalEnergy = std::real(interfaceSS.energy());
+    BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
+    // Two-site evolutions
+    maquis::cout << "Running TS real-time evolution test for PreBO model" << std::endl;
+    parametersExcitonicAggregate.set("optimization", "twosite");
+    maquis::DMRGInterface<std::complex<double>> interfaceTS(parametersExcitonicAggregate);
+    initialEnergy = std::real(interfaceTS.energy());
+    interfaceTS.evolve();
+    finalEnergy = std::real(interfaceTS.energy());
+    BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1.0E-10);
+#endif // HAVE_U1
+}
+
+#endif // DMRG_VIBRONIC

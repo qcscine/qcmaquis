@@ -60,6 +60,7 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_BilinearlyCoupled ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
+# == VIBRONIC TESTS ==
 if(BUILD_VIBRONIC)
     # Unit test
     add_executable(test_vibronic_lattice vibronic/test_vibronic_lattice.cpp)
@@ -68,6 +69,10 @@ if(BUILD_VIBRONIC)
     target_link_libraries(test_vibronic_u1_model ${DMRG_APP_LIBRARIES})
     add_executable(test_excitonic_u1_model vibronic/ExcitonicModel.cpp)
     target_link_libraries(test_excitonic_u1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_mpo_ops_vibronic test_mps_mpo_ops/test_mps_mpo_ops_vibronic.cpp)
+    target_link_libraries(test_mps_mpo_ops_vibronic ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_overlap_vibronic test_mps_mpo_ops/test_mps_overlap_vibronic.cpp)
+    target_link_libraries(test_mps_overlap_vibronic ${DMRG_APP_LIBRARIES})
     # Executable test
     add_executable(test_Excitonic test_ExcitonicCoupling.cpp)
     target_link_libraries(test_Excitonic ${DMRG_APP_LIBRARIES})

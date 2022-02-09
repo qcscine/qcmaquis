@@ -135,6 +135,7 @@ public:
             // Skips the first two elements, they are the electronic states
             auto uniqueCoefficients = std::set<int>(hamiltonianTerms.first[iSize].begin()+2,
                                                     hamiltonianTerms.first[iSize].end());
+            uniqueCoefficients.erase(0);
             // Manages separately the vertical energy 
             bool isConstantTerm = uniqueCoefficients.size() == 1 && hamiltonianTerms.first[iSize][2] == 0;
             if (!isConstantTerm) {

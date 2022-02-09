@@ -64,7 +64,7 @@ struct VibronicFixture
         parametersFakeVibronic.set("vibronic_nstates", 1);
         parametersFakeVibronic.set("vibronic_nmodes", 3);
         parametersFakeVibronic.set("integral_file", "integral_file_VibronicFile");
-        // vibronic Hamiltonian for pyrazine, for the 4-mode Hamiltonian.
+        // Vibronic Hamiltonian for pyrazine, for the 4-mode Harmonic Hamiltonian.
         parametersVibronicPyrazineRedDim.set("L", 6);
         parametersVibronicPyrazineRedDim.set("symmetry", "u1");
         parametersVibronicPyrazineRedDim.set("LATTICE", "vibronic lattice");
@@ -73,6 +73,15 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDim.set("vibronic_nstates", 2);
         parametersVibronicPyrazineRedDim.set("vibronic_nmodes", 4);
         parametersVibronicPyrazineRedDim.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim");
+        // Vibronic Hamiltonian for pyrazine, for the 4-mode full vibronic Hamiltonian.
+        parametersVibronicPyrazineRedDimFull.set("L", 6);
+        parametersVibronicPyrazineRedDimFull.set("symmetry", "u1");
+        parametersVibronicPyrazineRedDimFull.set("LATTICE", "vibronic lattice");
+        parametersVibronicPyrazineRedDimFull.set("MODEL", "vibronic");
+        parametersVibronicPyrazineRedDimFull.set("Nmax", 6);
+        parametersVibronicPyrazineRedDimFull.set("vibronic_nstates", 2);
+        parametersVibronicPyrazineRedDimFull.set("vibronic_nmodes", 4);
+        parametersVibronicPyrazineRedDimFull.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim_Full");
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
@@ -161,55 +170,75 @@ struct VibronicFixture
         integralFilePyrazineRedDim << " -674.68277            -3     -3" << std::endl;
         integralFilePyrazineRedDim << "  518.21124             4      4" << std::endl;
         integralFilePyrazineRedDim << " -518.21124            -4     -4" << std::endl;
-        // ALB We comment out for the moment the diabatic coupling part - we can decomment
-        //     it as soon as we have more tests.
-        //integralFilePyrazineRedDim << "EL_ST 0 0" << std::endl;
-        //integralFilePyrazineRedDim << " -791.22989             1      0" << std::endl;
-        //integralFilePyrazineRedDim << " -405.69687             2      0" << std::endl;
-        //integralFilePyrazineRedDim << " 1171.11703             3      0" << std::endl;
-        //integralFilePyrazineRedDim << "EL_ST 1 1" << std::endl;
-        //integralFilePyrazineRedDim << " 1092.881251            1      0" << std::endl;
-        //integralFilePyrazineRedDim << "-1379.877165            2      0" << std::endl;
-        //integralFilePyrazineRedDim << "  302.457910            3      0" << std::endl;
-        //integralFilePyrazineRedDim << "EL_ST 0 0" << std::endl;
-        //integralFilePyrazineRedDim << "   0.16131088           1      1" << std::endl;
-        //integralFilePyrazineRedDim << "   8.71078783           1      2" << std::endl;
-        //integralFilePyrazineRedDim << " -16.45371035           1      3" << std::endl;
-        //integralFilePyrazineRedDim << "   8.71078783           2      1" << std::endl;
-        //integralFilePyrazineRedDim << " -65.33090875           2      2" << std::endl;
-        //integralFilePyrazineRedDim << "  38.23067993           2      3" << std::endl;
-        //integralFilePyrazineRedDim << " -16.45371035           3      1" << std::endl;
-        //integralFilePyrazineRedDim << "  38.23067993           3      2" << std::endl;
-        //integralFilePyrazineRedDim << "  -9.35603137           3      3" << std::endl;
-        //integralFilePyrazineRedDim << " -93.47965832           4      4" << std::endl;
-        //integralFilePyrazineRedDim << "EL_ST 1 1 " << std::endl;
-        //integralFilePyrazineRedDim << " -73.96104114           1      1" << std::endl;
-        //integralFilePyrazineRedDim << " -24.03532198           1      2" << std::endl;
-        //integralFilePyrazineRedDim << " -15.24387871           1      3" << std::endl;
-        //integralFilePyrazineRedDim << " -24.03532198           2      1" << std::endl;
-        //integralFilePyrazineRedDim << "  39.35985614           2      2" << std::endl;
-        //integralFilePyrazineRedDim << "   9.27537593           2      3" << std::endl;
-        //integralFilePyrazineRedDim << " -15.24387871           3      1" << std::endl;
-        //integralFilePyrazineRedDim << "   9.27537593           3      2" << std::endl;
-        //integralFilePyrazineRedDim << "   1.77441974           3      3" << std::endl;
-        //integralFilePyrazineRedDim << " -93.47965832           4      4" << std::endl;
-        //integralFilePyrazineRedDim << "EL_ST 0 1" << std::endl;
-        //integralFilePyrazineRedDim << " 1677.63321200          4      0" << std::endl;
-        //integralFilePyrazineRedDim << "  -80.65544294          4      1" << std::endl;
-        //integralFilePyrazineRedDim << "  -44.44114904          4      2" << std::endl;
-        //integralFilePyrazineRedDim << "   10.24324125          4      3" << std::endl;
-        //integralFilePyrazineRedDim << "   50.65161814          1      4" << std::endl;
-        //integralFilePyrazineRedDim << "  -44.44114904          2      4" << std::endl;
-        //integralFilePyrazineRedDim << "   10.24324125          3      4" << std::endl;
-        //integralFilePyrazineRedDim << "EL_ST 1 0" << std::endl;
-        //integralFilePyrazineRedDim << " 1677.63321200          4      0" << std::endl;
-        //integralFilePyrazineRedDim << "  -80.65544294          4      1" << std::endl;
-        //integralFilePyrazineRedDim << "  -44.44114904          4      2" << std::endl;
-        //integralFilePyrazineRedDim << "   10.24324125          4      3" << std::endl;
-        //integralFilePyrazineRedDim << "   50.65161814          1      4" << std::endl;
-        //integralFilePyrazineRedDim << "  -44.44114904          2      4" << std::endl;
-        //integralFilePyrazineRedDim << "   10.24324125          3      4" << std::endl;
-        integralFilePyrazineRedDim.close();
+        //
+        integralFilePyrazineRedDimFull.open("integral_file_vibronic_Pyrazine_RedDim_Full");
+        integralFilePyrazineRedDimFull << "EL_ST 0 0" << std::endl;
+        integralFilePyrazineRedDimFull << "-4114.23                0      0" << std::endl;
+        integralFilePyrazineRedDimFull << "  325.84799             1      1" << std::endl;
+        integralFilePyrazineRedDimFull << " -325.84799            -1     -1" << std::endl;
+        integralFilePyrazineRedDimFull << "  559.34550             2      2" << std::endl;
+        integralFilePyrazineRedDimFull << " -559.34550            -2     -2" << std::endl;
+        integralFilePyrazineRedDimFull << "  674.68277             3      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -674.68277            -3     -3" << std::endl;
+        integralFilePyrazineRedDimFull << "  518.21124             4      4" << std::endl;
+        integralFilePyrazineRedDimFull << " -518.21124            -4     -4" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 1 1" << std::endl;
+        integralFilePyrazineRedDimFull << " 4114.23                0      0" << std::endl;
+        integralFilePyrazineRedDimFull << "  325.84799             1      1" << std::endl;
+        integralFilePyrazineRedDimFull << " -325.84799            -1     -1" << std::endl;
+        integralFilePyrazineRedDimFull << "  559.34550             2      2" << std::endl;
+        integralFilePyrazineRedDimFull << " -559.34550            -2     -2" << std::endl;
+        integralFilePyrazineRedDimFull << "  674.68277             3      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -674.68277            -3     -3" << std::endl;
+        integralFilePyrazineRedDimFull << "  518.21124             4      4" << std::endl;
+        integralFilePyrazineRedDimFull << " -518.21124            -4     -4" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 0 0" << std::endl;
+        integralFilePyrazineRedDimFull << " -791.22989             1      0" << std::endl;
+        integralFilePyrazineRedDimFull << " -405.69687             2      0" << std::endl;
+        integralFilePyrazineRedDimFull << " 1171.11703             3      0" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 1 1" << std::endl;
+        integralFilePyrazineRedDimFull << " 1092.881251            1      0" << std::endl;
+        integralFilePyrazineRedDimFull << "-1379.877165            2      0" << std::endl;
+        integralFilePyrazineRedDimFull << "  302.457910            3      0" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 0 0" << std::endl;
+        integralFilePyrazineRedDimFull << "   0.16131088           1      1" << std::endl;
+        integralFilePyrazineRedDimFull << "   8.71078783           1      2" << std::endl;
+        integralFilePyrazineRedDimFull << " -16.45371035           1      3" << std::endl;
+        integralFilePyrazineRedDimFull << "   8.71078783           2      1" << std::endl;
+        integralFilePyrazineRedDimFull << " -65.33090875           2      2" << std::endl;
+        integralFilePyrazineRedDimFull << "  38.23067993           2      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -16.45371035           3      1" << std::endl;
+        integralFilePyrazineRedDimFull << "  38.23067993           3      2" << std::endl;
+        integralFilePyrazineRedDimFull << "  -9.35603137           3      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -93.47965832           4      4" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 1 1 " << std::endl;
+        integralFilePyrazineRedDimFull << " -73.96104114           1      1" << std::endl;
+        integralFilePyrazineRedDimFull << " -24.03532198           1      2" << std::endl;
+        integralFilePyrazineRedDimFull << " -15.24387871           1      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -24.03532198           2      1" << std::endl;
+        integralFilePyrazineRedDimFull << "  39.35985614           2      2" << std::endl;
+        integralFilePyrazineRedDimFull << "   9.27537593           2      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -15.24387871           3      1" << std::endl;
+        integralFilePyrazineRedDimFull << "   9.27537593           3      2" << std::endl;
+        integralFilePyrazineRedDimFull << "   1.77441974           3      3" << std::endl;
+        integralFilePyrazineRedDimFull << " -93.47965832           4      4" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 0 1" << std::endl;
+        integralFilePyrazineRedDimFull << " 1677.63321200          4      0" << std::endl;
+        integralFilePyrazineRedDimFull << "  -80.65544294          4      1" << std::endl;
+        integralFilePyrazineRedDimFull << "  -44.44114904          4      2" << std::endl;
+        integralFilePyrazineRedDimFull << "   10.24324125          4      3" << std::endl;
+        integralFilePyrazineRedDimFull << "   50.65161814          1      4" << std::endl;
+        integralFilePyrazineRedDimFull << "  -44.44114904          2      4" << std::endl;
+        integralFilePyrazineRedDimFull << "   10.24324125          3      4" << std::endl;
+        integralFilePyrazineRedDimFull << "EL_ST 1 0" << std::endl;
+        integralFilePyrazineRedDimFull << " 1677.63321200          4      0" << std::endl;
+        integralFilePyrazineRedDimFull << "  -80.65544294          4      1" << std::endl;
+        integralFilePyrazineRedDimFull << "  -44.44114904          4      2" << std::endl;
+        integralFilePyrazineRedDimFull << "   10.24324125          4      3" << std::endl;
+        integralFilePyrazineRedDimFull << "   50.65161814          1      4" << std::endl;
+        integralFilePyrazineRedDimFull << "  -44.44114904          2      4" << std::endl;
+        integralFilePyrazineRedDimFull << "   10.24324125          3      4" << std::endl;
+        integralFilePyrazineRedDimFull.close();
     }
 
     /** @brief Class destructor */
@@ -218,13 +247,14 @@ struct VibronicFixture
         std::remove("integral_file_Excitonic");
         std::remove("integral_file_Excitonic_Harmonic");
         std::remove("integral_file_vibronic_Pyrazine_RedDim");
+        std::remove("integral_file_vibronic_Pyrazine_RedDim_Full");
     }
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
-        parametersVibronicPyrazineRedDim;
+        parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull;
 };
 
 #endif
