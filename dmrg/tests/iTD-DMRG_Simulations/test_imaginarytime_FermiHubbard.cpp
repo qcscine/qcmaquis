@@ -26,6 +26,7 @@
 
 #define BOOST_TEST_MAIN
 
+#include "Fixtures/TranscorrelatedFixture.h"
 #include <boost/test/included/unit_test.hpp>
 #include "utils/fpcomparison.h"
 #include "utils/io.hpp"
@@ -105,75 +106,85 @@
 //}
 
 /** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model */
-BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J0 )
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J0, TranscorrelatedFixture)
 {
-    // Two-site evolutions
-    DmrgParameters p;
-    p.set("L", 4);
-    p.set("width_FermiHubbard", 2);
-    p.set("height_FermiHubbard", 2);
-    p.set("nsweeps", 10);
-    p.set("max_bond_dimension", 10);
-    p.set("u1_total_charge1", 2);
-    p.set("u1_total_charge2", 1);
-    p.set("symmetry", "2u1");
-    p.set("MODEL", "fermi_hubbard_real");
-    p.set("site_types", "0,0,0,0");
-    p.set("U_FermiHubbard", 4.);
-    p.set("propagator_maxiter", 10);
-    p.set("imaginary_time", "yes");
-    p.set("TD_backpropagation", "no");
-    p.set("simulation_type", "TD");
-    p.set("COMPLEX", 1);
-    p.set("time_units", "fs");
-    p.set("time_step", 10.);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 10);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 10);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("imaginary_time", "yes");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "TD");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("COMPLEX", 1);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "fs");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_step", 10.);
     // iTD-DMRG
-    maquis::DMRGInterface<std::complex<double>> interfaceTD(p);
+    maquis::DMRGInterface<std::complex<double>> interfaceTD(parameters2x2_RealSpace_U4_2Alpha1Beta);
     interfaceTD.evolve();
     auto energyTD = std::real(interfaceTD.energy());
     // tcDMRG
-    p.set("transcorrelated_hamiltonian", "yes");
-    p.set("J_Transcorrelated", 0.);
-    maquis::DMRGInterface<std::complex<double>> interfaceTC(p);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_hamiltonian", "yes");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", 0.);
+    maquis::DMRGInterface<std::complex<double>> interfaceTC(parameters2x2_RealSpace_U4_2Alpha1Beta);
     interfaceTC.evolve();
     auto energyTC = std::real(interfaceTC.energy());
     BOOST_CHECK_CLOSE(energyTD, energyTC, 1.0E-8);
 }
 
-/** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model */
-BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J0p1 )
+/** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model for J=+/-0.1 */
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J0p1, TranscorrelatedFixture)
 {
-    // tcDMRG
-    DmrgParameters p;
-    p.set("L", 4);
-    p.set("width_FermiHubbard", 2);
-    p.set("height_FermiHubbard", 2);
-    p.set("nsweeps", 100);
-    p.set("max_bond_dimension", 50);
-    p.set("u1_total_charge1", 2);
-    p.set("u1_total_charge2", 1);
-    p.set("symmetry", "2u1");
-    p.set("MODEL", "fermi_hubbard_real");
-    p.set("site_types", "0,0,0,0");
-    p.set("optimization", "twosite");
-    p.set("U_FermiHubbard", 4.);
-    p.set("propagator_maxiter", 10);
-    p.set("imaginary_time", "yes");
-    p.set("TD_backpropagation", "no");
-    p.set("simulation_type", "TD");
-    p.set("COMPLEX", 1);
-    p.set("time_units", "as");
-    p.set("time_step", 100.);
-    p.set("transcorrelated_hamiltonian", "yes");
-    p.set("J_Transcorrelated", 0.1);
-    p.set("hamiltonian_units", "Hartree");
-    p.set("init_state", "const");
-    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(p);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 100);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("symmetry", "2u1");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("MODEL", "fermi_hubbard_real");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("init_state", "const");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("optimization", "twosite");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("imaginary_time", "yes");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "TD");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("COMPLEX", 1);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "as");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_step", 100.);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_hamiltonian", "yes");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", 0.1);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("hamiltonian_units", "Hartree");
+    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(parameters2x2_RealSpace_U4_2Alpha1Beta);
     interfaceTCPlus.evolve();
     auto energyTCPlus = std::real(interfaceTCPlus.energy());
     //
-    p.set("J_Transcorrelated", -0.1);
-    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(p);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", -0.1);
+    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(parameters2x2_RealSpace_U4_2Alpha1Beta);
+    interfaceTCMinus.evolve();
+    auto energyTCMinus = std::real(interfaceTCMinus.energy());
+    BOOST_CHECK_CLOSE(energyTCPlus, energyTCMinus, 1.0E-8);
+}
+
+/** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model for J=+/-1 */
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J1p0, TranscorrelatedFixture)
+{
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 100);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("symmetry", "2u1");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("MODEL", "fermi_hubbard_real");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("init_state", "const");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("optimization", "twosite");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("imaginary_time", "yes");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("TD_backpropagation", "no");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("simulation_type", "TD");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("COMPLEX", 1);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_units", "as");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("time_step", 100.);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("transcorrelated_hamiltonian", "yes");
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", 1.0);
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("hamiltonian_units", "Hartree");
+    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(parameters2x2_RealSpace_U4_2Alpha1Beta);
+    interfaceTCPlus.evolve();
+    auto energyTCPlus = std::real(interfaceTCPlus.energy());
+    //
+    parameters2x2_RealSpace_U4_2Alpha1Beta.set("J_Transcorrelated", -1.0);
+    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(parameters2x2_RealSpace_U4_2Alpha1Beta);
     interfaceTCMinus.evolve();
     auto energyTCMinus = std::real(interfaceTCMinus.energy());
     BOOST_CHECK_CLOSE(energyTCPlus, energyTCMinus, 1.0E-8);
