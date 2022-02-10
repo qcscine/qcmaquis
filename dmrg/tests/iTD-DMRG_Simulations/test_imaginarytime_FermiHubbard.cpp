@@ -105,7 +105,7 @@
 //}
 
 /** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model */
-BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_1 )
+BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J0 )
 {
     // Two-site evolutions
     DmrgParameters p;
@@ -140,16 +140,55 @@ BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_1 )
     BOOST_CHECK_CLOSE(energyTD, energyTC, 1.0E-8);
 }
 
-///** @brief iTD-DMRG calculation on the 2x2 momentum-space Fermi-Hubbard model */
-//BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Conventional_MomentumSpace )
+/** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model */
+BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_J0p1 )
+{
+    // tcDMRG
+    DmrgParameters p;
+    p.set("L", 4);
+    p.set("width_FermiHubbard", 2);
+    p.set("height_FermiHubbard", 2);
+    p.set("nsweeps", 100);
+    p.set("max_bond_dimension", 50);
+    p.set("u1_total_charge1", 2);
+    p.set("u1_total_charge2", 1);
+    p.set("symmetry", "2u1");
+    p.set("MODEL", "fermi_hubbard_real");
+    p.set("site_types", "0,0,0,0");
+    p.set("optimization", "twosite");
+    p.set("U_FermiHubbard", 4.);
+    p.set("propagator_maxiter", 10);
+    p.set("imaginary_time", "yes");
+    p.set("TD_backpropagation", "no");
+    p.set("simulation_type", "TD");
+    p.set("COMPLEX", 1);
+    p.set("time_units", "as");
+    p.set("time_step", 100.);
+    p.set("transcorrelated_hamiltonian", "yes");
+    p.set("J_Transcorrelated", 0.1);
+    p.set("hamiltonian_units", "Hartree");
+    p.set("init_state", "const");
+    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(p);
+    interfaceTCPlus.evolve();
+    auto energyTCPlus = std::real(interfaceTCPlus.energy());
+    //
+    p.set("J_Transcorrelated", -0.1);
+    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(p);
+    interfaceTCMinus.evolve();
+    auto energyTCMinus = std::real(interfaceTCMinus.energy());
+    BOOST_CHECK_CLOSE(energyTCPlus, energyTCMinus, 1.0E-8);
+}
+
+///** @brief iTD-DMRG calculation on the 2x2 Fermi-Hubbard model */
+//BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbardMomentum_2x2_Transcorrelated_J0p1 )
 //{
-//    // Two-site evolutions
+//    // tcDMRG
 //    DmrgParameters p;
 //    p.set("L", 4);
 //    p.set("width_FermiHubbard", 2);
 //    p.set("height_FermiHubbard", 2);
-//    p.set("nsweeps", 10);
-//    p.set("max_bond_dimension", 10);
+//    p.set("nsweeps", 100);
+//    p.set("max_bond_dimension", 50);
 //    p.set("u1_total_charge1", 2);
 //    p.set("u1_total_charge2", 1);
 //    p.set("symmetry", "2u1");
@@ -162,16 +201,18 @@ BOOST_AUTO_TEST_CASE( TestImaginaryTimeFermiHubbard_2x2_Transcorrelated_1 )
 //    p.set("simulation_type", "TD");
 //    p.set("COMPLEX", 1);
 //    p.set("time_units", "fs");
-//    p.set("time_step", 10.);
-//    // TD
-//    maquis::DMRGInterface<std::complex<double>> interfaceTD(p);
-//    interfaceTD.evolve();
-//    auto energyTD = std::real(interfaceTD.energy());
-//    // TI
-//    maquis::DMRGInterface<std::complex<double>> interfaceTI(p);
-//    interfaceTI.optimize();
-//    auto energyTI = std::real(interfaceTI.energy());
-//    BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
+//    p.set("time_step", 1.);
+//    p.set("transcorrelated_hamiltonian", "yes");
+//    p.set("J_Transcorrelated", 0.1);
+//    maquis::DMRGInterface<std::complex<double>> interfaceTCPlus(p);
+//    interfaceTCPlus.evolve();
+//    auto energyTCPlus = std::real(interfaceTCPlus.energy());
+//    //
+//    p.set("J_Transcorrelated", -0.1);
+//    maquis::DMRGInterface<std::complex<double>> interfaceTCMinus(p);
+//    interfaceTCMinus.evolve();
+//    auto energyTCMinus = std::real(interfaceTCMinus.energy());
+//    BOOST_CHECK_CLOSE(energyTCPlus, energyTCMinus, 1.0E-8);
 //}
 
 #endif // HAVE_TwoU1

@@ -45,14 +45,14 @@ void ArnoldiEvolver<Matrix, SymmGroup>::evolve_kernel(const SiteProblem& site_pr
   std::size_t local_dim = 1;
   MatrixType buffer_vector;
   double error;
-  matrix_type matrix_representation(max_iter_, max_iter_);
+  matrix_type matrix_representation(max_iter_, max_iter_, 0.);
   vector_type result_vector(1);
   // First step of the Arnoldi iteration
   print_header();
   lanczos_space.reserve(max_iter_);
   lanczos_space.push_back(matrix/ietl::two_norm(matrix));
   // ==  MAIN LOOP ==
-  for (std::size_t idx = 0; idx < max_iter_; idx++) {
+  for (int idx = 0; idx < max_iter_; idx++) {
     // Generation of the new vector
     buffer_vector = apply_hamiltonian(lanczos_space[idx], site_problem);
     for (int idx2 = 0; idx2 < idx+1; idx2++) {
@@ -62,7 +62,7 @@ void ArnoldiEvolver<Matrix, SymmGroup>::evolve_kernel(const SiteProblem& site_pr
     norm_local = ietl::two_norm(buffer_vector);
     apply_exponential(matrix_representation, result_vector, local_dim);
     matrix = result_vector[0]*lanczos_space[0];
-    for (std::size_t i = 1; i < local_dim; i++)
+    for (int i = 1; i < local_dim; i++)
       matrix += result_vector[i]*lanczos_space[i];
     if (is_imag_)
       matrix /= ietl::two_norm(matrix);
@@ -120,5 +120,5 @@ void ArnoldiEvolver<Matrix, SymmGroup>::apply_exponential(MatrixType& hamiltonia
   expM = alps::numeric::exp(H_hess, coeff, is_imag_);
   ret.resize(local_dim_);
   for (std::size_t idx = 0; idx < local_dim_; idx++)
-    ret[idx] = final_convert<ArgType>(expM(0, idx));
+    ret[idx] = final_convert<ArgType>(expM(idx, 0));
 }

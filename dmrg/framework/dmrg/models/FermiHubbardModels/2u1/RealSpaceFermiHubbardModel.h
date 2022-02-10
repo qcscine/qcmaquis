@@ -53,7 +53,7 @@ public:
     
     /** @brief Class constructor */
     FermiHubbardRealTwoU1(const Lattice& lat_, BaseParameters & parms_, bool isTranscorrelated=false)
-        : lat(lat_), parms(parms_), tag_handler(new TagHandler<Matrix, TwoU1>())
+        : lat(lat_), parms(parms_), tag_handler(new TagHandler<Matrix, TwoU1>()), isTranscorrelated_(isTranscorrelated)
     {
         // Definition of the charges (i.e., the relevant QN)
         TwoU1::charge A(0), B(0), C(0), D(1);
@@ -88,12 +88,15 @@ public:
         create_down = tag_handler->register_op(create_down_op, tag_detail::fermionic);
         destroy_up = tag_handler->register_op(destroy_up_op, tag_detail::fermionic);
         destroy_down = tag_handler->register_op(destroy_down_op, tag_detail::fermionic);
+    }
+
+    void create_terms() override {
         // Definition of the parameters of the Fermi-Hubbard lattice
         value_type U = parms["U_FermiHubbard"];
         value_type t = parms["t_FermiHubbard"];
         int width = parms["width_FermiHubbard"];
         int height = parms["height_FermiHubbard"];
-        if (isTranscorrelated && !parms.is_set("J_Transcorrelated"))
+        if (isTranscorrelated_ && !parms.is_set("J_Transcorrelated"))
             throw std::runtime_error("Please set the transcorrelation parameter");
         value_type J = parms.is_set("J_Transcorrelated") ? parms["J_Transcorrelated"] : 0.;
         // == HAMILTONIAN CREATION ==
@@ -142,7 +145,7 @@ public:
             this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeff));
             this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeff));
             // Transcorrelated-specific contributions
-            if (isTranscorrelated) {
+            if (isTranscorrelated_) {
                 std::vector<pos_t> posVectorDownTC_1, posVectorDownHermTC_1, posVectorDownTC_2, posVectorDownHermTC_2, posVectorDownTC_3, posVectorDownHermTC_3;
                 std::vector<pos_t> posVectorLeftTC_1, posVectorLeftHermTC_1, posVectorLeftTC_2, posVectorLeftHermTC_2, posVectorLeftTC_3, posVectorLeftHermTC_3;
                 if (hasLower) {
@@ -310,6 +313,7 @@ private:
     BaseParameters & parms;
     std::shared_ptr<TagHandler<Matrix, TwoU1> > tag_handler;
     tag_type create_up, create_down, destroy_up, destroy_down, ident, fill;
+    bool isTranscorrelated_;
 };
 
 #endif // REALSPACE_FERMIHUBBARD_MODEL
