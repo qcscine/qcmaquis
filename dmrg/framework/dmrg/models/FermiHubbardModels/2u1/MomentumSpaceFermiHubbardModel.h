@@ -124,18 +124,18 @@ public:
         std::pair<tag_type, value_type> ftddnu = tag_handler->get_product_tag(fill, ddnu.first);
         std::pair<tag_type, value_type> ddcu = tag_handler->get_product_tag(destroy_down, create_up);
         std::pair<tag_type, value_type> ducd = tag_handler->get_product_tag(destroy_up, create_down);
-#define HERMITIAN(op1, op2) tag_handler->hermitian_pair(op1, op2);
-        HERMITIAN(create_up, destroy_up)
-        HERMITIAN(create_down, destroy_down)
-        HERMITIAN(e2d, d2e);
-        HERMITIAN(cutf.first, ftdu.first)
-        HERMITIAN(cdtf.first, ftdd.first)
-        HERMITIAN(cund.first, dund.first)
-        HERMITIAN(cdnu.first, ddnu.first)
-        HERMITIAN(cundtf.first, ftdund.first)
-        HERMITIAN(cdnutf.first, ftddnu.first)
-        HERMITIAN(ddcu.first, ducd.first)
-#undef HERMITIAN
+//#define HERMITIAN(op1, op2) tag_handler->hermitian_pair(op1, op2);
+//        HERMITIAN(create_up, destroy_up)
+//        HERMITIAN(create_down, destroy_down)
+//        HERMITIAN(e2d, d2e);
+//        HERMITIAN(cutf.first, ftdu.first)
+//        HERMITIAN(cdtf.first, ftdd.first)
+//        HERMITIAN(cund.first, dund.first)
+//        HERMITIAN(cdnu.first, ddnu.first)
+//        HERMITIAN(cundtf.first, ftdund.first)
+//        HERMITIAN(cdnutf.first, ftddnu.first)
+//        HERMITIAN(ddcu.first, ducd.first)
+//#undef HERMITIAN
         // General variables
         value_type U = parms["U_FermiHubbard"];
         value_type t = parms["t_FermiHubbard"];
