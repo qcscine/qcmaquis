@@ -643,7 +643,7 @@ private:
      * @param merge_kind merge_behaviour: detach if a new branch should not be created, attach otherwise
      */
     prempo_key_type insert_operator(pos_t p, std::pair<prempo_key_type, prempo_key_type> kk, prempo_value_type val,
-                                    merge_kind merge_behavior=detach)
+                                    merge_kind merge_behavior=detach, bool is_left=false)
     {
         /// merge_behavior == detach: a new branch will be created, in case op already exist, an offset is used
         /// merge_behavior == attach: if operator tags match, keep the same branch
@@ -653,6 +653,50 @@ private:
             if (prempo[p].count(kk) == 0)
                 prempo[p].insert( make_pair(kk, val) );
         return kk.second;
+        /*
+        // Here remember that the insert method for a C++ map, if it already finds the elements, returns an
+        // iterator pointing at those elements, together with a boolean which is set to false.
+        // At this point, the algorithm is basically looking if there are already operators with the same bond
+        std::pair<typename prempo_map_type::iterator, bool> match = prempo[p].insert( make_pair(kk, val) );
+        if (merge_behavior == detach) {
+            // If the value has not been inserted, it means that it is already there. For this reason,
+            // generate a "fake" couple of prempo_key operators, sets the offset of kk at the maximum and finds the
+            // first free position after kk. Then insert at this precise position
+            if (!match.second) {
+                std::pair<prempo_key_type, prempo_key_type> kk_max = kk;
+                if (is_left)
+                    kk_max.second.offset = std::numeric_limits<index_type>::max();
+                else
+                    kk_max.first.offset = std::numeric_limits<index_type>::max();
+                typename prempo_map_type::iterator highest_offset = prempo[p].upper_bound(kk_max);
+                --highest_offset;
+                if (is_left)
+                    kk.second.offset = highest_offset->first.second.offset + 1;
+                else
+                    kk.first.offset = highest_offset->first.first.offset + 1;
+                prempo[p].insert(highest_offset, make_pair(kk, val));
+            }
+        }
+        else {
+            // The control done here has to met two conditions
+            // 1) the pair (kk, val) should not be already present in the list
+            // 2) the second element of the match object, which means the second element of the map object (i.e. the
+            //    couple of tag/scale), has to be different from the one of the operator which is inserted
+            while (!match.second && match.first->second != val) {
+                if (is_left)
+                    kk.second.offset += 1;
+                else
+                    kk.first.offset += 1;
+                match = prempo[p].insert(make_pair(kk, val));
+            }
+        }
+        prempo_key_type ret ;
+        if (is_left)
+            ret = kk.second ;
+        else
+            ret = kk.first ;
+        return ret ;
+        */
     }
 
     /**
