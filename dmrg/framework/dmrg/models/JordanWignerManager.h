@@ -215,44 +215,6 @@ private:
     return (transitionsCount % 2 == 0) ? 1. : -1.;
   }
 
-  term_descriptor arrange_operators(std::vector<Lattice::pos_t> const & positions,
-                                    std::vector<tag_type> const & operators,
-                                    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler) const
-  {
-      // Safety check
-      assert(positions.size() == operators.size());
-      // Types definition
-      typedef          Lattice::pos_t                          pos_t;
-      typedef typename Matrix::value_type                      value_type;
-      typedef typename OPTable<Matrix, TwoU1>::tag_type        tag_type;
-      typedef std::pair<pos_t, tag_type>                       pos_op_t;
-      // Variables definition
-      term_descriptor term;
-      term.coeff = 1.;
-      std::vector<pos_op_t> pos_ops;
-      std::transform(positions.begin(), positions.end(), operators.begin(), std::back_inserter(pos_ops),
-                     std::make_pair<pos_t const&, tag_type const&>);
-      std::stable_sort(pos_ops.begin(), pos_ops.end(), generate_mpo::compare<pos_op_t>) ;
-      // Now that the operators are properly sorted, the formation of the tag can start. Note that get_product_tag
-      // returns a new tag if the product does not exists, otherwise returns the existing tag
-      for (size_t opnr = 0; opnr < pos_ops.size(); )
-      {
-          tag_type product = pos_ops[opnr].second;
-          size_t range_end = opnr + 1;
-          while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first)
-          {
-              value_type scale = 1.0;
-              boost::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
-              term.coeff *= scale;
-              range_end++;
-          }
-          if(tag_handler->get_op(product).n_blocks() != 0)
-            term.push_back( std::make_pair(pos_ops[opnr].first, product) );
-          opnr = range_end;
-      }
-      return term;
-  }
-
   /* Class members */
   const Lattice& lat_;
   std::vector<tag_type> fillOp_, createUpOp_, createDownOp_, destroyUpOp_, destroyDownOp_;
