@@ -47,6 +47,18 @@ struct VibronicFixture
         parametersExcitonicAggregate.set("J_coupling", -500);
         parametersExcitonicAggregate.set("J_interaction", "nn");
         parametersExcitonicAggregate.set("integral_file", "integral_file_Excitonic");
+        //
+        parametersExcitonicAggregateTwoSites.set("L", 22);
+        parametersExcitonicAggregateTwoSites.set("symmetry", "u1");
+        parametersExcitonicAggregateTwoSites.set("LATTICE", "vibronic lattice");
+        parametersExcitonicAggregateTwoSites.set("MODEL", "excitonic");
+        parametersExcitonicAggregateTwoSites.set("Nmax", 8);
+        parametersExcitonicAggregateTwoSites.set("vibronic_nstates", 1);
+        parametersExcitonicAggregateTwoSites.set("vibronic_nmodes", 10);
+        parametersExcitonicAggregateTwoSites.set("n_excitons", 2);
+        parametersExcitonicAggregateTwoSites.set("J_coupling", -500);
+        parametersExcitonicAggregateTwoSites.set("J_interaction", "nn");
+        parametersExcitonicAggregateTwoSites.set("integral_file", "integral_file_Excitonic");
         // Vibronic models for S1/S2 states of pyrazine --> L=26
         parametersVibronic.set("L", 26);
         parametersVibronic.set("symmetry", "u1");
@@ -252,7 +264,7 @@ struct VibronicFixture
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
-        parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull;
+        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
         integralFilePyrazineRedDim, integralFilePyrazineRedDimFull;
 };
