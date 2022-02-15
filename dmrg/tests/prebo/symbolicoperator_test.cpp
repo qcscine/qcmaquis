@@ -28,7 +28,6 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/assert.hpp>
-#include "dmrg/models/coded/lattice.hpp"
 #include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/models/prebo/nu1/nu1_SymbolicJordanWigner.hpp"
 #include <iostream>

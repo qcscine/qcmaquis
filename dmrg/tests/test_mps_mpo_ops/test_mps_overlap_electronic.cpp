@@ -28,7 +28,7 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/mpl/list.hpp>
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/sim/matrix_types.h"

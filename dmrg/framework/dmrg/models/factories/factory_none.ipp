@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  *               2012      by Jan Gukelberger <gukelberger@phys.ethz.ch>
+ *               2021      by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -25,23 +26,22 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_none.hpp"
-#include "dmrg/models/coded/super_models_none.hpp"
 #include "dmrg/models/factories/factory.h"
+#include "dmrg/models/vibrational/none/model.hpp"
+
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TrivialGroup> {
-    static std::shared_ptr<model_impl<Matrix, TrivialGroup> > parse
-    (Lattice const& lattice, BaseParameters & parms)
+    // Types definition
+    using PointerType = std::shared_ptr<model_impl<Matrix, TrivialGroup> >;
+    // Factory class
+    static PointerType parse(Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, TrivialGroup> > impl_ptr;
-        if (parms["MODEL"] == std::string("boson Hubbard"))
-            return impl_ptr( new BoseHubbardNone<Matrix>(lattice, parms) );
-        else if (parms["MODEL"] == std::string("super boson Hubbard"))
-            return impl_ptr( new SuperBoseHubbardNone<Matrix>(lattice, parms) );
+        if (parms["MODEL"] == std::string("watson"))
+            return PointerType( new WatsonHamiltonian<Matrix>(lattice, parms, false));
         else {
             throw std::runtime_error("Don't know this model with None symmetry group!");
-            return impl_ptr();
+            return PointerType();
         }
     }
 };

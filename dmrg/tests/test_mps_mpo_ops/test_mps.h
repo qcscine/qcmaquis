@@ -28,6 +28,7 @@
 *****************************************************************************/
 #ifndef TEST_MPS_H
 #define TEST_MPS_H
+
 // Test MPS rotation: MPS based on OpenMOLCAS test qcmaquis:007
 // CH2, triplet and singlet, 6 electrons in 6 orbitals/ANO-RCC-MB
 // CH2 Triplet coordinates in Angstrom
