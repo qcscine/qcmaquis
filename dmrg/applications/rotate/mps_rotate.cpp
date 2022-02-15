@@ -36,7 +36,7 @@
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/mp_tensors/mps_rotate.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"

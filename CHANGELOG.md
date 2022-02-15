@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 3.1.2
+
+- Added support for vibrational Hamiltonians, both within the canonical quantization and within the n-mode frameworks.
+- Added support for excitonic and vibronic Hamiltonians.
+
 ## Release 3.1.1
 
 - Fixed bug raising the "pre-existing term" message when constructing the MPO 

@@ -30,7 +30,6 @@
 #include "maquis_dmrg.h"
 #include "dmrg/block_matrix/symmetry.h"
 
-
 /**
  * @brief Fixture class for benzene.
  * 
@@ -628,6 +627,7 @@ struct BenzeneFixture
         parametersBenzene.set("truncation_final", 1.0E-30);
         parametersBenzene.set("init_state", "hf");
         parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
+        parametersBenzene.set("ietl_jcd_tol", 1.0E-15);
     }
     // Class members
     RealIntegralMapType integralsReal;

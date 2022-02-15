@@ -246,7 +246,12 @@ namespace maquis
         fs << parms;
     }
 
+    // Explicit template instantiation
     template class DMRGInterface<double>;
     template class DMRGInterface<std::complex<double> >;
     template class DMRGInterface<double, Hamiltonian::PreBO>;
+    template class DMRGInterface<double, Hamiltonian::VibrationalNMode>;
+    template class DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    template class DMRGInterface<double, Hamiltonian::Vibronic>;
+    template class DMRGInterface<double, Hamiltonian::Excitonic>;
 }

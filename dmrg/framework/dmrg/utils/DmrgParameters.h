@@ -67,6 +67,7 @@ private:
         add_option("alpha_main", "", value(1e-4));
         add_option("alpha_final", "", value(1e-8));
 
+        // Jacobi-Davidson-related options
         add_option("eigensolver", "", value("IETL_JCD"));
         add_option("ietl_jcd_tol", "", value(1e-8));
         add_option("ietl_jcd_gmres", "", value(0));
@@ -91,6 +92,19 @@ private:
         add_option("entanglement_spectra", "", value(0));
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
+        // vDMRG-related parameters
+        add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization", value(6));
+
+        // n-mode vDMRG related parameters
+        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
+        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
+        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
+
+        // Vibronic-related parameters
+        add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
+        add_option("vibronic_nmodes", "Number of vibrational modes entering the vibronic Hamiltonian");
+        add_option("vibronic_sorting", "Mapping for the vibronic lattice", value("firstele"));
+
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
@@ -113,7 +127,6 @@ private:
         add_option("model_file", "path to model parameters", value(""));
         add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
 
-
         //Default values for lattice, model etc. for quantum chemistry calculations
         add_option("LATTICE", "", value("orbitals"));
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
@@ -130,6 +143,10 @@ private:
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
 
+        // Watson Hamiltonian-based simulations
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES");
+        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
+
         // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
         add_option("PreBO_ParticleTypeVector", "Number of particles per type");
@@ -137,6 +154,13 @@ private:
         add_option("PreBO_OrbitalVector", "Number of orbitals for each type");
         add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
 
+        // Vibronic
+        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
+        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
+        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
+        add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
+        add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
+        add_option("n_excitons", "Number of molecule composing the molecular aggregate");
     }
 
 };
@@ -200,7 +224,6 @@ private:
         add_option("twist", "");
         add_option("move", "");
 
-        add_option("Nmax", "");
         add_option("mu", "", value(0));
         add_option("mu0", "", value(0));
         add_option("h", "", value(1));

@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -34,6 +34,7 @@
 #include "Fixtures/BenzeneFixture.h"
 #include "Fixtures/TimeEvolversFixture.h"
 #include "Fixtures/PreBOTimeEvolversFixture.h"
+#include "Fixtures/VibronicFixture.h"
 
 /**
  * @brief Tests that iTD-DMRG and TI-DMRG give the same energy.
@@ -121,3 +122,35 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
 }
 
 #endif // DMRG_PREBO
+
+#ifdef DMRG_VIBRONIC
+
+/**
+ * @brief Tests that the energy obtained with iTD-DMRG and DMRG is coherent for a vibronic Hamiltonian.
+ */
+BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeVibronic, VibronicFixture )
+{
+#ifdef HAVE_U1
+    parametersVibronicPyrazineRedDimFull.set("init_state", "basis_state_generic");
+    parametersVibronicPyrazineRedDimFull.set("init_basis_state", "1,0,0,0,0,0");
+    parametersVibronicPyrazineRedDimFull.set("nsweeps", 20);
+    parametersVibronicPyrazineRedDimFull.set("max_bond_dimension", 20);
+    parametersVibronicPyrazineRedDimFull.set("time_step", 0.1);
+    parametersVibronicPyrazineRedDimFull.set("time_units", "as");
+    parametersVibronicPyrazineRedDimFull.set("propagator_maxiter", 40);
+    parametersVibronicPyrazineRedDimFull.set("TD_backpropagation", "no");
+    parametersVibronicPyrazineRedDimFull.set("imaginary_time", "yes");
+    maquis::DMRGInterface<double> realInterface(parametersVibronicPyrazineRedDimFull);
+    maquis::DMRGInterface<std::complex<double>> complexInterface(parametersVibronicPyrazineRedDimFull);
+    maquis::cout << "Running conventional DMRG optimization test for Vibronic model" << std::endl;
+    realInterface.optimize();
+    maquis::cout << "Running imaginary-time evolution for Vibronic model " << std::endl;
+    complexInterface.evolve();
+    // Test energy conservation
+    auto TIEnergy = std::real(realInterface.energy());
+    auto iTDEnergy = std::real(complexInterface.energy());
+    BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
+#endif
+}
+
+#endif // DMRG_VIBRONIC

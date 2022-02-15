@@ -35,8 +35,6 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/dual_index.h"
 
-#include "dmrg/models/op_handler.h"
-
 // function objects to set point group symmetry in Indices depending on the occupation
 // (do not set irrep if empty or doubly occupied)
 

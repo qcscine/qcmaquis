@@ -31,28 +31,13 @@
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/models/chem/pg_util.h"
+#include "dmrg/mp_tensors/charge_detail.h"
 
 template<class T>
 T tri_min(T a, T b, T c)
 {
     return std::min(std::min(a, b),
                     std::min(a, c));
-}
-
-namespace charge_detail {
-
-    template <class SymmGroup>
-    inline bool physical(typename SymmGroup::charge c) { return true; }
-
-    template <>
-    inline bool physical<TwoU1PG>(TwoU1PG::charge c) { return c[0] >= 0 && c[1] >= 0; }
-
-    template <>
-    inline bool physical<SU2U1>(SU2U1::charge c) { return SU2U1::spin(c) >= 0; }
-
-    template <>
-    inline bool physical<SU2U1PG>(SU2U1PG::charge c) { return SU2U1PG::spin(c) >= 0; }
-
 }
 
 template <class SymmGroup>
@@ -101,7 +86,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = left_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
                 it = left_allowed[i].erase(it);
-            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
+            else if (!finitegroup && !ChargeDetailClass<SymmGroup>::physical(it->first))
                 it = left_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
@@ -109,7 +94,6 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
             }
         }
     }
-    
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
@@ -123,13 +107,14 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = right_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
                 it = right_allowed[i].erase(it);
-            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
+            else if (!finitegroup && !ChargeDetailClass<SymmGroup>::physical(it->first))
                 it = right_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
                 ++it;
             }
         }
+        extract_common_subset(left_allowed[i], right_allowed[i]);
     }
     
     for (int i = 0; i < L+1; ++i) {

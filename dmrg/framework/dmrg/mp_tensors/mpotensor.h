@@ -37,7 +37,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
-#include "dmrg/models/op_handler.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
 template<class Matrix, class SymmGroup>

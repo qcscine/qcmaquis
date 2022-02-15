@@ -32,7 +32,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/utils/align.h"
 
 namespace chem {
