@@ -29,6 +29,7 @@
 #define CONTRACTIONS_SU2_MICRO_KERNELS_HPP
 
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/sparse_operator.h"
 
 namespace contraction {
 namespace SU2 {
@@ -40,11 +41,10 @@ namespace detail {
               std::size_t in_right_offset, std::size_t out_left_offset, std::size_t l_size, std::size_t r_size, std::size_t w_block,
               typename Matrix::value_type couplings[])
     {
-        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+        auto blocks = W.get_sparse().block(w_block);
 
         for(size_t rr = 0; rr < r_size; ++rr) {
-            for( block_iterator it = blocks.first; it != blocks.second; ++it)
+            for (auto it = blocks.first; it != blocks.second; ++it)
             {
                 std::size_t ss1 = it->row;
                 std::size_t ss2 = it->col;
@@ -70,13 +70,12 @@ namespace detail {
                                  std::size_t in_right_offset, std::size_t out_right_offset, std::size_t l_size, std::size_t r_size, std::size_t w_block,
                                  typename Matrix::value_type couplings[])
     {
-        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+        auto blocks = W.get_sparse().block(w_block);
 
         const size_t chunk = 1024;
         const size_t blength = r_size*l_size;
         for(size_t rr = 0; rr < blength/chunk; ++rr) {
-            for( block_iterator it = blocks.first; it != blocks.second; ++it)
+            for (auto it = blocks.first; it != blocks.second; ++it)
             {
                 std::size_t ss1 = it->row;
                 std::size_t ss2 = it->col;
@@ -97,7 +96,7 @@ namespace detail {
             }
         }
 
-        for( block_iterator it = blocks.first; it != blocks.second; ++it)
+        for (auto it = blocks.first; it != blocks.second; ++it)
         {
             std::size_t ss1 = it->row;
             std::size_t ss2 = it->col;
@@ -123,11 +122,10 @@ namespace detail {
                          std::size_t in_left_offset, std::size_t out_right_offset, std::size_t l_size, std::size_t r_size, std::size_t w_block,
                          typename Matrix::value_type couplings[])
     {
-        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+        auto blocks = W.get_sparse().block(w_block);
 
-        for(size_t rr = 0; rr < r_size; ++rr) {
-            for( block_iterator it = blocks.first; it != blocks.second; ++it)
+        for (size_t rr = 0; rr < r_size; ++rr) {
+            for (auto it = blocks.first; it != blocks.second; ++it)
             {
                 std::size_t ss1 = it->row;
                 std::size_t ss2 = it->col;
@@ -177,10 +175,8 @@ namespace detail {
                     size_t in_offset,
                     size_t r_size_cache, size_t r_size, size_t out_right_offset)
     {
-        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-
-        for (block_iterator it = blocks.first; it != blocks.second; ++it)
+        auto blocks = W.get_sparse().block(w_block);
+        for (auto it = blocks.first; it != blocks.second; ++it)
         {
             micro_task<typename Matrix::value_type> task = tpl;
 

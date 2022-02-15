@@ -2,10 +2,7 @@
 *
 * ALPS MPS DMRG Project
 *
-* Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
-*               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
-*               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
-*               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
+* Copyright (C) 2020- Institute for Theoretical Physics, ETH Zurich
 *               2020         Leon Freitag <lefreita@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS

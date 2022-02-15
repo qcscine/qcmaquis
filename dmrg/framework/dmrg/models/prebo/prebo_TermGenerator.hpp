@@ -28,14 +28,14 @@
 #ifndef MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP
 
-#include "dmrg/models/lattice.h"
-#include "dmrg/models/op_handler.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
 #include "nu1/nu1_nBodyTerm.hpp"
-#include "dmrg/models/prebo/model_helper.hpp"
+#include "dmrg/models/model_helper.hpp"
 #include "prebo_TagGenerator.hpp"
 #include "integral_interface.h"
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 namespace prebo {
 
@@ -806,6 +806,6 @@ namespace prebo {
 
 } // namespace prebo
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif // MAQUIS_DMRG_PREBO_TERMGENERATOR_HPP

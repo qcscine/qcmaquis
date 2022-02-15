@@ -28,7 +28,7 @@
 #define MAQUIS_DMRG_MODELS_CODED_FACTORY_H
 
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 
 template<class Matrix, class SymmGroup>

@@ -37,7 +37,7 @@
 /* external */
 #include <alps/numeric/matrix/algorithms.hpp>
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 namespace measurements {
 
@@ -653,6 +653,6 @@ namespace measurements {
     };
 }
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif // MAQUIS_DMRG_PREBO_MUTUAL_INFORMATION_H

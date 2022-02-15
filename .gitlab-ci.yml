@@ -10,6 +10,8 @@ stages:
   - buildFinal
   - testFinal
 
+# Conventional electronic-structure tests
+
 build-electronic:
   stage: buildBasic
   tags:
@@ -32,6 +34,8 @@ testElectronic:
   script:
     - cd buildElectronic
     - make test -j2
+
+# Relativistic electronic-structure tests
 
 build-relativistic:
   stage: buildAdvanced
@@ -57,7 +61,9 @@ testRelativistic:
     - cd buildRelativistic
     - make test -j2
 
-build-with-nu1:
+# Non-electronic-structure tests
+
+buildPreBO:
   stage: buildFinal
   needs: ["testRelativistic"]
   tags:
@@ -72,13 +78,61 @@ build-with-nu1:
     expire_in: 6h
     when: always
 
-testNU1:
+testPreBO:
   stage: testFinal
-  needs: ["build-with-nu1"]
+  needs: ["buildPreBO"]
   tags:
     - default_docker
   script:
     - cd buildNU1
+    - make test -j4
+
+buildVibrationalHamiltonians:
+  stage: buildFinal
+  needs: ["testRelativistic"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildVibrational && cd buildVibrational
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;NONE;U1" -DBUILD_VIBRATIONAL=ON -DBUILD_VIBRONIC=ON -DDMRG_NUMSYMM=5 ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildVibrational/
+    expire_in: 6h
+    when: always
+
+testVibrationalHamiltonians:
+  stage: testFinal
+  needs: ["buildVibrationalHamiltonians"]
+  tags:
+    - default_docker
+  script:
+    - cd buildVibrational
+    - make test -j4
+
+buildVibronicHamiltonians:
+  stage: buildFinal
+  needs: ["testRelativistic"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildVibronic && cd buildVibronic
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;U1" -DBUILD_VIBRONIC=ON ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildVibronic/
+    expire_in: 6h
+    when: always
+
+testVibronicHamiltonians:
+  stage: testFinal
+  needs: ["buildVibronicHamiltonians"]
+  tags:
+    - default_docker
+  script:
+    - cd buildVibronic
     - make test -j4
 
 # Pipeline for the TD-DMRG case
@@ -113,7 +167,7 @@ build-TD-with-all-symmetries:
     - default_docker
   script:
     - mkdir buildTDAllSymmetries && cd buildTDAllSymmetries
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1;U1" -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON -DBUILD_VIBRONIC=ON ../dmrg
     - make -j2
   artifacts:
     paths:

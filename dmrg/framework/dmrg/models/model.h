@@ -30,9 +30,8 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/term_descriptor.h"
 #include "dmrg/models/measurement.h"
-
-#include "dmrg/models/lattice.h"
-#include "dmrg/models/op_handler.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/site_operator.h"

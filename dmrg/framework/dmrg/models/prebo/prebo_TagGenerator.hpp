@@ -28,18 +28,15 @@
 #ifndef MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 #define MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP
 
-/* internal include */
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "nu1/nu1_SymbolicJordanWigner.hpp"
-
-/* external include */
-#include <dmrg/models/lattice.h>
+#include <dmrg/models/lattice/lattice.h>
 #include <alps/numeric/matrix.hpp>
 #include <alps/numeric/matrix/matrix.hpp>
 #include <map>
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 namespace prebo {
 
@@ -157,25 +154,6 @@ namespace prebo {
             }
 
 
-        }
-
-        // +--------------------+
-        // | REGISTER_ALL_TYPES |
-        // +--------------------+
-        /*! \brief
-         *  This method is used to register all the operators contained in a given vector
-         */
-        std::vector<tag_type> register_all_types(std::vector<op_t> const &ops,   // -> vector of operators
-                                                 tag_detail::operator_kind kind)  // -> bosonic or fermionic
-        {
-            std::vector<tag_type> ret;
-            for (std::size_t idx = 0; idx < ops.size(); idx++) {
-                std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[idx], kind);
-                assert(newtag.first < tag_handler->size());
-                assert(std::abs(newtag.second - value_type(1.)) == value_type());
-                ret.push_back(newtag.first);
-            }
-            return ret;
         }
 
         // +--------------------------+
@@ -361,19 +339,22 @@ namespace prebo {
             //
             // Fermions
             if (num_fer_types > 0) {
-                this->fer_ident_tag = register_all_types(fer_ident, tag_detail::bosonic);
-                this->fer_filling_tag = register_all_types(fer_filling, tag_detail::bosonic);
-                this->fer_create_up_tag = register_all_types(fer_create_up, tag_detail::fermionic);
-                this->fer_create_down_tag = register_all_types(fer_create_down, tag_detail::fermionic);
-                this->fer_dest_up_tag = register_all_types(fer_dest_up, tag_detail::fermionic);
-                this->fer_dest_down_tag = register_all_types(fer_dest_down, tag_detail::fermionic);
+                this->fer_ident_tag = modelHelper<Matrix, NU1>::register_all_types(fer_ident, tag_detail::bosonic, tag_handler);
+                this->fer_filling_tag = modelHelper<Matrix, NU1>::register_all_types(fer_filling, tag_detail::bosonic, tag_handler);
+                this->fer_create_up_tag = modelHelper<Matrix, NU1>::register_all_types(fer_create_up, tag_detail::fermionic, tag_handler);
+                this->fer_create_down_tag = modelHelper<Matrix, NU1>::register_all_types(fer_create_down, tag_detail::fermionic, tag_handler);
+                this->fer_dest_up_tag = modelHelper<Matrix, NU1>::register_all_types(fer_dest_up, tag_detail::fermionic, tag_handler);
+                this->fer_dest_down_tag = modelHelper<Matrix, NU1>::register_all_types(fer_dest_down, tag_detail::fermionic, tag_handler);
+                modelHelper<Matrix, NU1>::registerHermitianConjugates(fer_create_up_tag, fer_dest_up_tag, tag_handler);
+                modelHelper<Matrix, NU1>::registerHermitianConjugates(fer_create_down_tag, fer_dest_down_tag, tag_handler);
             }
             // Bosons
             if (num_bos_types > 0) {
-                this->bos_ident_tag = register_all_types(bos_ident, tag_detail::bosonic);
-                this->bos_create_tag = register_all_types(bos_create, tag_detail::bosonic);
-                this->bos_dest_tag = register_all_types(bos_dest, tag_detail::bosonic);
-                this->bos_count_tag = register_all_types(bos_count, tag_detail::bosonic);
+                this->bos_ident_tag = modelHelper<Matrix, NU1>::register_all_types(bos_ident, tag_detail::bosonic, tag_handler);
+                this->bos_create_tag = modelHelper<Matrix, NU1>::register_all_types(bos_create, tag_detail::bosonic, tag_handler);
+                this->bos_dest_tag = modelHelper<Matrix, NU1>::register_all_types(bos_dest, tag_detail::bosonic, tag_handler);
+                this->bos_count_tag = modelHelper<Matrix, NU1>::register_all_types(bos_count, tag_detail::bosonic, tag_handler);
+                modelHelper<Matrix, NU1>::registerHermitianConjugates(bos_create_tag, bos_dest_tag, tag_handler);
             }
 
         } //create_tags
@@ -431,6 +412,6 @@ namespace prebo {
 
 } // namespace prebo
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif // MAQUIS_DMRG_PREBO_TAGGENERATOR_HPP

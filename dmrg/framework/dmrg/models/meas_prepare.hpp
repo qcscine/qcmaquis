@@ -28,7 +28,7 @@
 #ifndef MAQUIS_DMRG_MODEL_MEAS_PREPARE_HPP
 #define MAQUIS_DMRG_MODEL_MEAS_PREPARE_HPP
 
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/generate_mpo.hpp"
 
 namespace meas_prepare {

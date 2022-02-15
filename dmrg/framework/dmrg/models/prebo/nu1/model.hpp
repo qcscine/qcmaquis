@@ -33,7 +33,7 @@
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 #include "nu1_nBodyTerm.hpp"
 #include "dmrg/models/prebo/prebo_parse_integrals.h"
-#include "dmrg/models/prebo/model_helper.hpp"
+#include "dmrg/models//model_helper.hpp"
 #include "dmrg/models/measurements/prebo_particle_rdm.h"
 #include "dmrg/models/measurements/prebo_mutual_information.h"
 
@@ -44,7 +44,7 @@
 #include <unordered_map>
 #include <chrono>
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 /**
  * @brief Pre-Born Oppenheimer model class
@@ -224,6 +224,6 @@ public:
     }
 };
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif

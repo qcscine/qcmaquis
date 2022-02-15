@@ -23,9 +23,10 @@ if(BUILD_PREBO)
     target_link_libraries(prebo_test1 ${DMRG_APP_LIBRARIES})
     add_executable(prebo_test2 prebo_test2.cpp)
     target_link_libraries(prebo_test2 ${DMRG_APP_LIBRARIES})
-    add_executable(prebo_test_model model/model_prebo.cpp)
+    # Unit tests for the model class
+    add_executable(prebo_test_model prebo/PreBOModel.cpp)
     target_link_libraries(prebo_test_model ${DMRG_APP_LIBRARIES})
-    # Unit tests
+    # Unit tests for the helper classes
     add_executable(test_prebo_symbolic_operator prebo/symbolicoperator_test.cpp)
     target_link_libraries(test_prebo_symbolic_operator ${DMRG_APP_LIBRARIES})
     add_executable(test_prebo_symbolic_jw prebo/SymbolicJordanWignerTest.cpp)
@@ -33,6 +34,51 @@ if(BUILD_PREBO)
     add_executable(test_mps_mpo_ops_prebo test_mps_mpo_ops/test_mps_mpo_ops_prebo.cpp)
     target_link_libraries(test_mps_mpo_ops_prebo ${DMRG_APP_LIBRARIES})
 endif(BUILD_PREBO)
+
+if(BUILD_VIBRATIONAL)
+    # Unit test
+    add_executable(test_vibrational_lattice vibrational/test_vibrational_lattice.cpp)
+    target_link_libraries(test_vibrational_lattice ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_nu1_model vibrational/NU1VibrationalModel.cpp)
+    target_link_libraries(test_vibrational_nu1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibrational_watson_model vibrational/WatsonVibrationalModel.cpp)
+    target_link_libraries(test_vibrational_watson_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_mpo_ops_vibrational test_mps_mpo_ops/test_mps_mpo_ops_vibrational.cpp)
+    target_link_libraries(test_mps_mpo_ops_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mpo_times_mps_vibrational test_mps_mpo_ops/test_mpo_times_mps_vibrational.cpp)
+    target_link_libraries(test_mpo_times_mps_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_initializers_vibrational mps_initializers/test_mps_initializers_vibrational.cpp)
+    target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
+    target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
+    # Executable tests
+    add_executable(test_FAD_2Mode test_FAD_2Mode.cpp)
+    target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})
+    add_executable(test_Ethylene_Sextic test_Ethylene_Sextic.cpp)
+    target_link_libraries(test_Ethylene_Sextic ${DMRG_APP_LIBRARIES})
+    add_executable(test_BilinearlyCoupled test_BilinearlyCoupled.cpp)
+    target_link_libraries(test_BilinearlyCoupled ${DMRG_APP_LIBRARIES})
+endif(BUILD_VIBRATIONAL)
+
+# == VIBRONIC TESTS ==
+if(BUILD_VIBRONIC)
+    # Unit test
+    add_executable(test_vibronic_lattice vibronic/test_vibronic_lattice.cpp)
+    target_link_libraries(test_vibronic_lattice ${DMRG_APP_LIBRARIES})
+    add_executable(test_vibronic_u1_model vibronic/VibronicModel.cpp)
+    target_link_libraries(test_vibronic_u1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_excitonic_u1_model vibronic/ExcitonicModel.cpp)
+    target_link_libraries(test_excitonic_u1_model ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_mpo_ops_vibronic test_mps_mpo_ops/test_mps_mpo_ops_vibronic.cpp)
+    target_link_libraries(test_mps_mpo_ops_vibronic ${DMRG_APP_LIBRARIES})
+    add_executable(test_mps_overlap_vibronic test_mps_mpo_ops/test_mps_overlap_vibronic.cpp)
+    target_link_libraries(test_mps_overlap_vibronic ${DMRG_APP_LIBRARIES})
+    # Executable test
+    add_executable(test_Excitonic test_ExcitonicCoupling.cpp)
+    target_link_libraries(test_Excitonic ${DMRG_APP_LIBRARIES})
+    add_executable(test_Vibronic test_VibronicCoupling.cpp)
+    target_link_libraries(test_Vibronic ${DMRG_APP_LIBRARIES})
+endif(BUILD_VIBRONIC)
 
 add_executable(test_integral_map test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
@@ -49,6 +95,9 @@ target_link_libraries(test_mps_mpo_ops_TwoU1 ${DMRG_APP_LIBRARIES})
 add_executable(test_mps_mpo_ops_electronic test_mps_mpo_ops/test_mps_mpo_ops_electronic.cpp)
 target_link_libraries(test_mps_mpo_ops_electronic ${DMRG_APP_LIBRARIES})
 
+add_executable(test_mpo_times_mps_TwoU1 test_mps_mpo_ops/test_mpo_times_mps_TwoU1.cpp)
+target_link_libraries(test_mpo_times_mps_TwoU1 ${DMRG_APP_LIBRARIES})
+
 add_executable(test_mps_overlap_electronic test_mps_mpo_ops/test_mps_overlap_electronic.cpp)
 target_link_libraries(test_mps_overlap_electronic ${DMRG_APP_LIBRARIES})
 
@@ -64,6 +113,9 @@ target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
+
+add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
+target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
 
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_time_evolvers TimeEvolvers/TimeEvolvers.cpp)

@@ -1,0 +1,39 @@
+// +--------------------------------------------------------------------+
+//  EXAMPLE 1: N-mode example calculation on a two-mode potential of FAD 
+// +--------------------------------------------------------------------+
+// FAD indicates the formic acid dimer, and the reference PES is taken from
+// Phys. Chem. Chem. Phys., 2016, 18, 24835-24840.
+// The two modes are 0 and 5, following the notation of the paper
+
+// -- General parameters --
+L                        = 22
+max_bond_dimension       = 100
+nsweeps                  = 20
+symmetry                 = 'nu1'
+LATTICE                  = "nmode lattice"
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+MODEL                    = "nmode"
+integral_file            = "FCIDUMP_FAD_2Modes"
+lattice_library          = "coded"
+model_library            = "coded"
+optimization             = twosite
+conv_thresh              = 1.0E-16 
+
+// -- SVD truncation --
+truncation_initial       = 1e-50
+truncation_final         = 1e-50
+
+// -- Initialization and storage information --
+init_state               = 'const'
+chkpfile                 = 'FAD_2Mode_TS.checkpoint_state.0.h5'
+resultfile               = 'FAD_2Mode_TS.results_state.0.h5'
+
+// -- Nmode-specific parameters --
+nmode_num_modes          = 2
+nmode_num_basis          = "11,11"
+
+// -- Jacobi-Davidson parameters --
+ietl_jcd_maxiter         = 10
+ietl_jcd_tol             = 1e-8
+conv_thresh              = -1
+integral_cutoff          = 1e-300
