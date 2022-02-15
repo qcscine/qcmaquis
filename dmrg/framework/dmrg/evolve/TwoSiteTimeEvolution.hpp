@@ -266,19 +266,11 @@ private:
      */
     void print_header(int& sweep, int& site1, int& site2, int& lr){
         char buffer[50] ;
-        int n , a ;
-        if (lr == 1) {
-            a = 2*sweep+1 ;
-            n = sprintf(buffer, "  Sweep number %3d - site numbers %3d and %3d", a, site1, site2);
-        } else {
-            a = 2*sweep+2 ;
-            n = sprintf(buffer, "  Sweep number %3d - site numbers %3d and %3d", a, site1, site2);
-        }
+        int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
         std::cout << " +--------------------------------------------+" << std::endl ;
-        std::cout << buffer << std::endl ;
-        std::cout << " +--------------------------------------------+" << std::endl ;
+        std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
+        std::cout << " +--------------------------------------------+" << std::endl;
     }
-
 };
 
 #endif

@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2015 Laboratory of Physical Chemistry, ETH Zurich
  *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -26,6 +27,14 @@
 
 #ifndef ONED_MPO_MAKER_H
 #define ONED_MPO_MAKER_H
+
+#include <utility>
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/term_descriptor.h"
+#include "dmrg/models/generate_mpo/utils.hpp"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 namespace generate_mpo
 {
@@ -224,6 +233,32 @@ namespace generate_mpo
         term_descriptor<typename Matrix::value_type> term = arrange_operators(positions, operators, tag_handler);
         term.coeff *= scale;
         return sign_and_fill(term, ident, fill, tag_handler, lat);
+    }
+
+    /** @brief Enum class used in the following class */
+    enum class IonizedOrbital { Up, Down };
+
+    /**
+     * @brief Routine that builds the MPO representation of the destruction operator.
+     * TODO: Check if it works also for the TwoU1 and SU2U1 symmetry.
+     */
+    template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup>
+    make_destroy_mpo(const Lattice& lat, Model<Matrix, SymmGroup>& model, int iOrb, IonizedOrbital alphaOrBeta=IonizedOrbital::Up)
+    {
+      using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+      std::vector<int> pos(1, iOrb);
+      auto name = alphaOrBeta == IonizedOrbital::Up ? "destroy_up" : "destroy_down";
+      tag_type opDestroy = model.get_operator_tag(name, lat.template get_prop<typename SymmGroup::subcharge>("type", pos[0]));
+      tag_type ops_[1] = {opDestroy};
+      std::vector<tag_type> ops(ops_, ops_+1);
+      term_descriptor<typename Matrix::value_type> term = generate_mpo::arrange_operators(pos, ops, model.operators_table());
+      std::vector<tag_type> identities, fillings;
+      for (std::size_t idx = 0; idx <= lat.maximum_vertex_type(); idx++) {
+        identities.push_back(model.identity_matrix_tag(idx));
+        fillings.push_back(model.filling_matrix_tag(idx));
+      }
+      return generate_mpo::make_1D_mpo(pos, ops, identities, fillings, model.operators_table(), lat);
     }
 
 }

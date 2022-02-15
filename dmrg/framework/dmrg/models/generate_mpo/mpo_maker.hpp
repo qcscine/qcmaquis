@@ -28,15 +28,11 @@
 #define GENERATE_MPO_MPO_MAKER_H
 
 #include "dmrg/models/generate_mpo/utils.hpp"
-
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
-
 #include "dmrg/mp_tensors/mpo.h"
-
-#include "dmrg/models/lattice.h"
-
+#include "dmrg/models/lattice/lattice.h"
 #include <string>
 #include <sstream>
 

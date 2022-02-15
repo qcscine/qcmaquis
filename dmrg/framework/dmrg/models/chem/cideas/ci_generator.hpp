@@ -33,7 +33,7 @@
 #include <algorithm>
 #include <alps/numeric/matrix.hpp>
 
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/measurements/chementropy.h"
 #include "determinant.hpp"
 
