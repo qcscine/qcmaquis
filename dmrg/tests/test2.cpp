@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE( Test2 )
                 -6.04428444795E-10, 4.25968504501E-10, -4.91811127261E-11, 4.84877254927E-10 }
             };
 
-            test_detail::check_measurement_mat(meas_trans2rdm, ref_trans2rdm, true);
+            test_detail::check_measurement_mat(meas_trans2rdm, ref_trans2rdm, true, 1.0E-5);
 
         }
 
