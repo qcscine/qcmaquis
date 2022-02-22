@@ -118,32 +118,30 @@ std::ostream& operator << (std::ostream& os, detail::prempo_key<pos_t, tag_type,
 template<class Matrix, class SymmGroup>
 class TaggedMPOMaker
 {
-    typedef typename Matrix::value_type scale_type;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-    typedef Lattice::pos_t pos_t;
-    typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;
-    typedef typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t pos_op_type;
-    typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
-    typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
-    typedef std::vector<tag_type> tag_vec;
-    typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
-    typedef std::pair<tag_type, scale_type> prempo_value_type;
-        // TODO: consider moving to hashmap
-    typedef std::multimap<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
-                          compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
+    using scale_type = typename Matrix::value_type;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+    using pos_t = Lattice::pos_t;
+    using tag_type = typename OperatorTagTerm<Matrix, SymmGroup>::tag_type;
+    using pos_op_type = typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t;
+    using tag_block = boost::tuple<std::size_t, std::size_t, tag_type, scale_type>;
+    using term_descriptor = ::term_descriptor<typename Matrix::value_type>;
+    using tag_vec = std::vector<tag_type>;
+    using prempo_key_type = detail::prempo_key<pos_t, tag_type, index_type>;
+    using prempo_value_type = std::pair<tag_type, scale_type>;
+    // TODO: consider moving to hashmap
+    using prempo_map_type =  std::multimap<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
+                                           compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > >;
     enum merge_kind {attach, detach};
 
 public:
-
     /** @brief Class constructor from a lattice and a model */
     TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model)
-    : lat(lat_), length(lat.size()), tag_handler(model.operators_table()), prempo(length),
-      trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
-      leftmost_right(length), rightmost_left(0), finalized(false), verbose(true), core_energy(0.)
+        : lat(lat_), length(lat.size()), tag_handler(model.operators_table()), prempo(length),
+          trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
+          leftmost_right(length), rightmost_left(0), finalized(false), verbose(true), core_energy(0.)
     {
-        for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
-        {
+        for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p) {
             identities.push_back(model.identity_matrix_tag(p));
             fillings.push_back(model.filling_matrix_tag(p));
             try { identities_full.push_back(model.get_operator_tag("ident_full", p)); }
@@ -154,8 +152,7 @@ public:
     }
 
     /**
-     * @brief Class constructor from a lattice and a vector of terms 
-     *
+     * @brief Class constructor from a lattice and a vector of terms.
      * This method should be used for constructing operators != from the Hamiltonian.
      */
     TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & i_f_, tag_vec const & f_,
@@ -172,8 +169,7 @@ public:
 
 
     /**
-     * @brief Class constructor from a lattice and a vector of terms
-     *
+     * @brief Class constructor from a lattice and a vector of terms.
      * This method should be used for constructing operators != from the Hamiltonian.
      */
     TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & f_,

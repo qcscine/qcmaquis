@@ -35,6 +35,9 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models//model_helper.hpp"
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
+#include "dmrg/models/model_helper.hpp"
+#include "onemodalRDM.h"
+#include "twomodalRDM.h"
 
 /**
  * @brief Class implementing the n-mode vibrational Hamiltonian
@@ -198,11 +201,8 @@ public:
 
     /** @brief Measurement associated with the n-mode Hamiltonian class */
     measurements_type measurements() const {
-        typedef std::vector<op_t> op_vec;
-        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         measurements_type meas;
-        /*
-        if (model["MEASURE[One Modal RDM]"]) {
+        if (this->parameters["MEASURE[One Modal RDM]"]) {
             std::string name;
             std::vector<operators_type> op;
             std::vector<float_t> coeffs;
@@ -212,19 +212,16 @@ public:
                 name = "onemodalRDM_" + std::to_string(jj) + "_00";
                 op = {count, ident};
                 coeffs = {-1.0, 1.0};
-                meas.push_back(new measurements::onemodalRDM<Matrix, NU1>(this->lat, name, jj, op,
-                                                                          coeffs, this->tag_handler, this->ident));
-
+                meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, jj, op, coeffs, this->tag_handler, this->ident));
                 //this is for the operator a+a
                 name = "onemodalRDM_" + std::to_string(jj) + "_11";
                 op = {count};
                 coeffs = {1.0};
-                meas.push_back(new measurements::onemodalRDM<Matrix, NU1>(this->lat, name, jj, op,
-                                                                          coeffs, this->tag_handler, this->ident));
-
+                meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, jj, op, coeffs, this->tag_handler, this->ident));
             }
-
         }
+
+        /*
         if (model["MEASURE[Two Modal RDM]"]) {
 
 
