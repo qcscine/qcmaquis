@@ -57,44 +57,49 @@ public:
     using terms_type = typename std::vector<term_descriptor>;
     using value_type = typename Matrix::value_type;
     using tag_handler = typename std::shared_ptr<TagHandler<Matrix, SymmGroup>>;
+    //
+    using base::labels_num;
+    using base::vector_results;
 
     /**
      * @brief Class constructor:
      * @param lat_: DMRG lattice
      * @param name_: measurement name (needed by the base class)
-     * @param jj: site for which the RDM is calculated.
      * @param op: vector of the tags associated with the terms that are to be added up to the measurement.
      * @param coeffs: scalar coefficients for the operator.
      * @param tagger: tag_handler associated with the model.
      */
-    onemodalRDM(Lattice const&  lat_, std::string name_, int jj, std::vector< operators_type > &op,
+    onemodalRDM(Lattice const&  lat_, std::string name_, std::vector< operators_type > &op,
                 std::vector<float_t>& coeffs, const std::shared_ptr<TagHandler<Matrix, SymmGroup>>& tagger,
-                const std::vector<tag_type>& ident)
-        : base(name_) , lat(lat_), site_(jj)
+                const std::vector<tag_type>& ident) : base(name_) , lat(lat_)
     {
         int L = lat_.size();
-        terms_type terms_;
-        assert( jj < lat.size() ) ;
-        int i_type = lat.get_prop<int>("type", jj);
-        for(int k = 0; k < coeffs.size(); ++k)
-        {
-            positions.resize(0);
-            operators.resize(0);
-            positions.push_back(jj);
-            operators.push_back(op[k][i_type]);
-            value_type scaling = static_cast<value_type>(coeffs[k]);
-            auto term = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tagger);
-            term.first.coeff = scaling;
-            assert(!term.second);
-            terms_.push_back(term.first);
+        for (int iSite = 0; iSite < L; iSite++) {
+            int i_type = lat.get_prop<int>("type", iSite);
+            terms_type terms_;
+            for(int k = 0; k < coeffs.size(); ++k) {
+                positions.resize(0);
+                operators.resize(0);
+                positions.push_back(iSite);
+                operators.push_back(op[k][i_type]);
+                value_type scaling = static_cast<value_type>(coeffs[k]);
+                auto term = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tagger);
+                term.first.coeff = scaling;
+                assert(!term.second);
+                terms_.push_back(term.first);
+            }
+            auto mpoMaker = generate_mpo::TaggedMPOMaker<Matrix, SymmGroup>(lat_, ident, ident, ident, tagger, terms_);
+            this->mpoVector.push_back(mpoMaker.create_mpo());
         }
-        auto mpoMaker = generate_mpo::TaggedMPOMaker<Matrix, SymmGroup>(lat_, ident, ident, ident, tagger, terms_);
-        this->mpo = mpoMaker.create_mpo();
-        //MPO<Matrix, SymmGroup> mpo = make_mpo(lat_, tagger, terms_, ident, true);
     }
 
     void evaluate(const MPS<Matrix, SymmGroup>& mps,  boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) {
-        this-> result = expval(mps, this->mpo);
+        int iSite = 0;
+        for (const auto& mpoElement: this->mpoVector) {
+            labels_num.push_back({iSite});
+            vector_results.push_back(expval(mps, mpoElement));
+            iSite++;
+        }
         /*
         using contr = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
         // Creates the left boundary
@@ -117,9 +122,8 @@ public:
 
 private:
     /* Private members */
-    MPO<Matrix, SymmGroup> mpo;
+    std::vector<MPO<Matrix, SymmGroup>> mpoVector;
     const Lattice& lat;
-    int site_;
     positions_type positions;
     operators_type operators;
 };

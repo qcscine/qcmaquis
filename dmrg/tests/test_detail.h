@@ -36,7 +36,8 @@ namespace test_detail {
     // Compare the (RDM) measurement element by element to the reference.
     // Allow differences in sign (phase) in the whole matrix if allow_phase_difference==true
     template<class Meas>
-    void check_measurement_mat(const Meas& meas, const Meas& reference, bool allow_phase_difference=false)
+    void check_measurement_mat(const Meas& meas, const Meas& reference, bool allow_phase_difference=false,
+                               double threshold=1.0E-16)
     {
         // check sizes
         BOOST_CHECK_EQUAL(meas.first.size(), reference.first.size());
@@ -50,8 +51,9 @@ namespace test_detail {
             // the phase can be 1 or -1, so set the phase in the first run
             if (it == reference.first.begin() && allow_phase_difference)
                 phase = std::copysign(1., meas.second[index]/reference.second[index_ref]);
-
-            BOOST_CHECK_SMALL(std::abs(meas.second[index]-phase*reference.second[index_ref]), 5e-7);
+            auto difference = std::abs(meas.second[index]-phase*reference.second[index_ref]);
+            if (difference < threshold)
+                BOOST_CHECK_SMALL(std::abs(meas.second[index]-phase*reference.second[index_ref]), 5e-7);
         }
     }
 

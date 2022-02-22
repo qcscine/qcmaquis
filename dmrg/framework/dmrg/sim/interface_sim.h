@@ -336,8 +336,8 @@ public:
         //    throw std::runtime_error("Tried to measure before a sweep");
 
         // Run all measurements and fill the result map
-        for(auto&& meas: all_measurements)
-                ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(), "/spectrum/results", mps).meas_out(meas);
+        for (auto&& meas: all_measurements)
+            ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(), "/spectrum/results", mps).meas_out(meas);
 
         // Measurements that require SU2U1->2U1 transformation
         #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)

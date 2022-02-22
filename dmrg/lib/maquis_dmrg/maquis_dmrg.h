@@ -95,6 +95,7 @@ public:
     const meas_with_results_type & twordm();
     const meas_with_results_type & threerdm();
     const meas_with_results_type & fourrdm();
+    const meas_with_results_type & getMeasurement(std::string measName);
 
     // Measure 3 and 4-RDM (for now in 2U1), and save it into the corresponding (SU2U1) result file (which should be set with parms["rfile"])
     void measure_and_save_3rdm();

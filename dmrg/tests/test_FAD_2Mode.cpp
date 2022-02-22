@@ -33,11 +33,8 @@
 #include "maquis_dmrg.h"
 
 /**
- * @brief N-mode calculation on two-mode PES of FAD
- * 
+ * @brief N-mode calculation on two-mode PES of FAD.
  * The basis set has been generated with a DVR primitive basis.
- * The reference energ has been generated 
- * 
  */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 {
@@ -53,5 +50,35 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
     BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
 #endif // HAS_NU1
 }
+
+#ifdef HAVE_NU1
+
+/** @brief Same as above, but includes measurements */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixture)
+{
+    // Adds the final input parameters
+    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("seed", 16071991);
+    parametersFADTwoBody.set("nsweeps", 20);
+    parametersFADTwoBody.set("max_bond_dimension", 20);
+    parametersFADTwoBody.set("MODEL", "nmode");
+    parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
+    // Creates the interface
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    interface.optimize();
+    BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
+    // Measurements
+    interface.measure();
+    // std::cout << interface.getMeasurement("onemodalRDM_0_00").second.size() << std::endl;
+    for (int iSite = 0; iSite < 22; iSite++) {
+        BOOST_CHECK_EQUAL(interface.getMeasurement("onemodalRDM_00").first[iSite][0],
+                          interface.getMeasurement("onemodalRDM_11").first[iSite][0]);
+        auto meas1 = interface.getMeasurement("onemodalRDM_00").second[iSite];
+        auto meas2 = interface.getMeasurement("onemodalRDM_11").second[iSite];
+        BOOST_CHECK_CLOSE(meas1+meas2, 1., 1.0E-16);
+    }
+}
+
+#endif // HAS_NU1
 
 #endif // DMRG_VIBRATIONAL

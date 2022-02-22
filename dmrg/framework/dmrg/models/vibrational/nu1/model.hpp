@@ -199,26 +199,27 @@ public:
         return tag_handler;
     }
 
-    /** @brief Measurement associated with the n-mode Hamiltonian class */
+    /**
+     * @brief Measurement associated with the n-mode Hamiltonian class 
+     * Note that we currently support one- and two-modal RDM.
+     */
     measurements_type measurements() const {
         measurements_type meas;
-        if (this->parameters["MEASURE[One Modal RDM]"]) {
+        if (this->parameters.is_set("MEASURE[One Modal RDM]")) {
             std::string name;
             std::vector<operators_type> op;
             std::vector<float_t> coeffs;
-            //need to calculate the one modal reduced density matrix for every mode
-            for (int jj = 0; jj < lattice_size; ++jj) {
-                //this is for the operator 1 - a+a
-                name = "onemodalRDM_" + std::to_string(jj) + "_00";
-                op = {count, ident};
-                coeffs = {-1.0, 1.0};
-                meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, jj, op, coeffs, this->tag_handler, this->ident));
-                //this is for the operator a+a
-                name = "onemodalRDM_" + std::to_string(jj) + "_11";
-                op = {count};
-                coeffs = {1.0};
-                meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, jj, op, coeffs, this->tag_handler, this->ident));
-            }
+            // Calculate the one modal reduced density matrix for every mode
+            // 1) operator 1 - a+a
+            name = "onemodalRDM_00";
+            op = {count, ident};
+            coeffs = {-1.0, 1.0};
+            meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, op, coeffs, this->tag_handler, this->ident));
+            // 2) operator a+a
+            name = "onemodalRDM_11";
+            op = {count};
+            coeffs = {1.0};
+            meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, op, coeffs, this->tag_handler, this->ident));
         }
 
         /*

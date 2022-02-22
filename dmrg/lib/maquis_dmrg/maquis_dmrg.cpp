@@ -193,6 +193,14 @@ namespace maquis
         return measurements().at("fourptdm");
     }
 
+    template <class V, Hamiltonian HamiltonianType>
+    const typename DMRGInterface<V, HamiltonianType>::meas_with_results_type& DMRGInterface<V, HamiltonianType>::getMeasurement(std::string measName)
+    {
+        if (measurements().find(measName) == measurements().end())
+            throw std::runtime_error("Measurement not available!");
+        return measurements().at(measName);
+    }
+
     #define measure_and_save_rdm(N) \
         BaseParameters meas_parms = parms.measurements(); \
         parms.erase_measurements(); \
