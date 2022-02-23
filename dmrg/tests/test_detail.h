@@ -52,7 +52,7 @@ namespace test_detail {
             if (it == reference.first.begin() && allow_phase_difference)
                 phase = std::copysign(1., meas.second[index]/reference.second[index_ref]);
             auto difference = std::abs(meas.second[index]-phase*reference.second[index_ref]);
-            if (difference < threshold)
+            if (difference > threshold)
                 BOOST_CHECK_SMALL(std::abs(meas.second[index]-phase*reference.second[index_ref]), 5e-7);
         }
     }
