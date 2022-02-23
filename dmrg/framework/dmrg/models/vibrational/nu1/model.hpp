@@ -36,8 +36,7 @@
 #include "dmrg/models//model_helper.hpp"
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
 #include "dmrg/models/model_helper.hpp"
-#include "onemodalRDM.h"
-#include "twomodalRDM.h"
+#include "VibrationalRDM.h"
 
 /**
  * @brief Class implementing the n-mode vibrational Hamiltonian
@@ -205,165 +204,56 @@ public:
      */
     measurements_type measurements() const {
         measurements_type meas;
+        // == One-modal RDM ==
+        std::string name;
+        std::vector< std::vector< operators_type >> ops;
+        std::vector<float_t> coeffs;
         if (this->parameters.is_set("MEASURE[One Modal RDM]")) {
-            std::string name;
-            std::vector<operators_type> op;
-            std::vector<float_t> coeffs;
             // Calculate the one modal reduced density matrix for every mode
             // 1) operator 1 - a+a
             name = "onemodalRDM_00";
-            op = {count, ident};
+            ops = {{count}, {ident}};
             coeffs = {-1.0, 1.0};
-            meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, op, coeffs, this->tag_handler, this->ident));
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
             // 2) operator a+a
             name = "onemodalRDM_11";
-            op = {count};
+            ops = {{count}};
             coeffs = {1.0};
-            meas.push_back(new measurements::onemodalRDM<Matrix, N>(lattice, name, op, coeffs, this->tag_handler, this->ident));
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
         }
-
-        /*
-        if (model["MEASURE[Two Modal RDM]"]) {
-
-
-            std::string name;
-            std::vector<tag_type > ops;
-            std::vector<pos_t > pos;
-
-
-            for (int jj = 0; jj < lattice_size; ++jj) {
-                for (int kk = jj + 1; kk < lattice_size; ++kk) {
-
-                    size_t j_type = lat.get_prop<int>("type", jj);
-                    size_t k_type = lat.get_prop<int>("type", kk);
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {ident[j_type]};
-                            pos = {jj};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type]};
-                            pos = {jj};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[k_type]};
-                            pos = {kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_00";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type]};
-                            pos = {jj};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-
-
-                        {
-                            term_descriptor term;
-
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_11";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-
-
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {create[j_type], destroy[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_12";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                        {
-                            term_descriptor term;
-                            ops = {destroy[j_type], create[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_21";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {count[k_type]};
-                            pos = {kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_22";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_33";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-
-                    }
-
-                }
-            }
+        // == Two-modal RDM ==
+        if (this->parameters.is_set("MEASURE[Two Modal RDM]")) {
+            // 0-0 element of the two-particle RDM
+            ops = {{ident, ident}, {count, ident}, {ident, count}, {count, count}};
+            coeffs = {1.0, -1.0, -1.0, 1.0};
+            name = "twomodeRDM_00";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
+            // 1-1 element of the two-particle RDM
+            ops = {{count, ident}, {count, count}};
+            coeffs = {1.0, -1.0};
+            name = "twomodeRDM_11";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
+            // 1-2 element of the two-particle RDM
+            ops = {{create, destroy}};
+            coeffs = {1.0};
+            name = "twomodeRDM_12";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
+            // 2-1 element of the two-particle RDM
+            ops = {{destroy, create}};
+            coeffs = {1.0};
+            name = "twomodeRDM_21";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
+            // 2-2 element of the two-particle RDM
+            ops = {{ident, count}, {count, count}};
+            coeffs = {1.0, -1.0};
+            name = "twomodeRDM_22";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
+            // 3-3 element of the two-particle RDM
+            ops = {{count, count}};
+            coeffs = {1.0};
+            name = "twomodeRDM_33";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident));
         }
-        */
         return meas;
     }
 

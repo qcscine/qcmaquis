@@ -40,9 +40,9 @@
 
 namespace measurements {
 
-/** @brief Measurement associated with the one-modal RDM. */
+/** @brief Measurement associated with a vibrational RDM. */
 template <class Matrix, int N>
-class onemodalRDM : public measurement<Matrix, NU1_template<N>> {
+class VibrationalRDM : public measurement<Matrix, NU1_template<N>> {
 public:
     // Type definition
     using SymmGroup = NU1_template<N>;
@@ -69,19 +69,36 @@ public:
      * @param coeffs: scalar coefficients for the operator.
      * @param tagger: tag_handler associated with the model.
      */
-    onemodalRDM(Lattice const&  lat_, std::string name_, std::vector< operators_type > &op,
-                std::vector<float_t>& coeffs, const std::shared_ptr<TagHandler<Matrix, SymmGroup>>& tagger,
-                const std::vector<tag_type>& ident) : base(name_) , lat(lat_)
+    VibrationalRDM(Lattice const&  lat_, std::string name_, const std::vector< std::vector< operators_type >>& op,
+                   const std::vector<float_t>& coeffs, const std::shared_ptr<TagHandler<Matrix, SymmGroup>>& tagger,
+                   const std::vector<tag_type>& ident)
+        : base(name_) , lat(lat_)
     {
+        // Global variables calculation
         int L = lat_.size();
-        for (int iSite = 0; iSite < L; iSite++) {
-            int i_type = lat.get_prop<int>("type", iSite);
+        assert(op.size() == coeffs.size());
+        for (const auto& iOp: op)
+            assert(iOp.size() == op[0].size());
+        int numberOfSQOperators = op[0].size();
+        int overallCombinations = std::pow(L, numberOfSQOperators);
+        // Generates the operators.
+        positions_type positions;
+        operators_type operators;
+        for (int iTerm = 0; iTerm  < overallCombinations; iTerm++) {
+            // The representation of iTerm in base L gives the index of each operator.
+            auto newIntegerRepresentation = this->to_base(iTerm, L, numberOfSQOperators);
+            assert(newIntegerRepresentation.size() <= numberOfSQOperators);
+            // Loop over the terms that compose the operator
             terms_type terms_;
             for(int k = 0; k < coeffs.size(); ++k) {
                 positions.resize(0);
                 operators.resize(0);
-                positions.push_back(iSite);
-                operators.push_back(op[k][i_type]);
+                for (int iOp = 0; iOp < numberOfSQOperators; iOp++) {
+                    auto iSite = newIntegerRepresentation[iOp];
+                    int i_type = lat.get_prop<int>("type", iSite);        
+                    positions.push_back(iSite);
+                    operators.push_back(op[k][iOp][i_type]);
+                }
                 value_type scaling = static_cast<value_type>(coeffs[k]);
                 auto term = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tagger);
                 term.first.coeff = scaling;
@@ -90,14 +107,16 @@ public:
             }
             auto mpoMaker = generate_mpo::TaggedMPOMaker<Matrix, SymmGroup>(lat_, ident, ident, ident, tagger, terms_);
             this->mpoVector.push_back(mpoMaker.create_mpo());
+            // Updates variables of the base class used to retrieve data.
+            vector_results.push_back(0);
+            labels_num.push_back(positions);
         }
     }
 
     void evaluate(const MPS<Matrix, SymmGroup>& mps,  boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) {
         int iSite = 0;
         for (const auto& mpoElement: this->mpoVector) {
-            labels_num.push_back({iSite});
-            vector_results.push_back(expval(mps, mpoElement));
+            vector_results[iSite] = expval(mps, mpoElement);
             iSite++;
         }
         /*
@@ -118,14 +137,27 @@ public:
     }
 
     /** @brief Cloning method */
-    measurement<Matrix, SymmGroup>* do_clone() const { return new onemodalRDM(*this); }
+    measurement<Matrix, SymmGroup>* do_clone() const { return new VibrationalRDM(*this); }
 
 private:
+
+    /** @brief Small helper function to convert a decimal number n into an arbitrary base b */
+    std::vector<int> to_base(int n, int base, int overallSize)
+    {
+
+        std::vector<int> result(overallSize, 0);
+        auto jCont = overallSize-1;
+        while (n) {
+            result[jCont] = n%base;
+            n /= base;
+            jCont--;
+        }
+        return result;
+    }
+
     /* Private members */
     std::vector<MPO<Matrix, SymmGroup>> mpoVector;
     const Lattice& lat;
-    positions_type positions;
-    operators_type operators;
 };
 
 } // namespace measurements

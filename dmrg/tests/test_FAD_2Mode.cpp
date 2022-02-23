@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
     // Adds the final input parameters
     parametersFADTwoBody.set("init_state", "default");
     parametersFADTwoBody.set("seed", 16071991);
-    parametersFADTwoBody.set("nsweeps", 20);
+    parametersFADTwoBody.set("nsweeps", 100);
     parametersFADTwoBody.set("max_bond_dimension", 20);
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
@@ -77,6 +77,30 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
         auto meas2 = interface.getMeasurement("onemodalRDM_11").second[iSite];
         BOOST_CHECK_CLOSE(meas1+meas2, 1., 1.0E-16);
     }
+}
+
+/** 
+ * @brief Measure the two-modal RDM and checks sanity of the modal entropies
+ * The sanity check is done by verifying that the subadditivity property is verified
+ * (i.e., that S_{pq} < S_p + S_q, see Chem. Phys. 323, 519 (2006))
+ */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixture)
+{
+    // Adds the final input parameters
+    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("seed", 16071991);
+    parametersFADTwoBody.set("nsweeps", 100);
+    parametersFADTwoBody.set("max_bond_dimension", 20);
+    parametersFADTwoBody.set("MODEL", "nmode");
+    parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
+    parametersFADTwoBody.set("MEASURE[Two Modal RDM]", "1");
+    // Creates the interface
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    interface.optimize();
+    BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
+    // Measurements
+    interface.measure();
+    // TODO COMPLETE!!
 }
 
 #endif // HAS_NU1
