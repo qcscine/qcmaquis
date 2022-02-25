@@ -28,6 +28,7 @@
 *****************************************************************************/
 #ifndef TEST_UTILS_H
 #define TEST_UTILS_H
+
 #include "maquis_dmrg.h"
 #include <boost/filesystem/operations.hpp>
 

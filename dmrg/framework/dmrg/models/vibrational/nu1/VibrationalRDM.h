@@ -40,6 +40,18 @@
 
 namespace measurements {
 
+/**
+ * @brief Enum class for managing the operators in vibrational RDMs.
+ *
+ * We have three possibilities:
+ *
+ * 1) AddAll: all possible combinations are added.
+ * 2) ExcludeAllSame: exclude terms where all operators sit on the same site.
+ * 3) ExcludeSame: exclude terms where there are at least 2 ops sitting on the
+ *    same site.
+ */
+enum class VibrationalRDMModality { AddAll, ExcludeAllSame, ExcludeSame};
+
 /** @brief Measurement associated with a vibrational RDM. */
 template <class Matrix, int N>
 class VibrationalRDM : public measurement<Matrix, NU1_template<N>> {
@@ -68,10 +80,11 @@ public:
      * @param op: vector of the tags associated with the terms that are to be added up to the measurement.
      * @param coeffs: scalar coefficients for the operator.
      * @param tagger: tag_handler associated with the model.
+     * @param excludeSameSite: if true, excludes elements of the RDM sitting on the same site.
      */
     VibrationalRDM(Lattice const&  lat_, std::string name_, const std::vector< std::vector< operators_type >>& op,
                    const std::vector<float_t>& coeffs, const std::shared_ptr<TagHandler<Matrix, SymmGroup>>& tagger,
-                   const std::vector<tag_type>& ident)
+                   const std::vector<tag_type>& ident, VibrationalRDMModality modality)
         : base(name_) , lat(lat_)
     {
         // Global variables calculation
@@ -84,32 +97,38 @@ public:
         // Generates the operators.
         positions_type positions;
         operators_type operators;
-        for (int iTerm = 0; iTerm  < overallCombinations; iTerm++) {
+        for (int iTerm = 0; iTerm < overallCombinations; iTerm++) {
             // The representation of iTerm in base L gives the index of each operator.
             auto newIntegerRepresentation = this->to_base(iTerm, L, numberOfSQOperators);
             assert(newIntegerRepresentation.size() <= numberOfSQOperators);
-            // Loop over the terms that compose the operator
-            terms_type terms_;
-            for(int k = 0; k < coeffs.size(); ++k) {
-                positions.resize(0);
-                operators.resize(0);
-                for (int iOp = 0; iOp < numberOfSQOperators; iOp++) {
-                    auto iSite = newIntegerRepresentation[iOp];
-                    int i_type = lat.get_prop<int>("type", iSite);        
-                    positions.push_back(iSite);
-                    operators.push_back(op[k][iOp][i_type]);
+            auto setSize = std::set<int>(newIntegerRepresentation.begin(), newIntegerRepresentation.end()).size();
+            bool accept = (modality == VibrationalRDMModality::AddAll) ||
+                          (modality == VibrationalRDMModality::ExcludeAllSame && setSize != 1) ||
+                          (modality == VibrationalRDMModality::ExcludeSame && setSize == newIntegerRepresentation.size());
+            if (accept) {
+                // Loop over the terms that compose the operator
+                terms_type terms_;
+                for(int k = 0; k < coeffs.size(); ++k) {
+                    positions.resize(0);
+                    operators.resize(0);
+                    for (int iOp = 0; iOp < numberOfSQOperators; iOp++) {
+                        auto iSite = newIntegerRepresentation[iOp];
+                        int i_type = lat.get_prop<int>("type", iSite);
+                        positions.push_back(iSite);
+                        operators.push_back(op[k][iOp][i_type]);
+                    }
+                    value_type scaling = static_cast<value_type>(coeffs[k]);
+                    auto term = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tagger);
+                    term.first.coeff = scaling;
+                    assert(!term.second);
+                    terms_.push_back(term.first);
                 }
-                value_type scaling = static_cast<value_type>(coeffs[k]);
-                auto term = modelHelper<Matrix, SymmGroup>::arrange_operators(positions, operators, scaling, tagger);
-                term.first.coeff = scaling;
-                assert(!term.second);
-                terms_.push_back(term.first);
+                auto mpoMaker = generate_mpo::TaggedMPOMaker<Matrix, SymmGroup>(lat_, ident, ident, ident, tagger, terms_);
+                this->mpoVector.push_back(mpoMaker.create_mpo());
+                // Updates variables of the base class used to retrieve data.
+                vector_results.push_back(0);
+                labels_num.push_back(positions);
             }
-            auto mpoMaker = generate_mpo::TaggedMPOMaker<Matrix, SymmGroup>(lat_, ident, ident, ident, tagger, terms_);
-            this->mpoVector.push_back(mpoMaker.create_mpo());
-            // Updates variables of the base class used to retrieve data.
-            vector_results.push_back(0);
-            labels_num.push_back(positions);
         }
     }
 
