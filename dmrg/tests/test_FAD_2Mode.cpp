@@ -75,14 +75,17 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
     BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
     // Measurements
     interface.measure();
-    // std::cout << interface.getMeasurement("onemodalRDM_0_00").second.size() << std::endl;
+    std::vector<double> firstMeas(22, 0);
+    std::vector<double> secondMeas(22, 0);
     for (int iSite = 0; iSite < 22; iSite++) {
-        BOOST_CHECK_EQUAL(interface.getMeasurement("onemodalRDM_00").first[iSite][0],
-                          interface.getMeasurement("onemodalRDM_11").first[iSite][0]);
-        auto meas1 = interface.getMeasurement("onemodalRDM_00").second[iSite];
-        auto meas2 = interface.getMeasurement("onemodalRDM_11").second[iSite];
-        BOOST_CHECK_CLOSE(meas1+meas2, 1., 1.0E-16);
+        auto idx1 = interface.getMeasurement("onemodalRDM_00").first[iSite][0];
+        auto idx2 = interface.getMeasurement("onemodalRDM_11").first[iSite][0];
+        firstMeas[idx1] = interface.getMeasurement("onemodalRDM_00").second[iSite];
+        secondMeas[idx2] = interface.getMeasurement("onemodalRDM_11").second[iSite];
     }
+    // Final check
+    for (int iSite = 0; iSite < 22; iSite++)
+        BOOST_CHECK_CLOSE(firstMeas[iSite]+secondMeas[iSite], 1., 1.0E-16);
 }
 
 /** 
@@ -105,7 +108,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixtur
     interface.optimize();
     interface.measure();
     // == TWO-MODAL ENTROPY ==
-    tmatrix<double> twoMatrixEntanglement(22, 22, 0.);
+    tmatrix<double> twoMatrixEntanglement(22, 22, 0.), twoMode00(22, 22, 0.), twoMode11(22, 22, 0.),
+        twoMode22(22, 22, 0.), twoMode33(22, 22, 0.), twoMode12(22, 22, 0.), twoMode21(22, 22, 0.);
     BOOST_CHECK_EQUAL(interface.getMeasurement("twomodeRDM_00").first.size(),
                       interface.getMeasurement("twomodeRDM_11").first.size());
     BOOST_CHECK_EQUAL(interface.getMeasurement("twomodeRDM_11").first.size(),
@@ -116,34 +120,54 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixtur
                       interface.getMeasurement("twomodeRDM_22").first.size());
     BOOST_CHECK_EQUAL(interface.getMeasurement("twomodeRDM_33").first.size(),
                       interface.getMeasurement("twomodeRDM_22").first.size());
+    // Extracts the two-modal entropy and calculates the entanglement
     auto overallSize = interface.getMeasurement("twomodeRDM_00").first.size();
     for (int iElement = 0; iElement < overallSize; iElement++) {
-        // Gets the indices
+        // 0-0
         int iRow = interface.getMeasurement("twomodeRDM_00").first[iElement][0];
         int iCol = interface.getMeasurement("twomodeRDM_00").first[iElement][1];
-        // Extracts the matrix elements
-        auto meas00 = interface.getMeasurement("twomodeRDM_00").second[iElement];
-        auto meas11 = interface.getMeasurement("twomodeRDM_11").second[iElement];
-        auto meas12 = interface.getMeasurement("twomodeRDM_12").second[iElement];
-        auto meas21 = interface.getMeasurement("twomodeRDM_21").second[iElement];
-        auto meas22 = interface.getMeasurement("twomodeRDM_22").second[iElement];
-        auto meas33 = interface.getMeasurement("twomodeRDM_33").second[iElement];
-        // Constructs the two-modal entanglement matrix
-        tmatrix<double> entanglementMatrix(4, 4, 0.), evecs(4, 4, 0.);
-        std::vector<double> evals(4, 0.);
-        entanglementMatrix(0, 0) = meas00;
-        entanglementMatrix(1, 1) = meas11;
-        entanglementMatrix(1, 2) = meas12;
-        entanglementMatrix(2, 1) = meas21;
-        entanglementMatrix(2, 2) = meas22;
-        entanglementMatrix(3, 3) = meas33;
-        heev(entanglementMatrix, evecs, evals);
-        // Calculates the two-orbital entropy
-        double entropy = 0.;
-        for (int i = 0; i < 4; i++)
-            if (std::abs(evals[i]) > 1.0E-16)
-                entropy -= evals[i]*std::log(evals[i]);
-        twoMatrixEntanglement(iRow, iCol) = entropy;
+        twoMode00(iRow, iCol) =  interface.getMeasurement("twomodeRDM_00").second[iElement];
+        // 1-1
+        iRow = interface.getMeasurement("twomodeRDM_11").first[iElement][0];
+        iCol = interface.getMeasurement("twomodeRDM_11").first[iElement][1];
+        twoMode11(iRow, iCol) =  interface.getMeasurement("twomodeRDM_11").second[iElement];
+        // 1-2
+        iRow = interface.getMeasurement("twomodeRDM_12").first[iElement][0];
+        iCol = interface.getMeasurement("twomodeRDM_12").first[iElement][1];
+        twoMode12(iRow, iCol) =  interface.getMeasurement("twomodeRDM_12").second[iElement];
+        // 2-1
+        iRow = interface.getMeasurement("twomodeRDM_21").first[iElement][0];
+        iCol = interface.getMeasurement("twomodeRDM_21").first[iElement][1];
+        twoMode21(iRow, iCol) =  interface.getMeasurement("twomodeRDM_21").second[iElement];
+        // 2-2
+        iRow = interface.getMeasurement("twomodeRDM_22").first[iElement][0];
+        iCol = interface.getMeasurement("twomodeRDM_22").first[iElement][1];
+        twoMode22(iRow, iCol) =  interface.getMeasurement("twomodeRDM_22").second[iElement];
+        // 3-3
+        iRow = interface.getMeasurement("twomodeRDM_33").first[iElement][0];
+        iCol = interface.getMeasurement("twomodeRDM_33").first[iElement][1];
+        twoMode33(iRow, iCol) =  interface.getMeasurement("twomodeRDM_33").second[iElement];
+    }
+    // Calculates the entanglement
+    for (int iRow = 0; iRow < 22; iRow++) {
+        for (int iCol = 0; iCol < 22; iCol++) {
+            // Constructs the two-modal entanglement matrix
+            tmatrix<double> entanglementMatrix(4, 4, 0.), evecs(4, 4, 0.);
+            std::vector<double> evals(4, 0.);
+            entanglementMatrix(0, 0) = twoMode00(iRow, iCol);
+            entanglementMatrix(1, 1) = twoMode11(iRow, iCol);
+            entanglementMatrix(1, 2) = twoMode12(iRow, iCol);
+            entanglementMatrix(2, 1) = twoMode21(iRow, iCol);
+            entanglementMatrix(2, 2) = twoMode22(iRow, iCol);
+            entanglementMatrix(3, 3) = twoMode33(iRow, iCol);
+            heev(entanglementMatrix, evecs, evals);
+            // Calculates the two-orbital entropy
+            double entropy = 0.;
+            for (int i = 0; i < 4; i++)
+                if (std::abs(evals[i]) > 1.0E-16)
+                    entropy -= evals[i]*std::log(evals[i]);
+            twoMatrixEntanglement(iRow, iCol) = entropy;
+        }
     }
     // == ONE-MODAL ENTROPY ==
     std::vector<double> vectorEntanglement(22, 0.);
