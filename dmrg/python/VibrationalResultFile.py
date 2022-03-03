@@ -72,7 +72,7 @@ class ResultFileVibrationaleMeasurement(object):
                 raise VibrationalCalculationTypeError
             # Extracts the key parameters
             self.overallSize = self.h5pyfile['parameters']['L'][()]
-            # For the n-mode case, the code needs to extract also 
+            # For the n-mode case, the code needs to extract also
             if (self.__vibrationalCalculationType == VibrationalCalculationType.NMODE):
                 tmpStr = str(self.h5pyfile['parameters']['nmode_num_basis'][()] )[2:-1]
                 tmpLst = tmpStr.split(',')
@@ -88,7 +88,7 @@ class ResultFileVibrationaleMeasurement(object):
                 self.numBasisFunctions = [nMaxParameter]*self.overallSize
         except:
             raise h5Error
-    
+
     def getNumberOfModals(self):
         """Getter for the number of modal bases"""
         return self.numBasisFunctions
@@ -118,24 +118,40 @@ class ResultFileVibrationaleMeasurement(object):
                 oneModalEntropy[iCont] += -i11*math.log(i11)
         return oneModalEntropy
 
-    # # Extracts the two-modals entropy for each modal
-    # def extractTwoModalEntropy(self):
-    #     ret = np.zeros(self.overallSize, self.overallSize)
-    #     for jj in range(self.overallSize):
-    #         for kk in range(jj+1, self.overallSize):
-    #             eigenvalues = np.zeros((4))
-    #             eigenvalues[0] = self.h5pyfile['spectrum']['results']['twomodeRDM_'+str(jj)+"_"+str(kk)+"_00"]['mean']['value'][0]
-    #             eigenvalues[3] = self.h5pyfile['spectrum']['results']['twomodeRDM_'+str(jj)+"_"+str(kk)+"_33"]['mean']['value'][0]
-    #             a = self.h5pyfile['spectrum']['results']['twomodeRDM_'+str(jj)+"_"+str(kk)+"_11"]['mean']['value'][0]
-    #             b = self.h5pyfile['spectrum']['results']['twomodeRDM_'+str(jj)+"_"+str(kk)+"_12"]['mean']['value'][0]
-    #             c = self.h5pyfile['spectrum']['results']['twomodeRDM_'+str(jj)+"_"+str(kk)+"_21"]['mean']['value'][0]
-    #             d = self.h5pyfile['spectrum']['results']['twomodeRDM_'+str(jj)+"_"+str(kk)+"_22"]['mean']['value'][0]
-    #             eigenvalues[1] = (a + d + np.sqrt((a - d)**2 + 4.0*b*c))/2.0
-    #             eigenvalues[2] = (a + d - np.sqrt((a - d)**2 + 4.0*b*c))/2.2
-    #             ret[jj][kk] = self.__calculateEntropy(eigenvalues)
-    #             ret[kk][jj] = ret[jj][kk]
-    #     return ret
-    
+    def __checkAndExtractTwoParticleQuantity(resultFile, label):
+        for idx, i in enumerate(resultFile['labels_num']):
+            if i[0] == label[0] and i[1] == label[1]:
+                return resultFile['mean']['value'][0,idx]
+        return None
+
+    def __extractTwoModalEntropy(self):
+        """Extracts the two-modals entropy for each modal"""
+        twoModalEntropy = np.zeros((self.overallSize, self.overallSize))
+        twoModalEntropy00 = np.zeros((self.overallSize, self.overallSize))
+        twoModalEntropy11 = np.zeros((self.overallSize, self.overallSize))
+        twoModalEntropy22 = np.zeros((self.overallSize, self.overallSize))
+        twoModalEntropy33 = np.zeros((self.overallSize, self.overallSize))
+        twoModalEntropy12 = np.zeros((self.overallSize, self.overallSize))
+        twoModalEntropy21 = np.zeros((self.overallSize, self.overallSize))
+        #
+        for iMat, ihd5 in zip([twoModalEntropy00, twoModalEntropy11, twoModalEntropy22, twoModalEntropy33, twoModalEntropy12, twoModalEntropy21],
+                              [self.h5pyfile['spectrum']['results']['twomodeRDM_00'], self.h5pyfile['spectrum']['results']['twomodeRDM_11'],
+                               self.h5pyfile['spectrum']['results']['twomodeRDM_22'], self.h5pyfile['spectrum']['results']['twomodeRDM_33'],
+                               self.h5pyfile['spectrum']['results']['twomodeRDM_12'], self.h5pyfile['spectrum']['results']['twomodeRDM_21']]):
+            for idx, iLabel in enumerate(ihd5['labels_num']):
+                iMat[iLabel[0], iLabel[1]] = ihd5['mean']['value'][0, idx]
+
+        for i in range(self.overallSize):
+            for j in range(self.overallSize):
+                eigenvalue0 = twoModalEntropy00[i, j]
+                eigenvalue1 = (twoModalEntropy11[i, j] + twoModalEntropy22[i, j] + np.sqrt((twoModalEntropy11[i, j] - twoModalEntropy22[i, j])**2 + 4.*twoModalEntropy21[i, j]*twoModalEntropy12[i, j]))/2.
+                eigenvalue2 = (twoModalEntropy11[i, j] + twoModalEntropy22[i, j] - np.sqrt((twoModalEntropy11[i, j] - twoModalEntropy22[i, j])**2 + 4.*twoModalEntropy21[i, j]*twoModalEntropy12[i, j]))/2.
+                eigenvalue3 = twoModalEntropy33[i, j]
+                for iEigen in [eigenvalue0, eigenvalue1, eigenvalue2, eigenvalue3]:
+                    if abs(iEigen) > ResultFileVibrationaleMeasurement.atol:
+                        twoModalEntropy[i, j] += -iEigen*math.log(iEigen)
+        return twoModalEntropy
+
     def getOneModalEntropy(self):
         """
         Gets the one-modal entropy as a "full" list
@@ -158,24 +174,14 @@ class ResultFileVibrationaleMeasurement(object):
         return lstOfList
 
     def getMutualInformation(self):
-        """Calculates the mutual information"""
+        """
+        Calculates the mutual information
+        """
         mutual_information = np.zeros((self.overallSize, self.overallSize))
-        single_entropy = self.__extractOneModalEntropy()
-        # two_entropy = self.extractTwoModalEntropy()
-        # for i in range(self.overallSize):
-        #     for j in range(i+1, self.overallSize):
-        #         result = self.__calculateMutualInformation(single_entropy, two_entropy, i, j)
-        #         mutual_information[i][j] = result
-        #         mutual_information[j][i] = result
+        singleEntropy = self.__extractOneModalEntropy()
+        twoEntropy = self.__extractTwoModalEntropy()
+        for i in range(self.overallSize):
+            for j in range(i+1, self.overallSize):
+                mutual_information[i][j] = 0.5*(singleEntropy[i] + singleEntropy[j] - twoEntropy[i, j])
+                mutual_information[j][i] = 0.5*(singleEntropy[i] + singleEntropy[j] - twoEntropy[i, j])
         return mutual_information
-
-    # def __calculateEntropy(self, w):
-    #     w = w[w > ResultFileVibrationaleMeasurement.atol]
-    #     lnw = np.log(w)
-    #     return -1.0*np.sum(w*lnw)
-
-    # def __calculateMutualInformation(single_ent, two_ent, i, j):
-    #     if i == j:
-    #         return 0
-    #     else:
-    #         return 0.5*(single_ent[i] + single_ent[j] - two_ent[i][j])
