@@ -103,7 +103,6 @@ if __name__ == "__main__":
   parser.add_argument("--twodimensional", action="store_true", help="If present, do a 2D logarithmic plot of the entanglement")
   args = parser.parse_args() 
   inputFileName = args.resultfile
-  doDiagram = args.diagram
   doTwoDimensional = args.twodimensional
   doThreeDimensional = args.threedimensional
   #
