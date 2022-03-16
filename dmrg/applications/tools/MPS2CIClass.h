@@ -78,7 +78,7 @@ public:
   /** @brief Calculates the overlap  with a bunch of input determinants */
   void calculateOverlap(std::string determinantName) const {
     // Loads the determinants
-    auto determinants = parse_config<Matrix, SymmGroup>(std::string(), per_site);
+    auto determinants = parse_config<Matrix, SymmGroup>(determinantName, per_site);
     // printout the determinants
     for (pos_t q = 0; q < determinants.size(); ++q) {
       for (pos_t p = 0; p < L; ++p)
