@@ -60,9 +60,8 @@ int main(int argc, char ** argv)
     exit(1);
   }
   // Creates the calculator class
-  MPSCICalculator<matrix, grp> calculator(argv[1]);
+  MPSCICalculator<cmatrix, grp> calculator(argv[1]);
   // Calculates the overlap
   calculator.calculateOverlap(argv[2]);
   return 0;
 }
-
