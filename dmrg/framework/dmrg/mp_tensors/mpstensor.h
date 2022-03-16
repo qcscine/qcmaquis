@@ -116,6 +116,9 @@ public:
 
     std::vector<block_matrix<Matrix, SymmGroup> > to_list() const;
 
+    /** @brief Scales each block of an MPS by the exponential of the product of the corresponding charges */
+    void scaleByExponentialProductOfCharges(value_type scalingFactor);
+
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
 

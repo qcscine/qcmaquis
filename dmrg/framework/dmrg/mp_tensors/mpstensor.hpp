@@ -696,3 +696,25 @@ void MPSTensor<Matrix, SymmGroup>::add_block_to_column(block_matrix<Matrix, Symm
         this->data_.add_block_to_column(bm, bm.get_left_charge(idx), bm.get_right_charge(idx));
     }
 }
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::scaleByExponentialProductOfCharges(value_type scalingFactor) {
+    this->make_left_paired();
+    auto localProductBasis = ProductBasis<SymmGroup>(this->phys_i, this->left_i);
+    for (int iBlock = 0; iBlock < this->data_.n_blocks(); iBlock++) {
+        auto leftCharge = this->data_.get_left_charge(iBlock);
+        auto rightCharge = this->data_.get_right_charge(iBlock);
+        for (int iPhys = 0; iPhys < this->phys_i.size(); iPhys++) {
+            if (phys_i[iPhys].first[0] == 1 && phys_i[iPhys].first[1] == 1) {
+                auto trueLeftCharge = SymmGroup::fuse(leftCharge, -phys_i[iPhys].first);
+                if (left_i.has(trueLeftCharge)) {
+                    auto offset = localProductBasis(phys_i[iPhys].first, trueLeftCharge);
+                    // Calculates the scaling factor.
+                    for (int iRow = 0; iRow < left_i.size_of_block(trueLeftCharge); iRow++)
+                        for (int iCol = 0; iCol < right_i.size_of_block(rightCharge); iCol++)
+                            this->data_[iBlock](iRow+offset, iCol) *= std::exp(scalingFactor);
+                }
+            }
+        }
+    }
+}
