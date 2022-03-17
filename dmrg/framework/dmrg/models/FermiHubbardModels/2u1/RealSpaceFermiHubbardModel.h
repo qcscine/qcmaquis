@@ -194,8 +194,8 @@ public:
                     posVectorLeftHermTC_3 = {iSite%height, iSite, iSite%height, iSite%height, iSite, iSite};
                 }
                 // TC operator 1
-                coeffx = -tx*(std::exp(-J)-1.);
-                coeffy = -ty*(std::exp(-J)-1.);
+                coeffx = -tx*(std::exp(J)-1.);
+                coeffy = -ty*(std::exp(J)-1.);
                 if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx));
@@ -213,8 +213,8 @@ public:
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeffy));
                 }
                 // TC operator 2
-                coeffx = -tx*(std::exp(J)-1.);
-                coeffy = -ty*(std::exp(J)-1.);
+                coeffx = -tx*(std::exp(-J)-1.);
+                coeffy = -ty*(std::exp(-J)-1.);
                 if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx));

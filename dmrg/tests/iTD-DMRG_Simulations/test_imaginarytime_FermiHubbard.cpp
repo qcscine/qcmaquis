@@ -280,8 +280,8 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_AsymmetricRealSpace2x2_Tra
     BOOST_CHECK_CLOSE(energyPlus, energyMinus, 1.0E-8);
     // Now applies the correlator and checks that the final overlap is the same
     for (int iSite = 0; iSite < mpsJPlus.size(); iSite++) {
-        mpsJPlus[iSite].scaleByExponentialProductOfCharges(-0.5);
-        mpsJMinus[iSite].scaleByExponentialProductOfCharges(0.5);
+        mpsJPlus[iSite].scaleByExponentialProductOfCharges(0.5);
+        mpsJMinus[iSite].scaleByExponentialProductOfCharges(-0.5);
     }
     mpsJPlus[0] /= std::sqrt(norm(mpsJPlus));
     mpsJMinus[0] /= std::sqrt(norm(mpsJMinus));
