@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
         parametersTCDMRG.set("hamiltonian_units", "Hartree");
         // Setup of the simulation parameters.
         // Note that we don't use the interface in order to be able to access the MPS.
-        int nSweeps = 20;
+        int nSweeps = 50;
         time_stopper stop_callback(10000.);
         auto lat = Lattice(parametersTCDMRG);
         auto model = Model<cmatrix, TwoU1>(lat, parametersTCDMRG);
