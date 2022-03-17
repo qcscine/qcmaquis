@@ -37,6 +37,19 @@ struct TranscorrelatedFixture
     /** @brief Constructor for the fixture class */
     TranscorrelatedFixture() {
         // 2x2 Real-Space Fermi-Hubbard Hamiltonian.
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("L", 4);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("width_FermiHubbard", 2);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("height_FermiHubbard", 2);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("U_FermiHubbard", 4.);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("tx_FermiHubbard", -1.5);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("ty_FermiHubbard", -0.5);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("symmetry", "2u1");
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("site_types", "0,0,0,0");
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("MODEL", "fermi_hubbard_real");
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("u1_total_charge1", 2);
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta.set("u1_total_charge2", 1);
+        // 2x2 Real-Space Fermi-Hubbard Hamiltonian.
         parameters2x2_RealSpace_U4_2Alpha1Beta.set("L", 4);
         parameters2x2_RealSpace_U4_2Alpha1Beta.set("width_FermiHubbard", 2);
         parameters2x2_RealSpace_U4_2Alpha1Beta.set("height_FermiHubbard", 2);
@@ -47,7 +60,7 @@ struct TranscorrelatedFixture
         parameters2x2_RealSpace_U4_2Alpha1Beta.set("MODEL", "fermi_hubbard_real");
         parameters2x2_RealSpace_U4_2Alpha1Beta.set("u1_total_charge1", 2);
         parameters2x2_RealSpace_U4_2Alpha1Beta.set("u1_total_charge2", 1);
-        // 2x2 Fermi-Hubbard Hamiltonian.
+        // 2x2 Momentum-Space Fermi-Hubbard Hamiltonian.
         parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("L", 4);
         parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("width_FermiHubbard", 2);
         parameters2x2_MomentumSpace_U4_2Alpha1Beta.set("height_FermiHubbard", 2);
@@ -61,7 +74,8 @@ struct TranscorrelatedFixture
     }
 
     // Class members
-    DmrgParameters parameters2x2_RealSpace_U4_2Alpha1Beta, parameters2x2_MomentumSpace_U4_2Alpha1Beta;
+    DmrgParameters parameters2x2_RealSpace_U4_2Alpha1Beta, parameters2x2_MomentumSpace_U4_2Alpha1Beta,
+        parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta;
 };
 
 #endif

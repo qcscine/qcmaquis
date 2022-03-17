@@ -159,7 +159,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
  *     resulting MPS gives the same energy as TI-DMRG, if the energy is evaluated
  *     with the *un-transcorrelated* MPO.
  */
-BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_CheckLeftVsRight, TranscorrelatedFixture)
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_CheckLeftVsRight, TranscorrelatedFixture)
 {
     // Type definition
     using SingleSiteTimeEvolution = SingleSiteTimeEvolution<cmatrix, TwoU1, storage::disk>;
@@ -179,7 +179,6 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_CheckLeftVsRight, Transcor
         // Setup of the parameter object
         auto parametersTCDMRG = parameters2x2_RealSpace_U4_2Alpha1Beta;
         parametersTCDMRG.set("max_bond_dimension", 100);
-        parametersTCDMRG.set("init_state", "const");
         parametersTCDMRG.set("alpha_initial", 1.0E-8);
         parametersTCDMRG.set("alpha_main", 1.0E-15);
         parametersTCDMRG.set("alpha_final", 1.0E-30);
@@ -233,6 +232,62 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_CheckLeftVsRight, Transcor
         BOOST_CHECK_CLOSE(energySSFromExponential, energyTI, 1.0E-8);
         BOOST_CHECK_CLOSE(energyTSFromExponential, energyTI, 1.0E-8);
     }
+}
+
+/**
+ * @brief Compares the results of a conventional and transcorrelated DMRG calculation.
+ * 
+ * We use as a reference the *asymmetric* two-dimensional real-space Fermi-Hubbard Hamiltonian.
+ * We take a simple lattice (2x2, with 3 electrons), for tcDMRG is expected to converge to the same
+ * limit with a relatively low bond dimension of m=100 for any J value.
+ * We then explicitly apply e^{2*J} onto the left eigenvector, and verify that the
+ * resulting MPS is equivalent to the right one.
+ */
+BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_AsymmetricRealSpace2x2_Transcorrelated_CheckLeftVsRight, TranscorrelatedFixture)
+{
+    // == J=0.5 ==
+    auto parameters = parameters2x2_AsymmetricRealSpace_U4_2Alpha1Beta;
+    parameters.set("nsweeps", 20);
+    parameters.set("propagator_maxiter", 10);
+    parameters.set("propagator_accuracy", 1.0E-10);
+    parameters.set("imaginary_time", "yes");
+    parameters.set("TD_backpropagation", "no");
+    parameters.set("simulation_type", "TD");
+    parameters.set("COMPLEX", 1);
+    parameters.set("time_units", "as");
+    parameters.set("time_step", 10.);
+    parameters.set("transcorrelated_hamiltonian", "yes");
+    parameters.set("J_Transcorrelated", 0.5);
+    parameters.set("hamiltonian_units", "Hartree");
+    parameters.set("chkpfile", "JPlus.checkpoint.h5");
+    maquis::DMRGInterface<std::complex<double>> interfaceJPlus(parameters);
+    interfaceJPlus.evolve();
+    auto energyPlus = maquis::real(interfaceJPlus.energy());
+    MPS<cmatrix, TwoU1> mpsJPlus;
+    load("JPlus.checkpoint.h5", mpsJPlus);
+    // == J=-0.5 ==
+    parameters.set("J_Transcorrelated", -0.5);
+    parameters.set("chkpfile", "JMinus.checkpoint.h5");
+    maquis::DMRGInterface<std::complex<double>> interfaceJMinus(parameters);
+    interfaceJMinus.evolve();
+    auto energyMinus = maquis::real(interfaceJMinus.energy());
+    MPS<cmatrix, TwoU1> mpsJMinus;
+    load("JMinus.checkpoint.h5", mpsJMinus);
+    // Cleans up tmp files
+    boost::filesystem::remove_all("JPlus.checkpoint.h5");
+    boost::filesystem::remove_all("JMinus.checkpoint.h5");
+    // First checks that the energies are the same
+    BOOST_CHECK_CLOSE(energyPlus, energyMinus, 1.0E-8);
+    // Now applies the correlator and checks that the final overlap is the same
+    for (int iSite = 0; iSite < mpsJPlus.size(); iSite++) {
+        mpsJPlus[iSite].scaleByExponentialProductOfCharges(-0.5);
+        mpsJMinus[iSite].scaleByExponentialProductOfCharges(0.5);
+    }
+    mpsJPlus[0] /= std::sqrt(norm(mpsJPlus));
+    mpsJMinus[0] /= std::sqrt(norm(mpsJMinus));
+    // Final checl
+    auto similiarity = overlap(mpsJMinus, mpsJPlus);
+    BOOST_CHECK_CLOSE(std::abs(similiarity), 1.0, 1.0E-8);
 }
 
 /**
