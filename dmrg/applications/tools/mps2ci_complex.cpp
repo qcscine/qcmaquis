@@ -62,6 +62,7 @@ int main(int argc, char ** argv)
   // Creates the calculator class
   MPSCICalculator<cmatrix, grp> calculator(argv[1]);
   // Calculates the overlap
-  calculator.calculateOverlap(argv[2]);
+  auto completeness = calculator.calculateOverlap(argv[2]);
+  maquis::cout << " Completeness : " << completeness << std::endl;
   return 0;
 }

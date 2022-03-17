@@ -75,8 +75,12 @@ public:
         per_site.push_back(phys_dims[irreps[q]]);
   }
 
-  /** @brief Calculates the overlap  with a bunch of input determinants */
-  void calculateOverlap(std::string determinantName) const {
+  /** 
+   * @brief Calculates the overlap  with a bunch of input determinants 
+   * @param determinantName: file containing the list of determinants
+   * @return Sum of squared values of CI coefficients.
+   */
+  double calculateOverlap(std::string determinantName) const {
     // Loads the determinants
     auto determinants = parse_config<Matrix, SymmGroup>(determinantName, per_site);
     // printout the determinants
@@ -87,11 +91,15 @@ public:
     }
     // Set initial counter
     int i = 1;
+    double completeness = 0.;
     for (const auto& it: determinants) {
-      maquis::cout << "CI coefficient of det " << i << " : " << extract_coefficient(mps, it) << std::endl;
+      auto coefficient = extract_coefficient(mps, it);
+      maquis::cout << "CI coefficient of det " << i << " : " << coefficient << std::endl;
       i++;
+      completeness += std::norm(coefficient);
     }
     maquis::cout << std::endl;
+    return completeness;
   }
 
 private:
