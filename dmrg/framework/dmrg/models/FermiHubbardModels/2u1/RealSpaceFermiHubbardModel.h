@@ -32,7 +32,8 @@
  * H = - t * \sum_{<i,j>} \sum_{\sigma} a_{i,\sigma}^\dagger a_{j,\sigma}
  *     + U \sum_i \sum_{\sigma} n_{i,\sigma} n_{i,\bar{\sigma}}
  * 
- * where <i,j> denotes a sum over all nearest-neighbour pairs.
+ * where <i,j> denotes a sum over all nearest-neighbour pairs of a square
+ * spin lattice.
  */
 
 #ifndef REALSPACE_FERMIHUBBARD_MODEL
@@ -93,7 +94,18 @@ public:
     void create_terms() override {
         // Definition of the parameters of the Fermi-Hubbard lattice
         value_type U = parms["U_FermiHubbard"];
-        value_type t = parms["t_FermiHubbard"];
+        value_type tx, ty;
+        if (!parms.is_set("tx_FermiHubbard") && !parms.is_set("tx_FermiHubbard")) {
+            tx = parms["t_FermiHubbard"].as<value_type>();
+            ty = parms["t_FermiHubbard"].as<value_type>();
+        }
+        else if (parms.is_set("tx_FermiHubbard") && parms.is_set("tx_FermiHubbard")) {
+            tx = parms["tx_FermiHubbard"].as<value_type>();
+            ty = parms["ty_FermiHubbard"].as<value_type>();
+        }
+        else {
+            throw std::runtime_error("Please set *both* tx and ty");
+        }
         int width = parms["width_FermiHubbard"];
         int height = parms["height_FermiHubbard"];
         if (isTranscorrelated_ && !parms.is_set("J_Transcorrelated"))
@@ -133,17 +145,18 @@ public:
                 posVectorLeftHerm = {iSite%height, iSite};
             }
             // Adds the hopping terms to the term vector
-            value_type coeff = -t;
+            value_type coeffx = -tx;
+            value_type coeffy = -ty;
             std::vector< OperatorType > opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-            this->terms_.push_back(jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeff));
-            this->terms_.push_back(jw.getTerm(posVectorLeftHerm, opVector, tag_handler, true, coeff));
-            this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeff));
-            this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeff));
+            this->terms_.push_back(jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeffx));
+            this->terms_.push_back(jw.getTerm(posVectorLeftHerm, opVector, tag_handler, true, coeffx));
+            this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeffy));
+            this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeffy));
             opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
-            this->terms_.push_back(jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeff));
-            this->terms_.push_back(jw.getTerm(posVectorLeftHerm, opVector, tag_handler, true, coeff));
-            this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeff));
-            this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeff));
+            this->terms_.push_back(jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeffx));
+            this->terms_.push_back(jw.getTerm(posVectorLeftHerm, opVector, tag_handler, true, coeffx));
+            this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeffy));
+            this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeffy));
             // Transcorrelated-specific contributions
             if (isTranscorrelated_) {
                 std::vector<pos_t> posVectorDownTC_1, posVectorDownHermTC_1, posVectorDownTC_2, posVectorDownHermTC_2, posVectorDownTC_3, posVectorDownHermTC_3;
@@ -181,48 +194,65 @@ public:
                     posVectorLeftHermTC_3 = {iSite%height, iSite, iSite%height, iSite%height, iSite, iSite};
                 }
                 // TC operator 1
-                coeff = -t*(std::exp(-J)-1.);
-                if (std::abs(coeff) > 1.0E-10) {
+                coeffx = -tx*(std::exp(-J)-1.);
+                coeffy = -ty*(std::exp(-J)-1.);
+                if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
-                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_1, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeff));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_1, opVector, tag_handler, true, coeffx));
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_1, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeff));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_1, opVector, tag_handler, true, coeffx));
+                }
+                if (std::abs(coeffy) > 1.0E-10) {
+                    opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
+                    this->terms_.push_back(jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeffy));
+                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeffy));
+                    opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                    this->terms_.push_back(jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeffy));
+                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeffy));
                 }
                 // TC operator 2
-                coeff = -t*(std::exp(J)-1.);
-                if (std::abs(coeff) > 1.0E-10) {
+                coeffx = -tx*(std::exp(J)-1.);
+                coeffy = -ty*(std::exp(J)-1.);
+                if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
-                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_2, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_2, opVector, tag_handler, true, coeff));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_2, opVector, tag_handler, true, coeffx));
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_2, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_2, opVector, tag_handler, true, coeff));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_2, opVector, tag_handler, true, coeffx));
+                }
+                if (std::abs(coeffy) > 1.0E-10) {
+                    opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
+                    this->terms_.push_back(jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeffy));
+                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_2, opVector, tag_handler, true, coeffy));
+                    opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                    this->terms_.push_back(jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeffy));
+                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_2, opVector, tag_handler, true, coeffy));
                 }
                 // TC operator 3
-                coeff = 2.*t*(std::cosh(J)-1.);
-                if (std::abs(coeff) > 1.0E-10) {
+                coeffx = 2.*tx*(std::cosh(J)-1.);
+                coeffy = 2.*ty*(std::cosh(J)-1.);
+                if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta,
                                 OperatorType::CreateBeta, OperatorType::DestroyBeta};
-                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_3, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_3, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownTC_3, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_3, opVector, tag_handler, true, coeff));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_3, opVector, tag_handler, true, coeffx));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_3, opVector, tag_handler, true, coeffx));
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                                 OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
-                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_3, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_3, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownTC_3, opVector, tag_handler, true, coeff));
-                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_3, opVector, tag_handler, true, coeff));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftTC_3, opVector, tag_handler, true, coeffx));
+                    this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_3, opVector, tag_handler, true, coeffx));
+                }
+                if (std::abs(coeffy) > 1.0E-10) {
+                    opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta,
+                                OperatorType::CreateBeta, OperatorType::DestroyBeta};
+                    this->terms_.push_back(jw.getTerm(posVectorDownTC_3, opVector, tag_handler, true, coeffy));
+                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_3, opVector, tag_handler, true, coeffy));
+                    opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
+                                OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
+                    this->terms_.push_back(jw.getTerm(posVectorDownTC_3, opVector, tag_handler, true, coeffy));
+                    this->terms_.push_back(jw.getTerm(posVectorDownHermTC_3, opVector, tag_handler, true, coeffy));
                 }
             }
 

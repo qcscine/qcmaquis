@@ -117,6 +117,8 @@ private:
         // Parameters related to the Fermi-Hubbard model
         add_option("U_FermiHubbard", "Potential term entering the Fermi-Hubbard model", value(0.));
         add_option("t_FermiHubbard", "Hopping term entering the Fermi-Hubbard model", value(1.));
+        add_option("tx_FermiHubbard", "Hopping term for the x dimension entering the two-dimensional Fermi-Hubbard model", value(1.));
+        add_option("ty_FermiHubbard", "Hopping term for the y dimension entering the two-dimensional Fermi-Hubbard model", value(1.));
         add_option("width_FermiHubbard", "Width of the Fermi-Hubbard lattice");
         add_option("height_FermiHubbard", "Height of the Fermi-Hubbard lattice");
 
