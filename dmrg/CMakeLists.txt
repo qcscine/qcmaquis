@@ -50,6 +50,7 @@ option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 # DMRG-related flags
 option (BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
 option (BUILD_CIDEAS "Build CIDEAS binary (deprecated)" OFF)
+option (BUILD_GUTZWILLER "Build a tool for applying a Gutzwiller correlator onto the wave function" OFF)
 option (BUILD_MPS_ROTATE "Build mps_rotate binary for RASSI counterrotation (deprecated)" OFF)
 option (BUILD_MPS_COMPRESS "Build mps_compress binary for MPS compression (not working currently)" OFF)
 option (BUILD_MPS_OVERLAP "Build MPS Overlap calculator" OFF)

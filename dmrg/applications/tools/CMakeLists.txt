@@ -77,8 +77,14 @@ endif (BUILD_MPS2CI)
 
 # DEAS
 if (BUILD_DEAS)
-  create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+  create_tools_symm_target("deas"   "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 endif(BUILD_DEAS)
+
+# GUTZWILLER CORRELATOR APPLICATION
+if (BUILD_GUTZWILLER)
+  create_tools_symm_target("mps_gutzwiller_complex_2u1"     "TWOU1"   "mps_gutzwiller_complex.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+  create_tools_symm_target("mps_gutzwiller_complex_2u1pg"   "TWOU1PG" "mps_gutzwiller_complex.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+endif(BUILD_GUTZWILLER )
 
 # create_tools_symm_target("mult_test_2u1pg"   "TWOU1PG" "mult_test.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
