@@ -222,11 +222,11 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
         // Single-site
         auto mpsTimesMPOSS = mpsLeftSS;
         for (int iSite = 0; iSite < mpsTimesMPOSS.size(); iSite++)
-            mpsTimesMPOSS[iSite].scaleByExponentialProductOfCharges(-jValue);
+            mpsTimesMPOSS[iSite].scaleByExponentialProductOfCharges(jValue);
         // Two-site
         auto mpsTimesMPOTS = mpsLeftTS;
         for (int iSite = 0; iSite < mpsTimesMPOTS.size(); iSite++)
-            mpsTimesMPOTS[iSite].scaleByExponentialProductOfCharges(-jValue);
+            mpsTimesMPOTS[iSite].scaleByExponentialProductOfCharges(jValue);
         auto energySSFromExponential = std::real(expval(mpsTimesMPOSS, mpoOriginal)/overlap(mpsTimesMPOSS, mpsTimesMPOSS));
         auto energyTSFromExponential = std::real(expval(mpsTimesMPOTS, mpoOriginal)/overlap(mpsTimesMPOTS, mpsTimesMPOTS));
         BOOST_CHECK_CLOSE(energySSFromExponential, energyTI, 1.0E-8);
