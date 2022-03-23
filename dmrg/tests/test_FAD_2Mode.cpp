@@ -28,6 +28,7 @@
 
 #ifdef DMRG_VIBRATIONAL
 
+#include <boost/filesystem.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
 #include "maquis_dmrg.h"
@@ -42,14 +43,16 @@
  * @brief N-mode calculation on two-mode PES of FAD.
  * The basis set has been generated with a DVR primitive basis.
  */
-BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
+BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
 {
 #ifdef HAVE_NU1
     // Adds the final input parameters
     parametersFADTwoBody.set("init_state", "const");
     parametersFADTwoBody.set("nsweeps", 20);
-    parametersFADTwoBody.set("max_bond_dimension",100);
+    parametersFADTwoBody.set("max_bond_dimension", 100);
     parametersFADTwoBody.set("MODEL", "nmode");
+    parametersFADTwoBody.set("truncation_initial", 1.0E-20);
+    parametersFADTwoBody.set("truncation_final", 1.0E-16);
     // Creates the interface
     maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
     interface.optimize();
@@ -58,6 +61,41 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 }
 
 #ifdef HAVE_NU1
+
+/**
+ * @brief N-mode calculation on one-mode PES of FAD.
+ * The basis set has been generated with a DVR primitive basis.
+ * Note that we also check the excitation energy.
+ */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFixture)
+{
+    // Adds the final input parameters
+    parametersFADOneBodyBinary.set("init_state", "const");
+    parametersFADOneBodyBinary.set("nsweeps", 20);
+    parametersFADOneBodyBinary.set("max_bond_dimension",100);
+    parametersFADOneBodyBinary.set("MODEL", "nmode");
+    parametersFADOneBodyBinary.set("chkpfile", "GS.checkpoint.h5");
+    parametersFADOneBodyBinary.set("resfule", "GS.results.h5");
+    // Creates the interface and checks the resulting energy
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADOneBodyBinary);
+    interface.optimize();
+    auto gsEnergy = interface.energy();
+    BOOST_CHECK_CLOSE(gsEnergy, -2.359242429009664e+03, 1.0E-5);
+    // Excited-state calculations
+    parametersFADOneBodyBinary.set("chkpfile", "ES.checkpoint.h5");
+    parametersFADOneBodyBinary.set("resfule", "ES.results.h5");
+    parametersFADOneBodyBinary.set("n_ortho_states", 1);
+    parametersFADOneBodyBinary.set("ortho_states", "GS.checkpoint.h5");
+    // Creates a new interface object and reruns the optimization
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interfaceES(parametersFADOneBodyBinary);
+    interfaceES.optimize();
+    auto esEnergy = interfaceES.energy();
+    BOOST_CHECK_CLOSE(esEnergy-gsEnergy, 0.4450425713052937, 1.0E-5);
+    boost::filesystem::remove_all("GS.results.h5");
+    boost::filesystem::remove_all("GS.checkpoint.h5");
+    boost::filesystem::remove_all("ES.results.h5");
+    boost::filesystem::remove_all("ES.checkpoint.h5");
+}
 
 /** @brief Same as above, but includes measurements */
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixture)

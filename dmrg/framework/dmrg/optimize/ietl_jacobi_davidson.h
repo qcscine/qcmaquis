@@ -55,6 +55,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     for (int n = 1; n < ortho_vecs.size(); ++n) {
         for (int n0 = 0; n0 < n; ++n0)
             ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
+        maquis::cout << "State " << n << " neglected because the corresponding boundary is too small" << std::endl;
         if (ortho_vecs[n].scalar_norm() > thresholdForCompleteness) {
             ortho_vecs[n] /= ietl::two_norm(ortho_vecs[n]);
             ortho_vecs_local.push_back(ortho_vecs[n]);
