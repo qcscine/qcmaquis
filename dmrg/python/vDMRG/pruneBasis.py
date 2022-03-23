@@ -81,5 +81,3 @@ if __name__ == "__main__":
       print(" Mode "+str(iMode))
       listOfModes = " ".join([str(i) for i in iList])
       print(listOfModes)
-
-  
