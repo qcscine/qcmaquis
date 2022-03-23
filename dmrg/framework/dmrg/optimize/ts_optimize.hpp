@@ -168,9 +168,7 @@ public:
                                                                     base::ortho_left_[n][site1], base::ortho_right_[n][site2+1]);
             }
 
-            //std::pair<typename maquis::traits::real_type<value_type>::type, MPSTensor<Matrix, SymmGroup> > res;
-            std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-
+            std::pair<value_type, MPSTensor<Matrix, SymmGroup> > res;
 
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||

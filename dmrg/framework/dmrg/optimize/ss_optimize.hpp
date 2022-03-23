@@ -133,7 +133,7 @@ public:
 
             std::chrono::high_resolution_clock::time_point now, then;
 
-            std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+            std::pair<typename MPSTensor<Matrix, SymmGroup>::value_type, MPSTensor<Matrix, SymmGroup> > res;
             SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
 
             /// Compute orthogonal vectors
