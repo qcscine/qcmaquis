@@ -89,6 +89,10 @@ class ResultFileVibrationaleMeasurement(object):
         except:
             raise h5Error
 
+    def getNumberOfModes(self):
+        """Getter for the number of modal bases"""
+        return len(self.numBasisFunctions)
+
     def getNumberOfModals(self):
         """Getter for the number of modal bases"""
         return self.numBasisFunctions
