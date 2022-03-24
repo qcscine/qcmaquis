@@ -40,7 +40,7 @@ namespace detail {
  * 
  * Reads the FF from an input file and creates the Hamiltonian for the n-mode representation.
  * The potential is given in the following form:
- * i-n i-        m           float_1   --> 1-body term (the first index is the mode, the second the basis set)
+ * i-n i-m                   float_1   --> 1-body term (the first index is the mode, the second the basis set)
  * i-n i-m j-p j-q           float_2   --> 2-body term (again, the indexes of the mode are the same).
  * i-n i-m j-p j-q k-v k-w   float_3   --> 3-body term.
  * 
@@ -102,7 +102,6 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
             for (auto i = 0; i < 12; ++i) {
                 if (i < indices_str.size()) {
                     t.first[i] = std::stoul(indices_str[i]);
-                    assert(t.first[i] < lat.size());
                 } else {
                     t.first[i] = -1;
                 }
