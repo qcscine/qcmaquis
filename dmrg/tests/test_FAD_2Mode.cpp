@@ -28,6 +28,7 @@
 
 #ifdef DMRG_VIBRATIONAL
 
+#include <random>
 #include <boost/filesystem.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
@@ -95,6 +96,42 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFi
     boost::filesystem::remove_all("GS.checkpoint.h5");
     boost::filesystem::remove_all("ES.results.h5");
     boost::filesystem::remove_all("ES.checkpoint.h5");
+}
+
+/** @brief Check that the ground-state energy is the same irrespectively on the modal order */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeFixture)
+{
+    // Adds the final input parameters
+    parametersFADTwoBodyFingerPrint.set("init_state", "const");
+    parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
+    parametersFADTwoBodyFingerPrint.set("max_bond_dimension", 100);
+    parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
+    parametersFADTwoBodyFingerPrint.set("alpha_initial", 1.0E-8);
+    parametersFADTwoBodyFingerPrint.set("alpha_main", 1.0E-15);
+    parametersFADTwoBodyFingerPrint.set("alpha_final", 0.);
+    parametersFADTwoBodyFingerPrint.set("ngrowsweeps", 2);
+    parametersFADTwoBodyFingerPrint.set("nmainsweeps", 2);
+    // Creates the interface and checks the resulting energy
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interfaceConventionalSorting(parametersFADTwoBodyFingerPrint);
+    interfaceConventionalSorting.optimize();
+    auto conventionalSortingEnergy = interfaceConventionalSorting.energy();
+    // Generates randomly a reshuffling
+    int latticeSize = parametersFADTwoBodyFingerPrint["L"];
+    std::vector<int> newOrder(latticeSize);
+    for (int iSite = 0; iSite < latticeSize; iSite++)
+        newOrder[iSite] = iSite+1;
+    std::shuffle(newOrder.begin(), newOrder.end(), std::default_random_engine());
+    std::string inputOrder = "";
+    for (int iElement = 0; iElement < newOrder.size(); iElement++) {
+        inputOrder += std::to_string(newOrder[iElement]);
+        if (iElement != newOrder.size()-1)
+            inputOrder += ",";
+    }
+    parametersFADTwoBodyFingerPrint.set("modals_order", inputOrder);
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interfaceRandomSorting(parametersFADTwoBodyFingerPrint);
+    interfaceRandomSorting.optimize();
+    auto randomSortingEnergy = interfaceRandomSorting.energy();
+    BOOST_CHECK_CLOSE(conventionalSortingEnergy, randomSortingEnergy, 1.0E-7);
 }
 
 /** @brief Same as above, but includes measurements */

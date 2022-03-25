@@ -287,8 +287,9 @@ private:
         pos.reserve(ham_term.size());
         do {
             // Retrieves matrix element
-            auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
-            auto index  = ham_term[2*jCont+1] + offset;
+            // auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
+            // auto index  = ham_term[2*jCont+1] + offset;
+            auto index = lattice.get_prop<int>("absolutePositionInLattice", ham_term[2*jCont]-1, ham_term[2*jCont+1]);
             assert(index < lattice_size);
             pos.push_back(index);
             if (jCont % 2 == 0)

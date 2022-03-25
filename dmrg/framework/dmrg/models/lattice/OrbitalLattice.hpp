@@ -6,6 +6,7 @@
  *               2012-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
+ *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -37,31 +38,19 @@
 #include <boost/lambda/lambda.hpp>
 #include <numeric>
 #include "dmrg/utils/BaseParameters.h"
-
+#include "LatticeHelperClass.hpp"
 
 class Orbitals : public lattice_impl
 {
-    typedef int subcharge;
-
 public:
+    typedef int subcharge;
     typedef lattice_impl::pos_t pos_t;
 
-    Orbitals (BaseParameters & parms)
-    : L(parms["L"])
-    , irreps(L, 0)
-    , order(L)
+    /** @brief Class contructor */
+    Orbitals (BaseParameters & parms) : L(parms["L"]), irreps(L, 0), order(L)
     {
-        if (!parms.is_set("orbital_order"))
-            for (pos_t p = 0; p < L; ++p)
-                order[p] = p;
-        else {
-            order = parms["orbital_order"].as<std::vector<pos_t> >();
-            if (order.size() != L)
-                throw std::runtime_error("Number of orbitals in the orbital order does not match the total number of orbitals");
-
-            for (auto&& o: order) o--;
-        }
-
+        // Extracts the order
+        order = LatticeHelperClass::getOrbitalOrder(parms, "orbital_order");
         if (parms.is_set("integral_file")) {
             std::string integral_file = parms["integral_file"];
             if (!boost::filesystem::exists(integral_file))
@@ -184,9 +173,8 @@ private:
 private:
     pos_t L;
     int maximum_vertex;
-
     std::vector<subcharge> irreps;
-    std::vector<pos_t> order;
+    std::vector<int> order;
 };
 
 #endif

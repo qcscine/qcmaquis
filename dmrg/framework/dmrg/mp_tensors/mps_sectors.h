@@ -86,7 +86,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = left_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
                 it = left_allowed[i].erase(it);
-            else if (!finitegroup && !ChargeDetailClass<SymmGroup>::physical(it->first))
+            else if (!finitegroup && !ChargeDetailClass<SymmGroup>::physical(it->first)
+                                  && ChargeDetailClass<SymmGroup>::hasLessParticleThan(it->first, right_end))
                 it = left_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
@@ -107,7 +108,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = right_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
                 it = right_allowed[i].erase(it);
-            else if (!finitegroup && !ChargeDetailClass<SymmGroup>::physical(it->first))
+            else if (!finitegroup && !ChargeDetailClass<SymmGroup>::physical(it->first)
+                                  && ChargeDetailClass<SymmGroup>::hasLessParticleThan(it->first, right_end))
                 it = right_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);

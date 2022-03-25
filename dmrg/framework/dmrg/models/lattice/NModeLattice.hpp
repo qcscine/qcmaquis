@@ -39,14 +39,18 @@
 #include <boost/lambda/lambda.hpp>
 #include <numeric>
 #include "dmrg/utils/BaseParameters.h"
+#include "LatticeHelperClass.hpp"
 
 /**
- * @brief NMode lattice class.
- * 
- * Lattice representing a n-mode vibrational Hamiltonian.
- * Each site is mapped to a modal which is, in turn, associated with a mode.
- * The lattice is, therefore, partition in sublattices, one associated with
- * each mode.
+ * @brief Lattice representing a n-mode vibrational Hamiltonian.
+ *
+ * Tha lattice has the following properties:
+ *  - each site is mapped to a modal which is, in turn, associated with a mode.
+ *  - the lattice is, therefore, partition in sublattices, one associated with
+ *    each mode.
+ *  - in the conventional sorting, modals associated with the same mode are
+ *    close one to each other. However, the sorting can be modified such that
+ *    modals associated with different modes are "intertwined".
  */
 
 class NModeLattice : public lattice_impl
@@ -54,49 +58,58 @@ class NModeLattice : public lattice_impl
 public:
     // Types definition
     using post_t = lattice_impl::pos_t;
-    
+
     /**
      * @brief Class constructor for the lattice
      * @param parameters parameter container
      */
-    NModeLattice(BaseParameters& parameters) : L(0), vector_bases(0), vector_types(0)
+    NModeLattice(BaseParameters& parameters) : L(0), vectorWithStartingPositions(0), vector_types(0)
     {
+        // Parameter initialization
+        L = parameters["L"];
+        order = LatticeHelperClass::getOrbitalOrder(parameters, "modals_order");
+        inverseOrder.resize(L);
+        for (int iOrder = 0; iOrder < order.size(); iOrder++)
+            inverseOrder[iOrder] = std::distance(order.begin(), (std::find(order.begin(), order.end(), iOrder)));
         num_modes = parameters["nmode_num_modes"];
-        L = parameters["L"] ;
-        vector_types.resize(L);
-        vector_bases.reserve(L);
         std::string jnk = parameters["nmode_num_basis"];
         maximum_vertex = num_modes-1;
+        // The vector [size_vec] contains the number of modal bases per mode.
         std::vector<std::string> size_vec;
         boost::split(size_vec, jnk, boost::is_any_of(","));
         assert(size_vec.size() == num_modes);
         // Loops over the number of basis functions and calculates the index
         // of the first site associated with a given mode
-        for (std::size_t idx = 0; idx < size_vec.size(); idx++) {
+        vectorWithStartingPositions.reserve(L);
+        for (int idx = 0; idx < size_vec.size(); idx++)
+        {
             if (idx == 0) {
-                vector_bases.push_back(0);
-            } else {
+                vectorWithStartingPositions.push_back(0);
+            }
+            else {
                 int mod = stoi(size_vec[idx-1]);
                 if (mod <= 0)
                     throw std::runtime_error("Non-positive number of basis function found");
                 else
-                    vector_bases.push_back(vector_bases[idx-1] + mod);
+                    vectorWithStartingPositions.push_back(vectorWithStartingPositions[idx-1] + mod);
             }
         }
-        int count = vector_bases[size_vec.size()-1] + stoi(size_vec[size_vec.size()-1]);
+        int count = vectorWithStartingPositions[size_vec.size()-1] + stoi(size_vec[size_vec.size()-1]);
         if (count != L)
-            throw std::runtime_error("Inconsistent number of basis functions") ;
+            throw std::runtime_error("Inconsistent number of basis functions");
         // Now populates the vector with the type of each site (i.e., the mode to
         // which they belong
-        int jcont=0 ;
-        for (int idx1 = 0; idx1 < size_vec.size(); idx1++) {
-            for (int idx2 = 0; idx2 < stoi(size_vec[idx1]); idx2++) {
-                vector_types[jcont] = idx1;
-                ++jcont;
-            }
+        vector_types.resize(L);
+        int jcont=0;
+        // Loop over the modes
+        int iMode = 0;
+        for (int iSite = 0; iSite < L; iSite++) {
+            if (iMode != num_modes-1 && iSite == vectorWithStartingPositions[iMode+1])
+                iMode++;
+            vector_types[inverseOrder[iSite]] = iMode;
         }
     }
-    
+
     /** @brief Returns the next position in the lattice */
     std::vector<pos_t> forward(pos_t i) const
     {
@@ -105,7 +118,7 @@ public:
             ret.push_back(i+1);
         return ret;
     }
-    
+
     /** @brief Returns the neighbors of a given site */
     std::vector<pos_t> all(pos_t i) const
     {
@@ -119,13 +132,16 @@ public:
 
     /**
      * @brief Getter for the property
-     * 
+     *
      * Note that, in additional to the usual properties of a lattice, we code
      * the additional property "sublatticePos" which states where the sublattice
-     * associated with a given mode is starting
-     * 
+     * associated with a given mode is starting.
+     * Also, we define a property called "absolutePositionInLattice" that, given
+     * the mode and modal index, returns the corresponding absolute position in the
+     * DMRG lattice.
+     *
      * @param property string identifier for the property
-     * @param pos vector of positions 
+     * @param pos vector of positions
      * @return boost::any requested property
      */
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
@@ -138,9 +154,13 @@ public:
             return boost::any(vector_types[pos[0]]);
         else if (property == "type" && pos.size() == 2)
             return boost::any(0);
+        else if (property == "absolutePositionInLattice" && pos.size() == 2) {
+            int posInConventionalSorting = vectorWithStartingPositions[pos[0]] + pos[1];
+            return boost::any(inverseOrder[posInConventionalSorting]);
+        }
         else if (property == "sublatticePos" && pos.size() == 1) {
             assert (pos[0] >= 0 && pos[0] < L);
-            return boost::any(vector_bases[pos[0]]);
+            return boost::any(vectorWithStartingPositions[pos[0]]);
         }
         else if (property == "ParticleType" && pos.size() == 1) {
             assert (pos[0] >= 0 && pos[0] < L);
@@ -150,12 +170,12 @@ public:
             return num_modes;
         else {
             std::ostringstream ss;
-            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
+            ss << "No property '" << property << "' with " << pos.size() << " points implemented.";
             throw std::runtime_error(ss.str());
             return boost::any();
         }
     }
-    
+
     /** @brief Getter for the lattice size */
     pos_t size() const { return L; }
 
@@ -169,20 +189,22 @@ private:
     int maximum_vertex;
     /** Number of modes (== number of site types) */
     int num_modes;
+    /** Order of the modals in the DMRG lattice */
+    std::vector<int> order, inverseOrder;
     /** Sites type vector */
     std::vector<int> vector_types;
-    /** 
+    /**
      * The i-th element returns the number of basis that have been used
      * before the i-th mode. Used as offset in vectors
      */
-    std::vector<int> vector_bases;
-    
+    std::vector<int> vectorWithStartingPositions;
+
     /** @brief Prints the label of a given site */
     std::string site_label (int i) const
     {
         return "( " + boost::lexical_cast<std::string>(i) + " )";
     }
-    
+
     /** @brief Prints the label of a given bond */
     std::string bond_label (int i, int j) const
     {
