@@ -47,18 +47,16 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     auto ortho_vecs_local = std::vector< MPSTensor<Matrix, SymmGroup> >();
     if (initial.num_elements() <= ortho_vecs.size())
         ortho_vecs.resize(initial.num_elements()-1);
-    // Gram-Schmidt the ortho_vecs
-    if (ortho_vecs.size() != 0) {
-        ortho_vecs[0] /= ietl::two_norm(ortho_vecs[0]);
-        ortho_vecs_local.push_back(ortho_vecs[0]);
-    }
-    for (int n = 1; n < ortho_vecs.size(); ++n) {
-        for (int n0 = 0; n0 < n; ++n0)
-            ortho_vecs[n] -= ietl::dot(ortho_vecs[n0], ortho_vecs[n])/ietl::dot(ortho_vecs[n0],ortho_vecs[n0])*ortho_vecs[n0];
-        maquis::cout << "State " << n << " neglected because the corresponding boundary is too small" << std::endl;
+    // Gram-Schmidt the ortho_vecs and loads the results in the [ortho_vecs_local]
+    for (int n = 0; n < ortho_vecs.size(); ++n) {
+        for (const auto& iLocal: ortho_vecs_local)
+            ortho_vecs[n] -= ietl::dot(iLocal, ortho_vecs[n])*iLocal;
         if (ortho_vecs[n].scalar_norm() > thresholdForCompleteness) {
             ortho_vecs[n] /= ietl::two_norm(ortho_vecs[n]);
             ortho_vecs_local.push_back(ortho_vecs[n]);
+        }
+        else {
+            maquis::cout << "State " << n << " neglected because the corresponding boundary is too small" << std::endl;
         }
     }
     // Checks if the number of constraints is > than the actual size of the vector space
