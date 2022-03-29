@@ -98,7 +98,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
                 indices_str.insert(indices_str.end(), std::make_move_iterator(temp.begin()),
                                     std::make_move_iterator(temp.end()));
             }
-            assert(indices_str.size() == 4 || indices_str.size() == 8 || line_splitted.size() == 12);
+            assert(indices_str.size() == 4 || indices_str.size() == 8 || indices_str.size() == 12);
             for (auto i = 0; i < 12; ++i) {
                 if (i < indices_str.size()) {
                     t.first[i] = std::stoul(indices_str[i]);
