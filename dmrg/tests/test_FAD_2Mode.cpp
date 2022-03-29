@@ -119,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
     int latticeSize = parametersFADTwoBodyFingerPrint["L"];
     std::vector<int> newOrder(latticeSize);
     for (int iSite = 0; iSite < latticeSize; iSite++)
-        newOrder[iSite] = iSite+1;
+        newOrder[iSite] = iSite;
     std::shuffle(newOrder.begin(), newOrder.end(), std::default_random_engine());
     std::string inputOrder = "";
     for (int iElement = 0; iElement < newOrder.size(); iElement++) {
