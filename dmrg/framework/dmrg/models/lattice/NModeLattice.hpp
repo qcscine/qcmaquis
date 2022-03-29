@@ -67,10 +67,13 @@ public:
     {
         // Parameter initialization
         L = parameters["L"];
-        order = LatticeHelperClass::getOrbitalOrder(parameters, "modals_order");
+        order = LatticeHelperClass::getOrbitalOrder(parameters, "modals_order", false);
         inverseOrder.resize(L);
-        for (int iOrder = 0; iOrder < order.size(); iOrder++)
-            inverseOrder[iOrder] = std::distance(order.begin(), (std::find(order.begin(), order.end(), iOrder)));
+        for (int iOrder = 0; iOrder < order.size(); iOrder++) {
+            auto pointerToFoundElement = std::find(order.begin(), order.end(), iOrder);
+            assert(pointerToFoundElement != order.end());
+            inverseOrder[iOrder] = std::distance(order.begin(), pointerToFoundElement);
+        }
         num_modes = parameters["nmode_num_modes"];
         std::string jnk = parameters["nmode_num_basis"];
         maximum_vertex = num_modes-1;

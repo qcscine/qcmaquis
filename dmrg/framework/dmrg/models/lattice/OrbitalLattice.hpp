@@ -50,7 +50,7 @@ public:
     Orbitals (BaseParameters & parms) : L(parms["L"]), irreps(L, 0), order(L)
     {
         // Extracts the order
-        order = LatticeHelperClass::getOrbitalOrder(parms, "orbital_order");
+        order = LatticeHelperClass::getOrbitalOrder(parms, "orbital_order", true);
         if (parms.is_set("integral_file")) {
             std::string integral_file = parms["integral_file"];
             if (!boost::filesystem::exists(integral_file))
