@@ -363,23 +363,36 @@ public:
         return expval(mps, mpo);
     }
 
+    /**
+     * @brief Method to extract a CI coefficient associated to a given determinant.
+     *
+     * Note that the format in which the input must be given is the same as for 
+     * the [hf_occ] (for electronic problems) or the [basis_state_generic] initializer
+     * for the vibrational case.
+     *
+     * @param determinantString string associated with the target determinatn
+     * @return overlap value
+     */
+    typename Matrix::value_type getCICoefficient(std::string determinantString) override {
+        auto modifiedParameters = parms;
+        std::string initState = (parms["MODEL"] == "quantum_chemistry") ? "hf_occ" : "basis_state_generic";
+        modifiedParameters.set("init_state", initState);
+        modifiedParameters.set("init_basis_state", determinantString);
+        auto mpsOverlap = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, modifiedParameters)));
+        return overlap(mpsOverlap, mps)/std::sqrt(norm(mpsOverlap)*norm(mps));
+    }
+
     void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
     {
         if (parms.is_set("integral_file") || parms.is_set("integrals"))
             throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
         parms.set("integrals_binary", chem::serialize(integrals));
-
-        //std::cout << " parms are set (and ints are updated) -> " << std::endl;
-        //std::cout << parms << std::endl;
-
         // construct new model and mpo with new integrals
         // hope this doesn't give any memory leaks
         model = Model<Matrix, SymmGroup>(lat, parms);
         mpo = make_mpo(lat, model);
-
         // check if MPS is still OK
         maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms));
-
         all_measurements = model.measurements();
         all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
 
@@ -418,23 +431,20 @@ public:
         return iteration_results_;
     }
 
+    /** @brief Get the overlap of the MPS with another MPS, which is loaded from a chkp file */
     virtual typename Matrix::value_type get_overlap(const std::string & aux_filename)
     {
         maquis::checks::symmetry_check(parms, aux_filename);
-
         MPS<Matrix, SymmGroup> aux_mps;
         load(aux_filename, aux_mps);
-
         return overlap(aux_mps, this->mps);
     }
 
     /** @brief Getter for the number of sweeps that have been run */
     int get_last_sweep() { return last_sweep_; };
 
-    ~interface_sim()
-    {
-        storage::disk::sync();
-    }
+    /** @brief Class destructor */
+    ~interface_sim() { storage::disk::sync(); }
 
 private:
 

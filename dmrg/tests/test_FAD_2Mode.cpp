@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -82,6 +82,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFi
     interface.optimize();
     auto gsEnergy = interface.energy();
     BOOST_CHECK_CLOSE(gsEnergy, -2.359242429009664e+03, 1.0E-5);
+    // Checks that the overlap of the final wave function with the hf determinant is = 1.
+    auto targetOverlap = interface.getCICoefficient("0,0,0");
+    BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-16);
     // Excited-state calculations
     parametersFADOneBodyBinary.set("chkpfile", "ES.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "ES.results.h5");

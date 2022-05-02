@@ -120,6 +120,12 @@ namespace maquis
     }
 
     template <class V, Hamiltonian HamiltonianType>
+    V DMRGInterface<V, HamiltonianType>::getCICoefficient(std::string determinantString)
+    {
+        return impl_->sim->getCICoefficient(determinantString);
+    }
+
+    template <class V, Hamiltonian HamiltonianType>
     results_collector& DMRGInterface<V, HamiltonianType>::get_iteration_results()
     {
         return impl_->sim->get_iteration_results();

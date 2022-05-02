@@ -66,6 +66,9 @@ public:
     /** @brief Gets the energy at the end of the simulation */
     V energy();
 
+    /** @brief Gets the overlap of the MPS with a given determinant */
+    V getCICoefficient(std::string determinantString);
+
     /** @brief Getter for an obtject storing the statistics of the optimization */
     results_collector& get_iteration_results();
             
