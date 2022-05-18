@@ -75,7 +75,7 @@ public:
         // Model parameters
         nMax = parameters_["Nmax"];
         maxManyBodyCoupling = parameters_["watson_max_coupling"];
-        op_t ident_op, create_op, destroy_op, count_op, position_op, momentum_op;
+        op_t ident_op, position_op, momentum_op;
         std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         int overallDimension = nMax + VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
@@ -84,31 +84,17 @@ public:
         momentumPowers.resize(nMax);
         // Here it's where the "physical" basis is defined
         physIndices.insert(std::make_pair(C, nMax));
-        Matrix mcount(nMax, nMax, 0.),
-               mcreate(nMax, nMax, 0.),
-               mdestroy(nMax, nMax, 0.), 
-               mpos(overallDimension, overallDimension, 0.),
-               mmom(overallDimension, overallDimension, 0.),
-               mident(overallDimension, overallDimension, 0.);
+        Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
+        Matrix mident(overallDimension, overallDimension, 0.);
         // Loads the matrices
         mident(0, 0) = 1.;
         for (int n = 1; n < overallDimension; n++) {
             mpos(n-1, n) = std::sqrt(value_type(n));
             mpos(n, n-1) = std::sqrt(value_type(n));
             mmom(n-1, n) = std::sqrt(value_type(n));
-            mmom(n,n- 1) = -std::sqrt(value_type(n));
+            mmom(n, n-1) = -std::sqrt(value_type(n));
             mident(n, n) = 1.;
         }
-        //
-        for (int n = 1; n < nMax; n++) {
-            mcount(n, n) = n;
-            mcreate(n-1, n) = std::sqrt(value_type(n));
-            mdestroy(n, n-1) = std::sqrt(value_type(n));
-        }
-        //
-        count_op.insert_block(mcount, C,C);
-        create_op.insert_block(mcreate, C,C);
-        destroy_op.insert_block(mdestroy, C,C);
         position_op.insert_block(mpos, C,C);
         momentum_op.insert_block(mmom, C,C);
         ident_op.insert_block(mident, C,C);
@@ -116,13 +102,8 @@ public:
         powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_op, position_op);
         powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_op, momentum_op);
         // -- Create operator tag table --
-        create = tag_handler->register_op(create_op, tag_detail::bosonic);
-        destroy = tag_handler->register_op(destroy_op, tag_detail::bosonic);
-        count = tag_handler->register_op(count_op, tag_detail::bosonic);
-        // 
         ident_op.resize_block(0, nMax, nMax);
         ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
-        //
         positionPowers.resize(maxCoupling+1);
         momentumPowers.resize(maxCoupling+1);
         positionPowers[0] = ident;
@@ -148,21 +129,30 @@ public:
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
-            auto uniqueCoefficients = std::set<int>(iTerms.first.begin(), iTerms.first.end());
-            if (uniqueCoefficients.size() <= maxManyBodyCoupling) {
-                for (const auto& iSite: uniqueCoefficients) {
-                    if (iSite != 0) {
-                        positions.push_back(abs(iSite)-1);
-                        auto numberOfOccurrences = std::count(iTerms.first.begin(), iTerms.first.end(), iSite);
-                        assert(numberOfOccurrences > 0 && numberOfOccurrences <= maxCoupling);
-                        if (iSite < 0)
-                            operators.push_back(momentumPowers[numberOfOccurrences]);
-                        else if (iSite > 0)
-                            operators.push_back(positionPowers[numberOfOccurrences]);
-                    }
+            auto termVector = std::vector<int>(iTerms.first.begin(), iTerms.first.end());
+            auto termSet = std::set<int>(iTerms.first.begin(), iTerms.first.end());
+            auto newEnd = std::remove(termVector.begin(), termVector.end(), 0);
+            auto numberOfNonZeroElements = std::distance(termVector.begin(), newEnd);
+            std::stable_sort(termVector.begin(), newEnd, [](const auto& iVal, const auto& jVal) {
+                return std::abs(iVal) < std::abs(jVal);
+            });
+            if (termSet.size() <= maxManyBodyCoupling) {
+                int outerCounter = 0;
+                while (outerCounter < numberOfNonZeroElements) {
+                    int referenceValue = termVector[outerCounter];
+                    int innerCounter = 0;
+                    while (termVector[outerCounter+innerCounter] == referenceValue && innerCounter+outerCounter != numberOfNonZeroElements)
+                        innerCounter += 1;
+                    positions.push_back(abs(referenceValue)-1);
+                    assert(innerCounter > 0 && innerCounter <= maxCoupling);
+                    if (referenceValue < 0)
+                        operators.push_back(momentumPowers[innerCounter]);
+                    else if (referenceValue > 0)
+                        operators.push_back(positionPowers[innerCounter]);
+                    outerCounter += innerCounter;
                 }
                 // Final addition of the terms
-                modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_);
+                modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_, true);
             }
         }
     }
@@ -188,13 +178,7 @@ public:
      * @return tag_type tag associated with the requested operator
      */
     tag_type get_operator_tag(const std::string& name, size_t type) const {
-        if (name == "n")
-            return count;
-        else if (name == "bdag")
-            return create;
-        else if (name == "b")
-            return destroy;
-        else if (name == "id")
+        if (name == "id")
             return ident;
         else if (name == "fill")
             return ident;
@@ -235,7 +219,7 @@ private:
     /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler;
     /** Tags of the elementary operators */
-    tag_type ident, create, destroy, count, position, momentum;
+    tag_type ident, position, momentum;
     /** Tag for the powers of the position/momentum operators */
     std::vector<tag_type> positionPowers, momentumPowers;
 };
