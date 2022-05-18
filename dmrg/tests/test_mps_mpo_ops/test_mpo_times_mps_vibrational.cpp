@@ -89,6 +89,24 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
 };
 
+/** @brief Check Hermiticity of None operator with Coriolis */
+BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Hermiticity_None, WatsonFixture)
+{
+  // Generates the HF MPS
+  parametersH2COWatson.set("init_state", "const");
+  parametersH2COWatson.set("max_bond_dimension", 200);
+  auto lattice = Lattice(parametersH2COWatson);
+  auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersH2COWatson);
+  auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
+  auto mps1 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
+  // Calculates the default guess
+  parametersH2COWatson.set("init_state", "default");
+  auto mps2 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
+  auto energy1 = expval(mps1, mps2, watsonHarmonicMPO);
+  auto energy2 = expval(mps2, mps1, watsonHarmonicMPO);
+  BOOST_CHECK_CLOSE(energy1, energy2, 1.E-15);
+};
+
 /**
  * @brief Checks that the H^2 expectation value, caluclated via [mpo_times_mps] and expva, gives coherent results.
  */
