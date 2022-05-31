@@ -208,6 +208,14 @@ public:
         std::string name;
         std::vector< std::vector< operators_type >> ops;
         std::vector<float_t> coeffs;
+        // One-mode RDM
+        if (this->parameters.is_set("MEASURE[One Mode RDM]")) {
+            name = "onemodeRDM";
+            ops = {{create, destroy}};
+            coeffs = {1.0};
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::AddAll));
+        }
         if (this->parameters.is_set("MEASURE[One Modal RDM]")) {
             // Calculate the one modal reduced density matrix for every mode
             // 1) operator 1 - a+a

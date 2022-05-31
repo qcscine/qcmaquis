@@ -265,6 +265,48 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixtur
     }
 }
 
+/**
+ * @brief Measure the one-mode RDM and checks sanity of the trace.
+ * Note that the trace of the one-mode RDM should be 1 for each sub-block of modals
+ * belonging to the same mode. The overall trace should then be equal to the overall number
+ * of modes.
+ */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_ModeRDM, NModeFixture)
+{
+    // Adds the final input parameters
+    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("seed", 30031989);
+    parametersFADTwoBody.set("nsweeps", 10);
+    parametersFADTwoBody.set("max_bond_dimension", 20);
+    parametersFADTwoBody.set("MODEL", "nmode");
+    parametersFADTwoBody.set("MEASURE[One Mode RDM]", "1");
+    // Creates the interface
+    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    interface.optimize();
+    interface.measure();
+    // == TWO-MODAL ENTROPY ==
+    tmatrix<double> oneModeRDM(22, 22, 0.);
+    auto overallSize = interface.getMeasurement("onemodeRDM").first.size();
+    for (int iElement = 0; iElement < overallSize; iElement++) {
+        // 0-0
+        int iRow = interface.getMeasurement("onemodeRDM").first[iElement][0];
+        int iCol = interface.getMeasurement("onemodeRDM").first[iElement][1];
+        oneModeRDM(iRow, iCol) =  interface.getMeasurement("onemodeRDM").second[iElement];
+    }
+    // Calculates the trace
+    double trace = 0.;
+    for (int idx = 0; idx < 22; idx++)
+        trace += oneModeRDM(idx, idx);
+    BOOST_CHECK_CLOSE(trace, 2., 1.0E-10);
+    // Checks that the off-diagonal elements of the one-mode RDM are zero.
+    for (int iRow = 0; iRow < 11; iRow++) {
+        for (int iCol = 11; iCol < 22; iCol++) {
+            BOOST_CHECK_CLOSE(oneModeRDM(iRow, iCol), 0., 1.0E-10);
+            BOOST_CHECK_CLOSE(oneModeRDM(iCol, iRow), 0., 1.0E-10);
+        }
+    }
+}
+
 #endif // HAS_NU1
 
 #endif // DMRG_VIBRATIONAL
