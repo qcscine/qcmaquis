@@ -1,12 +1,6 @@
 add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALPS_DISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 
-set(DMRG_APP_LIBRARIES dmrg_utils ${DMRG_LIBRARIES})
-
-if(USE_AMBIENT)
-  compile_with_ambient()
-endif(USE_AMBIENT)
-
-
+set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 
 macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
   get_symm_group_name(SYMM_NAME ${SYMM})
@@ -62,9 +56,11 @@ endif(BUILD_ONETDM_DIAG)
 #create_tools_symm_target("nrdmexpect_2u1pg"   "TWOU1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 #create_tools_symm_target("nrdmexpect_su2u1pg" "SU2U1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 if (BUILD_MPS2CI)
-create_tools_symm_target("mps2ci_2u1"           "TWOU1"   "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("srcas_2u1pg"           "TWOU1PG"   "srcas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps2ci_2u1"           "TWOU1"    "mps2ci.cpp"              "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps2ci_2u1pg"         "TWOU1PG"  "mps2ci.cpp"              "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps2ci_none"          "NONE"     "mps2ci_vibrational.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps2ci_nu1"           "NU1"      "mps2ci_vibrational.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("srcas_2u1pg"          "TWOU1PG"  "srcas.cpp"               "dmrg_models;${DMRG_APP_LIBRARIES}")
 endif (BUILD_MPS2CI)
 if (BUILD_DEAS)
 create_tools_symm_target("deas"             "TWOU1"   "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")

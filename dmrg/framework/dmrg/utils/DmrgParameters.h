@@ -161,6 +161,10 @@ private:
         add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
         add_option("n_excitons", "Number of molecule composing the molecular aggregate");
+
+        // Tools 
+        add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
+        add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
     }
 
 };
