@@ -147,6 +147,9 @@ private:
         add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES");
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
 
+        // n-mode vibrational calculations
+        add_option("nModeDumpIntegral", "If == yes, store the integrals in the result file", value("no"));
+
         // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
         add_option("PreBO_ParticleTypeVector", "Number of particles per type");
