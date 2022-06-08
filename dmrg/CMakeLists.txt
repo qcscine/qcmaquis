@@ -39,8 +39,9 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry
-to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available.")
+set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include in the build objects. \
+U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
+TwoU1PG and SU2U1PG are built in any case.")
 set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
@@ -183,7 +184,9 @@ macro(configure_symm_file INPUT OUTBASE VARNAME)
   endforeach(SYMM)
 endmacro(configure_symm_file)
 
-# Adding symmetries definitions
+# Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
+list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
+list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
 message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
