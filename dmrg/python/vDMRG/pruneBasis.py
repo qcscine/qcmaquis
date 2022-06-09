@@ -85,5 +85,5 @@ if __name__ == "__main__":
     print(" == LIST OF ACCEPTED MODES == ")
     for iMode, iList in enumerate(lstOfAcceptedModes):
       print(" Mode "+str(iMode))
-      listOfModes = " ".join([str(i) for i in iList])
+      listOfModes = " ".join([str(i) for i in sorted(iList)])
       print(listOfModes)
