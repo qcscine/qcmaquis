@@ -41,12 +41,13 @@ where `<CMAKE_COMPILE_OPTIONS>` can be (optionally) one of the following:
 ### CMake compile options:
 - `BUILD_MANUAL`: Compile and install the QCMaquis manual in PDF.
 - `BUILD_OPENMOLCAS_INTERFACE`: Build and install the OpenMOLCAS Fortran interface.
-- `TESTS`: Compile tests.
+- `QCMAQUIS_TESTS`: Compile tests.
 - `LAPACK_64_BIT`: Enable if you use a linear algebra library configured with 64-bit integers (ILP64).
 - `BLAS_LAPACK_SELECTOR`: Set the vendor of the linear algebra library: `openblas`,`mkl_sequential`, `mkl_parallel`, `veclib` for Accelerate on Mac OS X, `auto` for autodetection and `manual` for setting the linking directories manually are supported. Default is autodetection, which usually does a good job.
 - `BUILD_PREBO`: Build the pre-BO related model. It is mandatory to activate the `NU1` symmetry.
 - `BUILD_VIBRATIONAL`: Build the vibrational DMRG module. It is mandatory to activate either the `NONE` (for canonical quantization) or the `NU1` (for n-mode second quantization) symmetry.
 - `BUILD_VIBRONIC`: Buld the vibronic and excitonic DMRG modules. It is mandatory to activate the `U1` symmetry.
+- `DMRG_NUMSYMM`: Maximum number of (N)U1 symmetries
 - `BUILD_*`: Build (legacy) utility binaries to perform various operations with matrix product state (MPS) checkpoint files.
 
 A more detailed installation guide can be found in Section 3.1 of our manual.
