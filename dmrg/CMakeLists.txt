@@ -227,6 +227,10 @@ if(BUILD_VIBRONIC)
   endif()
 endif(BUILD_VIBRONIC)
 
+if(DMRG_HAS_U1 OR DMRG_HAS_NU1)
+  message(STATUS "DMRG NumSymm is: ${DMRG_NUMSYMM}")
+endif()
+
 ##### Dependencies #####
 # GSL
 # find GNU Scientific Library if using SU2 Groups
