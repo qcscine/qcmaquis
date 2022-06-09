@@ -51,7 +51,11 @@ def pruneFcidumpFile(listOfListModals: List[ List[int] ], fileName: str, outputF
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("-r", "--resultfile", type=str, help="Input result file", required=True, nargs="+")
+  parser.add_argument("-r", "--resultfile", type=str, help="""
+                                                           Input result files.
+                                                           If more than a single file is provided, the list of pruned modes is the
+                                                           union of the pruned set obtained from each file.
+                                                           """, required=True, nargs="+")
   parser.add_argument("-f", "--fcidump", type=str, action="store", help="If present, prunes directly the FCIDUMP file")
   parser.add_argument("-o", "--output", type=str, action="store", help="""
                                                                        Name of the output file.
@@ -68,6 +72,8 @@ if __name__ == "__main__":
   lstOfAcceptedModes = [[] for i in range(resultFileList[0].getNumberOfModes())]
   for iRes in resultFileList:
     oneModalEntropies = iRes.getSeparatedOneModalEntropy()
+    # Loop over the modals of each mode and, if the entropy is larger than the threshold
+    # at least for one of the result files, include the mode.
     for iMode, entropyList in enumerate(oneModalEntropies):
       for idx, iModalEntropy in enumerate(entropyList):
         if abs(iModalEntropy) > threshold and idx not in lstOfAcceptedModes[iMode]:
