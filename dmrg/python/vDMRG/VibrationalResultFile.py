@@ -101,6 +101,18 @@ class ResultFileVibrationaleMeasurement(object):
         """Getter for the overall number of sites"""
         return self.overallSize
 
+    def __extractOneModeRDM(self):
+        """Extracts the one-mode RDM matrix"""
+        oneModeRDM = np.zeros((self.overallSize, self.overallSize))
+        ihd5 = self.h5pyfile['spectrum']['results']['onemodeRDM']
+        for idx, iLabel in enumerate(ihd5['labels_num']):
+            oneModeRDM[iLabel[0], iLabel[1]] = abs(ihd5['mean']['value'][0, idx])
+        print(oneModeRDM[0,0])
+        print(oneModeRDM[1,0])
+        print(oneModeRDM[0,1])
+        print(oneModeRDM[1,1])
+        return oneModeRDM
+
     def __extractOneModalEntropy(self):
         """Extracts the one-modal entropy for each modal"""
         oneModalEntropy = np.zeros(self.overallSize)
@@ -155,6 +167,12 @@ class ResultFileVibrationaleMeasurement(object):
                     if abs(iEigen) > ResultFileVibrationaleMeasurement.atol:
                         twoModalEntropy[i, j] += -iEigen*math.log(iEigen)
         return twoModalEntropy
+
+    def getOneModeRDM(self):
+        """
+        Gets the one-modal entropy as a "full" list
+        """
+        return self.__extractOneModeRDM()
 
     def getOneModalEntropy(self):
         """

@@ -61,7 +61,7 @@ if __name__ == "__main__":
                                                                        Name of the output file.
                                                                        Required if the [fcidump] option is provided.
                                                                        """)
-  parser.add_argument("-t", "--threshold", type=float, action="store", help="Pruning threshold for the one-particle modal entropy", required=True)
+  parser.add_argument("-t", "--threshold", type=float, action="store", help="Pruning threshold for the one-modal entropy", required=True)
   args = parser.parse_args()
   fcidumpName = args.fcidump
   outputFile = args.output
@@ -85,5 +85,5 @@ if __name__ == "__main__":
     print(" == LIST OF ACCEPTED MODES == ")
     for iMode, iList in enumerate(lstOfAcceptedModes):
       print(" Mode "+str(iMode))
-      listOfModes = " ".join([str(i) for i in iList])
+      listOfModes = " ".join([str(i) for i in sorted(iList)])
       print(listOfModes)

@@ -35,10 +35,11 @@ from VibrationalResultFile import ResultFileVibrationaleMeasurement
 def pruneIntegralFile(listOfThresholds, integralFile, outputFile: str):
   inFile = open(integralFile, mode="r")
   outFile = open(outputFile, mode="w")
+  localText = ""
   for i in inFile:
-    tmpList = [[int(k) for k in j.split("-")] for j in i.split()[:-1]]
-    if all([j[1] <= listOfThresholds[j[0]-1] for j in tmpList]):
-      outFile.write(i)
+    if all([j[1] <= listOfThresholds[j[0]-1] for j in [[int(k) for k in j.split("-")] for j in i.split()[:-1]]]):
+      localText += i
+  outFile.write(localText)
   outFile.close()
 
 def calculateMaximumModalIndex(inputList, threshold: int):
@@ -63,11 +64,13 @@ def extractOneBodyEnergyFromFCIDUMP(resultFile):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("-f", "--fcidump", type=str, action="store", help="If present, prunes directly the FCIDUMP file")
+  parser.add_argument("-f", "--fcidump", type=str, action="store", help="Name of the FCIDUMP file")
   parser.add_argument("-t", "--threshold", type=int, action="store", required=False, help="Threshold on the number of modals")
+  parser.add_argument("-p", "--prunefcidump", action="store_true", help="If present, prunes the FCIDUMP file and generates a new one") 
   args = parser.parse_args()
   fcidumpFile = open(args.fcidump, mode="r")
   threshold = args.threshold
+  writeNewFcidump = args.prunefcidump
   # Prints header
   print("")
   print(" =========================================== ")
@@ -90,11 +93,12 @@ if __name__ == "__main__":
     listOfThresholds = calculateMaximumModalIndex(listOfSingleParticleEnergiesSorted, threshold)
     for idx, i in enumerate(listOfThresholds):
       print(" "+str(i+1)+" modal basis functions retained for mode "+str(idx))
-    newIntegralFileName = args.fcidump+"_Pruned"
-    pruneIntegralFile(listOfThresholds, args.fcidump, newIntegralFileName)
-    print("")
-    print(" New integral file generated with name "+newIntegralFileName)
-    print("")
+    if writeNewFcidump:
+      newIntegralFileName = args.fcidump+"_Pruned"
+      pruneIntegralFile(listOfThresholds, args.fcidump, newIntegralFileName)
+      print("")
+      print(" New integral file generated with name "+newIntegralFileName)
+      print("")
     # Calculated pruned sorting
     listOfSingleParticleEnergiesPruned = [i for i in listOfSingleParticleEnergies if i[1] <= listOfThresholds[i[0]-1]]
     listOfSingleParticleEnergiesPrunedSorted = listOfSingleParticleEnergiesPruned[:]
@@ -105,4 +109,3 @@ if __name__ == "__main__":
       sortingPruned += ","
     print(" Output sorting for the pruned modal set: ")
     print(" "+sortingPruned[:-1])
-

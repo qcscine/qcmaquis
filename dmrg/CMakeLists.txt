@@ -48,6 +48,9 @@ option(ENABLE_OMP "Enable OpenMP" ON)
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
+# The upper bound for NU1 symmetry is DMRG_NUMSYMM+1 (BOOST does not include in the macro the upper bound)
+math(EXPR DMRG_UPPER_BOUND "${DMRG_NUMSYMM}+1" OUTPUT_FORMAT DECIMAL)
+
 # DMRG-related flags
 option (BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
 option (BUILD_CIDEAS "Build CIDEAS binary (deprecated)" OFF)
