@@ -163,7 +163,7 @@ namespace dmrg {
             }
             // Sets the max. number of N that is required for the NU1 symmetry group
             switch (numberOfSymmetries) { 
-                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~)
+                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_UPPER_BOUND@, DECLCASE, ~)
                 default:
                     throw std::runtime_error("Please recompile QCMaquis with a higher DMRG_NUMSYMM value");
                     break;
