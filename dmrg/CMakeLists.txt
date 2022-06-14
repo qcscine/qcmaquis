@@ -44,7 +44,7 @@ U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently availab
 TwoU1PG and SU2U1PG are built in any case.")
 set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
 set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
-add_compile_definitions(ORDER_NONE=${DMRG_ORDERNONE})
+add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
