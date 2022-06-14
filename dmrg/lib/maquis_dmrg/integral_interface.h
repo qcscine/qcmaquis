@@ -65,8 +65,8 @@ enum class Hamiltonian {Electronic, VibrationalCanonical, VibrationalNMode, PreB
  *   we have up to 12 indices (note that in the n-mode Hamiltonian each SQ
  *   operator is identified by 2 indices, as for the PreBO one)
  * - the canonical quantization-based vibration Hamiltonian has a number of indices
- *   equal to the max. order of the Taylor expansion of the PES. Here we include
- *   up to sixth-order force constants.
+ *   equal to the max. order of the Taylor expansion of the PES.
+ *   The maximum order of the force constants can be set at compilation.
  */
 constexpr int getIndexDim(const Hamiltonian& type) {
     int indexDim=0;
@@ -75,15 +75,14 @@ constexpr int getIndexDim(const Hamiltonian& type) {
             indexDim = 4;
             break;
         case Hamiltonian::VibrationalCanonical:
-            indexDim = 6;
+            indexDim = ORDER_NONE; // This value is defined in the top level CMakeLists.txt and can be set as a compile flag           
             break;
         // Note that we support so-far only up to 3-body terms
         case Hamiltonian::VibrationalNMode:
             indexDim = 12;
             break;
         // We support up to 2-mode coupling for the vibronic case.
-        // The index is, however, 4 because we also include the electronic
-        // state index (same fore the excitonic case)
+        // The index is, however, 4 because we also include the electronic state index
         case Hamiltonian::Vibronic:
             indexDim = 4;
             break;

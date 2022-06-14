@@ -47,7 +47,8 @@ where `<CMAKE_COMPILE_OPTIONS>` can be (optionally) one of the following:
 - `BUILD_PREBO`: Build the pre-BO related model. It is mandatory to activate the `NU1` symmetry.
 - `BUILD_VIBRATIONAL`: Build the vibrational DMRG module. It is mandatory to activate either the `NONE` (for canonical quantization) or the `NU1` (for n-mode second quantization) symmetry.
 - `BUILD_VIBRONIC`: Buld the vibronic and excitonic DMRG modules. It is mandatory to activate the `U1` symmetry.
-- `DMRG_NUMSYMM`: Maximum number of (N)U1 symmetries
+- `DMRG_NUMSYMM`: Maximum number of (N)U1 symmetries. Default is 6. For higher numbers, only that one specific NUMSYMM is compiled.
+- `DMRG_ORDERNONE` Maximum order of integral terms for NONE symmetry for vibrational calculations. Default is 6. Integral files need to have #DMRG_ORDERNONE mode indices.
 - `BUILD_*`: Build (legacy) utility binaries to perform various operations with matrix product state (MPS) checkpoint files.
 
 A more detailed installation guide can be found in Section 3.1 of our manual.

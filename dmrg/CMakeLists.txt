@@ -43,6 +43,8 @@ set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
 TwoU1PG and SU2U1PG are built in any case.")
 set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
+set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
+add_compile_definitions(ORDER_NONE=${DMRG_ORDERNONE})
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -214,6 +216,9 @@ if((BUILD_VIBRATIONAL))
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
     set(DMRG_VIBRATIONAL TRUE)
+  endif()
+  if (DMRG_VIBRATIONAL AND DMRG_HAS_TrivialGroup)
+    message(STATUS "vDMRG OrderNONE is: ${DMRG_ORDERNONE}")
   endif()
 endif()
 
