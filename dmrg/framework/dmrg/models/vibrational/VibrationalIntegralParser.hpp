@@ -30,7 +30,6 @@
 #ifdef DMRG_VIBRATIONAL
 
 #include "integral_interface.h"
-#include "VibrationalModelTraitClass.hpp"
 
 namespace Vibrational {
 namespace detail {
@@ -150,19 +149,19 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
  * 
  * This routine expects to parse an integral file that is written in the following format:
  * 
- * coefficient    i   j   k   l   m   n 
+ * coefficient    i   j   k   l   m   n   ... (#Indices shoud be == OrderNONE)
  * 
  * Each line of the file is associated with a SQ operator expressed as:
  * 
- * coeff * o_i * o_j * o_k * o_l * o_m * o_n
+ * coeff * o_i * o_j * o_k * o_l * o_m * o_n * ...
  * 
  * where the operator o_i is:
  *  - (b_i^\dagger + b_i) if i > 0
  *  - i*(b_{-i}^\dagger - b_{-i}) if i < 0
  *  - the identity if i == 0
  * 
- * Note that the dimension of the array depends on the maximum allowed coupling degree, which is 
- * set in the TrivialGroup vibrational model trait class.
+ * Note that the dimension of the array depends on the maximum allowed coupling degree, which is taken from interal_interface.h
+ * and can be set at compile time.
  * 
  * @tparam T scalar type associated with the Hamiltonian (real for most vibrational calculations)
  * @param parms parameter container
@@ -171,13 +170,17 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
  */
 
 template<class T>
-inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings>, T > > 
+inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>, T > > 
     WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
 {
     // Types definition
     using pos_t = Lattice::pos_t;
-    using KeyType = std::array<int, VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings>;
+    using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>;
     using RetType = std::vector< std::pair< KeyType, T> > ;
+    // Set the number of indices which are expected in the FCIDUMP
+    int maxCoupling = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
+    // Determines the maximum many-body coupling degree. Per default read in all integrals that are given
+    int maxManyBodyCoupling = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : maxCoupling;
     // Load ordering and determine inverse ordering
     std::vector<pos_t> inv_order;
     std::vector<pos_t> order(lat.size());
@@ -206,36 +209,17 @@ inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<Trivia
         std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
                     std::back_inserter(raw));
         auto it = raw.begin();
-        // Determines the maximum many-body coupling degree
-        std::vector<bool> doCoupling(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, false);
-        doCoupling[0] = true;
-        int upperBound = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : 6;
-        for (int iActive = 0; iActive < upperBound; iActive++)
-            doCoupling[iActive] = true;
         // == Main loop ==
-        int row = 0;
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
-            std::vector<int> tmp2(VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings, 0);
-            std::vector<int>::iterator jnk_iter;
-            std::copy(it+1, it+7, tmp2.begin());
-            if (tmp2[2] == 0)
-                tmp2.resize(2);
-            else if (tmp2[3] == 0)
-                tmp2.resize(3);
-            else if (tmp2[4] == 0)
-                tmp2.resize(4);
-            else if (tmp2[5] == 0)
-                tmp2.resize(5);
-            std::sort(tmp2.begin(), tmp2.end());
-            jnk_iter = std::unique(tmp2.begin(), tmp2.end());
-            long coupl = std::distance(tmp2.begin(), jnk_iter);
-            if (std::abs(*it) > parms["integral_cutoff"] && doCoupling[coupl-1] ) {
+            auto modeSet = std::set<int>(it+1, it+maxCoupling);
+            // Screen integrals
+            if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
                 T coefficient = *it++;
                 KeyType tmp;
-                for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
+                for (int idx = 0; idx < maxCoupling; idx++)
                     tmp[idx] = *(it+idx);
-                for (int idx = 0; idx < VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings; idx++)
+                for (int idx = 0; idx < maxCoupling; idx++)
                     if (tmp[idx] > 0)
                         tmp[idx] = inv_order[tmp[idx]-1]+1;
                     else if (tmp[idx] < 0)
@@ -245,8 +229,7 @@ inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<Trivia
             else {
                 ++it;
             }
-            it += VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
-            row++;
+            it += maxCoupling;
         }
     }
     else if (parms.is_set("integrals_binary")) {
@@ -255,9 +238,12 @@ inline std::vector< std::pair< std::array<int, VibrationalModelTraitClass<Trivia
         std::stringstream ss(parms["integrals_binary"].as<std::string>());
         boost::archive::text_iarchive ia{ss};
         ia >> ints;
-        for (auto&& t: ints)
-            if (std::abs(t.second) > parms["integral_cutoff"])
+        for (auto&& t: ints) {
+            auto modeSet = std::set<int>(t.first.begin(), t.first.end());
+            // Screen integrals
+            if ((std::abs(t.second) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling))
                 ret.push_back(std::make_pair(t.first, t.second));
+        }
     }
     return ret;
 }
