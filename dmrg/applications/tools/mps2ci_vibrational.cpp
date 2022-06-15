@@ -50,16 +50,15 @@ int main(int argc, char ** argv)
 {
     // Check coherence in input
     if (argc != 2) {
-        maquis::cout << "Usage: mps2ci_nMode <input file> " << std::endl;
+        maquis::cout << "Usage: mps2ci_vib <input file> " << std::endl;
         exit(1);
     }
-    maquis::cout.precision(10);
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
-        // Creates the simulation object
-        maquis::cout.precision(10);
         if(!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson"))
             throw std::runtime_error("This app supports only vibrational Hamiltonians");
+        maquis::cout.precision(10);
+        // Creates the simulation object
         maquis::DMRGInterface<double> interface(opt.parms);
         // Opens the determinant file and loops over it
         std::string nameOfDetFile = opt.parms["determinant_file"];
