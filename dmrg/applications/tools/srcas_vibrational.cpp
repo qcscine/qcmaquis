@@ -33,6 +33,7 @@
 #include <vector>
 
 #include "maquis_dmrg.h"
+#include "srcas_vibrational_utilies.h"
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
@@ -58,10 +59,14 @@ int main(int argc, char ** argv)
         if(!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson"))
             throw std::runtime_error("This app supports only vibrational Hamiltonians");
         maquis::cout.precision(10);
-        // Creates the simulation object
-        maquis::DMRGInterface<double> interface(opt.parms);
         std::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl;
+        // Creates the simulation object
+        SRCAS srcas(opt.parms);
+        // maquis::DMRGInterface<double> interface(opt.parms);
+        
+
         // Opens the determinant file and loops over it
+        /*
         std::string nameOfDetFile = opt.parms["determinant_file"];
         double threshold = opt.parms["determinant_threshold"];
         std::ifstream is(nameOfDetFile);
@@ -71,6 +76,7 @@ int main(int argc, char ** argv)
             if (std::abs(overlap) > threshold)
                 std::cout << "CI coefficient of " << str << " : " << overlap << std::endl;
         }
+        */
     }
     else {
         throw std::runtime_error("Parameters in inputfile corrupted");

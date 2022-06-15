@@ -25,17 +25,20 @@
  *
  *****************************************************************************/
 
-#ifndef SAMPLING_VIB_HPP
-#define SAMPLING_VIB_HPP
-
 #include <iostream>
 #include <boost/random.hpp>
 #include <boost/lexical_cast.hpp>
 #include <math.h>
 #include <string.h>
 
+// Random number generator, work together with boost library
+// Distribution is a variable modelling a random distribution over the 0-1 range
+SRCAS::SRCAS(DmrgParameters& parameters) : distribution_(0.,1.), random_number_(generator_,distribution_), parms_(parameters)
+{
+    generator_.seed(parms["seed"]);
+}
 
-void quicksort(string dets[], double b[], int left, int right) {
+void SRCAS::quicksort(string dets[], double b[], int left, int right) {
     double pivot = std::abs(b[(left+right)/2]);
     int l = left;
     int r = right;
@@ -63,33 +66,12 @@ void quicksort(string dets[], double b[], int left, int right) {
     if (l < right) quicksort(dets, b, l, right);
 }
 
-// Calculates CI coefficient for n-mode Determinant via MPS-MPS overlap evaluation
-template <typename Determinant, typename Matrix, typename SymmGroup>
-double calculate_coefficient(MPS<Matrix, SymmGroup> mps, Determinant det, std::vector<Index<SymmGroup>>& phys_dims, std::vector<int>& site_type, NU1::charge& right_end){
-    auto state = HelperClassBasisVectorConverter<NU1>::GenerateIndexFromString(det, phys_dims, site_type, mps.length());
-    MPS<Matrix, SymmGroup> mps2 = state_mps<Matrix>(state, phys_dims, site_type, right_end);
-    double ovp = overlap(mps, mps2);
-    return ovp;
-}
-
-// +------------------+
-//  SAMPLING STRUCTURE
-// +------------------+
+/*
 
 class SRCAS {
-    // Random number generator, work together with boost library
-    // Distribution is a variable modelling a random distribution over the 0-1 range
-    SRCAS() : distribution(0.,1.), random_number(generator,distribution)
-    {
-        unsigned int seed = 123456;
-        generator.seed(seed+time(NULL));
-    }
+    
 
-    // Definition of the variables used for the random generation
-    boost::mt19937 generator;
-    boost::uniform_real<> distribution;
-    boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > random_number;
-
+    
     // -- ARGUMENTS of perform_srcas --
     // 1)  mps           --> reference MPS
     // 2)  modals        --> modal basis size for each mode, provided in input in determinant format
@@ -99,14 +81,14 @@ class SRCAS {
     // 6) CI_threshold   --> threshold to use to store the determinant
     // 7) COM_threshold  --> threshold to assess the convergence of the SRCAS algorithm
 
-    /*
+    
     add_option("init_basis_state", "local indexes for basis state init", value(""));
 
          // Vibrational SRCAS
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.9));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numMicroiterations", "Number of microiterations in each SRCAS macroiteration", value(10000));
-    */
+    
 
     template <typename Determinant, typename Matrix, typename SymmGroup>
     void perform_srcas(MPS<Matrix, SymmGroup> mps, std::vector<int> modals, Determinant starting_det, int nsamples, int nitermax, double CI_threshold, double COM_threshold)
@@ -228,8 +210,6 @@ class SRCAS {
     }
 };
 
-
-
-#endif
+*/
 
 
