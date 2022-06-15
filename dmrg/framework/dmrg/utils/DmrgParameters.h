@@ -165,6 +165,11 @@ private:
         // Tools 
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
+
+        // Vibrational SRCAS
+        add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.9));
+        add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
+        add_option("srcas_numMicroiterations", "Number of microiterations in each SRCAS macroiteration", value(10000));
     }
 
 };
