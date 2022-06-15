@@ -35,7 +35,6 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/model_helper.hpp"
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
-#include "dmrg/models/vibrational/VibrationalModelTraitClass.hpp"
 #include "dmrg/models/vibrational/VibrationalHelperClass.hpp"
 
 /**
@@ -65,25 +64,23 @@ public:
     
     /**
      * @brief Class constructor
-     * @param lattice_ object representing the DMRG lattice
-     * @param parameters_ container with the DMRG parameters
+     * @param lattice object representing the DMRG lattice
+     * @param parameters container with the DMRG parameters
      * @param verbose if true, prints information regarding the Hamiltonian terms
      */
-    WatsonHamiltonian(const Lattice& lattice_, BaseParameters& parameters_, bool verbose)
-        : lattice(lattice_), parameters(parameters_), tag_handler(new table_type()), physIndices(0)
+    WatsonHamiltonian(const Lattice& lattice, BaseParameters& parameters, bool verbose)
+        : lattice_(lattice), parameters_(parameters), tag_handler_(new table_type()), physIndices_(0)
     {
         // Model parameters
-        nMax = parameters_["Nmax"];
-        maxManyBodyCoupling = parameters_["watson_max_coupling"];
+        nMax_ = parameters_["Nmax"];
         op_t ident_op, position_op, momentum_op;
         std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
-        int overallDimension = nMax + VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
-        int maxCoupling = VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
-        momentumPowers.resize(nMax);
-        momentumPowers.resize(nMax);
+        int overallDimension = nMax_ + maxCoupling_;
+        momentumPowers_.resize(nMax_);
+        momentumPowers_.resize(nMax_);
         // Here it's where the "physical" basis is defined
-        physIndices.insert(std::make_pair(C, nMax));
+        physIndices_.insert(std::make_pair(C, nMax_));
         Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
         Matrix mident(overallDimension, overallDimension, 0.);
         // Loads the matrices
@@ -99,18 +96,18 @@ public:
         momentum_op.insert_block(mmom, C,C);
         ident_op.insert_block(mident, C,C);
         // -- Creates the powers of the position/momentum operator --
-        powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_op, position_op);
-        powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling, nMax, ident_op, momentum_op);
+        powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling_, nMax_, ident_op, position_op);
+        powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling_, nMax_, ident_op, momentum_op);
         // -- Create operator tag table --
-        ident_op.resize_block(0, nMax, nMax);
-        ident = tag_handler->register_op(ident_op, tag_detail::bosonic);
-        positionPowers.resize(maxCoupling+1);
-        momentumPowers.resize(maxCoupling+1);
-        positionPowers[0] = ident;
-        momentumPowers[0] = ident;
-        for (int iOrder = 1; iOrder <= maxCoupling; iOrder++) {
-            positionPowers[iOrder] = tag_handler->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
-            momentumPowers[iOrder] = tag_handler->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
+        ident_op.resize_block(0, nMax_, nMax_);
+        ident_ = tag_handler_->register_op(ident_op, tag_detail::bosonic);
+        positionPowers_.resize(maxCoupling_+1);
+        momentumPowers_.resize(maxCoupling_+1);
+        positionPowers_[0] = ident_;
+        momentumPowers_[0] = ident_;
+        for (int iOrder = 1; iOrder <= maxCoupling_; iOrder++) {
+            positionPowers_[iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
+            momentumPowers_[iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
         }
     }
 
@@ -125,43 +122,40 @@ public:
      * This method populates the [terms_] member with the Hamiltonian coefficients
      */
     void create_terms() override {
-        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters, lattice);
+        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_);
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
             auto termVector = std::vector<int>(iTerms.first.begin(), iTerms.first.end());
-            auto termSet = std::set<int>(iTerms.first.begin(), iTerms.first.end());
             auto newEnd = std::remove(termVector.begin(), termVector.end(), 0);
             auto numberOfNonZeroElements = std::distance(termVector.begin(), newEnd);
             std::stable_sort(termVector.begin(), newEnd, [](const auto& iVal, const auto& jVal) {
                 return std::abs(iVal) < std::abs(jVal);
-            });
-            if (termSet.size() <= maxManyBodyCoupling) {
-                int outerCounter = 0;
-                while (outerCounter < numberOfNonZeroElements) {
-                    int referenceValue = termVector[outerCounter];
-                    int innerCounter = 0;
-                    while (termVector[outerCounter+innerCounter] == referenceValue && innerCounter+outerCounter != numberOfNonZeroElements)
-                        innerCounter += 1;
-                    positions.push_back(abs(referenceValue)-1);
-                    assert(innerCounter > 0 && innerCounter <= maxCoupling);
-                    if (referenceValue < 0)
-                        operators.push_back(momentumPowers[innerCounter]);
-                    else if (referenceValue > 0)
-                        operators.push_back(positionPowers[innerCounter]);
-                    outerCounter += innerCounter;
-                }
-                // Final addition of the terms
-                modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler, this->terms_, true);
+            });            
+            int outerCounter = 0;
+            while (outerCounter < numberOfNonZeroElements) {
+                int referenceValue = termVector[outerCounter];
+                int innerCounter = 0;
+                while (termVector[outerCounter+innerCounter] == referenceValue && innerCounter+outerCounter != numberOfNonZeroElements)
+                    innerCounter += 1;
+                positions.push_back(abs(referenceValue)-1);
+                assert(innerCounter > 0 && innerCounter <= maxCoupling);
+                if (referenceValue < 0)
+                    operators.push_back(momentumPowers_[innerCounter]);
+                else if (referenceValue > 0)
+                    operators.push_back(positionPowers_[innerCounter]);
+                outerCounter += innerCounter;
             }
+            // Final addition of the terms
+            modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler_, this->terms_, true);
         }
     }
 
     /** @brief Getter for the physical dimension of a given type */
-    Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices; }
+    Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_; }
 
     /** @brief Getter for the identity operator */
-    tag_type identity_matrix_tag(size_t type) const { return ident; }
+    tag_type identity_matrix_tag(size_t type) const { return ident_; }
 
     /** @brief Getter for the filling operator */
     tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
@@ -179,9 +173,9 @@ public:
      */
     tag_type get_operator_tag(const std::string& name, size_t type) const {
         if (name == "id")
-            return ident;
+            return ident_;
         else if (name == "fill")
-            return ident;
+            return ident_;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -189,7 +183,7 @@ public:
 
     /** @brief Getter for the tag_handler */
     table_ptr operators_table() const {
-        return tag_handler;
+        return tag_handler_;
     }
 
     /** 
@@ -205,23 +199,21 @@ public:
 
 private:
     /** Static class member indicating the highest value of the Taylor operator */
-    static constexpr int maxCoupling = VibrationalModelTraitClass<TrivialGroup>::maximumNumberOfCouplings;
+    static constexpr int maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
     /** Ref to the lattice object */
-    const Lattice& lattice;
+    const Lattice& lattice_;
     /** Max excitation degree (assumed constant for all modes for the moment) */
-    int nMax;
-    /** Maximum order of the many-body coupling term */
-    int maxManyBodyCoupling;
+    int nMax_;
     /** Parameter container */
-    BaseParameters& parameters;
+    BaseParameters& parameters_;
     /** Physical basis */
-    Index<TrivialGroup> physIndices;
+    Index<TrivialGroup> physIndices_;
     /** Pointer to the tag_handler */
-    std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler;
+    std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler_;
     /** Tags of the elementary operators */
-    tag_type ident, position, momentum;
+    tag_type ident_;
     /** Tag for the powers of the position/momentum operators */
-    std::vector<tag_type> positionPowers, momentumPowers;
+    std::vector<tag_type> positionPowers_, momentumPowers_;
 };
 
 #endif // DMRG_VIBRATIONAL
