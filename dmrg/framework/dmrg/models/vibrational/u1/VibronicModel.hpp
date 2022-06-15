@@ -31,7 +31,6 @@
 
 #include "dmrg/models/measurements/local_at.h"
 #include "dmrg/models/model_helper.hpp"
-#include "dmrg/models/vibrational/VibrationalModelTraitClass.hpp"
 #include "dmrg/models/vibrational/VibrationalHelperClass.hpp"
 #include "dmrg/models/vibrational/VibronicIntegralParser.hpp"
 
@@ -67,7 +66,7 @@ public:
     {
         // Variable definition
         int nMax = parameters_["Nmax"];
-        int maxCoupling = VibrationalModelTraitClass<U1>::maximumNumberOfCouplings;
+        int maxCoupling = chem::getIndexDim(chem::Hamiltonian::Vibronic) / 2; // Two indices are required as the electronic state is also included
         op_t ident_vib_op, ident_ele_op, create_ele_op, destroy_ele_op, count_ele_op;
         op_t position_vib_op, momentum_vib_op;
         // Definition of the physical dimensions.

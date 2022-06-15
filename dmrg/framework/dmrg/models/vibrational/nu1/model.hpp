@@ -82,7 +82,7 @@ public:
         // == BUILDS ALL THE RELEVANT CHARGES ==
         // The ones we are interested in are:
         // - the empty charge
-        // - the charges in which a given mode is populated by 1 quentum
+        // - the charges in which a given mode is populated by 1 quantum
         charge_type empty_state(0);
         std::vector<charge_type> excited_states(num_modes, 0);
         for (std::size_t idx = 0; idx < num_modes; idx++)
