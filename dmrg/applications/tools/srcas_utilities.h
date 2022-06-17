@@ -30,19 +30,25 @@
 
 #include "dmrg/utils/DmrgParameters.h"
 
+#include <string.h>
+#include <boost/random.hpp>
+
 class SRCAS {
     public:
         SRCAS(DmrgParameters& parameters);      
-        //void run();
-        //void printInital();
-        //void printFinal();
+        void run();
+        void printSRCASSettings();
+        //void printResults();
     private:
-        void quicksort(string dets[], double b[], int left, int right);
+        void quicksort(std::string dets[], double b[], int left, int right);
         // Definition of the variables used for the random generation
         boost::mt19937 generator_;
         boost::uniform_real<> distribution_;
-        boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > random_number_;
+        boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > randomNumber_;
         DmrgParameters& parms_;
+        std::string startingDet_;
+        std::vector<int> detQueen_, detTmp_;
+        int numModes_;
 };
 
 

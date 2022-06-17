@@ -30,5 +30,10 @@
 #define IMPL_MODEL_REAL(z, n, test) template class interface_sim<matrix,NU1_template<n>>;
 #define IMPL_MODEL_COMPLEX(z, n, test) template class interface_sim<cmatrix,NU1_template<n>>;
 
-BOOST_PP_REPEAT_FROM_TO(1, @DMRG_UPPER_BOUND@, IMPL_MODEL_REAL, ~)
-BOOST_PP_REPEAT_FROM_TO(1, @DMRG_UPPER_BOUND@, IMPL_MODEL_COMPLEX, ~)
+BOOST_PP_REPEAT_FROM_TO(1, 7, IMPL_MODEL_REAL, ~)
+BOOST_PP_REPEAT_FROM_TO(1, 7, IMPL_MODEL_COMPLEX, ~)
+
+#if @DMRG_NUMSYMM@ > 6
+    impl_model_factory(matrix, NU1_template<@DMRG_NUMSYMM@>)
+    impl_model_factory(cmatrix, NU1_template<@DMRG_NUMSYMM@>)
+#endif

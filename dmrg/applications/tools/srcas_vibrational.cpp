@@ -32,8 +32,8 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "srcas_utilities.h"
 #include "maquis_dmrg.h"
-#include "srcas_vibrational_utilies.h"
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
@@ -42,9 +42,8 @@
  * @brief Application that extracts the CI coefficients associated with a given MPS
  * 
  * This applications takes as input a DMRG input file, looks for the chkp file defined
- * in that input file, loads the corresponding MPS, and calculates the overlap with
- * the Slater determinants that are listed in a given input file, which is specified
- * in the DMRG input file.
+ * in that input file, loads the corresponding MPS, and performs a stochastic sampling
+ * of the active space to determine the CI expansion coefficients.
  */
 
 int main(int argc, char ** argv)
@@ -59,10 +58,12 @@ int main(int argc, char ** argv)
         if(!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson"))
             throw std::runtime_error("This app supports only vibrational Hamiltonians");
         maquis::cout.precision(10);
-        std::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl;
+        std::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
         // Creates the simulation object
         SRCAS srcas(opt.parms);
-        // maquis::DMRGInterface<double> interface(opt.parms);
+        srcas.printSRCASSettings();
+        srcas.run();
+        //maquis::DMRGInterface<double> interface(opt.parms);
         
 
         // Opens the determinant file and loops over it
