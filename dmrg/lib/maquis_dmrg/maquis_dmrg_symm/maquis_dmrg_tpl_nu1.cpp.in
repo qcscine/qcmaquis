@@ -34,6 +34,6 @@ BOOST_PP_REPEAT_FROM_TO(1, 7, IMPL_MODEL_REAL, ~)
 BOOST_PP_REPEAT_FROM_TO(1, 7, IMPL_MODEL_COMPLEX, ~)
 
 #if @DMRG_NUMSYMM@ > 6
-    impl_model_factory(matrix, NU1_template<@DMRG_NUMSYMM@>)
-    impl_model_factory(cmatrix, NU1_template<@DMRG_NUMSYMM@>)
+    template class interface_sim<matrix,NU1_template<@DMRG_NUMSYMM@>>;
+    template class interface_sim<cmatrix,NU1_template<@DMRG_NUMSYMM@>>;
 #endif

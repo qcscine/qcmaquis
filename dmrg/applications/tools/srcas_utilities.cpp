@@ -41,39 +41,46 @@
 SRCAS::SRCAS(DmrgParameters& parameters) : distribution_(0.,1.), randomNumber_(generator_,distribution_), parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
-    // Get the number of modes
-    if(parms_["MODEL"] == "nmode")
+
+    // Get the number of modes and the maximum occupation of each one
+    if(parms_["MODEL"] == "nmode") {
         numModes_ = parms_["nmode_num_modes"];
-    else if (parms_["MODEL"] == "watson")
+        maxDetStr_ = parms_["nmode_num_basis"].str();
+    } else if (parms_["MODEL"] == "watson") {
         numModes_ = parms_["L"];
-     // If user set a starting det, use this, otherwise use "0,0,0, ... ,0"
+        maxDetStr_ = parms_["Nmax"].str();
+        for (int i=1; i<numModes_; i++) {
+            maxDetStr_ += ",";
+            maxDetStr_ += parms_["Nmax"].str();
+        }
+    }
+
+    // If user set a starting det, use this, otherwise use "0,0,0, ... ,0"
     if (parms_.is_set("init_basis_state"))
         startingDet_ = parms_["init_basis_state"].str();
     else {
         startingDet_ = "0";
         for (int i=1; i<numModes_; i++) startingDet_ += ",0";
     }
+
+    // Initialize the relevant vectors
     detQueen_.resize(numModes_);
     detTmp_.resize(numModes_);
+    detSpace_.resize(numModes_);
     for (int i=0; i<detQueen_.size(); i++) {
-        std::cout << startingDet_[2*i] << " ";
-        detQueen_[i]=startingDet_[2*i];
-        std::cout << detQueen_[i] << std::endl;
+        detQueen_[i]=std::stoi(startingDet_.substr(2*i,1));
+        detSpace_[i]=std::stoi(maxDetStr_.substr(2*i,1));
     }
+    detTmp_ = detQueen_;
+    for (int i=0; i<detQueen_.size(); i++) std::cout << detQueen_[i] << " ";
 }
 
 void SRCAS::printSRCASSettings() {
     std::cout << "--- SRCAS SETTINGS ---" << std::endl;
     std::cout << "MPS taken from:                      " << parms_["chkpfile"].str() << std::endl;
-    std::cout << "Determinant space is:                ";
-    if(parms_["MODEL"] == "nmode") std::cout << parms_["nmode_num_basis"].str() << std::endl;
-    else if(parms_["MODEL"] == "watson")  {
-        std::cout << parms_["Nmax"];
-        for (int i=1; i<numModes_; i++) std::cout << "," << parms_["Nmax"];
-        std::cout << std::endl;
-    }
+    std::cout << "Determinant space is:                " << maxDetStr_ << std::endl;
     std::cout << "Starting determinant is:             " << startingDet_ << std::endl;
-    std::cout << "SRCAS target completness is:         " << std::setprecision(2) << std::fixed << parms_["srcas_targetCompleteness"] << std::endl;
+    std::cout << "SRCAS target completness is:         " << parms_["srcas_targetCompleteness"] << std::endl;
     std::cout << "Maximum number of iterations is:     " << parms_["srcas_maxNumIterations"] << std::endl;
     std::cout << "Number of samples per iteration is:  " << parms_["srcas_numSamples"] << std::endl;
     std::cout << "Random number seed is:               " << parms_["seed"] << std::endl;
@@ -141,6 +148,7 @@ void SRCAS::run() {
                 std::cout << modeToExcite << " ";
                 //detTmp_[modeToExcite] = int(floor(modals[modeToExcite]*randomNumber_())); // pick a random modal for that mode --> could be changed to be closer to queen with only +-1
             } ;
+            std::cout << std::endl;
             /*
             // Updates the data if the determinant has not been visited yet.
             iter = hash.find(det_tmp) ;

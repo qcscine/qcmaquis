@@ -46,8 +46,8 @@ class SRCAS {
         boost::uniform_real<> distribution_;
         boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > randomNumber_;
         DmrgParameters& parms_;
-        std::string startingDet_;
-        std::vector<int> detQueen_, detTmp_;
+        std::string startingDet_, maxDetStr_;
+        std::vector<int> detQueen_, detTmp_, detSpace_;
         int numModes_;
 };
 
