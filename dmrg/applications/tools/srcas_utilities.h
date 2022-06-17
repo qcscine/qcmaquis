@@ -30,7 +30,7 @@
 
 #include "dmrg/utils/DmrgParameters.h"
 
-#include <string.h>
+#include <string>
 #include <boost/random.hpp>
 
 class SRCAS {
@@ -38,21 +38,20 @@ class SRCAS {
         SRCAS(DmrgParameters& parameters);      
         void run();
         void printSRCASSettings();
-        //void printResults();
+        void printResults();
     private:
         void quicksort(std::string dets[], double b[], int left, int right);
-        // Definition of the variables used for the random generation
+
         boost::mt19937 generator_;
-        boost::uniform_real<> distribution_;
-        boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > randomNumber_;
+        boost::uniform_real<> uniformDist_;
+        boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > uniformRandomNumber_;
+
         DmrgParameters& parms_;
-        std::string startingDet_, maxDetStr_;
+        std::string startingDet_, maxDetStr_, detTmpStr_;
         std::vector<int> detQueen_, detTmp_, detSpace_;
         int numModes_;
+        std::map<std::vector<int>, double> hashTable_;
+        std::map<std::vector<int>, double>::iterator iter_;
 };
 
-
-
 #endif
-
-

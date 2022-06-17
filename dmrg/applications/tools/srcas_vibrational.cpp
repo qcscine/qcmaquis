@@ -58,26 +58,12 @@ int main(int argc, char ** argv)
         if(!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson"))
             throw std::runtime_error("This app supports only vibrational Hamiltonians");
         maquis::cout.precision(10);
-        std::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
+        maquis::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
         // Creates the simulation object
         SRCAS srcas(opt.parms);
         srcas.printSRCASSettings();
         srcas.run();
-        //maquis::DMRGInterface<double> interface(opt.parms);
-        
-
-        // Opens the determinant file and loops over it
-        /*
-        std::string nameOfDetFile = opt.parms["determinant_file"];
-        double threshold = opt.parms["determinant_threshold"];
-        std::ifstream is(nameOfDetFile);
-        std::string str;
-        while (getline(is, str)) {
-            auto overlap = interface.getCICoefficient(str);
-            if (std::abs(overlap) > threshold)
-                std::cout << "CI coefficient of " << str << " : " << overlap << std::endl;
-        }
-        */
+        srcas.printResults();
     }
     else {
         throw std::runtime_error("Parameters in inputfile corrupted");
