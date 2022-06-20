@@ -293,11 +293,19 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_ModeRDM, NModeFixture)
         int iCol = interface.getMeasurement("onemodeRDM").first[iElement][1];
         oneModeRDM(iRow, iCol) =  interface.getMeasurement("onemodeRDM").second[iElement];
     }
-    // Calculates the trace
+    // Calculates the overall trace
     double trace = 0.;
     for (int idx = 0; idx < 22; idx++)
         trace += oneModeRDM(idx, idx);
     BOOST_CHECK_CLOSE(trace, 2., 1.0E-10);
+    // Calculates the mode-resolved trace
+    double traceMode1 = 0., traceMode2 = 0.;
+    for (int idx = 0; idx < 11; idx++) {
+        traceMode1 += oneModeRDM(idx, idx);
+        traceMode2 += oneModeRDM(idx+11, idx+11);
+    }
+    BOOST_CHECK_CLOSE(traceMode1, 1., 1.0E-10);
+    BOOST_CHECK_CLOSE(traceMode2, 1., 1.0E-10);
     // Checks that the off-diagonal elements of the one-mode RDM are zero.
     for (int iRow = 0; iRow < 11; iRow++) {
         for (int iCol = 11; iCol < 22; iCol++) {

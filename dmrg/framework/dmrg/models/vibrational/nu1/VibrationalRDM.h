@@ -74,7 +74,7 @@ public:
     using base::vector_results;
 
     /**
-     * @brief Class constructor:
+     * @brief Class constructor
      * @param lat_: DMRG lattice
      * @param name_: measurement name (needed by the base class)
      * @param op: vector of the tags associated with the terms that are to be added up to the measurement.
@@ -175,7 +175,9 @@ private:
     }
 
     /* Private members */
+    // MPO associated with the measurements
     std::vector<MPO<Matrix, SymmGroup>> mpoVector;
+    // Underlying DMRG lattice
     const Lattice& lat;
 };
 
