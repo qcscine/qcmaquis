@@ -92,9 +92,6 @@ private:
         add_option("entanglement_spectra", "", value(0));
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
-        // vDMRG-related parameters
-        add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization", value(6));
-
         // n-mode vDMRG related parameters
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
@@ -144,7 +141,7 @@ private:
         add_option("MEASURE[Renyi2]", "", value(false));
 
         // Watson Hamiltonian-based simulations
-        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES");
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization");
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
 
         // n-mode vibrational calculations
@@ -168,6 +165,12 @@ private:
         // Tools 
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
+
+        // Vibrational SRCAS
+        add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.9));
+        add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
+        add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
+        add_option("srcas_overlapThreshold", "Threshold for overlap coefficient for being added to the determinant list", value(0.001));
     }
 
 };

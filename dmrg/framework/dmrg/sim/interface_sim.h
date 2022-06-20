@@ -370,7 +370,7 @@ public:
      * the [hf_occ] (for electronic problems) or the [basis_state_generic] initializer
      * for the vibrational case.
      *
-     * @param determinantString string associated with the target determinatn
+     * @param determinantString string associated with the target determinant
      * @return overlap value
      */
     typename Matrix::value_type getCICoefficient(std::string determinantString) override {

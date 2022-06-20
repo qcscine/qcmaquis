@@ -69,8 +69,8 @@ public:
 
     /**
      * @brief Class constructor
-     * @param lattice_ object representing the DMRG lattice
-     * @param parameters_ container with the DMRG parameters
+     * @param lattice object representing the DMRG lattice
+     * @param parameters container with the DMRG parameters
      * @param verbose if true, prints information regarding the Hamiltonian terms
      */
     NMode(const Lattice& lattice_, BaseParameters& parameters_, bool verbose)
@@ -82,7 +82,7 @@ public:
         // == BUILDS ALL THE RELEVANT CHARGES ==
         // The ones we are interested in are:
         // - the empty charge
-        // - the charges in which a given mode is populated by 1 quentum
+        // - the charges in which a given mode is populated by 1 quantum
         charge_type empty_state(0);
         std::vector<charge_type> excited_states(num_modes, 0);
         for (std::size_t idx = 0; idx < num_modes; idx++)
@@ -309,7 +309,6 @@ private:
         while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
     }
 
-private:
     const Lattice& lattice;
     int lattice_size, num_modes, maxCouplingDegree;
     BaseParameters& parameters;

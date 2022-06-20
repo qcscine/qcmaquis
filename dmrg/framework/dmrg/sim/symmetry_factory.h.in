@@ -163,23 +163,21 @@ namespace dmrg {
             else {
                 throw std::runtime_error("NU1 model not recognized");
             }
-#if @DMRG_NUMSYMM@ < 7
-            // Sets the max. number of N that is required for the NU1 symmetry group
-            switch (numberOfSymmetries) { 
-                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_UPPER_BOUND@, DECLCASE, ~)
+            // Sets the number of N that is required for the NU1 symmetry group
+            switch (numberOfSymmetries) {
+                // All numsymm from 1 including to 6 are always compiled as they are needed for the test suite
+                BOOST_PP_REPEAT_FROM_TO(1, 7, DECLCASE, ~)
+#if @DMRG_NUMSYMM@ > 6
+                // For large molecules, also compile that specific NUMSYMM
+                case @DMRG_NUMSYMM@:
+                    std::cout << "Setting NU1 with N = " << @DMRG_NUMSYMM@ << std::endl;
+                    ret.reset(new typename TR::template F<NU1_template<@DMRG_NUMSYMM@>>::type(args...));
+                    break;
+#endif
                 default:
-                    throw std::runtime_error("Please recompile QCMaquis with a higher DMRG_NUMSYMM value");
+                    throw std::runtime_error("Please recompile QCMaquis with the correct DMRG_NUMSYMM value");
                     break;
             }
-#else
-            // For large molecules, only compile that specific NUMSYMM, not everything up to it
-            if (numberOfSymmetries==@DMRG_NUMSYMM@) {
-                std::cout << "Setting NU1 with N = " << @DMRG_NUMSYMM@ << std::endl;
-                ret.reset(new typename TR::template F<NU1_template<@DMRG_NUMSYMM@>>::type(args...));
-            } else {
-                throw std::runtime_error("Please recompile QCMaquis with the correct DMRG_NUMSYMM value");
-            }
-#endif
         }
 #endif
 #ifdef HAVE_TrivialGroup

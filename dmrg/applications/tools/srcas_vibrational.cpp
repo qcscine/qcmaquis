@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "srcas_utilities.h"
 #include "maquis_dmrg.h"
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/utils/DmrgOptions.h"
@@ -41,16 +42,15 @@
  * @brief Application that extracts the CI coefficients associated with a given MPS
  * 
  * This applications takes as input a DMRG input file, looks for the chkp file defined
- * in that input file, loads the corresponding MPS, and calculates the overlap with
- * the Slater determinants that are listed in a given input file, which is specified
- * in the DMRG input file.
+ * in that input file, loads the corresponding MPS, and performs a stochastic sampling
+ * of the active space to determine the CI expansion coefficients.
  */
 
 int main(int argc, char ** argv)
 {
     // Check coherence in input
     if (argc != 2) {
-        maquis::cout << "Usage: mps2ci_vib <input file> " << std::endl;
+        maquis::cout << "Usage: srcas_vib <input file> " << std::endl;
         exit(1);
     }
     DmrgOptions opt(argc, argv);
@@ -58,22 +58,18 @@ int main(int argc, char ** argv)
         if(!(opt.parms["MODEL"] == "nmode") && !(opt.parms["MODEL"] == "watson"))
             throw std::runtime_error("This app supports only vibrational Hamiltonians");
         maquis::cout.precision(10);
+        maquis::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
         // Creates the simulation object
-        maquis::DMRGInterface<double> interface(opt.parms);
-        // Opens the determinant file and loops over it
-        std::string nameOfDetFile = opt.parms["determinant_file"];
-        double threshold = opt.parms["determinant_threshold"];
-        std::ifstream is(nameOfDetFile);
-        std::string str;
-        while (getline(is, str)) {
-            auto overlap = interface.getCICoefficient(str);
-            if (std::abs(overlap) > threshold)
-                std::cout << "CI coefficient of " << str << " : " << overlap << std::endl;
-        }
+        SRCAS srcas(opt.parms);
+        srcas.printSRCASSettings();
+        srcas.run();
+        srcas.printResults();
     }
     else {
-        throw std::runtime_error("Parameters file corrupted");
+        throw std::runtime_error("Parameters in inputfile corrupted");
     }
     maquis::cout << std::endl;
     return 0;
 }
+
+        

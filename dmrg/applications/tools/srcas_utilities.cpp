@@ -1,0 +1,236 @@
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2014-2014 by Yingjin Ma <yingjin.ma@phys.chem.ethz.ch>
+ *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
+ * 
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ * 
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
+
+#include "srcas_utilities.h"
+#include "maquis_dmrg.h"
+
+
+#include <iostream>
+#include <iomanip>
+#include <boost/random.hpp>
+#include <boost/lexical_cast.hpp>
+#include <math.h>
+#include <string>
+
+SRCAS::SRCAS(DmrgParameters& parameters) : uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
+{
+    generator_.seed(parms_["seed"]);
+    // Get the number of modes and the maximum occupation of each one
+    if(parms_["MODEL"] == "nmode") {
+        numModes_ = parms_["nmode_num_modes"];
+        maxDetStr_ = parms_["nmode_num_basis"].str();
+    } else if (parms_["MODEL"] == "watson") {
+        numModes_ = parms_["L"];
+        maxDetStr_ = parms_["Nmax"].str();
+        for (int i=1; i<numModes_; i++) {
+            maxDetStr_ += ",";
+            maxDetStr_ += parms_["Nmax"].str();
+        }
+    }
+
+    // If user set a starting det, use this, otherwise use "0,0,0, ... ,0"
+    if (parms_.is_set("init_basis_state"))
+        startingDet_ = parms_["init_basis_state"].str();
+    else {
+        startingDet_ = "0";
+        for (int i=1; i<numModes_; i++) startingDet_ += ",0";
+    }
+    // Initialize the relevant vectors
+    detQueen_.resize(numModes_);
+    detTmp_.resize(numModes_);
+    detSpace_.resize(numModes_);
+    std::string delim = ",";
+    std::string startTmp = startingDet_;
+    std::string spaceTmp = maxDetStr_;
+    size_t posQ, posS;
+    for (int i=0; i<detQueen_.size(); i++) {
+        posQ = startTmp.find(delim);
+        detQueen_[i]=std::stoi(startTmp.substr(0, posQ));
+        startTmp.erase(0, posQ + delim.length());
+        posS = spaceTmp.find(delim);
+        detSpace_[i]=std::stoi(spaceTmp.substr(0, posS));
+        spaceTmp.erase(0, posS + delim.length());
+    }
+    detTmp_ = detQueen_;
+}
+
+void SRCAS::printSRCASSettings() {
+    maquis::cout << "--- SRCAS SETTINGS ---" << std::endl;
+    maquis::cout << "MPS taken from:                      " << parms_["chkpfile"].str() << std::endl;
+    maquis::cout << "Determinant space is:                " << maxDetStr_ << std::endl;
+    maquis::cout << "Starting determinant is:             " << startingDet_ << std::endl;
+    maquis::cout << "CI coeff (overlap) threshold is:     " << parms_["srcas_overlapThreshold"] << std::endl;
+    maquis::cout << "SRCAS target completeness is:        " << parms_["srcas_targetCompleteness"] << std::endl;
+    maquis::cout << "Maximum number of iterations is:     " << parms_["srcas_maxNumIterations"] << std::endl;
+    maquis::cout << "Number of samples per iteration is:  " << parms_["srcas_numSamples"] << std::endl;
+    maquis::cout << "Random number seed is:               " << parms_["seed"] << std::endl;
+}
+
+void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
+    double pivot = std::abs(b[(left+right)/2]);
+    int l = left;
+    int r = right;
+    while(l <= r) {
+        while (std::abs(b[l]) < pivot)
+            l++ ;
+        while (std::abs(b[r]) > pivot)
+            r-- ;
+        if (l <= r) {
+            // Variable definition
+            double tmp ;
+            tmp  = b[l] ;
+            b[l] = b[r] ;
+            b[r] = tmp ;
+            std::string ctmp ;
+            ctmp = dets[l] ;
+            dets[l] = dets[r] ;
+            dets[r] = ctmp ;
+            l++ ;
+            r-- ;
+        }
+    };
+    // Calls the routine defined above
+    if (left < r)  quicksort(dets, b, left, r);
+    if (l < right) quicksort(dets, b, l, right);
+}
+
+
+
+void SRCAS::run() {
+    maquis::cout << std::endl << "--- Initializing Interface ---" << std::endl;
+    // Creates the interface object
+    maquis::DMRGInterface<double> interface(parms_);
+
+    maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
+
+    // Starting det should always be added to the list
+    double overlap = interface.getCICoefficient(startingDet_);
+    hashTable_[detQueen_] = overlap;
+
+    // Initialize variables that are used during the sampling
+    double ci0, ci_ratio, ci_tmp, x;
+    double sum_ci2 = 0.0;
+    int nMacroIter = 0, nSampled = 0, nAcceptedQueen = 0;
+    
+
+    // +-----------+
+    //   MAIN LOOP
+    // +-----------+
+    do {
+        // For every macroiteration generate N determinants
+        for ( int isample = 0; isample < parms_["srcas_numSamples"] ; isample++ ) {
+            // Start from queen
+            detTmp_= detQueen_;
+            // Loop over the modes            
+            for (int i=0; i<detTmp_.size(); i++) {
+                boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
+                boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
+                do {
+                    x = uniformRandomNumber_();
+                    if (x < samplingFraction_) // Only accept a fraction of the proposed updates to stay closer to reference det
+                        detTmp_[i] = poissonRandomNumber();
+                } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
+            }
+
+            // Updates the data if the determinant has not been visited yet.
+            iter_ = hashTable_.find(detTmp_) ;
+            if(iter_ == hashTable_.end()) {
+                detTmpStr_ = std::to_string(detTmp_[0]);
+                for (int i=1; i<detTmp_.size(); i++) {
+                    detTmpStr_ += ",";
+                    detTmpStr_ += std::to_string(detTmp_[i]);
+                }
+                overlap = interface.getCICoefficient(detTmpStr_);
+                // The data are stored based on the CI_threshold parameter
+                if(std::fabs(overlap) >= parms_["srcas_overlapThreshold"]) {
+                    hashTable_[detTmp_] = overlap;
+                    nSampled++;
+                }
+            } else {
+                overlap = iter_->second;
+            }
+            // Determinant update (regardless of being in the hash table or not to avoid getting stuck in the Markov chain)
+            // Selection criterion based on CI coeff^2 in analogy to the completeness measure
+            ci_ratio = pow(overlap,2.0)/pow(ci0,2);
+            x = uniformRandomNumber_();
+            if (ci_ratio > x) {
+                detQueen_ = detTmp_;
+                ci0 = overlap;
+                nAcceptedQueen++ ;
+            }
+        }
+        sum_ci2 = 0.0 ;
+        for (iter_=hashTable_.begin(); iter_!=hashTable_.end(); iter_++) {
+            ci_tmp  = iter_->second;
+            sum_ci2 += pow(ci_tmp,2.0);
+        }
+        nMacroIter++ ;
+        // Prints results
+        maquis::cout << "----------------------------------------------------------------" << std::endl ;
+        maquis::cout << "Macroiteration number:                       " << nMacroIter << std::endl;
+        maquis::cout << "Determinants sampled above the CI threshold: " << nSampled << std::endl;
+        maquis::cout << "Determinants accepted as queens:             " << nAcceptedQueen << std::endl;
+        maquis::cout << "Current completeness (\\sum(ci^2)):           " << sum_ci2 << std::endl;
+        
+    } while((sum_ci2 < parms_["srcas_targetCompleteness"]) && (nMacroIter < parms_["srcas_maxNumIterations"]));
+    // Final completeness
+    completeness_ = sum_ci2;
+}    
+
+// +---------------+
+//   FINAL PRINTING
+// +---------------+
+void SRCAS::printResults() {
+    maquis::cout << "----------------------------------------------------------------" << std::endl ;
+    maquis::cout << std::endl << "--- Finished SRCAS ---" << std::endl;
+    maquis::cout << "Final completeness is:                " << completeness_ << std::endl;
+    maquis::cout << "# of stored determinants is:          " << hashTable_.size() << std::endl;
+
+    double CIs_show[hashTable_.size()]; // CI value
+    std::string dets_show[hashTable_.size()]; // dets represent
+    int i = 0;
+    int det_length = hashTable_.begin()->first.size();
+    maquis::cout << std::endl << "-------------DETERMINANTS ABOVE OVERLAP THRESHOLD--------------------" << std::endl << std::endl;
+    for(iter_ = hashTable_.begin(); iter_!=hashTable_.end(); iter_++) {
+        // Local initialization that is later used for sorting
+        std::string ctmp;
+        CIs_show[i] = iter_->second;
+        for(int p = 0; p < det_length; p++)
+            ctmp = ctmp + boost::lexical_cast<std::string>(iter_->first[p]);
+        dets_show[i] = ctmp;
+        i++;
+    }
+    // Final sorting
+    quicksort(dets_show, CIs_show, 0, hashTable_.size()-1);
+    // Output the entire ordered list
+    maquis::cout << std::fixed << std::setprecision(10);
+    for(int i = 0; i < hashTable_.size() ; i++){
+        maquis::cout << " Determinant " << dets_show[hashTable_.size()-i-1] << " with ";
+        if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
+        maquis::cout << CIs_show[hashTable_.size()-i-1] << " is number " << i+1 << std::endl;
+    }        
+}

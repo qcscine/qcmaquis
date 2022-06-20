@@ -42,7 +42,9 @@ set (ALPS_SOURCE_DIR "alps")
 set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include in the build objects. \
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
 TwoU1PG and SU2U1PG are built in any case.")
-set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
+set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
+set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
+add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
 option(ENABLE_OMP "Enable OpenMP" ON)
 # Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
@@ -215,6 +217,12 @@ if((BUILD_VIBRATIONAL))
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
     set(DMRG_VIBRATIONAL TRUE)
   endif()
+  if (DMRG_VIBRATIONAL AND DMRG_HAS_TrivialGroup)
+    message(STATUS "vDMRG ORDERNONE is: ${DMRG_ORDERNONE}")
+  endif()
+  if(DMRG_VIBRATIONAL AND DMRG_HAS_NU1)
+    message(STATUS "vDMRG NUMSYMM is: ${DMRG_NUMSYMM}")
+  endif()
 endif()
 
 # Vibronic-specific flag
@@ -226,10 +234,6 @@ if(BUILD_VIBRONIC)
     set(DMRG_VIBRONIC TRUE)
   endif()
 endif(BUILD_VIBRONIC)
-
-if(DMRG_HAS_U1 OR DMRG_HAS_NU1)
-  message(STATUS "DMRG NumSymm is: ${DMRG_NUMSYMM}")
-endif()
 
 ##### Dependencies #####
 # GSL
