@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Hermiticity_None, WatsonFixture)
   auto mps2 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
   auto energy1 = expval(mps1, mps2, watsonHarmonicMPO);
   auto energy2 = expval(mps2, mps1, watsonHarmonicMPO);
-  BOOST_CHECK_CLOSE(energy1, energy2, 1.E-15);
+  BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-11);
 };
 
 /**
