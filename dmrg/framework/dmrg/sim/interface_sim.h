@@ -375,9 +375,12 @@ public:
      */
     typename Matrix::value_type getCICoefficient(std::string determinantString) override {
         auto modifiedParameters = parms;
-        std::string initState = (parms["MODEL"] == "quantum_chemistry") ? "hf_occ" : "basis_state_generic";
+        std::string initState = (parms["MODEL"] == "quantum_chemistry") ? "hf" : "basis_state_generic";
         modifiedParameters.set("init_state", initState);
-        modifiedParameters.set("init_basis_state", determinantString);
+        if (parms["MODEL"] == "quantum_chemistry")
+            modifiedParameters.set("hf_occ", determinantString);
+        else
+            modifiedParameters.set("init_basis_state", determinantString);
         auto mpsOverlap = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, modifiedParameters)));
         return overlap(mpsOverlap, mps)/std::sqrt(norm(mpsOverlap)*norm(mps));
     }

@@ -69,7 +69,8 @@ public:
   // General implementation
   static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
-    assert(inputVec.size() == size);
+    if (inputVec.size() != size)
+      throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
     auto state = state_type(size);
     for (int j = 0 ; j < size; ++j)
       state[j] = physDim[siteType[j]].element(inputVec[j]);
@@ -87,7 +88,8 @@ public:
   // General implementation
   static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
-    assert(inputVec.size() == size);
+    if (inputVec.size() != size)
+      throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
     auto state = state_type(size);
     // Note that here we have two possibilities: either a site is electronic site, or it is a vibrational one.
     for (int j = 0 ; j < size; ++j) {
@@ -125,6 +127,8 @@ public:
   /** @brief Parser for the NU1 symmetry group */
   static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
+    if (inputVec.size() != physDim.size())
+      throw std::runtime_error("Index list number of elements does not match the number of site types. Check the setting 'init_basis_state'.");
     auto state = state_type(size);
     int numberOfTypes = inputVec.size();
     std::vector<int> counterOfTypes(numberOfTypes, 0);

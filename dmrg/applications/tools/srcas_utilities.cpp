@@ -26,8 +26,9 @@
  *****************************************************************************/
 
 #include "srcas_utilities.h"
-#include "maquis_dmrg.h"
 
+#include "maquis_dmrg.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 #include <iostream>
 #include <iomanip>
@@ -43,6 +44,7 @@ SRCAS::SRCAS(DmrgParameters& parameters) : uniformDist_(0.,1.), uniformRandomNum
     if(parms_["MODEL"] == "nmode") {
         numModes_ = parms_["nmode_num_modes"];
         maxDetStr_ = parms_["nmode_num_basis"].str();
+        detSpace_ = parms_["nmode_num_basis"].as<std::vector<int> >();
     } else if (parms_["MODEL"] == "watson") {
         numModes_ = parms_["L"];
         maxDetStr_ = parms_["Nmax"].str();
@@ -50,30 +52,19 @@ SRCAS::SRCAS(DmrgParameters& parameters) : uniformDist_(0.,1.), uniformRandomNum
             maxDetStr_ += ",";
             maxDetStr_ += parms_["Nmax"].str();
         }
+        std::vector<int> tmpVec(numModes_, std::stoi(parms_["Nmax"].str()));
+        detSpace_ = std::move(tmpVec);
     }
 
     // If user set a starting det, use this, otherwise use "0,0,0, ... ,0"
-    if (parms_.is_set("init_basis_state"))
+    if (parms_.is_set("init_basis_state")) {
         startingDet_ = parms_["init_basis_state"].str();
-    else {
+        detQueen_ = parms_["init_basis_state"].as<std::vector<int> >();
+    } else {
         startingDet_ = "0";
         for (int i=1; i<numModes_; i++) startingDet_ += ",0";
-    }
-    // Initialize the relevant vectors
-    detQueen_.resize(numModes_);
-    detTmp_.resize(numModes_);
-    detSpace_.resize(numModes_);
-    std::string delim = ",";
-    std::string startTmp = startingDet_;
-    std::string spaceTmp = maxDetStr_;
-    size_t posQ, posS;
-    for (int i=0; i<detQueen_.size(); i++) {
-        posQ = startTmp.find(delim);
-        detQueen_[i]=std::stoi(startTmp.substr(0, posQ));
-        startTmp.erase(0, posQ + delim.length());
-        posS = spaceTmp.find(delim);
-        detSpace_[i]=std::stoi(spaceTmp.substr(0, posS));
-        spaceTmp.erase(0, posS + delim.length());
+        std::vector<int> tmpVec(numModes_, 0);
+        detQueen_ = std::move(tmpVec);
     }
     detTmp_ = detQueen_;
 }
