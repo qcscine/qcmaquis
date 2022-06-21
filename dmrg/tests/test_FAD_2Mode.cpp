@@ -85,6 +85,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFi
     // Checks that the overlap of the final wave function with the hf determinant is = 1.
     auto targetOverlap = interface.getCICoefficient("0");
     BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-16);
+    // Checks that overlap calculations cannot be performed for invalid reference determinants
+    BOOST_CHECK_THROW(interface.getCICoefficient("0,0,0"), std::runtime_error);
     // Excited-state calculations
     parametersFADOneBodyBinary.set("chkpfile", "ES.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "ES.results.h5");

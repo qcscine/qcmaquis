@@ -48,6 +48,11 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic, WatsonFixture)
     InterfaceType interface(parametersEthyleneWatsonHarmonic);
     interface.optimize();
     BOOST_CHECK_CLOSE(interface.energy(), referenceHarmonicEnergy, 1.0E-5);
+    // Checks that the overlap of the final wave function with the hf determinant is = 1.
+    auto targetOverlap = interface.getCICoefficient("0,0,0,0,0,0,0,0,0,0,0,0");
+    BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-12);
+    // Checks that overlap calculations cannot be performed for invalid reference determinants
+    BOOST_CHECK_THROW(interface.getCICoefficient("0,0,0"), std::runtime_error);
 #endif
 }
 
