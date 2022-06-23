@@ -37,7 +37,7 @@
 #include <math.h>
 #include <string>
 
-SRCAS::SRCAS(DmrgParameters& parameters) : uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
+SRCAS::SRCAS(DmrgParameters& parameters, maquis::DMRGInterface<double>& interface) : interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
     // Get the number of modes and the maximum occupation of each one
@@ -112,14 +112,10 @@ void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
 
 
 void SRCAS::run() {
-    maquis::cout << std::endl << "--- Initializing Interface ---" << std::endl;
-    // Creates the interface object
-    maquis::DMRGInterface<double> interface(parms_);
-
     maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
 
     // Starting det should always be added to the list
-    double overlap = interface.getCICoefficient(startingDet_);
+    double overlap = interface_.getCICoefficient(startingDet_);
     hashTable_[detQueen_] = overlap;
 
     // Initialize variables that are used during the sampling
@@ -133,7 +129,7 @@ void SRCAS::run() {
     // +-----------+
     do {
         // For every macroiteration generate N determinants
-        for ( int isample = 0; isample < parms_["srcas_numSamples"] ; isample++ ) {
+        for (int isample = 0; isample < parms_["srcas_numSamples"]; isample++) {
             // Start from queen
             detTmp_= detQueen_;
             // Loop over the modes            
@@ -155,7 +151,7 @@ void SRCAS::run() {
                     detTmpStr_ += ",";
                     detTmpStr_ += std::to_string(detTmp_[i]);
                 }
-                overlap = interface.getCICoefficient(detTmpStr_);
+                overlap = interface_.getCICoefficient(detTmpStr_);
                 // The data are stored based on the CI_threshold parameter
                 if(std::fabs(overlap) >= parms_["srcas_overlapThreshold"]) {
                     hashTable_[detTmp_] = overlap;
@@ -224,4 +220,16 @@ void SRCAS::printResults() {
         if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
         maquis::cout << CIs_show[hashTable_.size()-i-1] << " is number " << i+1 << std::endl;
     }        
+}
+
+std::vector<int> SRCAS::getCurrentQueen() {
+    return detQueen_;
+}
+
+std::map<std::vector<int>, double> SRCAS::getDetTable() {
+    return hashTable_;
+}
+
+double SRCAS::getCompleteness() {
+    return completeness_;
 }

@@ -29,16 +29,22 @@
 #define SAMPLING_VIB_H
 
 #include "dmrg/utils/DmrgParameters.h"
+#include "maquis_dmrg.h"
 
 #include <string>
 #include <boost/random.hpp>
 
 class SRCAS {
     public:
-        SRCAS(DmrgParameters& parameters);      
+        SRCAS(DmrgParameters& parameters, maquis::DMRGInterface<double>& interface);      
         void run();
         void printSRCASSettings();
         void printResults();
+        
+        std::vector<int> getCurrentQueen();
+        std::map<std::vector<int>, double> getDetTable();
+        double getCompleteness();
+
     private:
         void quicksort(std::string dets[], double b[], int left, int right);
 
@@ -47,6 +53,8 @@ class SRCAS {
         boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > uniformRandomNumber_;
 
         DmrgParameters& parms_;
+        maquis::DMRGInterface<double>& interface_;
+
         std::string startingDet_, maxDetStr_, detTmpStr_;
         std::vector<int> detQueen_, detTmp_, detSpace_;
         int numModes_;
