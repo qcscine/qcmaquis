@@ -32,15 +32,20 @@
 #include "maquis_dmrg.h"
 
 #include <string>
+#include <memory>
 #include <boost/random.hpp>
 
+template <class V, Hamiltonian HamiltonianType> // real or complex
+using InterfaceType = maquis::DMRGInterface<V, HamiltonianType>;
+
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
 class SRCAS {
     public:
-        SRCAS(DmrgParameters& parameters, maquis::DMRGInterface<double>& interface);      
+        SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);      
         void run();
         void printSRCASSettings();
         void printResults();
-        
+
         std::vector<int> getCurrentQueen();
         std::map<std::vector<int>, double> getDetTable();
         double getCompleteness();
@@ -53,7 +58,7 @@ class SRCAS {
         boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > uniformRandomNumber_;
 
         DmrgParameters& parms_;
-        maquis::DMRGInterface<double>& interface_;
+        std::shared_ptr<InterfaceType> interface_;
 
         std::string startingDet_, maxDetStr_, detTmpStr_;
         std::vector<int> detQueen_, detTmp_, detSpace_;

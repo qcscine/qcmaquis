@@ -37,7 +37,9 @@
 #include <math.h>
 #include <string>
 
-SRCAS::SRCAS(DmrgParameters& parameters, maquis::DMRGInterface<double>& interface) : interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+SRCAS<InterfaceType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface) :
+    interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
     // Get the number of modes and the maximum occupation of each one
@@ -69,7 +71,8 @@ SRCAS::SRCAS(DmrgParameters& parameters, maquis::DMRGInterface<double>& interfac
     detTmp_ = detQueen_;
 }
 
-void SRCAS::printSRCASSettings() {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+void SRCAS<InterfaceType>::printSRCASSettings() {
     maquis::cout << "--- SRCAS SETTINGS ---" << std::endl;
     maquis::cout << "MPS taken from:                      " << parms_["chkpfile"].str() << std::endl;
     maquis::cout << "Determinant space is:                " << maxDetStr_ << std::endl;
@@ -81,7 +84,8 @@ void SRCAS::printSRCASSettings() {
     maquis::cout << "Random number seed is:               " << parms_["seed"] << std::endl;
 }
 
-void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+void SRCAS<InterfaceType>::quicksort(std::string dets[], double b[], int left, int right) {
     double pivot = std::abs(b[(left+right)/2]);
     int l = left;
     int r = right;
@@ -109,13 +113,12 @@ void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
     if (l < right) quicksort(dets, b, l, right);
 }
 
-
-
-void SRCAS::run() {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+void SRCAS<InterfaceType>::run() {
     maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
 
     // Starting det should always be added to the list
-    double overlap = interface_.getCICoefficient(startingDet_);
+    double overlap = interface_->getCICoefficient(startingDet_);
     hashTable_[detQueen_] = overlap;
 
     // Initialize variables that are used during the sampling
@@ -151,7 +154,7 @@ void SRCAS::run() {
                     detTmpStr_ += ",";
                     detTmpStr_ += std::to_string(detTmp_[i]);
                 }
-                overlap = interface_.getCICoefficient(detTmpStr_);
+                overlap = interface_->getCICoefficient(detTmpStr_);
                 // The data are stored based on the CI_threshold parameter
                 if(std::fabs(overlap) >= parms_["srcas_overlapThreshold"]) {
                     hashTable_[detTmp_] = overlap;
@@ -191,7 +194,8 @@ void SRCAS::run() {
 // +---------------+
 //   FINAL PRINTING
 // +---------------+
-void SRCAS::printResults() {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+void SRCAS<InterfaceType>::printResults() {
     maquis::cout << "----------------------------------------------------------------" << std::endl ;
     maquis::cout << std::endl << "--- Finished SRCAS ---" << std::endl;
     maquis::cout << "Final completeness is:                " << completeness_ << std::endl;
@@ -222,14 +226,22 @@ void SRCAS::printResults() {
     }        
 }
 
-std::vector<int> SRCAS::getCurrentQueen() {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+std::vector<int> SRCAS<InterfaceType>::getCurrentQueen() {
     return detQueen_;
 }
 
-std::map<std::vector<int>, double> SRCAS::getDetTable() {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+std::map<std::vector<int>, double> SRCAS<InterfaceType>::getDetTable() {
     return hashTable_;
 }
 
-double SRCAS::getCompleteness() {
+template <class InterfaceType> // real or complex, nmode or canonical (watson)
+double SRCAS<InterfaceType>::getCompleteness() {
     return completeness_;
 }
+
+// Explicit template instantiation
+template class SRCAS<maquis::DMRGInterface<double>>;
+template class SRCAS<maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>>;
+template class SRCAS<maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode>>;
