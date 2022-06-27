@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_state", "const");
     parametersFADTwoBody.set("seed", 16071991);
     parametersFADTwoBody.set("nsweeps", 100);
     parametersFADTwoBody.set("max_bond_dimension", 20);
