@@ -27,14 +27,13 @@
 #ifndef MP_TENSORS_MPO_CONTRACTOR_SS_H
 #define MP_TENSORS_MPO_CONTRACTOR_SS_H
 
-#include <boost/random.hpp>
-
 #include "dmrg/optimize/ietl_lanczos_solver.h"
-
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
+
 #ifdef HAVE_ARPACK
 #include "dmrg/optimize/arpackpp_solver.h"
 #endif
+
 #include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/utils/BaseParameters.h"
 
