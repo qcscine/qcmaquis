@@ -72,10 +72,6 @@ namespace maquis
     void DMRGInterface<V, HamiltonianType>::optimize()
     {
         try {
-            //std::cout << "start optimization inside interface --> " <<std::endl;
-            //std::cout << " parms are -> " << std::endl;
-            //std::cout << parms << std::endl;
-            //sim->run();
             impl_->sim->run("optimize");
         }
         catch (std::exception & e) {
