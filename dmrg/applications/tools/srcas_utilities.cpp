@@ -37,8 +37,8 @@
 #include <math.h>
 #include <string>
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-SRCAS<InterfaceType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface) :
+template <typename ScalarType> // real or complex
+SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface) :
     interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
@@ -71,8 +71,8 @@ SRCAS<InterfaceType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<Interfac
     detTmp_ = detQueen_;
 }
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-void SRCAS<InterfaceType>::printSRCASSettings() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << "--- SRCAS SETTINGS ---" << std::endl;
     maquis::cout << "MPS taken from:                      " << parms_["chkpfile"].str() << std::endl;
     maquis::cout << "Determinant space is:                " << maxDetStr_ << std::endl;
@@ -84,8 +84,8 @@ void SRCAS<InterfaceType>::printSRCASSettings() {
     maquis::cout << "Random number seed is:               " << parms_["seed"] << std::endl;
 }
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-void SRCAS<InterfaceType>::quicksort(std::string dets[], double b[], int left, int right) {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, int right) {
     double pivot = std::abs(b[(left+right)/2]);
     int l = left;
     int r = right;
@@ -96,7 +96,7 @@ void SRCAS<InterfaceType>::quicksort(std::string dets[], double b[], int left, i
             r-- ;
         if (l <= r) {
             // Variable definition
-            double tmp ;
+            ScalarType tmp ;
             tmp  = b[l] ;
             b[l] = b[r] ;
             b[r] = tmp ;
@@ -113,18 +113,21 @@ void SRCAS<InterfaceType>::quicksort(std::string dets[], double b[], int left, i
     if (l < right) quicksort(dets, b, l, right);
 }
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-void SRCAS<InterfaceType>::run() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::run() {
     maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
 
     // Starting det should always be added to the list
-    double overlap = interface_->getCICoefficient(startingDet_);
+    ScalarType overlap = interface_->getCICoefficient(startingDet_);
     hashTable_[detQueen_] = overlap;
 
     // Initialize variables that are used during the sampling
-    double ci0, ci_ratio, ci_tmp, x;
-    double sum_ci2 = 0.0;
-    int nMacroIter = 0, nSampled = 0, nAcceptedQueen = 0;
+    double x, ci_ratio, sum_ci2 = 0.0;
+    ScalarType ci_tmp, ci0 = overlap;
+     
+    int nMacroIter = 0, nSampled = 1, nAcceptedQueen = 0;
+
+    std::cout << overlap << " ";
     
 
     // +-----------+
@@ -156,7 +159,7 @@ void SRCAS<InterfaceType>::run() {
                 }
                 overlap = interface_->getCICoefficient(detTmpStr_);
                 // The data are stored based on the CI_threshold parameter
-                if(std::fabs(overlap) >= parms_["srcas_overlapThreshold"]) {
+                if(std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
                     hashTable_[detTmp_] = overlap;
                     nSampled++;
                 }
@@ -165,7 +168,7 @@ void SRCAS<InterfaceType>::run() {
             }
             // Determinant update (regardless of being in the hash table or not to avoid getting stuck in the Markov chain)
             // Selection criterion based on CI coeff^2 in analogy to the completeness measure
-            ci_ratio = pow(overlap,2.0)/pow(ci0,2);
+            ci_ratio = pow(std::abs(overlap),2.0)/pow(std::abs(ci0),2);
             x = uniformRandomNumber_();
             if (ci_ratio > x) {
                 detQueen_ = detTmp_;
@@ -176,7 +179,7 @@ void SRCAS<InterfaceType>::run() {
         sum_ci2 = 0.0 ;
         for (iter_=hashTable_.begin(); iter_!=hashTable_.end(); iter_++) {
             ci_tmp  = iter_->second;
-            sum_ci2 += pow(ci_tmp,2.0);
+            sum_ci2 += pow(std::abs(ci_tmp),2.0);
         }
         nMacroIter++ ;
         // Prints results
@@ -194,14 +197,14 @@ void SRCAS<InterfaceType>::run() {
 // +---------------+
 //   FINAL PRINTING
 // +---------------+
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-void SRCAS<InterfaceType>::printResults() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::printResults() {
     maquis::cout << "----------------------------------------------------------------" << std::endl ;
     maquis::cout << std::endl << "--- Finished SRCAS ---" << std::endl;
     maquis::cout << "Final completeness is:                " << completeness_ << std::endl;
     maquis::cout << "# of stored determinants is:          " << hashTable_.size() << std::endl;
 
-    double CIs_show[hashTable_.size()]; // CI value
+    ScalarType CIs_show[hashTable_.size()]; // CI value
     std::string dets_show[hashTable_.size()]; // dets represent
     int i = 0;
     int det_length = hashTable_.begin()->first.size();
@@ -221,27 +224,26 @@ void SRCAS<InterfaceType>::printResults() {
     maquis::cout << std::fixed << std::setprecision(10);
     for(int i = 0; i < hashTable_.size() ; i++){
         maquis::cout << " Determinant " << dets_show[hashTable_.size()-i-1] << " with ";
-        if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
+        //if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
         maquis::cout << CIs_show[hashTable_.size()-i-1] << " is number " << i+1 << std::endl;
     }        
 }
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-std::vector<int> SRCAS<InterfaceType>::getCurrentQueen() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+std::vector<int> SRCAS<ScalarType>::getCurrentQueen() {
     return detQueen_;
 }
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-std::map<std::vector<int>, double> SRCAS<InterfaceType>::getDetTable() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+std::map<std::vector<int>, ScalarType> SRCAS<ScalarType>::getDetTable() {
     return hashTable_;
 }
 
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
-double SRCAS<InterfaceType>::getCompleteness() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+double SRCAS<ScalarType>::getCompleteness() {
     return completeness_;
 }
 
 // Explicit template instantiation
-template class SRCAS<maquis::DMRGInterface<double>>;
-template class SRCAS<maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>>;
-template class SRCAS<maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode>>;
+template class SRCAS<double>;
+template class SRCAS<std::complex<double>>;

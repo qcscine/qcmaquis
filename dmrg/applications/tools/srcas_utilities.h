@@ -35,11 +35,9 @@
 #include <memory>
 #include <boost/random.hpp>
 
-template <class V, Hamiltonian HamiltonianType> // real or complex
-using InterfaceType = maquis::DMRGInterface<V, HamiltonianType>;
-
-template <class InterfaceType> // real or complex, nmode or canonical (watson)
+template <typename ScalarType> // real or complex
 class SRCAS {
+    using InterfaceType = maquis::DMRGInterface<ScalarType>;
     public:
         SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);      
         void run();
@@ -47,11 +45,11 @@ class SRCAS {
         void printResults();
 
         std::vector<int> getCurrentQueen();
-        std::map<std::vector<int>, double> getDetTable();
+        std::map<std::vector<int>, ScalarType> getDetTable();
         double getCompleteness();
 
     private:
-        void quicksort(std::string dets[], double b[], int left, int right);
+        void quicksort(std::string dets[], ScalarType b[], int left, int right);
 
         boost::mt19937 generator_;
         boost::uniform_real<> uniformDist_;
@@ -65,8 +63,9 @@ class SRCAS {
         int numModes_;
         double completeness_;
         const double samplingFraction_ = 1.0/3.0; // Change this value to alter the speed of sampling across the Hilbert space
-        std::map<std::vector<int>, double> hashTable_;
-        std::map<std::vector<int>, double>::iterator iter_;
+
+        std::map<std::vector<int>, ScalarType> hashTable_;
+        typename std::map<std::vector<int>, ScalarType>::iterator iter_;
 };
 
 #endif

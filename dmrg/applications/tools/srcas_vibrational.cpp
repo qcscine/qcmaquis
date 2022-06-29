@@ -60,16 +60,10 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         maquis::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
         // Creates the simulation object
-        using InterfaceType = maquis::DMRGInterface<double>;
-        // EDIT NINA this should be changed at some point!
-        /*
-        if (opt.parms["MODEL"] == "watson")
-            auto interface = std::make_shared<maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>>(opt.parms);
-        else
-            auto interface = std::make_shared<maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode>>(opt.parms);
-        */
+        using ScalarType = double;
+        using InterfaceType = maquis::DMRGInterface<ScalarType>;
         std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
-        SRCAS<InterfaceType> srcas(opt.parms, interface);
+        SRCAS<ScalarType> srcas(opt.parms, interface);
         srcas.printSRCASSettings();
         srcas.run();
         srcas.printResults();
