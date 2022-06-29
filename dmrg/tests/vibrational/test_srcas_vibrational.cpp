@@ -47,7 +47,7 @@
  */
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Harmonic, WatsonFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Harmonic, WatsonFixture)
     std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(parametersEthyleneWatsonHarmonic);
     interface->optimize();
     // Creates SRCAS object
-    SRCAS<InterfaceType> srcas(parametersEthyleneWatsonHarmonic, interface);
+    SRCAS<double> srcas(parametersEthyleneWatsonHarmonic, interface);
     std::vector<int> currQueen = srcas.getCurrentQueen();
     BOOST_CHECK_EQUAL(currQueen.size(), parametersEthyleneWatsonHarmonic["L"]);
     int sumOfQueen = std::accumulate(currQueen.begin(), currQueen.end(), 0);
@@ -77,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Harmonic, WatsonFixture)
  */
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Sextic_SingleSite, WatsonFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
@@ -94,7 +94,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Sextic_SingleSite, Watso
     std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(parametersEthyleneWatson);
     interface->optimize();
     // Creates SRCAS object
-    SRCAS<InterfaceType> srcas(parametersEthyleneWatson, interface);
+    SRCAS<double> srcas(parametersEthyleneWatson, interface);
     std::vector<int> currQueen = srcas.getCurrentQueen();
     BOOST_CHECK_EQUAL(currQueen.size(), parametersEthyleneWatson["L"]);
     int sumOfQueen = std::accumulate(currQueen.begin(), currQueen.end(), 0);
@@ -119,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Sextic_SingleSite, Watso
  */
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState, NModeFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
     parametersFADOneBodyBinary.set("init_basis_state", "0");
@@ -136,7 +136,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     // Checks that overlap calculations cannot be performed for invalid reference determinants
     BOOST_CHECK_THROW(interface->getCICoefficient("0,0,0"), std::runtime_error);
     // Creates SRCAS object
-    SRCAS<InterfaceType> srcas(parametersFADOneBodyBinary, interface);
+    SRCAS<double> srcas(parametersFADOneBodyBinary, interface);
     std::vector<int> currQueen = srcas.getCurrentQueen();
     BOOST_CHECK_EQUAL(currQueen.size(), parametersFADOneBodyBinary["nmode_num_modes"]);
     int sumOfQueen = std::accumulate(currQueen.begin(), currQueen.end(), 0);
@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     // Creates SRCAS object for excited state
     parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
     parametersFADOneBodyBinary.set("init_basis_state", "1");
-    SRCAS<InterfaceType> srcasES(parametersFADOneBodyBinary, interfaceES);
+    SRCAS<double> srcasES(parametersFADOneBodyBinary, interfaceES);
     currQueen = srcasES.getCurrentQueen();
     BOOST_CHECK_EQUAL(currQueen.size(), parametersFADOneBodyBinary["nmode_num_modes"]);
     sumOfQueen = std::accumulate(currQueen.begin(), currQueen.end(), 0);
