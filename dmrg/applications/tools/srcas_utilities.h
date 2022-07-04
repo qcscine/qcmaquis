@@ -50,6 +50,7 @@ class SRCAS {
 
     private:
         void quicksort(std::string dets[], ScalarType b[], int left, int right);
+        std::vector<int> generateNewDet();
 
         boost::mt19937 generator_;
         boost::uniform_real<> uniformDist_;

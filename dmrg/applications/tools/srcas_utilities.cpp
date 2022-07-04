@@ -114,6 +114,28 @@ void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, 
 }
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
+std::vector<int> SRCAS<ScalarType>::generateNewDet() {
+    // Start from queen
+    detTmp_= detQueen_;
+    if(parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
+        // Loop over the modes            
+        for (int i=0; i<detTmp_.size(); i++) {
+            boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
+            boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
+            do {
+                if (uniformRandomNumber_() < samplingFraction_) // Only accept a fraction of the proposed updates to stay closer to reference det
+                    detTmp_[i] = poissonRandomNumber();
+            } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
+        }
+    } else {
+        maquis::cout << "SRCAS determinant generation NYI for non-vibrational calculations! Abort!" << std::endl;
+        exit(1);
+    }
+    return detTmp_;
+}
+
+
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::run() {
     maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
 
@@ -136,18 +158,8 @@ void SRCAS<ScalarType>::run() {
     do {
         // For every macroiteration generate N determinants
         for (int isample = 0; isample < parms_["srcas_numSamples"]; isample++) {
-            // Start from queen
-            detTmp_= detQueen_;
-            // Loop over the modes            
-            for (int i=0; i<detTmp_.size(); i++) {
-                boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
-                boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
-                do {
-                    x = uniformRandomNumber_();
-                    if (x < samplingFraction_) // Only accept a fraction of the proposed updates to stay closer to reference det
-                        detTmp_[i] = poissonRandomNumber();
-                } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
-            }
+            // Get new determinant
+            detTmp_ = generateNewDet();
 
             // Updates the data if the determinant has not been visited yet.
             iter_ = hashTable_.find(detTmp_) ;
@@ -182,6 +194,7 @@ void SRCAS<ScalarType>::run() {
             sum_ci2 += pow(std::abs(ci_tmp),2.0);
         }
         nMacroIter++ ;
+        
         // Prints results
         maquis::cout << "----------------------------------------------------------------" << std::endl ;
         maquis::cout << "Macroiteration number:                       " << nMacroIter << std::endl;
