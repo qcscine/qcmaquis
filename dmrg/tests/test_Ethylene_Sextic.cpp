@@ -38,7 +38,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatsonHarmonic.set("init_state", "const");
     parametersEthyleneWatsonHarmonic.set("nsweeps", 20);
@@ -66,7 +66,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic, WatsonFixture)
  */
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, WatsonFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, Watso
  */
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_TwoSite, WatsonFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");

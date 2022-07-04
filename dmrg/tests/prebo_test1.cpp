@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
 
         maquis::cout << "Running Pre-BO test for symmetry nu1 with optimization: " << o << std::endl;
 
-        maquis::DMRGInterface<double, Hamiltonian::PreBO> interface(p);
+        maquis::DMRGInterface<double> interface(p);
         interface.optimize();
 
         // test energy
