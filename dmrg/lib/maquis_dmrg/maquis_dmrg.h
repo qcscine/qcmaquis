@@ -37,19 +37,19 @@ namespace maquis {
     
 // Types for measurement results
 // meas_with_results_type: one measurement = pair of vectors with labels and results
-template <class V>
-using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<V> >;
+template <typename ScalarType>
+using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<ScalarType> >;
 
 // All measurements -- a map with measurement names as keys and results as values
-template <class V>
-using results_map_type = std::map<std::string, meas_with_results_type<V> >;
+template <typename ScalarType>
+using results_map_type = std::map<std::string, meas_with_results_type<ScalarType> >;
 
-template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic> // real or complex
+template <typename ScalarType> // real or complex
 class DMRGInterface
 {
 public:
-    typedef maquis::meas_with_results_type<V> meas_with_results_type;
-    typedef maquis::results_map_type<V> results_map_type;
+    typedef maquis::meas_with_results_type<ScalarType> meas_with_results_type;
+    typedef maquis::results_map_type<ScalarType> results_map_type;
 
     /** @brief Class constructor */
     DMRGInterface(DmrgParameters& parms_);
@@ -64,10 +64,10 @@ public:
     void evolve();
 
     /** @brief Gets the energy at the end of the simulation */
-    V energy();
+    ScalarType energy();
 
     /** @brief Gets the overlap of the MPS with a given determinant */
-    V getCICoefficient(std::string determinantString);
+    ScalarType getCICoefficient(std::string determinantString);
 
     /** @brief Getter for an obtject storing the statistics of the optimization */
     results_collector& get_iteration_results();
@@ -88,7 +88,7 @@ public:
     const results_map_type & measurements();
 
     /** @brief Updates the integrals and re-initialize the model */
-    void update_integrals(const integral_map<V> & integrals);
+    void update_integrals(const integral_map<ScalarType> & integrals);
 
     // Get RDMs
     // TODO: This does not work for 2U1/2U1PG symmetry because "oneptdm" measurement is not recognised by the model!
@@ -112,7 +112,7 @@ public:
     void measure_and_save_trans3rdm(const std::string & bra_name);
 
     // Load an MPS from a given checkpoint and measure the overlap with the current MPS
-    V overlap(const std::string& aux_mps_name);
+    ScalarType overlap(const std::string& aux_mps_name);
 
     // Dump parameters into text file
     void dump_parameters(const std::string & file);
