@@ -48,7 +48,6 @@
 
 template<int N, class S>
 class NU1DG;
-
 template<int N, class S>
 class NU1ChargeDG : public NU1ChargePG<N, S>
 {

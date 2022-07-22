@@ -26,34 +26,127 @@
 * DEALINGS IN THE SOFTWARE.
 *
 *****************************************************************************/
+
 #ifndef ALIGN_H
 #define ALIGN_H
 
 #include <array>
+#include "dmrg/block_matrix/symmetry.h"
 
-namespace maquis{
-    namespace detail {
+namespace maquis {
+namespace detail {
 
-        typedef std::array<int, 4> index_type;
+/** @brief Trait class with the index info depending on the Hamiltonian */
+template<class SymmGroup>
+class AlignTraitClass {
+public:
+    static constexpr bool doRealign=true;
+};
 
-        // Permutes integral indices to yield the canonical form with i>=j, k>=l
-        template<bool P=false>
-        inline index_type align(const index_type & idx)
-        {
-            int i = idx[0], j = idx[1], k = idx[2], l = idx[3];
-            if (i<j) std::swap(i,j);
-            if (k<l) std::swap(k,l);
-            if (i<k) { std::swap(i,k); std::swap(j,l); }
-            if (i==k && j<l) { std::swap(j,l); }
-            return index_type{i,j,k,l};
+template<>
+class AlignTraitClass<TrivialGroup> {
+public:
+    static constexpr bool doRealign=true;
+};
+
+template<>
+class AlignTraitClass<U1DG> {
+public:
+    static constexpr bool doRealign=true;
+};
+
+/** @brief Class containing all methods required to manage the indices of an integral file */
+template<bool DoAlignment>
+class AlignerClass {
+public:
+    // Types declaration
+    using IndexTwoBody = typename std::array<int, 4>;
+    using IndexThreeBody = typename std::array<int, 6>;
+
+    /**
+     * @brief Permutes integral indices to yield the canonical form.
+     * Note that the canonical ordering is obtained with i>=j, k>=l.
+     * @param idx Input index.
+     * @return Aligned index.
+     */
+    static inline IndexTwoBody align(const IndexTwoBody& idx) {
+        int i = idx[0];
+        int j = idx[1];
+        int k = idx[2];
+        int l = idx[3];
+        // Same coordinate swap
+        if (i < j)
+            std::swap(i, j);
+        if (k < l)
+            std::swap(k, l);
+        // Hermitian swap
+        if (i < k) {
+            std::swap(i, k);
+            std::swap(j, l);
         }
-
-        // Disables permutation (e.g. for relativistic calculations)
-        template<>
-        inline index_type align<true>(const index_type & idx)
-        {
-            return idx;
+        if (i == k && j < l) {
+            std::swap(j, l);
         }
+        return IndexTwoBody{i, j, k, l};
     }
-}
+
+    /** @brief Same as above, but for the three-body terms */
+    static inline IndexThreeBody align(const IndexThreeBody& idx) {
+        int i = idx[0];
+        int j = idx[1];
+        int k = idx[2];
+        int l = idx[3];
+        int m = idx[4];
+        int n = idx[5];
+        //
+        if (i < j)
+            std::swap(i, j);
+        if (k < l)
+            std::swap(k, l);
+        if (m < n)
+            std::swap(m, n);
+        // Hermitian swap
+        if (i < k) {
+            std::swap(i, k);
+            std::swap(j, l);
+        }
+        if (k < m) {
+            std::swap(k, m);
+            std::swap(l, n);
+        }
+        if (i < k) {
+            std::swap(i, k);
+            std::swap(j, l);
+        }
+        if (i == k && j < l) {
+            std::swap(j, l);
+        }
+        if (k == m && l < n) {
+            std::swap(l, n);
+        }
+        if (i == k && j < l) {
+            std::swap(j, l);
+        }
+        return IndexThreeBody{i, j, k, l, m, n};
+    }
+};
+
+/** @brief Class containing all methods required to manage the indices of an integral file */
+template<>
+class AlignerClass<false> {
+public:
+    // Types declaration
+    using IndexTwoBody = typename std::array<int, 4>;
+    using IndexThreeBody = typename std::array<int, 6>;
+
+    /** @brief Two-body term */
+    static inline IndexTwoBody align(const IndexTwoBody& idx) { return idx; }
+
+    /** @brief Three-body term */
+    static inline IndexThreeBody align(const IndexThreeBody& idx) { return idx; }
+};
+
+} // detail
+} // maquis
+
 #endif

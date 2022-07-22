@@ -110,7 +110,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     // only effective if point group symmetry is active, need to adapt operators to different irreps
     #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
-
     GENERATE_SITE_SPECIFIC(ident_op)
     GENERATE_SITE_SPECIFIC(fill_op)
     GENERATE_SITE_SPECIFIC(create_up_op)
@@ -127,7 +126,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     GENERATE_SITE_SPECIFIC(count_up_down_op)
     GENERATE_SITE_SPECIFIC(d2u_op)
     GENERATE_SITE_SPECIFIC(u2d_op)
-
     #undef GENERATE_SITE_SPECIFIC
 
     /**********************************************************************/
@@ -135,7 +133,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     /**********************************************************************/
 
     #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
-
     REGISTER(ident,                 tag_detail::bosonic)
     REGISTER(fill,                  tag_detail::bosonic)
     REGISTER(create_up,             tag_detail::fermionic)
@@ -152,7 +149,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     REGISTER(count_up_down,         tag_detail::bosonic)
     REGISTER(d2u,                   tag_detail::bosonic)
     REGISTER(u2d,                   tag_detail::bosonic)
-
     #undef REGISTER
 
     //**********************************************************************
