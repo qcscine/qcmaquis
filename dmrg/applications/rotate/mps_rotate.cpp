@@ -7,7 +7,6 @@
  *               2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2019 by Leon Freitag <lefreita@ethz.ch>
  *
- *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
@@ -42,8 +41,8 @@
 #include "dmrg/utils/DmrgParameters.h"
 
 #include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/chem/transform_symmetry.hpp"
-#include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/models/MolecularHamiltonian/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonian/2u1/chem_helper.h"
 
 // #include "../tools/ci_encode.hpp"
 // #include "utils.hpp"

@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/2u1/model.h"
+#include "dmrg/models/MolecularHamiltonians/2u1/model.h"
 #include "dmrg/models/factories/factory.h"
 
 template<class Matrix>

@@ -32,7 +32,7 @@
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/models/chem/mps_init_deas.hpp"
+#include "dmrg/models/MolecularHamiltonians/mps_init_deas.hpp"
 
 namespace maquis
 {

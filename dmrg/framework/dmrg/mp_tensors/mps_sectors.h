@@ -30,7 +30,7 @@
 
 
 #include "dmrg/block_matrix/indexing.h"
-#include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/MolecularHamiltonians/pg_util.h"
 #include "dmrg/mp_tensors/charge_detail.h"
 
 template<class T>

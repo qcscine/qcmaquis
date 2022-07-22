@@ -29,7 +29,7 @@
 #define QC_TERMMAKER_SU2_H
 
 #include "dmrg/models/term_descriptor.h"
-#include "dmrg/models/chem/util.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
 
 template <class M, class S>
 struct TermMakerSU2 {

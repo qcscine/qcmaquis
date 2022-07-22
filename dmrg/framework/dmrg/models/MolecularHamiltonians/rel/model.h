@@ -41,11 +41,11 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/util.h"
-#include "dmrg/models/chem/parse_integrals.h"
-#include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/rel/chem_helper.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
+#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
+#include "dmrg/models/MolecularHamiltonians/pg_util.h"
+#include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
+#include "dmrg/models/MolecularHamiltonians/rel/chem_helper.h"
 #include "dmrg/utils/checks.h"
 
 template<class Matrix, class SymmGroup>
@@ -393,6 +393,6 @@ private:
 
 };
 
-#include "dmrg/models/chem/rel/model.hpp"
+#include "dmrg/models/MolecularHamiltonians/rel/model.hpp"
 
 #endif

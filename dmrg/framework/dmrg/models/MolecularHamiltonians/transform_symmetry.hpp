@@ -31,7 +31,7 @@
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/models/chem/util.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
 
 namespace transform_detail
 {

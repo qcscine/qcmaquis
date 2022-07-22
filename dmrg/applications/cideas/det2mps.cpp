@@ -30,7 +30,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include "dmrg/sim/matrix_types.h"
-#include "dmrg/models/chem/cideas/cideas.hpp"
+#include "dmrg/models/MolecularHamiltonians/cideas/cideas.hpp"
 #include "dmrg/utils/DmrgOptions.h"
 
 #if defined(USE_TWOU1)

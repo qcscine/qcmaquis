@@ -35,13 +35,11 @@
 #include <functional>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/filesystem.hpp>
-
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
 #include "dmrg/models/measurement.h"
 #include "dmrg/utils/checks.h"
-
-#include "dmrg/models/chem/su2u1/term_maker.h"
-#include "dmrg/models/chem/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/su2u1/term_maker.h"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 #include "measurements_details.h"
 
 namespace measurements {

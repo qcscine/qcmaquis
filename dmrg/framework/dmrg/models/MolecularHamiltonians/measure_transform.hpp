@@ -30,7 +30,7 @@
 
 #include <boost/mpl/if.hpp>
 
-#include "dmrg/models/chem/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 #include "dmrg/models/measurements.h"
 
 

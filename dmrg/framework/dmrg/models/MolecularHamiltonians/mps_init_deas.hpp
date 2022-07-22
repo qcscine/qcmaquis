@@ -32,10 +32,10 @@
 
 #include "dmrg/models/lattice/lattice.h"
 #include "alps/numeric/matrix.hpp"
-#include "dmrg/models/chem/util.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/mp_tensors/charge_detail.h"
-#include "dmrg/models/chem/cideas/ci_generator.hpp"
+#include "dmrg/models/MolecularHamiltonians/cideas/ci_generator.hpp"
 
 template<class Matrix, class SymmGroup, class=void>
 struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>

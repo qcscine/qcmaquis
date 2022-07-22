@@ -37,7 +37,7 @@ using std::cout;
 using std::endl;
 
 #include "dmrg/sim/matrix_types.h"
-#include "dmrg/models/chem/util.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
 #include "MPS2CIClass.h"
 
 #if defined(USE_TWOU1)
