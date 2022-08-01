@@ -114,7 +114,8 @@ public:
 
 template <class SymmGroup=TrivialGroup>
 inline IndexTuple align(int i, int j, int k, int l) {
-    return IndexTuple(maquis::detail::AlignerClass<false>::align(std::array<int, 4>({i,j,k,l})));
+    auto ret = maquis::detail::AlignerClass<false>::align(std::array<int, 4>({i,j,k,l}));
+    return IndexTuple(ret[0], ret[1], ret[2], ret[3]);
 }
 
 template <>
