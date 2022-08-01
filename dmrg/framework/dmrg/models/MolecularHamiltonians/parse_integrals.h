@@ -55,14 +55,14 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true, b
 {
     // Types and variable definition
     using pos_t = Lattice::pos_t;
-    std::vector<pos_t> inv_order;
+    std::vector<int> inv_order;
     std::vector<T> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
 
     // Functor class used to reorder the integral indices (used for custom sorting)
     struct reorderer
     {
-        pos_t operator()(pos_t p, std::vector<pos_t> const & inv_order) {
+        int operator()(int p, const std::vector<int>& inv_order) {
             return p >= 0 ? inv_order[p] : p;
         }
     };
@@ -125,12 +125,14 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true, b
                 matrix_elements.push_back(t.second);
                 if (do_align) {
                     //using AlignerClass = maquis::detail::AlignerClass<maquis::detail::AlignTraitClass<SymmGroup>::doRealign>;
-                    IndexTuple aligned = align<SymmGroup>(reorderer()(t.first[0]-1, inv_order), reorderer()(t.first[1]-1, inv_order),
-                                                          reorderer()(t.first[2]-1, inv_order), reorderer()(t.first[3]-1, inv_order));
-                    indices.push_back({ aligned[0], aligned[1], aligned[2], aligned[3] });
+                    auto tmp = chem::detail::IndexTuple<SymmGroup, 4>({reorderer()(t.first[0]-1, inv_order), reorderer()(t.first[1]-1, inv_order),
+                                                                       reorderer()(t.first[2]-1, inv_order), reorderer()(t.first[3]-1, inv_order)});
+                    tmp.align();
+                    indices.push_back({ tmp[0], tmp[1], tmp[2], tmp[3] });
                 }
-                else
+                else {
                     indices.push_back({ t.first[0]-1, t.first[1]-1, t.first[2]-1, t.first[3]-1 });
+                }
             }
         }
     }
@@ -165,9 +167,10 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true, b
             {
                 matrix_elements.push_back(t.second);
                 if (do_align) {
-                    IndexTuple aligned = align<SymmGroup>(reorderer()(t.first[0]-1, inv_order), reorderer()(t.first[1]-1, inv_order),
-                                                          reorderer()(t.first[2]-1, inv_order), reorderer()(t.first[3]-1, inv_order));
-                    indices.push_back({ aligned[0], aligned[1], aligned[2], aligned[3] });
+                    auto tmp = chem::detail::IndexTuple<SymmGroup, 4>({reorderer()(t.first[0]-1, inv_order), reorderer()(t.first[1]-1, inv_order),
+                                                                       reorderer()(t.first[2]-1, inv_order), reorderer()(t.first[3]-1, inv_order)});
+                    tmp.align();
+                    indices.push_back({ tmp[0], tmp[1], tmp[2], tmp[3] });
                 }
                 else {
                     indices.push_back({ t.first[0]-1, t.first[1]-1, t.first[2]-1, t.first[3]-1 });

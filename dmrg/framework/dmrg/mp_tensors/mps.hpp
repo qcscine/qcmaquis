@@ -190,7 +190,7 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
         if (i < length()-1) {
             parallel::guard proc(scheduler(i+1));
             (*this)[i+1].multiply_from_left(t);
-            (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
+            //(*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
     }
     if (tmp_i == p1)

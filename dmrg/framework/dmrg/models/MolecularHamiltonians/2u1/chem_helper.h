@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
+ *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -52,7 +52,7 @@ public:
     {
         boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
         for (std::size_t m=0; m < matrix_elements.size(); ++m) {
-            IndexTuple pos;
+            IndexTuple<S, 4> pos;
             std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
             coefficients[pos] = matrix_elements[m];
         }
@@ -63,21 +63,20 @@ public:
     int idx(int m, int pos) const { return idx_(m,pos); }
 
     void commit_terms(std::vector<term_descriptor> & tagterms) {
-        for (typename std::map<IndexTuple, term_descriptor>::const_iterator it = two_terms.begin();
-                it != two_terms.end(); ++it)
+        for (const auto& it = two_terms.begin(); it != two_terms.end(); ++it)
             tagterms.push_back(it->second);
-        for (typename std::map<SixTuple, term_descriptor>::const_iterator it = three_terms.begin();
-                it != three_terms.end(); ++it)
+        for (auto it = three_terms.begin(); it != three_terms.end(); ++it)
             tagterms.push_back(it->second);
     }
 
-    void add_term(std::vector<term_descriptor> & tagterms,
-                  value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2)
+    void add_term(std::vector<term_descriptor> & tagterms, value_type scale,
+                  int p1, int p2,
+                  std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2)
     {
         term_descriptor
         term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
-        IndexTuple id(p1, p2, op_1[lat.get_prop<typename S::subcharge>("type", p1)],
-                              op_2[lat.get_prop<typename S::subcharge>("type", p2)]);
+        IndexTuple<S, 4> id(p1, p2, op_1[lat.get_prop<typename S::subcharge>("type", p1)],
+                                    op_2[lat.get_prop<typename S::subcharge>("type", p2)]);
         if (two_terms.count(id) == 0) {
             two_terms[id] = term;
         }
@@ -86,9 +85,9 @@ public:
     }
 
     // two positions with four operators - multiply first and second operator pairs
-    void add_term(std::vector<term_descriptor> & tagterms,
-                  value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2,
-                                                    std::vector<tag_type> const & op_3, std::vector<tag_type> const & op_4)
+    void add_term(std::vector<term_descriptor> & tagterms, value_type scale, int p1, int p2,
+                  std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2,
+                  std::vector<tag_type> const & op_3, std::vector<tag_type> const & op_4)
     {
         std::pair<tag_type, value_type> ptag1, ptag2;
         ptag1 = tag_handler->get_product_tag(op_1[lat.get_prop<typename S::subcharge>("type", p1)],
@@ -100,7 +99,7 @@ public:
         term.coeff = scale * ptag1.second * ptag2.second;
         term.push_back(std::make_pair(p1, ptag1.first));
         term.push_back(std::make_pair(p2, ptag2.first));
-        IndexTuple id(p1, p2, ptag1.first, ptag2.first);
+        IndexTuple<S, 4> id(p1, p2, ptag1.first, ptag2.first);
         if (two_terms.count(id) == 0) {
             two_terms[id] = term;
         }
@@ -115,8 +114,8 @@ public:
     {
         term_descriptor
         term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
-        SixTuple id(term.position(0), term.position(1), term.position(2),
-                    term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
+        IndexTuple<S, 6> id(term.position(0), term.position(1), term.position(2),
+                            term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
         if (three_terms.count(id) == 0) {
             three_terms[id] = term;
         }
@@ -130,18 +129,21 @@ public:
                   std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
     {
         // Collapse terms with identical operators and different scales into one term
-        if (op_i[0] == op_k[0] && op_j[0] == op_l[0]) {
-            // if i>j, we switch l,j to get the related term
-            // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
-            IndexTuple self(i,j,k,l), twin(i,l,k,j);
-            if (i<j) twin = IndexTuple(k,j,i,l);
+        // if i>j, we switch l,j to get the related term
+        // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
+        if (op_i[0] == op_k[0] && op_j[0] == op_l[0]) 
+        {
+            auto self = IndexTuple<S, 4>({i,j,k,l});
+            auto twin = (i < j) ? IndexTuple<S, 4>({k,j,i,l}) : IndexTuple<S, 4>({i,l,k,j});
             if (self > twin) {
-                term_descriptor
-                term = TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(i,j,k,l)], i,k,l,j,
-                                                  op_i, op_k, op_l, op_j, tag_handler, lat);
-                term_descriptor
-                term_twin = TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(twin)], twin[0],twin[2],twin[3],twin[1],
+                self.align();
+                auto term = TermMaker<M, S>::four_term(ident, fill, coefficients[self],
+                                                       i, k, l, j,
                                                        op_i, op_k, op_l, op_j, tag_handler, lat);
+                twin.align();
+                auto term_twin = TermMaker<M, S>::four_term(ident, fill, coefficients[twin],
+                                                            twin[0], twin[2], twin[3], twin[1],
+                                                            op_i, op_k, op_l, op_j, tag_handler, lat);
                 //term.coeff += value_type(sign(twin)) * coefficients[align<S>(twin)];
                 term.coeff += term_twin.coeff;
                 tagterms.push_back(term);
@@ -149,8 +151,10 @@ public:
             //else: we already have the term
         }
         else {
-            tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(i,j,k,l)], i,k,l,j,
-                               op_i, op_k, op_l, op_j, tag_handler, lat) );
+            auto index = IndexTuple<S, 4>({i, j, k, l});
+            index.align();
+            tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[index], i, k, l, j,
+                                                           op_i, op_k, op_l, op_j, tag_handler, lat) );
         }
     }
 
@@ -163,9 +167,9 @@ private:
     alps::numeric::matrix<Lattice::pos_t> idx_;
     std::vector<Lattice::pos_t> order;
     std::vector<Lattice::pos_t> inv_order;
-    std::map<IndexTuple, value_type> coefficients;
-    std::map<SixTuple, term_descriptor> three_terms;
-    std::map<IndexTuple, term_descriptor> two_terms;
+    std::map<IndexTuple<S, 4>, value_type> coefficients;
+    std::map<IndexTuple<S, 6>, term_descriptor> three_terms;
+    std::map<IndexTuple<S, 4>, term_descriptor> two_terms;
     bool isTranscorrelated_;
 };
 

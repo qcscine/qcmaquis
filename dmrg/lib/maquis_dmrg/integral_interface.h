@@ -186,10 +186,10 @@ public:
 
     // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation.
     // Maybe these two properties should be decoupled in the future.
-    V& operator[](const index_type<HamiltonianType> & key) { return map_[maquis::detail::AlignerClass<is_complex_t<V>::value>::align(key)]; };
-    const V& operator[](const index_type<HamiltonianType> & key) const { return map_[maquis::detail::AlignerClass<is_complex_t<V>::value>::align(key)]; };
-    V& at(const index_type<HamiltonianType> & key) { return map_.at(maquis::detail::AlignerClass<is_complex_t<V>::value>::align(key)); };
-    const V& at(const index_type<HamiltonianType> & key) const { return map_.at(maquis::detail::AlignerClass<is_complex_t<V>::value>::align(key)); };
+    V& operator[](const index_type<HamiltonianType>& key) { return map_[maquis::detail::alignArray(key)]; }
+    const V& operator[](const index_type<HamiltonianType>& key) const {  return map_[maquis::detail::alignArray(key)]; }
+    V& at(const index_type<HamiltonianType>& key) { return map_.at(maquis::detail::alignArray(key)); }
+    const V& at(const index_type<HamiltonianType>& key) const { return map_.at(maquis::detail::alignArray(key)); }
 
     /** @brief Size getter */
     size_type size() const { return map_.size(); }

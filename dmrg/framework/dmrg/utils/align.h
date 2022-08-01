@@ -6,7 +6,8 @@
 *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2020         Leon Freitag <lefreita@ethz.ch>
+*               2020-        Leon Freitag <lefreita@ethz.ch>
+*               2022-        Alberto Baiardi <abaiardi@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -36,6 +37,12 @@
 namespace maquis {
 namespace detail {
 
+template<int NumberOfElements=4>
+class IndexTuple;
+
+template<class SymmGroup, int NumberOfElements>
+auto align(std::initializer_list<int> rhs);
+
 /** @brief Trait class with the index info depending on the Hamiltonian */
 template<class SymmGroup>
 class AlignTraitClass {
@@ -46,105 +53,77 @@ public:
 template<>
 class AlignTraitClass<TrivialGroup> {
 public:
-    static constexpr bool doRealign=true;
+    static constexpr bool doRealign=false;
 };
 
 template<>
 class AlignTraitClass<U1DG> {
 public:
-    static constexpr bool doRealign=true;
+    static constexpr bool doRealign=false;
 };
 
-/** @brief Class containing all methods required to manage the indices of an integral file */
-template<bool DoAlignment>
-class AlignerClass {
-public:
-    // Types declaration
-    using IndexTwoBody = typename std::array<int, 4>;
-    using IndexThreeBody = typename std::array<int, 6>;
-
-    /**
-     * @brief Permutes integral indices to yield the canonical form.
-     * Note that the canonical ordering is obtained with i>=j, k>=l.
-     * @param idx Input index.
-     * @return Aligned index.
-     */
-    static inline IndexTwoBody align(const IndexTwoBody& idx) {
-        int i = idx[0];
-        int j = idx[1];
-        int k = idx[2];
-        int l = idx[3];
-        // Same coordinate swap
-        if (i < j)
-            std::swap(i, j);
-        if (k < l)
-            std::swap(k, l);
-        // Hermitian swap
-        if (i < k) {
-            std::swap(i, k);
-            std::swap(j, l);
-        }
-        if (i == k && j < l) {
-            std::swap(j, l);
-        }
-        return IndexTwoBody{i, j, k, l};
+/** @brief Align function for the 4-element array */
+inline auto alignArray(const std::array<int, 4>& idx) 
+{
+    int i = idx[0];
+    int j = idx[1];
+    int k = idx[2];
+    int l = idx[3];
+    // Same coordinate swap
+    if (i < j)
+        std::swap(i, j);
+    if (k < l)
+        std::swap(k, l);
+    // Hermitian swap
+    if (i < k) {
+        std::swap(i, k);
+        std::swap(j, l);
     }
-
-    /** @brief Same as above, but for the three-body terms */
-    static inline IndexThreeBody align(const IndexThreeBody& idx) {
-        int i = idx[0];
-        int j = idx[1];
-        int k = idx[2];
-        int l = idx[3];
-        int m = idx[4];
-        int n = idx[5];
-        //
-        if (i < j)
-            std::swap(i, j);
-        if (k < l)
-            std::swap(k, l);
-        if (m < n)
-            std::swap(m, n);
-        // Hermitian swap
-        if (i < k) {
-            std::swap(i, k);
-            std::swap(j, l);
-        }
-        if (k < m) {
-            std::swap(k, m);
-            std::swap(l, n);
-        }
-        if (i < k) {
-            std::swap(i, k);
-            std::swap(j, l);
-        }
-        if (i == k && j < l) {
-            std::swap(j, l);
-        }
-        if (k == m && l < n) {
-            std::swap(l, n);
-        }
-        if (i == k && j < l) {
-            std::swap(j, l);
-        }
-        return IndexThreeBody{i, j, k, l, m, n};
+    if (i == k && j < l) {
+        std::swap(j, l);
     }
-};
+    return std::array<int, 4>{i, j, k, l};
+}
 
-/** @brief Class containing all methods required to manage the indices of an integral file */
-template<>
-class AlignerClass<false> {
-public:
-    // Types declaration
-    using IndexTwoBody = typename std::array<int, 4>;
-    using IndexThreeBody = typename std::array<int, 6>;
-
-    /** @brief Two-body term */
-    static inline IndexTwoBody align(const IndexTwoBody& idx) { return idx; }
-
-    /** @brief Three-body term */
-    static inline IndexThreeBody align(const IndexThreeBody& idx) { return idx; }
-};
+/** @brief Align function for the 6-element array */
+inline auto alignArray(const std::array<int, 6>& idx) {
+    int i = idx[0];
+    int j = idx[1];
+    int k = idx[2];
+    int l = idx[3];
+    int m = idx[4];
+    int n = idx[5];
+    //
+    if (i < j)
+        std::swap(i, j);
+    if (k < l)
+        std::swap(k, l);
+    if (m < n)
+        std::swap(m, n);
+    // Hermitian swap
+    if (i < k) {
+        std::swap(i, k);
+        std::swap(j, l);
+    }
+    if (k < m) {
+        std::swap(k, m);
+        std::swap(l, n);
+    }
+    if (i < k) {
+        std::swap(i, k);
+        std::swap(j, l);
+    }
+    if (i == k && j < l) {
+        std::swap(j, l);
+    }
+    if (k == m && l < n) {
+        std::swap(l, n);
+    }
+    if (i == k && j < l) {
+        std::swap(j, l);
+    }
+    return std::array<int, 6>{i, j, k, l, m, n};
+}
 
 } // detail
 } // maquis
