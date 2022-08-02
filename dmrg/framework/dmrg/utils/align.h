@@ -125,6 +125,24 @@ inline auto alignArray(const std::array<int, 6>& idx) {
     return std::array<int, 6>{i, j, k, l, m, n};
 }
 
+/** @brief Same as above, but based on types. Alignes for real, not for complex */
+template<class ScalarType>
+class AlignTraitTypeClass { };
+
+template<>
+class AlignTraitTypeClass<double> {
+public:
+    static std::array<int, 4> align(const std::array<int, 4>& idx) { return alignArray(idx); }
+    static std::array<int, 6> align(const std::array<int, 6>& idx) { return alignArray(idx); }
+};
+
+template<>
+class AlignTraitTypeClass<std::complex<double> > {
+public:
+    static std::array<int, 4> align(const std::array<int, 4>& idx) { return idx; }
+    static std::array<int, 6> align(const std::array<int, 6>& idx) { return idx; }
+};
+
 } // detail
 } // maquis
 

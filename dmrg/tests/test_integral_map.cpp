@@ -45,7 +45,8 @@ BOOST_AUTO_TEST_CASE( Test_Integral_Map )
     // check if the permutation works
     BOOST_CHECK_CLOSE(val, 2.0, 1.0e-15);
 
-    // Now try the relativistic permutation
+    // Now try the relativistic permutation (in theory, the second value should not override the
+    // first one because we don't have the full integral symmetry)
     chem::integral_map<std::complex<double> > ints_complex;
     ints_complex[{1,1,2,1}] = {1.0, 0.0};
     ints_complex[{1,1,1,2}] = {2.0, -1.0};

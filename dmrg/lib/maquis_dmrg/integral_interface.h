@@ -158,10 +158,8 @@ public:
     integral_map() = default;
 
     /**
-     * @brief Copy constructor 
-     * 
+     * @brief Copy constructor
      * Explicit copy using this->operator[]() to avoid potential doubling due to symmetry permutation
-     * 
      * @param map object that is copied from
      * @param cutoff Threshold for accepting integrals
      */
@@ -186,10 +184,10 @@ public:
 
     // For complex integrals, use relativistic permutation. Otherwise, use nonrelativistic permutation.
     // Maybe these two properties should be decoupled in the future.
-    V& operator[](const index_type<HamiltonianType>& key) { return map_[maquis::detail::alignArray(key)]; }
-    const V& operator[](const index_type<HamiltonianType>& key) const {  return map_[maquis::detail::alignArray(key)]; }
-    V& at(const index_type<HamiltonianType>& key) { return map_.at(maquis::detail::alignArray(key)); }
-    const V& at(const index_type<HamiltonianType>& key) const { return map_.at(maquis::detail::alignArray(key)); }
+    V& operator[](const index_type<HamiltonianType>& key) { return map_[maquis::detail::AlignTraitTypeClass<V>::align(key)]; }
+    const V& operator[](const index_type<HamiltonianType>& key) const {  return map_[maquis::detail::AlignTraitTypeClass<V>::align(key)]; }
+    V& at(const index_type<HamiltonianType>& key) { return map_.at(maquis::detail::AlignTraitTypeClass<V>::align(key)); }
+    const V& at(const index_type<HamiltonianType>& key) const { return map_.at(maquis::detail::AlignTraitTypeClass<V>::align(key)); }
 
     /** @brief Size getter */
     size_type size() const { return map_.size(); }
