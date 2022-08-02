@@ -41,8 +41,10 @@ public:
   using ArrayType = std::array<int, NumberOfElements>;
   using InitializerType = std::initializer_list<int>;
 
-  /** @brief Default class constructor */
-  IndexTuple() = default;
+  /** @brief Default class constructor - initialize every element to 0 */
+  IndexTuple() {
+    std::fill(tmpStorage.begin(), tmpStorage.end(), 0);
+  }
 
   /** @brief Class constructor taking a series of indices as input */
   IndexTuple(InitializerType inputArray) {
@@ -71,12 +73,12 @@ public:
   }
 
   /** @brief Square bracket operator calls the underlying array function */
-  int operator[](int i) const {
+  const int& operator[](int i) const {
     return tmpStorage[i];
   }
 
   /** @brief Non-const overload */
-  int operator[](int i) {
+  int& operator[](int i) {
     return tmpStorage[i];
   }
 

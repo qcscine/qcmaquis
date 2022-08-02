@@ -38,6 +38,18 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_Constructor_TwoU1 )
 #endif
 }
 
+#ifdef HAVE_TwoU1
+
+BOOST_AUTO_TEST_CASE( Test_IndexTuple_Zero_Constructor_TwoU1 )
+{
+  typename chem::detail::IndexTuple<TwoU1, 4> index1;
+  BOOST_CHECK_EQUAL(index1.data().size(), 4);
+  for (int i = 0; i < 4; i++)
+    BOOST_CHECK_EQUAL(index1[i], 0);
+}
+
+#endif
+
 BOOST_AUTO_TEST_CASE( Test_IndexTuple_Constructor_SU2U1 )
 {
 #ifdef HAVE_SU2U1
