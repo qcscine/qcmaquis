@@ -94,8 +94,14 @@ if(BUILD_VIBRONIC)
     target_link_libraries(test_Vibronic ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRONIC)
 
-add_executable(test_integral_map test_integral_map.cpp)
+# -- Tests related to the integrals management --
+
+add_executable(test_integral_map IntegralParser/test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
+add_executable(test_IndexTuple IntegralParser/test_IndexTuple.cpp)
+target_link_libraries(test_IndexTuple ${DMRG_APP_LIBRARIES})
+
+# -- Additional tests --
 
 add_executable(test_rel test_rel.cpp)
 target_link_libraries(test_rel ${DMRG_APP_LIBRARIES})

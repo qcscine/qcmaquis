@@ -37,9 +37,6 @@
 namespace maquis {
 namespace detail {
 
-template<int NumberOfElements=4>
-class IndexTuple;
-
 template<class SymmGroup, int NumberOfElements>
 auto align(std::initializer_list<int> rhs);
 
