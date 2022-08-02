@@ -147,10 +147,7 @@ void SRCAS<ScalarType>::run() {
     double x, ci_ratio, sum_ci2 = 0.0;
     ScalarType ci_tmp, ci0 = overlap;
      
-    int nMacroIter = 0, nSampled = 1, nAcceptedQueen = 0;
-
-    std::cout << overlap << " ";
-    
+    int nMacroIter = 0, nSampled = 1, nAcceptedQueen = 0;    
 
     // +-----------+
     //   MAIN LOOP
