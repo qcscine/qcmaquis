@@ -178,7 +178,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
             // Parses the integral part.
             try {
                 for (int iElement = 0; iElement < t.first.size(); iElement++)
-                    *(orb_string.get()) >> iElement;
+                    *(orb_string.get()) >> t.first[iElement];
                 //*(orb_string.get()) >> t.first[0] >> t.first[1] >> t.first[2] >> t.first[3];
             } 
             catch(std::exception & e) {
