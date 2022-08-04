@@ -33,22 +33,22 @@
 namespace chem { 
 namespace detail {
 
-template <typename M, class S>
+template <typename Matrix, class SymmGroup>
 class RelChemHelper
 {
 public:
-    using value_type = typename M::value_type;
+    using value_type = typename Matrix::value_type;
     using term_descriptor = ::term_descriptor<value_type>;
-    using tag_type = typename TagHandler<M, S>::tag_type;
+    using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
     using pos_t = Lattice::pos_t;
 
-    RelChemHelper(BaseParameters & parms, Lattice const & lat_, std::vector<tag_type> const & ident_,
-                  std::vector<tag_type> const & fill_, std::shared_ptr<TagHandler<M, S> > tag_handler_)
+    RelChemHelper(BaseParameters& parms, const Lattice& lat_, const std::vector<tag_type>& ident_,
+                  const std::vector<tag_type>& fill_, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
         : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
     {
-		boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
-        for (std::size_t m=0; m < matrix_elements.size(); ++m) {
-            IndexTuple<S, 4> pos;
+		boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup, chem::Hamiltonian::RelativisticElectronic>(parms, lat);
+        for (int m = 0; m < matrix_elements.size(); ++m) {
+            IndexTuple<SymmGroup, 4> pos;
 			std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
             coefficients[pos] = matrix_elements[m];
         }
@@ -70,9 +70,9 @@ public:
     void add_term(std::vector<term_descriptor> & tagterms,
                   value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2) {
 
-        auto term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
-        IndexTuple<S, 4> id({p1, p2, static_cast<int>(op_1[lat.get_prop<typename S::subcharge>("type", p1)]),
-                                     static_cast<int>(op_2[lat.get_prop<typename S::subcharge>("type", p2)])});
+        auto term = TermMaker<Matrix, SymmGroup>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
+        IndexTuple<SymmGroup, 4> id({p1, p2, static_cast<int>(op_1[lat.get_prop<typename SymmGroup::subcharge>("type", p1)]),
+                                             static_cast<int>(op_2[lat.get_prop<typename SymmGroup::subcharge>("type", p2)])});
         if (two_terms.count(id) == 0)
             two_terms[id] = term;
         else
@@ -84,14 +84,10 @@ public:
                   std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
                   std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
     {
-        term_descriptor
-        term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
-        IndexTuple<S, 6> id({static_cast<int>(term.position(0)),
-                             static_cast<int>(term.position(1)),
-                             static_cast<int>(term.position(2)),
-                             static_cast<int>(term.operator_tag(0)),
-                             static_cast<int>(term.operator_tag(1)),
-                             static_cast<int>(term.operator_tag(2))});
+        auto term = TermMaker<Matrix, SymmGroup>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
+        IndexTuple<SymmGroup, 6> id({static_cast<int>(term.position(0)), static_cast<int>(term.position(1)),
+                                     static_cast<int>(term.position(2)), static_cast<int>(term.operator_tag(0)),
+                                     static_cast<int>(term.operator_tag(1)), static_cast<int>(term.operator_tag(2))});
         if (three_terms.count(id) == 0)
             three_terms[id] = term;
         else
@@ -103,18 +99,16 @@ public:
                   std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
                   std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
     {
-		auto term = TermMaker<M, S>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler, lat);
-
+		auto term = TermMaker<Matrix, SymmGroup>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler, lat);
 		if (i<k)
             std::swap(i,k);
 		if (j<l)
             std::swap(j,l);
-
-		IndexTuple<S, 8> id(IndexTuple<S, 4>(std::array<int, 4>{i,k,l,j}),
-                            IndexTuple<S, 4>(std::array<int, 4>{static_cast<int>(op_i[lat.get_prop<typename S::subcharge>("type",i)]),
-                                                                static_cast<int>(op_k[lat.get_prop<typename S::subcharge>("type",k)]),
-                                                                static_cast<int>(op_l[lat.get_prop<typename S::subcharge>("type",l)]),
-                                                                static_cast<int>(op_j[lat.get_prop<typename S::subcharge>("type",j)])}));
+		IndexTuple<SymmGroup, 8> id(IndexTuple<SymmGroup, 4>(std::array<int, 4>{i,k,l,j}),
+                                    IndexTuple<SymmGroup, 4>(std::array<int, 4>{static_cast<int>(op_i[lat.get_prop<typename SymmGroup::subcharge>("type",i)]),
+                                                                                static_cast<int>(op_k[lat.get_prop<typename SymmGroup::subcharge>("type",k)]),
+                                                                                static_cast<int>(op_l[lat.get_prop<typename SymmGroup::subcharge>("type",l)]),
+                                                                                static_cast<int>(op_j[lat.get_prop<typename SymmGroup::subcharge>("type",j)])}));
 		if (four_terms.count(id) == 0)
 			four_terms[id] = term;
 		else
@@ -124,14 +118,14 @@ public:
 private:
     const std::vector<tag_type>& ident;
     const std::vector<tag_type>& fill;
-    std::shared_ptr<TagHandler<M, S> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     Lattice const & lat;
     std::vector<value_type> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
-    std::map<IndexTuple<S, 4>, value_type> coefficients;
-    std::map<IndexTuple<S, 8>, term_descriptor> four_terms;
-    std::map<IndexTuple<S, 6>, term_descriptor> three_terms;
-    std::map<IndexTuple<S, 4>, term_descriptor> two_terms;
+    std::map<IndexTuple<SymmGroup, 4>, value_type> coefficients;
+    std::map<IndexTuple<SymmGroup, 8>, term_descriptor> four_terms;
+    std::map<IndexTuple<SymmGroup, 6>, term_descriptor> three_terms;
+    std::map<IndexTuple<SymmGroup, 4>, term_descriptor> two_terms;
 };
 
 } // namespace detail

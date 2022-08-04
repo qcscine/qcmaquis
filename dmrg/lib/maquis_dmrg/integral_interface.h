@@ -57,19 +57,20 @@ namespace chem {
  * 3. Nuclear repulsion energy uses an index 0,0,0,0 
  * 
  * @tparam V Type associated with the scalar factors of the Hamiltonian
- * @tparam HamiltonianType Enum class representing the 
+ * @tparam HamiltonianType Enum class representing the Hamiltonian type.
+ * @tparam Transcorrelation Enum class representing whether the Hamiltonian was transcorrelated.
  */
-template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+template<class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic, HamiltonianTransformation Transcorrelation=HamiltonianTransformation::Conventional>
 class integral_map
 {
 public:
-    typedef std::unordered_map<index_type<HamiltonianType>, V, integral_hash<HamiltonianType>> map_t;
-    typedef typename map_t::size_type size_type;
+    using map_t = std::unordered_map<index_type<HamiltonianType, Transcorrelation>, V, integral_hash<HamiltonianType, Transcorrelation>>;
+    using size_type = typename map_t::size_type;
     // Type which returns std::abs(V), for the integral cutoff
     // Not very clean but std::conditional seems not to work here
-    typedef typename std::complex<V>::value_type value_type;
-    typedef typename map_t::iterator iterator;
-    typedef typename map_t::const_iterator const_iterator;
+    using value_type = typename std::complex<V>::value_type;
+    using iterator = typename map_t::iterator;
+    using const_iterator = typename map_t::const_iterator;
 
     /** @brief Default constructor */
     integral_map() = default;

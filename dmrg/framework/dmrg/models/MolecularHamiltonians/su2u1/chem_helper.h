@@ -33,35 +33,39 @@
 namespace chem {
 namespace detail {
 
-template <typename M, class S>
+template <typename Matrix, class SymmGroup>
 class ChemHelperSU2
 {
 public:
-    using value_type = typename M::value_type;
+    using value_type = typename Matrix::value_type;
     using term_descriptor = ::term_descriptor<value_type>;
     using pos_t = Lattice::pos_t;
 
-    ChemHelperSU2(BaseParameters & parms, Lattice const & lat, std::shared_ptr<TagHandler<M, S> > tag_handler_)
+    /** @brief Class constructor */
+    ChemHelperSU2(BaseParameters& parms, const Lattice& lat, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
         : tag_handler(tag_handler_)
     {
-        boost::tie(idx_, matrix_elements) = parse_integrals<value_type, S>(parms, lat);
-        for (std::size_t m=0; m < matrix_elements.size(); ++m) {
-            IndexTuple<S, 4> pos;
+        boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup, chem::Hamiltonian::Electronic>(parms, lat);
+        for (int m = 0; m < matrix_elements.size(); ++m) {
+            IndexTuple<SymmGroup, 4> pos;
             std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
             coefficients[pos] = matrix_elements[m];
         }
     
     }
+
+    /** @brief Getter for the Hamiltonian coefficients */
     std::vector<value_type> const & getMatrixElements() const { return matrix_elements; }
 
+    /** @brief Getter for the Hamiltonian indices */
     alps::numeric::matrix<Lattice::pos_t> const & getIdx() const { return idx_; }
-    int idx(int m, int pos) const {
-        return idx_(m,pos);
-    }
+
+    /** @brief Getter for a specific Hamiltonian index */
+    int idx(int m, int pos) const { return idx_(m,pos); }
 
     void commit_terms(std::vector<term_descriptor> & tagterms) 
     {
-        using EightTuple = IndexTuple<S, 8>;
+        using EightTuple = IndexTuple<SymmGroup, 8>;
         for (const auto& it: two_terms)
             tagterms.push_back(it.second);
         for (const auto& it: three_terms)
@@ -74,8 +78,8 @@ public:
     // Collapse terms with identical operators and different scales into one term
     void add_2term(std::vector<term_descriptor> & tagterms, term_descriptor term)
     {
-        IndexTuple<S, 4> id({static_cast<int>(term.position(0)), static_cast<int>(term.position(1)),
-                             static_cast<int>(term.operator_tag(0)), static_cast<int>(term.operator_tag(1))});
+        IndexTuple<SymmGroup, 4> id({static_cast<int>(term.position(0)), static_cast<int>(term.position(1)),
+                                     static_cast<int>(term.operator_tag(0)), static_cast<int>(term.operator_tag(1))});
         if (two_terms.count(id) == 0)
             two_terms[id] = term;
         else
@@ -84,7 +88,7 @@ public:
 
     void add_3term(std::vector<term_descriptor> & tagterms, term_descriptor term)
     {
-        using SixTuple = IndexTuple<S, 6>;
+        using SixTuple = IndexTuple<SymmGroup, 6>;
         SixTuple id({static_cast<int>(term.position(0)),
                      static_cast<int>(term.position(1)),
                      static_cast<int>(term.position(2)),
@@ -99,10 +103,10 @@ public:
 
     void add_4term(std::vector<term_descriptor> & tagterms, term_descriptor term)
     {
-        using EightTuple = IndexTuple<S, 8>;
-        IndexTuple<S, 4> pos(std::array<int, 4>({term.position(0), term.position(1), term.position(2), term.position(3)}));
-        IndexTuple<S, 4> ops(std::array<int, 4>({static_cast<int>(term.operator_tag(0)), static_cast<int>(term.operator_tag(1)),
-                                                 static_cast<int>(term.operator_tag(2)), static_cast<int>(term.operator_tag(3))}));
+        using EightTuple = IndexTuple<SymmGroup, 8>;
+        IndexTuple<SymmGroup, 4> pos(std::array<int, 4>({term.position(0), term.position(1), term.position(2), term.position(3)}));
+        IndexTuple<SymmGroup, 4> ops(std::array<int, 4>({static_cast<int>(term.operator_tag(0)), static_cast<int>(term.operator_tag(1)),
+                                                         static_cast<int>(term.operator_tag(2)), static_cast<int>(term.operator_tag(3))}));
         EightTuple id(pos, ops);
         if (four_terms.count(id) == 0 )
             four_terms[id] = term;
@@ -111,13 +115,13 @@ public:
     }
 
 private:
-    std::shared_ptr<TagHandler<M, S> > tag_handler;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     std::vector<value_type> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
-    std::map<IndexTuple<S, 4>, value_type> coefficients;
-    std::map<IndexTuple<S, 4>, term_descriptor> two_terms;
-    std::map<IndexTuple<S, 6>, term_descriptor> three_terms;
-    std::map<IndexTuple<S, 8>, term_descriptor> four_terms;
+    std::map<IndexTuple<SymmGroup, 4>, value_type> coefficients;
+    std::map<IndexTuple<SymmGroup, 4>, term_descriptor> two_terms;
+    std::map<IndexTuple<SymmGroup, 6>, term_descriptor> three_terms;
+    std::map<IndexTuple<SymmGroup, 8>, term_descriptor> four_terms;
 };
 
 }

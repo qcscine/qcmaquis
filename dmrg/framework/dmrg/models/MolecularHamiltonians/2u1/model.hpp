@@ -31,9 +31,10 @@
 #include "dmrg/models/JordanWignerManager.h"
 
 using Hamiltonian = chem::Hamiltonian;
+using HamiltonianTransformation = chem::HamiltonianTransformation;
 
-template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
-qc_model<Matrix, SymmGroup, HamiltonianType>::qc_model(Lattice const & lat_, BaseParameters & parms_)
+template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
+qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice const & lat_, BaseParameters & parms_)
     : lat(lat_), parms(parms_), tag_handler(new table_type())
 {
     typedef typename SymmGroup::subcharge subcharge;
@@ -189,13 +190,13 @@ qc_model<Matrix, SymmGroup, HamiltonianType>::qc_model(Lattice const & lat_, Bas
 }
 
 /** @brief Create the Hamiltonian terms */
-template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
-void qc_model<Matrix, SymmGroup, HamiltonianType>::create_terms()
+template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms()
 {
     // Generates the data required to form the Hamiltonian
     auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
     MapOfOperatorsType mapOfOperators;
-    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType> term_assistant(parms, lat, ident, fill, tag_handler);
+    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
     // Tmp objects.
     std::vector< OperatorType > oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
@@ -329,8 +330,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType>::create_terms()
 }
 
 /** @brief Adds an operator to the underyling operator map */
-template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
-void qc_model<Matrix, SymmGroup, HamiltonianType>::addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const {
+template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const {
     //
     if (mapOfOperators.find(term.getBase()) == mapOfOperators.end())
         mapOfOperators.insert({term.getBase(), term.coeff });

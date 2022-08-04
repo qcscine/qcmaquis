@@ -88,7 +88,8 @@ void updateIndices(const std::pair<IndexType, T>& t, const std::vector<int>& inv
  * @param do_align if true, permutes the indices to have a common sorting.
  * @return std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
  */
-template <class T, class SymmGroup, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+template <class T, class SymmGroup, Hamiltonian HamiltonianType,
+          HamiltonianTransformation Transcorrelated = HamiltonianTransformation::Conventional>
 inline std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
 parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
 {
@@ -97,7 +98,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType)>;
     using IndexType = chem::index_type<HamiltonianType>;
     static constexpr int numberOfIntegers = getIndexDim(HamiltonianType);
-    static constexpr bool isHermitian = isModelHermitian(HamiltonianType);
+    static constexpr bool isHermitian = (Transcorrelated == HamiltonianTransformation::Transcorrelated);
     //
     std::vector<int> inv_order;
     std::vector<T> matrix_elements;

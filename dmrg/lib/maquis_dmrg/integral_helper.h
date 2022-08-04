@@ -32,23 +32,11 @@
 namespace chem {
 
 /** @brief Enum class distinguishing the possible types of Hamiltonians */
-enum class Hamiltonian {Electronic, ElectronicTranscorrelated,
+enum class Hamiltonian {Electronic, RelativisticElectronic,
                         VibrationalCanonical, VibrationalNMode,
                         PreBO, Vibronic, Excitonic};
 
-/** @brief Constexpr function returning whether an Hamiltonian is Hermitian */
-constexpr bool isModelHermitian(const Hamiltonian& type) {
-    bool ret = true;
-    switch (type) {
-        case Hamiltonian::ElectronicTranscorrelated:
-            ret = false;
-            break;
-        default:
-            ret = true;
-            break;
-    }
-    return ret;
-}
+enum class HamiltonianTransformation {Conventional, Transcorrelated};
 
 /** 
  * @brief Constexpr function returning the index of the Hamiltonian map
@@ -70,14 +58,22 @@ constexpr bool isModelHermitian(const Hamiltonian& type) {
  *   equal to the max. order of the Taylor expansion of the PES. Here we include
  *   up to sixth-order force constants.
  */
-constexpr int getIndexDim(const Hamiltonian& type) {
+constexpr int getIndexDim(const Hamiltonian& type,
+                          const HamiltonianTransformation& transformation=HamiltonianTransformation::Conventional) {
     int indexDim=0;
     switch (type) {
         case Hamiltonian::Electronic:
-            indexDim = 4;
+            switch (transformation) {
+                case HamiltonianTransformation::Conventional:
+                    indexDim = 4;
+                    break;
+                case HamiltonianTransformation::Transcorrelated:
+                    indexDim = 6;
+                    break;
+            }
             break;
-        case Hamiltonian::ElectronicTranscorrelated:
-            indexDim = 6;
+        case Hamiltonian::RelativisticElectronic:
+            indexDim = 4;
             break;
         case Hamiltonian::VibrationalCanonical:
             indexDim = 6;
@@ -104,16 +100,18 @@ constexpr int getIndexDim(const Hamiltonian& type) {
 
 
 /** @brief Class associated with the index identifying a single SQ operator */
-template <Hamiltonian HamiltonianType=Hamiltonian::Electronic, int N = getIndexDim(HamiltonianType)>
-using index_type = std::array<int, N>;
+template <Hamiltonian HamiltonianType=Hamiltonian::Electronic, HamiltonianTransformation Transcorrelation=HamiltonianTransformation::Conventional>
+using index_type = std::array<int, getIndexDim(HamiltonianType, Transcorrelation)>;
 
 /** @brief Class associated with a single entry of the Hamiltonian */
-template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
-using integral_tuple = std::pair<index_type<HamiltonianType>, V>;
+template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic,
+          HamiltonianTransformation Transcorrelation=HamiltonianTransformation::Conventional>
+using integral_tuple = std::pair<index_type<HamiltonianType, Transcorrelation>, V>;
 
 /** @brief Class associated with the overall Hamiltonian */
-template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
-using integrals = std::vector<integral_tuple<V, HamiltonianType> >; // TODO: use a map later
+template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic,
+          HamiltonianTransformation Transcorrelation=HamiltonianTransformation::Conventional>
+using integrals = std::vector<integral_tuple<V, HamiltonianType, Transcorrelation> >; // TODO: use a map later
 
 // Structs needed for distinguishing whether we have a complex type or not
 // required for proper integral permutation rules in the integral_map.
@@ -124,14 +122,13 @@ struct is_complex_t<std::complex<T> > : public std::true_type {};
 
 
 /** @brief Hasing function for a single Hamiltonian entry */
-template <Hamiltonian HamiltonianType=Hamiltonian::Electronic>
+template <Hamiltonian HamiltonianType=Hamiltonian::Electronic, HamiltonianTransformation Transcorrelation=HamiltonianTransformation::Conventional>
 struct integral_hash
 {
-    public:
-        std::size_t operator()(const index_type<HamiltonianType>& id) const
-        {
-            return boost::hash_range(id.begin(), id.end());
-        }
+public:
+    std::size_t operator()(const index_type<HamiltonianType, Transcorrelation>& id) const {
+        return boost::hash_range(id.begin(), id.end());
+    }
 };
 
 } // namespace chem

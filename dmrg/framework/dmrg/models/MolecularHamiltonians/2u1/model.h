@@ -48,8 +48,9 @@
 #include "dmrg/utils/checks.h"
 
 using Hamiltonian = chem::Hamiltonian;
+using HamiltonianTransformation = chem::HamiltonianTransformation;
 
-template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
+template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation HamiltonianTranscorrelated>
 class qc_model : public model_impl<Matrix, SymmGroup>
 {
     // Types definition
@@ -1041,7 +1042,7 @@ private:
     BaseParameters & parms;
     std::vector<Index<SymmGroup> > phys_indices;
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    bool isTranscorrelated_=false;
+    static constexpr bool isTranscorrelated_ = (HamiltonianTranscorrelated == HamiltonianTransformation::Transcorrelated);
 
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
