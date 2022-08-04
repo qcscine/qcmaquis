@@ -188,7 +188,7 @@ namespace alps {
         }
 
         template <typename T, class memoryblock>
-        typename matrix<T>::value_type overlap(const matrix<T, memoryblock> & M1, const matrix<T, memoryblock> & M2){
+        typename matrix<T, memoryblock>::value_type overlap(const matrix<T, memoryblock> & M1, const matrix<T, memoryblock> & M2){
             typename matrix<T, memoryblock>::value_type ret(0);
             for (std::size_t c = 0; c < num_cols(M1); ++c)
                 for (std::size_t r = 0; r < num_rows(M1); ++r)
