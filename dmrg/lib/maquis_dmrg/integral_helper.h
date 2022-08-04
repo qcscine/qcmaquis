@@ -36,6 +36,20 @@ enum class Hamiltonian {Electronic, ElectronicTranscorrelated,
                         VibrationalCanonical, VibrationalNMode,
                         PreBO, Vibronic, Excitonic};
 
+/** @brief Constexpr function returning whether an Hamiltonian is Hermitian */
+constexpr bool isModelHermitian(const Hamiltonian& type) {
+    bool ret = true;
+    switch (type) {
+        case Hamiltonian::ElectronicTranscorrelated:
+            ret = false;
+            break;
+        default:
+            ret = true;
+            break;
+    }
+    return ret;
+}
+
 /** 
  * @brief Constexpr function returning the index of the Hamiltonian map
  * 

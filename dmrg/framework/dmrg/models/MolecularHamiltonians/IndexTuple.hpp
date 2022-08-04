@@ -83,9 +83,9 @@ public:
   }
 
   /** In-place alignment */
-  void align() {
+  void align(bool isHermitian) {
     if (doAlignment)
-      tmpStorage = maquis::detail::alignArray(tmpStorage);
+      tmpStorage = maquis::detail::alignArray(tmpStorage, isHermitian);
   }
 
   /** @brief Non-const begin pointer */

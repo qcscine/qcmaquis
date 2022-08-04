@@ -622,7 +622,7 @@ public:
         // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
         // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
         auto key = chem::detail::IndexTuple<S, 4>({i,j,k,l});
-        key.align();
+        key.align(true);
 
         pos_t i_ = key[0];
         pos_t j_ = key[1];

@@ -47,12 +47,13 @@ namespace detail {
  * @param matrix_elements vector storing the Hamiltonian coefficients.
  * @param indices vector storing the indices corresponding to [matrix_elements].
  * @param do_align if true, align (i.e., put in canonical order) the index.
+ * @param isHermitian (true if the Hamiltonian is Hermitian -- used to enforce the orbital canonization)
  * @param cutoff positive number, cutoff used to neglect terms in the Hamiltonian.
  */
 template <class T, class SymmGroup, class IndexType, Hamiltonian HamiltonianType>
 void updateIndices(const std::pair<IndexType, T>& t, const std::vector<int>& inv_order,
                    std::vector<T>& matrix_elements, std::vector<IndexType>& indices,
-                   bool do_align, double cutoff) 
+                   bool do_align, bool isHermitian, double cutoff)
 {
     // Types declaration
     using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType)>;
@@ -73,7 +74,7 @@ void updateIndices(const std::pair<IndexType, T>& t, const std::vector<int>& inv
             idx++;
         }
         if (do_align)
-            tmp.align();
+            tmp.align(isHermitian);
         indices.push_back(tmp.data());
     }
 }
@@ -85,7 +86,7 @@ void updateIndices(const std::pair<IndexType, T>& t, const std::vector<int>& inv
  * @param parms Parameter container
  * @param lat lattice object.
  * @param do_align if true, permutes the indices to have a common sorting.
- * @return std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> > 
+ * @return std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
  */
 template <class T, class SymmGroup, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
 inline std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
@@ -96,11 +97,11 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType)>;
     using IndexType = chem::index_type<HamiltonianType>;
     static constexpr int numberOfIntegers = getIndexDim(HamiltonianType);
-    // 
+    static constexpr bool isHermitian = isModelHermitian(HamiltonianType);
+    //
     std::vector<int> inv_order;
     std::vector<T> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
-
     // Loads the ordering from input and determine inverse ordering.
     // Note that the inverse ordering is what is actually needed.
     // In fact, the input tells me which lattice size of the *new* order corresponds to which
@@ -126,9 +127,8 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     inv_order.resize(order.size());
     for (int p = 0; p < order.size(); ++p)
         inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
-
     // == PARSING OF THE DATA ==
-    std::vector<index_type<Hamiltonian::Electronic>> indices;
+    std::vector<index_type<HamiltonianType>> indices;
     std::unique_ptr<std::istream> orb_string;
     // FCIDUMP integrals provided as a single string (undocumented, used only for testing purposes)
     // Note that, in this case, we don't expect any header.
@@ -156,7 +156,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
         ia >> ints;
         for (auto&& t: ints)
             updateIndices<T, SymmGroup, IndexType, HamiltonianType>(t, inv_order, matrix_elements, indices,
-                                                                    do_align, parms["integral_cutoff"]);
+                                                                    do_align, isHermitian, parms["integral_cutoff"]);
     }
     else {
         throw std::runtime_error("Integrals are not defined in the input.");
@@ -169,7 +169,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     // but parms["integrals_binary"] is set and parsing is already completed, so the below can be skipped.
     // For this reason, there is a bit of code repetition compared to above.
 
-    if (orb_string) 
+    if (orb_string)
     {
         T val;
         while(parser_detail::read_value<T>(*(orb_string.get()), val)) {
@@ -180,21 +180,21 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
                 for (int iElement = 0; iElement < t.first.size(); iElement++)
                     *(orb_string.get()) >> t.first[iElement];
                 //*(orb_string.get()) >> t.first[0] >> t.first[1] >> t.first[2] >> t.first[3];
-            } 
+            }
             catch(std::exception & e) {
                 std::cerr << e.what() << std::endl;
                 throw std::runtime_error("error parsing integrals");
             }
             updateIndices<T, SymmGroup, IndexType, HamiltonianType>(t, inv_order, matrix_elements, indices,
-                                                                    do_align, parms["integral_cutoff"]);
+                                                                    do_align, isHermitian, parms["integral_cutoff"]);
         }
     }
-    
+
     // By now we should have parsed all the integrals, but we still have to convert the indices to alps::numeric::matrix<Lattice::pos_t>
     // Leon: I didn't figure out how to safely add a row to alps::matrix using POD and not iterators
     // so I'm using a temporary object to read all the integrals
     // and then use resize on the alps::matrix once I know the temporary object's size.
-    
+
     idx_.resize(indices.size(), numberOfIntegers);
 
     // is better done with row iterators

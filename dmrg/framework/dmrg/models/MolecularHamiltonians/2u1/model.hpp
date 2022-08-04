@@ -206,7 +206,8 @@ void qc_model<Matrix, SymmGroup>::create_terms()
     std::vector< OperatorType > opVector4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
     std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
     // == MAIN LOOP ==
-    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
+    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++)
+    {
         int i = term_assistant.idx(iElement, 0);
         int j = term_assistant.idx(iElement, 1);
         int k = term_assistant.idx(iElement, 2);

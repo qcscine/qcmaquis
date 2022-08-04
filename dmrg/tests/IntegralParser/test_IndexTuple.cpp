@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_FourElement_Align )
 {
   using TupleType = chem::detail::IndexTuple<TwoU1, 4>;
   TupleType indexUnsorted(std::array<int, 4>{3, 4, 8, 2});
-  indexUnsorted.align();
+  indexUnsorted.align(true);
   BOOST_CHECK_EQUAL(indexUnsorted[0], 8);
   BOOST_CHECK_EQUAL(indexUnsorted[1], 2);
   BOOST_CHECK_EQUAL(indexUnsorted[2], 4);
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_SixElement_Align_1 )
 {
   using TupleType = chem::detail::IndexTuple<TwoU1, 6>;
   TupleType indexUnsorted(std::array<int, 6>{3, 1, 4, 5, 6, 2});
-  indexUnsorted.align();
+  indexUnsorted.align(true);
   BOOST_CHECK_EQUAL(indexUnsorted[0], 6);
   BOOST_CHECK_EQUAL(indexUnsorted[1], 2);
   BOOST_CHECK_EQUAL(indexUnsorted[2], 5);
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( Test_IndexTuple_SixElement_Align_2 )
 {
   using TupleType = chem::detail::IndexTuple<TwoU1, 6>;
   TupleType indexUnsorted(std::array<int, 6>{3, 1, 2, 3, 3, 3});
-  indexUnsorted.align();
+  indexUnsorted.align(true);
   BOOST_CHECK_EQUAL(indexUnsorted[0], 3);
   BOOST_CHECK_EQUAL(indexUnsorted[1], 3);
   BOOST_CHECK_EQUAL(indexUnsorted[2], 3);

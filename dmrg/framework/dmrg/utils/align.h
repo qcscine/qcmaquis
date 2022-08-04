@@ -60,18 +60,20 @@ public:
 };
 
 /** @brief Align function for the 4-element array */
-inline auto alignArray(const std::array<int, 4>& idx) 
+inline auto alignArray(const std::array<int, 4>& idx, bool isHermitian) 
 {
     int i = idx[0];
     int j = idx[1];
     int k = idx[2];
     int l = idx[3];
-    // Same coordinate swap
-    if (i < j)
-        std::swap(i, j);
-    if (k < l)
-        std::swap(k, l);
-    // Hermitian swap
+    // Same coordinate swap --> symmetry only available if Hermitean
+    if (isHermitian) {
+        if (i < j)
+            std::swap(i, j);
+        if (k < l)
+            std::swap(k, l);
+    }
+    // R12 swap
     if (i < k) {
         std::swap(i, k);
         std::swap(j, l);
@@ -83,33 +85,39 @@ inline auto alignArray(const std::array<int, 4>& idx)
 }
 
 /** @brief Align function for the 6-element array */
-inline auto alignArray(const std::array<int, 6>& idx) {
+inline auto alignArray(const std::array<int, 6>& idx, bool isHermitian) {
     int i = idx[0];
     int j = idx[1];
     int k = idx[2];
     int l = idx[3];
     int m = idx[4];
     int n = idx[5];
-    //
-    if (i < j)
-        std::swap(i, j);
-    if (k < l)
-        std::swap(k, l);
-    if (m < n)
-        std::swap(m, n);
-    // Hermitian swap
+    // bra <--> ket symmetry for each coordinate, only valid if Hermitian
+    if (isHermitian) {
+        if (i < j)
+            std::swap(i, j);
+        if (k < l)
+            std::swap(k, l);
+        if (m < n)
+            std::swap(m, n);
+    }
+    // R123 symmetry wrt 1/2
     if (i < k) {
         std::swap(i, k);
         std::swap(j, l);
     }
+    // R123 symmetry wrt 2/3
     if (k < m) {
         std::swap(k, m);
         std::swap(l, n);
     }
+    // R123 symmetry wrt 1/2 (to be repeated in case the previous swap screwed
+    // up stuff)
     if (i < k) {
         std::swap(i, k);
         std::swap(j, l);
     }
+    // Same as above, but for the specific case in which a few indices are equal.
     if (i == k && j < l) {
         std::swap(j, l);
     }
@@ -129,8 +137,8 @@ class AlignTraitTypeClass { };
 template<>
 class AlignTraitTypeClass<double> {
 public:
-    static std::array<int, 4> align(const std::array<int, 4>& idx) { return alignArray(idx); }
-    static std::array<int, 6> align(const std::array<int, 6>& idx) { return alignArray(idx); }
+    static std::array<int, 4> align(const std::array<int, 4>& idx) { return alignArray(idx, true); }
+    static std::array<int, 6> align(const std::array<int, 6>& idx) { return alignArray(idx, true); }
 };
 
 template<>
