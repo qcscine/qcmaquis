@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
+ *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -47,8 +47,9 @@
 #include "dmrg/models/MolecularHamiltonians/2u1/chem_helper.h"
 #include "dmrg/utils/checks.h"
 
+using Hamiltonian = chem::Hamiltonian;
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
 class qc_model : public model_impl<Matrix, SymmGroup>
 {
     // Types definition

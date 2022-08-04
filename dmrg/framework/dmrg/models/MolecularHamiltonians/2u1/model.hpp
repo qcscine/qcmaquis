@@ -30,8 +30,10 @@
 
 #include "dmrg/models/JordanWignerManager.h"
 
-template <class Matrix, class SymmGroup>
-qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
+using Hamiltonian = chem::Hamiltonian;
+
+template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
+qc_model<Matrix, SymmGroup, HamiltonianType>::qc_model(Lattice const & lat_, BaseParameters & parms_)
     : lat(lat_), parms(parms_), tag_handler(new table_type())
 {
     typedef typename SymmGroup::subcharge subcharge;
@@ -187,13 +189,13 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 }
 
 /** @brief Create the Hamiltonian terms */
-template<class Matrix, class SymmGroup>
-void qc_model<Matrix, SymmGroup>::create_terms()
+template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
+void qc_model<Matrix, SymmGroup, HamiltonianType>::create_terms()
 {
     // Generates the data required to form the Hamiltonian
     auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
     MapOfOperatorsType mapOfOperators;
-    chem::detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler, isTranscorrelated_);
+    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
     // Tmp objects.
     std::vector< OperatorType > oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
@@ -327,8 +329,8 @@ void qc_model<Matrix, SymmGroup>::create_terms()
 }
 
 /** @brief Adds an operator to the underyling operator map */
-template <class Matrix, class SymmGroup>
-void qc_model<Matrix, SymmGroup>::addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const {
+template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType>
+void qc_model<Matrix, SymmGroup, HamiltonianType>::addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const {
     //
     if (mapOfOperators.find(term.getBase()) == mapOfOperators.end())
         mapOfOperators.insert({term.getBase(), term.coeff });

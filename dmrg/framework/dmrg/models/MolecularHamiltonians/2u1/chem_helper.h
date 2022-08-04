@@ -34,34 +34,36 @@
 namespace chem {
 namespace detail {
 
-template <typename M, class S>
+template <typename Matrix, class SymmGroup, Hamiltonian HamiltonianType>
 class ChemHelper
 {
 public:
-    using value_type = typename M::value_type;
+    // Type definition
+    using value_type = typename Matrix::value_type;
     using term_descriptor = ::term_descriptor<value_type>;
-    using tag_type = typename TagHandler<M, S>::tag_type;
+    using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
     using pos_t = Lattice::pos_t;
 
     /** @brief Class constructor */
-    ChemHelper(BaseParameters & parms, Lattice const & lat_
-               , std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_
-               , std::shared_ptr<TagHandler<M, S> > tag_handler_, bool isTranscorrelated=false)
-        : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_),
-          isTranscorrelated_(isTranscorrelated)
+    ChemHelper(BaseParameters & parms, Lattice const & lat_, std::vector<tag_type> const & ident_,
+               std::vector<tag_type> const & fill_, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
+        : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
     {
-        boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
-        for (std::size_t m=0; m < matrix_elements.size(); ++m) {
-            IndexTuple<S, 4> pos;
+        boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup>(parms, lat);
+        for (int m = 0; m < matrix_elements.size(); ++m) {
+            IndexTuple<SymmGroup, numberOfIntegers> pos;
             std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
             coefficients[pos] = matrix_elements[m];
         }
     }
 
-    std::vector<value_type> & getMatrixElements() { return matrix_elements; }
+    /** @brief Getter for a reference to the matrix elements */
+    std::vector<value_type>& getMatrixElements() { return matrix_elements; }
 
+    /** @brief Getter for the indices */
     int idx(int m, int pos) const { return idx_(m,pos); }
 
+    /*
     void commit_terms(std::vector<term_descriptor> & tagterms) {
         for (const auto& it = two_terms.begin(); it != two_terms.end(); ++it)
             tagterms.push_back(it->second);
@@ -157,20 +159,22 @@ public:
                                                            op_i, op_k, op_l, op_j, tag_handler, lat) );
         }
     }
+    */
 
 private:
-    std::vector<tag_type> const & ident;
-    std::vector<tag_type> const & fill;
-    std::shared_ptr<TagHandler<M, S> > tag_handler;
-    Lattice const & lat;
+    static constexpr int numberOfIntegers = getIndexDim(HamiltonianType);
+    const std::vector<tag_type>& ident;
+    const std::vector<tag_type>& fill;
+    std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    const Lattice& lat;
     std::vector<value_type> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
-    std::vector<Lattice::pos_t> order;
-    std::vector<Lattice::pos_t> inv_order;
-    std::map<IndexTuple<S, 4>, value_type> coefficients;
-    std::map<IndexTuple<S, 6>, term_descriptor> three_terms;
-    std::map<IndexTuple<S, 4>, term_descriptor> two_terms;
-    bool isTranscorrelated_;
+    // std::vector<Lattice::pos_t> order;
+    // std::vector<Lattice::pos_t> inv_order;
+    std::map<IndexTuple<SymmGroup, numberOfIntegers>, value_type> coefficients;
+    // std::map<IndexTuple<S, 6>, term_descriptor> three_terms;
+    // std::map<IndexTuple<S, 4>, term_descriptor> two_terms;
+    // bool isTranscorrelated_;
 };
 
 } // detail

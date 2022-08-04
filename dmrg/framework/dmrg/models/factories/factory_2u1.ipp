@@ -40,7 +40,7 @@ struct coded_model_factory<Matrix, TwoU1>
     {
         using impl_ptr = std::shared_ptr<model_impl<Matrix, TwoU1> >;
         if (parms["MODEL"] == std::string("quantum_chemistry"))
-            return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
+            return impl_ptr( new qc_model<Matrix, TwoU1, Hamiltonian::Electronic>(lattice, parms) );
         else if (parms["MODEL"] == std::string("fermi_hubbard_real"))
             return (parms["transcorrelated_hamiltonian"] == "yes") ?
                     impl_ptr(new FermiHubbardRealTwoU1<Matrix>(lattice, parms, true)) :
