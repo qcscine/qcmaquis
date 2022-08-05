@@ -17,6 +17,10 @@ target_link_libraries(test_FH_RealSpace ${DMRG_APP_LIBRARIES})
 add_executable(test_FH_MomentumSpace test_FH_MomentumSpace.cpp)
 target_link_libraries(test_FH_MomentumSpace ${DMRG_APP_LIBRARIES})
 
+# *** Transcorrelated
+add_executable(test_transcorrelated_molecular Transcorrelated/TranscorrelatedMolecularTest.cpp)
+target_link_libraries(test_transcorrelated_molecular ${DMRG_APP_LIBRARIES})
+
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_imaginarytime_Electronic iTD-DMRG_Simulations/test_imaginarytime_Electronic.cpp)
     target_link_libraries(test_imaginarytime_Electronic ${DMRG_APP_LIBRARIES})

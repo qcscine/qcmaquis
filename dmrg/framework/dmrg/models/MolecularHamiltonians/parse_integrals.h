@@ -5,7 +5,7 @@
  * Copyright (C) 2014- Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2019 by Leon Freitag <lefreita@ethz.ch>
- *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -50,13 +50,13 @@ namespace detail {
  * @param isHermitian (true if the Hamiltonian is Hermitian -- used to enforce the orbital canonization)
  * @param cutoff positive number, cutoff used to neglect terms in the Hamiltonian.
  */
-template <class T, class SymmGroup, class IndexType, Hamiltonian HamiltonianType>
+template <class T, class SymmGroup, class IndexType, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
 void updateIndices(const std::pair<IndexType, T>& t, const std::vector<int>& inv_order,
                    std::vector<T>& matrix_elements, std::vector<IndexType>& indices,
                    bool do_align, bool isHermitian, double cutoff)
 {
     // Types declaration
-    using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType)>;
+    using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType, Transcorrelated)>;
     // Functor class used to reorder the integral indices (used for custom sorting)
     struct reorderer
     {
@@ -96,9 +96,11 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     // Types and variable definition
     using pos_t = Lattice::pos_t;
     using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType)>;
-    using IndexType = chem::index_type<HamiltonianType>;
-    static constexpr int numberOfIntegers = getIndexDim(HamiltonianType);
-    static constexpr bool isHermitian = (Transcorrelated == HamiltonianTransformation::Transcorrelated);
+    using IndexType = chem::index_type<HamiltonianType, Transcorrelated>;
+    using IntegralTupleType = integral_tuple<T, HamiltonianType, Transcorrelated>;
+    using IntegralMapType = integral_map<T, HamiltonianType, Transcorrelated>;
+    static constexpr int numberOfIntegers = getIndexDim(HamiltonianType, Transcorrelated);
+    static constexpr bool isHermitian = (Transcorrelated == HamiltonianTransformation::Conventional);
     //
     std::vector<int> inv_order;
     std::vector<T> matrix_elements;
@@ -129,7 +131,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     for (int p = 0; p < order.size(); ++p)
         inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
     // == PARSING OF THE DATA ==
-    std::vector<index_type<HamiltonianType>> indices;
+    std::vector<index_type<HamiltonianType, Transcorrelated>> indices;
     std::unique_ptr<std::istream> orb_string;
     // FCIDUMP integrals provided as a single string (undocumented, used only for testing purposes)
     // Note that, in this case, we don't expect any header.
@@ -149,15 +151,14 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
             orb_string.get()->ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     // Integrals provided as a binary file
-    else if (parms.is_set("integrals_binary"))
-    {
-        integral_map<T> ints;
+    else if (parms.is_set("integrals_binary")) {
+        IntegralMapType ints;
         std::stringstream ss(parms["integrals_binary"].as<std::string>());
         boost::archive::text_iarchive ia{ss};
         ia >> ints;
         for (auto&& t: ints)
-            updateIndices<T, SymmGroup, IndexType, HamiltonianType>(t, inv_order, matrix_elements, indices,
-                                                                    do_align, isHermitian, parms["integral_cutoff"]);
+            updateIndices<T, SymmGroup, IndexType, HamiltonianType, Transcorrelated>(t, inv_order, matrix_elements, indices,
+                                                                                     do_align, isHermitian, parms["integral_cutoff"]);
     }
     else {
         throw std::runtime_error("Integrals are not defined in the input.");
@@ -174,7 +175,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     {
         T val;
         while(parser_detail::read_value<T>(*(orb_string.get()), val)) {
-            integral_tuple<T> t;
+            IntegralTupleType t;
             t.second = val;
             // Parses the integral part.
             try {
@@ -186,8 +187,8 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
                 std::cerr << e.what() << std::endl;
                 throw std::runtime_error("error parsing integrals");
             }
-            updateIndices<T, SymmGroup, IndexType, HamiltonianType>(t, inv_order, matrix_elements, indices,
-                                                                    do_align, isHermitian, parms["integral_cutoff"]);
+            updateIndices<T, SymmGroup, IndexType, HamiltonianType, Transcorrelated>(t, inv_order, matrix_elements, indices,
+                                                                                     do_align, isHermitian, parms["integral_cutoff"]);
         }
     }
 
@@ -228,4 +229,4 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
 } // namespace detail
 } // namespace chem
 
-#endif
+#endif // QC_CHEM_PARSE_INTEGRALS_H
