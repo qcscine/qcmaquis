@@ -29,7 +29,8 @@
 #define QC_TERMMAKER_SU2_H
 
 #include "dmrg/models/term_descriptor.h"
-#include "dmrg/models/chem/util.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
+#include "dmrg/models/MolecularHamiltonians/IndexTuple.hpp"
 
 template <class M, class S>
 struct TermMakerSU2 {
@@ -38,12 +39,10 @@ struct TermMakerSU2 {
     typedef typename M::value_type value_type;
     typedef ::term_descriptor<value_type> term_descriptor;
     typedef typename operator_selector<M, S>::type op_t;
-
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef std::vector<tag_type> tag_vec;
     typedef typename term_descriptor::value_type pos_op_t;
     typedef std::shared_ptr<TagHandler<M, S> > tag_handler_t;
-
     typedef typename S::subcharge sc;
 
     struct OperatorBundle
@@ -622,32 +621,34 @@ public:
 
         // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
         // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
+        auto key = chem::detail::IndexTuple<S, 4>({i,j,k,l});
+        key.align(true);
 
-        chem::detail::IndexTuple key = chem::detail::align<S>(i,j,k,l);
-        pos_t i_ = key[0], j_ = key[1], k_ = key[2], l_ = key[3];
+        pos_t i_ = key[0];
+        pos_t j_ = key[1];
+        pos_t k_ = key[2];
+        pos_t l_ = key[3];
 
-        if (k_ > l_ && l_ > j_) // eg V_4132
-        { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
-
-            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, value_type(-std::sqrt(3.))*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
-            ret.push_back(TM::four_term(ops.ident.no_couple,      1,                matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+        if (k_ > l_ && l_ > j_) { // eg V_4132
+            // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, value_type(-std::sqrt(3.))*matrix_element, i, k, l, j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple, 1, matrix_element, i, k, l, j, ops.create, ops.destroy, lat));
         }
-        else if (k_ > j_ && j_ > l_) // eg V_4231
-        { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
-
+        else if (k_ > j_ && j_ > l_) { // eg V_4231
+            // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
             value_type local_element = matrix_element;
-            if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
-
+            if (TM::sgn(i,k,l,j))
+                local_element = -matrix_element;
             ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, value_type(std::sqrt(3.))*local_element, i,k,l,j, ops.create, ops.destroy, lat));
             ret.push_back(TM::four_term(ops.ident.no_couple,      1,               local_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
-        else if (j_ > k_ && k_ > l_) // eg V_4321
-        { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
-
+        else if (j_ > k_ && k_ > l_) { // eg V_4321
+            // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
             ret.push_back(TM::four_term(ops.ident.no_couple, 1, value_type(2.)*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
-        else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
-
+        else {
+            throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); 
+        }
         return ret;
     }
 
@@ -696,15 +697,28 @@ private:
               OperatorCollection const & ops, Lattice const & lat)
     {
         int s, p;
-
-        if (i==k && k==l)      { s = i; p = j; }
-        else if (k==l && l==j) { s = j; p = i; }
-        else if (i==l && l==j) { s = i; p = k; }
-        else if (i==k && k==j) { s = i; p = l; }
-        else  { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
-
+        if (i==k && k==l) {
+            s = i;
+            p = j; 
+        }
+        else if (k==l && l==j) {
+            s = j;
+            p = i; 
+        }
+        else if (i==l && l==j) {
+            s = i;
+            p = k;
+        }
+        else if (i==k && k==j) {
+            s = i;
+            p = l;
+        }
+        else {
+            throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); 
+        }
+        //
         std::vector<term_descriptor> ret;
-
+        //
         if (i==k) // one lonely destructor
             ret.push_back(TM::positional_two_term(
                 true, ops.ident.no_couple,  value_type(std::sqrt(2.))*matrix_element, s, p, ops.create_count.couple_down, ops.create_count.fill_couple_up,

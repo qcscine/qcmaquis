@@ -160,10 +160,12 @@ struct TermMaker {
         return std::vector<RetType>(tmp.begin(), tmp.end());
     }
 
+    /** @brief Comparison operator between two tags */
     static bool compare_tag(pos_op_t p1, pos_op_t p2) {
         return std::get<0>(p1) < std::get<0>(p2);
     }
 
+    /** @brief Function to add a simple two-term operator */
     static term_descriptor two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                      std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
                                      std::shared_ptr<TagHandler<M, S> > op_table,
@@ -177,6 +179,11 @@ struct TermMaker {
         return term;
     }
 
+    /** 
+     * @brief Same as above, but for positional operators.
+     * Note that here, by positional, we mean that also the filling operator is added in the operator
+     * evaluation, to take the Jordan-Wigner transformation into account.
+     */
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
                                                std::vector<tag_type> const & op1, std::vector<tag_type> const & op2,
                                                std::shared_ptr<TagHandler<M, S> > op_table, Lattice const & lat)
@@ -201,19 +208,16 @@ struct TermMaker {
         return term;
     }
 
-    // same, but multiply first two operators
+    /** @brief Same as above, but has three operators, where the first two act on the same site and can be multiplied together */
     static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
-                                     std::vector<tag_type> const & op1, std::vector<tag_type> const & op2, std::vector<tag_type> const & op3,
-                                     std::shared_ptr<TagHandler<M, S> > op_table,
-                                     Lattice const & lat)
+                                               std::vector<tag_type> const & op1, const std::vector<tag_type>& op2, const std::vector<tag_type>& op3,
+                                               std::shared_ptr<TagHandler<M, S> > op_table, const Lattice& lat)
     {
         term_descriptor term;
         term.is_fermionic = sign;
         term.coeff = scale;
-
         std::pair<tag_type, value_type> pre_ptag;
         pre_ptag = op_table->get_product_tag(op1[lat.get_prop<sc_t>("type",i)], op2[lat.get_prop<sc_t>("type",i)]);
-
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
             ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", i)], pre_ptag.first);
@@ -230,13 +234,15 @@ struct TermMaker {
         return term;
     }
 
+    /** @brief Three-site operator. Here the filling is added a-priori */
     static term_descriptor three_term(std::vector<tag_type> const & ident, std::vector<tag_type> const & fill_op,
-                                     value_type scale, pos_t pb, pos_t p1, pos_t p2,
-                                     std::vector<tag_type> const & opb1, std::vector<tag_type> const & opb2,
-                                     std::vector<tag_type> const & ops1, std::vector<tag_type> const & ops2,
-                                     std::shared_ptr<TagHandler<M, S> > op_table,
-                                     Lattice const & lat)
+                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
+                                      std::vector<tag_type> const & opb1, std::vector<tag_type> const & opb2,
+                                      std::vector<tag_type> const & ops1, std::vector<tag_type> const & ops2,
+                                      std::shared_ptr<TagHandler<M, S> > op_table,
+                                      Lattice const & lat)
     {
+        // Set up the descriptor object
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
@@ -246,7 +252,7 @@ struct TermMaker {
         tag_type op2 = ops2[lat.get_prop<sc_t>("type", p2)];
         std::pair<tag_type, value_type> ptag1, ptag2;
 
-        if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
+        if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ){
             // if the bosonic operator is in between
             // the fermionic operators, multiply with fill
             ptag1 = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", pb)], opb2[lat.get_prop<sc_t>("type", pb)]);
@@ -285,6 +291,7 @@ struct TermMaker {
         return term;
     }
 
+    /** @brief Three-site operator. Here the filling is added a-priori */
     static term_descriptor four_term(std::vector<tag_type> const & ident, std::vector<tag_type> const & fill_op,
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_j,

@@ -44,7 +44,7 @@ using std::endl;
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/models/chem/util.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
 #include "ci_encode.hpp"
 #include "sampling.hpp"
 

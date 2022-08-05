@@ -28,7 +28,7 @@
 *****************************************************************************/
 
 #include "maquis_dmrg_detail.h"
-#include "dmrg/models/chem/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
 
 namespace maquis {
     namespace interface_detail {

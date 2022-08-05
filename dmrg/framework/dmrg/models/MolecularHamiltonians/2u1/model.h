@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2015 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
+ *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -40,15 +40,17 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/util.h"
-#include "dmrg/models/chem/parse_integrals.h"
-#include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
+#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
+#include "dmrg/models/MolecularHamiltonians/pg_util.h"
+#include "dmrg/models/MolecularHamiltonians/2u1/term_maker.h"
+#include "dmrg/models/MolecularHamiltonians/2u1/chem_helper.h"
 #include "dmrg/utils/checks.h"
 
+using Hamiltonian = chem::Hamiltonian;
+using HamiltonianTransformation = chem::HamiltonianTransformation;
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation HamiltonianTranscorrelated>
 class qc_model : public model_impl<Matrix, SymmGroup>
 {
     // Types definition
@@ -1040,7 +1042,7 @@ private:
     BaseParameters & parms;
     std::vector<Index<SymmGroup> > phys_indices;
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    bool isTranscorrelated_=false;
+    static constexpr bool isTranscorrelated_ = (HamiltonianTranscorrelated == HamiltonianTransformation::Transcorrelated);
 
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
@@ -1080,6 +1082,6 @@ private:
 };
 
 
-#include "dmrg/models/chem/2u1/model.hpp"
+#include "dmrg/models/MolecularHamiltonians/2u1/model.hpp"
 
 #endif

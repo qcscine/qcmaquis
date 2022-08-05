@@ -38,13 +38,7 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::v
 parse_integrals(BaseParameters & parms, Lattice const & lat)
 {
     typedef Lattice::pos_t pos_t;
-
     std::vector<T> matrix_elements;
-
-    // ********************************************************************
-    // *** Parse orbital data *********************************************
-    // ********************************************************************
-
     std::vector<chem::index_type<chem::Hamiltonian::PreBO>> indices;
 
     if (parms.is_set("integral_file")) {

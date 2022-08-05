@@ -29,7 +29,7 @@
 
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
-#include "dmrg/models/chem/mps_init_hf.hpp"
+#include "dmrg/models/MolecularHamiltonians/mps_init_hf.hpp"
 
 namespace detail {
 //    template <class Matrix, class SymmGroup>

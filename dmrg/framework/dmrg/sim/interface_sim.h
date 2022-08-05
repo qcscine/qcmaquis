@@ -40,7 +40,7 @@
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
-#include "dmrg/models/chem/measure_transform.hpp"
+#include "dmrg/models/MolecularHamiltonians/measure_transform.hpp"
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
 

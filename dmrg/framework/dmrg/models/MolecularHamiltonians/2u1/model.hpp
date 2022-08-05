@@ -30,8 +30,11 @@
 
 #include "dmrg/models/JordanWignerManager.h"
 
-template <class Matrix, class SymmGroup>
-qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
+using Hamiltonian = chem::Hamiltonian;
+using HamiltonianTransformation = chem::HamiltonianTransformation;
+
+template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
+qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice const & lat_, BaseParameters & parms_)
     : lat(lat_), parms(parms_), tag_handler(new table_type())
 {
     typedef typename SymmGroup::subcharge subcharge;
@@ -110,7 +113,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     // only effective if point group symmetry is active, need to adapt operators to different irreps
     #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
-
     GENERATE_SITE_SPECIFIC(ident_op)
     GENERATE_SITE_SPECIFIC(fill_op)
     GENERATE_SITE_SPECIFIC(create_up_op)
@@ -127,7 +129,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     GENERATE_SITE_SPECIFIC(count_up_down_op)
     GENERATE_SITE_SPECIFIC(d2u_op)
     GENERATE_SITE_SPECIFIC(u2d_op)
-
     #undef GENERATE_SITE_SPECIFIC
 
     /**********************************************************************/
@@ -135,7 +136,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     /**********************************************************************/
 
     #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
-
     REGISTER(ident,                 tag_detail::bosonic)
     REGISTER(fill,                  tag_detail::bosonic)
     REGISTER(create_up,             tag_detail::fermionic)
@@ -152,7 +152,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     REGISTER(count_up_down,         tag_detail::bosonic)
     REGISTER(d2u,                   tag_detail::bosonic)
     REGISTER(u2d,                   tag_detail::bosonic)
-
     #undef REGISTER
 
     //**********************************************************************
@@ -191,13 +190,13 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 }
 
 /** @brief Create the Hamiltonian terms */
-template<class Matrix, class SymmGroup>
-void qc_model<Matrix, SymmGroup>::create_terms()
+template<class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms()
 {
     // Generates the data required to form the Hamiltonian
     auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
     MapOfOperatorsType mapOfOperators;
-    chem::detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler, isTranscorrelated_);
+    chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
     // Tmp objects.
     std::vector< OperatorType > oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
@@ -210,7 +209,8 @@ void qc_model<Matrix, SymmGroup>::create_terms()
     std::vector< OperatorType > opVector4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
     std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
     // == MAIN LOOP ==
-    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
+    for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++)
+    {
         int i = term_assistant.idx(iElement, 0);
         int j = term_assistant.idx(iElement, 1);
         int k = term_assistant.idx(iElement, 2);
@@ -330,8 +330,8 @@ void qc_model<Matrix, SymmGroup>::create_terms()
 }
 
 /** @brief Adds an operator to the underyling operator map */
-template <class Matrix, class SymmGroup>
-void qc_model<Matrix, SymmGroup>::addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const {
+template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
+void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::addTerm(MapOfOperatorsType& mapOfOperators, const term_descriptor& term) const {
     //
     if (mapOfOperators.find(term.getBase()) == mapOfOperators.end())
         mapOfOperators.insert({term.getBase(), term.coeff });

@@ -39,8 +39,8 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "integral_interface.h"
 #include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/chem/transform_symmetry.hpp"
-#include "dmrg/models/chem/su2u1/term_maker.h"
+#include "dmrg/models/MolecularHamiltonians/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonians/su2u1/term_maker.h"
 
 // Functions required for MPSSI
 // Equation numbers are from S. Knecht et al, JCTC 2016, 12, 5881

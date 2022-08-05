@@ -40,7 +40,7 @@ using std::endl;
 
 #include "dmrg/sim/matrix_types.h"
 #include "dmrg/models/model.h"
-#include "dmrg/models/chem/transform_symmetry.hpp"
+#include "dmrg/models/MolecularHamiltonian/transform_symmetry.hpp"
 
 #if defined(USE_SU2U1)
 typedef SU2U1 grp;

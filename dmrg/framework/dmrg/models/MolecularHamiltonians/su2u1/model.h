@@ -5,7 +5,6 @@
  * Copyright (C) 2013 Laboratory for Physical Chemistry, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
- *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
@@ -40,11 +39,11 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/util.h"
-#include "dmrg/models/chem/parse_integrals.h"
-#include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/su2u1/chem_helper.h"
-#include "dmrg/models/chem/su2u1/term_maker.h"
+#include "dmrg/models/MolecularHamiltonians/util.h"
+#include "dmrg/models/MolecularHamiltonians/parse_integrals.h"
+#include "dmrg/models/MolecularHamiltonians/pg_util.h"
+#include "dmrg/models/MolecularHamiltonians/su2u1/chem_helper.h"
+#include "dmrg/models/MolecularHamiltonians/su2u1/term_maker.h"
 
 template<class Matrix, class SymmGroup>
 class qc_su2 : public model_impl<Matrix, SymmGroup>
@@ -207,6 +206,6 @@ private:
 
 };
 
-#include "dmrg/models/chem/su2u1/model.hpp"
+#include "dmrg/models/MolecularHamiltonians/su2u1/model.hpp"
 
 #endif

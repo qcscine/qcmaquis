@@ -32,8 +32,7 @@
 #include "dmrg/models/measurements/chementropy.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/sim/matrix_types.h"
-
-#include "dmrg/models/chem/cideas/cideas.hpp"
+#include "dmrg/models/MolecularHamiltonians/cideas/cideas.hpp"
 
 
 // namespace chem

@@ -25,36 +25,23 @@
  *****************************************************************************/
 
 #include "dmrg/mp_tensors/mpstensor.h"
-
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
-
 #include "dmrg/utils/random.hpp"
 #include <alps/numeric/isnan.hpp>
 #include <alps/numeric/isinf.hpp>
-
 #include "utils/traits.hpp"
-
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
-
 // implementation of join functions
 #include "dmrg/mp_tensors/mps_join.h"
 
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
-                                        Index<SymmGroup> const & ld,
-                                        Index<SymmGroup> const & rd,
-                                        bool fillrand,
-                                        typename Matrix::value_type val)
-: phys_i(sd)
-, left_i(ld)
-, right_i(rd)
-, cur_storage(LeftPaired)
-, cur_normalization(Unorm)
+MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd, Index<SymmGroup> const & ld,
+                                        Index<SymmGroup> const & rd, bool fillrand, typename Matrix::value_type val)
+    : phys_i(sd), left_i(ld), right_i(rd), cur_storage(LeftPaired), cur_normalization(Unorm)
 {
     Index<SymmGroup> lb = sd*ld, rb = rd;
     common_subset(lb, rb);
-    
     // remove blocks from the right index that may not be allowed by the left index
     right_i = rb;
     // remove blocks from the left index that may not be allowed by the right index
@@ -67,9 +54,9 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     rb.sort();
     left_i.sort();
     right_i.sort();
-    
     data() = block_matrix<Matrix, SymmGroup>(lb, rb);
-    
+    // std::cout << "Inside" << std::endl;
+    // std::cout << data() << std::endl;
     if (fillrand)
         data().generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
     else

@@ -74,15 +74,15 @@ BOOST_AUTO_TEST_CASE( Test_HiRDM )
      "   1.58753163271              0     0     0     0\n");
 
 
-    p.set("integrals",integrals);
+    p.set("integrals", integrals);
 
 
-    p.set("site_types","0,0,0");
-    p.set("L",3);
-    p.set("irrep",0);
+    p.set("site_types", "0,0,0");
+    p.set("L", 3);
+    p.set("irrep", 0);
 
-    p.set("nsweeps",2);
-    p.set("max_bond_dimension",100);
+    p.set("nsweeps", 2);
+    p.set("max_bond_dimension", 100);
 
     // for SU2U1
     p.set("nelec",4);
