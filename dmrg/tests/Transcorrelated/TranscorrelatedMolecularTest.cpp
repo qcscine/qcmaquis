@@ -66,146 +66,42 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
 #endif
 }
 
-/** @brief Checks that a conventional Hamiltonian, given as input as transcorrelated, gives reasonable energies */
-/*
+#ifdef HAVE_TwoU1
+
+/**
+ * @brief Verify coherence between tcDMRG and FCI.
+ * Here we take a conventional Hamiltonian, we encode it in the transcorrelated
+ * format, and check that the energy is coherent with that of a "poor-man"
+ * implementation of CISD.
+ * Note that we do the check for both the conventional and the transcorrelated format.
+ */
 BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
 {
-#ifdef HAVE_TwoU1
-    parametersH2Conventional.set("nsweeps", 10);
-    parametersH2Conventional.set("max_bond_dimension", 100);
-    maquis::DMRGInterface<double> interfaceTI(parametersH2Conventional);
-    interfaceTI.optimize();
-    auto energyTI = interfaceTI.energy();
-    // Reference energy obtained with PySCF
-    BOOST_CHECK_CLOSE(energyTI, -1.140073480875899, 1.0E-8);
-    // Hand-made Full-CI
-    auto lattice = Lattice(parametersH2Conventional);
-    auto model = Model<matrix, TwoU1>(lattice, parametersH2Conventional);
-    auto mpo = make_mpo(lattice, model);
-    std::vector<std::string> fullCIDeterminants{"4,1,1,1,1,1,1,1,1,1",
-                                                "1,4,1,1,1,1,1,1,1,1",
-                                                "1,1,4,1,1,1,1,1,1,1",
-                                                "1,1,1,4,1,1,1,1,1,1",
-                                                "1,1,1,1,4,1,1,1,1,1",
-                                                "1,1,1,1,1,4,1,1,1,1",
-                                                "1,1,1,1,1,1,4,1,1,1",
-                                                "1,1,1,1,1,1,1,4,1,1",
-                                                "1,1,1,1,1,1,1,1,4,1",
-                                                "1,1,1,1,1,1,1,1,1,4",
-                                                //
-                                                "2,3,1,1,1,1,1,1,1,1",
-                                                "2,1,3,1,1,1,1,1,1,1",
-                                                "2,1,1,3,1,1,1,1,1,1",
-                                                "2,1,1,1,3,1,1,1,1,1",
-                                                "2,1,1,1,1,3,1,1,1,1",
-                                                "2,1,1,1,1,1,3,1,1,1",
-                                                "2,1,1,1,1,1,1,3,1,1",
-                                                "2,1,1,1,1,1,1,1,3,1",
-                                                "2,1,1,1,1,1,1,1,1,3",
-                                                //
-                                                "3,2,1,1,1,1,1,1,1,1",
-                                                "1,2,3,1,1,1,1,1,1,1",
-                                                "1,2,1,3,1,1,1,1,1,1",
-                                                "1,2,1,1,3,1,1,1,1,1",
-                                                "1,2,1,1,1,3,1,1,1,1",
-                                                "1,2,1,1,1,1,3,1,1,1",
-                                                "1,2,1,1,1,1,1,3,1,1",
-                                                "1,2,1,1,1,1,1,1,3,1",
-                                                "1,2,1,1,1,1,1,1,1,3",
-                                                //
-                                                "3,1,2,1,1,1,1,1,1,1",
-                                                "1,3,2,1,1,1,1,1,1,1",
-                                                "1,1,2,3,1,1,1,1,1,1",
-                                                "1,1,2,1,3,1,1,1,1,1",
-                                                "1,1,2,1,1,3,1,1,1,1",
-                                                "1,1,2,1,1,1,3,1,1,1",
-                                                "1,1,2,1,1,1,1,3,1,1",
-                                                "1,1,2,1,1,1,1,1,3,1",
-                                                "1,1,2,1,1,1,1,1,1,3",
-                                                //
-                                                "3,1,1,2,1,1,1,1,1,1",
-                                                "1,3,1,2,1,1,1,1,1,1",
-                                                "1,1,3,2,1,1,1,1,1,1",
-                                                "1,1,1,2,3,1,1,1,1,1",
-                                                "1,1,1,2,1,3,1,1,1,1",
-                                                "1,1,1,2,1,1,3,1,1,1",
-                                                "1,1,1,2,1,1,1,3,1,1",
-                                                "1,1,1,2,1,1,1,1,3,1",
-                                                "1,1,1,2,1,1,1,1,1,3",
-                                                //
-                                                "3,1,1,1,2,1,1,1,1,1",
-                                                "1,3,1,1,2,1,1,1,1,1",
-                                                "1,1,3,1,2,1,1,1,1,1",
-                                                "1,1,1,3,2,1,1,1,1,1",
-                                                "1,1,1,1,2,3,1,1,1,1",
-                                                "1,1,1,1,2,1,3,1,1,1",
-                                                "1,1,1,1,2,1,1,3,1,1",
-                                                "1,1,1,1,2,1,1,1,3,1",
-                                                "1,1,1,1,2,1,1,1,1,3",
-                                                //
-                                                "3,1,1,1,1,2,1,1,1,1",
-                                                "1,3,1,1,1,2,1,1,1,1",
-                                                "1,1,3,1,1,2,1,1,1,1",
-                                                "1,1,1,3,1,2,1,1,1,1",
-                                                "1,1,1,1,3,2,1,1,1,1",
-                                                "1,1,1,1,1,2,3,1,1,1",
-                                                "1,1,1,1,1,2,1,3,1,1",
-                                                "1,1,1,1,1,2,1,1,3,1",
-                                                "1,1,1,1,1,2,1,1,1,3",
-                                                //
-                                                "3,1,1,1,1,1,2,1,1,1",
-                                                "1,3,1,1,1,1,2,1,1,1",
-                                                "1,1,3,1,1,1,2,1,1,1",
-                                                "1,1,1,3,1,1,2,1,1,1",
-                                                "1,1,1,1,3,1,2,1,1,1",
-                                                "1,1,1,1,1,3,2,1,1,1",
-                                                "1,1,1,1,1,1,2,3,1,1",
-                                                "1,1,1,1,1,1,2,1,3,1",
-                                                "1,1,1,1,1,1,2,1,1,3",
-                                                //
-                                                "3,1,1,1,1,1,1,2,1,1",
-                                                "1,3,1,1,1,1,1,2,1,1",
-                                                "1,1,3,1,1,1,1,2,1,1",
-                                                "1,1,1,3,1,1,1,2,1,1",
-                                                "1,1,1,1,3,1,1,2,1,1",
-                                                "1,1,1,1,1,3,1,2,1,1",
-                                                "1,1,1,1,1,1,3,2,1,1",
-                                                "1,1,1,1,1,1,1,2,3,1",
-                                                "1,1,1,1,1,1,1,2,1,3",
-                                                //
-                                                "3,1,1,1,1,1,1,1,2,1",
-                                                "1,3,1,1,1,1,1,1,2,1",
-                                                "1,1,3,1,1,1,1,1,2,1",
-                                                "1,1,1,3,1,1,1,1,2,1",
-                                                "1,1,1,1,3,1,1,1,2,1",
-                                                "1,1,1,1,1,3,1,1,2,1",
-                                                "1,1,1,1,1,1,3,1,2,1",
-                                                "1,1,1,1,1,1,1,3,2,1",
-                                                "1,1,1,1,1,1,1,1,2,3",
-                                                //
-                                                "3,1,1,1,1,1,1,1,1,2",
-                                                "1,3,1,1,1,1,1,1,1,2",
-                                                "1,1,3,1,1,1,1,1,1,2",
-                                                "1,1,1,3,1,1,1,1,1,2",
-                                                "1,1,1,1,3,1,1,1,1,2",
-                                                "1,1,1,1,1,3,1,1,1,2",
-                                                "1,1,1,1,1,1,3,1,1,2",
-                                                "1,1,1,1,1,1,1,3,1,2",
-                                                "1,1,1,1,1,1,1,1,3,2"};
-    std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
-    for (const auto& iString: fullCIDeterminants) {
-        parametersH2Conventional.set("init_state", "hf");
-        parametersH2Conventional.set("hf_occ", iString);
-        vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, parametersH2Conventional))));
+    for (auto& iParameter: std::vector<DmrgParameters>{parametersH2Conventional_ConventionalFormat, parametersH2Conventional_TranscorrelatedFormat}) {
+        iParameter.set("nsweeps", 10);
+        iParameter.set("max_bond_dimension", 100);
+        maquis::DMRGInterface<double> interface(iParameter);
+        interface.optimize();
+        auto energyDMRG = interface.energy();
+        // Hand-made Full-CI
+        auto lattice = Lattice(iParameter);
+        auto model = Model<matrix, TwoU1>(lattice, iParameter);
+        auto mpo = make_mpo(lattice, model);
+        std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
+        for (const auto& iString: fullCIDeterminantsH2) {
+            iParameter.set("init_state", "hf");
+            iParameter.set("hf_occ", iString);
+            vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, iParameter))));
+        }
+        matrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
+        matrix eigenVectors(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
+        alps::numeric::vector<double> eigenValues(vectorOfMPS.size(), 0.0);
+        for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
+            for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
+                hamiltonianMatrix(iRow, iCol) = expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo)/std::sqrt(norm(vectorOfMPS[iRow])*norm(vectorOfMPS[iCol]));
+        alps::numeric::syev(hamiltonianMatrix, eigenVectors, eigenValues);
+        BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size()-1], energyDMRG, 1.0E-8);
     }
-    matrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
-    matrix eigenVectors(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
-    alps::numeric::vector<double> eigenValues(vectorOfMPS.size(), 0.0);
-    for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
-        for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
-            hamiltonianMatrix(iRow, iCol) = expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo);
-    alps::numeric::syev(hamiltonianMatrix, eigenVectors, eigenValues);
-    BOOST_CHECK_CLOSE(eigenValues[0], energyTI, 1.0E-8);
-#endif // HAVE_TwoU1
 }
-*/
+
+#endif // HAVE_TwoU1
