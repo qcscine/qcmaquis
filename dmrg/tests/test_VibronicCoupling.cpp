@@ -36,7 +36,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_Vibronic_SingleSite, VibronicFixture)
 {
 #ifdef HAVE_U1
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Vibronic>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersVibronicPyrazineRedDim.set("init_state", "default");
     parametersVibronicPyrazineRedDim.set("optimization", "singlesite");

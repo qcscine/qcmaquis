@@ -37,7 +37,9 @@
 #include <math.h>
 #include <string>
 
-SRCAS::SRCAS(DmrgParameters& parameters) : uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
+template <typename ScalarType> // real or complex
+SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface) :
+    interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_), parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
     // Get the number of modes and the maximum occupation of each one
@@ -69,7 +71,8 @@ SRCAS::SRCAS(DmrgParameters& parameters) : uniformDist_(0.,1.), uniformRandomNum
     detTmp_ = detQueen_;
 }
 
-void SRCAS::printSRCASSettings() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << "--- SRCAS SETTINGS ---" << std::endl;
     maquis::cout << "MPS taken from:                      " << parms_["chkpfile"].str() << std::endl;
     maquis::cout << "Determinant space is:                " << maxDetStr_ << std::endl;
@@ -81,7 +84,8 @@ void SRCAS::printSRCASSettings() {
     maquis::cout << "Random number seed is:               " << parms_["seed"] << std::endl;
 }
 
-void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::quicksort(std::string dets[], ScalarType b[], int left, int right) {
     double pivot = std::abs(b[(left+right)/2]);
     int l = left;
     int r = right;
@@ -92,7 +96,7 @@ void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
             r-- ;
         if (l <= r) {
             // Variable definition
-            double tmp ;
+            ScalarType tmp ;
             tmp  = b[l] ;
             b[l] = b[r] ;
             b[r] = tmp ;
@@ -109,43 +113,50 @@ void SRCAS::quicksort(std::string dets[], double b[], int left, int right) {
     if (l < right) quicksort(dets, b, l, right);
 }
 
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+std::vector<int> SRCAS<ScalarType>::generateNewDet() {
+    // Start from queen
+    detTmp_= detQueen_;
+    if(parms_["MODEL"] == "nmode" || parms_["MODEL"] == "watson") {
+        // Loop over the modes            
+        for (int i=0; i<detTmp_.size(); i++) {
+            boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
+            boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
+            do {
+                if (uniformRandomNumber_() < samplingFraction_) // Only accept a fraction of the proposed updates to stay closer to reference det
+                    detTmp_[i] = poissonRandomNumber();
+            } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
+        }
+    } else {
+        maquis::cout << "SRCAS determinant generation NYI for non-vibrational calculations! Abort!" << std::endl;
+        exit(1);
+    }
+    return detTmp_;
+}
 
 
-void SRCAS::run() {
-    maquis::cout << std::endl << "--- Initializing Interface ---" << std::endl;
-    // Creates the interface object
-    maquis::DMRGInterface<double> interface(parms_);
-
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::run() {
     maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
 
     // Starting det should always be added to the list
-    double overlap = interface.getCICoefficient(startingDet_);
+    ScalarType overlap = interface_->getCICoefficient(startingDet_);
     hashTable_[detQueen_] = overlap;
 
     // Initialize variables that are used during the sampling
-    double ci0, ci_ratio, ci_tmp, x;
-    double sum_ci2 = 0.0;
-    int nMacroIter = 0, nSampled = 0, nAcceptedQueen = 0;
-    
+    double x, ci_ratio, sum_ci2 = 0.0;
+    ScalarType ci_tmp, ci0 = overlap;
+     
+    int nMacroIter = 0, nSampled = 1, nAcceptedQueen = 0;    
 
     // +-----------+
     //   MAIN LOOP
     // +-----------+
     do {
         // For every macroiteration generate N determinants
-        for ( int isample = 0; isample < parms_["srcas_numSamples"] ; isample++ ) {
-            // Start from queen
-            detTmp_= detQueen_;
-            // Loop over the modes            
-            for (int i=0; i<detTmp_.size(); i++) {
-                boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
-                boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
-                do {
-                    x = uniformRandomNumber_();
-                    if (x < samplingFraction_) // Only accept a fraction of the proposed updates to stay closer to reference det
-                        detTmp_[i] = poissonRandomNumber();
-                } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
-            }
+        for (int isample = 0; isample < parms_["srcas_numSamples"]; isample++) {
+            // Get new determinant
+            detTmp_ = generateNewDet();
 
             // Updates the data if the determinant has not been visited yet.
             iter_ = hashTable_.find(detTmp_) ;
@@ -155,9 +166,9 @@ void SRCAS::run() {
                     detTmpStr_ += ",";
                     detTmpStr_ += std::to_string(detTmp_[i]);
                 }
-                overlap = interface.getCICoefficient(detTmpStr_);
+                overlap = interface_->getCICoefficient(detTmpStr_);
                 // The data are stored based on the CI_threshold parameter
-                if(std::fabs(overlap) >= parms_["srcas_overlapThreshold"]) {
+                if(std::abs(overlap) >= parms_["srcas_overlapThreshold"]) {
                     hashTable_[detTmp_] = overlap;
                     nSampled++;
                 }
@@ -166,7 +177,7 @@ void SRCAS::run() {
             }
             // Determinant update (regardless of being in the hash table or not to avoid getting stuck in the Markov chain)
             // Selection criterion based on CI coeff^2 in analogy to the completeness measure
-            ci_ratio = pow(overlap,2.0)/pow(ci0,2);
+            ci_ratio = pow(std::abs(overlap),2.0)/pow(std::abs(ci0),2);
             x = uniformRandomNumber_();
             if (ci_ratio > x) {
                 detQueen_ = detTmp_;
@@ -177,9 +188,10 @@ void SRCAS::run() {
         sum_ci2 = 0.0 ;
         for (iter_=hashTable_.begin(); iter_!=hashTable_.end(); iter_++) {
             ci_tmp  = iter_->second;
-            sum_ci2 += pow(ci_tmp,2.0);
+            sum_ci2 += pow(std::abs(ci_tmp),2.0);
         }
         nMacroIter++ ;
+        
         // Prints results
         maquis::cout << "----------------------------------------------------------------" << std::endl ;
         maquis::cout << "Macroiteration number:                       " << nMacroIter << std::endl;
@@ -195,13 +207,14 @@ void SRCAS::run() {
 // +---------------+
 //   FINAL PRINTING
 // +---------------+
-void SRCAS::printResults() {
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+void SRCAS<ScalarType>::printResults() {
     maquis::cout << "----------------------------------------------------------------" << std::endl ;
     maquis::cout << std::endl << "--- Finished SRCAS ---" << std::endl;
     maquis::cout << "Final completeness is:                " << completeness_ << std::endl;
     maquis::cout << "# of stored determinants is:          " << hashTable_.size() << std::endl;
 
-    double CIs_show[hashTable_.size()]; // CI value
+    ScalarType CIs_show[hashTable_.size()]; // CI value
     std::string dets_show[hashTable_.size()]; // dets represent
     int i = 0;
     int det_length = hashTable_.begin()->first.size();
@@ -221,7 +234,26 @@ void SRCAS::printResults() {
     maquis::cout << std::fixed << std::setprecision(10);
     for(int i = 0; i < hashTable_.size() ; i++){
         maquis::cout << " Determinant " << dets_show[hashTable_.size()-i-1] << " with ";
-        if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
+        //if (CIs_show[hashTable_.size()-i-1]>0) maquis::cout << " ";
         maquis::cout << CIs_show[hashTable_.size()-i-1] << " is number " << i+1 << std::endl;
     }        
 }
+
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+std::vector<int> SRCAS<ScalarType>::getCurrentQueen() {
+    return detQueen_;
+}
+
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+std::map<std::vector<int>, ScalarType> SRCAS<ScalarType>::getDetTable() {
+    return hashTable_;
+}
+
+template <typename ScalarType> // real or complex, nmode or canonical (watson)
+double SRCAS<ScalarType>::getCompleteness() {
+    return completeness_;
+}
+
+// Explicit template instantiation
+template class SRCAS<double>;
+template class SRCAS<std::complex<double>>;

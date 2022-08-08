@@ -60,7 +60,10 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         maquis::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
         // Creates the simulation object
-        SRCAS srcas(opt.parms);
+        using ScalarType = double;
+        using InterfaceType = maquis::DMRGInterface<ScalarType>;
+        std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+        SRCAS<ScalarType> srcas(opt.parms, interface);
         srcas.printSRCASSettings();
         srcas.run();
         srcas.printResults();

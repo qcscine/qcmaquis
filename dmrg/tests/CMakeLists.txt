@@ -2,7 +2,7 @@ add_definitions(-DHAVE_ALPS_HDF5 -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING -DALP
 
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
-set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
+set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES} srcas_utils)
 
 # *** Targets
 add_executable(test1 test1.cpp)
@@ -51,6 +51,11 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
     target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
+    if (BUILD_MPS2CI)
+        add_executable(test_vibrational_srcas vibrational/test_srcas_vibrational.cpp)
+        target_link_libraries(test_vibrational_srcas ${DMRG_APP_LIBRARIES})
+        target_include_directories(test_vibrational_srcas PRIVATE ../applications/tools)
+    endif(BUILD_MPS2CI)
     # Executable tests
     add_executable(test_FAD_2Mode test_FAD_2Mode.cpp)
     target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})

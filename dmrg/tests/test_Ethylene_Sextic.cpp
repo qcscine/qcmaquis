@@ -38,7 +38,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatsonHarmonic.set("init_state", "const");
     parametersEthyleneWatsonHarmonic.set("nsweeps", 20);
@@ -48,6 +48,11 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic, WatsonFixture)
     InterfaceType interface(parametersEthyleneWatsonHarmonic);
     interface.optimize();
     BOOST_CHECK_CLOSE(interface.energy(), referenceHarmonicEnergy, 1.0E-5);
+    // Checks that the overlap of the final wave function with the hf determinant is = 1.
+    auto targetOverlap = interface.getCICoefficient("0,0,0,0,0,0,0,0,0,0,0,0");
+    BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-12);
+    // Checks that overlap calculations cannot be performed for invalid reference determinants
+    BOOST_CHECK_THROW(interface.getCICoefficient("0,0,0"), std::runtime_error);
 #endif
 }
 
@@ -61,7 +66,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic, WatsonFixture)
  */
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, WatsonFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
@@ -88,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, Watso
  */
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_TwoSite, WatsonFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersEthyleneWatson.set("init_state", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");

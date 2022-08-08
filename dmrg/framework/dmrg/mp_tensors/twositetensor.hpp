@@ -31,7 +31,6 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-#include "dmrg/utils/random.hpp"
 #include <alps/numeric/real.hpp>
 
 #include <vector>

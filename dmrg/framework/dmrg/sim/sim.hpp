@@ -26,8 +26,9 @@
  *****************************************************************************/
 
 #include <boost/algorithm/string.hpp>
-#include "dmrg/version.h"
 
+#include "dmrg/version.h"
+#include "dmrg/utils/random.hpp"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 
 namespace sim_detail {

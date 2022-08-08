@@ -29,31 +29,44 @@
 #define SAMPLING_VIB_H
 
 #include "dmrg/utils/DmrgParameters.h"
+#include "maquis_dmrg.h"
 
 #include <string>
+#include <memory>
 #include <boost/random.hpp>
 
+template <typename ScalarType> // real or complex
 class SRCAS {
+    using InterfaceType = maquis::DMRGInterface<ScalarType>;
     public:
-        SRCAS(DmrgParameters& parameters);      
+        SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface);      
         void run();
         void printSRCASSettings();
         void printResults();
+
+        std::vector<int> getCurrentQueen();
+        std::map<std::vector<int>, ScalarType> getDetTable();
+        double getCompleteness();
+
     private:
-        void quicksort(std::string dets[], double b[], int left, int right);
+        void quicksort(std::string dets[], ScalarType b[], int left, int right);
+        std::vector<int> generateNewDet();
 
         boost::mt19937 generator_;
         boost::uniform_real<> uniformDist_;
         boost::variate_generator<boost::mt19937&, boost::uniform_real<double> > uniformRandomNumber_;
 
         DmrgParameters& parms_;
+        std::shared_ptr<InterfaceType> interface_;
+
         std::string startingDet_, maxDetStr_, detTmpStr_;
         std::vector<int> detQueen_, detTmp_, detSpace_;
         int numModes_;
         double completeness_;
         const double samplingFraction_ = 1.0/3.0; // Change this value to alter the speed of sampling across the Hilbert space
-        std::map<std::vector<int>, double> hashTable_;
-        std::map<std::vector<int>, double>::iterator iter_;
+
+        std::map<std::vector<int>, ScalarType> hashTable_;
+        typename std::map<std::vector<int>, ScalarType>::iterator iter_;
 };
 
 #endif

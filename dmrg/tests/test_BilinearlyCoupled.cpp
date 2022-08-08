@@ -42,7 +42,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::VibrationalCanonical>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersBilinearly.set("init_state", "basis_state_generic");
     parametersBilinearly.set("init_basis_state", "0,0,0,0,0,0");

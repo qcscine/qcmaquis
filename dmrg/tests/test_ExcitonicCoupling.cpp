@@ -36,7 +36,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_SingleSite, VibronicFixture)
 {
 #ifdef HAVE_U1
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Excitonic>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersExcitonicAggregate.set("init_state", "default");
     //parametersExcitonicAggregate.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_SingleSite, VibronicFixture)
 /** @brief Watson-based calculation on an excitonic Hamiltonian. */
 BOOST_FIXTURE_TEST_CASE(Test_Vibronic_Excitonic_TwoSite, VibronicFixture)
 {
-    using InterfaceType = maquis::DMRGInterface<double, Hamiltonian::Excitonic>;
+    using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
     parametersExcitonicAggregate.set("init_state", "default");
     //parametersExcitonicAggregate.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");

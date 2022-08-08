@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
     parametersFADTwoBody.set("truncation_initial", 1.0E-20);
     parametersFADTwoBody.set("truncation_final", 1.0E-16);
     // Creates the interface
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    maquis::DMRGInterface<double> interface(parametersFADTwoBody);
     interface.optimize();
     BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
 #endif // HAS_NU1
@@ -78,20 +78,22 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFi
     parametersFADOneBodyBinary.set("chkpfile", "GS.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "GS.results.h5");
     // Creates the interface and checks the resulting energy
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADOneBodyBinary);
+    maquis::DMRGInterface<double> interface(parametersFADOneBodyBinary);
     interface.optimize();
     auto gsEnergy = interface.energy();
     BOOST_CHECK_CLOSE(gsEnergy, -2.359242429009664e+03, 1.0E-5);
     // Checks that the overlap of the final wave function with the hf determinant is = 1.
     auto targetOverlap = interface.getCICoefficient("0");
     BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-16);
+    // Checks that overlap calculations cannot be performed for invalid reference determinants
+    BOOST_CHECK_THROW(interface.getCICoefficient("0,0,0"), std::runtime_error);
     // Excited-state calculations
     parametersFADOneBodyBinary.set("chkpfile", "ES.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "ES.results.h5");
     parametersFADOneBodyBinary.set("n_ortho_states", 1);
     parametersFADOneBodyBinary.set("ortho_states", "GS.checkpoint.h5");
     // Creates a new interface object and reruns the optimization
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interfaceES(parametersFADOneBodyBinary);
+    maquis::DMRGInterface<double> interfaceES(parametersFADOneBodyBinary);
     interfaceES.optimize();
     auto esEnergy = interfaceES.energy();
     BOOST_CHECK_CLOSE(esEnergy-gsEnergy, 0.4450425713052937, 1.0E-5);
@@ -115,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
     parametersFADTwoBodyFingerPrint.set("ngrowsweeps", 2);
     parametersFADTwoBodyFingerPrint.set("nmainsweeps", 2);
     // Creates the interface and checks the resulting energy
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interfaceConventionalSorting(parametersFADTwoBodyFingerPrint);
+    maquis::DMRGInterface<double> interfaceConventionalSorting(parametersFADTwoBodyFingerPrint);
     interfaceConventionalSorting.optimize();
     auto conventionalSortingEnergy = interfaceConventionalSorting.energy();
     // Generates randomly a reshuffling
@@ -131,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
             inputOrder += ",";
     }
     parametersFADTwoBodyFingerPrint.set("modals_order", inputOrder);
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interfaceRandomSorting(parametersFADTwoBodyFingerPrint);
+    maquis::DMRGInterface<double> interfaceRandomSorting(parametersFADTwoBodyFingerPrint);
     interfaceRandomSorting.optimize();
     auto randomSortingEnergy = interfaceRandomSorting.energy();
     BOOST_CHECK_CLOSE(conventionalSortingEnergy, randomSortingEnergy, 1.0E-7);
@@ -141,14 +143,14 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_state", "const");
     parametersFADTwoBody.set("seed", 16071991);
     parametersFADTwoBody.set("nsweeps", 100);
     parametersFADTwoBody.set("max_bond_dimension", 20);
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
     // Creates the interface
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    maquis::DMRGInterface<double> interface(parametersFADTwoBody);
     interface.optimize();
     BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
     // Measurements
@@ -182,7 +184,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixtur
     parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
     parametersFADTwoBody.set("MEASURE[Two Modal RDM]", "1");
     // Creates the interface
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    maquis::DMRGInterface<double> interface(parametersFADTwoBody);
     interface.optimize();
     interface.measure();
     // == TWO-MODAL ENTROPY ==
@@ -281,7 +283,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_ModeRDM, NModeFixture)
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("MEASURE[One Mode RDM]", "1");
     // Creates the interface
-    maquis::DMRGInterface<double, Hamiltonian::VibrationalNMode> interface(parametersFADTwoBody);
+    maquis::DMRGInterface<double> interface(parametersFADTwoBody);
     interface.optimize();
     interface.measure();
     // == TWO-MODAL ENTROPY ==
