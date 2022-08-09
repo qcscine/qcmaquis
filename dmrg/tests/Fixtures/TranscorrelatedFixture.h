@@ -30,7 +30,7 @@
 #include "maquis_dmrg.h"
 #include "dmrg/block_matrix/symmetry.h"
 
-/** @brief Fixture class constaining the input parameters for a 
+/** @brief Fixture class constaining the input parameters for a
  *         transcorrelated Hamiltonian */
 struct TranscorrelatedFixture
 {

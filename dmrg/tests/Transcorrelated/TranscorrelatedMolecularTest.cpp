@@ -104,4 +104,39 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
     }
 }
 
+/** @brief Same as above, but for the transcorrelated Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, TranscorrelatedFixture)
+{
+    parametersH2Transcorrelated.set("nsweeps", 10);
+    parametersH2Transcorrelated.set("max_bond_dimension", 100);
+    parametersH2Transcorrelated.set("time_step", 10.);
+    parametersH2Transcorrelated.set("propagator_maxiter", 10);
+    parametersH2Transcorrelated.set("imaginary_time", "yes");
+    parametersH2Transcorrelated.set("TD_backpropagation", "no");
+    parametersH2Transcorrelated.set("simulation_type", "TD");
+    parametersH2Transcorrelated.set("COMPLEX", 1);
+    parametersH2Transcorrelated.set("time_units", "fs");
+    maquis::DMRGInterface<double> interface(parametersH2Transcorrelated);
+    interface.evolve();
+    auto energyDMRG = maquis::real(interface.energy());
+    // Hand-made Full-CI
+    auto lattice = Lattice(parametersH2Transcorrelated);
+    auto model = Model<matrix, TwoU1>(lattice, parametersH2Transcorrelated);
+    auto mpo = make_mpo(lattice, model);
+    std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
+    for (const auto& iString: fullCIDeterminantsH2) {
+        parametersH2Transcorrelated.set("init_state", "hf");
+        parametersH2Transcorrelated.set("hf_occ", iString);
+        vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, parametersH2Transcorrelated))));
+    }
+    matrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
+    matrix eigenVectors(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
+    alps::numeric::vector<double> eigenValues(vectorOfMPS.size(), 0.0);
+    for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
+        for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
+            hamiltonianMatrix(iRow, iCol) = expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo)/std::sqrt(norm(vectorOfMPS[iRow])*norm(vectorOfMPS[iCol]));
+    //alps::numeric::ggev(hamiltonianMatrix, eigenVectors, eigenValues);
+    BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size()-1], energyDMRG, 1.0E-8);
+}
+
 #endif // HAVE_TwoU1
