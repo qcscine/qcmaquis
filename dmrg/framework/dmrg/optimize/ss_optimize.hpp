@@ -116,18 +116,13 @@ public:
             Storage::fetch(left_[site]);
             Storage::fetch(right_[site+1]);
 
-            if (lr == +1 && site+2 <= L) Storage::prefetch(right_[site+2]);
-            if (lr == -1 && site > 0)    Storage::prefetch(left_[site-1]);
+            if (lr == +1 && site+2 <= L)
+                Storage::prefetch(right_[site+2]);
+            if (lr == -1 && site > 0)
+                Storage::prefetch(left_[site-1]);
 
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
-
-
-//            maquis::cout << "My size: " << std::endl;
-//            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << std::endl;
 
             //SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
 
@@ -138,10 +133,9 @@ public:
 
             /// Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
-            for (int n = 0; n < base::northo; ++n) {
+            for (int n = 0; n < base::northo; ++n)
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site], base::ortho_mps[n][site],
                                                                     base::ortho_left_[n][site], base::ortho_right_[n][site+1]);
-            }
 
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||

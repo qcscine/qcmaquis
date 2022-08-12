@@ -501,7 +501,7 @@ public:
     {
         // assert(basis_index.size() == mps.length());
         auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(basis_index, phys_dims, site_type, mps.length());
-        mps = state_mps<Matrix>(state, phys_dims, site_type);
+        mps = state_mps<Matrix>(state, phys_dims, site_type, right_end);
 #ifndef NDEBUG
         for (int i = 0 ; i < basis_index.size() ; i++ ) {
           maquis::cout << "state: ";
