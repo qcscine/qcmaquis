@@ -105,6 +105,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
 }
 
 /** @brief Same as above, but for the transcorrelated Hamiltonian */
+/*
 BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, TranscorrelatedFixture)
 {
     parametersH2Transcorrelated.set("nsweeps", 10);
@@ -138,5 +139,6 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
     //alps::numeric::ggev(hamiltonianMatrix, eigenVectors, eigenValues);
     BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size()-1], energyDMRG, 1.0E-8);
 }
+*/
 
 #endif // HAVE_TwoU1
