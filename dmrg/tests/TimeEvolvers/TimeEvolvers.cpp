@@ -129,6 +129,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     // Prepares the TimeEvolver and forwards propagates it
     auto timeEvolver = TimeEvolver<cmatrix, S, DmrgParameters>(p);
     timeEvolver.evolve(sp0, mps[0], true);
+    auto normAfterPropagation = std::sqrt(maquis::real(ietl::dot(mps[0], mps[0])));
+    BOOST_CHECK_CLOSE(normAfterPropagation, 1., 1e-10);
     // Calculates the final energy from the apply method
     auto sigmaVector = sp0.apply(mps[0]);
     auto intermediateEnergy = maquis::real(ietl::dot(mps[0], sigmaVector)) + mpo.getCoreEnergy();
