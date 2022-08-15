@@ -38,13 +38,12 @@ def pruneFcidumpFile(listOfListModals: List[ List[int] ], fileName: str, outputF
         splittedLine = iLine.split()
         splittedLine.pop()
         accepted = True
-        if len(splittedLine) > 2:
-          for iElement in splittedLine:
-            iSplittedElement = [int(j) for j in iElement.split("-")]
-            assert(len(iSplittedElement) == 2)
-            if (not iSplittedElement[1] in listOfListModals[iSplittedElement[0]-1]):
-              accepted = False
-              break
+        for iElement in splittedLine:
+          iSplittedElement = [int(j) for j in iElement.split("-")]
+          assert(len(iSplittedElement) == 2)
+          if (not iSplittedElement[1] in listOfListModals[iSplittedElement[0]-1]):
+            accepted = False
+            break
         if accepted:
           outputFile.write(iLine)
 
