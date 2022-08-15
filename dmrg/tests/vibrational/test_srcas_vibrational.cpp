@@ -124,7 +124,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     // Adds the final input parameters
     parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
     parametersFADOneBodyBinary.set("init_basis_state", "0");
-    parametersFADOneBodyBinary.set("nsweeps", 20);
+    parametersFADOneBodyBinary.set("nsweeps", 2);
     parametersFADOneBodyBinary.set("max_bond_dimension",100);
     parametersFADOneBodyBinary.set("chkpfile", "GS.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "GS.results.h5");
@@ -149,6 +149,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     // Excited-state calculations
     parametersFADOneBodyBinary.set("chkpfile", "ES.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "ES.results.h5");
+    parametersFADOneBodyBinary.set("nsweeps", 20);
     parametersFADOneBodyBinary.set("init_state", "const");
     parametersFADOneBodyBinary.set("n_ortho_states", 1);
     parametersFADOneBodyBinary.set("ortho_states", "GS.checkpoint.h5");
