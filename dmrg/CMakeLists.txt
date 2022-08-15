@@ -45,8 +45,8 @@ TwoU1PG and SU2U1PG are built in any case.")
 set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
 set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
 add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
+add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
 option(ENABLE_OMP "Enable OpenMP" ON)
-# Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
@@ -462,6 +462,7 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Test_MPS_Overlap_Vibrational COMMAND test_mps_overlap_vibrational)
     add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
+    add_test(NAME Test_Ethylene_nMode COMMAND test_Ethylene_nMode)
     add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
   endif(BUILD_VIBRATIONAL)
   # Vibronic tests

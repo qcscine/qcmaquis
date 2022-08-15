@@ -57,12 +57,14 @@ if(BUILD_VIBRATIONAL)
         target_include_directories(test_vibrational_srcas PRIVATE ../applications/tools)
     endif(BUILD_MPS2CI)
     # Executable tests
-    add_executable(test_FAD_2Mode test_FAD_2Mode.cpp)
+    add_executable(test_FAD_2Mode VibrationalDMRG/test_FAD_2Mode.cpp)
     target_link_libraries(test_FAD_2Mode ${DMRG_APP_LIBRARIES})
-    add_executable(test_Ethylene_Sextic test_Ethylene_Sextic.cpp)
+    add_executable(test_Ethylene_Sextic VibrationalDMRG/test_Ethylene_Sextic.cpp)
     target_link_libraries(test_Ethylene_Sextic ${DMRG_APP_LIBRARIES})
-    add_executable(test_BilinearlyCoupled test_BilinearlyCoupled.cpp)
+    add_executable(test_BilinearlyCoupled VibrationalDMRG/test_BilinearlyCoupled.cpp)
     target_link_libraries(test_BilinearlyCoupled ${DMRG_APP_LIBRARIES})
+    add_executable(test_Ethylene_nMode VibrationalDMRG/test_Ethylene_nMode.cpp)
+    target_link_libraries(test_Ethylene_nMode ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 # == VIBRONIC TESTS ==
