@@ -169,7 +169,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     auto maxAbsCICoeff = std::max_element(detTableES.begin(), detTableES.end(), []
         (const std::pair<std::vector<int>, double> a, const std::pair<std::vector<int>, double> b)
         {return std::abs(a.second) < std::abs(b.second);});
-    BOOST_CHECK_CLOSE(maxAbsCICoeff->second, 1.0, 1.0E-3);
+    BOOST_CHECK_CLOSE(std::abs(maxAbsCICoeff->second), 1.0, 1.0E-3);
     BOOST_CHECK_EQUAL(std::accumulate(maxAbsCICoeff->first.begin(), maxAbsCICoeff->first.end(), 0), 1);
     BOOST_CHECK_CLOSE(srcasES.getCompleteness(), 1.00, 1.0E-5);
     boost::filesystem::remove_all("GS.results.h5");
