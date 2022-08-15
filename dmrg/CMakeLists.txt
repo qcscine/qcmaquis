@@ -423,6 +423,8 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
+  # Alps-related tests
+  add_test(NAME Test_Alps_Diagonalization COMMAND test_alps_diagonalization)
   # Time-evolution tests
   if(BUILD_DMRG_EVOLVE)
     add_test(NAME Test_Time_Evolver COMMAND test_time_evolvers)

@@ -369,9 +369,23 @@ namespace alps {
             return M;
         }
 
+        /**
+         * @brief Calculates the exponential of an Hermitian matrix via the eigendecomposition.
+         *
+         * Note that this method calculates exp(alpha*M), where alpha is a generic scalar factor.
+         * The method offers the possibility of shifting the exponential by the maximum eigenvalue,
+         * to avoid that the norm explodes. This happens for real-valued exponentials, when
+         * alpha*norm(L) >> 1.
+         *
+         * @tparam T type associated with the memory entries
+         * @tparam MemoryBlock data type underlying the memory storage (by default, std::vector)
+         * @param M input matrix
+         * @param alpha scaling factor
+         * @param doShift if true, shifts the matrix by the maximum eigenvalue.
+         * @return matrix<T, MemoryBlock> matrix exponential
+         */
         template<typename T, class MemoryBlock>
-        matrix<T, MemoryBlock> exp_hermitian (matrix<T, MemoryBlock> M, T const & alpha=1,
-                                              bool doShift=false)
+        matrix<T, MemoryBlock> exp_hermitian(matrix<T, MemoryBlock> M, const T& alpha=1, bool doShift=false)
         {
             matrix<T, MemoryBlock> N, tmp;
             typename associated_real_vector<matrix<T, MemoryBlock> >::type Sv(num_rows(M));
@@ -409,11 +423,21 @@ namespace alps {
            std::generate(elements(m).first, elements(m).second, g);
         }
 
+        /**
+         * @brief Diagonalization of a Hermitean matrix.
+         *
+         * Note that the eigenvalues are real and returned in increasing order,
+         * and the eigenvector are sorted consequently.
+         *
+         * @tparam T Scalar type associated with the matrix entries.
+         * @tparam MemoryBlock Class used to store the entries of the matrices.
+         * @param M input matrix (passed by value because used to store [evecs])
+         * @param evecs output matrix with the eigenvectors.
+         * @param evals output matrix with the eigenvalues.
+         */
         template<typename T, class MemoryBlock>
-        void heev(matrix<T, MemoryBlock> M
-            , matrix<T, MemoryBlock> & evecs
-            , typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals
-        )
+        void heev(matrix<T, MemoryBlock> M, matrix<T, MemoryBlock> & evecs,
+                  typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals)
         {
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
@@ -433,10 +457,10 @@ namespace alps {
                           col(evecs, num_cols(M)-1-c).first);
         }
 
+        /** @brief Overload that does not calculate the vectors */
         template<typename T, class MemoryBlock>
-        void heev(matrix<T, MemoryBlock> M
-           , typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals
-        )
+        void heev(matrix<T, MemoryBlock> M,
+                  typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals)
         {
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
@@ -450,9 +474,9 @@ namespace alps {
             std::reverse(evals.begin(), evals.end());
         }
 
+        /** @brief Overload that uses a diagonal matrix to store the eigenvalues */
         template<typename T, class MemoryBlock>
-        void heev(matrix<T, MemoryBlock> M,
-                  matrix<T, MemoryBlock> & evecs,
+        void heev(matrix<T, MemoryBlock> M, matrix<T, MemoryBlock> & evecs,
                   typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type & evals)
         {
             assert(num_rows(M) == num_cols(M));
@@ -461,13 +485,62 @@ namespace alps {
             evals = typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type(evals_);
         }
 
+        /**
+         * @brief Diagonalization routine for non-Hermitean matrices.
+         *
+         * Note that, unlike the Hermitean case, here we don't sort the eigenvectors based on the
+         * corresponding eigenvalue because the eigenvalues are not ensure to be real, so a proper
+         * comparison operator is not defined.
+         *
+         * @tparam T Scalar type associated with the matrix entries.
+         * @tparam MemoryBlock Class used to store the entries of the matrices.
+         * @param M input matrix.
+         * @param eVecsLeft output left eigenvectors.
+         * @param eVecsRight output right eigenvectors.
+         * @param evals output eigenvalues
+         */
+        template<typename T, class MemoryBlock>
+        void geev(matrix<T, MemoryBlock> M,
+                  matrix<T, MemoryBlock> & eVecsLeft, matrix<T, MemoryBlock>& eVecsRight,
+                  typename associated_vector<matrix<T, MemoryBlock> >::type& eVals)
+        {
+            // Standard checks
+            assert(num_rows(M) == num_cols(M));
+            assert(evals.size() == num_rows(M));
+            boost::numeric::bindings::lapack::geev('V', 'V', M, eVals, eVecsLeft, eVecsRight);
+        }
+
+        /** @brief Overload that does not calculate the vectors */
+        template<typename T, class MemoryBlock>
+        void geev(matrix<T, MemoryBlock> M,
+                  typename associated_vector<matrix<T, MemoryBlock> >::type& eVals)
+        {
+            assert(num_rows(M) == num_cols(M));
+            assert(evals.size() == num_rows(M));
+            matrix<T, MemoryBlock> left(num_rows(M), 1), right(num_rows(M), 1);
+            boost::numeric::bindings::lapack::geev('N', 'N', M, eVals, left, right);
+        }
+
+        /** @brief Overload that uses a diagonal matrix to store the eigenvalues */
+        template<typename T, class MemoryBlock>
+        void geev(matrix<T, MemoryBlock> M,
+                  matrix<T, MemoryBlock> & eVecsLeft, matrix<T, MemoryBlock> & eVecsRight,
+                  typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type& evals)
+        {
+            assert(num_rows(M) == num_cols(M));
+            typename associated_vector<matrix<T, MemoryBlock> >::type evals_(num_rows(M));
+            heev(M, eVecsLeft, eVecsRight, evals_);
+            evals = typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type(evals_);
+        }
+
+        /** @brief Just a wrapper around [heev] */
         template<typename T, class MemoryBlock, class ThirdArgument>
-        void syev(matrix<T, MemoryBlock> M,
-                  matrix<T, MemoryBlock> & evecs,
+        void syev(matrix<T, MemoryBlock> M, matrix<T, MemoryBlock> & evecs,
                   ThirdArgument & evals)
         {
             heev(M, evecs, evals);
         }
+
         /*
         * Some block_matrix algorithms necessitate nested specialization due to ambient scheduler
         * the algos are full rewritten or partly with subset specialization

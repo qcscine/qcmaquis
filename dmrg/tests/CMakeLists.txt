@@ -141,6 +141,9 @@ target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
 add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
 target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
 
+add_executable(test_alps_diagonalization alps/DiagonalizationTest.cpp)
+target_link_libraries(test_alps_diagonalization ${DMRG_APP_LIBRARIES})
+
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_time_evolvers TimeEvolvers/TimeEvolvers.cpp)
     target_link_libraries(test_time_evolvers ${DMRG_APP_LIBRARIES})
