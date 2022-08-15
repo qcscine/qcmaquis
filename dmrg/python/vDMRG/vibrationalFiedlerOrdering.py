@@ -125,4 +125,7 @@ if __name__ == "__main__":
   print("Old cost ", cost_old, " new cost ", cost_new)
   originalOrder = [i for i in range(len(order))]
   new_order = [originalOrder[order[i]] for i in range(len(order))]
-  print("Fiedler ordering: ", new_order)
+  outputString = ""
+  for iString in new_order:
+    outputString += str(iString)+","
+  print("Fiedler ordering: ", outputString[:-1])
