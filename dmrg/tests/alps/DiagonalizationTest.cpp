@@ -100,7 +100,8 @@ BOOST_AUTO_TEST_CASE(CheckComplexNonHermitianDiagonalization) {
   std::complex<double> complexZero = std::complex<double>(0., 0.);
   cmatrix hamiltonianMatrix(size, size, complexZero), eigenVectorsLeft(size, size, complexZero),
           eigenVectorsRight(size, size, complexZero), Mv(size, size, complexZero),
-          lambdaV(size, size, complexZero);
+          lambdaV(size, size, complexZero), vM(size, size, complexZero),
+          vLambda(size, size, complexZero);
   alps::numeric::vector<std::complex<double>> eigenValues(size, complexZero);
   // Fills the matrix with the actual data
   for (int i = 0; i < size; i++)
@@ -113,6 +114,9 @@ BOOST_AUTO_TEST_CASE(CheckComplexNonHermitianDiagonalization) {
         hamiltonianMatrix(i, j) = std::complex<double>(2., 3.);
   alps::numeric::geev(hamiltonianMatrix, eigenVectorsLeft, eigenVectorsRight, eigenValues);
   // Does the check for the right eigenvectors.
+  // Note that, in matrix form, the equation that must be fulfilled is:
+  //    M * v = v * Lambda
+  // where Lambda is the diagonal matrix with the eigenvectors.
   for (int iRow = 0; iRow < size; iRow++) {
     for (int iCol = 0; iCol < size; iCol++) {
       for (int iJunk = 0; iJunk < size; iJunk++)
@@ -124,4 +128,17 @@ BOOST_AUTO_TEST_CASE(CheckComplexNonHermitianDiagonalization) {
   for (int iRow = 0; iRow < size; iRow++)
     for (int iCol = 0; iCol < size; iCol++)
       BOOST_CHECK_CLOSE(std::norm(lambdaV(iRow, iCol)), std::norm(Mv(iRow, iCol)), 1.0E-10);
+  // Does the check for the left eigenvectors. In this case, the equation to be fulfilled is:
+  //   v^\dagger * M = Lambda * v^dagger
+  for (int iRow = 0; iRow < size; iRow++) {
+    for (int iCol = 0; iCol < size; iCol++) {
+      for (int iJunk = 0; iJunk < size; iJunk++)
+        vM(iRow, iCol) += std::conj(eigenVectorsLeft(iJunk, iRow))*hamiltonianMatrix(iJunk, iCol);
+      vLambda(iRow, iCol) = std::conj(eigenVectorsLeft(iCol, iRow))*eigenValues(iRow);
+    }
+  }
+  // Checks matrix equality element-wise
+  for (int iRow = 0; iRow < size; iRow++)
+    for (int iCol = 0; iCol < size; iCol++)
+      BOOST_CHECK_CLOSE(std::norm(vLambda(iRow, iCol)), std::norm(vM(iRow, iCol)), 1.0E-10);
 }
