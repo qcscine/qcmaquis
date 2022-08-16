@@ -1685,17 +1685,6 @@ struct TranscorrelatedFixture
         integralFileH2Conventional_TranscorrelatedFormat << " 4.0639393258647036e+00  10  10   0   0   0   0" << std::endl;
         integralFileH2Conventional_TranscorrelatedFormat << " 1.0000000000000000e+00   0   0   0   0   0   0" << std::endl;
         integralFileH2Conventional_TranscorrelatedFormat.close();
-        // Sets the correpsonding parameters
-        parametersH2Conventional_TranscorrelatedFormat.set("integral_file", "IntegralFile_H2_Conventional_TranscorrelatedFormat");
-        parametersH2Conventional_TranscorrelatedFormat.set("site_types", "0,0,0,0,0,0,0,0,0,0");
-        parametersH2Conventional_TranscorrelatedFormat.set("L", 10);
-        parametersH2Conventional_TranscorrelatedFormat.set("symmetry", "2u1");
-        parametersH2Conventional_TranscorrelatedFormat.set("irrep", 0);
-        parametersH2Conventional_TranscorrelatedFormat.set("nelec", 2);
-        parametersH2Conventional_TranscorrelatedFormat.set("u1_total_charge1", 1);
-        parametersH2Conventional_TranscorrelatedFormat.set("u1_total_charge2", 1);
-        parametersH2Conventional_TranscorrelatedFormat.set("MODEL", "quantum_chemistry");
-        parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_hamiltonian", "yes");
         // Transcorrelated integrals
         integralFileH2Transcorrelated.open("IntegralFile_H2_Transcorrelated");
         integralFileH2Transcorrelated << " &FCI NORB=10,NELEC=2,MS2=0, " << std::endl;
@@ -2882,7 +2871,18 @@ struct TranscorrelatedFixture
         integralFileH2Transcorrelated << " 4.0639393258647036e+00  10  10   0   0   0   0" << std::endl;
         integralFileH2Transcorrelated << " 1.0000000000000000e+00   0   0   0   0   0   0" << std::endl;
         integralFileH2Transcorrelated.close();
-        // Sets the correpsonding parameters
+        // Parameters for the conventional Hamiltonian encoded in the transcorrelated format
+        parametersH2Conventional_TranscorrelatedFormat.set("integral_file", "IntegralFile_H2_Conventional_TranscorrelatedFormat");
+        parametersH2Conventional_TranscorrelatedFormat.set("site_types", "0,0,0,0,0,0,0,0,0,0");
+        parametersH2Conventional_TranscorrelatedFormat.set("L", 10);
+        parametersH2Conventional_TranscorrelatedFormat.set("symmetry", "2u1");
+        parametersH2Conventional_TranscorrelatedFormat.set("irrep", 0);
+        parametersH2Conventional_TranscorrelatedFormat.set("nelec", 2);
+        parametersH2Conventional_TranscorrelatedFormat.set("u1_total_charge1", 1);
+        parametersH2Conventional_TranscorrelatedFormat.set("u1_total_charge2", 1);
+        parametersH2Conventional_TranscorrelatedFormat.set("MODEL", "quantum_chemistry");
+        parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_hamiltonian", "yes");
+        // Parameters for the "true" transcorrelated calculation
         parametersH2Transcorrelated.set("integral_file", "IntegralFile_H2_Transcorrelated");
         parametersH2Transcorrelated.set("site_types", "0,0,0,0,0,0,0,0,0,0");
         parametersH2Transcorrelated.set("L", 10);

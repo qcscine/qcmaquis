@@ -507,7 +507,7 @@ namespace alps {
             // Standard checks
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
-            boost::numeric::bindings::lapack::geev('V', 'V', M, eVals, eVecsLeft, eVecsRight);
+            int info = boost::numeric::bindings::lapack::geev('V', 'V', M, eVals, eVecsLeft, eVecsRight);
         }
 
         /** @brief Overload that does not calculate the vectors */
@@ -518,7 +518,7 @@ namespace alps {
             assert(num_rows(M) == num_cols(M));
             assert(evals.size() == num_rows(M));
             matrix<T, MemoryBlock> left(num_rows(M), 1), right(num_rows(M), 1);
-            boost::numeric::bindings::lapack::geev('N', 'N', M, eVals, left, right);
+            int info = boost::numeric::bindings::lapack::geev('N', 'N', M, eVals, left, right);
         }
 
         /** @brief Overload that uses a diagonal matrix to store the eigenvalues */

@@ -63,6 +63,8 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
     // The reference energy was generated with the UCISD module of PySCF
     BOOST_CHECK_CLOSE(energy1, -1.102429823850713, 1.0E-3);
     BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-8);
+    std::cout << energy1 << std::endl;
+    std::cout << energy2 << std::endl;
 #endif
 }
 
@@ -105,10 +107,9 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
 }
 
 /** @brief Same as above, but for the transcorrelated Hamiltonian */
-/*
 BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, TranscorrelatedFixture)
 {
-    parametersH2Transcorrelated.set("nsweeps", 10);
+    parametersH2Transcorrelated.set("nsweeps", 30);
     parametersH2Transcorrelated.set("max_bond_dimension", 100);
     parametersH2Transcorrelated.set("time_step", 10.);
     parametersH2Transcorrelated.set("propagator_maxiter", 10);
@@ -120,6 +121,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
     maquis::DMRGInterface<double> interface(parametersH2Transcorrelated);
     interface.evolve();
     auto energyDMRG = maquis::real(interface.energy());
+    std::cout << energyDMRG << std::endl;
     // Hand-made Full-CI
     auto lattice = Lattice(parametersH2Transcorrelated);
     auto model = Model<matrix, TwoU1>(lattice, parametersH2Transcorrelated);
@@ -130,15 +132,24 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
         parametersH2Transcorrelated.set("hf_occ", iString);
         vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, parametersH2Transcorrelated))));
     }
-    matrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
-    matrix eigenVectors(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
-    alps::numeric::vector<double> eigenValues(vectorOfMPS.size(), 0.0);
+    cmatrix hamiltonianMatrix(vectorOfMPS.size(), vectorOfMPS.size(), 0.0);
+    alps::numeric::vector<std::complex<double>> eigenValues(vectorOfMPS.size(), 0.0);
     for (int iRow = 0; iRow < vectorOfMPS.size(); iRow++)
         for (int iCol = 0; iCol < vectorOfMPS.size(); iCol++)
             hamiltonianMatrix(iRow, iCol) = expval(vectorOfMPS[iRow], vectorOfMPS[iCol], mpo)/std::sqrt(norm(vectorOfMPS[iRow])*norm(vectorOfMPS[iCol]));
-    //alps::numeric::ggev(hamiltonianMatrix, eigenVectors, eigenValues);
-    BOOST_CHECK_CLOSE(eigenValues[vectorOfMPS.size()-1], energyDMRG, 1.0E-8);
+    alps::numeric::geev(hamiltonianMatrix, eigenValues);
+    // Checks that the eigenvalues are real (this comes from the fact that the matrix is obtained
+    // as similarity transformation of a real-valued matrix)
+    double minimumEnergy = std::real(eigenValues[0]);
+    for (int iElement = 0; iElement < vectorOfMPS.size(); iElement++) {
+        BOOST_CHECK_SMALL(std::imag(eigenValues[iElement]), 1.0E-8);
+        if (iElement != 0) {
+            auto realEnergy = std::real(eigenValues[iElement]);
+            if (realEnergy < minimumEnergy)
+                minimumEnergy = realEnergy;
+        }
+    }
+    BOOST_CHECK_CLOSE(minimumEnergy, energyDMRG, 1.0E-8);
 }
-*/
 
 #endif // HAVE_TwoU1

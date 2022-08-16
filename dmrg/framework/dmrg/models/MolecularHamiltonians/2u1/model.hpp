@@ -174,19 +174,19 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
     std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(destroy_down_for_meas, create_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up, create_down_for_meas);
 
-    #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
-    HERMITIAN(create_up, destroy_up)
-    HERMITIAN(create_down, destroy_down)
-    HERMITIAN(create_down_for_meas, destroy_down_for_meas)
-    HERMITIAN(cutf.first, ftdu.first)
-    HERMITIAN(cdtf.first, ftdd.first)
-    HERMITIAN(e2d, d2e)
-    HERMITIAN(cund.first, dund.first)
-    HERMITIAN(cdnu.first, ddnu.first)
-    HERMITIAN(cundtf.first, ftdund.first)
-    HERMITIAN(cdnutf.first, ftddnu.first)
-    HERMITIAN(ddcu.first, ducd.first)
-    #undef HERMITIAN
+    // #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
+    // HERMITIAN(create_up, destroy_up)
+    // HERMITIAN(create_down, destroy_down)
+    // HERMITIAN(create_down_for_meas, destroy_down_for_meas)
+    // HERMITIAN(cutf.first, ftdu.first)
+    // HERMITIAN(cdtf.first, ftdd.first)
+    // HERMITIAN(e2d, d2e)
+    // HERMITIAN(cund.first, dund.first)
+    // HERMITIAN(cdnu.first, ddnu.first)
+    // HERMITIAN(cundtf.first, ftdund.first)
+    // HERMITIAN(cdnutf.first, ftddnu.first)
+    // HERMITIAN(ddcu.first, ducd.first)
+    // #undef HERMITIAN
 }
 
 /** @brief Create the Hamiltonian terms */
