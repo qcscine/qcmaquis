@@ -167,6 +167,15 @@ private:
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
         add_option("srcas_overlapThreshold", "Threshold for overlap coefficient for being added to the determinant list", value(0.001));
+
+        // Solution of linear systems
+        add_option("linsystem_precond", "If yes, applies a preconditioner to the linear system solver", value("no"));
+        add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [mps] for the rhs", value("zero"));
+        add_option("linsystem_max_it", "Maximum number of times the iterative linear system solver is repeated (if >1, does basically restarted GMRES", value(1));
+        add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-8));
+        add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(10));
+        add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
+        add_option("linsystem_dmrg_alg", "DMRG algorithm that is using the solution of the linear system (possible values [ip] and [feast])", value("ip"));
     }
 
 };
