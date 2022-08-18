@@ -43,12 +43,13 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
     // Two-site evolutions
     parametersRelativistic.set("optimization", "twosite");
     parametersRelativistic.set("time_step", 10.);
-    parametersRelativistic.set("nsweeps", 40);
+    parametersRelativistic.set("nsweeps", 100);
     // TD
     maquis::DMRGInterface<std::complex<double>> interfaceTD(parametersRelativistic);
     interfaceTD.evolve();
     auto energyTD = std::real(interfaceTD.energy());
     // TI
+    parametersRelativistic.set("nsweeps", 40);
     maquis::DMRGInterface<std::complex<double>> interfaceTI(parametersRelativistic);
     interfaceTI.optimize();
     auto energyTI = std::real(interfaceTI.energy());
