@@ -118,10 +118,12 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
     parametersH2Transcorrelated.set("simulation_type", "TD");
     parametersH2Transcorrelated.set("COMPLEX", 1);
     parametersH2Transcorrelated.set("time_units", "fs");
+    parametersH2Transcorrelated.set("init_state", "hf");
+    parametersH2Transcorrelated.set("hf_occ", "4,1,1,1,1,1,1,1,1,1");
+    parametersH2Transcorrelated.set("optimization", "twosite");
     maquis::DMRGInterface<double> interface(parametersH2Transcorrelated);
     interface.evolve();
     auto energyDMRG = maquis::real(interface.energy());
-    std::cout << energyDMRG << std::endl;
     // Hand-made Full-CI
     auto lattice = Lattice(parametersH2Transcorrelated);
     auto model = Model<matrix, TwoU1>(lattice, parametersH2Transcorrelated);
