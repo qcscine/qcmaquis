@@ -32,7 +32,6 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/mp_tensors/boundary.h"
-#include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/siteproblem.h"
