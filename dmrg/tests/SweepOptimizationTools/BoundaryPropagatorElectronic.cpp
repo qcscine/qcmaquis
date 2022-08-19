@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#define BOOST_TEST_MODULE BoundaryPropagator
+#define BOOST_TEST_MODULE BoundaryPropagatorElectronic
 
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
@@ -47,7 +47,13 @@ TwoU1PG
 #endif
 > symmetries;
 
-/** Checks the constructor of a site shifter object */
+/**
+ * @brief Checks that the BoundaryPropagator object works propery.
+ * 
+ * The check is done by verifying that the first element of the right boundary
+ * and the last element of the left boundary contain the MPS energy.
+ * 
+ */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorBoundaryPropagator, S, symmetries, BenzeneFixture)
 {
     using BoundaryPropagatorType = BoundaryPropagator<matrix, S, storage::disk>;
@@ -58,6 +64,18 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorBoundaryPropagator, S, symmetrie
     auto mpsBenzeneConst = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
     mpsBenzeneConst.normalize_right();
     auto boundaryPropagator = BoundaryPropagatorType(mpsBenzeneConst, mpoBenzene);
-    std::cout << "ALB" << std::endl;
-    // BOOST_TEST(siteShifter.getSite() == 0);
+    boundaryPropagator.propagateRightBoundary(0, -1);
+    // Simple checks
+    auto lastRightBoundary = boundaryPropagator.getRightBoundary(0);
+    BOOST_CHECK_EQUAL(lastRightBoundary.aux_dim(), 1);
+    BOOST_CHECK_EQUAL(lastRightBoundary[0].n_blocks(), 1);
+    // Energy check
+    auto energy = expval(mpsBenzeneConst, mpoBenzene);
+    auto energyFromRightBoundary = lastRightBoundary[0].trace() + mpoBenzene.getCoreEnergy();
+    BOOST_CHECK_CLOSE(energyFromRightBoundary, energy, 1.0E-8);
+    // Does the same for the left part
+    boundaryPropagator.propagateLeftBoundary(0, latticeBenzene.size());
+    auto lastLeftBoundary = boundaryPropagator.getLeftBoundary(latticeBenzene.size());
+    auto energyFromLeftBoundary = lastLeftBoundary[0].trace() + mpoBenzene.getCoreEnergy();
+    BOOST_CHECK_CLOSE(energyFromLeftBoundary, energy, 1.0E-8);
 }

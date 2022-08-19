@@ -51,6 +51,10 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_mps_initializers_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_mps_overlap_vibrational test_mps_mpo_ops/test_mps_overlap_vibrational.cpp)
     target_link_libraries(test_mps_overlap_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_boundary_propagator_vibrational SweepOptimizationTools/BoundaryPropagatorVibrational.cpp)
+    target_link_libraries(test_boundary_propagator_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_overlap_propagator_vibrational SweepOptimizationTools/OverlapPropagatorVibrational.cpp)
+    target_link_libraries(test_overlap_propagator_vibrational ${DMRG_APP_LIBRARIES})
     if (BUILD_MPS2CI)
         add_executable(test_vibrational_srcas vibrational/test_srcas_vibrational.cpp)
         target_link_libraries(test_vibrational_srcas ${DMRG_APP_LIBRARIES})
@@ -120,13 +124,12 @@ target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
-
 add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
 target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
-
+add_executable(test_overlap_propagator_electronic SweepOptimizationTools/OverlapPropagatorElectronic.cpp)
+target_link_libraries(test_overlap_propagator_electronic ${DMRG_APP_LIBRARIES})
 add_executable(test_boundary_propagator_electronic SweepOptimizationTools/BoundaryPropagatorElectronic.cpp)
 target_link_libraries(test_boundary_propagator_electronic ${DMRG_APP_LIBRARIES})
-
 add_executable(test_linear_system_solver LinearSystem/LinearSystemSolver.cpp)
 target_link_libraries(test_linear_system_solver ${DMRG_APP_LIBRARIES})
 

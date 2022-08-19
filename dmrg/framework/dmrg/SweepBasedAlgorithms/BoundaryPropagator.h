@@ -35,6 +35,23 @@
 
 /**
  * @brief This class serves as a wrapper around the boundary propagation routine.
+ * 
+ * The boundary propagation is represented by the following contraction patters:
+ * 
+ *         o--o--o--o--o--o
+ *         |  |  |  |  |  |
+ *         +--+--+--+--+--+
+ *         |  |  |  |  |  |
+ *         o--o--o--o--o--o
+ * 
+ * And the result of the contraction between the MPS and the MPO are stored in
+ * so-called boundaries.
+ * The (i)-th left boundary collects the partial MPS/MPO contraction up to site (i)
+ * from the left, with the (i)-th site *excluded*.
+ * The (i)-th right boundary collects instead the partial MPS/MPO contraction up
+ * to site (i) included.
+ * When solving the local problem on a given site j one, therefore, needs, the j-th
+ * left boundaries and the (j+1)-th right boundary (for the single-site case).
  */
 template<class Matrix, class SymmGroup, class Storage>
 class BoundaryPropagator {
@@ -82,19 +99,64 @@ public:
     return right_[iSite];
   }
 
+  /**
+   * @brief Propagation of the left boundary.
+   * 
+   * Note that this function assumes that the MPS at site [siteInitial]
+   * was changed, and that the optimization is now moved up to site [siteFinal].
+   * Therefore, all boundaries ranging from left_[siteInitial+1] up to left_[siteFinal]
+   * are changed.
+   * 
+   * @param siteInitial starting site of the propagation.
+   * @param siteFInal last site of the boundary propagation.
+   */
+  inline void propagateLeftBoundary(int siteInitial, int siteFinal) {
+    if (siteInitial < siteFinal) {
+      for (int iSite = siteInitial; iSite < siteFinal; iSite++) {
+        // The incoming boundary can be dropped - it's anyway overwritten
+        Storage::drop(left_[iSite+1]);
+        left_[iSite+1] = Contraction::overlap_mpo_left_step(mps_[iSite], mps_[iSite],
+                                                            left_[iSite], mpo_[iSite]);
+        // We start writing the boundary that has been just used
+        Storage::evict(left_[iSite]);
+        parallel::sync();
+      }
+    }
+  }
+
+  /**
+   * @brief Propagation of the right boundary.
+   * 
+   * Analogously to [propagateLeftBoundary], this function assumes that the MPS at 
+   * site [siteInitial] was changed, and that the optimization is now moved to the *right*
+   * up to site [siteFinal].
+   * Therefore, all boundaries ranging from right_[siteInitial] up to right_[siteFinal+1]
+   * are changed.
+   * Note that it makes sense to call this function with siteFinal == -1, in order to calculate
+   * right_[0] (which should just contain the energy).
+   * 
+   * @param siteInitial starting site of the propagation.
+   * @param siteFInal last site of the boundary propagation.
+   */
+  inline void propagateRightBoundary(int siteInitial, int siteFinal) {
+    if (siteInitial > siteFinal) {
+      for (int iSite = siteInitial; iSite > siteFinal; iSite--) {
+        Storage::drop(right_[iSite]);
+        right_[iSite] = Contraction::overlap_mpo_right_step(mps_[iSite], mps_[iSite],
+                                                            right_[iSite+1], mpo_[iSite]);
+        Storage::evict(right_[iSite+1]);
+        parallel::sync();
+      }
+    }
+  }
+
 private:
 
   /** @brief Generates the left boundary */
   void generateLeftBoundary() {
     Storage::drop(left_[0]);
     left_[0] = mps_.left_boundary();
-    Storage::pin(left_[0]);
-    for (int i = 0; i < initSite_; i++) {
-      Storage::drop(left_[i+1]);
-      propagateLeftBoundary(i);
-      Storage::evict(left_[i]);
-      parallel::sync();
-    }
+    propagateLeftBoundary(0, initSite_);
     Storage::evict(left_[initSite_]);
   }
 
@@ -102,34 +164,8 @@ private:
   void generateRightBoundary() {
     Storage::drop(right_[L_]);
     right_[L_] = mps_.right_boundary();
-    Storage::pin(right_[L_]);
-    for (int i = L_-1; i >= initSite_; i--) {
-      Storage::drop(right_[i]);
-      propagateRightBoundary(i);
-      Storage::evict(right_[i+1]);
-      parallel::sync();
-    }
+    propagateRightBoundary(L_-1, initSite_);
     Storage::evict(right_[initSite_]);
-  }
-
-  /** @brief Propagation of the left boundary */
-  inline void propagateLeftBoundary(int referenceSite) {
-    assert(siteInitial <= siteFinal);
-    assert(siteInitial >= 0 && siteInitial <= L_);
-    assert(siteFinal >= 0 && siteFinal <= L_);
-    left_[referenceSite+1] = Contraction::overlap_mpo_left_step(mps_[referenceSite], mps_[referenceSite],
-                                                                left_[referenceSite], mpo_[referenceSite]);
-    Storage::pin(left_[referenceSite]);
-  }
-
-  /** @brief Propagation of the right boundary */
-  inline void propagateRightBoundary(int referenceSite) {
-    assert(siteInitial >= siteFinal);
-    assert(siteInitial >= 0 && siteInitial <= L_);
-    assert(siteFinal >= 0 && siteFinal <= L_);
-    right_[referenceSite] = Contraction::overlap_mpo_right_step(mps_[referenceSite], mps_[referenceSite],
-                                                                right_[referenceSite+1], mpo_[referenceSite]);
-    Storage::pin(right_[referenceSite]);
   }
 
   // Class members
