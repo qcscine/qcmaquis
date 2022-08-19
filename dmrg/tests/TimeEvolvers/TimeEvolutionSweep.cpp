@@ -54,6 +54,7 @@ TwoU1PG
 
 /** Checks the constructor of a site shifter object */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetries, TestTimeEvolverFixture) {
+#ifdef DMRG_TD
     using SingleSiteTimeEvolution = SingleSiteTimeEvolution<cmatrix, S, storage::disk>;
     // In both cases, we construct everything as is done in [sim.hpp]
     auto lat = Lattice(parametersH2FourOrbitals);
@@ -70,7 +71,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetri
         ssEvolver.evolve_sweep(iSweep);
     auto finalEnergy = expval(mps, mpo);
     BOOST_CHECK_CLOSE(maquis::real(initialEnergy), maquis::real(finalEnergy), 1.0E-10);
+#endif // DMRG_TD
 }
+
+#ifdef DMRG_TD
 
 /** Checks the constructor of a site shifter object */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorTwoSiteEvolution, S, symmetries, TestTimeEvolverFixture) {
@@ -204,4 +208,6 @@ BOOST_FIXTURE_TEST_CASE(TestSingleSiteImaginaryTimeVsTIRelativistic, TestTimeEvo
     BOOST_CHECK_CLOSE(maquis::real(iTDEnergy), -1.0780470133e+02, 1.0E-7);
 }
 
-#endif
+#endif // HAVE_U1DG
+
+#endif // DMRG_TD

@@ -39,7 +39,7 @@
  */
 BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
 {
-#ifdef HAVE_U1DG
+#if defined(HAVE_U1DG) and defined(DMRG_TD)
     // Two-site evolutions
     parametersRelativistic.set("optimization", "twosite");
     parametersRelativistic.set("time_step", 10.);
@@ -55,5 +55,5 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
     auto energyTI = std::real(interfaceTI.energy());
     // The threshold is here a bit looser because the iTD-DMRG convergence is rather slow
     BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
-#endif // HAVE_U1DG
+#endif // HAVE_U1DG and DMRG_TD
 }

@@ -51,7 +51,7 @@
  */
 BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, TranscorrelatedFixture)
 {
-#ifdef HAVE_TwoU1
+#if defined(HAVE_TwoU1) and defined(DMRG_TD)
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 10);
     parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 50);
     // TI
@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
 #endif // HAVE_TwoU1
 }
 
-#ifdef HAVE_TwoU1
+#if defined(HAVE_TwoU1) and defined(DMRG_TD)
 
 /** 
  * @brief Test on tcDMRG with no correlation parameter.
@@ -358,4 +358,4 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
     }
 }
 
-#endif // HAVE_TwoU1
+#endif // HAVE_TwoU1 and DMRG_TD

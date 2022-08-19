@@ -38,7 +38,7 @@
  */
 BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
 {
-#ifdef DMRG_PREBO
+#if defined(DMRG_PREBO) and defined(DMRG_TD)
     // Generic settings
     parametersPreBOComplex.set("optimization", "twosite");
     parametersPreBOReal.set("optimization", "twosite");
@@ -52,5 +52,5 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
     auto TIEnergy = std::real(realInterface.energy());
     auto iTDEnergy = std::real(complexInterface.energy());
     BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
-#endif // DMRG_PREBO
+#endif // DMRG_PREBO and DMRG_TD
 }

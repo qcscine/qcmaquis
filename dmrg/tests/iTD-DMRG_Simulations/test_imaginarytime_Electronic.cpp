@@ -44,6 +44,7 @@
  */
 BOOST_FIXTURE_TEST_CASE( TestImaginaryTime, BenzeneFixture )
 {
+#ifdef DMRG_TD
     std::vector<std::string> symmetries;
     #ifdef HAVE_SU2U1PG
     symmetries.push_back("su2u1pg");
@@ -71,9 +72,10 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTime, BenzeneFixture )
         auto iTDEnergy = std::real(complexInterface.energy());
         BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
     }
+#endif // DMRG_TD
 }
 
-#ifdef HAVE_U1DG
+#if defined(HAVE_U1DG) and defined(DMRG_TD)
 
 /**
  * @brief Tests that the energy is conserved along a relativistic TD-DMRG propagation.
@@ -97,9 +99,9 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
     BOOST_CHECK_CLOSE(energyTD, energyTI, 1.0E-8);
 }
 
-#endif // HAVE_U1DG
+#endif // HAVE_U1DG and DMRG_TD
 
-#ifdef DMRG_PREBO
+#if defined(DMRG_PREBO) and defined(DMRG_TD)
 
 /**
  * @brief Tests that the energy is conserved along a "true" PreBO TD-DMRG propagation.
@@ -121,9 +123,9 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
     BOOST_CHECK_CLOSE(TIEnergy, iTDEnergy, 1.0E-10);
 }
 
-#endif // DMRG_PREBO
+#endif // DMRG_PREBO and DMRG_TD
 
-#ifdef DMRG_VIBRONIC
+#if defined(DMRG_VIBRONIC) and defined(DMRG_TD)
 
 /**
  * @brief Tests that the energy obtained with iTD-DMRG and DMRG is coherent for a vibronic Hamiltonian.
@@ -153,4 +155,4 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeVibronic, VibronicFixture )
 #endif
 }
 
-#endif // DMRG_VIBRONIC
+#endif // DMRG_VIBRONIC and DMRG_TD

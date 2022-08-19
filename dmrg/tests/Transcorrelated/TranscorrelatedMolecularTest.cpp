@@ -48,7 +48,7 @@
  */
 BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFixture)
 {
-#ifdef HAVE_TwoU1
+#if defined(HAVE_TwoU1) and defined(DMRG_TD)
     parametersH2Conventional_ConventionalFormat.set("nsweeps", 10);
     parametersH2Conventional_ConventionalFormat.set("max_bond_dimension", 100);
     maquis::DMRGInterface<double> interfaceConventional(parametersH2Conventional_ConventionalFormat);
@@ -65,10 +65,10 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
     BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-8);
     std::cout << energy1 << std::endl;
     std::cout << energy2 << std::endl;
-#endif
+#endif // HAVE_TwoU1 and DMRG_TD
 }
 
-#ifdef HAVE_TwoU1
+#if defined(HAVE_TwoU1) and defined(DMRG_TD)
 
 /**
  * @brief Verify coherence between tcDMRG and FCI.
@@ -154,4 +154,4 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
     BOOST_CHECK_CLOSE(minimumEnergy, energyDMRG, 1.0E-8);
 }
 
-#endif // HAVE_TwoU1
+#endif // HAVE_TwoU1 and DMRG_TD

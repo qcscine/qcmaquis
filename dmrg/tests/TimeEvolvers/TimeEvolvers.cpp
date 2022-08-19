@@ -56,6 +56,7 @@ TwoU1PG
 
 /** @brief Checks that the number of overall blocks of a block_matrix is correct */
 BOOST_AUTO_TEST_CASE_TEMPLATE(TimeEvolversAddTime, S, symmetries) {
+#ifdef DMRG_TD
     // The parameters are not really used
     DmrgParameters p;
     p.set("site_types", "0,0,0,0");
@@ -77,7 +78,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TimeEvolversAddTime, S, symmetries) {
     // in the l->r sweep, and then by other t/2. in the r->l sweep.
     auto refValue = 1./(2.*24.18884254);
     BOOST_CHECK_CLOSE(gotTimeStep, refValue, 1e-7);
+#endif // DMRG_TD
 }
+
+#ifdef DMRG_TD
 
 /** @brief Checks that the energy of an MPS is conserved after the propagation of a SiteProblem */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetries, TestTimeEvolverFixture) {
@@ -261,3 +265,5 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyDecreaseSiteproblem, S, symmetries, T
     auto finalEnergy = maquis::real(expval(mps, mpo));
     BOOST_TEST(finalEnergy < initialEnergy);
 }
+
+#endif // DMRG_TD
