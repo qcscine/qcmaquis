@@ -124,6 +124,9 @@ target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
 add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
 target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
 
+add_executable(test_boundary_propagator_electronic SweepOptimizationTools/BoundaryPropagatorElectronic.cpp)
+target_link_libraries(test_boundary_propagator_electronic ${DMRG_APP_LIBRARIES})
+
 add_executable(test_linear_system_solver LinearSystem/LinearSystemSolver.cpp)
 target_link_libraries(test_linear_system_solver ${DMRG_APP_LIBRARIES})
 

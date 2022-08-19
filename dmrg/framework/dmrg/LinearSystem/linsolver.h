@@ -2,9 +2,9 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2019 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2019- Institute for Theoretical Physics, ETH Zurich
  *               2019 by Anna Kelemen <akelemen@ethz.ch>
- *               2020 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2020- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
