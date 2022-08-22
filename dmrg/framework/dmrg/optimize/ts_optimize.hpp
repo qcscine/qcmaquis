@@ -261,17 +261,6 @@ public:
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){
-                    if(site1 != 0){
-                        #ifdef USE_AMBIENT
-                        std::vector<int> placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        parallel::scheduler_permute scheduler(placement_l, parallel::groups_granularity);
-                        for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
-                            parallel::guard group(scheduler(b), parallel::groups_granularity);
-                            storage::migrate(left_[site1][b], parallel::scheduler_size_indexed(left_[site1][b]));
-                        }
-                        parallel::sync();
-                        #endif
-                    }
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
@@ -306,17 +295,6 @@ public:
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
-                    if(site1 != L-2){
-                        #ifdef USE_AMBIENT
-                        std::vector<int> placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        parallel::scheduler_permute scheduler(placement_r, parallel::groups_granularity);
-                        for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
-                            parallel::guard group(scheduler(b), parallel::groups_granularity);
-                            storage::migrate(right_[site2+1][b], parallel::scheduler_size_indexed(right_[site2+1][b]));
-                        }
-                        parallel::sync();
-                        #endif
-                    }
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]);
                 }
