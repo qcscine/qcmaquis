@@ -77,13 +77,6 @@ public:
             site = to_site(L, _site);
         }
 
-//        if (parms["beta_mode"] && sweep == 0 && resume_at < L) {
-//            int site = (resume_at == -1) ? 0 : resume_at;
-//            mpo = zero_after(mpo_orig, site+2);
-//            mps.canonize(site);
-//            this->init_left_right(mpo, site);
-//        }
-
         Storage::prefetch(left_[site]);
         Storage::prefetch(right_[site+1]);
 
