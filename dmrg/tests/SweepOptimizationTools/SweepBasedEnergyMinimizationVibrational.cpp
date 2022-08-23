@@ -54,6 +54,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizer_Vibrational_Watson, Watso
   auto mpsDefault = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatsonHarmonic)));
   mpsDefault.normalize_right();
   auto energyMinimizer = SweepBasedMinimizerSS(mpsDefault, watsonHarmonicMPO, parametersEthyleneWatsonHarmonic);
+  energyMinimizer.runSweepSimulation();
 #endif // HAVE_TrivialGroup
 }
 

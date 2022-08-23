@@ -63,32 +63,32 @@ public:
   };
 
   /** @brief Method to update the MPS for a given site */
-  auto updateMPS(int site, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS, double alpha,
+  auto updateMPS(int site1, int site2, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS, double alpha,
                  double cutoff, double mMax) {
     // Printing
     maquis::cout << "MPS truncation performed with noise parameter alpha = " << alpha << std::endl;
-    mps_[site] = inputMPS;
+    mps_[site1] = inputMPS;
     truncation_results truncationOutput;
     // Forward sweep case
     if (sweepDirection == SweepDirectionType::Forward) {
-      if (site < L_-1) {
-        truncationOutput = mps_.grow_l2r_sweep(mpo_[site], boundaryPropagator_->getLeftBoundary(site),
-                                               boundaryPropagator_->getRightBoundary(site+1), site, alpha,
+      if (site1 < L_-1) {
+        truncationOutput = mps_.grow_l2r_sweep(mpo_[site1], boundaryPropagator_->getLeftBoundary(site1),
+                                               boundaryPropagator_->getRightBoundary(site2), site1, alpha,
                                                cutoff, mMax);
       }
       else {
-        auto t = mps_[site].normalize_left(DefaultSolver());
+        auto t = mps_[site1].normalize_left(DefaultSolver());
       }
     }
     // Backward case
     else if (sweepDirection == SweepDirectionType::Backward) {
-      if (site > 0) {
-        truncationOutput = mps_.grow_r2l_sweep(mpo_[site], boundaryPropagator_->getLeftBoundary(site),
-                                               boundaryPropagator_->getRightBoundary(site+1), site, alpha,
+      if (site1 > 0) {
+        truncationOutput = mps_.grow_r2l_sweep(mpo_[site1], boundaryPropagator_->getLeftBoundary(site1),
+                                               boundaryPropagator_->getRightBoundary(site2), site1, alpha,
                                                cutoff, mMax);
       }
       else {
-        auto t = mps_[site].normalize_right(DefaultSolver());
+        auto t = mps_[site1].normalize_right(DefaultSolver());
       }
     }
     return truncationOutput;

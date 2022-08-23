@@ -76,46 +76,51 @@ public:
    */
   void runSweepSimulation() {
     int maxNumberOfSweeps = parms_["nsweeps"];
-    this->prepareSweep();
+    // == LOOP OVER THE SWEEPS ==
     for (int iSweep = 0; iSweep < maxNumberOfSweeps; iSweep++) {
-      // This part is holds for any sweep-based optimization
-      auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
-      currentSite_ = convertMicroIterationToSite(indexOfMicroIteration_);
-      siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(currentSite_);
-      siteRight_ = SweepTraitClass::getIndexOfRightBoundary(currentSite_);
-      mpoContainer_.updatePlacements(indexOfMicroIteration_, siteLeft_, siteRight_);
-      // We must be careful here because, for the two-site case, there is the risk of fetching twice the boundaries.
-      if (SweepTraitClass::countEndSiteTwice_ && indexOfMicroIteration_ != lastSite_) {
-        Storage::fetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
-        Storage::fetch(boundaryPropagator_->getRightBoundary(siteRight_));
+      this->prepareSweep();
+      indexOfMicroIteration_ = 0;
+      // == LOOP OVER THE MICROITERATIONS ==
+      while (indexOfMicroIteration_ < 2*lastSite_) {
+        auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
+        currentSite_ = convertMicroIterationToSite(indexOfMicroIteration_);
+        siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(currentSite_, sweepType);
+        siteRight_ = SweepTraitClass::getIndexOfRightBoundary(currentSite_, sweepType);
+        mpoContainer_.updatePlacements(indexOfMicroIteration_, siteLeft_, siteRight_);
+        // We must be careful here because, for the two-site case, there is the risk of fetching twice the boundaries.
+        if (SweepTraitClass::countEndSiteTwice_ && indexOfMicroIteration_ != lastSite_) {
+          Storage::fetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
+          Storage::fetch(boundaryPropagator_->getRightBoundary(siteRight_));
+        }
+        if (sweepType == SweepDirectionType::Forward) {
+          auto nextIndex = SweepTraitClass::getIndexOfNextRightBoundary(currentSite_, sweepType);
+          if (nextIndex < L_)
+            Storage::prefetch(boundaryPropagator_->getRightBoundary(nextIndex));
+        }
+        else if (sweepType == SweepDirectionType::Backward) {
+          auto nextIndex = SweepTraitClass::getIndexOfNextLeftBoundary(currentSite_, sweepType);
+          if (nextIndex > 0)
+            Storage::prefetch(boundaryPropagator_->getLeftBoundary(nextIndex));
+        }
+        // == SOLUTION OF THE LOCAL PROBLEM ==
+        this->prepareMicroiteration();
+        auto outputTensor = this->solveLocalProblem();
+        // == MPS UPDATE ==
+        auto truncationResults = mpsUpdater_->updateMPS(siteLeft_, siteRight_, sweepType, outputTensor, this->getAlpha(iSweep),
+                                                        this->get_cutoff(iSweep), this->get_Mmax(iSweep));
+        // == BOUNDARY PROPAGATION ==
+        this->propagateBoundaries();
+        if (sweepType == SweepDirectionType::Forward && siteLeft_ != L_-1) {
+          Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
+          Storage::evict(boundaryPropagator_->getLeftBoundary(siteLeft_));
+        }
+        else if (sweepType == SweepDirectionType::Backward && siteLeft_ != 0) {
+          Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
+          Storage::evict(boundaryPropagator_->getRightBoundary(siteRight_+1));
+        }
+        this->finalizeMicroIteration(truncationResults);
       }
-      if (sweepType == SweepDirectionType::Forward) {
-        auto nextIndex = SweepTraitClass::getIndexOfNextRightBoundary(currentSite_, sweepType);
-        if (nextIndex < L_)
-          Storage::prefetch(boundaryPropagator_->getRightBoundary(nextIndex));
-      }
-      else if (sweepType == SweepDirectionType::Backward) {
-        auto nextIndex = SweepTraitClass::getIndexOfNextLeftBoundary(currentSite_, sweepType);
-        if (nextIndex > 0)
-          Storage::prefetch(boundaryPropagator_->getLeftBoundary(nextIndex));
-      }
-      // == SOLUTION OF THE LOCAL PROBLEM ==
-      this->prepareMicroiteration();
-      auto outputTensor = this->solveLocalProblem();
-      // == MPS UPDATE ==
-      auto truncationResults = mpsUpdater_->updateMPS(siteLeft_, siteRight_, sweepType, outputTensor, this->getAlpha(iSweep),
-                                                      this->get_cutoff(iSweep), this->get_Mmax(iSweep));
-      // == BOUNDARY PROPAGATION ==
-      this->propagateBoundaries();
-      if (sweepType == SweepDirectionType::Forward && siteLeft_ != L_-1) {
-        Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
-        Storage::evict(boundaryPropagator_->getLeftBoundary(siteLeft_));
-      }
-      else if (sweepType == SweepDirectionType::Backward && siteLeft_ != 0) {
-        Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
-        Storage::evict(boundaryPropagator_->getRightBoundary(siteRight_+1));
-      }
-      this->finalizeMicroIteration(truncationResults);
+      indexOfMicroIteration_++;
     }
     this->finalizeSweep();
   };

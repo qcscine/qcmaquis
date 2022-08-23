@@ -63,6 +63,7 @@ public:
   using Base::mpoContainer_;
   using Base::mpo_;
   using Base::parms_;
+  using Base::runSweepSimulation;
   using Base::siteLeft_;
   using Base::siteRight_;
   
