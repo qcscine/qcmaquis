@@ -35,29 +35,31 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/checks.h"
+#include "dmrg/SweepBasedAlgorithms/SweepOptimizationTypeTrait.h"
+#include "dmrg/SweepBasedAlgorithms/SweepMPSContainer.h"
 
 /**
- * @brief Class representing an MPS/MPS contraction. 
- * 
+ * @brief Class representing an MPS/MPS contraction.
+ *
  * The tensor network to be contracted is now the following:
- * 
+ *
  *     o--o--o--o--o
  *     |  |  |  |  |
  *     x--x--x--x--x
- * 
+ *
  * which is as the contraction implemented by the [BoundaryPropagator]
- * object, without the MPO. The structure of the class reflects the 
+ * object, without the MPO. The structure of the class reflects the
  * philosophy of [BoundaryPropagator]. Two key differences are:
- * 
+ *
  * 1) that the method does not allow to access directly the "boundaries",
  *    but rather their partial contraction with an MPS, i.e.,
- *     
+ *
  *     o--o-- --o--o
  *     |  |  |  |  |
  *     x--x--x--x--x
- * 
+ *
  *    which is what is needed by the DMRG[ortho] method.
- * 
+ *
  * 2) multiple MPS tensors (x--x--x--x--x) are supported. Again, this is
  *    connected to the fact that in DMRG[ortho] one may need to orthogonalize
  *    wrt multiple MPSs.
@@ -97,9 +99,19 @@ public:
   }
 
   /** @brief Contracts the boundary with an additional MPS */
-  auto getOrthogonalVector(int iVector, int iSite) const {
-    return contraction::site_ortho_boundaries(refMPS_[iSite], orthoMPS_[iVector][iSite],
-                                              partialContractionLeft_[iVector][iSite], partialContractionRight_[iVector][iSite+1]);
+  template<SweepOptimizationType SweepType=SweepOptimizationType::SingleSite>
+  auto getOrthogonalVector(int iVector, int siteLeft, int siteRight) const {
+    using SweepMPSContainerType = SweepMPSContainer<Matrix, SymmGroup, SweepType>;
+    auto mpsContainer = SweepMPSContainerType(refMPS_);
+    auto orthoMPSContainer = SweepMPSContainerType(orthoMPS_[iVector]);
+    return contraction::site_ortho_boundaries(mpsContainer.getMPSTensor(siteLeft, siteRight),
+                                              orthoMPSContainer.getMPSTensor(siteLeft, siteRight),
+                                              partialContractionLeft_[iVector][siteLeft], partialContractionRight_[iVector][siteRight]);
+  }
+
+  /** @brief Getter for the number of orthogonal states */
+  int getNumberOfOverlapMPSs() const {
+    return nOrthogonalMPSs_;
   }
 
   /** @brief Propagation algorithm for the left overlap boundaries (see [BoundaryPropagator]) */
