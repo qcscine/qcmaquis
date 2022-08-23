@@ -73,9 +73,9 @@ private:
         add_option("ietl_jcd_gmres", "", value(0));
         add_option("ietl_jcd_maxiter", "", value(10));
 
-        add_option("nsweeps", "");
-        add_option("nmainsweeps", "", 0);
-        add_option("ngrowsweeps", "", 0);
+        add_option("nsweeps", "Number of sweeps of the optimization", 10);
+        add_option("ngrowsweeps", "Number of the grow sweeps (used for the truncation and noise parameters)", 2);
+        add_option("nmainsweeps", "Number of main sweeps (used for the truncation and noise parameters)", 5);
 
         add_option("resultfile", "");
         add_option("chkpfile", "");
