@@ -36,9 +36,9 @@
 
 /**
  * @brief Class that manages the update of an MPS at the end of the sweep.
- * 
- * Also in this case, the class hides the detail of how the 
- * 
+ *
+ * Also in this case, the class hides the detail of how the
+ *
  * @tparam SweepType can be SingleSite or TwoSite.
  */
 template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType SweepType>
@@ -56,7 +56,7 @@ public:
 
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
-                  BaseParameters& parms) 
+                  BaseParameters& parms)
     : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms)
   {
     L_ = mps_.size();
@@ -116,7 +116,7 @@ public:
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
                   BaseParameters& parms)
-    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms) 
+    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms)
   {
     L_ = mps_.size();
   };
@@ -126,28 +126,28 @@ public:
                  double alpha, double cutoff, double mMax)
   {
     // Converts back the MPS into the two-site tensor
-    TwoSiteTensorType tst;
+    TwoSiteTensorType tst(mps_[site1], mps_[site1+1]);
     tst << inputMPS;
     truncation_results truncationOutput;
     // Actual truncation
     if (sweepDirection == SweepDirectionType::Forward) {
       // Write back result from optimization
       if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[site1], mps_[site2], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
+        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
       else
-        boost::tie(mps_[site1], mps_[site2], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(site1),
-                                                                                       mpo_[site1]);
+        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(site1),
+                                                                                         mpo_[site1]);
       // Final normalization
-      auto t = mps_[site2].normalize_left(DefaultSolver());
-      if (site2 < L_-1)
-        mps_[site2+1].multiply_from_left(t);
+      auto t = mps_[site1+1].normalize_left(DefaultSolver());
+      if (site1+2 < L_)
+        mps_[site1+2].multiply_from_left(t);
     }
     else if (sweepDirection == SweepDirectionType::Backward) {
       if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[site1], mps_[site2], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
+        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
       else
-        boost::tie(mps_[site1], mps_[site2], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(site2+1),
-                                                                                       mpo_[site2]);
+        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(site2+1),
+                                                                                         mpo_[site2]);
       auto t = mps_[site1].normalize_right(DefaultSolver());
       if (site1 > 0)
         mps_[site1-1].multiply_from_right(t);

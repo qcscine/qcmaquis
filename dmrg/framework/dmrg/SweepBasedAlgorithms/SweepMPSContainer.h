@@ -28,15 +28,16 @@
 #define SWEEP_MPS_CONTAINER
 
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "SweepOptimizationTypeTrait.h"
 
 /**
  * @brief Class wrapping around an MPS, to be used in conjunction with sweep-based algorithms.
- * 
+ *
  * Similarly to [SweepMPOContainer], this class serves as a wrapper to hide how the MPS
  * for a given site (or, for the TS case, for a pair of neighbouring sites) is constructed.
- * 
+ *
  * @tparam SweepType can be OneSite or TwoSite.
  */
 template<class Matrix, class SymmGroup, SweepOptimizationType SweepType>
@@ -53,7 +54,7 @@ public:
   SweepMPSContainer(const MPSType& mps) : mps_(mps) {};
 
   /** @brief Getter for the MPOTensor */
-  auto& getMPSTensor(int siteLeft, int siteRight) { return mps_[siteLeft]; }
+  auto& getMPSTensor(int siteLeft) { return mps_[siteLeft]; }
 
 private:
   const MPSType& mps_;
@@ -67,20 +68,21 @@ private:
 
 public:
   using MPSType = MPS<Matrix, SymmGroup>;
+  using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
   SweepMPSContainer(const MPSType& mps) : mps_(mps) { };
 
   /** @brief Getter for the MPOTensor */
-  auto& getMPSTensor(int siteLeft, int siteRight) {
-    TwoSiteTensor<Matrix, SymmGroup> tst(mps_[siteLeft], mps_[siteRight]);
+  auto& getMPSTensor(int siteLeft) {
+    TwoSiteTensor<Matrix, SymmGroup> tst(mps_[siteLeft], mps_[siteLeft+1]);
     localMPS_ = tst.make_mps();
     return localMPS_;
   }
 
 private:
   const MPSType& mps_;
-  MPSType localMPS_;
+  MPSTensorType localMPS_;
 };
 
 #endif // SWEEP_MPO_CONTAINER

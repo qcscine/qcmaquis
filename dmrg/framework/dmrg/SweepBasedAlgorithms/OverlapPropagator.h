@@ -104,8 +104,8 @@ public:
     using SweepMPSContainerType = SweepMPSContainer<Matrix, SymmGroup, SweepType>;
     auto mpsContainer = SweepMPSContainerType(refMPS_);
     auto orthoMPSContainer = SweepMPSContainerType(orthoMPS_[iVector]);
-    return contraction::site_ortho_boundaries(mpsContainer.getMPSTensor(siteLeft, siteRight),
-                                              orthoMPSContainer.getMPSTensor(siteLeft, siteRight),
+    return contraction::site_ortho_boundaries(mpsContainer.getMPSTensor(siteLeft),
+                                              orthoMPSContainer.getMPSTensor(siteLeft),
                                               partialContractionLeft_[iVector][siteLeft], partialContractionRight_[iVector][siteRight]);
   }
 

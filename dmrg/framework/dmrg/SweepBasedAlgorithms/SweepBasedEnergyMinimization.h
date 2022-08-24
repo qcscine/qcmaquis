@@ -113,7 +113,7 @@ public:
 
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() override final {
-    auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_, siteRight_);
+    auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     if (parms_["eigensolver"] == std::string("IETL"))
       resultOfLocalSiteProblem_ = solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
     else if (parms_["eigensolver"] == std::string("IETL_JCD"))
@@ -133,14 +133,14 @@ public:
   void propagateBoundaries() override final {
     auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
     if (sweepType == SweepDirectionType::Forward) {
-      boundaryPropagator_->propagateLeftBoundary(currentSite_, currentSite_+1);
+      boundaryPropagator_->propagateLeftBoundary(siteLeft_, siteLeft_+1);
       if (overlapPropagator_)
-        overlapPropagator_->propagateLeftOverlapBoundaries(currentSite_, currentSite_+1);
+        overlapPropagator_->propagateLeftOverlapBoundaries(siteLeft_, siteLeft_+1);
     }
     else if (sweepType == SweepDirectionType::Backward) {
-      boundaryPropagator_->propagateRightBoundary(currentSite_, currentSite_-1);
+      boundaryPropagator_->propagateRightBoundary(siteRight_-1, siteRight_-2);
       if (overlapPropagator_)
-        overlapPropagator_->propagateRightOverlapBoundaries(currentSite_, currentSite_-1);
+        overlapPropagator_->propagateRightOverlapBoundaries(siteRight_-1, siteRight_-2);
     }
   }
 

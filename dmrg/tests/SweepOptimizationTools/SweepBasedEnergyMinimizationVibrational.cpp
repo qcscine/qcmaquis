@@ -70,4 +70,36 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerSS_Vibrational_Watson, Wat
 #endif // HAVE_TrivialGroup
 }
 
+#ifdef HAVE_TrivialGroup
+
+BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerTS_Vibrational_Bilinearly, WatsonFixture)
+{
+#ifdef HAVE_TrivialGroup
+  // Data Generation
+  using SweepBasedMinimizerTS = SweepBasedEnergyMinimization<matrix, TrivialGroup, storage::disk, SweepOptimizationType::TwoSite>;
+  using MPSType = MPS<matrix, TrivialGroup>;
+  parametersBilinearly.set("nsweeps", 10);
+  parametersBilinearly.set("max_bond_dimension", 20);
+  auto lattice = Lattice(parametersBilinearly);
+  auto bilinearlyModel = Model<matrix, TrivialGroup>(lattice, parametersBilinearly);
+  auto bilinearlyMPO = make_mpo(lattice, bilinearlyModel);
+  parametersBilinearly.set("init_state", "const");
+  // TSOptimizer calculation
+  auto mpsConst = MPS<matrix, TrivialGroup>(lattice.size(), *(bilinearlyModel.initializer(lattice, parametersBilinearly)));
+  mpsConst.normalize_right();
+  auto energyMinimizer = SweepBasedMinimizerTS(mpsConst, bilinearlyMPO, parametersBilinearly);
+  energyMinimizer.runSweepSimulation();
+  double optimalEnergyFromSweeper = energyMinimizer.getSpecificResult<double>("Energy");
+  // Interface calculation
+  parametersBilinearly.set("optimization", "twosite");
+  maquis::DMRGInterface<double> interfaceBilinearly(parametersBilinearly);
+  interfaceBilinearly.optimize();
+  double optimalEnergyFromInterface = interfaceBilinearly.energy();
+  // Final check
+  BOOST_CHECK_CLOSE(optimalEnergyFromInterface, optimalEnergyFromSweeper, 1.0e-7);
+#endif // HAVE_TrivialGroup
+}
+
+#endif // HAVE_TrivialGroup
+
 #endif // DMRG_VIBRATIONAL

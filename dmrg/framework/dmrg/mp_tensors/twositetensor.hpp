@@ -42,18 +42,12 @@
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                                                 MPSTensor<Matrix, SymmGroup> const & mps2)
-: phys_i( mps1.site_dim()*mps2.site_dim() )
-, phys_i_left( mps1.site_dim() )
-, phys_i_right( mps2.site_dim() )
-, left_i( mps1.row_dim() )
-, right_i( mps2.col_dim() )
-, cur_storage(TSBothPaired)
-, cur_normalization(Unorm)
+    : phys_i( mps1.site_dim()*mps2.site_dim() ), phys_i_left( mps1.site_dim() ), phys_i_right( mps2.site_dim() ),
+      left_i( mps1.row_dim() ), right_i( mps2.col_dim() ), cur_storage(TSBothPaired), cur_normalization(Unorm)
 {
     mps1.make_left_paired();
     mps2.make_right_paired();
     gemm(mps1.data(), mps2.data(), data_, parallel::scheduler_balanced(mps1.data()));
- 
 }
 
 

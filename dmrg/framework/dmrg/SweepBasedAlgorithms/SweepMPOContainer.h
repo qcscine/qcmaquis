@@ -90,11 +90,11 @@ public:
   void updatePlacements(int microIterationIndex, int leftSite, int rightSite) {
     if (microIterationIndex < mpo_.size()-1) {
       twoSiteMPOCache_[leftSite].placement_l = mpo_[leftSite].placement_l;
-      twoSiteMPOCache_[leftSite].placement_r = parallel::get_right_placement(twoSiteMPOCache_[leftSite], mpo_[leftSite].placement_l, mpo_[rightSite].placement_r);
+      twoSiteMPOCache_[leftSite].placement_r = parallel::get_right_placement(twoSiteMPOCache_[leftSite], mpo_[leftSite].placement_l, mpo_[leftSite+1].placement_r);
     } 
     else {
-      twoSiteMPOCache_[leftSite].placement_l = parallel::get_left_placement(twoSiteMPOCache_[leftSite], mpo_[leftSite].placement_l, mpo_[rightSite].placement_r);
-      twoSiteMPOCache_[leftSite].placement_r = mpo_[rightSite].placement_r;
+      twoSiteMPOCache_[leftSite].placement_l = parallel::get_left_placement(twoSiteMPOCache_[leftSite], mpo_[leftSite].placement_l, mpo_[leftSite+1].placement_r);
+      twoSiteMPOCache_[leftSite].placement_r = mpo_[leftSite+1].placement_r;
     }
   }
 
