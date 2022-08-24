@@ -262,8 +262,8 @@ public:
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){
-                    Storage::evict(mps[site1]);
-                    Storage::evict(left_[site1]);
+                    Storage::StoreToFile(mps[site1]);
+                    Storage::StoreToFile(left_[site1]);
                 }
                 { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
                 { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
@@ -296,8 +296,8 @@ public:
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
-                    Storage::evict(mps[site2]);
-                    Storage::evict(right_[site2+1]);
+                    Storage::StoreToFile(mps[site2]);
+                    Storage::StoreToFile(right_[site2+1]);
                 }
                 { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
                 { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }

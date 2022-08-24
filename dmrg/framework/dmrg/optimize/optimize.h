@@ -85,7 +85,7 @@ public:
 
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
-            Storage::evict(mps[i]);
+            Storage::StoreToFile(mps[i]);
 
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
@@ -100,12 +100,12 @@ public:
             boost::split(files, files_, boost::is_any_of(", "));
             for (int n = 0; n < northo; ++n) {
                 maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-    
+
                 maquis::checks::symmetry_check(parms, files[n]);
                 maquis::checks::orbital_order_check(parms, files[n]);
                 load(files[n], ortho_mps[n]);
                 maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-    
+
                 maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
             }
         }
@@ -125,8 +125,6 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
-        Storage::pin(left_[site+1]);
-
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
@@ -134,8 +132,6 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
-        Storage::pin(right_[site]);
-
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
@@ -161,15 +157,14 @@ protected:
         //Timer tlb("Init left boundaries"); tlb.begin();
         Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
-        Storage::pin(left_[0]);
 
         for (int i = 0; i < site; ++i) {
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
-            Storage::evict(left_[i]);
+            Storage::StoreToFile(left_[i]);
             parallel::sync(); // to scale down memory
         }
-        Storage::evict(left_[site]);
+        Storage::StoreToFile(left_[site]);
         //tlb.end();
 
         maquis::cout << "Boundaries are partially initialized...\n";
@@ -177,15 +172,14 @@ protected:
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
-        Storage::pin(right_[L]);
 
         for (int i = L-1; i >= site; --i) {
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
-            Storage::evict(right_[i+1]);
+            Storage::StoreToFile(right_[i+1]);
             parallel::sync(); // to scale down memory
         }
-        Storage::evict(right_[site]);
+        Storage::StoreToFile(right_[site]);
         //trb.end();
 
         maquis::cout << "Boundaries are fully initialized...\n";

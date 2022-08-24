@@ -51,8 +51,6 @@ public:
   using ValueType = typename MPSTensorType::value_type;
   //
   using Base::boundaryPropagator_;
-  using Base::convertMicroIterationToSite;
-  using Base::currentSite_;
   using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
   using Base::initSite_;
@@ -73,8 +71,6 @@ public:
                                int initSite=0) : Base(mps, mpo, parms, initSite), nOrtho_(0)
   {
     mps_.canonize(initSite_);
-    for (int i = 0; i < L_; ++i)
-      Storage::evict(mps_[i]);
     if (parms_.is_set("ortho_states")) {
       files_ = parms_["ortho_states"].str();
       std::vector<std::string> files;
@@ -94,12 +90,6 @@ public:
   /** @brief Method called at the beginning of each sweep */
   void prepareSweep() override final {
     iterationResults_.clear();
-    if (initSite_ != -1) {
-      indexOfMicroIteration_ = initSite_;
-      currentSite_ = convertMicroIterationToSite(indexOfMicroIteration_);
-    }
-    Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(currentSite_, SweepDirectionType::Forward)));
-    Storage::prefetch(boundaryPropagator_->getRightBoundary(SweepTraitClass::getIndexOfRightBoundary(currentSite_, SweepDirectionType::Forward)));
   }
 
   /** @brief Method called before each microiteration */
@@ -133,12 +123,12 @@ public:
   void propagateBoundaries() override final {
     auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
     if (sweepType == SweepDirectionType::Forward) {
-      boundaryPropagator_->propagateLeftBoundary(siteLeft_, siteLeft_+1);
+      boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
         overlapPropagator_->propagateLeftOverlapBoundaries(siteLeft_, siteLeft_+1);
     }
     else if (sweepType == SweepDirectionType::Backward) {
-      boundaryPropagator_->propagateRightBoundary(siteRight_-1, siteRight_-2);
+      boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
         overlapPropagator_->propagateRightOverlapBoundaries(siteRight_-1, siteRight_-2);
     }

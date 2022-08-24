@@ -148,22 +148,22 @@ private:
 
         Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
-        Storage::evict(left_[0]);
+        Storage::StoreToFile(left_[0]);
 
         for (int i = 0; i < L; ++i) {
             Storage::drop(left_[i+1]);
             left_[i+1] = contr::overlap_mpo_left_step(mpsp[i], mps[i], left_[i], mpo[i]);
-            Storage::evict(left_[i+1]);
+            Storage::StoreToFile(left_[i+1]);
         }
 
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
-        Storage::evict(right_[L]);
+        Storage::StoreToFile(right_[L]);
 
         for(int i = L-1; i >= 0; --i) {
             Storage::drop(right_[i]);
             right_[i] = contr::overlap_mpo_right_step(mpsp[i], mps[i], right_[i+1], mpo[i]);
-            Storage::evict(right_[i]);
+            Storage::StoreToFile(right_[i]);
         }
     }
 

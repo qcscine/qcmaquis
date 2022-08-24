@@ -102,51 +102,34 @@ public:
   /**
    * @brief Propagation of the left boundary.
    * 
-   * Note that this function assumes that the MPS at site [siteInitial]
-   * was changed, and that the optimization is now moved up to site [siteFinal].
-   * Therefore, all boundaries ranging from left_[siteInitial+1] up to left_[siteFinal]
-   * are changed.
+   * Updates the left boundary element that is sitting on [iSite].
+   * Therefore, it contracts left[iSite-1] with mps[iSite-1].
    * 
-   * @param siteInitial starting site of the propagation.
-   * @param siteFInal last site of the boundary propagation.
+   * @param iSite site on which the left boundary must be updated.
    */
-  inline void propagateLeftBoundary(int siteInitial, int siteFinal) {
-    if (siteInitial < siteFinal) {
-      for (int iSite = siteInitial; iSite < siteFinal; iSite++) {
-        // The incoming boundary can be dropped - it's anyway overwritten
-        Storage::drop(left_[iSite+1]);
-        left_[iSite+1] = Contraction::overlap_mpo_left_step(mps_[iSite], mps_[iSite],
-                                                            left_[iSite], mpo_[iSite]);
-        // We start writing the boundary that has been just used
-        Storage::evict(left_[iSite]);
-        parallel::sync();
-      }
+  inline void updateLeftBoundary(int iSite) {
+    if (iSite > 0 && iSite < L_-1) {
+      Storage::drop(left_[iSite]);
+      left_[iSite] = Contraction::overlap_mpo_left_step(mps_[iSite-1], mps_[iSite-1],
+                                                        left_[iSite-1], mpo_[iSite-1]);
+      Storage::StoreToFile(left_[iSite-1]);
     }
   }
 
   /**
    * @brief Propagation of the right boundary.
    * 
-   * Analogously to [propagateLeftBoundary], this function assumes that the MPS at 
-   * site [siteInitial] was changed, and that the optimization is now moved to the *right*
-   * up to site [siteFinal].
-   * Therefore, all boundaries ranging from right_[siteInitial] up to right_[siteFinal+1]
-   * are changed.
-   * Note that it makes sense to call this function with siteFinal == -1, in order to calculate
-   * right_[0] (which should just contain the energy).
+   * Updates the right boundary element that is sitting on [iSite].
+   * Therefore, contracts right[iSite+1] with mps_[iSite] to yield right[iSite].
    * 
-   * @param siteInitial starting site of the propagation.
-   * @param siteFInal last site of the boundary propagation.
+   * @param iSite site on which the right boundary must be updated.
    */
-  inline void propagateRightBoundary(int siteInitial, int siteFinal) {
-    if (siteInitial > siteFinal) {
-      for (int iSite = siteInitial; iSite > siteFinal; iSite--) {
-        Storage::drop(right_[iSite]);
-        right_[iSite] = Contraction::overlap_mpo_right_step(mps_[iSite], mps_[iSite],
-                                                            right_[iSite+1], mpo_[iSite]);
-        Storage::evict(right_[iSite+1]);
-        parallel::sync();
-      }
+  inline void updateRightBoundary(int iSite) {
+    if (iSite >= 0 && iSite < L_) {
+      Storage::drop(right_[iSite]);
+      right_[iSite] = Contraction::overlap_mpo_right_step(mps_[iSite], mps_[iSite],
+                                                          right_[iSite+1], mpo_[iSite]);
+      Storage::StoreToFile(right_[iSite+1]);
     }
   }
 
@@ -156,16 +139,18 @@ private:
   void generateLeftBoundary() {
     Storage::drop(left_[0]);
     left_[0] = mps_.left_boundary();
-    propagateLeftBoundary(0, initSite_);
-    Storage::evict(left_[initSite_]);
+    for (int iSite = 1; iSite <= initSite_; iSite++)
+      updateLeftBoundary(iSite);
+    Storage::StoreToFile(left_[initSite_]);
   }
 
   /** @brief Generates the right boundary */
   void generateRightBoundary() {
     Storage::drop(right_[L_]);
     right_[L_] = mps_.right_boundary();
-    propagateRightBoundary(L_-1, initSite_);
-    Storage::evict(right_[initSite_]);
+    for (int iSite = L_-1; iSite > initSite_; iSite--)
+      updateRightBoundary(iSite);
+    Storage::StoreToFile(right_[initSite_+1]);
   }
 
   // Class members

@@ -175,7 +175,7 @@ public:
           maquis::cout << " Alpha = " << alpha << std::endl;
           trunc = site_shifter_->shiftSiteTD(mpo_, left_, right_, alpha, cutoff, Mmax, Mmax, perturber_->is_perturb_dm());
           Storage::drop(right_[site+1]);
-          Storage::evict(left_[site]);
+          Storage::StoreToFile(left_[site]);
           site_shifter_->forward_shift();
         } else {
           time_evolver_->add_to_current_time(time_step_effective);
@@ -188,7 +188,7 @@ public:
           maquis::cout << " Alpha = " << alpha << std::endl;
           trunc = site_shifter_->shiftSiteTD(mpo_, left_, right_, alpha, cutoff, Mmax, Mmax, perturber_->is_perturb_dm());
           Storage::drop(left_[site]);
-          Storage::evict(right_[site+1]);
+          Storage::StoreToFile(right_[site+1]);
           site_shifter_->backward_shift();
         } else {
           time_evolver_->add_to_current_time(time_step_effective);

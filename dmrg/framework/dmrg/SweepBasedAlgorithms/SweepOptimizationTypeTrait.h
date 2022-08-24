@@ -43,25 +43,30 @@ class SweepOptimizationTypeTrait<SweepOptimizationType::SingleSite> {
 public:
   /** @brief Gets the index of the left boundary for a given site */
   static int getIndexOfLeftBoundary(int site, SweepDirectionType sweepDirection) { return site; }
-  
+
   /** @brief Gets the index of the right boundary for a given site */
   static int getIndexOfRightBoundary(int site, SweepDirectionType sweepDirection) { return site+1; }
 
   /** @brief Gets the index of the left boundary associated with the following sweep for a given site */
   static int getIndexOfNextLeftBoundary(int site, SweepDirectionType sweepDirection) {
-    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection) 
+    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection)
                                                            : getIndexOfLeftBoundary(site-1, sweepDirection);
   }
-  
+
   /** @brief Gets the index of the right boundary associated with the following sweep for a given site */
   static int getIndexOfNextRightBoundary(int site, SweepDirectionType sweepDirection) {
-    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection) 
+    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection)
                                                            : getIndexOfLeftBoundary(site-1, sweepDirection);
   }
 
   /** @brief Gets the upper boundary of the loop over the microiterations */
   static int getLastSite(int L) {
     return L;
+  }
+
+  /** @brief Simple function converting microiteration index to the optimization site */
+  static int convertMicroIterationToSite(int L, int i) {
+    return (i < 0) ? 0 : (i < L) ? i : 2*L-1-i;
   }
 
   // Static members
@@ -73,30 +78,35 @@ template<>
 class SweepOptimizationTypeTrait<SweepOptimizationType::TwoSite> {
 public:
   /** @brief Gets the index of the left boundary for a given site */
-  static inline int getIndexOfLeftBoundary(int site, SweepDirectionType sweepDirection) { 
-    return (sweepDirection == SweepDirectionType::Forward) ? site : site-1; 
+  static inline int getIndexOfLeftBoundary(int site, SweepDirectionType sweepDirection) {
+    return (sweepDirection == SweepDirectionType::Forward) ? site : site-1;
   }
-  
+
   /** @brief Gets the index of the right boundary for a given site */
-  static inline int getIndexOfRightBoundary(int site, SweepDirectionType sweepDirection) { 
+  static inline int getIndexOfRightBoundary(int site, SweepDirectionType sweepDirection) {
     return (sweepDirection == SweepDirectionType::Forward) ? site+2 : site+1;
   }
 
   /** @brief Gets the index of the left boundary associated with the following sweep for a given site */
   static int getIndexOfNextLeftBoundary(int site, SweepDirectionType sweepDirection) {
-    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection) 
+    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection)
                                                            : getIndexOfLeftBoundary(site-1, sweepDirection);
   }
-  
+
   /** @brief Gets the index of the right boundary associated with the following sweep for a given site */
   static int getIndexOfNextRightBoundary(int site, SweepDirectionType sweepDirection) {
-    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection) 
+    return (sweepDirection == SweepDirectionType::Forward) ? getIndexOfLeftBoundary(site+1, sweepDirection)
                                                            : getIndexOfLeftBoundary(site-1, sweepDirection);
   }
 
   /** @brief Gets the upper boundary of the loop over the microiterations */
   static int getLastSite(int L) {
     return L-1;
+  }
+
+  /** @brief Simple function converting microiteration index to the optimization site */
+  static int convertMicroIterationToSite(int L, int i) {
+    return (i < 0) ? 0 :  (i < L-1) ? i : 2*L - 2 - i;
   }
 
   // Static members

@@ -197,7 +197,7 @@ public:
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
                 if (site != L-1) {
                     Storage::drop(right_[site+1]);
-                    Storage::evict(left_[site]);
+                    Storage::StoreToFile(left_[site]);
                 }
             } else if (lr == -1) {
                 if (site > 0) {
@@ -214,7 +214,7 @@ public:
                 this->boundary_right_step(mpo, site); // creating right_[site]
                 if (site > 0) {
                     Storage::drop(left_[site]);
-                    Storage::evict(right_[site+1]);
+                    Storage::StoreToFile(right_[site+1]);
                 }
             }
 

@@ -63,7 +63,7 @@ public:
   }
 
   /** @brief Not implemented for the SS case */
-  void updatePlacements(int microIterationIndex, int leftSite, int rightSite) { };
+  void updatePlacements(int microIterationIndex, int currentSite) { };
 
 private:
   const MPOType& mpo_;
@@ -87,14 +87,14 @@ public:
   }
 
   /** @brief Specific function needed for the two-site case */
-  void updatePlacements(int microIterationIndex, int leftSite, int rightSite) {
+  void updatePlacements(int microIterationIndex, int currentSite) {
     if (microIterationIndex < mpo_.size()-1) {
-      twoSiteMPOCache_[leftSite].placement_l = mpo_[leftSite].placement_l;
-      twoSiteMPOCache_[leftSite].placement_r = parallel::get_right_placement(twoSiteMPOCache_[leftSite], mpo_[leftSite].placement_l, mpo_[leftSite+1].placement_r);
+      twoSiteMPOCache_[currentSite].placement_l = mpo_[currentSite].placement_l;
+      twoSiteMPOCache_[currentSite].placement_r = parallel::get_right_placement(twoSiteMPOCache_[currentSite], mpo_[currentSite].placement_l, mpo_[currentSite+1].placement_r);
     } 
     else {
-      twoSiteMPOCache_[leftSite].placement_l = parallel::get_left_placement(twoSiteMPOCache_[leftSite], mpo_[leftSite].placement_l, mpo_[leftSite+1].placement_r);
-      twoSiteMPOCache_[leftSite].placement_r = mpo_[leftSite+1].placement_r;
+      twoSiteMPOCache_[currentSite].placement_l = parallel::get_left_placement(twoSiteMPOCache_[currentSite], mpo_[currentSite].placement_l, mpo_[currentSite+1].placement_r);
+      twoSiteMPOCache_[currentSite].placement_r = mpo_[currentSite+1].placement_r;
     }
   }
 

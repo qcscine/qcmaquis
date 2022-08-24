@@ -83,7 +83,8 @@ BOOST_FIXTURE_TEST_CASE(Test_BoundaryPropagator_Vibrational_NU1, NModeFixture)
   mpsDefault.canonize(5);
   auto boundaryPropagator = BoundaryPropagatorType(mpsDefault, nModeMPO, 5);
   mpsDefault.canonize(7);
-  boundaryPropagator.propagateLeftBoundary(5, 7);
+  boundaryPropagator.updateLeftBoundary(6);
+  boundaryPropagator.updateLeftBoundary(7);
   auto siteProblem = SiteProblemType(boundaryPropagator.getLeftBoundary(7), boundaryPropagator.getRightBoundary(8), nModeMPO[7]);
   auto energyFromSP = siteProblem.get_energy(mpsDefault[7]);
   auto energyFromExpval = expval(mpsDefault, nModeMPO);

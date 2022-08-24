@@ -64,7 +64,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorBoundaryPropagator, S, symmetrie
     auto mpsBenzeneConst = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
     mpsBenzeneConst.normalize_right();
     auto boundaryPropagator = BoundaryPropagatorType(mpsBenzeneConst, mpoBenzene);
-    boundaryPropagator.propagateRightBoundary(0, -1);
+    boundaryPropagator.updateRightBoundary(0);
     // Simple checks
     auto lastRightBoundary = boundaryPropagator.getRightBoundary(0);
     BOOST_CHECK_EQUAL(lastRightBoundary.aux_dim(), 1);
@@ -74,7 +74,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorBoundaryPropagator, S, symmetrie
     auto energyFromRightBoundary = lastRightBoundary[0].trace() + mpoBenzene.getCoreEnergy();
     BOOST_CHECK_CLOSE(energyFromRightBoundary, energy, 1.0E-8);
     // Does the same for the left part
-    boundaryPropagator.propagateLeftBoundary(0, latticeBenzene.size());
+    for (int iSite = 1; iSite <= latticeBenzene.size(); iSite++)
+        boundaryPropagator.updateLeftBoundary(iSite);
     auto lastLeftBoundary = boundaryPropagator.getLeftBoundary(latticeBenzene.size());
     auto energyFromLeftBoundary = lastLeftBoundary[0].trace() + mpoBenzene.getCoreEnergy();
     BOOST_CHECK_CLOSE(energyFromLeftBoundary, energy, 1.0E-8);

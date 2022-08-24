@@ -87,19 +87,19 @@ namespace storage {
     public:
         template<class T> static void prefetch(T& o){}
         template<class T> static void fetch(T& o){}
-        template<class T> static void evict(T& o){}
+        template<class T> static void StoreToFile(T& o){}
         template<class T> static void drop(T& o){}
         static void sync(){}
     };
 
-    template<class T> class evict_request {};
+    template<class T> class StoreToFile_request {};
     template<class T> class fetch_request {};
     template<class T> class drop_request {};
 
     template<class Matrix, class SymmGroup>
-    class evict_request< Boundary<Matrix, SymmGroup> > {
+    class StoreToFile_request< Boundary<Matrix, SymmGroup> > {
     public:
-        evict_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+        StoreToFile_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
         void operator()(){
             std::ofstream ofs(fp.c_str(), std::ofstream::binary);
             Boundary<Matrix, SymmGroup>& o = *ptr;
@@ -250,14 +250,14 @@ namespace storage {
                 state = prefetching;
                 this->thread(new boost::thread(fetch_request<T>(disk::fp(sid), (T*)this)));
             }
-            void evict(){
+            void StoreToFile(){
                 if(state == core){
                     state = storing;
                     dumped = true;
                     parallel::sync();
-                    this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
+                    this->thread(new boost::thread(StoreToFile_request<T>(disk::fp(sid), (T*)this)));
                 }
-                assert(this->state != prefetching); // evict of prefetched
+                assert(this->state != prefetching); // StoreToFile of prefetched
             }
             void drop(){
                 if(dumped) std::remove(disk::fp(sid).c_str());
@@ -298,14 +298,13 @@ namespace storage {
                 if(instance().queue[i]) instance().queue[i]->join();
             instance().queue.clear();
         }
-        template<class T> static void fetch(serializable<T>& t)   { if(enabled()) t.fetch();    }
-        template<class T> static void prefetch(serializable<T>& t){ if(enabled()) t.prefetch(); }
-        template<class T> static void evict(serializable<T>& t)   { if(enabled()) t.evict();    }
-        template<class T> static void drop(serializable<T>& t)    { if(enabled()) t.drop();     }
-        template<class T> static void pin(serializable<T>& t)     { }
+        template<class T> static void fetch(serializable<T>& t)         { if(enabled()) t.fetch();       }
+        template<class T> static void prefetch(serializable<T>& t)      { if(enabled()) t.prefetch();    }
+        template<class T> static void StoreToFile(serializable<T>& t)   { if(enabled()) t.StoreToFile(); }
+        template<class T> static void drop(serializable<T>& t)          { if(enabled()) t.drop();        }
 
         template<class Matrix, class SymmGroup> 
-        static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
+        static void StoreToFile(MPSTensor<Matrix, SymmGroup>& t){ }
 
         disk() : active(false), sid(0) {}
         std::vector<descriptor*> queue;
