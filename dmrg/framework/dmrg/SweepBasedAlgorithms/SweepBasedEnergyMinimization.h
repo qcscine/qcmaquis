@@ -53,6 +53,7 @@ public:
   using Base::boundaryPropagator_;
   using Base::convertMicroIterationToSite;
   using Base::currentSite_;
+  using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
   using Base::initSite_;
   using Base::iterationResults_;
@@ -66,23 +67,28 @@ public:
   using Base::runSweepSimulation;
   using Base::siteLeft_;
   using Base::siteRight_;
-  
+
   /** @brief Class constructor */
-  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms, 
-                               int initSite=0) : Base(mps, mpo, parms, initSite)
+  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
+                               int initSite=0) : Base(mps, mpo, parms, initSite), nOrtho_(0)
   {
     mps_.canonize(initSite_);
     for (int i = 0; i < L_; ++i)
       Storage::evict(mps_[i]);
-    files_ = parms_["ortho_states"].str();
-    std::vector<std::string> files;
-    boost::split(files, files_, boost::is_any_of(", "));
-    nOrtho_ = parms_["n_ortho_states"];
-    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, files, parms_);
-    if (nOrtho_ != overlapPropagator_->getNumberOfOverlapMPSs())
-      throw std::runtime_error("Nuber of chkp files not coherent with [n_ortho_states] parameter");
-    orthoLocal_.resize(nOrtho_);
-    maquis::cout << "Running a constrained optimization with respect to " << nOrtho_ << " states." << std::endl;
+    if (parms_.is_set("ortho_states")) {
+      files_ = parms_["ortho_states"].str();
+      std::vector<std::string> files;
+      boost::split(files, files_, boost::is_any_of(", "));
+      if (!parms_.is_set("n_ortho_states"))
+        throw std::runtime_error("Please set [n_ortho_states]");
+      else
+        nOrtho_ = parms_["n_ortho_states"];
+      overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, files, parms_);
+      if (nOrtho_ != overlapPropagator_->getNumberOfOverlapMPSs())
+        throw std::runtime_error("Nuber of chkp files not coherent with [n_ortho_states] parameter");
+      orthoLocal_.resize(nOrtho_);
+      maquis::cout << "Running a constrained optimization with respect to " << nOrtho_ << " states." << std::endl;
+    }
   }
 
   /** @brief Method called at the beginning of each sweep */
@@ -100,8 +106,9 @@ public:
   void prepareMicroiteration() override final {
     siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
                                                      mpoContainer_.getMPOTensor(siteLeft_));
-    for (int iState = 0; iState < nOrtho_; iState++)
-      orthoLocal_[iState] = overlapPropagator_->getOrthogonalVector(iState, siteLeft_, siteRight_);
+    if (overlapPropagator_)
+      for (int iState = 0; iState < nOrtho_; iState++)
+        orthoLocal_[iState] = overlapPropagator_->getOrthogonalVector(iState, siteLeft_, siteRight_);
   }
 
   /** @brief Solution of the site-centered problem */
@@ -116,7 +123,9 @@ public:
     else
       throw std::runtime_error("I don't know this eigensolver.");
     // Loads the final results
-    iterationResults_["Energy"] << resultOfLocalSiteProblem_.first + mpo_.getCoreEnergy();
+    auto energy = resultOfLocalSiteProblem_.first + mpo_.getCoreEnergy();
+    maquis::cout << "Energy = " << energy << std::endl;
+    iterationResults_["Energy"] << energy;
     return resultOfLocalSiteProblem_.second;
   }
 
@@ -125,11 +134,13 @@ public:
     auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
     if (sweepType == SweepDirectionType::Forward) {
       boundaryPropagator_->propagateLeftBoundary(currentSite_, currentSite_+1);
-      overlapPropagator_->propagateLeftOverlapBoundaries(currentSite_, currentSite_+1);
+      if (overlapPropagator_)
+        overlapPropagator_->propagateLeftOverlapBoundaries(currentSite_, currentSite_+1);
     }
     else if (sweepType == SweepDirectionType::Backward) {
       boundaryPropagator_->propagateRightBoundary(currentSite_, currentSite_-1);
-      overlapPropagator_->propagateRightOverlapBoundaries(currentSite_, currentSite_-1);
+      if (overlapPropagator_)
+        overlapPropagator_->propagateRightOverlapBoundaries(currentSite_, currentSite_-1);
     }
   }
 

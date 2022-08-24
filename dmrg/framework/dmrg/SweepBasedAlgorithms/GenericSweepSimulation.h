@@ -38,7 +38,7 @@
 
 /**
  * @brief Class representing a generic sweep-based simulation.
- * 
+ *
  * @tparam Matrix matrix class underlying the matrix storage.
  * @tparam SymmGroup symmetry group of the Hamiltonian.
  */
@@ -57,7 +57,7 @@ public:
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
 
   /** @brief Class constructor */
-  GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms, 
+  GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
                          int initSite=0)
     : mps_(mps), mpo_(mpo), initSite_(initSite), parms_(parms), L_(mps_.length()),
       mpoContainer_(mpo_, mps_), mpsContainer_(mps)
@@ -69,10 +69,10 @@ public:
 
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.
-   * 
+   *
    * Note that we delegate every action to the derived class, with the exception of the
-   * memory management, which is done here to ensure that 
-   * 
+   * memory management, which is done here to ensure that
+   *
    */
   void runSweepSimulation() {
     int maxNumberOfSweeps = parms_["nsweeps"];
@@ -116,14 +116,49 @@ public:
         }
         else if (sweepType == SweepDirectionType::Backward && siteLeft_ != 0) {
           Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
-          Storage::evict(boundaryPropagator_->getRightBoundary(siteRight_+1));
+          Storage::evict(boundaryPropagator_->getRightBoundary(siteRight_));
         }
         this->finalizeMicroIteration(truncationResults);
+        indexOfMicroIteration_ += 1;
       }
-      indexOfMicroIteration_++;
     }
     this->finalizeSweep();
-  };
+  }
+
+  /** @brief Gets the container with the results of each iteration */
+  const auto& iteration_results() const { return iterationResults_; }
+
+  /** @brief Gets a specific value of the iteration result */
+  template<class CastType>
+  CastType getSpecificResult(std::string resultName) {
+    if (!iterationResults_.has(resultName))
+      throw std::runtime_error("Trying to access non-existing simulation result");
+    return boost::any_cast<CastType>(iterationResults_[resultName].get()[0]);
+  }
+
+protected:
+
+  /**
+   * @brief Collects the operation to be done before a sweep.
+   * Note that these operations are done only once per sweep, i.e. they are not
+   * repeated at each microiteration.
+   */
+  virtual void prepareSweep() = 0;
+
+  /** @brief Collects the operation to be performed before a microiteration */
+  virtual void prepareMicroiteration() = 0;
+
+  /** @brief Runs the actual sweep simulation */
+  virtual MPSTensorType solveLocalProblem() = 0;
+
+  /** @brief Boundary propagation method */
+  virtual void propagateBoundaries() = 0;
+
+  /** @brief Collects the operation to be run at the end of a micro iteration */
+  virtual void finalizeMicroIteration(const truncation_results& trunc) = 0;
+
+  /** @brief Collects the operation to be run at the end of the simulation */
+  virtual void finalizeSweep() = 0;
 
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)
@@ -138,7 +173,7 @@ public:
   }
 
   /**
-   * @brief Simple function returning the sweep index of a given microiteration index 
+   * @brief Simple function returning the sweep index of a given microiteration index
    * The input index is the microiteration index (which includes both the forward and the
    * backward sweep), and the returned value is the site on which the microiteration is
    * centered.
@@ -186,33 +221,6 @@ public:
     }
     return Mmax;
   }
-
-  /** @brief Gets the container with the results of each iteration */
-  const auto& iteration_results() const { return iterationResults_; }
-
-protected:
-
-  /** 
-   * @brief Collects the operation to be done before a sweep.
-   * Note that these operations are done only once per sweep, i.e. they are not
-   * repeated at each microiteration.
-   */
-  virtual void prepareSweep() = 0;
-
-  /** @brief Collects the operation to be performed before a microiteration */
-  virtual void prepareMicroiteration() = 0;
-
-  /** @brief Runs the actual sweep simulation */
-  virtual MPSTensorType solveLocalProblem() = 0;
-
-  /** @brief Boundary propagation method */
-  virtual void propagateBoundaries() = 0;
-
-  /** @brief Collects the operation to be run at the end of a micro iteration */
-  virtual void finalizeMicroIteration(const truncation_results& trunc) = 0;
-
-  /** @brief Collects the operation to be run at the end of the simulation */
-  virtual void finalizeSweep() = 0;
 
 protected:
   MPSType& mps_;
