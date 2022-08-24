@@ -128,7 +128,7 @@ private:
 
         add_option("NUMBER_EIGENVALUES", "", value(1));
         add_option("n_ortho_states", "", value(0));
-        add_option("ortho_states", "comma separated list of filenames", "");
+        add_option("ortho_states", "comma separated list of filenames");
 
         add_option("MEASURE[Energy]", "", value(true));
         add_option("MEASURE[EnergyVariance]", "", value(0));
