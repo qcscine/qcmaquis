@@ -93,19 +93,21 @@ public:
         if (northo > 0 && !parms_.is_set("ortho_states"))
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
 
-        ortho_mps.resize(northo);
-        std::string files_ = parms_["ortho_states"].str();
-        std::vector<std::string> files;
-        boost::split(files, files_, boost::is_any_of(", "));
-        for (int n = 0; n < northo; ++n) {
-            maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-
-            maquis::checks::symmetry_check(parms, files[n]);
-            maquis::checks::orbital_order_check(parms, files[n]);
-            load(files[n], ortho_mps[n]);
-            maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
-
-            maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+        if (parms_.is_set("ortho_states")) {
+            ortho_mps.resize(northo);
+            std::string files_ = parms_["ortho_states"].str();
+            std::vector<std::string> files;
+            boost::split(files, files_, boost::is_any_of(", "));
+            for (int n = 0; n < northo; ++n) {
+                maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
+    
+                maquis::checks::symmetry_check(parms, files[n]);
+                maquis::checks::orbital_order_check(parms, files[n]);
+                load(files[n], ortho_mps[n]);
+                maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
+    
+                maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+            }
         }
 
         init_left_right(mpo, site);
