@@ -35,15 +35,15 @@
 
 /**
  * @brief This class serves as a wrapper around the boundary propagation routine.
- * 
+ *
  * The boundary propagation is represented by the following contraction patters:
- * 
+ *
  *         o--o--o--o--o--o
  *         |  |  |  |  |  |
  *         +--+--+--+--+--+
  *         |  |  |  |  |  |
  *         o--o--o--o--o--o
- * 
+ *
  * And the result of the contraction between the MPS and the MPO are stored in
  * so-called boundaries.
  * The (i)-th left boundary collects the partial MPS/MPO contraction up to site (i)
@@ -62,7 +62,7 @@ public:
   using Contraction = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
 
   /** @brief Class constructor */
-  BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite=0) 
+  BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite=0)
     : initSite_(initSite), L_(mps.length()), mps_(mps), mpo_(mpo)
   {
     parallel::construct_placements(mpo_);
@@ -76,7 +76,7 @@ public:
   }
 
   /** @brief Getter for the left boundary */
-  auto& getLeftBoundary(int iSite) { 
+  auto& getLeftBoundary(int iSite) {
     assert(iSite >= 0 && iSite <= L_);
     return left_[iSite];
   }
@@ -101,14 +101,14 @@ public:
 
   /**
    * @brief Propagation of the left boundary.
-   * 
+   *
    * Updates the left boundary element that is sitting on [iSite].
    * Therefore, it contracts left[iSite-1] with mps[iSite-1].
-   * 
+   *
    * @param iSite site on which the left boundary must be updated.
    */
   inline void updateLeftBoundary(int iSite) {
-    if (iSite > 0 && iSite < L_-1) {
+    if (iSite > 0 && iSite <= L_) {
       Storage::drop(left_[iSite]);
       left_[iSite] = Contraction::overlap_mpo_left_step(mps_[iSite-1], mps_[iSite-1],
                                                         left_[iSite-1], mpo_[iSite-1]);
@@ -118,10 +118,10 @@ public:
 
   /**
    * @brief Propagation of the right boundary.
-   * 
+   *
    * Updates the right boundary element that is sitting on [iSite].
    * Therefore, contracts right[iSite+1] with mps_[iSite] to yield right[iSite].
-   * 
+   *
    * @param iSite site on which the right boundary must be updated.
    */
   inline void updateRightBoundary(int iSite) {
@@ -161,4 +161,4 @@ private:
   const MPSType& mps_;
 };
 
-#endif 
+#endif
