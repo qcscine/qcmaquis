@@ -77,10 +77,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestOverlapPropagatorElectronic, S, symmetries,
     excitedStateMPSs.push_back(mpsExc2);
     auto overlapPropagator = OverlapPropagatorType(mpsGS, excitedStateMPSs, 0);
     // Checks orthogonality
-    auto ortho1 = overlapPropagator.getOrthogonalVector(0, 0, 1);
+    auto ortho1 = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(0, 0, 1);
     auto overlap1 = ietl::dot(ortho1, mpsGS[0]);
     BOOST_CHECK_SMALL(overlap1, 1.0E-10);
-    auto ortho2 = overlapPropagator.getOrthogonalVector(1, 0, 1);
+    auto ortho2 = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(1, 0, 1);
     auto overlap2 = ietl::dot(ortho1, mpsGS[0]);
     BOOST_CHECK_SMALL(overlap2, 1.0E-10);
 }
