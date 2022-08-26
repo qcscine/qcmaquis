@@ -96,9 +96,9 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
     for (int iSite = latticeSize-1; iSite >= 0; iSite--)
         orthoRight[iSite] = contr::overlap_right_step(mpsHF[iSite], mpsHF[iSite], orthoRight[iSite+1]);
     // Prepares the SiteProblem object and the corresponding ortho object.
-    SiteProblem siteProblem(leftBoundary[0], rightBoundary[1], mpo[0]);
+    auto siteProblem = std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
     auto rhs = contraction::site_ortho_boundaries(mpsHF[0], mpsHF[0], orthoLeft[0], orthoRight[1]);
-    auto precond = contraction::Engine<matrix, matrix, TrivialGroup>::diagonal_hamiltonian(leftBoundary[0], rightBoundary[1], mpo[0], mpsHF[0]);
+    auto precond = std::make_shared<BlockMatrix>(contraction::Engine<matrix, matrix, TrivialGroup>::diagonal_hamiltonian(leftBoundary[0], rightBoundary[1], mpo[0], mpsHF[0]));
     double zShift = 0.;
     auto linearSolver = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond);
     auto result = linearSolver.res();

@@ -158,7 +158,7 @@ private:
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
         add_option("n_excitons", "Number of molecule composing the molecular aggregate");
 
-        // Tools 
+        // Tools
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
@@ -175,7 +175,12 @@ private:
         add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-8));
         add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(10));
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
-        add_option("linsystem_dmrg_alg", "DMRG algorithm that is using the solution of the linear system (possible values [ip] and [feast])", value("ip"));
+
+        // Parameters related to DMRG[IPI]
+        add_option("ipi_sweep_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
+        add_option("ipi_sweeps_per_system", "Maximum number of sweeps used to solve one linear system for DMRG[IPI]");
+        add_option("ipi_shift", "Shift parameter for the DMRG[IPI] algorithm");
+        add_option("ipi_iterations", "Number of macroiterations for the DMRG[IPI] calculation");
     }
 
 };
@@ -183,17 +188,12 @@ private:
 class ModelParameters : public BaseParameters
 {
 public:
+
     ModelParameters() : BaseParameters() { init_options(); }
-	ModelParameters(std::ifstream& param_file)
-    : BaseParameters(param_file)
-    {
-        init_options();
-    }
-	ModelParameters(BaseParameters const& p)
-    : BaseParameters(p)
-    {
-        init_options();
-    }
+
+	ModelParameters(std::ifstream& param_file) : BaseParameters(param_file) { init_options(); }
+
+    ModelParameters(BaseParameters const& p) : BaseParameters(p) { init_options(); }
 
 
 private:

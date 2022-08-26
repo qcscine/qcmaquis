@@ -30,6 +30,7 @@
 #include <memory>
 #include "GenericSweepSimulation.h"
 #include "SweepBasedEnergyMinimization.h"
+#include "SweepBasedLinearSystem.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/utils/BaseParameters.h"
@@ -41,6 +42,8 @@ class SweepSimulationFactory {
   using GenericTSSimulationType = GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using OptimizationSSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
   using OptimizationTSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
+  using LinearSystemSSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
+  using LinearSystemTSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using PointerToSSSimulatorType = std::unique_ptr<GenericSSSimulationType>;
   using PointerToTSSimulatorType = std::unique_ptr<GenericTSSimulationType>;
   using MPSType = MPS<Matrix, SymmGroup>;
@@ -51,11 +54,18 @@ public:
                          MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite)
     : sweepType_(sweepType)
   {
+    // Optimization
     if (simulationName == "optimize")
       if (sweepType_ == SweepOptimizationType::SingleSite)
         ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, initSite);
       else if (sweepType_ == SweepOptimizationType::TwoSite)
         tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, initSite);
+    // Solution of a linear system
+    if (simulationName == "linear_system")
+      if (sweepType_ == SweepOptimizationType::SingleSite)
+        ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, initSite);
+      else if (sweepType_ == SweepOptimizationType::TwoSite)
+        tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, initSite);
     if (!ssSimulator_ && !tsSimulator_)
       throw std::runtime_error("Error in parameters for [SweepSimulationFactory] object");
   };

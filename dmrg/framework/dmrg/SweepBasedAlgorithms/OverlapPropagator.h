@@ -91,7 +91,15 @@ public:
     initializeData(initSite);
   }
 
-  /** @brief Class constructor from a vector of MPSs*/
+  /** @brief Class constructor from a single MPS */
+  OverlapPropagator(const MPSType& refMPS, const MPSType& otherMPS, int initSite=0)
+    : refMPS_(refMPS), L_(refMPS_.length()), nOrthogonalMPSs_(1)
+  {
+    orthoMPS_.push_back(otherMPS);
+    initializeData(initSite);
+  }
+
+  /** @brief Class constructor from a vector of MPS */
   OverlapPropagator(const MPSType& refMPS, const std::vector<MPSType>& otherMPSs, int initSite=0)
     : refMPS_(refMPS), L_(refMPS_.length()), nOrthogonalMPSs_(otherMPSs.size()), orthoMPS_(otherMPSs)
   {
@@ -107,6 +115,12 @@ public:
     return contraction::site_ortho_boundaries(mpsContainer.getMPSTensor(siteLeft),
                                               orthoMPSContainer.getMPSTensor(siteLeft),
                                               partialContractionLeft_[iVector][siteLeft], partialContractionRight_[iVector][siteRight]);
+  }
+
+  /** @brief Overload where the index of the state is not specified */
+  template<SweepOptimizationType SweepType>
+  auto getOrthogonalVector(int siteLeft, int siteRight) const {
+    return this->template getOrthogonalVector<SweepType>(0, siteLeft, siteRight);
   }
 
   /** @brief Getter for the number of orthogonal states */

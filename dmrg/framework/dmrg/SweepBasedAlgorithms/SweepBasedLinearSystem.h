@@ -24,12 +24,13 @@
  *
  *****************************************************************************/
 
-#ifndef SWEEP_BASED_ENERGY_MINIMIZATION_H
-#define SWEEP_BASED_ENERGY_MINIMIZATION_H
+#ifndef SWEEP_BASED_LINEAR_SYSTEM_H
+#define SWEEP_BASED_LINEAR_SYSTEM_H
 
 #include "GenericSweepSimulation.h"
+#include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
-#include "dmrg/optimize/ietl_jacobi_davidson.h"
+#include "dmrg/LinearSystem/linsolver.h"
 #include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
@@ -39,15 +40,17 @@
 #include "OverlapPropagator.h"
 
 template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType SweepType>
-class SweepBasedEnergyMinimization : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
+class SweepBasedLinearSystem : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
 public:
   using Base = GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType>;
   using OverlapPropagatorType = OverlapPropagator<Matrix, SymmGroup, Storage>;
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
   using SiteProblemType = SiteProblem<Matrix, SymmGroup>;
+  using LinearSolverType = LinSolver<Matrix, SymmGroup>;
   using MPSType = typename Base::MPSType;
   using MPOType = typename Base::MPOType;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
+  using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
   using ValueType = typename MPSTensorType::value_type;
   //
   using Base::boundaryPropagator_;
@@ -67,24 +70,39 @@ public:
   using Base::siteRight_;
 
   /** @brief Class constructor */
-  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
-                               int initSite=0) : Base(mps, mpo, parms, initSite), nOrtho_(0)
+  SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite=0)
+    : Base(mps, mpo, parms, initSite), adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false)
   {
-    mps_.canonize(initSite_);
-    if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {
-      files_ = parms_["ortho_states"].str();
-      std::vector<std::string> files;
-      boost::split(files, files_, boost::is_any_of(", "));
-      if (!parms_.is_set("n_ortho_states"))
-        throw std::runtime_error("Please set [n_ortho_states]");
-      else
-        nOrtho_ = parms_["n_ortho_states"];
-      overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, files, parms_);
-      if (nOrtho_ != overlapPropagator_->getNumberOfOverlapMPSs())
-        throw std::runtime_error("Nuber of chkp files not coherent with [n_ortho_states] parameter");
-      orthoLocal_.resize(nOrtho_);
-      maquis::cout << "Running a constrained optimization with respect to " << nOrtho_ << " states." << std::endl;
+    /* // Folded simulation --> To be reactivated when implementing the folded operator 
+    if (parms["pI_folded"] == "yes") {
+        maquis::cout << " Activating folded treatment " << std::endl;
+        isSquared = true;
+    } */
+    mps.canonize(initSite_);
+    rhsMps_ = mps;
+    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, parms_);
+    /* To be reactivated when implementing the folded operator 
+    if (isSquared) {
+      leftSquared_.resize(mpo.length()+1);
+      rightSquared_.resize(mpo.length()+1);
+      leftCross_.resize(mpo.length()+1);
+      rightCross_.resize(mpo.length()+1);
+    } */
+    // Adaptive m
+    if (parms.is_set("linsystem_truncation_ratio")) {
+      adaptiveBondDimension_ = true;
+      truncationRatio_ = parms["linsystem_truncation_ratio"].as<double>();
     }
+    // Shift parameter
+    if (parms_.is_set("linsystem_shift"))
+      shiftParameter_ = parms["linear_system_shift"].as<ValueType>();
+    if (parms_["linsystem_precond"] == "yes")
+      isPrecond_ = true;
+  }
+
+  /** @brief Setter for the shift */
+  void setShift(ValueType newShift) {
+    shiftParameter_ = newShift;
   }
 
   /** @brief Method called at the beginning of each sweep */
@@ -96,26 +114,25 @@ public:
   void prepareMicroiteration() override final {
     siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
                                                      mpoContainer_.getMPOTensor(siteLeft_));
-    if (overlapPropagator_)
-      for (int iState = 0; iState < nOrtho_; iState++)
-        orthoLocal_[iState] = overlapPropagator_->template getOrthogonalVector<SweepType>(iState, siteLeft_, siteRight_);
+    rhs_ = overlapPropagator_->template getOrthogonalVector<SweepType>(siteLeft_, siteRight_);
+    if (isPrecond_)
+      preconditioner_ = std::make_unique<BlockMatrixType>(contraction::diagonal_hamiltonian(boundaryPropagator_->getLeftBoundary(siteLeft_),
+                                                                                            boundaryPropagator_->getRightBoundary(siteRight_),
+                                                                                            mpoContainer_.getMPOTensor(siteLeft_),
+                                                                                            mpsContainer_.getMPSTensor(siteLeft_)));
   }
 
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() override final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
-    if (parms_["eigensolver"] == std::string("IETL"))
-      resultOfLocalSiteProblem_ = solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
-    else if (parms_["eigensolver"] == std::string("IETL_JCD"))
-      resultOfLocalSiteProblem_ = solve_ietl_jcd(*(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_);
-    else if (parms_["eigensolver"] == std::string("IETL_DAVIDSON"))
-      resultOfLocalSiteProblem_ = solve_ietl_jcd(*(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_);
-    else
-      throw std::runtime_error("I don't know this eigensolver.");
-    // Loads the final results
-    auto energy = resultOfLocalSiteProblem_.first + mpo_.getCoreEnergy();
-    maquis::cout << "Energy = " << energy << std::endl;
-    iterationResults_["Energy"] << energy;
+    LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_);
+    resultOfLocalSiteProblem_ = ls.res();
+    int prec = maquis::cout.precision() ;
+    maquis::cout.precision(15);
+    maquis::cout << " Energy = " << resultOfLocalSiteProblem_.first + maquis::real(mpo_.getCoreEnergy()) << std::endl;
+    maquis::cout.precision(prec);
+    // mps[site] = res.second;
+    iterationResults_["Energy"] << resultOfLocalSiteProblem_.first + maquis::real(mpo_.getCoreEnergy());
     return resultOfLocalSiteProblem_.second;
   }
 
@@ -124,11 +141,15 @@ public:
     auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
     // Boundary propagation
     if (sweepType == SweepDirectionType::Forward) {
+      if (siteLeft_+1 != L_)
+        rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1, DefaultSolver());
       boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
     }
     else if (sweepType == SweepDirectionType::Backward) {
+      if (siteLeft_-1 >= 0)
+        rhsMps_.move_normalization_r2l(siteLeft_+1, siteLeft_);
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
@@ -149,12 +170,16 @@ public:
 
 private:
   // Class members
-  int nOrtho_;
-  std::vector<MPSTensorType> orthoLocal_;
-  std::unique_ptr<OverlapPropagatorType> overlapPropagator_;
-  std::unique_ptr<SiteProblemType> siteProblem_;
-  std::string files_;
-  std::pair<ValueType, MPSTensorType > resultOfLocalSiteProblem_;
+  MPSType rhsMps_;                                                // RHS for the solution of the linear system.
+  std::shared_ptr<BlockMatrixType> preconditioner_;               // If needed, stores the preconditioner.
+  bool adaptiveBondDimension_;                                    // Whether to dynamically adapt the bond dimension.
+  bool isPrecond_;                                                // If true, activates the preconditioning.
+  double truncationRatio_;                                        // Parameter for a DBSS-like solution of the linear system.
+  ValueType shiftParameter_;                                      // Shift parameter for the linear system
+  MPSTensorType rhs_;                                             // RHS of the local linear system (updated at each microiteration).
+  std::unique_ptr<OverlapPropagatorType> overlapPropagator_;      // Object needed to store the partial MPS/MPS contraction
+  std::shared_ptr<SiteProblemType> siteProblem_;                  // Site problem associated with the solution of the linear system.
+  std::pair<ValueType, MPSTensorType > resultOfLocalSiteProblem_; // TO CHECK IF NEEDED
 };
 
-#endif // SWEEP_BASED_ENERGY_MINIMIZATION_H
+#endif // SWEEP_BASED_LINEAR_SYSTEM_H
