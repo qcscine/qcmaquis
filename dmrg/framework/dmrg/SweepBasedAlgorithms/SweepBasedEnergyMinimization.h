@@ -39,7 +39,7 @@
 #include "OverlapPropagator.h"
 
 template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType SweepType>
-class SweepBasedEnergyMinimization : private GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
+class SweepBasedEnergyMinimization : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
 public:
   using Base = GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType>;
   using OverlapPropagatorType = OverlapPropagator<Matrix, SymmGroup, Storage>;
@@ -71,7 +71,7 @@ public:
                                int initSite=0) : Base(mps, mpo, parms, initSite), nOrtho_(0)
   {
     mps_.canonize(initSite_);
-    if (parms_.is_set("ortho_states")) {
+    if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {
       files_ = parms_["ortho_states"].str();
       std::vector<std::string> files;
       boost::split(files, files_, boost::is_any_of(", "));
@@ -98,7 +98,7 @@ public:
                                                      mpoContainer_.getMPOTensor(siteLeft_));
     if (overlapPropagator_)
       for (int iState = 0; iState < nOrtho_; iState++)
-        orthoLocal_[iState] = overlapPropagator_->getOrthogonalVector(iState, siteLeft_, siteRight_);
+        orthoLocal_[iState] = overlapPropagator_->template getOrthogonalVector<SweepType>(iState, siteLeft_, siteRight_);
   }
 
   /** @brief Solution of the site-centered problem */
@@ -125,12 +125,12 @@ public:
     if (sweepType == SweepDirectionType::Forward) {
       boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
-        overlapPropagator_->propagateLeftOverlapBoundaries(siteLeft_, siteLeft_+1);
+        overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
     }
     else if (sweepType == SweepDirectionType::Backward) {
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
-        overlapPropagator_->propagateRightOverlapBoundaries(siteRight_-1, siteRight_-2);
+        overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
     }
   }
 

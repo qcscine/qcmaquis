@@ -99,7 +99,7 @@ public:
   }
 
   /** @brief Contracts the boundary with an additional MPS */
-  template<SweepOptimizationType SweepType=SweepOptimizationType::SingleSite>
+  template<SweepOptimizationType SweepType>
   auto getOrthogonalVector(int iVector, int siteLeft, int siteRight) const {
     using SweepMPSContainerType = SweepMPSContainer<Matrix, SymmGroup, SweepType>;
     auto mpsContainer = SweepMPSContainerType(refMPS_);
@@ -115,22 +115,18 @@ public:
   }
 
   /** @brief Propagation algorithm for the left overlap boundaries (see [BoundaryPropagator]) */
-  inline void propagateLeftOverlapBoundaries(int siteInitial, int siteFinal) {
-    if (siteInitial < siteFinal) {
-      for (int iSite = siteInitial; iSite < siteFinal; iSite++) {
-        for (int n = 0; n < nOrthogonalMPSs_; n++)
-          partialContractionLeft_[n][iSite+1] = Contraction::overlap_left_step(refMPS_[iSite], orthoMPS_[n][iSite], partialContractionLeft_[n][iSite]);
-      }
+  inline void updateLeftOverlapBoundaries(int iSite) {
+    if (iSite > 0 && iSite <= L_) {
+      for (int n = 0; n < nOrthogonalMPSs_; n++)
+        partialContractionLeft_[n][iSite] = Contraction::overlap_left_step(refMPS_[iSite-1], orthoMPS_[n][iSite-1], partialContractionLeft_[n][iSite-1]);
     }
   }
 
   /** @brief Propagation algorithm for the right boundaries (see [BoundaryPropagator]) */
-  inline void propagateRightOverlapBoundaries(int siteInitial, int siteFinal) {
-    if (siteInitial > siteFinal) {
-      for (int iSite = siteInitial; iSite > siteFinal; iSite--) {
-        for (int n = 0; n < nOrthogonalMPSs_; n++)
-          partialContractionRight_[n][iSite] = Contraction::overlap_right_step(refMPS_[iSite], orthoMPS_[n][iSite], partialContractionRight_[n][iSite+1]);
-      }
+  inline void updateRightOverlapBoundaries(int iSite) {
+    if (iSite >= 0 && iSite < L_) {
+      for (int n = 0; n < nOrthogonalMPSs_; n++)
+        partialContractionRight_[n][iSite] = Contraction::overlap_right_step(refMPS_[iSite], orthoMPS_[n][iSite], partialContractionRight_[n][iSite+1]);
     }
   }
 
@@ -159,12 +155,14 @@ private:
 
   /** @brief Generates the left partial overlap contractions */
   void generateLeftOverlapContractions(int initSite) {
-    propagateLeftOverlapBoundaries(0, initSite);
+    for (int iSite = 1; iSite < initSite; iSite++)
+      updateLeftOverlapBoundaries(iSite);
   }
 
   /** @brief Generates the right partial overlap contractions */
   void generateRightOverlapContractions(int initSite) {
-    propagateRightOverlapBoundaries(L_-1, initSite);
+    for (int iSite = L_-1; iSite > initSite; iSite--)
+      updateRightOverlapBoundaries(iSite);
   }
 
   // Class members

@@ -44,6 +44,7 @@
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
 
+#include "dmrg/SweepBasedAlgorithms/SweepSimulationFactory.h"
 
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
@@ -56,6 +57,7 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
     using measurements_type = typename base::measurements_type;
     using meas_with_results_type = typename interface_base::meas_with_results_type;
     using results_map_type = typename interface_base::results_map_type;
+    using FactoryType = SweepSimulationFactory<Matrix, SymmGroup, storage::disk>;
 
     // Class inheritance from the sim object
     using base::mps;
@@ -74,18 +76,12 @@ public:
 
     /**
      * @brief Class constructor
-     * 
-     * Note that the base class is here the [sim] object, and we call the constructor 
-     * for that object.
-     * 
+     * Note that the base class is here the [sim] object.
      * @param parms_ parameter container
      */
-    interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1)
-    { }
+    interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
-    /**
-     * @brief Wrapper around all the possible operations supported by the simulation object.
-     */
+    /** @brief Wrapper around all the possible operations supported by the simulation object. */
     void run(std::string runType)
     {
         if (runType == "optimize")
@@ -105,18 +101,17 @@ public:
         // MPO creation
         if (parms["MODEL"] == std::string("quantum_chemistry") && parms["use_compressed"])
             throw std::runtime_error("chem compression has been disabled");
-        MPO<Matrix, SymmGroup> mpoc = mpo;
-        if (parms["use_compressed"])
-            mpoc.compress(1e-12);
         // Optimizer initialization
         std::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite") {
-            optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, lat, init_site) );
+            // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
+            //                 (mps, mpo, parms, stop_callback, lat, init_site) );
+            factory_ = std::make_unique<FactoryType>("optimize", SweepOptimizationType::SingleSite, mps, mpo, parms, init_site);
         }
         else if(parms["optimization"] == "twosite") {
-            optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, lat, init_site) );
+            // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
+            //                 (mps, mpo, parms, stop_callback, lat, init_site) );
+            factory_ = std::make_unique<FactoryType>("optimize", SweepOptimizationType::TwoSite, mps, mpo, parms, init_site);
         }
         else {
             throw std::runtime_error("Don't know this optimizer");
@@ -127,15 +122,14 @@ public:
         try {
             for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
                 // TODO: introduce some timings
-
-                optimizer->sweep(sweep, Both);
+                // optimizer->sweep(sweep, Both);
+                factory_->runSingleSweep(sweep);
                 storage::disk::sync();
-
                 bool converged = false;
-
                 if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
-                    iteration_results_ = optimizer->iteration_results();
+                    // iteration_results_ = optimizer->iteration_results();
+                    iteration_results_ = factory_->getIterationResults();
 
                     /// write iteration results if result files are specified
                     if (!rfile().empty())
@@ -179,14 +173,17 @@ public:
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
                     checkpoint_simulation(mps, sweep, -1);
 
-                if (stopped) break;
+                if (stopped)
+                    break;
             }
-        } catch (dmrg::time_limit const& e) {
+        }
+        catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
             checkpoint_simulation(mps, e.sweep(), e.site());
 
             {
-                iteration_results_ = optimizer->iteration_results();
+                // iteration_results_ = optimizer->iteration_results();
+                iteration_results_ = factory_->getIterationResults();
                 if (!rfile().empty())
                 {
                     storage::archive ar(rfile(), "w");
@@ -332,8 +329,8 @@ public:
         results_map_type ret;
 
         // Do not measure before a sweep
-        //if (this->get_last_sweep() < 0)
-        //    throw std::runtime_error("Tried to measure before a sweep");
+        if (this->get_last_sweep() < 0)
+            throw std::runtime_error("Tried to measure before a sweep");
 
         // Run all measurements and fill the result map
         for (auto&& meas: all_measurements)
@@ -353,15 +350,11 @@ public:
                 ret.insert(transformed_meas.begin(), transformed_meas.end());
             }
         #endif
-
         return ret;
     }
 
     /** @brief Gets the energy for the mps that is stored in the sim object */
-    typename Matrix::value_type get_energy()
-    {
-        return expval(mps, mpo);
-    }
+    typename Matrix::value_type get_energy() { return expval(mps, mpo); }
 
     /**
      * @brief Method to extract a CI coefficient associated to a given determinant.
@@ -451,25 +444,23 @@ public:
 
 private:
 
-    results_collector iteration_results_;
-    int last_sweep_;
-
-    std::string results_archive_path(int sweep) const
-    {
+    std::string results_archive_path(int sweep) const {
         status_type status;
         status["sweep"] = sweep;
         return base::results_archive_path(status);
     }
 
-    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
-    {
+    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site) {
         status_type status;
         status["sweep"] = sweep;
         status["site"]  = site;
         return base::checkpoint_simulation(state, status);
     }
 
-
+    // Class members
+    results_collector iteration_results_;
+    int last_sweep_;
+    std::unique_ptr<FactoryType> factory_;
 };
 
 #endif
