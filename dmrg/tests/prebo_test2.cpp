@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
              {    0.0007706595,    0.0000101362,    0.0007840622,    0.0036272786,    0.0047812823,    0.0000070624},
              {    0.0000002699,    0.0000000141,    0.0000002797,    0.0000332957,    0.0000070624,    0.0000445343}};
 
-
+    p.set("max_bond_dimension", 100);
     p.set("integrals_binary", maquis::serialize(integrals));
     p.set("L", 6);
     p.set("LATTICE", "preBO lattice");
