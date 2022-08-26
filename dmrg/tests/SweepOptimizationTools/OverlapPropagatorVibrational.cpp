@@ -69,8 +69,8 @@ BOOST_FIXTURE_TEST_CASE(Test_OverlapPropagator_Vibrational_Watson, WatsonFixture
   auto overlapPropagator = OverlapPropagatorType(mpsDefault, mpsVector, 0);
   auto referenceOverlap = overlap(mpsConst, mpsDefault);
   for (int iSite = 0; iSite < 12; iSite++) {
-    auto orthoMPS = overlapPropagator.getOrthogonalVector(0, iSite, iSite+1);
-    overlapPropagator.propagateLeftOverlapBoundaries(iSite, iSite+1);
+    auto orthoMPS = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(0, iSite, iSite+1);
+    overlapPropagator.updateLeftOverlapBoundaries(iSite+1);
     auto overlap = ietl::dot(orthoMPS, mpsDefault[iSite]);
     BOOST_CHECK_CLOSE(overlap, referenceOverlap, 1.0E-8);
   }
