@@ -134,7 +134,7 @@ public:
         convergedOuter = true;
       }
       else {
-        maquis::cout << " --> CONVERGENCE NOT REACHED, "
+        maquis::cout << " --> CONVERGENCE NOT REACHED, STARTS NEW ITERATION" << std::endl;
       }
     }
 
@@ -403,7 +403,7 @@ public:
   }
 
   /** @brief Gets the energy for the mps that is stored in the sim object */
-  typename Matrix::value_type get_energy() { return expval(mps, mpo); }
+  RealType get_energy() { return maquis::real(expval(mps, mpo)); }
 
   /**
    * @brief Method to extract a CI coefficient associated to a given determinant.

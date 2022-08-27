@@ -54,13 +54,14 @@ template <class Matrix>
 class abstract_interface_sim {
 public:
     // warning, these types are defiled in model_impl already
-    typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
-    typedef std::map<std::string, meas_with_results_type> results_map_type;
+    using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> >;
+    using results_map_type = std::map<std::string, meas_with_results_type>;
+    using RealType = typename maquis::traits::real_type<Matrix>::type;
 
     virtual ~abstract_interface_sim() {}
     virtual void run(std::string runType) = 0;
     virtual void run_measure() = 0;
-    virtual typename Matrix::value_type get_energy() = 0;
+    virtual RealType get_energy() = 0;
     virtual results_collector& get_iteration_results() = 0;
     virtual int get_last_sweep() = 0;
     virtual results_map_type measure_out() =0;

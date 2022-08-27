@@ -80,7 +80,7 @@ public:
     } */
     mps.canonize(initSite_);
     rhsMps_ = mps;
-    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, parms_);
+    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, initSite_);
     /* To be reactivated when implementing the folded operator 
     if (isSquared) {
       leftSquared_.resize(mpo.length()+1);
@@ -149,7 +149,7 @@ public:
     }
     else if (sweepType == SweepDirectionType::Backward) {
       if (siteLeft_-1 >= 0)
-        rhsMps_.move_normalization_r2l(siteLeft_+1, siteLeft_);
+        rhsMps_.move_normalization_r2l(siteLeft_, siteLeft_-1);
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
