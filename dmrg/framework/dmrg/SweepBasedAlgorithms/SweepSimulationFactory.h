@@ -42,8 +42,8 @@ class SweepSimulationFactory {
   using GenericTSSimulationType = GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using OptimizationSSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
   using OptimizationTSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
-  using LinearSystemSSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
-  using LinearSystemTSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
+  using LinearSystemSSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
+  using LinearSystemTSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using PointerToSSSimulatorType = std::unique_ptr<GenericSSSimulationType>;
   using PointerToTSSimulatorType = std::unique_ptr<GenericTSSimulationType>;
   using MPSType = MPS<Matrix, SymmGroup>;

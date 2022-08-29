@@ -60,7 +60,7 @@ public:
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
                          std::string simulationName="Optimization", int initSite=0)
     : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()), initSite_(initSite),
-      mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName)
+      mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName), nSweeps_(0)
   {
     printGenericInfo();
     nSweeps_ = parms_["nsweeps"];
@@ -253,12 +253,15 @@ protected:
     maquis::cout << " Simulation settings:" << std::endl;
     maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
     maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
-    maquis::cout << " - Overall number of sweeps: " << nSweeps_ << std::endl;
+    if (nSweeps_ != 0)
+      maquis::cout << " - Overall number of sweeps: " << nSweeps_ << std::endl;
   }
 
   /** @brief Prints info that are sweep-specific */
   void printSweepSpecificInfo(int iSweep) const {
     maquis::cout << std::endl;
+    maquis::cout << " SWEEP NUMBER " << iSweep << std::endl;
+    maquis::cout << " ----------------" << std::endl;
     maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
     maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
     maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
