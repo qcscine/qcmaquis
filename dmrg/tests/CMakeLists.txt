@@ -58,6 +58,8 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_overlap_propagator_vibrational ${DMRG_APP_LIBRARIES})
     add_executable(test_sweep_based_energy_minimization_vibrational SweepOptimizationTools/SweepBasedEnergyMinimizationVibrational.cpp)
     target_link_libraries(test_sweep_based_energy_minimization_vibrational ${DMRG_APP_LIBRARIES})
+    add_executable(test_sweep_based_linear_system_vibrational SweepOptimizationTools/SweepBasedLinearSystemVibrational.cpp)
+    target_link_libraries(test_sweep_based_linear_system_vibrational ${DMRG_APP_LIBRARIES})
     # MPSCI
     if (BUILD_MPS2CI)
         add_executable(test_vibrational_srcas vibrational/test_srcas_vibrational.cpp)
