@@ -42,7 +42,6 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
 {
 #ifdef HAVE_TwoU1PG
   using SweepBasedLinearSolverSS = SweepBasedLinearSystem<matrix, TwoU1PG, storage::disk, SweepOptimizationType::SingleSite>;
-  using MPSType = MPS<matrix, TrivialGroup>;
   parametersBenzene.set("nsweeps", 10);
   parametersBenzene.set("max_bond_dimension", 100);
   parametersBenzene.set("alpha_initial", 1.0E-8);
