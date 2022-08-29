@@ -93,9 +93,11 @@ public:
       adaptiveBondDimension_ = true;
       truncationRatio_ = parms["linsystem_truncation_ratio"].as<double>();
     }
-    // Shift parameter
-    if (parms_.is_set("linsystem_shift"))
-      shiftParameter_ = parms["linear_system_shift"].as<ValueType>();
+    // Note that we subtract the core energy to the shift parameter (the SiteProblem object
+    // does not include that contribution)
+    if (parms_.is_set("ipi_shift"))
+      shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpo_.getCoreEnergy();
+    std::cout << shiftParameter_ << std::endl;
     if (parms_["linsystem_precond"] == "yes")
       isPrecond_ = true;
   }
@@ -127,7 +129,7 @@ public:
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_);
     resultOfLocalSiteProblem_ = ls.res();
-    int prec = maquis::cout.precision() ;
+    int prec = maquis::cout.precision();
     maquis::cout.precision(15);
     maquis::cout << " Energy = " << resultOfLocalSiteProblem_.first + maquis::real(mpo_.getCoreEnergy()) << std::endl;
     maquis::cout.precision(prec);

@@ -35,21 +35,13 @@
 #include "dmrg/sim/matrix_types.h"
 #include "Fixtures/BenzeneFixture.h"
 
-typedef boost::mpl::list<
-#ifdef HAVE_TwoU1PG
-TwoU1PG
-#endif
-#ifdef HAVE_SU2U1PG
-, SU2U1PG
-#endif
-> symmetries;
-
 /**
  * @brief Checks that the linear system solver works for electronic problems.
  */
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, S, symmetries, BenzeneFixture)
+BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, BenzeneFixture)
 {
-  using SweepBasedLinearSolverSS = SweepBasedLinearSystem<matrix, S, storage::disk, SweepOptimizationType::SingleSite>;
+#ifdef HAVE_TwoU1PG
+  using SweepBasedLinearSolverSS = SweepBasedLinearSystem<matrix, TwoU1PG, storage::disk, SweepOptimizationType::SingleSite>;
   using MPSType = MPS<matrix, TrivialGroup>;
   parametersBenzene.set("nsweeps", 10);
   parametersBenzene.set("max_bond_dimension", 100);
@@ -57,26 +49,36 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_SweepBasedLinearSystemSS_Electronic_Benzen
   parametersBenzene.set("alpha_main", 1.0E-15);
   parametersBenzene.set("alpha_final", 0.);
   auto benzeneLattice = Lattice(parametersBenzene);
-  auto benzeneModel = Model<matrix, S>(benzeneLattice, parametersBenzene);
+  auto benzeneModel = Model<matrix, TwoU1PG>(benzeneLattice, parametersBenzene);
   auto benzeneMPO = make_mpo(benzeneLattice, benzeneModel);
   parametersBenzene.set("init_state", "hf");
   parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
-  auto hfBenzeneMPS = MPS<matrix, S>(benzeneLattice.size(), *(benzeneModel.initializer(benzeneLattice, parametersBenzene)));
+  auto hfBenzeneMPS = MPS<matrix, TwoU1PG>(benzeneLattice.size(), *(benzeneModel.initializer(benzeneLattice, parametersBenzene)));
   hfBenzeneMPS.normalize_right();
+  // Calculates the energy via the interface
+  parametersBenzene.set("optimization", "twosite");
+  parametersBenzene.set("symmetry", "2u1pg");
+  maquis::DMRGInterface<double> interfaceBenzene(parametersBenzene);
+  interfaceBenzene.optimize();
+  double energyFromInterface = interfaceBenzene.energy();
   // Parameters that are specific for the solution of the linear system.
   parametersBenzene.set("linsystem_precond", "no");
   parametersBenzene.set("linsystem_init", "zero");
   parametersBenzene.set("linsystem_max_it", 1);
-  parametersBenzene.set("linsystem_tol", 1.0E-5);
+  parametersBenzene.set("linsystem_tol", 1.0E-10);
   parametersBenzene.set("linsystem_krylov_dim", 100);
   parametersBenzene.set("linsystem_solver", "GMRES");
-  auto linearSolver = SweepBasedLinearSolverSS(hfBenzeneMPS, benzeneMPO, parametersBenzene);
-  linearSolver.runSingleSweep(0);
-  // double optimalEnergyFromSweeper = energyMinimizer.getSpecificResult<double>("Energy");
-  // // Now does the same with the interface
-  // parametersEthyleneWatsonHarmonic.set("optimization", "singlesite");
-  // maquis::DMRGInterface<double> interfaceWatson(parametersEthyleneWatsonHarmonic);
-  // interfaceWatson.optimize();
-  // double optimalEnergyFromInterface = interfaceWatson.energy();
-  // BOOST_CHECK_CLOSE(optimalEnergyFromInterface, optimalEnergyFromSweeper, 1.0e-7);
+  // Set the shift of DMRG[IPI] as the energy - 1 Hartree
+  parametersBenzene.set("nsweeps", 3);
+  parametersBenzene.set("ipi_shift", energyFromInterface-0.1);
+  std::vector<double> energyFromIPI;
+  // Does the IPI iteration "by hand"
+  int nIPI = 10;
+  for (int iSweep = 0; iSweep < nIPI; iSweep++) {
+    auto linearSolver = SweepBasedLinearSolverSS(hfBenzeneMPS, benzeneMPO, parametersBenzene);
+    linearSolver.runSweepSimulation();
+    energyFromIPI.push_back(linearSolver.template getSpecificResult<double>("Energy"));
+  }
+  BOOST_CHECK_CLOSE(energyFromInterface, energyFromIPI[nIPI-1], 1.0e-7);
+#endif // HAVE_TwoU1PG
 }

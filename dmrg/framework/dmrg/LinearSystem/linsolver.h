@@ -102,8 +102,7 @@ public:
     auto tmp2 = applyOperator(currentSolution_);
     // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp2);
-    ScalarType tmp3 = ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_);
-    en = maquis::real(tmp3);
+    en = maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_));
     std::pair<energy_type, MPSTensorType> r0 = std::make_pair(en, currentSolution_);
     return r0;
   };
