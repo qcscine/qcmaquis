@@ -59,7 +59,7 @@ public:
   /** @brief Class constructor */
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
                          int initSite=0)
-    : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()),
+    : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()), initSite_(initSite),
       mpoContainer_(mpo_, mps_), mpsContainer_(mps)
   {
     lastSite_ = SweepTraitClass::getLastSite(L_);
