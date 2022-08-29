@@ -71,7 +71,8 @@ public:
 
   /** @brief Class constructor */
   SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite=0)
-    : Base(mps, mpo, parms, initSite), adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false)
+    : Base(mps, mpo, parms, std::string("Linear system solver"), initSite), adaptiveBondDimension_(false),
+      shiftParameter_(0.), isPrecond_(false)
   {
     /* // Folded simulation --> To be reactivated when implementing the folded operator 
     if (parms["pI_folded"] == "yes") {
@@ -97,7 +98,6 @@ public:
     // does not include that contribution)
     if (parms_.is_set("ipi_shift"))
       shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpo_.getCoreEnergy();
-    std::cout << shiftParameter_ << std::endl;
     if (parms_["linsystem_precond"] == "yes")
       isPrecond_ = true;
   }
@@ -129,10 +129,6 @@ public:
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_);
     resultOfLocalSiteProblem_ = ls.res();
-    int prec = maquis::cout.precision();
-    maquis::cout.precision(15);
-    maquis::cout << " Energy = " << resultOfLocalSiteProblem_.first + maquis::real(mpo_.getCoreEnergy()) << std::endl;
-    maquis::cout.precision(prec);
     // mps[site] = res.second;
     iterationResults_["Energy"] << resultOfLocalSiteProblem_.first + maquis::real(mpo_.getCoreEnergy());
     return resultOfLocalSiteProblem_.second;

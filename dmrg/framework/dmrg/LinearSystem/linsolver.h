@@ -84,10 +84,12 @@ public:
 
   /** @brief Solves the linear system */
   std::pair<energy_type, MPSTensorType> res() {
-    maquis::cout << " Starting the iterative solution to the linear system" << std::endl;
-    std::cout << " Norm of the rhs MPSTensor = " << ietl::two_norm(rhsMPS_) << std::endl;
+    int prec = maquis::cout.precision();
+    maquis::cout.precision(15);
+    maquis::cout << std::endl;
     auto initError = ietl::two_norm(applyOperator(currentSolution_)-rhsMPS_);
-    std::cout << " Initial linear system error = " << initError << std::endl;
+    maquis::cout << " Initial ||Ax - b|| norm =  " << initError << std::endl;
+    maquis::cout << std::endl;
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
       if (parms_["linsystem_solver"] == "GMRES")
         gmres();
@@ -97,12 +99,16 @@ public:
         throw std::runtime_error("[linsystem_solver] parameter not recognized");
     }
     auto finalError = ietl::two_norm(applyOperator(currentSolution_)-rhsMPS_);
-    std::cout << " Final linear system error = " << finalError << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
     // == Finalization ==
     auto tmp2 = applyOperator(currentSolution_);
     // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp2);
     en = maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_));
+    maquis::cout << " Final energy = " << en << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout.precision(prec);
     std::pair<energy_type, MPSTensorType> r0 = std::make_pair(en, currentSolution_);
     return r0;
   };
@@ -117,11 +123,9 @@ protected:
    * The implementation is based on Saad's book on iterative methods.
    */
   void gmres() {
-    // Printing
-    printHeader();
-    maquis::cout << " --------------------------------- " << std::endl;
-    maquis::cout << " Iteration  | Rel. error estimate  " << std::endl;
-    maquis::cout << " --------------------------------- " << std::endl;
+    maquis::cout << " ------------------------------------- " << std::endl;
+    maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
+    maquis::cout << " ------------------------------------- " << std::endl;
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
@@ -234,7 +238,6 @@ protected:
   /** @brief Solve the linear system with MINRES (based on the PyKry python library). */
   void minres() {
     // Printing
-    printHeader();
     maquis::cout << " --------------------------------- " << std::endl;
     maquis::cout << " Iteration  | Rel. error estimate  " << std::endl;
     maquis::cout << " --------------------------------- " << std::endl;
@@ -381,14 +384,6 @@ private:
     maquis::cout << " --------------------------------- " << std::endl;
     maquis::cout << std::endl;
     maquis::cout << std::fixed;
-  }
-
-  /** @brief Prints the header of the table */
-  static void printHeader() {
-    maquis::cout << std::endl;
-    maquis::cout << " +-----------------------------------------+ " << std::endl;
-    maquis::cout << " | ITERATIVE SOLUTION OF THE LINEAR SYSTEM | " << std::endl;
-    maquis::cout << " +-----------------------------------------+ " << std::endl;
   }
 
   /** @brief Calculates the Givens rotation */

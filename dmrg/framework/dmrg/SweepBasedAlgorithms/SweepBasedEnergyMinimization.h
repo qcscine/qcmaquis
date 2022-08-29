@@ -67,8 +67,8 @@ public:
   using Base::siteRight_;
 
   /** @brief Class constructor */
-  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
-                               int initSite=0) : Base(mps, mpo, parms, initSite), nOrtho_(0)
+  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite=0)
+    : Base(mps, mpo, parms, std::string("Optimization"), initSite), nOrtho_(0)
   {
     mps_.canonize(initSite_);
     if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {

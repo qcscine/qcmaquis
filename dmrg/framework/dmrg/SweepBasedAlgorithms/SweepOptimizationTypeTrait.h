@@ -69,6 +69,11 @@ public:
     return (i < 0) ? 0 : (i < L) ? i : 2*L-1-i;
   }
 
+  /** @brief Gets the string identifier of the simulation type */
+  static std::string getSimulationTypeName() {
+    return std::string("Single site");
+  }
+
   // Static members
   static const bool countEndSiteTwice_=false;
 };
@@ -107,6 +112,11 @@ public:
   /** @brief Simple function converting microiteration index to the optimization site */
   static int convertMicroIterationToSite(int L, int i) {
     return (i < 0) ? 0 :  (i < L-1) ? i : 2*L - 2 - i;
+  }
+
+  /** @brief Gets the string identifier of the simulation type */
+  static std::string getSimulationTypeName() {
+    return std::string("Two site");
   }
 
   // Static members

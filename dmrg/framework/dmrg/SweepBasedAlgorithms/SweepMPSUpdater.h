@@ -66,7 +66,6 @@ public:
   auto updateMPS(int site1, int site2, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS, double alpha,
                  double cutoff, double mMax) {
     // Printing
-    maquis::cout << "MPS truncation performed with noise parameter alpha = " << alpha << std::endl;
     mps_[site1] = inputMPS;
     truncation_results truncationOutput;
     // Forward sweep case

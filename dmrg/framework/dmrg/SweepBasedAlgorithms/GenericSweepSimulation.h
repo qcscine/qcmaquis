@@ -58,10 +58,12 @@ public:
 
   /** @brief Class constructor */
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
-                         int initSite=0)
+                         std::string simulationName="Optimization", int initSite=0)
     : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()), initSite_(initSite),
-      mpoContainer_(mpo_, mps_), mpsContainer_(mps)
+      mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName)
   {
+    printGenericInfo();
+    nSweeps_ = parms_["nsweeps"];
     lastSite_ = SweepTraitClass::getLastSite(L_);
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpo_);
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpo_, mps_, boundaryPropagator_, parms_);
@@ -78,8 +80,11 @@ public:
     // Operations performed at the beginning of the 
     int maxNumberOfSweeps = parms_["nsweeps"];
     // == LOOP OVER THE SWEEPS ==
-    for (int iSweep = 0; iSweep < maxNumberOfSweeps; iSweep++) {
-      maquis::cout << " == SWEEP NUMBER = " << maxNumberOfSweeps << " ==" << std::endl;
+    for (int iSweep = 0; iSweep < nSweeps_; iSweep++) {
+      maquis::cout << std::endl;
+      maquis::cout << " ======================" << std::endl;
+      maquis::cout << " == SWEEP NUMBER " << iSweep << std::endl;
+      maquis::cout << " ======================" << std::endl;
       maquis::cout << std::endl;
       this->runSingleSweep(iSweep);
     }
@@ -91,23 +96,23 @@ public:
     // Preparatory operations.
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
+    this->printSweepSpecificInfo(iSweep);
     currentSite_ = SweepTraitClass::convertMicroIterationToSite(L_, indexOfMicroIteration_);
     // Prefetches the boundaries that will be needed for the first sweep
     Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(currentSite_, SweepDirectionType::Forward)));
     Storage::prefetch(boundaryPropagator_->getRightBoundary(SweepTraitClass::getIndexOfRightBoundary(currentSite_, SweepDirectionType::Forward)));
     // == LOOP OVER THE MICROITERATIONS ==
     while (indexOfMicroIteration_ < 2*lastSite_) {
-      maquis::cout << " -- Microiteration number = " << indexOfMicroIteration_ << " --" << std::endl;
-      maquis::cout << std::endl;
       // Calculates the relevant indices on the DMRG lattice.
       auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
+      printMicroiterInfo(sweepType);
       currentSite_ = SweepTraitClass::convertMicroIterationToSite(L_, indexOfMicroIteration_);
       siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(currentSite_, sweepType);
       siteRight_ = SweepTraitClass::getIndexOfRightBoundary(currentSite_, sweepType);
       mpoContainer_.updatePlacements(indexOfMicroIteration_, siteLeft_);
       // We must be careful here because, for the two-site case, there is the risk of fetching twice the boundaries.
       // In fact, we run the optimization of sites (L-1, L) twice consequently
-      //TODO ALB THIS SHOULD BE FIXED!
+      //TODO ALB THIS SHOULD BE FIXED PROPERLY!
       if (SweepTraitClass::countEndSiteTwice_ && indexOfMicroIteration_ != lastSite_) {
         Storage::fetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
         Storage::fetch(boundaryPropagator_->getRightBoundary(siteRight_));
@@ -238,16 +243,48 @@ protected:
     return Mmax;
   }
 
+  /** @brief Prints generic information about the */
+  void printGenericInfo() const {
+    maquis::cout << std::endl;
+    maquis::cout << "+----------------------------------+" << std::endl;
+    maquis::cout << " NEW SwEEP-BASED SIMULATION STARTED" << std::endl;
+    maquis::cout << "+----------------------------------+" << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " Simulation settings:" << std::endl;
+    maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
+    maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
+    maquis::cout << " - Overall number of sweeps: " << nSweeps_ << std::endl;
+  }
+
+  /** @brief Prints info that are sweep-specific */
+  void printSweepSpecificInfo(int iSweep) const {
+    maquis::cout << std::endl;
+    maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
+    maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
+    maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
+    maquis::cout << std::endl;
+  }
+
+  void printMicroiterInfo(SweepDirectionType sweepType) const {
+    maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
+    if (sweepType == SweepDirectionType::Forward)
+      maquis::cout << " , forward sweep" << std::endl;
+    else
+      maquis::cout << " , backward sweep" << std::endl;
+    maquis::cout << std::endl;
+  }
+
 protected:
   MPSType& mps_;
   const MPOType& mpo_;
   MPOContainerType mpoContainer_;
   MPSContainerType mpsContainer_;
   std::unique_ptr<SweepMPSUpdaterType> mpsUpdater_;
-  int initSite_, L_, indexOfMicroIteration_, currentSite_, lastSite_, siteLeft_, siteRight_;
+  int initSite_, L_, indexOfMicroIteration_, currentSite_, lastSite_, siteLeft_, siteRight_, nSweeps_;
   BaseParameters& parms_;
   results_collector iterationResults_;
   std::shared_ptr<BoundaryPropagatorType> boundaryPropagator_;
+  std::string simulationName_;
 };
 
 #endif // GENERIC_SWEEPS_SIMULATION_H

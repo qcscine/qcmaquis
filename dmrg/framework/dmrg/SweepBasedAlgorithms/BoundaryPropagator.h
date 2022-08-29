@@ -70,9 +70,7 @@ public:
     right_.resize(L_+1);
     // Generation of the left boundary
     generateLeftBoundary();
-    maquis::cout << "Boundaries are partially initialized...\n";
     generateRightBoundary();
-    maquis::cout << "Boundaries are fully initialized...\n";
   }
 
   /** @brief Getter for the left boundary */
