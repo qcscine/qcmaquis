@@ -62,6 +62,7 @@ public:
     : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()), initSite_(initSite),
       mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName), nSweeps_(0)
   {
+    mps_.normalize_right();
     printGenericInfo();
     nSweeps_ = parms_["nsweeps"];
     lastSite_ = SweepTraitClass::getLastSite(L_);
@@ -105,10 +106,10 @@ public:
     while (indexOfMicroIteration_ < 2*lastSite_) {
       // Calculates the relevant indices on the DMRG lattice.
       auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
-      printMicroiterInfo(sweepType);
       currentSite_ = SweepTraitClass::convertMicroIterationToSite(L_, indexOfMicroIteration_);
       siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(currentSite_, sweepType);
       siteRight_ = SweepTraitClass::getIndexOfRightBoundary(currentSite_, sweepType);
+      printMicroiterInfo(sweepType);
       mpoContainer_.updatePlacements(indexOfMicroIteration_, siteLeft_);
       // We must be careful here because, for the two-site case, there is the risk of fetching twice the boundaries.
       // In fact, we run the optimization of sites (L-1, L) twice consequently
@@ -274,6 +275,9 @@ protected:
       maquis::cout << " , forward sweep" << std::endl;
     else
       maquis::cout << " , backward sweep" << std::endl;
+    maquis::cout << " - Optimization centered on site: " << currentSite_ << std::endl;
+    maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
+    maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
     maquis::cout << std::endl;
   }
 

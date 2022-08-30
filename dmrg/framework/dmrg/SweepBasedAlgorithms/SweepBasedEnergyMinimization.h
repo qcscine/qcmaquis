@@ -70,7 +70,6 @@ public:
   SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite=0)
     : Base(mps, mpo, parms, std::string("Optimization"), initSite), nOrtho_(0)
   {
-    mps_.normalize_right();
     // mps_.canonize(initSite_);
     if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {
       files_ = parms_["ortho_states"].str();

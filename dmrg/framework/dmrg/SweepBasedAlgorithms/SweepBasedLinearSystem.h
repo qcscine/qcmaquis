@@ -79,8 +79,6 @@ public:
         maquis::cout << " Activating folded treatment " << std::endl;
         isSquared = true;
     } */
-    // mps.canonize(initSite_);
-    mps_.normalize_right();
     rhsMps_ = mps;
     overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, initSite_);
     /* To be reactivated when implementing the folded operator 
