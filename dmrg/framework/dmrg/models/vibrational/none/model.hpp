@@ -139,7 +139,7 @@ public:
                 while (termVector[outerCounter+innerCounter] == referenceValue && innerCounter+outerCounter != numberOfNonZeroElements)
                     innerCounter += 1;
                 positions.push_back(abs(referenceValue)-1);
-                assert(innerCounter > 0 && innerCounter <= maxCoupling);
+                assert(innerCounter > 0 && innerCounter <= maxCoupling_);
                 if (referenceValue < 0)
                     operators.push_back(momentumPowers_[innerCounter]);
                 else if (referenceValue > 0)
