@@ -29,6 +29,7 @@
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
+#include "dmrg/utils/BaseParameters.h"
 
 /**
  * @brief Helper class for the MPS initialization.
@@ -52,7 +53,7 @@ public:
   using ChargeType = typename SymmGroup::charge;
   using indexType = Index<SymmGroup>;
   using state_type = std::vector<boost::tuple<ChargeType, std::size_t> >;
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size)
   {
     throw std::runtime_error("GenerateIndexFromString method not available for this symmetry group");
@@ -66,8 +67,9 @@ public:
   // Types definition
   using indexType = Index<TrivialGroup>;
   using state_type = std::vector<boost::tuple<typename TrivialGroup::charge, std::size_t> >;
-  // General implementation
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
+  
+  // General implementation (params is passed just for coherence with the NU1 call)
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
@@ -85,8 +87,9 @@ public:
   // Types definition
   using indexType = Index<U1>;
   using state_type = std::vector<boost::tuple<typename U1::charge, std::size_t> >;
-  // General implementation
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
+  
+  // General implementation (params is passed just for coherence with the NU1 call)
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
@@ -125,21 +128,29 @@ public:
   using state_type = std::vector<boost::tuple<ChargeType, std::size_t> >;
 
   /** @brief Parser for the NU1 symmetry group */
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim, 
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != physDim.size())
       throw std::runtime_error("Index list number of elements does not match the number of site types. Check the setting 'init_basis_state'.");
     auto state = state_type(size);
     int numberOfTypes = inputVec.size();
     std::vector<int> counterOfTypes(numberOfTypes, 0);
+    // If available, extracts the user-defined modals order
+    std::vector<int> modalsOrder(size), inverseModalsOrder(size);
+    if (!params.is_set("modals_order"))
+      for (int p = 0; p < size; ++p)
+        modalsOrder[p] = p;
+    else
+      modalsOrder = params["modals_order"].template as<std::vector<int> >();
+    // Generates the inverse order
+    for (int p = 0; p < modalsOrder.size(); ++p)
+      inverseModalsOrder[p] = std::distance(modalsOrder.begin(), std::find(modalsOrder.begin(), modalsOrder.end(), p));
+    // Fills the MPS.
     for (int iLattice = 0; iLattice < size; iLattice++) {
-      if (counterOfTypes[siteType[iLattice]] == inputVec[siteType[iLattice]]) {
-        state[iLattice] = physDim[siteType[iLattice]].element(0);
-      }
-      else {
-        state[iLattice] = physDim[siteType[iLattice]].element(1);
-      }
-      counterOfTypes[siteType[iLattice]]++;
+      auto positionOfSiteInNewLattice = inverseModalsOrder[iLattice];
+      auto type = siteType[positionOfSiteInNewLattice];
+      state[positionOfSiteInNewLattice] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);
+      counterOfTypes[type]++;
     }
     return state;
   }

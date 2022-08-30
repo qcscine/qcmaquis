@@ -56,7 +56,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
     siteTypes.push_back(lattice.get_prop<int>("type", iSite));
   for (int iType = 0; iType <= lattice.maximum_vertex_type(); iType++)
     physCharges.push_back(nModeModel.phys_dim(iType));
-  auto outputVector = HelperClassBasisVectorConverter<Symmetry>::GenerateIndexFromString(inputVec, physCharges,
+  auto outputVector = HelperClassBasisVectorConverter<Symmetry>::GenerateIndexFromString(parametersFADTwoBody, inputVec, physCharges,
                                                                                          siteTypes, latticeSize);
   for (int iSite = 0; iSite < outputVector.size(); iSite++) {
     if (iSite == 1) {
@@ -128,6 +128,29 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_Energy_NU1, NModeFi
   auto refEnergy = 6.996161115711967e+02 + 1.801678060826892e+03 - 2.258583526759012e+01;
   // The energy is taken from the integral provides as input in the fixture class.
   BOOST_CHECK_CLOSE(energy, refEnergy, 1.0E-10);
+}
+
+/** @brief Verifies that changing the modals order does not alter the energy */
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_NU1_ArbitrarySorting, NModeFixture)
+{
+  using Symmetry = NU1_template<5>;
+  // Conventional sorting
+  parametersFADTwoBodyFingerPrint.set("init_state", "basis_state_generic");
+  parametersFADTwoBodyFingerPrint.set("init_basis_state", "0,0,0,0,0");
+  auto lattice = Lattice(parametersFADTwoBodyFingerPrint);
+  auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADTwoBodyFingerPrint);
+  auto mpo = make_mpo(lattice, nModeModel);
+  auto mps = MPS<matrix, Symmetry>(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBodyFingerPrint)));
+  auto energy1 = expval(mps, mpo)/overlap(mps, mps);
+  // Random sorting
+  parametersFADTwoBodyFingerPrint.set("modals_order", "11,3,5,10,19,0,14,4,8,13,18,17,2,12,9,1,6,7,15,16");
+  auto latticeFiedler = Lattice(parametersFADTwoBodyFingerPrint);
+  auto nModeModelFiedler = Model<matrix, Symmetry>(latticeFiedler, parametersFADTwoBodyFingerPrint);
+  auto mpoFiedler = make_mpo(latticeFiedler, nModeModelFiedler);
+  auto mpsFiedler = MPS<matrix, Symmetry>(latticeFiedler.size(), *(nModeModelFiedler.initializer(latticeFiedler, parametersFADTwoBodyFingerPrint)));
+  auto energy2 = expval(mpsFiedler, mpoFiedler)/overlap(mpsFiedler, mpsFiedler);
+  // The energy is taken from the integral provides as input in the fixture class.
+  BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-10);
 }
 
 #endif // HAVE_NU1
