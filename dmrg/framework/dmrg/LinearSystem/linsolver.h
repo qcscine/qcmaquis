@@ -92,7 +92,7 @@ public:
     auto tmp2 = applyOperator(currentSolution_);
     // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp2);
-    maquis::cout << " Final energy = " << maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_)) << std::endl;
+    maquis::cout << " Initial energy = " << maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_)) << std::endl;
     maquis::cout << std::endl;
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
       if (parms_["linsystem_solver"] == "GMRES")
