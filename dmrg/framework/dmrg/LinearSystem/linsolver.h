@@ -34,6 +34,7 @@
 // #include <Eigen/IterativeLinearSolvers>
 // #include <unsupported/Eigen/IterativeSolvers>
 // #include <Eigen/Eigenvalues>
+#include <boost/numeric/bindings/lapack.hpp>
 #include "linsolver_helper.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/siteproblem.h"
@@ -87,12 +88,9 @@ public:
     int prec = maquis::cout.precision();
     maquis::cout.precision(15);
     maquis::cout << std::endl;
-    auto initError = ietl::two_norm(applyOperator(currentSolution_)-rhsMPS_);
-    maquis::cout << " Initial ||Ax - b|| norm =  " << initError << std::endl;
     auto tmp2 = applyOperator(currentSolution_);
-    // ietl::mult(sp, x, tmp2, 0, false);
-    ietl::mult(*sp_, currentSolution_, tmp2);
-    maquis::cout << " Final energy = " << maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_)) << std::endl;
+    auto initError = ietl::two_norm(tmp2-rhsMPS_);
+    maquis::cout << " Initial ||Ax - b|| norm =  " << initError << std::endl;
     maquis::cout << std::endl;
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
       if (parms_["linsystem_solver"] == "GMRES")
@@ -102,11 +100,11 @@ public:
       else
         throw std::runtime_error("[linsystem_solver] parameter not recognized");
     }
-    auto finalError = ietl::two_norm(applyOperator(currentSolution_)-rhsMPS_);
+    tmp2 = applyOperator(currentSolution_);
+    auto finalError = ietl::two_norm(tmp2-rhsMPS_);
     maquis::cout << std::endl;
     maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
     // == Finalization ==
-    tmp2 = applyOperator(currentSolution_);
     // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp2);
     auto en = maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_));
@@ -226,6 +224,14 @@ protected:
     if (iter != 0) {
       //vec_type result = R.block(0, 0, iter, iter).colPivHouseholderQr().solve(y.head(iter));
       //vec_type result = vec_type::Zero(iter);
+      mat_type smallerMatrix(iter, iter, 0.);
+      vec_type smallerVector(iter);
+      for (int i = 0; i < iter; i++) {
+        for (int j = 0; j < iter; j++)
+          smallerMatrix(i, j) = R(i, j);
+        smallerVector[i] = y[i];
+      }
+      /*
       vec_type result(iter, 0.);
       for (int i = 0; i < iter; i++) {
         ScalarType s = 0.;
@@ -233,8 +239,20 @@ protected:
           s = s + R(i, j)*result[j];
         result[i] = (y[i] - s)/R(i, i);
       }
+      */
+      auto info = boost::numeric::bindings::lapack::gels(smallerMatrix, smallerVector);
       for (int iFinal = 0; iFinal < iter; iFinal++)
-        currentSolution_ += result[iFinal]*vecSpace[iFinal];
+        currentSolution_ += smallerVector[iFinal]*vecSpace[iFinal];
+        //currentSolution_ += result[iFinal]*vecSpace[iFinal];
+      // DEBUG
+      /*
+        vec_type diff(iter, 0.);
+        for (int iRow = 0; iRow < iter; iRow++) {
+          for (int iCol = 0; iCol < iter; iCol++)
+            diff(iRow) += R(iRow, iCol)*smallerVector[iCol];
+          std::cout << diff(iRow) - y[iRow] << std::endl;
+        }
+      */
     }
     printEndl();
   }

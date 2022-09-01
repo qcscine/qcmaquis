@@ -63,31 +63,31 @@ public:
   };
 
   /** @brief Method to update the MPS for a given site */
-  auto updateMPS(int site1, int site2, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS, double alpha,
-                 double cutoff, double mMax) {
+  auto updateMPS(int siteLeft, int siteRight, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS,
+                 double alpha, double cutoff, double mMax, bool normalizeEnd) {
     // Printing
-    mps_[site1] = inputMPS;
+    mps_[siteLeft] = inputMPS;
     truncation_results truncationOutput;
     // Forward sweep case
     if (sweepDirection == SweepDirectionType::Forward) {
-      if (site1 < L_-1) {
-        truncationOutput = mps_.grow_l2r_sweep(mpo_[site1], boundaryPropagator_->getLeftBoundary(site1),
-                                               boundaryPropagator_->getRightBoundary(site2), site1, alpha,
+      if (siteLeft < L_-1) {
+        truncationOutput = mps_.grow_l2r_sweep(mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
+                                               boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                cutoff, mMax);
       }
       else {
-        auto t = mps_[site1].normalize_left(DefaultSolver());
+        auto t = mps_[siteLeft].normalize_left(DefaultSolver());
       }
     }
     // Backward case
     else if (sweepDirection == SweepDirectionType::Backward) {
-      if (site1 > 0) {
-        truncationOutput = mps_.grow_r2l_sweep(mpo_[site1], boundaryPropagator_->getLeftBoundary(site1),
-                                               boundaryPropagator_->getRightBoundary(site2), site1, alpha,
-                                               cutoff, mMax);
+      if (siteLeft > 0) {
+        truncationOutput = mps_.grow_r2l_sweep(mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
+                                               boundaryPropagator_->getRightBoundary(siteRight), siteLeft,
+                                               alpha, cutoff, mMax);
       }
       else {
-        auto t = mps_[site1].normalize_right(DefaultSolver());
+        auto t = mps_[siteLeft].normalize_right(DefaultSolver());
       }
     }
     return truncationOutput;
@@ -122,7 +122,7 @@ public:
 
   /** @brief Method to update the MPS for a given site */
   auto updateMPS(int siteLeft, int siteRight, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS,
-                 double alpha, double cutoff, double mMax)
+                 double alpha, double cutoff, double mMax, bool normalizeEnd)
   {
     // Converts back the MPS into the two-site tensor
     TwoSiteTensorType tst(mps_[siteLeft], mps_[siteLeft+1]);
@@ -136,10 +136,14 @@ public:
       else
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(siteLeft),
                                                                                                mpo_[siteLeft]);
-      // Final normalization
-      auto t = mps_[siteLeft+1].normalize_left(DefaultSolver());
-      if (siteLeft+2 < L_)
-        mps_[siteLeft+2].multiply_from_left(t);
+      if (siteRight < L_) {
+        auto t = mps_[siteLeft+1].normalize_left(DefaultSolver());
+        mps_[siteRight].multiply_from_left(t);
+      }
+      else if (normalizeEnd) {
+        auto t = mps_[siteLeft+1].normalize_left(DefaultSolver());
+      }
+
     }
     else if (sweepDirection == SweepDirectionType::Backward) {
       if (parms_["twosite_truncation"] == "svd")
@@ -147,9 +151,13 @@ public:
       else
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(siteRight),
                                                                                                mpo_[siteLeft+1]);
-      auto t = mps_[siteLeft].normalize_right(DefaultSolver());
-      if (siteLeft > 0)
+      if (siteLeft > 0) {
+        auto t = mps_[siteLeft].normalize_right(DefaultSolver());
         mps_[siteLeft-1].multiply_from_right(t);
+      }
+      else if (normalizeEnd) {
+        auto t = mps_[siteLeft].normalize_right(DefaultSolver());
+      }
     }
     return truncationOutput;
   }

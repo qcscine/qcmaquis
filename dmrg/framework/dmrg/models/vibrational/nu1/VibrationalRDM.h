@@ -135,7 +135,7 @@ public:
     void evaluate(const MPS<Matrix, SymmGroup>& mps,  boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) {
         int iSite = 0;
         for (const auto& mpoElement: this->mpoVector) {
-            vector_results[iSite] = expval(mps, mpoElement);
+            vector_results[iSite] = expval(mps, mpoElement)/norm(mps);
             iSite++;
         }
         /*

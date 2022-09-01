@@ -177,10 +177,11 @@ private:
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
 
         // Parameters related to DMRG[IPI]
-        add_option("ipi_sweep_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
+        add_option("ipi_sweep_overlap_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
+        add_option("ipi_sweep_energy_threshold", "Threshold on the energy difference below which the IPI iterations are defined as converged", value(1.0E-10));
         add_option("ipi_sweeps_per_system", "Maximum number of sweeps used to solve one linear system for DMRG[IPI]");
         add_option("ipi_shift", "Shift parameter for the DMRG[IPI] algorithm");
-        add_option("ipi_iterations", "Number of macroiterations for the DMRG[IPI] calculation");
+        add_option("ipi_iterations", "Maximum bumber of macroiterations for the DMRG[IPI] calculation");
     }
 
 };

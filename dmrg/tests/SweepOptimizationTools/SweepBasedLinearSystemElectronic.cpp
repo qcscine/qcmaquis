@@ -62,7 +62,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   double energyFromInterface = interfaceBenzene.energy();
   // Parameters that are specific for the solution of the linear system.
   parametersBenzene.set("linsystem_precond", "no");
-  parametersBenzene.set("linsystem_init", "zero");
+  parametersBenzene.set("linsystem_init", "mps");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);
   parametersBenzene.set("linsystem_krylov_dim", 100);
@@ -81,3 +81,61 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   BOOST_CHECK_CLOSE(energyFromInterface, energyFromIPI[nIPI-1], 1.0e-7);
 #endif // HAVE_TwoU1PG
 }
+
+#ifdef HAVE_SU2U1PG
+
+/** @brief Same as above, but 1) for SU2U1 2) via the interface and 3) with the two-site optimizer */
+BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benzene, BenzeneFixture)
+{
+  // Prepares the input parameters
+  parametersBenzene.set("max_bond_dimension", 100);
+  parametersBenzene.set("optimization", "twosite");
+  parametersBenzene.set("symmetry", "su2u1pg");
+  parametersBenzene.set("init_state", "const");
+  // Optimization-specific parameters
+  parametersBenzene.set("nsweeps", 10);
+  parametersBenzene.set("chkpfile", "GS.Benzene.chkp.h5");
+  maquis::DMRGInterface<double> interfaceOptimizerGS(parametersBenzene);
+  interfaceOptimizerGS.optimize();
+  auto energyFromOptimizerGS = interfaceOptimizerGS.energy();
+  // Excited-state calculation
+  parametersBenzene.set("n_ortho_states", 1);
+  parametersBenzene.set("ortho_states", "GS.Benzene.chkp.h5");
+  parametersBenzene.set("chkpfile", "ES.Benzene.chkp.h5");
+  maquis::DMRGInterface<double> interfaceOptimizerES(parametersBenzene);
+  interfaceOptimizerES.optimize();
+  auto energyFromOptimizerES = interfaceOptimizerES.energy();
+  // IPI-specific parameters
+  double shiftGS = energyFromOptimizerGS-(energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  parametersBenzene.set("ipi_shift", shiftGS);
+  parametersBenzene.set("ipi_sweep_threshold", 1.0E-5);
+  parametersBenzene.set("ipi_sweeps_per_system", 2);
+  parametersBenzene.set("ipi_iterations", 10);
+  parametersBenzene.set("linsystem_precond", "no");
+  parametersBenzene.set("linsystem_init", "mps");
+  parametersBenzene.set("linsystem_max_it", 1);
+  parametersBenzene.set("linsystem_tol", 1.0E-10);
+  parametersBenzene.set("linsystem_krylov_dim", 30);
+  parametersBenzene.set("linsystem_solver", "GMRES");
+  parametersBenzene.set("chkpfile", "GS.IPI.Benzene.chkp.h5");
+  maquis::DMRGInterface<double> interfaceGroundStateIPI(parametersBenzene);
+  interfaceGroundStateIPI.runInversePowerIteration();
+  auto energyGroundStateIPI = interfaceGroundStateIPI.energy();
+  BOOST_CHECK_CLOSE(energyFromOptimizerGS, energyGroundStateIPI, 1.0E-7);
+  //
+  double shiftES = energyFromOptimizerES-(energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  parametersBenzene.set("ipi_shift", shiftES);
+  parametersBenzene.set("chkpfile", "ES.IPI.Benzene.chkp.h5");
+  maquis::DMRGInterface<double> interfaceExcitedStateIPI(parametersBenzene);
+  interfaceExcitedStateIPI.runInversePowerIteration();
+  auto energyExcitedStateIPI = interfaceExcitedStateIPI.energy();
+  BOOST_CHECK_CLOSE(energyFromOptimizerES, energyExcitedStateIPI, 1.0E-7);
+  // Cleans up stuff
+  boost::filesystem::remove_all("GS.Benzene.chkp.h5");
+  boost::filesystem::remove_all("ES.Benzene.chkp.h5");
+  boost::filesystem::remove_all("GS.IPI.Benzene.chkp.h5");
+  boost::filesystem::remove_all("ES.IPI.Benzene.chkp.h5");
+}
+
+
+#endif // HAVE_SU2U1PG

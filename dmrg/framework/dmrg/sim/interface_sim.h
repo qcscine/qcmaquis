@@ -92,6 +92,13 @@ public:
       this->runAlternatingLeastSquares("linear_system", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
     else if (simulationType == "ipi")
       this->runInversePowerIteration();
+    else if (simulationType == "feast")
+      this->runFEASTSimulation();
+  }
+
+  /** @brief Runs a FEAST simulation */
+  void runFEASTSimulation() {
+    // TO BE CODED
   }
 
   // TO BE REACTIVATED AS SOON AS THE TIME EVOLUTION IS INCLUDED IN THE GENERIC SWEEP-BASED ENGINE
@@ -103,7 +110,8 @@ public:
   /** @brief Runs a IPI-based simulation */
   void runInversePowerIteration() {
     // Exctracts all relevant parameters
-    double overallConvergenceThreshold = parms["ipi_sweep_threshold"];
+    double energyConvergenceThreshold = parms["ipi_sweep_energy_threshold"];
+    double overlapConvergenceThreshold = parms["ipi_sweep_overlap_threshold"];
     int numberOfSweepPerSystem = parms["ipi_sweeps_per_system"];
     int numberOfOuterIterations = parms["ipi_iterations"];
     typename Matrix::value_type shift = parms["ipi_shift"];
@@ -111,7 +119,8 @@ public:
     maquis::cout << "   STARTING DMRG[INVERSE POWER ITERATION] SIMULATION = " << std::endl;
     maquis::cout << " ===================================================== " << std::endl;
     maquis::cout << std::endl;
-    maquis::cout << " Overall convergence threshold:      " << overallConvergenceThreshold << std::endl;
+    maquis::cout << " IPI energy convergence threshold:   " << energyConvergenceThreshold << std::endl;
+    maquis::cout << " IPI overlap convergence threshold:  " << overlapConvergenceThreshold << std::endl;
     maquis::cout << " Number of sweeps per linear system: " << numberOfSweepPerSystem << std::endl;
     maquis::cout << std::endl;
     // Prepares data structure where to store results
@@ -120,34 +129,37 @@ public:
     bool convergedOuter=false;
     double previousEnergy = this->get_energy(), nextEnergy, energyDifference;
     energiesForIPIIteration.push_back(previousEnergy);
+    auto mpsBackup = this->mps;
     // IPI macroiteration
     while (!convergedOuter) {
-      nextEnergy = previousEnergy;
       this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0.);
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
       energyDifference = std::fabs(nextEnergy - previousEnergy);
-      maquis::cout << std::endl;
-      maquis::cout << "Energy difference for iteration " << nIpiIterations << " = " << energyDifference << std::endl;
+      auto mpsOverlap = overlap(mpsBackup, this->mps);
+      auto precision = std::cout.precision();
+      maquis::cout << " == RESULTS FOR THE " << nIpiIterations << "-th iteration ==" << std::endl;
+      std::cout.precision(10);
+      maquis::cout << " - Energy difference for iteration = " << nIpiIterations << " = " << energyDifference << std::endl;
+      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::fabs(mpsOverlap) << std::endl;
+      std::cout.precision(precision);
       // Checks convergence and, if not reached, starts a new IPI iteration
-      if (nIpiIterations == numberOfOuterIterations || energyDifference < overallConvergenceThreshold) {
+      if (nIpiIterations == numberOfOuterIterations || energyDifference < energyConvergenceThreshold ||
+          std::fabs(mpsOverlap) < overlapConvergenceThreshold)
+      {
         maquis::cout << " --> CONVERGENCE REACHED" << std::endl;
         convergedOuter = true;
       }
       else {
         maquis::cout << " --> CONVERGENCE NOT REACHED, STARTS NEW ITERATION" << std::endl;
+        previousEnergy = nextEnergy;
+        mpsBackup = this->mps;
       }
     }
 
     //
     /*
-                if (parms["pI_check_convergence"] == "yes") {
-                    BEGIN_TIMING("ERROR")
-                    maquis::cout << " --> FULL ERROR: " << this->calculateError() << std::endl;
-                    maquis::cout << " --> REDUCED ERROR: " << this->calculateErrorReduced() << std::endl;
-                    END_TIMING("ERROR")
-                }
                 bool converged = false;
                 if ((sweep + 1) % meas_each == 0 || (sweep + 1) == parms["nsweeps"]) {
                     int prev_sweep = sweep - meas_each;
@@ -162,32 +174,7 @@ public:
                         maquis::cout << " == CONVERGENCE CHECK == " << std::endl;
                         maquis::cout << " Difference in energy wrt previous sweep: " << e_diff << std::endl;
                         real_type e_diff_IPI;
-                        // Here we assess the convergence wrt the "outer" loop.
-                        if ((e_diff < parms["pI_thresh"] || (relSweep+1)%ipiUpdate == 0) && parms["lin_alg"] != "feast") {
-                            // Prints information
-                            maquis::cout << std::endl;
-                            maquis::cout << " --> IPI Linear solver completed! " << std::endl;
-                            if (count > 1) {
-                                e_diff_IPI = std::abs(en_IPI[count-1] - en_IPI[count-2]);
-                                maquis::cout << " - Energy at the current IPI iteration: " << emin << std::endl;
-                                maquis::cout << " - Energy difference wrt previous IPI iteration " << e_diff_IPI << std::endl;
-                                if (e_diff_IPI < parms["conv_thresh"]) {
-                                    maquis::cout << " Convergence reached" << std::endl;
-                                    converged = true;
-                                }
-                            }
-                            //
-                            count += 1;
-                            en_IPI.push_back(emin);
-                            maquis::cout << "New IPI simulation started" << std::endl;
-                            if (parms["optimization"] == "singlesite")
-                                ls_solver.reset(new ss_ls_solver<Matrix, SymmGroup, storage::disk>
-                                    (mps_sa[0], mps_partial_overlap, mpoc, parms, stop_callback, init_site));
-                            else
-                                ls_solver.reset(new ts_ls_solver<Matrix, SymmGroup, storage::disk>
-                                    (mps_sa[0], mps_partial_overlap, mpoc, parms, stop_callback, init_site));
-                            maquis::cout << std::endl;
-                        }
+                        // Here we assess the convergence wrt the "outer" loop
                     }
                     relSweep += 1;
                 }
@@ -233,6 +220,8 @@ public:
         throw std::runtime_error("Don't know this optimizer");
     // Retrieve the measurements that should be always done.
     auto always_measurements = this->iteration_measurements(init_sweep);
+    auto firstEnergy = this->get_energy();
+    energies_.push_back(firstEnergy);
     // Run the sweep-based simulation.
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
@@ -242,15 +231,13 @@ public:
         bool converged = false;
         if ((sweep+1) % meas_each == 0 || (sweep+1) == nSweeps) {
           dumpParametersAndIterResults(sweep);
-          if (!rfile().empty()) {
-            // stop simulation if an energy threshold has been specified
-            int prev_sweep = sweep - meas_each;
-            if (prev_sweep >= 0)
-              converged = checkEnergyConvergence(sweep, prev_sweep, energyThreshold);
-            /// measure observables specified in 'always_measure'
-            if (always_measurements.size() > 0)
-              this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
-          }
+          dumpEnergy(sweep);
+          if (!rfile().empty() && always_measurements.size() > 0)
+            this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
+          // stop simulation if an energy threshold has been specified
+          int prev_sweep = sweep - meas_each;
+          if (prev_sweep >= 0)
+            converged = checkEnergyConvergence(sweep, prev_sweep, energyThreshold);
         }
         last_sweep_ = sweep;
         /// write checkpoint
@@ -265,6 +252,7 @@ public:
       maquis::cout << e.what() << " checkpointing partial result." << std::endl;
       checkpoint_simulation(mps, e.sweep(), e.site());
       dumpParametersAndIterResults(e.sweep());
+      dumpEnergy(e.sweep());
     }
   }
 
@@ -405,7 +393,7 @@ public:
   }
 
   /** @brief Gets the energy for the mps that is stored in the sim object */
-  RealType get_energy() { return maquis::real(expval(mps, mpo)); }
+  RealType get_energy() { return maquis::real(expval(mps, mpo)/overlap(mps, mps)); }
 
   /**
    * @brief Method to extract a CI coefficient associated to a given determinant.
@@ -501,6 +489,16 @@ private:
     }
   }
 
+  /** @brief Dumps the energy to the result file */
+  void dumpEnergy(int iSweep) {
+    if (!rfile().empty()) {
+      auto energy = this->get_energy();
+      energies_.push_back(energy);
+      storage::archive ar(rfile(), "w");
+      ar[this->results_archive_path(iSweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
+    }
+  }
+
   /**
    * @brief Checks energy convergence of the
    *
@@ -508,19 +506,11 @@ private:
    * @param iSweep
    */
   bool checkEnergyConvergence(int prevSweep, int iSweep, double convergenceThreshold) {
-    // FIXME: this does not work for complex numbers - stknecht feb 2016
-    // FIXME 2: this reads the previous energies from the result file and so does not work if
-    // results/checkpoints are not specified. The minimum energy should be stored separately and initialised/read
-    // at the beginning of the simulation instead -- Leon
     bool converged = false;
-    std::vector<RealType> energies;
-    storage::archive ar(rfile(), "w");
-    ar[results_archive_path(iSweep) + "/results/Energy/mean/value"] >> energies;
-    auto emin = *std::min_element(energies.begin(), energies.end());
-    ar[results_archive_path(prevSweep) + "/results/Energy/mean/value"] >> energies;
-    auto emin_prev = *std::min_element(energies.begin(), energies.end());
-    auto e_diff = std::abs(emin - emin_prev);
-    if (e_diff < convergenceThreshold)
+    auto emin = *std::min_element(energies_.begin(), energies_.end()-1);
+    auto eminNew = *std::min_element(energies_.begin(), energies_.end());
+    auto eDiff = std::abs(emin - eminNew);
+    if (eDiff < convergenceThreshold)
       converged = true;
     return converged;
   }
@@ -543,6 +533,7 @@ private:
     results_collector iteration_results_;
     int last_sweep_;
     std::unique_ptr<FactoryType> factory_;
+    std::vector<RealType> energies_;
 };
 
 #endif
