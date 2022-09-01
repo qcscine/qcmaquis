@@ -147,6 +147,11 @@ public:
     initSite_ = -1;
   }
 
+  /** @brief Whether to normalize the MPS at the end of a half-sweep */
+  bool normalizeAtEnd() override final {
+    return true;
+  }
+
 private:
   // Class members
   int nOrtho_;

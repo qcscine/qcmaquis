@@ -37,11 +37,10 @@
 
 #ifdef DMRG_VIBRATIONAL
 
-/** @brief Checks that the linear system solver via interface works for electronic problems. */
-BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, WatsonFixture)
+/** @brief Checks that the linear system solver via interface works for vibrational problems. */
+BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
-  using SweepBasedLinearSolverTS = SweepBasedLinearSystem<matrix, TrivialGroup, storage::disk, SweepOptimizationType::TwoSite>;
   parametersBilinearly.set("nsweeps", 5);
   parametersBilinearly.set("max_bond_dimension", 100);
   parametersBilinearly.set("truncation_initial", 1.0E-20);

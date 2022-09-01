@@ -138,15 +138,13 @@ public:
     auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
     // Boundary propagation
     if (sweepType == SweepDirectionType::Forward) {
-      if (siteLeft_+1 != L_)
-        rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1, DefaultSolver());
+      rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1, DefaultSolver());
       boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
     }
     else if (sweepType == SweepDirectionType::Backward) {
-      if (siteLeft_-1 >= 0)
-        rhsMps_.move_normalization_r2l(siteLeft_, siteLeft_-1);
+      rhsMps_.move_normalization_r2l(siteRight_-1, siteRight_-2);
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
@@ -163,6 +161,11 @@ public:
   /** @brief Operations to be executed at the end of the sweep */
   void finalizeSweep() override final {
     initSite_ = -1;
+  }
+
+  /** @brief Whether to normalize the MPS at the end of a half-sweep */
+  bool normalizeAtEnd() override final {
+    return false;
   }
 
 private:

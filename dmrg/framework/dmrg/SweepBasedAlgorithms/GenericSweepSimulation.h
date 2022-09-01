@@ -138,7 +138,7 @@ public:
       auto outputTensor = this->solveLocalProblem();
       // == MPS UPDATE ==
       auto truncationResults = mpsUpdater_->updateMPS(siteLeft_, siteRight_, sweepType, outputTensor, this->getAlpha(iSweep),
-                                                      this->get_cutoff(iSweep), this->get_Mmax(iSweep));
+                                                      this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd());
       // == BOUNDARY PROPAGATION ==
       this->propagateBoundaries();
       // After the boundary propagation we can do two operations at the memory level.
@@ -185,6 +185,8 @@ protected:
 
   /** @brief Runs the actual sweep simulation */
   virtual MPSTensorType solveLocalProblem() = 0;
+
+  virtual bool normalizeAtEnd() = 0;
 
   /** @brief Boundary propagation method */
   virtual void propagateBoundaries() = 0;
