@@ -122,4 +122,4 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_BraKetHermitian_Vibronic, VibronicFixture
 
 #endif // HAVE_U1
 
-#endif // DMRG_VIBRATIONAL
+#endif // DMRG_VIBRONIC

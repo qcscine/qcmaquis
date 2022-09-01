@@ -121,35 +121,35 @@ public:
   };
 
   /** @brief Method to update the MPS for a given site */
-  auto updateMPS(int site1, int site2, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS,
+  auto updateMPS(int siteLeft, int siteRight, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS,
                  double alpha, double cutoff, double mMax)
   {
     // Converts back the MPS into the two-site tensor
-    TwoSiteTensorType tst(mps_[site1], mps_[site1+1]);
+    TwoSiteTensorType tst(mps_[siteLeft], mps_[siteLeft+1]);
     tst << inputMPS;
     truncation_results truncationOutput;
     // Actual truncation
     if (sweepDirection == SweepDirectionType::Forward) {
       // Write back result from optimization
       if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
       else
-        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(site1),
-                                                                                         mpo_[site1]);
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(siteLeft),
+                                                                                               mpo_[siteLeft]);
       // Final normalization
-      auto t = mps_[site1+1].normalize_left(DefaultSolver());
-      if (site1+2 < L_)
-        mps_[site1+2].multiply_from_left(t);
+      auto t = mps_[siteLeft+1].normalize_left(DefaultSolver());
+      if (siteLeft+2 < L_)
+        mps_[siteLeft+2].multiply_from_left(t);
     }
     else if (sweepDirection == SweepDirectionType::Backward) {
       if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
       else
-        boost::tie(mps_[site1], mps_[site1+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(site2+1),
-                                                                                         mpo_[site2]);
-      auto t = mps_[site1].normalize_right(DefaultSolver());
-      if (site1 > 0)
-        mps_[site1-1].multiply_from_right(t);
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(siteRight),
+                                                                                               mpo_[siteLeft+1]);
+      auto t = mps_[siteLeft].normalize_right(DefaultSolver());
+      if (siteLeft > 0)
+        mps_[siteLeft-1].multiply_from_right(t);
     }
     return truncationOutput;
   }

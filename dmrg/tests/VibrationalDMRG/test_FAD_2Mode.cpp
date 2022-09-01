@@ -54,10 +54,16 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("truncation_initial", 1.0E-20);
     parametersFADTwoBody.set("truncation_final", 1.0E-16);
-    // Creates the interface
-    maquis::DMRGInterface<double> interface(parametersFADTwoBody);
-    interface.optimize();
-    BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
+    // SingleSite
+    parametersFADTwoBody.set("optimization", "singlesite");
+    maquis::DMRGInterface<double> interfaceSS(parametersFADTwoBody);
+    interfaceSS.optimize();
+    BOOST_CHECK_CLOSE(interfaceSS.energy(), -1499.5871477508479, 1.0E-5);
+    // TwoSite
+    parametersFADTwoBody.set("optimization", "twosite");
+    maquis::DMRGInterface<double> interfaceTS(parametersFADTwoBody);
+    interfaceTS.optimize();
+    BOOST_CHECK_CLOSE(interfaceTS.energy(), -1499.5871477508479, 1.0E-5);
 #endif // HAS_NU1
 }
 

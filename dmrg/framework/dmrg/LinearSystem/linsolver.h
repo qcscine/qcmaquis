@@ -89,6 +89,10 @@ public:
     maquis::cout << std::endl;
     auto initError = ietl::two_norm(applyOperator(currentSolution_)-rhsMPS_);
     maquis::cout << " Initial ||Ax - b|| norm =  " << initError << std::endl;
+    auto tmp2 = applyOperator(currentSolution_);
+    // ietl::mult(sp, x, tmp2, 0, false);
+    ietl::mult(*sp_, currentSolution_, tmp2);
+    maquis::cout << " Final energy = " << maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_)) << std::endl;
     maquis::cout << std::endl;
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
       if (parms_["linsystem_solver"] == "GMRES")
@@ -102,10 +106,10 @@ public:
     maquis::cout << std::endl;
     maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
     // == Finalization ==
-    auto tmp2 = applyOperator(currentSolution_);
+    tmp2 = applyOperator(currentSolution_);
     // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp2);
-    en = maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_));
+    auto en = maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_));
     maquis::cout << " Final energy = " << en << std::endl;
     maquis::cout << std::endl;
     maquis::cout.precision(prec);

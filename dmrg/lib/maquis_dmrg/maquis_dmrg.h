@@ -63,6 +63,9 @@ public:
     /** @brief Run a DMRG propagation */
     void evolve();
 
+    /** @brief Run a DMRG[IPI] calculation */
+    void runInversePowerIteration();
+
     /** @brief Gets the energy at the end of the simulation */
     ScalarType energy();
 

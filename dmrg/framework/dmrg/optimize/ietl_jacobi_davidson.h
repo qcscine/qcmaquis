@@ -91,7 +91,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         auto energy = ietl::dot(initial, sigmaVector);
         r0 = std::make_pair(energy, initial);
     }
-    maquis::cout << "JCD used " << iter.iterations() << " iterations." << std::endl;
+    maquis::cout << " Jacobi-Davidson diagonalization converged after " << iter.iterations() << " iterations." << std::endl;
     return r0;
 }
 

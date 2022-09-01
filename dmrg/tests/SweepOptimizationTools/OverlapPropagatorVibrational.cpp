@@ -93,7 +93,7 @@ BOOST_FIXTURE_TEST_CASE(Test_OverlapPropagator_Vibrational_NU1, NModeFixture)
   auto overlapPropagator = OverlapPropagatorType(mpsDefault, mpsVector, 0);
   for (int iSite = 1; iSite <= 7; iSite++)
     overlapPropagator.updateLeftOverlapBoundaries(iSite);
-  auto mpsOrtho = overlapPropagator.template getOrthogonalVector<SweepOptimization::Singlesite>(0, 7, 8);
+  auto mpsOrtho = overlapPropagator.template getOrthogonalVector<SweepOptimizationType::SingleSite>(0, 7, 8);
   auto overlap = ietl::dot(mpsOrtho, mpsDefault[7]);
   BOOST_CHECK_CLOSE(overlap, 1., 1.0E-7);
 }

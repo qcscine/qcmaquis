@@ -90,6 +90,8 @@ public:
       this->evolve();
     else if (simulationType == "solve_linear_system")
       this->runAlternatingLeastSquares("linear_system", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
+    else if (simulationType == "ipi")
+      this->runInversePowerIteration();
   }
 
   // TO BE REACTIVATED AS SOON AS THE TIME EVOLUTION IS INCLUDED IN THE GENERIC SWEEP-BASED ENGINE
