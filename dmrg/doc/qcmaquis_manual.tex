@@ -5,6 +5,7 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{booktabs}
+\usepackage{braket}
 \usepackage[bf,singlelinecheck=off]{caption}
 \usepackage[T1]{fontenc}
 \usepackage{framed}
@@ -940,7 +941,8 @@ The MPS-SI framework is driven by the \kwd{\&MPSSI} module, which derives from t
 \end{enumerate}
 \end{framed}
 
-NEVPT2 is a second-order perturbation theory with a CAS (or a CAS-like) reference wavefunction originally developed by Angeli et al.~\cite{Angeli_JChemPhys_Introduction_2001,Angeli_ChemPhysLett_Nelectron_2001,Angeli_JChemPhys_nelectron_2002,Angeli_JChemPhys_quasidegenerate_2004} In contrast to CASPT2, it uses a Dyall Hamiltonian\cite{Dyall_JChemPhys_choice_1995} as the zeroth-order Hamiltonian and is therefore inherently free of intruder states and parameters such as the IPEA shift. NEVPT2 exists in two formulations -- the strongly- (SC-) and the partially-contracted NEVPT2 (PC-NEVPT2), which differ in the basis of the first-order wavefunction expansion. The implementation in the NEVPT2 module is based on the original NEVPT2 implementation by Angeli et al.~\cite{Angeli_JChemPhys_nelectron_2002,Angeli_JChemPhys_quasidegenerate_2004}, with the implementation of the \qcm{} DMRG reference wave function and Cholesky decomposition for the two-electron integrals\cite{chimia,Freitag_JChemTheoryComput_Multireference_2017}. For excited states both single-state and multi-state calculations with the QD-NEVPT2 approach\cite{Angeli_JChemPhys_quasidegenerate_2004} are supported.
+NEVPT2 is a second-order perturbation theory with a CAS (or a CAS-like) reference wavefunction originally developed by Angeli et al.~\cite{Angeli_JChemPhys_Introduction_2001,Angeli_ChemPhysLett_Nelectron_2001,Angeli_JChemPhys_nelectron_2002,Angeli_JChemPhys_quasidegenerate_2004} In contrast to CASPT2, it uses a Dyall Hamiltonian\cite{Dyall_JChemPhys_choice_1995} as the zeroth-order Hamiltonian and is therefore inherently free of intruder states and parameters such as the IPEA shift. NEVPT2 exists in two formulations -- the strongly- (SC-) and the partially-contracted NEVPT2 (PC-NEVPT2), which differ in the basis of the first-order wavefunction expansion. The implementation in the NEVPT2 module is based on the original NEVPT2 implementation by Angeli et al.~\cite{Angeli_JChemPhys_nelectron_2002,Angeli_JChemPhys_quasidegenerate_2004}, with the implementation of the \qcm{} DMRG reference wave function and Cholesky decomposition for the two-electron integrals\cite{chimia,Freitag_JChemTheoryComput_Multireference_2017}.
+For excited states both single-state and multi-state calculations with the QD-NEVPT2 approach\cite{Angeli_JChemPhys_quasidegenerate_2004} are supported.
 
 \subsection{Running NEVPT2}
 
@@ -2203,7 +2205,105 @@ MEASURE[1rdm]          = 1
 MEASURE[mutinf]        = 1
 \end{lstlisting}
 
-%\subsection{Practical considerations}
+\section{Excited state targeting with DMRG}
+
+Being based on the variational principle, the DMRG algorithm is inherently tailored to ground-state wave functions.
+However, DMRG variants designed to target excited states have been proposed in the recent years.
+To date, \qcm\ supports two excited-state DMRG methods:
+
+\begin{enumerate}
+  \item \texttt{DMRG[ortho]}~\cite{Keller_JChemPhys_efficient_2015}, which relies on a constrained optimization search.
+  \item \texttt{DMRG[IPI]}~\cite{Baiardi2022_DMRG-FEAST}, which extends the inverse power iteration to MPS wave functions.
+\end{enumerate}
+
+\noindent In the following, we will briefly review the key aspects of these algortihms, and describe how to run the corresponding simulation with \qcm.
+
+\subsection{\texttt{DMRG[ortho]}}
+
+\noindent Suppose one wants to target the first excited-state of a given Hamiltonian.
+If the exact wave function $\ket{\Psi_\text{GS}}$ is available, then the first excited state is the lowest-eigenvalue of the following projected operator $\mathcal{H}_p$:
+
+\begin{equation}
+  \mathcal{H}_p^{(1)} = \left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right)
+  				  		\mathcal{H}
+				  		\left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right) \, .
+  \label{eq:ProjectedHamiltonian}
+\end{equation}
+
+\noindent Applying DMRG to the auxiliary operator defined in Eq.~(\ref{eq:ProjectedHamiltonian}) therefore yields the first excited state $\ket{\Psi_\text{ES}^{(1)}}$.
+Similarly, the second excited state is optimized by applying DMRG to the following Hamiltonian:
+
+\begin{equation}
+  \mathcal{H}_p^{(1)} = \left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right)
+						\left( \mathcal{I} - \ket{\Psi_\text{ES}^{(1)}} \bra{\Psi_\text{ES}^{(1)}} \right)
+  				  		\mathcal{H}
+						\left( \mathcal{I} - \ket{\Psi_\text{ES}^{(1)}} \bra{\Psi_\text{ES}^{(1)}} \right)
+				  		\left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right) \, .
+  \label{eq:ProjectedHamiltonian2}
+\end{equation}
+
+\noindent Repeating this procedure $n$ times enables optimizing the $n$-th excited state.
+A \texttt{DMRG[ortho]} calculation is activated in \qcm\ by two keywords:
+
+\begin{itemize}
+  \item \texttt{n\_ortho\_states}: indicates the number of states for which the projector is constructed, as in Eq.~(\ref{eq:ProjectedHamiltonian2}).
+  \item \texttt{ortho\_states}: comma separated list of checkpoint files containing the MPS for constructing the projection operators, as in Eq.~(\ref{eq:ProjectedHamiltonian2}).
+\end{itemize}
+%
+Therefore, for targeting, for example, the two lowest-energy excited states, three calculations are needed:
+
+\begin{enumerate}
+  \item conventional ground-state DMRG optimization, where the \texttt{chkpfile} keyword is set to the name of the checkpoint file that will store the ground-state MPS (let us suppose that this name is \texttt{GS.checkpoint.h5}).
+  \item constrained DMRG calculation where \texttt{n\_ortho\_states} is set to 1 and where \texttt{ortho\_states} is set to \texttt{GS.checkpoint.h5}. Since we will optimize also the second excited state, we specify again the \texttt{chkpfile} keyword to store the excited-state MPS (let us suppose that this file is called \texttt{``ES.checkpoint.h5''}).
+  \item second constrained DMRG calculation where \texttt{n\_ortho\_states} is set to 2 and where \texttt{ortho\_states} is set to \texttt{``GS.checkpoint.h5,ES.checkpoint.h5''}
+\end{enumerate}
+
+\noindent DMRG[ortho] is extremely efficient when targeting low-lying excited states, but becomes unpractical for optimizing highly-excited states for two main reasons.
+First, the optimization of a given excited state requires optimizing all the lower-lying states with DMRG -- a computational task that becomes unfeasible for high-energy states.
+Second, the density of Hamiltonian eigenfunctions increases with increasing energy, and so does the probability that DMRG converges to a state different than the lower-energy one.
+These two limitations are lifted by the inverse power iteration method, that is described in the next subsection.
+
+\subsection{\texttt{DMRG[IPI]}}
+
+The inverse power iteration method is an iterative scheme for calculating the ground-state wave function of an Hamiltonian (and, more in general, the lowest-energy eigenvalue of an operator).
+It can be shown that, starting from a random normalized guess wave function $\ket{\Psi_0}$, the series of wave functions $\ket{\Psi_n}$ obtained recursively as:
+
+\begin{equation}
+  \ket{\tilde{\Psi}_n} = \mathcal{H}^{-1} \ket{\Psi_{n-1}} \qquad \qquad
+  \ket{\Psi_n} = \frac{\ket{\tilde{\Psi}_n}}{\left\| \ket{\tilde{\Psi}_n} \right\|} \, ,
+  \label{eq:IPI_Series}
+\end{equation}
+%
+converges to the ground state wave function for $n \rightarrow +\infty$.
+Similarly, if we introduce a shift parameter $\omega$, the series obtained as:
+
+\begin{equation}
+  \ket{\tilde{\Psi}_n} = \left( \mathcal{H} - \omega \mathcal{I} \right)^{-1} \ket{\Psi_{n-1}} \qquad \qquad
+  \ket{\Psi_n} = \frac{\ket{\tilde{\Psi}_n}}{\left\| \ket{\tilde{\Psi}_n} \right\|} \, ,
+  \label{eq:IPI_Series_Shifted}
+\end{equation}
+%
+converges to the eigenfunction with energy the closest to the shift parameter $\omega$.
+DMRG[IPI] applies this idea to wave function encoded as MPSs.
+Calculating the $n$-th wave function $\ket{\Psi_n}$ from the $(n-1)$-th one $\ket{\Psi_{n-1}}$ requires solving, in practice, a linear system.
+DMRG[IPI] does that by applying a sweep-based algorithm\cite{Rakhuba2016_vDMRG,Baiardi2022_DMRG-FEAST} similar to the one that is used for the variational minimization.
+The solution of the linear system must, then, be in principle repeated infinitely many times and, in practice, until the wave function $\ket{\Psi_n}$ and the corresponding energy $E[\ket{\Psi_n}]$ is stable.
+A DMRG[IPI] calculation is run in \qcm\ with the \texttt{dmrgIPI} executable, located (starting from the build directory) in the \texttt{applications/dmrg} folder.
+The relevant parameter for the simulation are the following:
+
+\begin{itemize}
+  \item \texttt{linsystem\_precond}: if \texttt{yes}, use a diagonal preconditioner for solving the local linear system. If \texttt{no}, does not apply the preconditionditioner.
+  \item \texttt{linsystem\_init}: initial guess for the iterative solution of the local linear system. Can be either \texttt{mps}, if the initial guess should be constructed from the corresponding MPS tensor at the current iteration, or \texttt{zero}, if an MPS with zero entries should be used as initial guess.
+  \item \texttt{linsystem\_max\_it}: maximum number of restarts for the iterative solution of the linear system.
+  \item \texttt{linsystem\_krylov\_dim}: maximum dimension of the Krylov space for the iterative solution of the linear system.
+  \item \texttt{linsystem\_solver}: iterative algorithm for solving the linear system (can be either \texttt{GMRES} of \texttt{MINRES}).
+  \item \texttt{linsystem\_tol}: convergence threshold for the iterative solver of the linear system.
+  \item \texttt{ipi\_sweep\_overlap\_threshold}: the series of Eq.~(\ref{eq:IPI_Series_Shifted}) is stopped as soon as the norm of the overlap between the MPSs $\langle \Psi_n | \Psi_{n-1} \rangle$ falls below this threshold.
+  \item \texttt{ipi\_sweep\_energy\_threshold}: the series of Eq.~(\ref{eq:IPI_Series_Shifted}) is stopped as soon as the difference between the energy calculated at two subsequent iterations falls below this threshold.
+  \item \texttt{ipi\_sweeps\_per\_system}: maximum number of sweeps to be used to solve a given linear system.
+  \item \texttt{ipi\_shift}: $\omega$ parameter, expressed in the same units used for the Hamiltonian.
+  \item \texttt{ipi\_iterations}: maximum number of times the linear system of Eq.~(\ref{eq:IPI_Series_Shifted}) is solved (i.e., upper value for the $n$ parameter).
+\end{itemize}
 
 \section{\qcm\ examples library}
 \label{sec:examples}
