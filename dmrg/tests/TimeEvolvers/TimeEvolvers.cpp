@@ -56,6 +56,7 @@ TwoU1PG
 
 /** Checks that the number of overall blocks of a block_matrix is correct */
 BOOST_AUTO_TEST_CASE_TEMPLATE(TimeEvolversAddTime, S, symmetries) {
+#ifdef DMRG_TD
     // The parameters are not really used
     DmrgParameters p;
     p.set("site_types", "0,0,0,0");
@@ -77,7 +78,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(TimeEvolversAddTime, S, symmetries) {
     // in the l->r sweep, and then by other t/2. in the r->l sweep.
     auto refValue = 1./(2.*24.18884254);
     BOOST_CHECK_CLOSE(gotTimeStep, refValue, 1e-7);
+#endif // DMRG_TD
 }
+
+#ifdef DMRG_TD
 
 /** Checks that the energy of an MPS is conserved after the propagation of a SiteProblem */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetries, TestTimeEvolverFixture) {
@@ -90,7 +94,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);
-    p.set("nsweeps",2);
+    p.set("nsweeps", 2);
     p.set("max_bond_dimension", 100);
     p.set("hamiltonian_units", "Hartree");
     p.set("time_units", "as");
@@ -111,6 +115,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     auto model = Model<cmatrix, S>(lat, p);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, p)));
+    mps.canonize(0);
     auto latticeSize = mpo.length();
     // Prepares the boundaries
     std::vector<BoundaryType> left, right;
@@ -128,6 +133,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     // Prepares the TimeEvolver and forwards propagates it
     auto timeEvolver = TimeEvolver<cmatrix, S, DmrgParameters>(p);
     timeEvolver.evolve(sp0, mps[0], true);
+    auto normAfterPropagation = std::sqrt(maquis::real(ietl::dot(mps[0], mps[0])));
+    BOOST_CHECK_CLOSE(normAfterPropagation, 1., 1e-10);
     // Calculates the final energy from the apply method
     auto sigmaVector = sp0.apply(mps[0]);
     auto intermediateEnergy = maquis::real(ietl::dot(mps[0], sigmaVector)) + mpo.getCoreEnergy();
@@ -173,6 +180,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationZeroSiteproblem, S, symme
     auto model = Model<cmatrix, S>(lat, p);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, p)));
+    mps.normalize_right();
     auto latticeSize = mpo.length();
     auto initialEnergy = maquis::real(expval(mps, mpo));
     // Prepares the boundaries
@@ -257,3 +265,5 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyDecreaseSiteproblem, S, symmetries, T
     auto finalEnergy = maquis::real(expval(mps, mpo));
     BOOST_TEST(finalEnergy < initialEnergy);
 }
+
+#endif // DMRG_TD
