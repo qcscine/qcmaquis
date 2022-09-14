@@ -33,6 +33,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
 #include "maquis_dmrg.h"
+#include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/sim/matrix_types.h"
 // Needed for the diagonalization
 #include "dmrg/utils/utils.hpp"
@@ -154,14 +156,13 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
     // Adds the final input parameters
     parametersFADTwoBody.set("init_state", "const");
     parametersFADTwoBody.set("seed", 16071991);
-    parametersFADTwoBody.set("nsweeps", 100);
+    parametersFADTwoBody.set("nsweeps", 1);
     parametersFADTwoBody.set("max_bond_dimension", 20);
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("MEASURE[One Modal RDM]", "1");
-    // Creates the interface
+    // Creates the interfaces
     maquis::DMRGInterface<double> interface(parametersFADTwoBody);
     interface.optimize();
-    BOOST_CHECK_CLOSE(interface.energy(), -1499.5871477508479, 1.0E-5);
     // Measurements
     interface.measure();
     std::vector<double> firstMeas(22, 0);
@@ -174,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
     }
     // Final check
     for (int iSite = 0; iSite < 22; iSite++)
-        BOOST_CHECK_CLOSE(firstMeas[iSite]+secondMeas[iSite], 1., 1.0E-16);
+        BOOST_CHECK_SMALL(std::fabs(firstMeas[iSite]+secondMeas[iSite]-1.), 1.0E-15);
 }
 
 /** 
