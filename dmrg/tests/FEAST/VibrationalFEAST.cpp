@@ -48,10 +48,14 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
   auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
+  // Checks consistency between guess MPS
   auto firstMPS = feastSimulator.getCurrentGuess(0);
   auto secondMPS = feastSimulator.getCurrentGuess(1);
   auto overlapBetweenMPS = overlap(firstMPS, secondMPS);
   BOOST_CHECK_SMALL(overlapBetweenMPS, 1.0E-15);
+  // Checks consistency for quadrature points
+  auto quadPoints = feastSimulator.getQuadraturePoints();
+  BOOST_CHECK_EQUAL(quadPoints.size(), 8);
 #endif // HAVE_TrivialGroup
 }
 

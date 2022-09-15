@@ -33,6 +33,7 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/utils/BaseParameters.h"
+#include "FEASTHelperClass.h"
 
 template<class Matrix, class SymmGroup>
 class FEASTSimulator {
@@ -42,6 +43,7 @@ class FEASTSimulator {
   using MPOType = MPO<Matrix, SymmGroup>;
   using ValueType = typename MPSType::value_type;
   using InitializerType = mps_initializer<Matrix, SymmGroup>;
+  using QuadPointType = typename FeastHelper::QuadraturePoint;
 
 public:
 
@@ -64,11 +66,16 @@ public:
     // Generates the initial guess for the MPSs
     generateSeed(parms);
     initializeGuess(parms, model, lattice);
+    quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
   }
 
   /** @brief Getter for the MPS guesses */
   auto getCurrentGuess(int iState) {
     return mpsGuess[iState];
+  }
+
+  auto getQuadraturePoints() const {
+    return quadPoints;
   }
 
 private:
@@ -102,18 +109,19 @@ private:
   }
 
   // -- Class members --
-  int currentIter;                // Index of the current FEAST iteration.
-  int numStates;                  // Number of states to be targeted.
-  int maxFeastIter;               // Maximum number of FEAST iterations.
-  double eMin;                    // Lower bound for the complex contour integral.
-  double eMax;                    // Upper bound for the complex contour integral.
-  double feastThreshold;          // Threshold to assess the convergence of DMRG[FEAST].
-  int numQuadraturePoint;         // Number of quadrature point.
-  std::string intModality;        // "Full" for the full circle integration, "half" for the half-circle one.
-  std::string truncModality;      // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
-  std::string initType;           // Initialization strategy for each guess.
-  std::vector<MPSType> mpsGuess;  // Stores the current guess for hte FEAST procedure.
-  std::vector<int> seedForInit;   // Seed for random initialization.
+  int currentIter;                       // Index of the current FEAST iteration.
+  int numStates;                         // Number of states to be targeted.
+  int maxFeastIter;                      // Maximum number of FEAST iterations.
+  double eMin;                           // Lower bound for the complex contour integral.
+  double eMax;                           // Upper bound for the complex contour integral.
+  double feastThreshold;                 // Threshold to assess the convergence of DMRG[FEAST].
+  int numQuadraturePoint;                // Number of quadrature point.
+  std::string intModality;               // "Full" for the full circle integration, "half" for the half-circle one.
+  std::string truncModality;             // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
+  std::string initType;                  // Initialization strategy for each guess.
+  std::vector<MPSType> mpsGuess;         // Stores the current guess for hte FEAST procedure.
+  std::vector<int> seedForInit;          // Seed for random initialization.
+  std::vector<QuadPointType> quadPoints; // Vector with the quadrature points and weight.
 };
 
 #endif // FEAST_SIMULATOR
