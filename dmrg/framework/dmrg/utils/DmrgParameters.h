@@ -182,6 +182,15 @@ private:
         add_option("ipi_sweeps_per_system", "Maximum number of sweeps used to solve one linear system for DMRG[IPI]");
         add_option("ipi_shift", "Shift parameter for the DMRG[IPI] algorithm");
         add_option("ipi_iterations", "Maximum bumber of macroiterations for the DMRG[IPI] calculation");
+
+        // Parameters related to the DMRG[FEAST] algorithm
+        add_option("feast_num_states", "Number of states to be targeted by DMRG[FEAST]", value(1));
+        add_option("feast_max_iter", "Maximum number of FEAST iterations");
+        add_option("feast_emin", "Lower bound for the complex contour integration");
+        add_option("feast_emax", "Upper bound for the complex contour integration");
+        add_option("feast_num_points", "Number of quadrature points for approximating the integral");
+        add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
+        add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
     }
 
 };

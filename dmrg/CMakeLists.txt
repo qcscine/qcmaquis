@@ -466,6 +466,7 @@ if(QCMAQUIS_TESTS)
     add_test(NAME Test_BoundaryPropagator_Vibrational COMMAND test_boundary_propagator_vibrational)
     add_test(NAME Test_SweepEnergyMinimization_Vibrational COMMAND test_sweep_based_energy_minimization_vibrational)
     add_test(NAME Test_SweepBasedLinearSystem_Vibrational COMMAND test_sweep_based_linear_system_vibrational)
+    add_test(NAME Test_FEAST_vibrational COMMAND test_FEAST_vibrational)
     # Application tests
     add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
