@@ -27,6 +27,7 @@
 #ifndef FEAST_SIMULATOR
 #define FEAST_SIMULATOR
 
+#include <cstdlib>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps.h"
@@ -54,33 +55,65 @@ public:
     numQuadraturePoint = parms["feast_num_points"].as<int>();
     intModality = parms["feast_integral_type"].as<std::string>();
     truncModality = parms["feast_truncation_type"].as<std::string>();
+    initType = parms["feast_init_type"].as<std::string>();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
       throw std::runtime_error("Parameter [feast_integral_type] not recognized");
     if (truncModality != "each" && truncModality != "end")
       throw std::runtime_error("Parameter [feast_truncation_type] not recognized");
     // Generates the initial guess for the MPSs
-    initializeGuess(parms);
+    generateSeed(parms);
+    initializeGuess(parms, model, lattice);
+  }
+
+  /** @brief Getter for the MPS guesses */
+  auto getCurrentGuess(int iState) {
+    return mpsGuess[iState];
   }
 
 private:
 
   /** @brief Generates the guess for FEAST */
-  void initializeGuess(BaseParameters& parms) {
+  void initializeGuess(BaseParameters& parms, const ModelType& model, const LatticeType& lattice) {
+    std::vector<std::string> initStates;
+    bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" || initType == "basis_state_generic_default");
+    if (needToWriteONV) {
+      std::string states = parms["feast_init_onv"].as<std::string>();
+      initStates.resize(numStates);
+      boost::split(initStates, states, boost::is_any_of("|"));
+    }
+    // Generates the guess MPS
+    for (int iState = 0; iState < numStates; iState++) {
+      auto parametersTmp = parms;
+      parametersTmp["init_state"] = initType;
+      parametersTmp["seed"] = seedForInit[iState];
+      if (needToWriteONV)
+        parametersTmp["init_basis_state"] = initStates[iState];
+      mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
+    }
   }
 
+  void generateSeed(BaseParameters& parms) {
+    // Sets the seeds (to be used later)
+    std::srand(parms["seed"]);
+    seedForInit.resize(numStates);
+    for (int iState = 0; iState < numStates; iState++)
+      seedForInit[iState] = std::rand();
+  }
 
-  // Class members
+  // -- Class members --
   int currentIter;                // Index of the current FEAST iteration.
   int numStates;                  // Number of states to be targeted.
   int maxFeastIter;               // Maximum number of FEAST iterations.
-  double eMin;                    // Lower bound for the complex contour integral
-  double eMax;                    // Upper bound for the complex contour integral
-  double feastThreshold;          // Threshold to assess the convergence of DMRG[FEAST]
-  int numQuadraturePoint;         // Number of quadrature point
-  std::string intModality;        // "Full" for the full circle integration, "half" for the half-circle one
-  std::string truncModality;      // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end
-  std::vector<MPSType> mpsGuess;  // Stores the current guess for hte FEAST procedure
+  double eMin;                    // Lower bound for the complex contour integral.
+  double eMax;                    // Upper bound for the complex contour integral.
+  double feastThreshold;          // Threshold to assess the convergence of DMRG[FEAST].
+  int numQuadraturePoint;         // Number of quadrature point.
+  std::string intModality;        // "Full" for the full circle integration, "half" for the half-circle one.
+  std::string truncModality;      // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
+  std::string initType;           // Initialization strategy for each guess.
+  std::vector<MPSType> mpsGuess;  // Stores the current guess for hte FEAST procedure.
+  std::vector<int> seedForInit;   // Seed for random initialization.
 };
 
 #endif // FEAST_SIMULATOR

@@ -179,7 +179,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     if (!rfile().empty())
     {
         storage::archive ar(rfile(), "w");
-
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }

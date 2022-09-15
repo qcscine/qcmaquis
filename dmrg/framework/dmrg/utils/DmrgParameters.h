@@ -191,8 +191,9 @@ private:
         add_option("feast_num_points", "Number of quadrature points for approximating the integral");
         add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
+        add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("const"));
+        add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
     }
-
 };
 
 class ModelParameters : public BaseParameters
