@@ -32,8 +32,8 @@
 
 namespace FeastHelper {
 
-struct QuadraturePoint {
-
+class QuadraturePoint {
+public:
   /** @brief Class constructor */
   QuadraturePoint(double node, double weight) 
     : quadratureNode(node), quadratureWeight(weight) {}
