@@ -36,6 +36,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
   using FEASTSimulatorType = FEASTSimulator<matrix, TrivialGroup>;
+  using ModelType = Model<matrix, TrivialGroup>;
   //
   parametersH2COWatson.set("max_bond_dimension", 100);
   parametersH2COWatson.set("optimization", "twosite");
@@ -61,7 +62,9 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic, WatsonFixture)
   parametersH2COWatson.set("feast_emin", eMin);
   parametersH2COWatson.set("feast_emax", eMax);
   parametersH2COWatson.set("feast_num_points", 8);
-  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson);
+  auto vibrationalLattice = Lattice(parametersH2COWatson);
+  auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
+  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
   // Cleans up stuff
   boost::filesystem::remove_all("GS.H2CO.chkp.h5");
   boost::filesystem::remove_all("ES.H2CO.chkp.h5");
