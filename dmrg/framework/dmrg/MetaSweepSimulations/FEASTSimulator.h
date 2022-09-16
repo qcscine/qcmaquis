@@ -28,7 +28,7 @@
 #define FEAST_SIMULATOR
 
 #include <cstdlib>
-#include <boost/container_hash/hash.hpp>
+#include <boost/functional/hash.hpp>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps.h"
