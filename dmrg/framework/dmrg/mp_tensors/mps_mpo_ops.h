@@ -151,7 +151,7 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
 }
 
 template<class Matrix, class SymmGroup>
-typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const & mps)
+double norm(MPS<Matrix, SymmGroup> const & mps)
 {
     parallel::scheduler_balanced scheduler(mps.length());
     std::size_t L = mps.length();
@@ -165,7 +165,7 @@ typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const &
         left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_left_step(mps[i], cpy, left); // serial
     }
     
-    return trace(left);
+    return maquis::real(trace(left));
 }
 
 template<class Matrix, class SymmGroup>

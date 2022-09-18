@@ -449,3 +449,14 @@ void clean_mps(MPS<Matrix, SymmGroup> & mps)
         }
     } while (again);
 }
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::setComplexPartToZero() {
+    for (auto& mpsTensor: data_)
+        mpsTensor.setComplexPartToZero();
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::scaleByScalar(scalar_type scalingFactor) {
+    this->operator[](this->length()-1) *= scalingFactor;
+}
