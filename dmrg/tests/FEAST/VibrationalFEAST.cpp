@@ -28,6 +28,7 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/WatsonFixture.h"
+#include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/MetaSweepSimulations/FEASTSimulator.h"
 #include "dmrg/sim/matrix_types.h"
@@ -36,8 +37,9 @@
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
-  using FEASTSimulatorType = FEASTSimulator<matrix, TrivialGroup>;
-  using ModelType = Model<matrix, TrivialGroup>;
+  using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
+  using ModelType = Model<cmatrix, TrivialGroup>;
+  parametersH2COWatson.set("max_bond_dimension", 10);
   parametersH2COWatson.set("feast_num_states", 2);
   parametersH2COWatson.set("feast_max_iter", 5);
   parametersH2COWatson.set("feast_emin", 0.);
@@ -52,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   auto firstMPS = feastSimulator.getCurrentGuess(0);
   auto secondMPS = feastSimulator.getCurrentGuess(1);
   auto overlapBetweenMPS = overlap(firstMPS, secondMPS);
-  BOOST_CHECK_SMALL(overlapBetweenMPS, 1.0E-15);
+  BOOST_CHECK_SMALL(maquis::real(overlapBetweenMPS), 1.0E-15);
   // Checks consistency for quadrature points
   auto quadPoints = feastSimulator.getQuadraturePoints();
   BOOST_CHECK_EQUAL(quadPoints.size(), 8);
@@ -63,10 +65,10 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
 
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic, WatsonFixture)
 {
-  using FEASTSimulatorType = FEASTSimulator<matrix, TrivialGroup>;
-  using ModelType = Model<matrix, TrivialGroup>;
+  using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
+  using ModelType = Model<cmatrix, TrivialGroup>;
   //
-  parametersH2COWatson.set("max_bond_dimension", 100);
+  parametersH2COWatson.set("max_bond_dimension", 10);
   parametersH2COWatson.set("optimization", "twosite");
   parametersH2COWatson.set("symmetry", "none");
   parametersH2COWatson.set("init_state", "const");
@@ -82,21 +84,24 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic, WatsonFixture)
   maquis::DMRGInterface<double> interfaceOptimizerES(parametersH2COWatson);
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
+  // Cleans up stuff
+  boost::filesystem::remove_all("GS.H2CO.chkp.h5");
+  boost::filesystem::remove_all("ES.H2CO.chkp.h5");
   // FEAST
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   parametersH2COWatson.set("feast_num_states", 1);
-  parametersH2COWatson.set("feast_max_iter", 5);
+  parametersH2COWatson.set("feast_max_iter", 1);
   parametersH2COWatson.set("feast_emin", eMin);
   parametersH2COWatson.set("feast_emax", eMax);
-  parametersH2COWatson.set("feast_num_points", 8);
+  parametersH2COWatson.set("feast_num_points", 2);
   parametersH2COWatson.set("feast_init_type", "default");
+  parametersH2COWatson.set("nsweeps", 1);
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
+  auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
   auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
-  // Cleans up stuff
-  boost::filesystem::remove_all("GS.H2CO.chkp.h5");
-  boost::filesystem::remove_all("ES.H2CO.chkp.h5");
+  feastSimulator.runFeastSimulation(vibrationalMPO);
 }
 
 #endif // HAVE_TrivialGroup

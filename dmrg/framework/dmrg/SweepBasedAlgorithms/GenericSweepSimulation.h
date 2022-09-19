@@ -60,8 +60,11 @@ public:
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
                          std::string simulationName="Optimization", int initSite=0)
     : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()), initSite_(initSite),
-      mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName), nSweeps_(0)
+      mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName),
+      nSweeps_(0), currentSite_(initSite)
   {
+    siteLeft_ = currentSite_;
+    siteRight_ = currentSite_+1;
     mps_.normalize_right();
     printGenericInfo();
     nSweeps_ = parms_["nsweeps"];
@@ -78,17 +81,9 @@ public:
    *
    */
   void runSweepSimulation() {
-    // Operations performed at the beginning of the 
-    int maxNumberOfSweeps = parms_["nsweeps"];
     // == LOOP OVER THE SWEEPS ==
-    for (int iSweep = 0; iSweep < nSweeps_; iSweep++) {
-      maquis::cout << std::endl;
-      maquis::cout << " ======================" << std::endl;
-      maquis::cout << " == SWEEP NUMBER " << iSweep << std::endl;
-      maquis::cout << " ======================" << std::endl;
-      maquis::cout << std::endl;
+    for (int iSweep = 0; iSweep < nSweeps_; iSweep++)
       this->runSingleSweep(iSweep);
-    }
     this->finalizeSweep();
   }
 
@@ -120,7 +115,7 @@ public:
       }
       // Starts prefetching what will be needed in the following microiteration.
       // Note that, for instance, we don't prefetch the left boundary for the l2r sweep because
-      // this will be taken care in the boundary propagation (in other words, there is no 
+      // this will be taken care in the boundary propagation (in other words, there is no
       // need to prefetch the left boundary since it will be anyways modified by the boundary
       // propagation)
       if (sweepType == SweepDirectionType::Forward) {
@@ -200,7 +195,6 @@ protected:
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)
   {
-    double ret;
     if (N < 2)
       return y1;
     if (y0 == 0)
@@ -263,8 +257,9 @@ protected:
   /** @brief Prints info that are sweep-specific */
   void printSweepSpecificInfo(int iSweep) const {
     maquis::cout << std::endl;
-    maquis::cout << " SWEEP NUMBER " << iSweep << std::endl;
-    maquis::cout << " ----------------" << std::endl;
+    maquis::cout << " -------------------" << std::endl;
+    maquis::cout << "   SWEEP NUMBER " << iSweep << std::endl;
+    maquis::cout << " -------------------" << std::endl;
     maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
     maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
     maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;

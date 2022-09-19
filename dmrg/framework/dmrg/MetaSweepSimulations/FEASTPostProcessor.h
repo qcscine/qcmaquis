@@ -36,9 +36,10 @@
 namespace FeastHelper {
 
 /** @brief Class devoted to the post-processing of the FEAST data */
-template <class Matrix, class SymmGroup>
+template <class SymmGroup>
 class FEASTPostProcessor {
 public:
+  using Matrix = cmatrix;
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
   using RealValueType = double;
@@ -48,13 +49,14 @@ public:
   using ComplexMatrixType = alps::numeric::matrix<ComplexNumber>;
   using DiagonalMatrixType = typename alps::numeric::associated_real_diagonal_matrix<ComplexMatrixType>::type;
   using ComplexVectorType = alps::numeric::vector<ComplexNumber>;
-  using ResultContainerType = std::map<std::pair<int, int>, MPSType, boost::hash<std::pair<int, int>>>;
+  using ResultContainerType = std::map<std::pair<int, int>, MPSType>;
 
-  FEASTPostProcessor(const ResultContainerType& resultMPS, int numberOfStates, int numberOfQuadrature,
-                     const std::vector<double>& w)
+  FEASTPostProcessor(ResultContainerType& resultMPS, int numberOfStates, int numberOfQuadrature,
+                     const std::vector<ComplexNumber>& w)
     : mpsContainer(resultMPS), nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w)
   {
     vibEnergy = std::vector<double>(nStates, 0);
+    vibEnergyPrev = std::vector<double>(nStates, 0);
     normVector = std::vector<double>(nStates, 0);
   }
 
@@ -68,7 +70,11 @@ public:
     // auto Bvec = std::vector<cmat_type>(omp_get_max_threads(), cmat_type::Zero(n_states, n_states));
     ComplexMatrixType H = ComplexMatrixType(nStates, nStates, 0.);
     ComplexMatrixType B = ComplexMatrixType(nStates, nStates, 0.);
-    std::cout << "Entering Hamiltonian construction" << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " +------------------------------+" << std::endl;
+    maquis::cout << "  FEAST SUBSPACE DIAGONALIZATION" << std::endl;
+    maquis::cout << " +------------------------------+" << std::endl;
+    maquis::cout << std::endl;
     // #pragma omp parallel for collapse(2)
     // Note that here we do not first sum the MPS and then calculate the expectation value, because this
     // would lead to a very large MPS. We instead sum the expectation values directly.
@@ -89,11 +95,12 @@ public:
     //     B += Bvec[iThread];
     // }
     auto overlapDeterminant = calculateDeterminant(B);
-    maquis::cout << "Matrices" << std::endl;
+    maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
     maquis::cout << H << std::endl;
+    maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
     maquis::cout << B << std::endl;
     maquis::cout << std::scientific;
-    maquis::cout << "Determinant of the overlap matrix " << overlapDeterminant << std::endl;
+    maquis::cout << " Determinant of the overlap matrix " << overlapDeterminant << std::endl;
     for (int i = 0; i < nStates; i++)
       normVector[i] = std::sqrt(std::real(B(i, i)));
     for (int i = 0; i < nStates; i++) {
@@ -102,8 +109,8 @@ public:
         B(i, j) /= normVector[i]*normVector[j];
       }
     }
-    auto overlapDeterminantAfter = calculateDeterminant(B);
-    std::cout << "Determinant of the overlap matrix after " << overlapDeterminantAfter << std::endl;
+    // auto overlapDeterminantAfter = calculateDeterminant(B);
+    // std::cout << "Determinant of the overlap matrix after " << overlapDeterminantAfter << std::endl;
     // == Matrix diagonalization ==
     // QR of the overlap
     ComplexMatrixType U, V;
@@ -113,7 +120,7 @@ public:
     for (int iElement = 0; iElement < nStates; iElement++)
       if (std::fabs(S(iElement, iElement)) > thresholdForRank_)
         rank += 1;
-    std::cout << "Overlap matrix rank " << rank << std::endl;
+    std::cout << " The FEAST overlap matrix has a rank " << rank << std::endl;
     // cmat_type regularizedInverseSquareRoot = svd.matrixU().block(0, 0, n_states, rank_)*
     //                                          svd.singularValues().head(rank_).array().rsqrt().matrix().asDiagonal();
     ComplexMatrixType regularizedInverseSquareRoot(nStates, rank);
@@ -121,14 +128,18 @@ public:
       for (int iCol = 0; iCol < rank; iCol++)
         regularizedInverseSquareRoot(iRow, iCol) = U(iRow, iCol)/std::sqrt(S(iCol, iCol));
     // cmat_type lowdinHamiltonian = regularizedInverseSquareRoot.adjoint()*H*regularizedInverseSquareRoot;
-    ComplexMatrixType tmp, lowdinHamiltonian;
+    ComplexMatrixType tmp(nStates, rank), lowdinHamiltonian(rank, rank);
     gemm(H, regularizedInverseSquareRoot, tmp);
     gemm(adjoint(regularizedInverseSquareRoot), tmp, lowdinHamiltonian);
     // Eigen::SelfAdjointEigenSolver<cmat_type> tmpSolver(lowdinHamiltonian);
     // rvec_type eigenvalues = tmpSolver.eigenvalues().real();
+    eigenValues = RealVectorType(rank);
+    eigenVectors = ComplexMatrixType(rank, rank);
     alps::numeric::heev(lowdinHamiltonian, eigenVectors, eigenValues);
+    vibEnergyPrev = vibEnergy;
     for (int iState = 0; iState < rank; iState++)
       vibEnergy[iState] = eigenValues[iState];
+    eigenVectorsRescaled = ComplexMatrixType(rank, rank);
     gemm(regularizedInverseSquareRoot, eigenVectors, eigenVectorsRescaled);
   };
 
@@ -141,22 +152,22 @@ public:
    * @param mMax maximum bond dimension
    * @param truncEach if true, truncates after each sum between MPSs.
    */
-  void performBackTransformation(const MPOType& mpo, int mMax, bool truncEach) {
+  auto performBackTransformation(const MPOType& mpo, int mMax, bool truncEach) {
     // Generates the MPS files for the new FEAST iteration
     // using MatrixOfMPSs = Eigen::Matrix< MPS<cMatrix, SymmGroup>, -1, -1>;
     // MatrixOfMPSs mps_transf(n_states, n_states);
-    using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType, boost::hash< std::pair<int, int> > >;
+    using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
     MatrixOfMPSs mpsTransformed;
     int rank = vibEnergy.size();
-    auto refNorm = ietl::two_norm(mpsContainer.begin()[0]);
+    auto refNorm = ietl::two_norm(mpsContainer.begin()->second[0]);
     for (auto& iMPS: mpsContainer)
-      iMPS.begin()[0] /= refNorm;
+      iMPS.second[0] /= refNorm;
     //#pragma omp parallel for collapse(2)
     // Actual back-transformation
     for (int iOutput = 0; iOutput < rank; iOutput++) {
       for (int iInput = 0; iInput < nStates; iInput++) {
         for (int iQuad = 0; iQuad < nQuad; iQuad++) {
-          auto mpsToAdd = mpsContainer[std::make_pair(iInput, iQuad)];
+          MPSType mpsToAdd = mpsContainer[std::make_pair(iInput, iQuad)];
           auto scalingFactor = eigenVectorsRescaled(iInput, iOutput)*weights[iQuad]/normVector[iInput];
           mpsToAdd.scaleByScalar(scalingFactor);
           if (iQuad == 0) {
@@ -183,15 +194,15 @@ public:
         else
           mpsTransformed[std::make_pair(iOutput, 0)] = join(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, iInput)]);
         //#pragma omp critical (printEnergy) {
-        std::cout << " Truncated Energy for root " << iOutput << " before truncation = " <<
-          expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
+        // std::cout << " Truncated Energy for root " << iOutput << " before truncation = " <<
+        //   expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
         //}
         if (!truncEach)
           mpsTransformed[std::make_pair(iOutput, 0)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, 0)], mMax, 1.0E-16);
         //#pragma omp critical (printEnergy)
         //{
-        std::cout << " Truncated Energy for root " << iOutput << " = " <<
-          expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
+        // std::cout << " Truncated Energy for root " << iOutput << " = " <<
+        //   expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
         //}
         //if (calculateVariance) {
         //    auto norm = overlap(mps_transf(iOutput, 0), mps_transf(iOutput, 0));
@@ -202,6 +213,22 @@ public:
         //}
       }
     }
+    return mpsTransformed;
+  }
+
+  /** @brief Prints the results of the FEAST calculation */
+  void printResults() const {
+    // Select only the ones that lie in user specified interval
+    std::cout << " +----------------------------------------------+" << std::endl;
+    std::cout << " |   State    |   Old energy   |   New energy   |" << std::endl;
+    std::cout << " +----------------------------------------------+" << std::endl;
+    for (int iState = 0; iState < vibEnergy.size(); iState++)
+        std::cout << "  " << std::setw(10) << std::internal << iState << "     "
+                  << std::setw(12) << std::right << std::fixed << std::setprecision(3)
+                  << vibEnergyPrev[iState] << "     " 
+                  << vibEnergy[iState]     << std::endl;
+    std::cout << " +----------------------------------------------+" << std::endl;
+    std::cout << std::endl;
   }
 
 private:
@@ -209,7 +236,8 @@ private:
   /** @brief Static method to calculate determinant */
   static ComplexNumber calculateDeterminant(ComplexMatrixType inputMatrix) {
     int numRows = num_rows(inputMatrix);
-    std::vector<int> ipiv(numRows);
+    // Note that here we use long int for coherence with lapack
+    std::vector<long int> ipiv(numRows);
     int info = boost::numeric::bindings::lapack::getrf(inputMatrix, ipiv);
     if (info != 0)
       throw std::runtime_error("Error in LU decomposition");
@@ -220,13 +248,13 @@ private:
   }
 
   // -- Class members --
-  const ResultContainerType& mpsContainer;
+  ResultContainerType& mpsContainer;
   int nStates, nQuad;
-  std::vector<double> vibEnergy, normVector;
+  std::vector<double> vibEnergy, vibEnergyPrev, normVector;
   ComplexMatrixType eigenVectors, eigenVectorsRescaled;
   static constexpr int thresholdForRank_ = 1.0E-10;
   RealVectorType eigenValues;
-  std::vector<double> weights;
+  std::vector<ComplexNumber> weights;
 };
 
 } // namespace FeastHelper

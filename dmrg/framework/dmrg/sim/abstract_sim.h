@@ -37,7 +37,7 @@
 class abstract_sim {
 public:
     virtual ~abstract_sim() {}
-    virtual void run(std::string runType) = 0;
+    virtual void run(const std::string& runType) = 0;
 };
 
 /**
@@ -59,7 +59,7 @@ public:
     using RealType = typename maquis::traits::real_type<Matrix>::type;
 
     virtual ~abstract_interface_sim() {}
-    virtual void run(std::string runType) = 0;
+    virtual void run(const std::string& runType) = 0;
     virtual void run_measure() = 0;
     virtual RealType get_energy() = 0;
     virtual results_collector& get_iteration_results() = 0;

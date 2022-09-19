@@ -83,7 +83,7 @@ public:
   interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
   /** @brief Runs a DMRG-based optimization */
-  void run(std::string simulationType) {
+  void run(const std::string& simulationType) {
     if (simulationType == "optimize")
       this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
     else if (simulationType == "evolve")
@@ -122,16 +122,18 @@ public:
     maquis::cout << " IPI energy convergence threshold:   " << energyConvergenceThreshold << std::endl;
     maquis::cout << " IPI overlap convergence threshold:  " << overlapConvergenceThreshold << std::endl;
     maquis::cout << " Number of sweeps per linear system: " << numberOfSweepPerSystem << std::endl;
+    maquis::cout << " Shift parameter: " << shift << std::endl;
     maquis::cout << std::endl;
     // Prepares data structure where to store results
     std::vector<RealType> energiesForIPIIteration;
     int nIpiIterations=0;
     bool convergedOuter=false;
-    double previousEnergy = this->get_energy(), nextEnergy, energyDifference;
+    double previousEnergy = this->get_energy();
     energiesForIPIIteration.push_back(previousEnergy);
     auto mpsBackup = this->mps;
     // IPI macroiteration
     while (!convergedOuter) {
+      double nextEnergy, energyDifference;
       this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0.);
       nIpiIterations += 1;
       nextEnergy = this->get_energy();

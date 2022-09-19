@@ -181,7 +181,7 @@ private:
         add_option("ipi_sweep_energy_threshold", "Threshold on the energy difference below which the IPI iterations are defined as converged", value(1.0E-10));
         add_option("ipi_sweeps_per_system", "Maximum number of sweeps used to solve one linear system for DMRG[IPI]");
         add_option("ipi_shift", "Shift parameter for the DMRG[IPI] algorithm");
-        add_option("ipi_iterations", "Maximum bumber of macroiterations for the DMRG[IPI] calculation");
+        add_option("ipi_iterations", "Maximum number of macroiterations for the DMRG[IPI] calculation");
 
         // Parameters related to the DMRG[FEAST] algorithm
         add_option("feast_num_states", "Number of states to be targeted by DMRG[FEAST]", value(1));
@@ -193,6 +193,7 @@ private:
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
         add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("const"));
         add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
+        add_option("feast_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-16));
     }
 };
 

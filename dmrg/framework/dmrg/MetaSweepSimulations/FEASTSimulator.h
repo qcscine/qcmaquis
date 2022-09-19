@@ -28,20 +28,21 @@
 #define FEAST_SIMULATOR
 
 #include <cstdlib>
-#include <boost/functional/hash.hpp>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/sim/matrix_types.h"
 #include "dmrg/SweepBasedAlgorithms/SweepBasedLinearSystem.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/storage.h"
 #include "FEASTQuadrature.h"
 #include "FEASTPostProcessor.h"
 
-template<class Matrix, class SymmGroup>
+template<class SymmGroup>
 class FEASTSimulator {
-  using StorageType = typename storage::constrained<Matrix>::type;
+  using Matrix = cmatrix;
+  using StorageType = storage::disk; // This is hardcoded for now
   using ComplexType = std::complex<double>;
   using LatticeType = Lattice;
   using ModelType = Model<Matrix, SymmGroup>;
@@ -49,11 +50,11 @@ class FEASTSimulator {
   using MPOType = MPO<Matrix, SymmGroup>;
   using ValueType = typename MPSType::value_type;
   using InitializerType = mps_initializer<Matrix, SymmGroup>;
-  using LinearSystemSSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, StorageType, SweepOptimizationType::SingleSite>;
-  using LinearSystemTSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, StorageType, SweepOptimizationType::TwoSite>;
+  using LinearSystemSSSimulationType = SweepBasedLinearSystem<cmatrix, SymmGroup, StorageType, SweepOptimizationType::SingleSite>;
+  using LinearSystemTSSimulationType = SweepBasedLinearSystem<cmatrix, SymmGroup, StorageType, SweepOptimizationType::TwoSite>;
   using PointerToSSSimulatorType = std::unique_ptr<LinearSystemSSSimulationType>;
   using PointerToTSSimulatorType = std::unique_ptr<LinearSystemTSSimulationType>;
-  using ResultContainerType = std::map<std::pair<int, int>, MPSType, boost::hash<std::pair<int, int>>>;
+  using ResultContainerType = std::map<std::pair<int, int>, MPSType>;
 
 public:
 
@@ -65,10 +66,14 @@ public:
     maxFeastIter = parameters["feast_max_iter"].as<int>();
     eMin = parameters["feast_emin"].as<double>();
     eMax = parameters["feast_emax"].as<double>();
+    mMax = parameters["max_bond_dimension"].as<int>();
+    feastThreshold = parameters["feast_convergence_threshold"].as<double>();
     numQuadraturePoint = parameters["feast_num_points"].as<int>();
     intModality = parameters["feast_integral_type"].as<std::string>();
     truncModality = parameters["feast_truncation_type"].as<std::string>();
+    truncateEach = (truncModality == "each");
     initType = parameters["feast_init_type"].as<std::string>();
+    printHeader();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
       throw std::runtime_error("Parameter [feast_integral_type] not recognized");
@@ -84,12 +89,11 @@ public:
 
   /** @brief Runs a single iteration of DMRG[FEAST] */
   void runFeastSimulation(const MPOType& mpo) {
-    maquis::cout << " +=====================" << std::endl;
-    maquis::cout << "  FEAST iteration " <<  currentIter << std::endl;
-    maquis::cout << " +=====================" << std::endl;
+    maquis::cout << " +====================" << std::endl;
+    maquis::cout << "   FEAST iteration " <<  currentIter << std::endl;
+    maquis::cout << " +====================" << std::endl;
     // Variable initialization
     std::vector<ComplexType> complexWeights;
-    resultContainer.clear();
     auto r = (eMax- eMin)/2.;
     auto r0 = (eMax + eMin)/2.;
     // For each FEAST iteration, we have a loop over the number of quadrature points 
@@ -103,9 +107,18 @@ public:
       ComplexType rimag = r * std::exp(imagUnity * theta);
       ComplexType t = r0 + rimag;
       complexWeights.push_back(weight * rimag / 4.);
-      // Here there is a bit of code repetition because 
+      maquis::cout << std::endl;
+      maquis::cout << " == NEW QUADRATURE POINT ==" << std::endl;
+      maquis::cout << std::endl;
+      maquis::cout << " - Node: " << t << std::endl;
+      maquis::cout << " - Weight: " << complexWeights[quadPoint] << std::endl;
+      maquis::cout << std::endl;
+      // Here there is a bit of code repetition because the pointer type is different for SS and TS
       if (isSingleSite) {
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
+          maquis::cout << std::endl;
+          maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
+          maquis::cout << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo, parameters, 0);
           ssSimulator->setShift(t);
@@ -115,6 +128,7 @@ public:
       }
       else {
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
+          maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsGuess[iGuess], mpo, parameters, 0);
           tsSimulator->setShift(t);
@@ -123,6 +137,11 @@ public:
         }
       }
     }
+    // Diagonalizes the Hamiltonian matrix in the FEAST subspace
+    typename FeastHelper::FEASTPostProcessor<SymmGroup> postProcessor(resultContainer, numStates, numQuadraturePoint, complexWeights);
+    postProcessor.solveEigenvalueProblem(mpo);
+    resultContainer = postProcessor.performBackTransformation(mpo, mMax, truncateEach);
+    postProcessor.printResults();
     // Final update of the iteration counter
     currentIter += 1;
   }
@@ -158,6 +177,7 @@ private:
     }
   }
 
+  /** @brief Generates the seed for the random number generator */
   void generateSeed(BaseParameters& parms) {
     // Sets the seeds (to be used later)
     std::srand(parms["seed"]);
@@ -166,11 +186,30 @@ private:
       seedForInit[iState] = std::rand();
   }
 
+  /** @brief Prints an header with the FEAST-specific parameters */
+  void printHeader() const {
+    maquis::cout << std::endl;
+    maquis::cout << " =========================" << std::endl;
+    maquis::cout << "  DMRGT[FEAST] SIMULATION " << std::endl;
+    maquis::cout << " =========================" << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " SIMULATION PARAMETERS: " << std::endl;
+    maquis::cout << " - Number of targeted states: " << numStates << std::endl;
+    maquis::cout << " - Lower bound for the complex contour integration: " << eMin << std::endl;
+    maquis::cout << " - Uppwer bound for the complex contour integration: " << eMax << std::endl;
+    maquis::cout << " - Number of quadrature points: " << numQuadraturePoint << std::endl;
+    maquis::cout << " - Convergence threshold for FEAST: " << feastThreshold << std::endl;
+    maquis::cout << " - Integration type: " << intModality << std::endl;
+    maquis::cout << " - Truncation modality: " << truncModality << std::endl;
+    maquis::cout << " - DMRG solver: " << ((isSingleSite) ? "single site" : "two site") << std::endl;
+  }
+
   // -- Class members --
   BaseParameters parameters;                                     // Parameter container
   int currentIter;                                               // Index of the current FEAST iteration.
   int numStates;                                                 // Number of states to be targeted.
   int maxFeastIter;                                              // Maximum number of FEAST iterations.
+  int mMax;                                                      // Maximum value of the bond dimension.
   double eMin, eMax;                                             // Lower and upper bound for the complex contour integral.
   double feastThreshold;                                         // Threshold to assess the convergence of DMRG[FEAST].
   int numQuadraturePoint;                                        // Number of quadrature point.
@@ -181,10 +220,13 @@ private:
   std::vector<int> seedForInit;                                  // Seed for random initialization.
   std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
+  bool truncateEach;                                             // If true, truncates the MPS after each sum.
   ResultContainerType resultContainer;                           // Member that stores the result of each linear system.
-
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };
+
+template<class SymmGroup>
+constexpr typename FEASTSimulator<SymmGroup>::ComplexType FEASTSimulator<SymmGroup>::imagUnity;
 
 #endif // FEAST_SIMULATOR

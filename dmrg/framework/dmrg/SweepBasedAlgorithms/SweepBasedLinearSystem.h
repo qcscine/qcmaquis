@@ -51,7 +51,7 @@ public:
   using MPOType = typename Base::MPOType;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
   using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
-  using ValueType = typename MPSTensorType::value_type;
+  using ValueType = typename MPSTensorType::scalar_type;
   //
   using Base::boundaryPropagator_;
   using Base::getSpecificResult;
