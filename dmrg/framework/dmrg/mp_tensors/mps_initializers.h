@@ -93,10 +93,10 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
             mps[i].divide_by_scalar(mps[i].scalar_norm());
         });
 
-#ifndef NDEBUG
-        maquis::cout << "init norm: " << norm(mps) << std::endl;
-        maquis::cout << mps.description() << std::endl;
-#endif
+// #ifndef NDEBUG
+//         maquis::cout << "init norm: " << norm(mps) << std::endl;
+//         maquis::cout << mps.description() << std::endl;
+// #endif
     }
 
     // Class attributes
