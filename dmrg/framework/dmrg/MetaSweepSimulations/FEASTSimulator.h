@@ -36,7 +36,8 @@
 #include "dmrg/SweepBasedAlgorithms/SweepBasedLinearSystem.h"
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/storage.h"
-#include "FEASTHelperClass.h"
+#include "FEASTQuadrature.h"
+#include "FEASTPostProcessor.h"
 
 template<class Matrix, class SymmGroup>
 class FEASTSimulator {
@@ -52,8 +53,7 @@ class FEASTSimulator {
   using LinearSystemTSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, StorageType, SweepOptimizationType::TwoSite>;
   using PointerToSSSimulatorType = std::unique_ptr<LinearSystemSSSimulationType>;
   using PointerToTSSimulatorType = std::unique_ptr<LinearSystemTSSimulationType>;
-  using QuadPointType = typename FeastHelper::QuadraturePoint;
-  using ResultContainerType = std::unordered_map<std::pair<int, int>, MPSType, boost::hash<std::pair<int, int>>>;
+  using ResultContainerType = std::map<std::pair<int, int>, MPSType, boost::hash<std::pair<int, int>>>;
 
 public:
 
@@ -167,21 +167,21 @@ private:
   }
 
   // -- Class members --
-  BaseParameters parameters;             // Parameter container
-  int currentIter;                       // Index of the current FEAST iteration.
-  int numStates;                         // Number of states to be targeted.
-  int maxFeastIter;                      // Maximum number of FEAST iterations.
-  double eMin, eMax;                     // Lower and upper bound for the complex contour integral.
-  double feastThreshold;                 // Threshold to assess the convergence of DMRG[FEAST].
-  int numQuadraturePoint;                // Number of quadrature point.
-  std::string intModality;               // "Full" for the full circle integration, "half" for the half-circle one.
-  std::string truncModality;             // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
-  std::string initType;                  // Initialization strategy for each guess.
-  std::vector<MPSType> mpsGuess;         // Stores the current guess for hte FEAST procedure.
-  std::vector<int> seedForInit;          // Seed for random initialization.
-  std::vector<QuadPointType> quadPoints; // Vector with the quadrature points and weight.
-  bool isSingleSite;                     // If true, runs a single-site calculation, otherwise runs a two-sites one.
-  ResultContainerType resultContainer;   // Member that stores the result of each linear system.
+  BaseParameters parameters;                                     // Parameter container
+  int currentIter;                                               // Index of the current FEAST iteration.
+  int numStates;                                                 // Number of states to be targeted.
+  int maxFeastIter;                                              // Maximum number of FEAST iterations.
+  double eMin, eMax;                                             // Lower and upper bound for the complex contour integral.
+  double feastThreshold;                                         // Threshold to assess the convergence of DMRG[FEAST].
+  int numQuadraturePoint;                                        // Number of quadrature point.
+  std::string intModality;                                       // "Full" for the full circle integration, "half" for the half-circle one.
+  std::string truncModality;                                     // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
+  std::string initType;                                          // Initialization strategy for each guess.
+  std::vector<MPSType> mpsGuess;                                 // Stores the current guess for hte FEAST procedure.
+  std::vector<int> seedForInit;                                  // Seed for random initialization.
+  std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
+  bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
+  ResultContainerType resultContainer;                           // Member that stores the result of each linear system.
 
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);

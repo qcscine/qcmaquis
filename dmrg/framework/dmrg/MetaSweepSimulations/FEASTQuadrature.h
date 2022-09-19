@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef FEAST_HELPER_CLASS
-#define FEAST_HELPER_CLASS
+#ifndef FEAST_QUADRATURE
+#define FEAST_QUADRATURE
 
 #include <stdexcept>
 #include <vector>
@@ -131,4 +131,4 @@ std::vector<QuadraturePoint> getQuadraturePoints(int nQuad)
 
 } // namespace FeastHelper
 
-#endif // FEAST_HELPER_CLASS
+#endif // FEAST_QUADRATURE
