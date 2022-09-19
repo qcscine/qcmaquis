@@ -26,8 +26,6 @@
 
 #define BOOST_TEST_MODULE mps_vibrational
 
-#ifdef DMRG_VIBRATIONAL
-
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
@@ -58,5 +56,3 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Vibrational_NU1, NModeFixture)
   BOOST_CHECK_CLOSE(std::sqrt(normAfter/normBefore), 3., 5.0E-14);
 #endif
 }
-
-#endif // DMRG_VIBRATIONAL
