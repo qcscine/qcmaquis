@@ -107,10 +107,10 @@ class ResultFileVibrationaleMeasurement(object):
         ihd5 = self.h5pyfile['spectrum']['results']['onemodeRDM']
         for idx, iLabel in enumerate(ihd5['labels_num']):
             oneModeRDM[iLabel[0], iLabel[1]] = abs(ihd5['mean']['value'][0, idx])
-        print(oneModeRDM[0,0])
-        print(oneModeRDM[1,0])
-        print(oneModeRDM[0,1])
-        print(oneModeRDM[1,1])
+        # print(oneModeRDM[0,0])
+        # print(oneModeRDM[1,0])
+        # print(oneModeRDM[0,1])
+        # print(oneModeRDM[1,1])
         return oneModeRDM
 
     def __extractOneModalEntropy(self):
