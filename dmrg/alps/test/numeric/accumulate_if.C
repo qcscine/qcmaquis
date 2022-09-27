@@ -38,10 +38,11 @@
 #include <algorithm>
 #include <functional>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/lambda/lambda.hpp>
 
+using namespace boost::placeholders;
 
 int main(int argc, char** argv)
 {
