@@ -32,6 +32,7 @@
 #include "parser_detail.h"
 #include "integral_interface.h"
 #include "dmrg/utils/align.h"
+#include "dmrg/models/lattice/lattice.h"
 
 namespace chem {
 namespace detail {
@@ -95,7 +96,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
 {
     // Types and variable definition
     using pos_t = Lattice::pos_t;
-    using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType)>;
+    using TupleType = chem::detail::IndexTuple<SymmGroup, getIndexDim(HamiltonianType, Transcorrelated)>;
     using IndexType = chem::index_type<HamiltonianType, Transcorrelated>;
     using IntegralTupleType = integral_tuple<T, HamiltonianType, Transcorrelated>;
     using IntegralMapType = integral_map<T, HamiltonianType, Transcorrelated>;

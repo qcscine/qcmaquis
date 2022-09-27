@@ -58,8 +58,7 @@ enum class HamiltonianTransformation {Conventional, Transcorrelated};
  *   equal to the max. order of the Taylor expansion of the PES. Here we include
  *   up to sixth-order force constants.
  */
-constexpr int getIndexDim(const Hamiltonian& type,
-                          const HamiltonianTransformation& transformation=HamiltonianTransformation::Conventional) {
+constexpr int getIndexDim(const Hamiltonian& type, const HamiltonianTransformation& transformation) {
     int indexDim=0;
     switch (type) {
         case Hamiltonian::Electronic:

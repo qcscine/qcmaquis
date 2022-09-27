@@ -38,6 +38,7 @@ class ChemHelperSU2
 {
 public:
     using value_type = typename Matrix::value_type;
+    using InputType = double;
     using term_descriptor = ::term_descriptor<value_type>;
     using pos_t = Lattice::pos_t;
 
@@ -45,7 +46,7 @@ public:
     ChemHelperSU2(BaseParameters& parms, const Lattice& lat, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
         : tag_handler(tag_handler_)
     {
-        boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup, chem::Hamiltonian::Electronic>(parms, lat);
+        boost::tie(idx_, matrix_elements) = parse_integrals<InputType, SymmGroup, chem::Hamiltonian::Electronic>(parms, lat);
         for (int m = 0; m < matrix_elements.size(); ++m) {
             IndexTuple<SymmGroup, 4> pos;
             std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
@@ -55,7 +56,7 @@ public:
     }
 
     /** @brief Getter for the Hamiltonian coefficients */
-    std::vector<value_type> const & getMatrixElements() const { return matrix_elements; }
+    const auto& getMatrixElements() const { return matrix_elements; }
 
     /** @brief Getter for the Hamiltonian indices */
     alps::numeric::matrix<Lattice::pos_t> const & getIdx() const { return idx_; }
@@ -116,7 +117,7 @@ public:
 
 private:
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    std::vector<value_type> matrix_elements;
+    std::vector<InputType> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
     std::map<IndexTuple<SymmGroup, 4>, value_type> coefficients;
     std::map<IndexTuple<SymmGroup, 4>, term_descriptor> two_terms;

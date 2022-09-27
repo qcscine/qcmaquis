@@ -39,7 +39,9 @@ class ChemHelper
 {
 public:
     // Type definition
-    using value_type = typename Matrix::value_type;
+    // using value_type = typename Matrix::value_type;
+    // Hardcoded to double because there is no reason to have complex coefficients.
+    using value_type = double;
     using term_descriptor = ::term_descriptor<value_type>;
     using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
     using pos_t = Lattice::pos_t;
@@ -64,7 +66,7 @@ public:
     int idx(int m, int pos) const { return idx_(m,pos); }
 
 private:
-    static constexpr int numberOfIntegers = getIndexDim(HamiltonianType);
+    static constexpr int numberOfIntegers = getIndexDim(HamiltonianType, Transcorrelated);
     const std::vector<tag_type>& ident;
     const std::vector<tag_type>& fill;
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;

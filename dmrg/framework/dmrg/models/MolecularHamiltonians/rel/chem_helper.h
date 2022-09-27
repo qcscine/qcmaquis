@@ -37,7 +37,9 @@ template <typename Matrix, class SymmGroup>
 class RelChemHelper
 {
 public:
-    using value_type = typename Matrix::value_type;
+    // Coefficients are always complex in relativistic Hamiltonians
+    // using value_type = typename Matrix::value_type;
+    using  value_type = std::complex<double>;
     using term_descriptor = ::term_descriptor<value_type>;
     using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
     using pos_t = Lattice::pos_t;

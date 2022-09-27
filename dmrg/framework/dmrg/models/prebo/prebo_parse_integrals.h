@@ -69,7 +69,6 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
             T integral;
             // initialize splitted line
             std::vector<std::string> line_splitted;
-            std::vector<std::size_t> size_vec;
             // -- Main data parsing --
             // Trim leading and final spaces in the string.
             line_string.erase(line_string.begin(),
@@ -153,7 +152,7 @@ parse_integrals(BaseParameters & parms, Lattice const & lat)
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
 
-        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::PreBO)*indices.size());
+        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::PreBO, chem::HamiltonianTransformation::Conventional)*indices.size());
         for (auto&& idx: indices)
             for (auto&& i: idx)
                 indices_vec.push_back(i);

@@ -197,17 +197,11 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     auto jw = JordanWignerHandler<Matrix, SymmGroup>(lat, fill, create_up, create_down, destroy_up, destroy_down);
     MapOfOperatorsType mapOfOperators;
     chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler);
-    std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
+    auto& matrix_elements = term_assistant.getMatrixElements();
     // Tmp objects.
     std::vector< OperatorType > oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
     std::vector< OperatorType > oneBodyVec2 = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
     std::vector< std::vector< OperatorType > > oneBodyElementaryOperators = { oneBodyVec1, oneBodyVec2 };
-    //
-    std::vector< OperatorType > opVector1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
-    std::vector< OperatorType > opVector2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
-    std::vector< OperatorType > opVector3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
-    std::vector< OperatorType > opVector4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-    std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
     // == MAIN LOOP ==
     for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++)
     {
@@ -217,6 +211,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         int l = term_assistant.idx(iElement, 3);
         int m = -1;
         int n = -1;
+        auto matrixElement = static_cast<value_type>(matrix_elements[iElement]);
         if (isTranscorrelated_) {
             m = term_assistant.idx(iElement, 4);
             n = term_assistant.idx(iElement, 5);
@@ -224,23 +219,30 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1 && m==-1 && n==-1) {
             term_descriptor term;
-            term.coeff = matrix_elements[iElement];
+            term.coeff = matrixElement;
             term.push_back( std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
             this->terms_.push_back(term);
         }
+        // One-body contribution
         else if (k == -1 && l == -1 && m==-1 && n==-1) {
             std::vector< std::array<int, 2> > posVector = isTranscorrelated_ ? std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})}) 
                                                                              : TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j);
             for (auto& iOp: oneBodyElementaryOperators) {
                 for (auto& iTerm: posVector) {
-                    std::vector< pos_t > posVector = { iTerm[0], iTerm[1] };
-                    auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrix_elements[iElement]);
+                    std::vector< pos_t > localPosVector = { iTerm[0], iTerm[1] };
+                    auto term = jw.getTerm(localPosVector, iOp, tag_handler, true, matrixElement);
                     addTerm(mapOfOperators, term);
-                    std::cout << term << std::endl;
+                    // std::cout << term << std::endl;
                 }
             }
         }
+        // Two-body contribution
         else if (m==-1 && n==-1) {
+            std::vector< OperatorType > opVector1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
+            std::vector< OperatorType > opVector2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
+            std::vector< OperatorType > opVector3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
+            std::vector< OperatorType > opVector4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
+            std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
             std::vector< std::array<int, 4> > tmp = isTranscorrelated_ ? TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j, k, l)
                                                                        : TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(i, j, k, l);
             for (auto& iOp: twoBodyElementaryOperators) {
@@ -248,13 +250,14 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                     std::vector< pos_t > posVector = { iTerm[0], iTerm[2], iTerm[3], iTerm[1] };
                     if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) && 
                         !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
-                        auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrix_elements[iElement]/2.);
+                        auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement/2.);
                         addTerm(mapOfOperators, term);
                         //std::cout << term << std::endl;
                     }
                 }
             }
         }
+        // Three-body contribution
         else {
             if (isTranscorrelated_) {
                 if (parms["transcorrelated_3body"] == "yes") {
@@ -279,9 +282,9 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                                                  OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};                                               
                         std::vector< OperatorType > opVector8 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateAlpha,
                                                                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
-                        std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4,
-                                                                                                  opVector5, opVector6, opVector7, opVector8 };
-                        for (auto& iOp: twoBodyElementaryOperators) {
+                        std::vector< std::vector< OperatorType > > threeBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4,
+                                                                                                    opVector5, opVector6, opVector7, opVector8 };
+                        for (auto& iOp: threeBodyElementaryOperators) {
                             for (auto& iTerm: tmp) {
                                 std::vector< pos_t > posVector = { iTerm[0], iTerm[2], iTerm[4], iTerm[5], iTerm[3], iTerm[1] };
                                 if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) && 
@@ -291,7 +294,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                     !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
                                     !(posVector[4] == posVector[3] && iOp[4] == iOp[3]))
                                 {
-                                    auto term = jw.getTerm(posVector, iOp, tag_handler, true, -matrix_elements[iElement]/6.);
+                                    auto term = jw.getTerm(posVector, iOp, tag_handler, true, -matrixElement/6.);
                                     //std::cout << term << std::endl;
                                     addTerm(mapOfOperators, term);
                                 }

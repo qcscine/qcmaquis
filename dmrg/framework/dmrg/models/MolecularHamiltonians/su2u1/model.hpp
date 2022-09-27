@@ -31,9 +31,7 @@
 
 template <class Matrix, class SymmGroup>
 qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
-: lat(lat_)
-, parms(parms_)
-, tag_handler(new table_type())
+    : lat(lat_), parms(parms_), tag_handler(new table_type())
 {
     typedef typename SymmGroup::subcharge subcharge;
     // find the highest irreducible representation number
@@ -42,13 +40,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     for (pos_t p=0; p < lat.size(); ++p)
         max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
                         ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
-
     typename SymmGroup::charge A(0), B(0), C(0), D(0);
     A[0] = 2; // 20
     B[0] = 1; B[1] =  1; // 11
     C[0] = 1; C[1] = -1; // 1-1
     // D = 00
-
     for (subcharge irr=0; irr <= max_irrep; ++irr)
     {
         Index<SymmGroup> phys;
@@ -59,10 +55,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         phys_indices.push_back(phys);
     }
-
     ops = TermMakerSU2<Matrix, SymmGroup>::construct_operators(max_irrep, tag_handler);
     op_collection =  TermMakerSU2<Matrix, SymmGroup>::construct_operator_collection(ops, max_irrep);
-
 }
 
 template <class Matrix, class SymmGroup>
@@ -73,7 +67,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
     chem::detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
     alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
-    std::vector<value_type> matrix_elements = ta.getMatrixElements();
+    auto matrix_elements = ta.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
 
@@ -94,7 +88,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
 
             term_descriptor term;
-            term.coeff = matrix_elements[m];
+            term.coeff = static_cast<value_type>(matrix_elements[m]);
             term.push_back( std::make_pair(0, ops.ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
 
@@ -105,7 +99,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
         else if ( i==j && k == -1 && l == -1) {
 
             term_descriptor term;
-            term.coeff = matrix_elements[m];
+            term.coeff = static_cast<value_type>(matrix_elements[m]);
             term.push_back( std::make_pair(i, ops.count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
@@ -121,10 +115,10 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                    true, ops.ident, value_type(std::sqrt(2.))*matrix_elements[m],j,i, ops.create, ops.create_fill, ops.destroy, ops.destroy_fill, lat
+                    true, ops.ident, value_type(std::sqrt(2.)*matrix_elements[m]), j, i, ops.create, ops.create_fill, ops.destroy, ops.destroy_fill, lat
                 ));
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                    true, ops.ident, value_type(std::sqrt(2.))*matrix_elements[m],i,j, ops.create, ops.create_fill, ops.destroy, ops.destroy_fill, lat
+                    true, ops.ident, value_type(std::sqrt(2.)*matrix_elements[m]), i, j, ops.create, ops.create_fill, ops.destroy, ops.destroy_fill, lat
                 ));
             }
 
@@ -139,8 +133,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
                 for (pos_t kk = 0; kk < lat.size(); ++kk)
                 {
                     if (kk == j || kk == i) continue;
-                    append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), i,kk,kk,j, op_collection, lat));
-                    append(terms, SSUM::three_term(matrix_elements[m] * value_type(1./(N-1)), j,kk,kk,i, op_collection, lat));
+                    append(terms, SSUM::three_term(value_type(matrix_elements[m]/(N-1)), i, kk, kk, j, op_collection, lat));
+                    append(terms, SSUM::three_term(value_type(matrix_elements[m]/(N-1)), j, kk, kk, i, op_collection, lat));
                 }
 
                 for (auto&& term: terms)
@@ -148,11 +142,11 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
                 terms.clear();
 
-                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), i,i,i,j, op_collection, lat));
-                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), j,i,i,i, op_collection, lat));
+                append(terms, SSUM::V_term(value_type(matrix_elements[m]/(N-1)), i,i,i,j, op_collection, lat));
+                append(terms, SSUM::V_term(value_type(matrix_elements[m]/(N-1)), j,i,i,i, op_collection, lat));
 
-                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), i,j,j,j, op_collection, lat));
-                append(terms, SSUM::V_term(matrix_elements[m] * value_type(1./(N-1)), j,j,j,i, op_collection, lat));
+                append(terms, SSUM::V_term(value_type(matrix_elements[m]/(N-1)), i,j,j,j, op_collection, lat));
+                append(terms, SSUM::V_term(value_type(matrix_elements[m]/(N-1)), j,j,j,i, op_collection, lat));
 
                 for (auto&& term: terms)
                     ta.add_2term(vec, term);
@@ -186,8 +180,8 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec & vec = this->terms_;
 
             term_vec terms;
-            append(terms, SSUM::two_term(matrix_elements[m], s,s,s,p, op_collection, lat));
-            append(terms, SSUM::two_term(matrix_elements[m], s,p,s,s, op_collection, lat));
+            append(terms, SSUM::two_term(static_cast<value_type>(matrix_elements[m]), s,s,s,p, op_collection, lat));
+            append(terms, SSUM::two_term(static_cast<value_type>(matrix_elements[m]), s,p,s,s, op_collection, lat));
 
             for (auto&& term: terms)
                 ta.add_2term(vec, term);
@@ -203,7 +197,7 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
 
             term_vec & vec = this->terms_;
 
-            term_vec terms = SSUM::two_term(matrix_elements[m], i,k,k,i, op_collection, lat);
+            term_vec terms = SSUM::two_term(static_cast<value_type>(matrix_elements[m]), i,k,k,i, op_collection, lat);
 
             for (auto&& term: terms)
                 ta.add_2term(vec, term);
@@ -219,10 +213,10 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec & vec = this->terms_;
 
             term_vec terms;
-            append(terms, SSUM::two_term(value_type(0.5)*matrix_elements[m], i,i,j,j, op_collection, lat));
-            append(terms, SSUM::two_term(value_type(0.5)*matrix_elements[m], j,j,i,i, op_collection, lat));
+            append(terms, SSUM::two_term(value_type(0.5*matrix_elements[m]), i, i, j, j, op_collection, lat));
+            append(terms, SSUM::two_term(value_type(0.5*matrix_elements[m]), j, j, i, i, op_collection, lat));
 
-            append(terms, SSUM::two_term(matrix_elements[m], i,j,i,j, op_collection, lat));
+            append(terms, SSUM::two_term(static_cast<value_type>(matrix_elements[m]), i,j,i,j, op_collection, lat));
 
             for (auto&& term: terms)
                 ta.add_2term(vec, term);
@@ -244,13 +238,13 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             term_vec terms;
             if (i==j)
             {
-                append(terms, SSUM::three_term(matrix_elements[m], i,k,l,i, op_collection, lat));
-                append(terms, SSUM::three_term(matrix_elements[m], i,l,k,i, op_collection, lat));
+                append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), i,k,l,i, op_collection, lat));
+                append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), i,l,k,i, op_collection, lat));
             }
             else // (k==l)
             {
-                append(terms, SSUM::three_term(matrix_elements[m], i,k,k,j, op_collection, lat));
-                append(terms, SSUM::three_term(matrix_elements[m], j,k,k,i, op_collection, lat));
+                append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), i,k,k,j, op_collection, lat));
+                append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), j,k,k,i, op_collection, lat));
             }
 
             for (auto&& term: terms)
@@ -275,10 +269,10 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             // c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
 
             term_vec terms;
-            append(terms, SSUM::three_term(matrix_elements[m], i,k,l,j, op_collection, lat));
-            append(terms, SSUM::three_term(matrix_elements[m], i,l,k,j, op_collection, lat));
-            append(terms, SSUM::three_term(matrix_elements[m], j,k,l,i, op_collection, lat));
-            append(terms, SSUM::three_term(matrix_elements[m], j,l,k,i, op_collection, lat));
+            append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), i,k,l,j, op_collection, lat));
+            append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), i,l,k,j, op_collection, lat));
+            append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), j,k,l,i, op_collection, lat));
+            append(terms, SSUM::three_term(static_cast<value_type>(matrix_elements[m]), j,l,k,i, op_collection, lat));
 
             for (auto&& term: terms)
                 ta.add_3term(vec, term);
@@ -301,12 +295,13 @@ void qc_su2<Matrix, SymmGroup>::create_terms()
             // \sum_{sigma, sigma'} c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} c_{p4, sigma}
 
             term_vec terms;
-            append(terms, SSUM::four_term(matrix_elements[m], i,k,l,j, op_collection, lat));
-            append(terms, SSUM::four_term(matrix_elements[m], i,l,k,j, op_collection, lat));
-            append(terms, SSUM::four_term(matrix_elements[m], j,k,l,i, op_collection, lat));
-            append(terms, SSUM::four_term(matrix_elements[m], j,l,k,i, op_collection, lat));
+            append(terms, SSUM::four_term(static_cast<value_type>(matrix_elements[m]), i,k,l,j, op_collection, lat));
+            append(terms, SSUM::four_term(static_cast<value_type>(matrix_elements[m]), i,l,k,j, op_collection, lat));
+            append(terms, SSUM::four_term(static_cast<value_type>(matrix_elements[m]), j,k,l,i, op_collection, lat));
+            append(terms, SSUM::four_term(static_cast<value_type>(matrix_elements[m]), j,l,k,i, op_collection, lat));
 
-            for (auto&& term: terms) ta.add_4term(vec, term);
+            for (auto&& term: terms)
+                ta.add_4term(vec, term);
 
             used_elements[m] += 1;
         }
