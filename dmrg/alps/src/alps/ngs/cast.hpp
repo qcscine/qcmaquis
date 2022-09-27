@@ -31,7 +31,7 @@
 #include <alps/ngs/config.hpp>
 #include <alps/ngs/stacktrace.hpp>
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/mpl/int.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -41,6 +41,8 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cstdio>
+
+using namespace boost::placeholders;
 
 namespace alps {
 
