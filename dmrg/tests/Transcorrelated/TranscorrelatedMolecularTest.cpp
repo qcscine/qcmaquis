@@ -63,8 +63,6 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
     // The reference energy was generated with the UCISD module of PySCF
     BOOST_CHECK_CLOSE(energy1, -1.102429823850713, 1.0E-3);
     BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-8);
-    std::cout << energy1 << std::endl;
-    std::cout << energy2 << std::endl;
 #endif // HAVE_TwoU1 and DMRG_TD
 }
 
@@ -152,6 +150,30 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
         }
     }
     BOOST_CHECK_CLOSE(minimumEnergy, energyDMRG, 1.0E-8);
+}
+
+/** 
+ * @brief Transcorrelated DMRG calculation on Be.
+ * The reference energy has been generated in this case with CC by Max Moerchen.
+ */
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
+{
+    parametersBeTranscorrelatedTwoBody.set("propagator_accuracy", 1.0E-5);
+    parametersBeTranscorrelatedTwoBody.set("propagator_maxiter", 10);
+    parametersBeTranscorrelatedTwoBody.set("hamiltonian_units", "Hartree");
+    parametersBeTranscorrelatedTwoBody.set("time_units", "fs");
+    parametersBeTranscorrelatedTwoBody.set("imaginary_time", "yes");
+    parametersBeTranscorrelatedTwoBody.set("TD_backpropagation", "no");
+    parametersBeTranscorrelatedTwoBody.set("symmetry", "2u1");
+    //
+    auto timeSteps = std::vector<double>{0.001, 0.01, 0.1};
+    for (const auto& iStep: timeSteps) {
+        parametersBeTranscorrelatedTwoBody.set("time_step", iStep);
+        maquis::DMRGInterface<std::complex<double>> interface(parametersBeTranscorrelatedTwoBody);
+        interface.evolve();
+        auto energyDMRG = maquis::real(interface.energy());
+        maquis::cout << "Time step " << iStep << " gives energy " << energyDMRG << std::endl;
+    }
 }
 
 #endif // HAVE_TwoU1 and DMRG_TD
