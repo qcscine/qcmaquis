@@ -38,8 +38,8 @@ class RelChemHelper
 {
 public:
     // Coefficients are always complex in relativistic Hamiltonians
-    // using value_type = typename Matrix::value_type;
-    using  value_type = std::complex<double>;
+    using value_type = typename Matrix::value_type;
+    using InputType = std::complex<double>;
     using term_descriptor = ::term_descriptor<value_type>;
     using tag_type = typename TagHandler<Matrix, SymmGroup>::tag_type;
     using pos_t = Lattice::pos_t;
@@ -48,7 +48,7 @@ public:
                   const std::vector<tag_type>& fill_, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
         : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
     {
-		boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup, chem::Hamiltonian::RelativisticElectronic>(parms, lat);
+		boost::tie(idx_, matrix_elements) = parse_integrals<InputType, SymmGroup, chem::Hamiltonian::RelativisticElectronic>(parms, lat);
         for (int m = 0; m < matrix_elements.size(); ++m) {
             IndexTuple<SymmGroup, 4> pos;
 			std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
@@ -56,7 +56,7 @@ public:
         }
     }
 
-    std::vector<value_type> & getMatrixElements() { return matrix_elements; }
+    auto& getMatrixElements() { return matrix_elements; }
 
     int idx(int m, int pos) const { return idx_(m,pos); }
 
@@ -69,8 +69,8 @@ public:
             tagterms.push_back(it.second);
     }
 
-    void add_term(std::vector<term_descriptor> & tagterms,
-                  value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2) {
+    void add_term(std::vector<term_descriptor> & tagterms, value_type scale, int p1, int p2,
+                  std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2) {
 
         auto term = TermMaker<Matrix, SymmGroup>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
         IndexTuple<SymmGroup, 4> id({p1, p2, static_cast<int>(op_1[lat.get_prop<typename SymmGroup::subcharge>("type", p1)]),
@@ -122,7 +122,7 @@ private:
     const std::vector<tag_type>& fill;
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     Lattice const & lat;
-    std::vector<value_type> matrix_elements;
+    std::vector<InputType> matrix_elements;
     alps::numeric::matrix<Lattice::pos_t> idx_;
     std::map<IndexTuple<SymmGroup, 4>, value_type> coefficients;
     std::map<IndexTuple<SymmGroup, 8>, term_descriptor> four_terms;
