@@ -506,7 +506,7 @@ namespace alps {
         {
             // Standard checks
             assert(num_rows(M) == num_cols(M));
-            assert(evals.size() == num_rows(M));
+            assert(eVals.size() == num_rows(M));
             int info = boost::numeric::bindings::lapack::geev('V', 'V', M, eVals, eVecsLeft, eVecsRight);
         }
 
@@ -516,7 +516,7 @@ namespace alps {
                   typename associated_vector<matrix<T, MemoryBlock> >::type& eVals)
         {
             assert(num_rows(M) == num_cols(M));
-            assert(evals.size() == num_rows(M));
+            assert(eVals.size() == num_rows(M));
             matrix<T, MemoryBlock> left(num_rows(M), 1), right(num_rows(M), 1);
             int info = boost::numeric::bindings::lapack::geev('N', 'N', M, eVals, left, right);
         }
