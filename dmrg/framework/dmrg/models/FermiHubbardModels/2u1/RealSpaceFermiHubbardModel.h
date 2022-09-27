@@ -112,12 +112,15 @@ public:
             throw std::runtime_error("Please set the transcorrelation parameter");
         value_type J = parms.is_set("J_Transcorrelated") ? parms["J_Transcorrelated"] : 0.;
         // == HAMILTONIAN CREATION ==
+        double hamiltonianNorm = 0.;
+        double nonHermitianNorm = 0.;
         auto jw = JordanWignerHandler<Matrix, TwoU1>(lat, fill, create_up, create_down, destroy_up, destroy_down);
         // Potential energy term
         for (int iSite = 0; iSite < height*width; iSite++) {
             std::vector< OperatorType > opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
             std::vector< pos_t > positions = {iSite, iSite, iSite, iSite};
             this->terms_.push_back(jw.getTerm(positions, opVector, tag_handler, true, U));
+            hamiltonianNorm += std::norm(U);
         }
         // Hopping term
         for (int iSite = 0; iSite < width*height; iSite++)
@@ -149,14 +152,22 @@ public:
             value_type coeffy = -ty;
             std::vector< OperatorType > opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
             this->terms_.push_back(jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeffx));
+            hamiltonianNorm += std::norm(coeffx);
             this->terms_.push_back(jw.getTerm(posVectorLeftHerm, opVector, tag_handler, true, coeffx));
+            hamiltonianNorm += std::norm(coeffx);
             this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeffy));
+            hamiltonianNorm += std::norm(coeffy);
             this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeffy));
+            hamiltonianNorm += std::norm(coeffy);
             opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
             this->terms_.push_back(jw.getTerm(posVectorLeft, opVector, tag_handler, true, coeffx));
+            hamiltonianNorm += std::norm(coeffx);
             this->terms_.push_back(jw.getTerm(posVectorLeftHerm, opVector, tag_handler, true, coeffx));
+            hamiltonianNorm += std::norm(coeffx);
             this->terms_.push_back(jw.getTerm(posVectorDown, opVector, tag_handler, true, coeffy));
+            hamiltonianNorm += std::norm(coeffy);
             this->terms_.push_back(jw.getTerm(posVectorDownHerm, opVector, tag_handler, true, coeffy));
+            hamiltonianNorm += std::norm(coeffy);
             // Transcorrelated-specific contributions
             if (isTranscorrelated_) {
                 std::vector<pos_t> posVectorDownTC_1, posVectorDownHermTC_1, posVectorDownTC_2, posVectorDownHermTC_2, posVectorDownTC_3, posVectorDownHermTC_3;
@@ -199,18 +210,34 @@ public:
                 if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                     this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_1, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_1, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                     this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_1, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                 }
                 if (std::abs(coeffy) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                     this->terms_.push_back(jw.getTerm(posVectorDownTC_1, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_1, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                 }
                 // TC operator 2
                 coeffx = -tx*(std::exp(-J)-1.);
@@ -218,18 +245,34 @@ public:
                 if (std::abs(coeffx) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                     this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_2, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_2, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                     this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_2, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
+                    nonHermitianNorm += std::norm(coeffx);
                 }
                 if (std::abs(coeffy) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_2, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                     this->terms_.push_back(jw.getTerm(posVectorDownTC_2, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_2, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
+                    nonHermitianNorm += std::norm(coeffy);
                 }
                 // TC operator 3
                 coeffx = 2.*tx*(std::cosh(J)-1.);
@@ -238,25 +281,34 @@ public:
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta,
                                 OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_3, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
                     this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_3, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                                 OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                     this->terms_.push_back(jw.getTerm(posVectorLeftTC_3, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
                     this->terms_.push_back(jw.getTerm(posVectorLeftHermTC_3, opVector, tag_handler, true, coeffx));
+                    hamiltonianNorm += std::norm(coeffx);
                 }
                 if (std::abs(coeffy) > 1.0E-10) {
                     opVector = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta,
                                 OperatorType::CreateBeta, OperatorType::DestroyBeta};
                     this->terms_.push_back(jw.getTerm(posVectorDownTC_3, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_3, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
                     opVector = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha,
                                 OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                     this->terms_.push_back(jw.getTerm(posVectorDownTC_3, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
                     this->terms_.push_back(jw.getTerm(posVectorDownHermTC_3, opVector, tag_handler, true, coeffy));
+                    hamiltonianNorm += std::norm(coeffy);
                 }
             }
-
         }
+        maquis::cout << " Hamiltonian Norm = " << std::sqrt(hamiltonianNorm) << std::endl;
+        maquis::cout << " Non-Hermtian Hamiltonian Norm = " << std::sqrt(nonHermitianNorm) << std::endl;
         // ALB TODO USE ADD TERM FROM model.hpp (to be put in the utils)
         for (auto it1 = this->terms_.begin(); it1 != this->terms_.end(); it1++) {
             for (auto it2 = it1+1; it2 != this->terms_.end();) {
