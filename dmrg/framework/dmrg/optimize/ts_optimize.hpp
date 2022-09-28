@@ -245,12 +245,10 @@ public:
 
 
                 block_matrix<Matrix, SymmGroup> t;
-
                 //t = mps[site1].normalize_left(DefaultSolver());
                 //mps[site2].multiply_from_left(t);
                 //mps[site2].divide_by_scalar(mps[site2].scalar_norm());
-
-                t = mps[site2].normalize_left(DefaultSolver());
+                t = mps[site2].leftNormalizeAndReturn(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
                 if (site2 < L-1)
@@ -280,12 +278,10 @@ public:
 
 
                 block_matrix<Matrix, SymmGroup> t;
-
                 //t = mps[site2].normalize_right(DefaultSolver());
                 //mps[site1].multiply_from_right(t);
                 //mps[site1].divide_by_scalar(mps[site1].scalar_norm());
-
-                t = mps[site1].normalize_right(DefaultSolver());
+                t = mps[site1].rightNormalizeAndReturn(DefaultSolver());
                 // MD: DEBUGGING OUTPUT
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
                 if (site1 > 0) mps[site1-1].multiply_from_right(t);

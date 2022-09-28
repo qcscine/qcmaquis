@@ -201,7 +201,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
         
         if (normalize == with_normalization) { // site != L/2-1
             block_matrix<Matrix, SymmGroup> t;
-            t = mps[site+1].normalize_left(DefaultSolver());
+            t = mps[site+1].leftNormalizeAndReturn(DefaultSolver());
             if (site+1 < L-1) mps[site+2].multiply_from_left(t);
         }
     }
@@ -210,7 +210,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
 
         if (normalize == with_normalization) { //site != L/2+1
             block_matrix<Matrix, SymmGroup> t;
-            t = mps[site].normalize_right(DefaultSolver());
+            t = mps[site].rightNormalizeAndReturn(DefaultSolver());
             if (site > 0) mps[site-1].multiply_from_right(t);
         }
     }

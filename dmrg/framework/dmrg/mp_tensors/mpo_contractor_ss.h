@@ -94,7 +94,7 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     block_matrix<Matrix, SymmGroup> t;
-                    t = mpsp[site].normalize_left(DefaultSolver());
+                    t = mpsp[site].leftNormalizeAndReturn(DefaultSolver());
                     mpsp[site+1].multiply_from_left(t);
                 }
 
@@ -103,7 +103,7 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     block_matrix<Matrix, SymmGroup> t;
-                    t = mpsp[site].normalize_right(DefaultSolver());
+                    t = mpsp[site].rightNormalizeAndReturn(DefaultSolver());
                     mpsp[site-1].multiply_from_right(t);
                 }
 
