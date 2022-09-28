@@ -123,9 +123,9 @@ struct compression {
 
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
-            else{
-                maquis::cout << "Norm reduction: " << trace(t) << std::endl;
-                ttrace = trace(t);
+            // else{
+            //     maquis::cout << "Norm reduction: " << trace(t) << std::endl;
+            //     ttrace = trace(t);
             }
         }
 
@@ -159,8 +159,8 @@ struct compression {
 
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
-            else
-                maquis::cout << "Norm reduction: " << trace(t) << std::endl;
+            // else
+            //     maquis::cout << "Norm reduction: " << trace(t) << std::endl;
         }
 
         return mps;
@@ -193,8 +193,8 @@ struct compression {
 
             if (p > 1)
                 mps[p-2].multiply_from_right(t);
-            else
-                maquis::cout << "Norm reduction: " << trace(t) << std::endl;
+            // else
+            //     maquis::cout << "Norm reduction: " << trace(t) << std::endl;
         }
 
         return mps;

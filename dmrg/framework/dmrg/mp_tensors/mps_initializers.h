@@ -83,7 +83,7 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
     {
         parallel::scheduler_balanced scheduler(mps.length());
         std::size_t L = mps.length();
-        maquis::cout << "Right end: " << right_end << std::endl;
+        // maquis::cout << "Right end: " << right_end << std::endl;
         // Compute the indexes which are allowed by symmetry
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
         // Populates the MPS tensor
