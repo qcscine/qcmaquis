@@ -158,22 +158,30 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
  */
 BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
 {
-    parametersBeTranscorrelatedTwoBody.set("propagator_accuracy", 1.0E-5);
+    parametersBeTranscorrelatedTwoBody.set("propagator_accuracy", 1.0E-10);
     parametersBeTranscorrelatedTwoBody.set("propagator_maxiter", 10);
     parametersBeTranscorrelatedTwoBody.set("hamiltonian_units", "Hartree");
     parametersBeTranscorrelatedTwoBody.set("time_units", "fs");
     parametersBeTranscorrelatedTwoBody.set("imaginary_time", "yes");
     parametersBeTranscorrelatedTwoBody.set("TD_backpropagation", "no");
     parametersBeTranscorrelatedTwoBody.set("symmetry", "2u1");
-    //
-    auto timeSteps = std::vector<double>{0.001, 0.01, 0.1};
-    for (const auto& iStep: timeSteps) {
-        parametersBeTranscorrelatedTwoBody.set("time_step", iStep);
-        maquis::DMRGInterface<std::complex<double>> interface(parametersBeTranscorrelatedTwoBody);
-        interface.evolve();
-        auto energyDMRG = maquis::real(interface.energy());
-        maquis::cout << "Time step " << iStep << " gives energy " << energyDMRG << std::endl;
-    }
+    parametersBeTranscorrelatedTwoBody.set("nsweeps", 10);
+    parametersBeTranscorrelatedTwoBody.set("time_step", 0.1);
+    parametersBeTranscorrelatedTwoBody.set("chkpfile", "Be.tcDMRG.checkpoint.h5");
+    maquis::DMRGInterface<std::complex<double>> interface(parametersBeTranscorrelatedTwoBody);
+    interface.evolve();
+    parametersBeTranscorrelatedTwoBody.set("nsweeps", 50);
+    parametersBeTranscorrelatedTwoBody.set("time_step", 0.01);
+    maquis::DMRGInterface<std::complex<double>> interface2(parametersBeTranscorrelatedTwoBody);
+    interface2.evolve();
+    parametersBeTranscorrelatedTwoBody.set("nsweeps", 100);
+    parametersBeTranscorrelatedTwoBody.set("time_step", 0.001);
+    maquis::DMRGInterface<std::complex<double>> interface3(parametersBeTranscorrelatedTwoBody);
+    interface3.evolve();
+    boost::filesystem::remove_all("Be.tcDMRG.checkpoint.h5");
+    auto energyDMRG = maquis::real(interface3.energy());
+    auto refEnergy = -14.6505807967243;
+    BOOST_CHECK_SMALL(std::abs(energyDMRG-refEnergy), 1.0E-10);
 }
 
 #endif // HAVE_TwoU1 and DMRG_TD

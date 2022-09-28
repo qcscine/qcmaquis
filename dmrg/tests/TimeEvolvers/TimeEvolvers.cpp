@@ -90,7 +90,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     using contr = contraction::Engine<cmatrix, typename storage::constrained<cmatrix>::type, S>;
     // The parameters are not really used
     DmrgParameters p;
-    p.set("integrals_binary", maquis::serialize(integrals));
+    p.set("integrals_binary", maquis::serialize(integralsH2));
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);
@@ -155,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationZeroSiteproblem, S, symme
     using contr = contraction::Engine<cmatrix, typename storage::constrained<cmatrix>::type, S>;
     // The parameters are not really used
     DmrgParameters p;
-    p.set("integrals_binary", maquis::serialize(integrals));
+    p.set("integrals_binary", maquis::serialize(integralsH2));
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);
@@ -216,7 +216,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyDecreaseSiteproblem, S, symmetries, T
     using contr = contraction::Engine<cmatrix, typename storage::constrained<cmatrix>::type, S>;
     // The parameters are not really used
     DmrgParameters p;
-    p.set("integrals_binary", maquis::serialize(integrals));
+    p.set("integrals_binary", maquis::serialize(integralsH2));
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);

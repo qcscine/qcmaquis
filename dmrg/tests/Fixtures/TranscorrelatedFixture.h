@@ -11514,7 +11514,8 @@ struct TranscorrelatedFixture
         parametersBeTranscorrelatedTwoBody.set("transcorrelated_hamiltonian", "yes");
         parametersBeTranscorrelatedTwoBody.set("truncation_initial", 1e-50);
         parametersBeTranscorrelatedTwoBody.set("truncation_final", 1e-50);
-        parametersBeTranscorrelatedTwoBody.set("init_state", "const");
+        parametersBeTranscorrelatedTwoBody.set("init_state", "hf");
+        parametersBeTranscorrelatedTwoBody.set("hf_occ", "4,4,1,1,1,1,1,1,1,1,1,1,1,1");
     }
 
     /** @brief Removes the FCIDUMP file */
