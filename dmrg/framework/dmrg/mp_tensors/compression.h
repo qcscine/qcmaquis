@@ -126,7 +126,7 @@ struct compression {
             // else{
             //     maquis::cout << "Norm reduction: " << trace(t) << std::endl;
             //     ttrace = trace(t);
-            }
+            //}
         }
 
         return mps;
