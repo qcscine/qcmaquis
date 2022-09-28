@@ -200,7 +200,6 @@ public:
     }
 
     /** @brief Runs a propagation calculation */
-    //AB For now it's mostly copy-pasted from optimize, should be rewritten in a cleaner way.
     void evolve()
     {
 #ifdef DMRG_TD
@@ -213,15 +212,12 @@ public:
         int chkp_each = parms["chkp_each"];
         // Optimizer initialization
         std::shared_ptr<EvolverType> evolver;
-        if (parms["optimization"] == "singlesite") {
+        if (parms["optimization"] == "singlesite")
             evolver = std::make_shared<SSEvolverType>(mps, mpo, parms, stop_callback, init_site);
-        }
-        else if(parms["optimization"] == "twosite") {
+        else if(parms["optimization"] == "twosite")
             evolver = std::make_shared<TSEvolverType>(mps, mpo, parms, stop_callback, init_site);
-        }
-        else {
+        else
             throw std::runtime_error("Evolution modality not recognized");
-        }
         measurements_type always_measurements = this->iteration_measurements(init_sweep);
         int nSweeps = parms["nsweeps"];
         try {

@@ -157,20 +157,16 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
     //**********************************************************************
     std::pair<std::vector<tag_type>, std::vector<value_type> > cutf = tag_handler->get_product_tags(create_up, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cdtf = tag_handler->get_product_tags(create_down_for_meas, fill);
-
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdu = tag_handler->get_product_tags(fill, destroy_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdd = tag_handler->get_product_tags(fill, destroy_down_for_meas);
-
     std::pair<std::vector<tag_type>, std::vector<value_type> > cund = tag_handler->get_product_tags(create_up, count_down);
     std::pair<std::vector<tag_type>, std::vector<value_type> > dund = tag_handler->get_product_tags(destroy_up, count_down);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cdnu = tag_handler->get_product_tags(create_down_for_meas, count_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ddnu = tag_handler->get_product_tags(destroy_down_for_meas, count_up);
-
     std::pair<std::vector<tag_type>, std::vector<value_type> > cundtf = tag_handler->get_product_tags(cund.first, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftdund = tag_handler->get_product_tags(fill, dund.first);
     std::pair<std::vector<tag_type>, std::vector<value_type> > cdnutf = tag_handler->get_product_tags(cdnu.first, fill);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ftddnu = tag_handler->get_product_tags(fill, ddnu.first);
-
     std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(destroy_down_for_meas, create_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up, create_down_for_meas);
 
@@ -252,7 +248,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                         !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
                         auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement/2.);
                         addTerm(mapOfOperators, term);
-                        //std::cout << term << std::endl;
+                        // std::cout << term << std::endl;
                     }
                 }
             }
@@ -295,7 +291,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                     !(posVector[4] == posVector[3] && iOp[4] == iOp[3]))
                                 {
                                     auto term = jw.getTerm(posVector, iOp, tag_handler, true, -matrixElement/6.);
-                                    //std::cout << term << std::endl;
+                                    // std::cout << term << std::endl;
                                     addTerm(mapOfOperators, term);
                                 }
                             }
