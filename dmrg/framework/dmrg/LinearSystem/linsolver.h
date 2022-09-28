@@ -245,14 +245,12 @@ protected:
         currentSolution_ += smallerVector[iFinal]*vecSpace[iFinal];
         //currentSolution_ += result[iFinal]*vecSpace[iFinal];
       // DEBUG
-      /*
-        vec_type diff(iter, 0.);
-        for (int iRow = 0; iRow < iter; iRow++) {
-          for (int iCol = 0; iCol < iter; iCol++)
-            diff(iRow) += R(iRow, iCol)*smallerVector[iCol];
-          std::cout << diff(iRow) - y[iRow] << std::endl;
-        }
-      */
+      // vec_type diff(iter, 0.);
+      // for (int iRow = 0; iRow < iter; iRow++) {
+      //   for (int iCol = 0; iCol < iter; iCol++)
+      //     diff(iRow) += R(iRow, iCol)*smallerVector[iCol];
+      //   std::cout << diff(iRow) - y[iRow] << std::endl;
+      // }
     }
     printEndl();
   }
@@ -377,12 +375,6 @@ public:
     return ret;
   }
 
-  /** @brief Overloading of user-defined conjugate function */
-  static inline double localConj(double a) { return a; }
-
-  /** @brief Conjugate function for complex numbers */
-  static inline std::complex<double> localConj(std::complex<double> a) { return std::conj(a); }
-
 private:
 
   /** @brief Preconditioner */
@@ -408,17 +400,6 @@ private:
     maquis::cout << std::fixed;
   }
 
-  /** @brief Calculates the Givens rotation */
-  static std::tuple<ScalarType, ScalarType, ScalarType> givens(ScalarType x0, ScalarType x1, ScalarType in0, ScalarType in1) {
-    double cos;
-    ScalarType sin;
-    std::tie(cos, sin) = calculateRotation(x0, x1);
-    auto r = cos*x0 + sin*x1;
-    auto out0 = cos*in0 + sin*in1;
-    auto out1 = -localConj(sin)*in0+cos*in1;
-    return std::make_tuple(out0, out1, r);
-  }
-
 
   /* Private members */
   std::shared_ptr<SiteProblem<Matrix, SymmGroup>> sp_;       // Pointer to the site problem representing the linear system.
@@ -426,7 +407,6 @@ private:
   const MPSTensorType& rhsMPS_;                              // Reference to the MPS representing the RHS of the local linear system.
   BaseParameters& parms_;                                    // Parameter container.
   ScalarType shift_;                                         // Shift to apply to the Hamiltonian.
-  energy_type en;                                            // CHECK IF NEEDED
   MPSTensorType currentSolution_;                            // Stores the current approximation to the solution of the linear system.
   int numberOfMacroIterations_;                              // Number of restarts for the solution of the linear system.
   int krylovDim_;                                            // Maximum dimension of the Krylov space.

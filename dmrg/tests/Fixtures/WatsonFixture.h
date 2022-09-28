@@ -3032,13 +3032,13 @@ struct WatsonFixture
         // and a 1/2 term coming from the two sqrt(2) factors
         integralsBilinearly = MaquisIntegralType {
             { {  1,  1,   0,   0,   0,   0},   std::sqrt(1./2.)/4. },
-            { {  2,  2,   0,   0,   0,   0},   std::sqrt(2./2.)/4. },
+            { {  2,  2,   0,   0,   0,   0},   std::sqrt(1.)/4. },
             { {  3,  3,   0,   0,   0,   0},   std::sqrt(3./2.)/4. },
             { {  4,  4,   0,   0,   0,   0},   std::sqrt(4./2.)/4. },
             { {  5,  5,   0,   0,   0,   0},   std::sqrt(5./2.)/4. },
             { {  6,  6,   0,   0,   0,   0},   std::sqrt(6./2.)/4. },
             { { -1, -1,   0,   0,   0,   0},  -std::sqrt(1./2.)/4. },
-            { { -2, -2,   0,   0,   0,   0},  -std::sqrt(2./2.)/4. },
+            { { -2, -2,   0,   0,   0,   0},  -std::sqrt(1.)/4. },
             { { -3, -3,   0,   0,   0,   0},  -std::sqrt(3./2.)/4. },
             { { -4, -4,   0,   0,   0,   0},  -std::sqrt(4./2.)/4. },
             { { -5, -5,   0,   0,   0,   0},  -std::sqrt(5./2.)/4. },
