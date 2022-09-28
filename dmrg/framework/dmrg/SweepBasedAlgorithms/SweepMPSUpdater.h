@@ -75,8 +75,8 @@ public:
                                                boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                cutoff, mMax);
       }
-      else {
-        auto t = mps_[siteLeft].normalize_left(DefaultSolver());
+      else if (normalizeEnd) {
+        mps_[siteLeft].leftNormalize(DefaultSolver());
       }
     }
     // Backward case
@@ -86,8 +86,8 @@ public:
                                                boundaryPropagator_->getRightBoundary(siteRight), siteLeft,
                                                alpha, cutoff, mMax);
       }
-      else {
-        auto t = mps_[siteLeft].normalize_right(DefaultSolver());
+      else if (normalizeEnd) {
+        mps_[siteLeft].rightNormalize(DefaultSolver());
       }
     }
     return truncationOutput;
@@ -137,11 +137,11 @@ public:
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(siteLeft),
                                                                                                mpo_[siteLeft]);
       if (siteRight < L_) {
-        auto t = mps_[siteLeft+1].normalize_left(DefaultSolver());
+        auto t = mps_[siteLeft+1].leftNormalizeAndReturn(DefaultSolver());
         mps_[siteRight].multiply_from_left(t);
       }
       else if (normalizeEnd) {
-        auto t = mps_[siteLeft+1].normalize_left(DefaultSolver());
+        mps_[siteLeft+1].leftNormalize(DefaultSolver());
       }
 
     }
@@ -152,11 +152,11 @@ public:
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(siteRight),
                                                                                                mpo_[siteLeft+1]);
       if (siteLeft > 0) {
-        auto t = mps_[siteLeft].normalize_right(DefaultSolver());
+        auto t = mps_[siteLeft].rightNormalizeAndReturn(DefaultSolver());
         mps_[siteLeft-1].multiply_from_right(t);
       }
       else if (normalizeEnd) {
-        auto t = mps_[siteLeft].normalize_right(DefaultSolver());
+        mps_[siteLeft].rightNormalize(DefaultSolver());
       }
     }
     return truncationOutput;

@@ -132,7 +132,7 @@ void MPS<Matrix, SymmGroup>::normalize_left()
     canonize(length()-1);
     // now state is: A A A A A A M
     parallel::guard proc(scheduler(length()-1));
-    block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
+    (*this)[length()-1].leftNormalize(DefaultSolver());
     // now state is: A A A A A A A
     canonized_i = length()-1;
 }
@@ -144,7 +144,7 @@ void MPS<Matrix, SymmGroup>::normalize_right()
     canonize(0);
     // now state is: M B B B B B B
     parallel::guard proc(scheduler(0));
-    block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
+    (*this)[0].rightNormalize(DefaultSolver());
     // now state is: B B B B B B B
     canonized_i = 0;
 }
@@ -185,7 +185,7 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
         block_matrix<Matrix, SymmGroup> t;
         {
             parallel::guard proc(scheduler(i));
-            t = (*this)[i].normalize_left(method);
+            t = (*this)[i].leftNormalizeAndReturn(method);
         }
         if (i < length()-1) {
             parallel::guard proc(scheduler(i+1));
@@ -215,7 +215,7 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
         block_matrix<Matrix, SymmGroup> t;
         {
             parallel::guard proc(scheduler(i));
-            t = (*this)[i].normalize_right(method);
+            t = (*this)[i].rightNormalizeAndReturn(method);
         }
         if (i > 0) {
             parallel::guard proc(scheduler(i-1));
