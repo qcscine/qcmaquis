@@ -136,7 +136,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     {
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
-        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::VibrationalNMode)*indices.size());
+        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::VibrationalNMode, chem::HamiltonianTransformation::Conventional)*indices.size());
         for (auto&& idx: indices)
             for (auto&& i: idx)
                 indices_vec.push_back(i);
