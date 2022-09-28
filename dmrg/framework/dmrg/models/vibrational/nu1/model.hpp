@@ -140,15 +140,17 @@ public:
 
     void create_terms() override {
         std::cout << "Parsing integral file" << std::endl;
-        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<value_type>(parameters, lattice);
+        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = Hamiltonian_term.first.size();
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
             operators_type operators;
             convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
-            if (positions.size()/2 <= maxCouplingDegree)
-                modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
+            if (positions.size()/2 <= maxCouplingDegree) {
+                auto matrixElement = static_cast<value_type>(Hamiltonian_term.second[iTerm]);
+                modelHelper<Matrix, NU1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
+            }
         }
         std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
     }

@@ -122,7 +122,7 @@ public:
      * This method populates the [terms_] member with the Hamiltonian coefficients
      */
     void create_terms() override {
-        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_);
+        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<double>(parameters_, lattice_);
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
@@ -147,7 +147,8 @@ public:
                 outerCounter += innerCounter;
             }
             // Final addition of the terms
-            modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, iTerms.second, tag_handler_, this->terms_, true);
+            auto coefficient = static_cast<value_type>(iTerms.second);
+            modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, coefficient, tag_handler_, this->terms_, true);
         }
     }
 
