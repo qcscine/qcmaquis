@@ -63,7 +63,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
 
 #ifdef HAVE_TrivialGroup
 
-BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic, WatsonFixture)
+/*
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
 {
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
@@ -102,6 +103,63 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic, WatsonFixture)
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
   auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
   feastSimulator.runFeastSimulation(vibrationalMPO);
+}
+*/
+
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
+{
+  using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
+  using ModelType = Model<cmatrix, TrivialGroup>;
+  //
+  parametersBilinearly.set("init_state", "basis_state_generic");
+  parametersBilinearly.set("init_basis_state", "0,0,0,0,0,0");
+  parametersBilinearly.set("optimization", "singlesite");
+  parametersBilinearly.set("alpha_initial", 1.0E-8);
+  parametersBilinearly.set("alpha_initial", 1.0E-15);
+  parametersBilinearly.set("alpha_initial", 0.);
+  parametersBilinearly.set("nsweeps", 20);
+  parametersBilinearly.set("ngrowsweeps", 2);
+  parametersBilinearly.set("nmainsweeps", 2);
+  parametersBilinearly.set("max_bond_dimension", 20);
+  parametersBilinearly.set("MODEL", "watson");
+  parametersBilinearly.set("chkpfile", "GS.Bilinearly.chkp.h5");
+  maquis::DMRGInterface<double> interfaceOptimizerGS(parametersBilinearly);
+  interfaceOptimizerGS.optimize();
+  auto energyFromOptimizerGS = interfaceOptimizerGS.energy();
+  // Excited-state calculation
+  parametersBilinearly.set("n_ortho_states", 1);
+  parametersBilinearly.set("ortho_states", "GS.Bilinearly.chkp.h5");
+  parametersBilinearly.set("chkpfile", "ES.Bilinearly.chkp.h5");
+  maquis::DMRGInterface<double> interfaceOptimizerES(parametersBilinearly);
+  interfaceOptimizerES.optimize();
+  auto energyFromOptimizerES = interfaceOptimizerES.energy();
+  // Cleans up stuff
+  boost::filesystem::remove_all("GS.Bilinearly.chkp.h5");
+  boost::filesystem::remove_all("ES.Bilinearly.chkp.h5");
+  // == DMRG[FEAST] ==
+  auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  // FEAST-specific parameters
+  parametersBilinearly.set("feast_num_states", 1);
+  parametersBilinearly.set("feast_max_iter", 1);
+  parametersBilinearly.set("feast_emin", eMin);
+  parametersBilinearly.set("feast_emax", eMax);
+  parametersBilinearly.set("feast_num_points", 8);
+  parametersBilinearly.set("feast_init_type", "basis_state_generic_default");
+  parametersBilinearly.set("feast_init_onv", "2,0,1,2,1,2");
+  // parametersH2COWatson.set("feast_truncation_type", "end");
+  // Setup parameters for the linear system solver.
+  parametersBilinearly.set("linsystem_precond", "no");
+  parametersBilinearly.set("linsystem_krylov_dim", 50);
+  parametersBilinearly.set("linsystem_tol", 1.0E-5);
+  parametersBilinearly.set("linsystem_init", "last");
+  auto vibrationalLattice = Lattice(parametersBilinearly);
+  auto vibrationalModel = ModelType(vibrationalLattice, parametersBilinearly);
+  auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
+  auto feastSimulator = FEASTSimulatorType(parametersBilinearly, vibrationalModel, vibrationalLattice);
+  feastSimulator.runFeastSimulation(vibrationalMPO);
+  auto feastEnergy = feastSimulator.getVibrationalEnergy(0);
+  BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }
 
 #endif // HAVE_TrivialGroup

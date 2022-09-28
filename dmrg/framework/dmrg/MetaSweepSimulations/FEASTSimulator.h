@@ -114,34 +114,38 @@ public:
       maquis::cout << " - Weight: " << complexWeights[quadPoint] << std::endl;
       maquis::cout << std::endl;
       // Here there is a bit of code repetition because the pointer type is different for SS and TS
+      maquis::cout << std::endl;
       if (isSingleSite) {
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           maquis::cout << std::endl;
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
-          maquis::cout << std::endl;
+          maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo, parameters, 0);
           ssSimulator->setShift(t);
           ssSimulator->runSweepSimulation();
-          resultContainer.emplace(std::make_pair(iGuess, quadPoint), std::move(mpsTmp));
+          resultContainer.insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
         }
       }
       else {
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
+          maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsGuess[iGuess], mpo, parameters, 0);
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo, parameters, 0);
           tsSimulator->setShift(t);
           tsSimulator->runSweepSimulation();
-          resultContainer.emplace(std::make_pair(iGuess, quadPoint), std::move(mpsTmp));
+          resultContainer.insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
         }
       }
+      maquis::cout << std::endl;
     }
     // Diagonalizes the Hamiltonian matrix in the FEAST subspace
     typename FeastHelper::FEASTPostProcessor<SymmGroup> postProcessor(resultContainer, numStates, numQuadraturePoint, complexWeights);
     postProcessor.solveEigenvalueProblem(mpo);
     resultContainer = postProcessor.performBackTransformation(mpo, mMax, truncateEach);
     postProcessor.printResults();
+    energies = postProcessor.getEnergies();
     // Final update of the iteration counter
     currentIter += 1;
   }
@@ -151,8 +155,14 @@ public:
     return mpsGuess[iState];
   }
 
+  /** @brief Getter for the quadrature points */
   auto getQuadraturePoints() const {
     return quadPoints;
+  }
+
+  /** @brief Getter for the FEAST energy */
+  auto getVibrationalEnergy(int iState) const {
+    return energies[iState];
   }
 
 private:
@@ -201,6 +211,7 @@ private:
     maquis::cout << " - Convergence threshold for FEAST: " << feastThreshold << std::endl;
     maquis::cout << " - Integration type: " << intModality << std::endl;
     maquis::cout << " - Truncation modality: " << truncModality << std::endl;
+    maquis::cout << " - MPS guess type: " << initType << std::endl;
     maquis::cout << " - DMRG solver: " << ((isSingleSite) ? "single site" : "two site") << std::endl;
   }
 
@@ -222,6 +233,7 @@ private:
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
   bool truncateEach;                                             // If true, truncates the MPS after each sum.
   ResultContainerType resultContainer;                           // Member that stores the result of each linear system.
+  std::vector<double> energies;                                  // FEAST energies at the current iteration.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };

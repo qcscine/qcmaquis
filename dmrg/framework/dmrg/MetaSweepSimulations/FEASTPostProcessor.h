@@ -95,12 +95,14 @@ public:
     //     B += Bvec[iThread];
     // }
     auto overlapDeterminant = calculateDeterminant(B);
-    maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
-    maquis::cout << H << std::endl;
-    maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
-    maquis::cout << B << std::endl;
-    maquis::cout << std::scientific;
-    maquis::cout << " Determinant of the overlap matrix " << overlapDeterminant << std::endl;
+    // maquis::cout << std::setprecision(12);
+    // maquis::cout << std::scientific;
+    // maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
+    // maquis::cout << H << std::endl;
+    // maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
+    // maquis::cout << B << std::endl;
+    // maquis::cout << " Determinant of the overlap matrix " << overlapDeterminant << std::endl;
+    // maquis::cout << H(0, 0)/B(0, 0) << std::endl;
     for (int i = 0; i < nStates; i++)
       normVector[i] = std::sqrt(std::real(B(i, i)));
     for (int i = 0; i < nStates; i++) {
@@ -120,7 +122,7 @@ public:
     for (int iElement = 0; iElement < nStates; iElement++)
       if (std::fabs(S(iElement, iElement)) > thresholdForRank_)
         rank += 1;
-    std::cout << " The FEAST overlap matrix has a rank " << rank << std::endl;
+    // std::cout << " The FEAST overlap matrix has a rank " << rank << std::endl;
     // cmat_type regularizedInverseSquareRoot = svd.matrixU().block(0, 0, n_states, rank_)*
     //                                          svd.singularValues().head(rank_).array().rsqrt().matrix().asDiagonal();
     ComplexMatrixType regularizedInverseSquareRoot(nStates, rank);
@@ -135,6 +137,12 @@ public:
     // rvec_type eigenvalues = tmpSolver.eigenvalues().real();
     eigenValues = RealVectorType(rank);
     eigenVectors = ComplexMatrixType(rank, rank);
+    // maquis::cout << "Regularized inverse square root" << std::endl;
+    // maquis::cout << regularizedInverseSquareRoot << std::endl;
+    // maquis::cout << "Lowding Hamiltonian" << std::endl;
+    // maquis::cout << lowdinHamiltonian << std::endl;
+    lowdinHamiltonian = (lowdinHamiltonian + adjoint(lowdinHamiltonian));
+    lowdinHamiltonian /= 2.;
     alps::numeric::heev(lowdinHamiltonian, eigenVectors, eigenValues);
     vibEnergyPrev = vibEnergy;
     for (int iState = 0; iState < rank; iState++)
@@ -229,6 +237,11 @@ public:
                   << vibEnergy[iState]     << std::endl;
     std::cout << " +----------------------------------------------+" << std::endl;
     std::cout << std::endl;
+  }
+
+  /** @brief Getter for the vibrational energy */
+  auto getEnergies() const {
+    return vibEnergy;
   }
 
 private:
