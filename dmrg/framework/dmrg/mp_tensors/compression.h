@@ -98,35 +98,30 @@ struct compression {
 
     template<class Matrix, class SymmGroup>
     MPS<Matrix, SymmGroup>
-    static l2r_compress(MPS<Matrix, SymmGroup> mps,
-                        std::size_t Mmax, double cutoff,
-                        double & ttrace, bool verbose = false)
+    static l2r_compress(MPS<Matrix, SymmGroup> mps, std::size_t Mmax, double cutoff, double & ttrace,
+                        bool verbose = false)
     {
         std::size_t L = mps.length();
-        std::vector<double> ret;
-
         block_matrix<Matrix, SymmGroup> t;
-
         mps.canonize(1);
-
-        if (verbose) maquis::cout << "Compressing @ ";
+        if (verbose)
+            maquis::cout << "Compressing @ ";
         for (std::size_t p = 1; p < L; ++p)
         {
             if (verbose) {
                 maquis::cout << p << " ";
                 maquis::cout.flush();
             }
-
             compress_two_sites(mps, Mmax, cutoff, p-1);
-
             t = mps[p].leftNormalizeAndReturn(DefaultSolver());
 
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
-            // else{
-            //     maquis::cout << "Norm reduction: " << trace(t) << std::endl;
-            //     ttrace = trace(t);
-            //}
+            else{
+                if (verbose)
+                    maquis::cout << "Norm reduction: " << trace(t) << std::endl;
+                ttrace = trace(t);
+            }
         }
 
         return mps;
@@ -134,29 +129,21 @@ struct compression {
 
     template<class Matrix, class SymmGroup>
     MPS<Matrix, SymmGroup>
-    static l2r_compress(MPS<Matrix, SymmGroup> mps,
-                        std::size_t Mmax, double cutoff,
-                        bool verbose = false)
+    static l2r_compress(MPS<Matrix, SymmGroup> mps, std::size_t Mmax, double cutoff, bool verbose = false)
     {
         std::size_t L = mps.length();
-        std::vector<double> ret;
-
         block_matrix<Matrix, SymmGroup> t;
-
         mps.canonize(1);
-
-        if (verbose) maquis::cout << "Compressing @ ";
+        if (verbose)
+            maquis::cout << "Compressing @ ";
         for (std::size_t p = 1; p < L; ++p)
         {
             if (verbose) {
                 maquis::cout << p << " ";
                 maquis::cout.flush();
             }
-
             compress_two_sites(mps, Mmax, cutoff, p-1);
-
             t = mps[p].leftNormalizeAndReturn(DefaultSolver());
-
             if (p+1 < L)
                 mps[p+1].multiply_from_left(t);
             // else
@@ -173,12 +160,8 @@ struct compression {
                         bool verbose = false)
     {
         std::size_t L = mps.length();
-        std::vector<double> ret;
-
         block_matrix<Matrix, SymmGroup> t;
-
         mps.canonize(L-1);
-
         if (verbose) maquis::cout << "Compressing @ ";
         for (std::size_t p = L-1; p > 0; --p)
         {
@@ -186,11 +169,8 @@ struct compression {
                 maquis::cout << p << " ";
                 maquis::cout.flush();
             }
-
             compress_two_sites(mps, Mmax, cutoff, p-1);
-
             t = mps[p-1].rightNormalizeAndReturn(DefaultSolver());
-
             if (p > 1)
                 mps[p-2].multiply_from_right(t);
             // else
