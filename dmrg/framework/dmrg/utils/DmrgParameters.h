@@ -170,10 +170,10 @@ private:
 
         // Solution of linear systems
         add_option("linsystem_precond", "If yes, applies a preconditioner to the linear system solver", value("no"));
-        add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [mps] for the rhs", value("zero"));
+        add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [mps] for the rhs", value("last"));
         add_option("linsystem_max_it", "Maximum number of times the iterative linear system solver is repeated (if >1, does basically restarted GMRES", value(1));
-        add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-8));
-        add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(10));
+        add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-5));
+        add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(50));
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
 
         // Parameters related to DMRG[IPI]
