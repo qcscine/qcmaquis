@@ -63,18 +63,19 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
 
 #ifdef HAVE_TrivialGroup
 
-/*
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
 {
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
   parametersH2COWatson.set("max_bond_dimension", 10);
+  parametersH2COWatson.set("init_state", "basis_state_generic");
+  parametersH2COWatson.set("init_basis_state", "0,0,0,0,0,0");
   parametersH2COWatson.set("optimization", "twosite");
   parametersH2COWatson.set("symmetry", "none");
-  parametersH2COWatson.set("init_state", "const");
-  parametersH2COWatson.set("nsweeps", 3);
+  parametersH2COWatson.set("nsweeps", 5);
   parametersH2COWatson.set("chkpfile", "GS.H2CO.chkp.h5");
+  parametersH2COWatson.set("Nmax", 6);
   maquis::DMRGInterface<double> interfaceOptimizerGS(parametersH2COWatson);
   interfaceOptimizerGS.optimize();
   auto energyFromOptimizerGS = interfaceOptimizerGS.energy();
@@ -95,16 +96,21 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatson.set("feast_max_iter", 1);
   parametersH2COWatson.set("feast_emin", eMin);
   parametersH2COWatson.set("feast_emax", eMax);
-  parametersH2COWatson.set("feast_num_points", 2);
-  parametersH2COWatson.set("feast_init_type", "default");
-  parametersH2COWatson.set("nsweeps", 1);
+  parametersH2COWatson.set("feast_num_points", 8);
+  parametersH2COWatson.set("feast_init_type", "basis_state_generic_const");
+  parametersH2COWatson.set("feast_init_onv", "3,2,1,1,2,0");
+  parametersH2COWatson.set("linsystem_precond", "no");
+  parametersH2COWatson.set("linsystem_krylov_dim", 50);
+  parametersH2COWatson.set("linsystem_tol", 1.0E-5);
+  parametersH2COWatson.set("linsystem_init", "last");
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
   auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
   feastSimulator.runFeastSimulation(vibrationalMPO);
+  auto feastEnergy = feastSimulator.getEnergy(0);
+  BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }
-*/
 
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
 {
@@ -158,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
   auto feastSimulator = FEASTSimulatorType(parametersBilinearly, vibrationalModel, vibrationalLattice);
   feastSimulator.runFeastSimulation(vibrationalMPO);
-  auto feastEnergy = feastSimulator.getVibrationalEnergy(0);
+  auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }
 

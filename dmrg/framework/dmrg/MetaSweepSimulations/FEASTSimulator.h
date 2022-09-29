@@ -87,6 +87,11 @@ public:
       isSingleSite = false;
   }
 
+  /** @brief FEAST simulation (which is composed by multiple FEAST iterations) */
+  void runFEAST(const MPOType& mpo) {
+
+  }
+
   /** @brief Runs a single iteration of DMRG[FEAST] */
   void runFeastSimulation(const MPOType& mpo) {
     maquis::cout << " +====================" << std::endl;
@@ -94,8 +99,8 @@ public:
     maquis::cout << " +====================" << std::endl;
     // Variable initialization
     std::vector<ComplexType> complexWeights;
-    auto r = (eMax- eMin)/2.;
-    auto r0 = (eMax + eMin)/2.;
+    auto r = (eMax - eMin)/2.;
+    auto r0 = (eMax + eMin - 2.*mpo.getCoreEnergy())/2.;
     // For each FEAST iteration, we have a loop over the number of quadrature points 
     // AND of the number of target states.
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
@@ -161,7 +166,7 @@ public:
   }
 
   /** @brief Getter for the FEAST energy */
-  auto getVibrationalEnergy(int iState) const {
+  auto getEnergy(int iState) const {
     return energies[iState];
   }
 

@@ -7,9 +7,10 @@ set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES} srca
 # *** Targets
 add_executable(test1 test1.cpp)
 target_link_libraries(test1 ${DMRG_APP_LIBRARIES})
-
 add_executable(test2 test2.cpp)
 target_link_libraries(test2 ${DMRG_APP_LIBRARIES})
+add_executable(test_FEAST_electronic FEAST/ElectronicFEAST.cpp)
+target_link_libraries(test_FEAST_electronic ${DMRG_APP_LIBRARIES})
 
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_imaginarytime test_imaginarytime.cpp)
@@ -103,31 +104,22 @@ endif(BUILD_VIBRONIC)
 
 add_executable(test_integral_map test_integral_map.cpp)
 target_link_libraries(test_integral_map ${DMRG_APP_LIBRARIES})
-
 add_executable(test_rel test_rel.cpp)
 target_link_libraries(test_rel ${DMRG_APP_LIBRARIES})
-
 add_executable(test_hirdm test_hirdm.cpp)
 target_link_libraries(test_hirdm ${DMRG_APP_LIBRARIES})
-
 add_executable(test_mps_mpo_ops_TwoU1 test_mps_mpo_ops/test_mps_mpo_ops_TwoU1.cpp)
 target_link_libraries(test_mps_mpo_ops_TwoU1 ${DMRG_APP_LIBRARIES})
-
 add_executable(test_mps_mpo_ops_electronic test_mps_mpo_ops/test_mps_mpo_ops_electronic.cpp)
 target_link_libraries(test_mps_mpo_ops_electronic ${DMRG_APP_LIBRARIES})
-
 add_executable(test_mpo_times_mps_TwoU1 test_mps_mpo_ops/test_mpo_times_mps_TwoU1.cpp)
 target_link_libraries(test_mpo_times_mps_TwoU1 ${DMRG_APP_LIBRARIES})
-
 add_executable(test_mps_overlap_electronic test_mps_mpo_ops/test_mps_overlap_electronic.cpp)
 target_link_libraries(test_mps_overlap_electronic ${DMRG_APP_LIBRARIES})
-
 add_executable(test_siteproblem test_mps_mpo_ops/test_siteproblem.cpp)
 target_link_libraries(test_siteproblem ${DMRG_APP_LIBRARIES})
-
 add_executable(test_mpsjoin test_mps_mpo_ops/mpsjoin.cpp)
 target_link_libraries(test_mpsjoin ${DMRG_APP_LIBRARIES})
-
 add_executable(test_wigner test_wigner.cpp)
 target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
 

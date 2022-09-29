@@ -40,11 +40,12 @@ namespace detail {
         typedef typename M::value_type value_type;
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef Lattice::pos_t pos_t;
+        using InputType = double;
 
         ChemHelperSU2(BaseParameters & parms, Lattice const & lat, std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : tag_handler(tag_handler_)
         {
-            boost::tie(idx_, matrix_elements) = parse_integrals<value_type, S>(parms, lat);
+            boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -53,7 +54,7 @@ namespace detail {
             }
         }
 
-        std::vector<value_type> const & getMatrixElements() const { return matrix_elements; }
+        const auto& getMatrixElements() const { return matrix_elements; }
         alps::numeric::matrix<Lattice::pos_t> const & getIdx() const { return idx_; }
 
         int idx(int m, int pos) const {
@@ -113,7 +114,7 @@ namespace detail {
 
         std::shared_ptr<TagHandler<M, S> > tag_handler;
 
-        std::vector<value_type> matrix_elements;
+        std::vector<InputType> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;
 
         std::map<IndexTuple, value_type> coefficients;

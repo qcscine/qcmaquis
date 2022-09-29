@@ -56,29 +56,29 @@ TwoU1PG
  */
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorBoundaryPropagator, S, symmetries, BenzeneFixture)
 {
-    using BoundaryPropagatorType = BoundaryPropagator<matrix, S, storage::disk>;
-    parametersBenzene.set("init_state", "const");
-    auto latticeBenzene = Lattice(parametersBenzene);
-    auto modelBenzene = Model<matrix, S>(latticeBenzene, parametersBenzene);
-    auto mpoBenzene = make_mpo(latticeBenzene, modelBenzene);
-    auto mpsBenzeneConst = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
-    mpsBenzeneConst.normalize_right();
-    auto energy = expval(mpsBenzeneConst, mpoBenzene);
-    auto boundaryPropagator = BoundaryPropagatorType(mpsBenzeneConst, mpoBenzene);
-    boundaryPropagator.updateRightBoundary(0);
-    // Simple checks
-    auto lastRightBoundary = boundaryPropagator.getRightBoundary(0);
-    BOOST_CHECK_EQUAL(lastRightBoundary.aux_dim(), 1);
-    BOOST_CHECK_EQUAL(lastRightBoundary[0].n_blocks(), 1);
-    // Energy check
-    auto energyFromRightBoundary = lastRightBoundary[0].trace() + mpoBenzene.getCoreEnergy();
-    BOOST_CHECK_CLOSE(energyFromRightBoundary, energy, 1.0E-8);
-    // Does the same for the left part
-    for (int iSite = 1; iSite <= latticeBenzene.size(); iSite++)
-        boundaryPropagator.updateLeftBoundary(iSite);
-    auto lastLeftBoundary = boundaryPropagator.getLeftBoundary(latticeBenzene.size());
-    BOOST_CHECK_EQUAL(lastLeftBoundary.aux_dim(), 1);
-    BOOST_CHECK_EQUAL(lastLeftBoundary[0].n_blocks(), 1);
-    auto energyFromLeftBoundary = lastLeftBoundary[0].trace() + mpoBenzene.getCoreEnergy();
-    BOOST_CHECK_CLOSE(energyFromLeftBoundary, energy, 1.0E-8);
+  using BoundaryPropagatorType = BoundaryPropagator<matrix, S, storage::disk>;
+  parametersBenzene.set("init_state", "const");
+  auto latticeBenzene = Lattice(parametersBenzene);
+  auto modelBenzene = Model<matrix, S>(latticeBenzene, parametersBenzene);
+  auto mpoBenzene = make_mpo(latticeBenzene, modelBenzene);
+  auto mpsBenzeneConst = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
+  mpsBenzeneConst.normalize_right();
+  auto energy = expval(mpsBenzeneConst, mpoBenzene);
+  auto boundaryPropagator = BoundaryPropagatorType(mpsBenzeneConst, mpoBenzene);
+  boundaryPropagator.updateRightBoundary(0);
+  // Simple checks
+  auto lastRightBoundary = boundaryPropagator.getRightBoundary(0);
+  BOOST_CHECK_EQUAL(lastRightBoundary.aux_dim(), 1);
+  BOOST_CHECK_EQUAL(lastRightBoundary[0].n_blocks(), 1);
+  // Energy check
+  auto energyFromRightBoundary = lastRightBoundary[0].trace() + mpoBenzene.getCoreEnergy();
+  BOOST_CHECK_CLOSE(energyFromRightBoundary, energy, 1.0E-8);
+  // Does the same for the left part
+  for (int iSite = 1; iSite <= latticeBenzene.size(); iSite++)
+    boundaryPropagator.updateLeftBoundary(iSite);
+  auto lastLeftBoundary = boundaryPropagator.getLeftBoundary(latticeBenzene.size());
+  BOOST_CHECK_EQUAL(lastLeftBoundary.aux_dim(), 1);
+  BOOST_CHECK_EQUAL(lastLeftBoundary[0].n_blocks(), 1);
+  auto energyFromLeftBoundary = lastLeftBoundary[0].trace() + mpoBenzene.getCoreEnergy();
+  BOOST_CHECK_CLOSE(energyFromLeftBoundary, energy, 1.0E-8);
 }
