@@ -39,5 +39,5 @@ integral_cutoff                  = 1.0E-10
 init_state                       = "basis_state_generic"
 init_basis_state                 = "0,0,0,0,0,0,0,0,0,0,0,0"
 chkpfile                         = "C2H4.DMRG-IPI.m50.SS.checkpoint.h5" 
-resultfile                       = "C2H4.DMRG-IPI.m50.SS.resfile.h5"
+resultfile                       = "C2H4.DMRG-IPI.m50.SS.result.h5"
 
