@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   // Cleans up stuff
   boost::filesystem::remove_all("GS.H2.FEAST.chkp.h5");
   boost::filesystem::remove_all("ES.H2.FEAST.chkp.h5");
-  // FEAST
+  // FEAST for ground state
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   parametersH2.set("feast_num_states", 1);
@@ -87,4 +87,14 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
+  // FEAST for excited state
+  eMin = energyFromOptimizerES - 0.0001;
+  eMax = energyFromOptimizerES + 0.0001;
+  parametersH2.set("feast_max_iter", 5);
+  parametersH2.set("feast_emin", eMin);
+  parametersH2.set("feast_emax", eMax);
+  auto feastSimulatorES = FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
+  feastSimulatorES.runFEAST();
+  feastEnergy = feastSimulatorES.getEnergy(0);
+  BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerES, 1.0E-6);
 }
