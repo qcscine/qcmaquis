@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSiteShifter, S, symmetries, Test
     using SiteShifterType = SiteShifter<matrix, S, TimeEvolverType, PerturberType>;
     // The parameters are not really used
     DmrgParameters p;
-    p.set("integrals_binary", maquis::serialize(integrals));
+    p.set("integrals_binary", maquis::serialize(integralsDouble));
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);
