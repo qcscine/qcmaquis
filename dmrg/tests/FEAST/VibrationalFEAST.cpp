@@ -49,7 +49,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   parametersH2COWatson.set("feast_init_onv", "0,0,0,0,0,0|1,0,0,0,0,0");
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
-  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
+  auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
+  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
   // Checks consistency between guess MPS
   auto firstMPS = feastSimulator.getCurrentGuess(0);
   auto secondMPS = feastSimulator.getCurrentGuess(1);
@@ -106,8 +107,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice);
-  feastSimulator.runFeastSimulation(vibrationalMPO);
+  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }
@@ -162,8 +163,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   auto vibrationalLattice = Lattice(parametersBilinearly);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersBilinearly);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersBilinearly, vibrationalModel, vibrationalLattice);
-  feastSimulator.runFeastSimulation(vibrationalMPO);
+  auto feastSimulator = FEASTSimulatorType(parametersBilinearly, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }

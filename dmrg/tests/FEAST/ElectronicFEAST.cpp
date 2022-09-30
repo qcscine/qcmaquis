@@ -49,6 +49,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   //
   parametersH2.set("max_bond_dimension", 10);
   parametersH2.set("init_state", "default");
+  parametersH2.set("seed", 19893003);
   parametersH2.set("optimization", "twosite");
   parametersH2.set("nsweeps", 5);
   parametersH2.set("chkpfile", "GS.H2.FEAST.chkp.h5");
@@ -82,8 +83,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   auto H2Lattice = Lattice(parametersH2);
   auto H2Model = ModelType(H2Lattice, parametersH2);
   auto H2MPO = make_mpo(H2Lattice, H2Model);
-  auto feastSimulator = FEASTSimulatorType(parametersH2, H2Model, H2Lattice);
-  feastSimulator.runFeastSimulation(H2MPO);
+  auto feastSimulator = FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
+  feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }

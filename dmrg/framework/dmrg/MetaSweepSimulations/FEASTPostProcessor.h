@@ -51,18 +51,22 @@ public:
   using ComplexVectorType = alps::numeric::vector<ComplexNumber>;
   using ResultContainerType = std::map<std::pair<int, int>, MPSType>;
 
-  FEASTPostProcessor(ResultContainerType& resultMPS, int numberOfStates, int numberOfQuadrature,
-                     const std::vector<ComplexNumber>& w)
-    : mpsContainer(resultMPS), nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w)
+  FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w)
+    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w)
   {
-    vibEnergy = std::vector<double>(nStates, 0);
-    vibEnergyPrev = std::vector<double>(nStates, 0);
+    energies = std::vector<double>(nStates, 0);
+    energiesPrev = std::vector<double>(nStates, 0);
     normVector = std::vector<double>(nStates, 0);
+  }
+
+  /** @brief Updates teh mps container */
+  void updateContainer(std::shared_ptr<ResultContainerType> container) {
+    mpsContainer = container;
   }
 
   /**
    * @brief Diagonalizes the Hamiltonian in the FEAST subspace.
-   * @return std::vector<double> eigenvalues of the FEAST Hamiltonian
+   * @return std::vector<double> eigenvalues of the FEAST Hamiltonian.
    */
   void solveEigenvalueProblem(const MPOType& mpo) {
     // -- Hamiltonian matrix construction --
@@ -80,10 +84,10 @@ public:
     // would lead to a very large MPS. We instead sum the expectation values directly.
     for (int i = 0; i < nStates; i++) {
       for (int iQ = 0; iQ < nQuad; iQ++) {
-        auto& mpsCopyI = mpsContainer[std::make_pair(i, iQ)];
+        auto& mpsCopyI = mpsContainer->operator[](std::make_pair(i, iQ));
         for (int j = 0; j < nStates; j++) {
           for (int jQ = 0; jQ < nQuad; jQ++) {
-            auto& mpsCopyJ = mpsContainer[std::make_pair(j, jQ)];
+            auto& mpsCopyJ = mpsContainer->operator[](std::make_pair(j, jQ));
             H(i, j) += expval(mpsCopyI, mpsCopyJ, mpo)*std::conj(weights[iQ])*weights[jQ];
             B(i, j) += overlap(mpsCopyI, mpsCopyJ)*std::conj(weights[iQ])*weights[jQ];
           }
@@ -94,7 +98,7 @@ public:
     //     H += Hvec[iThread];
     //     B += Bvec[iThread];
     // }
-    auto overlapDeterminant = calculateDeterminant(B);
+    // auto overlapDeterminant = calculateDeterminant(B);
     // maquis::cout << std::setprecision(12);
     // maquis::cout << std::scientific;
     // maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
@@ -144,19 +148,19 @@ public:
     lowdinHamiltonian = (lowdinHamiltonian + adjoint(lowdinHamiltonian));
     lowdinHamiltonian /= 2.;
     alps::numeric::heev(lowdinHamiltonian, eigenVectors, eigenValues);
-    vibEnergyPrev = vibEnergy;
+    energiesPrev = energies;
     for (int iState = 0; iState < rank; iState++)
-      vibEnergy[iState] = eigenValues[iState];
+      energies[iState] = eigenValues[iState];
     eigenVectorsRescaled = ComplexMatrixType(rank, rank);
     gemm(regularizedInverseSquareRoot, eigenVectors, eigenVectorsRescaled);
   };
 
   /**
    * @brief Back-transformation of the MPS
-   * 
+   *
    * The eigenvectors of the FEAST Hamiltonian are used to back-transform the MPS
    * and provide new guess for FEAST iteration.
-   * 
+   *
    * @param mMax maximum bond dimension
    * @param truncEach if true, truncates after each sum between MPSs.
    */
@@ -166,16 +170,18 @@ public:
     // MatrixOfMPSs mps_transf(n_states, n_states);
     using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
     MatrixOfMPSs mpsTransformed;
-    int rank = vibEnergy.size();
-    auto refNorm = ietl::two_norm(mpsContainer.begin()->second[0]);
-    for (auto& iMPS: mpsContainer)
+    // Variable definition
+    int rank = energies.size();
+    auto refNorm = ietl::two_norm(mpsContainer->begin()->second[0]);
+    std::vector<MPSType> result(rank);
+    for (auto& iMPS: *mpsContainer)
       iMPS.second[0] /= refNorm;
     //#pragma omp parallel for collapse(2)
     // Actual back-transformation
     for (int iOutput = 0; iOutput < rank; iOutput++) {
       for (int iInput = 0; iInput < nStates; iInput++) {
         for (int iQuad = 0; iQuad < nQuad; iQuad++) {
-          MPSType mpsToAdd = mpsContainer[std::make_pair(iInput, iQuad)];
+          MPSType mpsToAdd = mpsContainer->operator[](std::make_pair(iInput, iQuad));
           auto scalingFactor = eigenVectorsRescaled(iInput, iOutput)*weights[iQuad]/normVector[iInput];
           mpsToAdd.scaleByScalar(scalingFactor);
           if (iQuad == 0) {
@@ -196,17 +202,16 @@ public:
     }
     //#pragma omp parallel for
     for (int iOutput = 0; iOutput < rank; iOutput++) {
+      result[iOutput] = mpsTransformed[std::make_pair(iOutput, 0)];
       for (int iInput = 1; iInput < nStates; iInput++) {
-        if (truncEach) 
-          mpsTransformed[std::make_pair(iOutput, 0)] = joinAndTruncate(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, iInput)], mMax);
+        if (truncEach)
+          result[iOutput] = joinAndTruncate(result[iOutput], mpsTransformed[std::make_pair(iOutput, iInput)], mMax);
         else
-          mpsTransformed[std::make_pair(iOutput, 0)] = join(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, iInput)]);
+          result[iOutput] = join(result[iOutput], mpsTransformed[std::make_pair(iOutput, iInput)]);
         //#pragma omp critical (printEnergy) {
         // std::cout << " Truncated Energy for root " << iOutput << " before truncation = " <<
         //   expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
         //}
-        if (!truncEach)
-          mpsTransformed[std::make_pair(iOutput, 0)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, 0)], mMax, 1.0E-16);
         //#pragma omp critical (printEnergy)
         //{
         // std::cout << " Truncated Energy for root " << iOutput << " = " <<
@@ -220,8 +225,10 @@ public:
         //    reducedVariance[iOutput] = std::sqrt(maquis::real(squaredEnergy)) - maquis::real(energy);
         //}
       }
+      if (!truncEach)
+        result[iOutput] = compression::l2r_compress(result[iOutput], mMax, 1.0E-16);
     }
-    return mpsTransformed;
+    return result;
   }
 
   /** @brief Prints the results of the FEAST calculation */
@@ -230,18 +237,25 @@ public:
     std::cout << " +----------------------------------------------+" << std::endl;
     std::cout << " |   State    |   Old energy   |   New energy   |" << std::endl;
     std::cout << " +----------------------------------------------+" << std::endl;
-    for (int iState = 0; iState < vibEnergy.size(); iState++)
+    for (int iState = 0; iState < energies.size(); iState++)
         std::cout << "  " << std::setw(10) << std::internal << iState << "     "
                   << std::setw(12) << std::right << std::fixed << std::setprecision(3)
-                  << vibEnergyPrev[iState] << "     " 
-                  << vibEnergy[iState]     << std::endl;
+                  << energiesPrev[iState] << "     "
+                  << energies[iState]     << std::endl;
     std::cout << " +----------------------------------------------+" << std::endl;
     std::cout << std::endl;
   }
 
   /** @brief Getter for the vibrational energy */
   auto getEnergies() const {
-    return vibEnergy;
+    return energies;
+  }
+
+  /** @brief Gets the overall energy variation */
+  auto getOverallEnergyVariation() const {
+    auto overallSum = std::accumulate(energies.begin(), energies.end(), 0.);
+    auto oldOverallSum = std::accumulate(energiesPrev.begin(), energiesPrev.end(), 0.);
+    return std::abs(overallSum-oldOverallSum);
   }
 
 private:
@@ -261,9 +275,9 @@ private:
   }
 
   // -- Class members --
-  ResultContainerType& mpsContainer;
+  std::shared_ptr<ResultContainerType> mpsContainer;
   int nStates, nQuad;
-  std::vector<double> vibEnergy, vibEnergyPrev, normVector;
+  std::vector<double> energies, energiesPrev, normVector;
   ComplexMatrixType eigenVectors, eigenVectorsRescaled;
   static constexpr int thresholdForRank_ = 1.0E-10;
   RealVectorType eigenValues;

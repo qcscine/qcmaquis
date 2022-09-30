@@ -193,7 +193,8 @@ private:
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
         add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("const"));
         add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
-        add_option("feast_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-16));
+        add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
+        add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
     }
 };
 
