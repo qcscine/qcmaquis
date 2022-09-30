@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/MolecularHamiltonians/rel/model.h"
+#include "dmrg/models/chem/rel/model.h"
 #include "dmrg/models/factories/factory.h"
 
 template<class ScalarType>
