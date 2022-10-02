@@ -94,12 +94,15 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   parametersH2COWatson.set("feast_num_states", 1);
-  parametersH2COWatson.set("feast_max_iter", 1);
+  parametersH2COWatson.set("feast_max_iter", 2);
   parametersH2COWatson.set("feast_emin", eMin);
   parametersH2COWatson.set("feast_emax", eMax);
   parametersH2COWatson.set("feast_num_points", 8);
   parametersH2COWatson.set("feast_init_type", "basis_state_generic_const");
   parametersH2COWatson.set("feast_init_onv", "3,2,1,1,2,0");
+  parametersH2COWatson.set("feast_overlap_convergence_threshold", 1.0E-5);
+  parametersH2COWatson.set("feast_energy_convergence_threshold", 1.0E-5);
+  //
   parametersH2COWatson.set("linsystem_precond", "no");
   parametersH2COWatson.set("linsystem_krylov_dim", 50);
   parametersH2COWatson.set("linsystem_tol", 1.0E-5);
