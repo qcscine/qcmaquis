@@ -2305,6 +2305,68 @@ The relevant parameter for the simulation are the following:
   \item \texttt{ipi\_iterations}: maximum number of times the linear system of Eq.~(\ref{eq:IPI_Series_Shifted}) is solved (i.e., upper value for the $n$ parameter).
 \end{itemize}
 
+\subsection{\texttt{DMRG[FEAST]}}
+\label{subsec:FEAST}
+
+DMRG[FEAST] is another strategy for calculating excited states with DMRG that solves the limits of DMRG[IP].
+DMRG[FEAST]\cite{Baiardi2022_DMRG-FEAST} generalizes the FEAST algorithm by Polizzi\cite{Polizzi2009_FEAST} to MPS wave functions.
+FEAST all the eigenvalues $\left\{ \ket{\Psi_1}, \ldots, \ket{\Psi_n} \right\}$ with energy lying in a predetermined energy interval $\left[ E_\text{min}, E_\text{max} \right]$ by expressing the spectral projector,
+
+\begin{equation}
+  \mathcal{P} = \sum_{i=1}^n \ket{\Psi_i} \bra{\Psi_i} \, ,
+  \label{eq:SpectralProjector}
+\end{equation}
+%
+as a complex plane integral, by applying the Cauchy residual theorem
+
+\begin{equation}
+  \mathcal{P}  = \frac{1}{2\pi\mathrm{i}} \oint_{\mathcal{C}} 
+	\left( z \mathcal{I} - \mathcal{H} \right)^{-1} \mathrm{d}z \, ,
+  \label{eq:ComplexIntegral}
+\end{equation}
+%
+where $\mathcal{C}$ is a circle in the 
+Eq.~(\ref{eq:ComplexIntegral}) is then approximated with a numerical quadrature such as, for instance, the Gauss-Hermite one.
+This yields the following approximated form for $\mathcal{P}$:
+
+\begin{equation}
+  \mathcal{P} \approx \frac{1}{2\pi\mathrm{i}} \sum_{n_q=1}^{N_\text{quad}}
+	w_k \left( z_k \mathcal{I} - \mathcal{H} \right)^{-1} \mathrm{d}z \, ,
+  \label{eq:ComplexIntegralApproximate}
+\end{equation}
+%
+where $w_k$ and $z_k$ are the weights and the nodes of the quadrature, respectively.
+Applying $\mathcal{P}$ from Eq.~(\ref{eq:ComplexIntegralApproximate}) onto $n$ randomly generated wave functions will yield a basis for the subspace spanned by the $n$ eigenfunctions.
+It is, therefore, sufficient to diagonalize $\mathcal{H}$ in this subspace to retrieve the eigenfunctions $\left\{ \ket{\Psi_1}, \ldots, \ket{\Psi_n} \right\}$.
+In order to apply the approximate projector of Eq.~(\ref{eq:ComplexIntegralApproximate}) onto a wave function requires solving $N_\text{quad} \times n$ linear system.
+FEAST solves these systems with conventional solvers.
+DMRG[FEAST] applies, instead, a DMRG-like algorithm~\cite{Rakhuba2016_vDMRG} to iteratively solve the linear systems by ensuring that the solution can be represented as an MPS with a given bond dimension $m$.
+
+\qcm\ implements the DMRG[FEAST] algorithm as described in Ref.~\citenum{Baiardi2022_DMRG-FEAST}.
+A simulation can be run with the \texttt{dmrgFEAST} executable, which is stored -- relatively to the build directory -- in the \texttt{applications/FEAST} directory.
+The keywords that can be used to tune a DMRG[FEAST] calculation are the following:
+
+\begin{enumerate}
+  \item \texttt{feast\_num\_states}: number of initial guesses.
+  \item \texttt{feast\_max\_iter}: maximum number of outer iterations.
+  \item \texttt{feast\_emin}: lower bound for the complex contour integration.
+  \item \texttt{feast\_emax}: lower bound for the complex contour integration.
+  \item \texttt{feast\_num\_points}: number of quadrature points for approximating the numerical integration.
+  \item \texttt{feast\_integral\_type}: it is possible to show~\cite{Polizzi2009_FEAST} that the complex contour integral can be applied only to half of the circle \texttt{C} by exploiting the Hermiticity of the operator.
+  The \texttt{feast\_integral\_type} parameter should be set to \texttt{half} for applying this simplification, and to \texttt{full} for performing a conventional complex integration.
+  \item \texttt{feast\_truncation\_type}: if more than a single FEAST macroiteration is performed, the eigenfunctions of the FEAST Hamiltonian calculated at the $(N-1)$-th iteration can be used as a starting guess for the $N$-th iteration. However, these eigenfunctions are expressed as a linear combination of $n$ MPS, each one expressed as a sum of $N_q$ solutions of the linear systems introduced above.
+  Since the sum of two MPSs with bond dimension $m$ is an MPSs with bond dimension $2m$, this series of sums would increase drastically the bond dimension of the guesses, which have then to be truncated back to a bond dimension $m$.
+  If the \texttt{feast\_truncation\_type} keyword is set to \texttt{end}, the truncation is applied only once, after the $N_q \times n$ sum are performed.
+  If, instead, this keyword is set to \texttt{each}, the truncation is performed after each sum.
+  This second option is faster, but yields a less accurate initial guess.
+  \item \texttt{feast\_init\_type}: analog of \texttt{init\_type} for FEAST-based simulation -- this keyword sets the initial guess for DMRG[FEAST].
+  \item \texttt{feast\_init\_onv}: comma-separated list of integers indicating the ONV used as the initial guess (this keyword is valid only if \texttt{feast\_init\_type} is set to \texttt{basis\_state\_generic}).
+  \item \texttt{feast\_overlap\_convergence\_threshold}: first threshold used to assess the convergence of DMRG[FEAST]. The FEAST macroiterations are stopped if the sum of changes in the FEAST eigenfunctions exceeds the value set by this keyword.
+  \item \texttt{feast\_energy\_convergence\_threshold}: second threshold used to assess the convergence of DMRG[FEAST]. The FEAST macroiterations are stopped if the sum of changes in the FEAST energies exceeds the value set by this keyword.
+\end{enumerate}
+
+\clearpage
+
 \section{\qcm\ examples library}
 \label{sec:examples}
 
