@@ -183,6 +183,18 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   feastSimulatorES1.runFEAST();
   feastEnergy = feastSimulatorES1.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromIpiES1, 1.0E-5);
+  // Simultaneous calculation on ground and excited state (so, 2 roots)
+  eMin = energyFromIpiGS - 0.001;
+  eMax = energyFromIpiES1 + 0.001;
+  parametersLiH.set("feast_emin", eMin);
+  parametersLiH.set("feast_emax", eMax);
+  parametersLiH.set("feast_num_states", 2);
+  auto feastSimulatorTwoStates = FEASTSimulatorType(parametersLiH, LiHModel, LiHLattice, LiHMPO);
+  feastSimulatorTwoStates.runFEAST();
+  auto feastEnergyGS = feastSimulatorTwoStates.getEnergy(0);
+  auto feastEnergyES = feastSimulatorTwoStates.getEnergy(1);
+  BOOST_CHECK_CLOSE(feastEnergyGS, energyFromIpiGS, 1.0E-5);
+  BOOST_CHECK_CLOSE(feastEnergyES, energyFromIpiES1, 1.0E-5);
 }
 
 #endif // HAVE_SU2U1PG

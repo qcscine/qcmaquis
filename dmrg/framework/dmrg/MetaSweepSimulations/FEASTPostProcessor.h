@@ -151,6 +151,7 @@ public:
     energiesPrev = energies;
     for (int iState = 0; iState < rank; iState++)
       energies[iState] = eigenValues[iState];
+    std::sort(energies.begin(), energies.end());
     eigenVectorsRescaled = ComplexMatrixType(rank, rank);
     gemm(regularizedInverseSquareRoot, eigenVectors, eigenVectorsRescaled);
   };
