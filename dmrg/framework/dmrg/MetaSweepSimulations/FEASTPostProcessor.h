@@ -234,15 +234,15 @@ public:
 
   /** @brief Prints the results of the FEAST calculation */
   void printResults() const {
-    std::cout << " +----------------------------------------------+" << std::endl;
-    std::cout << " |   State    |   Old energy   |   New energy   |" << std::endl;
-    std::cout << " +----------------------------------------------+" << std::endl;
+    std::cout << " +----------------------------------------------------------+" << std::endl;
+    std::cout << " |   State    |      Old energy      |      New energy      |" << std::endl;
+    std::cout << " +----------------------------------------------------------+" << std::endl;
     for (int iState = 0; iState < energies.size(); iState++)
-        std::cout << std::setw(12) << std::internal << iState
-                  << std::setw(17) << std::right << std::fixed << std::setprecision(3) << energiesPrev[iState]
-                  << std::setw(17) << std::right << std::fixed << std::setprecision(3) << energiesPrev[iState]
+        std::cout << std::setw(13) << std::internal << iState
+                  << std::setw(23) << std::right << std::fixed << std::setprecision(10) << energiesPrev[iState]
+                  << std::setw(23) << std::right << std::fixed << std::setprecision(10) << energies[iState]
                   << std::endl;
-    std::cout << " +----------------------------------------------+" << std::endl;
+    std::cout << " +----------------------------------------------------------+" << std::endl;
     std::cout << std::endl;
   }
 

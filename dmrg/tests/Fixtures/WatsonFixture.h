@@ -3028,6 +3028,88 @@ struct WatsonFixture
         integralFileH2CO << " -6.47202422E-01     6    -1     2    -1     0     0 " << std::endl;
         integralFileH2CO << " -6.86387365E-01     6    -1     6    -1     0     0 " << std::endl;
         integralFileH2CO.close();
+        // H2CO with Coriolis
+        integralFileH2CONoCoriolis.open("integral_file_test_Watson_H2CO_NoCoriolis");
+        integralFileH2CONoCoriolis << "  3.00680530E+02     1     1     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.00680530E+02    -1    -1     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  3.17701267E+02     2     2     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.17701267E+02    -2    -2     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  3.86147312E+02     3     3     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.86147312E+02    -3    -3     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  4.38943497E+02     4     4     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -4.38943497E+02    -4    -4     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  7.43752825E+02     5     5     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -7.43752825E+02    -5    -5     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  7.62707162E+02     6     6     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -7.62707162E+02    -6    -6     0     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.05816020E+01     3     1     1     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.93721696E+01     3     2     2     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -5.43309031E-01     3     3     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  9.60251362E+00     4     1     1     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  3.45633264E+00     4     2     2     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.38078628E+01     4     3     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.45285761E+01     4     4     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  3.19513141E+01     4     4     4     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  6.07268854E+01     5     1     1     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  4.32990473E+01     5     2     2     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.39191778E+01     5     3     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.17846659E+01     5     4     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.39609413E+01     5     4     4     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  7.31837841E-01     5     5     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.49809437E+00     5     5     4     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -7.86782990E+01     5     5     5     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  6.70848856E+01     6     3     2     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -5.65451125E+01     6     4     2     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.05219964E+00     6     5     2     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.25173682E+01     6     6     3     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.33034641E+01     6     6     4     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.48605364E+02     6     6     5     0     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.54216115E+00     1     1     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.97146625E+00     2     2     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  9.95206562E-01     2     2     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  6.06908125E-01     3     3     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.39591375E+00     3     3     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  7.55118750E-02     3     3     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.56084375E+00     4     3     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.01937000E+00     4     3     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  4.62729167E-02     4     3     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -5.60271250E-01     4     4     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  4.09189375E-01     4     4     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.60052750E+00     4     4     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.03513750E+00     4     4     4     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.56950594E+00     4     4     4     4     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.13922250E+00     5     3     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.04063500E+00     5     3     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  6.85461250E-01     5     3     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -3.17024125E+00     5     4     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.29420500E+00     5     4     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.66437125E+00     5     4     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  2.51241750E+00     5     4     4     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.35770833E-01     5     4     4     4     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.74472994E+01     5     5     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.34178875E+01     5     5     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -8.23610125E+00     5     5     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  9.82390750E+00     5     5     4     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.77872063E+00     5     5     4     4     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.62019583E-01     5     5     5     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  5.49410000E-01     5     5     5     4     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  5.46160500E+00     5     5     5     5     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.24801250E-01     6     2     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -8.78582500E-01     6     2     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.93726000E+00     6     3     3     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.63781125E+00     6     4     4     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.53502500E-01     6     5     5     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.04703819E+01     6     6     1     1     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.40069881E+01     6     6     2     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -1.09334219E+01     6     6     3     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  1.31674425E+01     6     6     4     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -4.50839875E+00     6     6     4     4     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -6.13914875E+00     6     6     5     3     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  4.80537625E+00     6     6     5     4     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  3.53259812E+01     6     6     5     5     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << " -2.37378833E+00     6     6     6     2     0     0 " << std::endl;
+        integralFileH2CONoCoriolis << "  6.25073469E+00     6     6     6     6     0     0 " << std::endl;
+        integralFileH2CONoCoriolis.close();
         // Note that the 4. factor arises from a 1/2 term coming from the Harmonic hamiltonian
         // and a 1/2 term coming from the two sqrt(2) factors
         integralsBilinearly = MaquisIntegralType {
@@ -3081,6 +3163,13 @@ struct WatsonFixture
         parametersH2COWatson.set("Nmax", 6);
         parametersH2COWatson.set("integral_file", "integral_file_test_Watson_H2CO_Coriolis");
         //
+        parametersH2COWatsonNoCoriolis.set("L", 6);
+        parametersH2COWatsonNoCoriolis.set("symmetry", "none");
+        parametersH2COWatsonNoCoriolis.set("LATTICE", "watson lattice");
+        parametersH2COWatsonNoCoriolis.set("MODEL", "watson");
+        parametersH2COWatsonNoCoriolis.set("Nmax", 6);
+        parametersH2COWatsonNoCoriolis.set("integral_file", "integral_file_test_Watson_H2CO_NoCoriolis");
+        //
         parametersBilinearly.set("L", 6);
         parametersBilinearly.set("symmetry", "none");
         parametersBilinearly.set("LATTICE", "watson lattice");
@@ -3094,12 +3183,13 @@ struct WatsonFixture
         std::remove("integral_file_test_Watson_Ethylene_Harmonic");
         std::remove("integral_file_test_Watson_Ethylene_Sextic");
         std::remove("integral_file_test_Watson_H2CO_Coriolis");
+        std::remove("integral_file_test_Watson_H2CO_NoCoriolis");
     }
 
     // Class members
     DmrgParameters parametersEthyleneWatsonHarmonic, parametersEthyleneWatson, parametersBilinearly,
-        parametersH2COWatson;
-    std::ofstream integralFileEthyleneHarmonic, integralFileEthylene, integralFileH2CO;
+        parametersH2COWatson, parametersH2COWatsonNoCoriolis;
+    std::ofstream integralFileEthyleneHarmonic, integralFileEthylene, integralFileH2CO, integralFileH2CONoCoriolis;
     double referenceHarmonicEnergy;
     MaquisIntegralType integralsBilinearly;
 };

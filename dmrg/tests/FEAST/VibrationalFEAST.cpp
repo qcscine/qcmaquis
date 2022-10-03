@@ -69,22 +69,26 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
-  parametersH2COWatson.set("max_bond_dimension", 10);
-  parametersH2COWatson.set("init_state", "basis_state_generic");
-  parametersH2COWatson.set("init_basis_state", "0,0,0,0,0,0");
-  parametersH2COWatson.set("optimization", "twosite");
-  parametersH2COWatson.set("symmetry", "none");
-  parametersH2COWatson.set("nsweeps", 5);
-  parametersH2COWatson.set("chkpfile", "GS.H2CO.chkp.h5");
-  parametersH2COWatson.set("Nmax", 6);
-  maquis::DMRGInterface<double> interfaceOptimizerGS(parametersH2COWatson);
+  parametersH2COWatsonNoCoriolis.set("max_bond_dimension", 50);
+  parametersH2COWatsonNoCoriolis.set("init_state", "const");
+  parametersH2COWatsonNoCoriolis.set("optimization", "singlesite");
+  parametersH2COWatsonNoCoriolis.set("symmetry", "none");
+  parametersH2COWatsonNoCoriolis.set("nsweeps", 20);
+  parametersH2COWatsonNoCoriolis.set("ngrowsweeps", 3);
+  parametersH2COWatsonNoCoriolis.set("nmainsweeps", 3);
+  parametersH2COWatsonNoCoriolis.set("chkpfile", "GS.H2CO.chkp.h5");
+  parametersH2COWatsonNoCoriolis.set("Nmax", 6);
+  parametersH2COWatsonNoCoriolis.set("alpha_initial", 1.0E-8);
+  parametersH2COWatsonNoCoriolis.set("alpha_main", 1.0E-16);
+  parametersH2COWatsonNoCoriolis.set("alpha_final", 0.);
+  maquis::DMRGInterface<double> interfaceOptimizerGS(parametersH2COWatsonNoCoriolis);
   interfaceOptimizerGS.optimize();
   auto energyFromOptimizerGS = interfaceOptimizerGS.energy();
   // Excited-state calculation
-  parametersH2COWatson.set("n_ortho_states", 1);
-  parametersH2COWatson.set("ortho_states", "GS.H2CO.chkp.h5");
-  parametersH2COWatson.set("chkpfile", "ES.H2CO.chkp.h5");
-  maquis::DMRGInterface<double> interfaceOptimizerES(parametersH2COWatson);
+  parametersH2COWatsonNoCoriolis.set("n_ortho_states", 1);
+  parametersH2COWatsonNoCoriolis.set("ortho_states", "GS.H2CO.chkp.h5");
+  parametersH2COWatsonNoCoriolis.set("chkpfile", "ES.H2CO.chkp.h5");
+  maquis::DMRGInterface<double> interfaceOptimizerES(parametersH2COWatsonNoCoriolis);
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
@@ -93,24 +97,24 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   // FEAST
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
-  parametersH2COWatson.set("feast_num_states", 1);
-  parametersH2COWatson.set("feast_max_iter", 2);
-  parametersH2COWatson.set("feast_emin", eMin);
-  parametersH2COWatson.set("feast_emax", eMax);
-  parametersH2COWatson.set("feast_num_points", 8);
-  parametersH2COWatson.set("feast_init_type", "basis_state_generic_const");
-  parametersH2COWatson.set("feast_init_onv", "3,2,1,1,2,0");
-  parametersH2COWatson.set("feast_overlap_convergence_threshold", 1.0E-5);
-  parametersH2COWatson.set("feast_energy_convergence_threshold", 1.0E-5);
+  parametersH2COWatsonNoCoriolis.set("feast_num_states", 1);
+  parametersH2COWatsonNoCoriolis.set("feast_max_iter", 1);
+  parametersH2COWatsonNoCoriolis.set("feast_emin", eMin);
+  parametersH2COWatsonNoCoriolis.set("feast_emax", eMax);
+  parametersH2COWatsonNoCoriolis.set("feast_num_points", 8);
+  parametersH2COWatsonNoCoriolis.set("feast_init_type", "basis_state_generic_const");
+  parametersH2COWatsonNoCoriolis.set("feast_init_onv", "3,2,1,1,2,0");
+  parametersH2COWatsonNoCoriolis.set("feast_overlap_convergence_threshold", 1.0E-5);
+  parametersH2COWatsonNoCoriolis.set("feast_energy_convergence_threshold", 1.0E-5);
   //
-  parametersH2COWatson.set("linsystem_precond", "no");
-  parametersH2COWatson.set("linsystem_krylov_dim", 50);
-  parametersH2COWatson.set("linsystem_tol", 1.0E-5);
-  parametersH2COWatson.set("linsystem_init", "last");
-  auto vibrationalLattice = Lattice(parametersH2COWatson);
-  auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
+  parametersH2COWatsonNoCoriolis.set("linsystem_precond", "no");
+  parametersH2COWatsonNoCoriolis.set("linsystem_krylov_dim", 50);
+  parametersH2COWatsonNoCoriolis.set("linsystem_tol", 1.0E-5);
+  parametersH2COWatsonNoCoriolis.set("linsystem_init", "last");
+  auto vibrationalLattice = Lattice(parametersH2COWatsonNoCoriolis);
+  auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatsonNoCoriolis);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
-  auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  auto feastSimulator = FEASTSimulatorType(parametersH2COWatsonNoCoriolis, vibrationalModel, vibrationalLattice, vibrationalMPO);
   feastSimulator.runFEAST();
   auto feastEnergy = feastSimulator.getEnergy(0);
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
@@ -157,7 +161,6 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   parametersBilinearly.set("feast_num_points", 8);
   parametersBilinearly.set("feast_init_type", "basis_state_generic_default");
   parametersBilinearly.set("feast_init_onv", "2,0,1,2,1,2");
-  // parametersH2COWatson.set("feast_truncation_type", "end");
   // Setup parameters for the linear system solver.
   parametersBilinearly.set("linsystem_precond", "no");
   parametersBilinearly.set("linsystem_krylov_dim", 50);
