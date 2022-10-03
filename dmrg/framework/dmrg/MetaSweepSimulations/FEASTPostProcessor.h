@@ -151,6 +151,7 @@ public:
     energiesPrev = energies;
     for (int iState = 0; iState < rank; iState++)
       energies[iState] = eigenValues[iState];
+    std::sort(energies.begin(), energies.end());
     eigenVectorsRescaled = ComplexMatrixType(rank, rank);
     gemm(regularizedInverseSquareRoot, eigenVectors, eigenVectorsRescaled);
   };
@@ -233,15 +234,14 @@ public:
 
   /** @brief Prints the results of the FEAST calculation */
   void printResults() const {
-    // Select only the ones that lie in user specified interval
     std::cout << " +----------------------------------------------+" << std::endl;
     std::cout << " |   State    |   Old energy   |   New energy   |" << std::endl;
     std::cout << " +----------------------------------------------+" << std::endl;
     for (int iState = 0; iState < energies.size(); iState++)
-        std::cout << "  " << std::setw(10) << std::internal << iState << "     "
-                  << std::setw(12) << std::right << std::fixed << std::setprecision(3)
-                  << energiesPrev[iState] << "     "
-                  << energies[iState]     << std::endl;
+        std::cout << std::setw(12) << std::internal << iState
+                  << std::setw(17) << std::right << std::fixed << std::setprecision(3) << energiesPrev[iState]
+                  << std::setw(17) << std::right << std::fixed << std::setprecision(3) << energiesPrev[iState]
+                  << std::endl;
     std::cout << " +----------------------------------------------+" << std::endl;
     std::cout << std::endl;
   }

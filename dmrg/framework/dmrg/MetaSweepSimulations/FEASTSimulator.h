@@ -119,6 +119,7 @@ public:
         maquis::cout << " +-- CONVERGENCE CHECK --+" << std::endl;
         maquis::cout << std::endl;
         maquis::cout << "  - Iteration: " << currentIter << std::endl;
+        maquis::cout << std::scientific << std::setprecision(16);
         maquis::cout << "  - Overall MPS variation: " << overlapDifference << std::endl;
         maquis::cout << "  - Overall energy variation: " << energyDifference << std::endl;
         converged = (currentIter == maxFeastIter) || ((overlapDifference < feastThresholdOverlap)
