@@ -2365,6 +2365,8 @@ The keywords that can be used to tune a DMRG[FEAST] calculation are the followin
   \item \texttt{feast\_energy\_convergence\_threshold}: second threshold used to assess the convergence of DMRG[FEAST]. The FEAST macroiterations are stopped if the sum of changes in the FEAST energies exceeds the value set by this keyword.
 \end{enumerate}
 
+Note that the keywords starting with ``\texttt{linsystem\_}'' introduced in the previous section can be used to tune the iterative solution of the local linear sytem that is used to solve linear systems with DMRG.
+
 \clearpage
 
 \section{\qcm\ examples library}
