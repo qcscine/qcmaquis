@@ -9,6 +9,8 @@ add_executable(test1 test1.cpp)
 target_link_libraries(test1 ${DMRG_APP_LIBRARIES})
 add_executable(test2 test2.cpp)
 target_link_libraries(test2 ${DMRG_APP_LIBRARIES})
+add_executable(testLiH ElectronicDMRG/testLiH.cpp)
+target_link_libraries(testLiH ${DMRG_APP_LIBRARIES})
 add_executable(test_FEAST_electronic FEAST/ElectronicFEAST.cpp)
 target_link_libraries(test_FEAST_electronic ${DMRG_APP_LIBRARIES})
 
