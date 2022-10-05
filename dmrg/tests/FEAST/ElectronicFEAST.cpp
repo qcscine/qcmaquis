@@ -73,7 +73,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   // FEAST for ground state
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
-  std::cout << "ALB " << energyFromOptimizerGS << " " << energyFromOptimizerES << std::endl;
   parametersH2.set("feast_num_states", 1);
   parametersH2.set("feast_max_iter", 1);
   parametersH2.set("feast_emin", eMin);
