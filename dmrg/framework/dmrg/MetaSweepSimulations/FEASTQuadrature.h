@@ -35,16 +35,18 @@ namespace FeastHelper {
 class QuadraturePoint {
 public:
   /** @brief Class constructor */
-  QuadraturePoint(double node, double weight) 
+  QuadraturePoint(double node, double weight)
     : quadratureNode(node), quadratureWeight(weight) {}
-
   // Struct members
   double quadratureNode;
   double quadratureWeight;
 };
 
-/** @brief Function that generates the quadrature points */
-std::vector<QuadraturePoint> getQuadraturePoints(int nQuad) 
+/**
+ * @brief Function that generates the quadrature points
+ * Inlined to avoid multiple definition problem.
+ */
+inline std::vector<QuadraturePoint> getQuadraturePoints(int nQuad)
 {
   std::vector<QuadraturePoint> ret;
   switch(nQuad) {

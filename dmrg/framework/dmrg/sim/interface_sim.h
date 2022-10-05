@@ -1,32 +1,32 @@
 /*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
-*               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
-*               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
-*               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2018         Leon Freitag <lefreita@ethz.ch>
-*               2021         Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2018         Leon Freitag <lefreita@ethz.ch>
+ *               2021         Alberto Baiardi <abaiardi@ethz.ch>
+ *
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ *
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
 
 #ifndef INTERFACE_SIM_H
 #define INTERFACE_SIM_H
@@ -43,7 +43,7 @@
 #include "dmrg/models/chem/measure_transform.hpp"
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
-
+#include "dmrg/MetaSweepSimulations/FEASTLauncher.h"
 #include "dmrg/SweepBasedAlgorithms/SweepSimulationFactory.h"
 
 // The sim class for interface-based DMRG runs and measurements
@@ -59,6 +59,7 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
     using results_map_type = typename interface_base::results_map_type;
     using FactoryType = SweepSimulationFactory<Matrix, SymmGroup, storage::disk>;
     using RealType = typename maquis::traits::real_type<Matrix>::type;
+    using FEASTLauncherType = FEASTLauncher<Matrix, SymmGroup>;
 
     // Class inheritance from the sim object
     using base::mps;
@@ -80,7 +81,7 @@ public:
    * Note that the base class is here the [sim] object.
    * @param parms_ parameter container
    */
-  interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
+  explicit interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) {
@@ -97,8 +98,14 @@ public:
   }
 
   /** @brief Runs a FEAST simulation */
+  // TODO: fix the MPS that is actually extracted -- it should be not necessarily th 0-th one.
   void runFEASTSimulation() {
-    // TO BE CODED
+    try {
+      mps = FEASTLauncherType::runFEASTSimulation(parms, model, lat, mpo);
+    }
+    catch (std::exception& e) {
+      throw;
+    }
   }
 
   // TO BE REACTIVATED AS SOON AS THE TIME EVOLUTION IS INCLUDED IN THE GENERIC SWEEP-BASED ENGINE
@@ -239,7 +246,7 @@ public:
           // stop simulation if an energy threshold has been specified
           int prev_sweep = sweep - meas_each;
           if (prev_sweep >= 0)
-            converged = checkEnergyConvergence(sweep, prev_sweep, energyThreshold);
+            converged = checkEnergyConvergence(energyThreshold);
         }
         last_sweep_ = sweep;
         /// write checkpoint
@@ -501,13 +508,8 @@ private:
     }
   }
 
-  /**
-   * @brief Checks energy convergence of the
-   *
-   * @param prevSweep
-   * @param iSweep
-   */
-  bool checkEnergyConvergence(int prevSweep, int iSweep, double convergenceThreshold) {
+  /**  @brief Checks energy convergence of the sweep-based optimization */
+  bool checkEnergyConvergence(double convergenceThreshold) {
     bool converged = false;
     auto emin = *std::min_element(energies_.begin(), energies_.end()-1);
     auto eminNew = *std::min_element(energies_.begin(), energies_.end());

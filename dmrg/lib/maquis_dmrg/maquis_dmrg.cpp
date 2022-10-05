@@ -122,6 +122,19 @@ namespace maquis
     }
 
     template <typename ScalarType>
+    void DMRGInterface<ScalarType>::runFEAST() {
+        try {
+            impl_->sim->run("feast");
+        }
+        catch (std::exception& e) {
+            maquis::cerr << "Exception thrown!" << std::endl;
+            maquis::cerr << e.what() << std::endl;
+            throw;
+            //exit(1);
+        }
+    }
+
+    template <typename ScalarType>
     ScalarType DMRGInterface<ScalarType>::energy()
     {
         return impl_->sim->get_energy();

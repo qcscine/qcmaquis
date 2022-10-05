@@ -66,6 +66,9 @@ public:
     /** @brief Run a DMRG[IPI] calculation */
     void runInversePowerIteration();
 
+    /** @brief Run a DMRG[FEAST] calculation */
+    void runFEAST();
+
     /** @brief Gets the energy at the end of the simulation */
     ScalarType energy();
 

@@ -28,6 +28,7 @@
 
 #include <boost/mpl/list.hpp>
 #include <boost/test/included/unit_test.hpp>
+#include "dmrg/MetaSweepSimulations/FEASTLauncher.h"
 #include "dmrg/MetaSweepSimulations/FEASTSimulator.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/sim/matrix_types.h"
@@ -72,6 +73,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   // FEAST for ground state
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  std::cout << "ALB " << energyFromOptimizerGS << " " << energyFromOptimizerES << std::endl;
   parametersH2.set("feast_num_states", 1);
   parametersH2.set("feast_max_iter", 1);
   parametersH2.set("feast_emin", eMin);
@@ -101,10 +103,59 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerES, 1.0E-6);
 }
 
+/** @brief Test FEAST for electronic calculations (we target the ground and first excited state) */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetries, H2Fixture)
+{
+  using ComplexType = std::complex<double>;
+  using FEASTSimulatorType = FEASTSimulator<S>;
+  using ModelType = Model<cmatrix, S>;
+  //
+  parametersH2.set("max_bond_dimension", 10);
+  parametersH2.set("optimization", "twosite");
+  parametersH2.set("nsweeps", 5);
+  parametersH2.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
+  parametersH2.set("feast_num_states", 1);
+  parametersH2.set("feast_max_iter", 1);
+  parametersH2.set("feast_emin", -0.981);
+  parametersH2.set("feast_emax", -0.98);
+  parametersH2.set("feast_num_points", 8);
+  parametersH2.set("feast_init_type", "const");
+  parametersH2.set("linsystem_precond", "no");
+  parametersH2.set("linsystem_krylov_dim", 50);
+  parametersH2.set("linsystem_tol", 1.0E-10);
+  parametersH2.set("linsystem_init", "last");
+  maquis::cout << "Running test for symmetry " << symm_traits::SymmetryNameTrait<S>::symmName() << std::endl;
+  auto H2Lattice = Lattice(parametersH2);
+  auto H2Model = ModelType(H2Lattice, parametersH2);
+  auto H2MPO = make_mpo(H2Lattice, H2Model);
+  auto feastSimulator = FEASTSimulatorType(parametersH2, H2Model, H2Lattice, H2MPO);
+  feastSimulator.runFEAST();
+  auto feastEnergy = maquis::real(feastSimulator.getEnergy(0));
+  // Gets the energy via the interface
+  maquis::DMRGInterface<ComplexType> interfaceFEAST(parametersH2);
+  interfaceFEAST.runFEAST();
+  auto feastEnergyInterface = maquis::real(interfaceFEAST.energy());
+  // Final checks
+  BOOST_CHECK_CLOSE(feastEnergy, feastEnergyInterface, 1.0E-6);
+}
+
+/** @brief Test FEAST for electronic calculations (we target the ground and first excited state) */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H2Fixture)
+{
+  parametersH2.set("max_bond_dimension", 10);
+  parametersH2.set("init_state", "default");
+  parametersH2.set("seed", 19893003);
+  parametersH2.set("optimization", "twosite");
+  parametersH2.set("nsweeps", 5);
+  parametersH2.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
+  maquis::DMRGInterface<double> interfaceFEASTReal(parametersH2);
+  BOOST_CHECK_THROW(interfaceFEASTReal.runFEAST(), FEASTException);
+}
+
 #ifdef HAVE_SU2U1PG
 
 /**
- * @brief Test FEAST for electronic calculations (we target the first excited state) 
+ * @brief Test FEAST for electronic calculations (we target the first excited state)
  * Note that, unlike the other test-cases, here we benchmark against DMRG[IPI] and also
  * repeat the FEAST iterations.
  */
@@ -132,7 +183,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   parametersLiH.set("linsystem_krylov_dim", 20);
   // == IPI SIMULATION ==
   // Ground state, reference taken from test2.cpp == -7.90436
-  parametersLiH.set("ipi_shift", -8.); 
+  parametersLiH.set("ipi_shift", -8.);
   maquis::DMRGInterface<double> optimizerIpiGS(parametersLiH);
   optimizerIpiGS.runInversePowerIteration();
   auto energyFromIpiGS = optimizerIpiGS.energy();
@@ -144,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   auto energyFromIpiES1 = optimizerIpiES1.energy();
   BOOST_CHECK_SMALL(std::abs(energyFromIpiES1 - -7.77349), 1.0E-4);
   // Second excited state (no reference from test2.cpp, but DMRG data == -7.275314952)
-  parametersLiH.set("ipi_shift", -7.3); 
+  parametersLiH.set("ipi_shift", -7.3);
   maquis::DMRGInterface<double> optimizerIpiES2(parametersLiH);
   optimizerIpiES2.runInversePowerIteration();
   auto energyFromIpiES2 = optimizerIpiES2.energy();
@@ -162,7 +213,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   parametersLiH.set("linsystem_krylov_dim", 50);
   parametersLiH.set("linsystem_tol", 1.0E-5);
   parametersLiH.set("linsystem_init", "last");
-  // Ground state 
+  // Ground state
   auto eMin = energyFromIpiGS - 0.001;
   auto eMax = energyFromIpiGS + 0.001;
   parametersLiH.set("feast_emin", eMin);
