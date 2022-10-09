@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
  *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -29,6 +29,7 @@
 
 #ifdef DMRG_VIBRATIONAL
 
+#include <set>
 #include <sstream>
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -39,10 +40,10 @@
 
 /**
  * @brief Class implementing the canonical quantization-based vibrational Hamiltonian.
- * 
+ *
  * In this model, we use the canonical quantization to map the Born-Oppenheimer
  * vibrational Hamiltonian onto the DMRG lattice.
- * This means that we use the Harmonic Oscillator-based ladder operator to 
+ * This means that we use the Harmonic Oscillator-based ladder operator to
  * express the momentum/position operators as b^\dagger/b operators.
  */
 
@@ -61,7 +62,7 @@ class WatsonHamiltonian : public model_impl<Matrix, TrivialGroup> {
     using operators_type = typename std::vector<tag_type>;
     using value_type = typename Matrix::value_type;
 public:
-    
+
     /**
      * @brief Class constructor
      * @param lattice object representing the DMRG lattice
@@ -77,6 +78,18 @@ public:
         std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         int overallDimension = nMax_ + maxCoupling_;
+        if (parameters_["watson_coordinate_type"] == "cartesian") {
+            coordinateType_ = WatsonCoordinateType::CartesianNormalModes;
+            maquis::cout << " Coordinate type: Cartesian Normal Modes" << std::endl;
+        }
+        else if (parameters_["watson_coordinate_type"] == "internal") {
+            coordinateType_ = WatsonCoordinateType::InternalNormalModes;
+            maquis::cout << " Coordinate type: Internal coordinates-based Normal Modes" << std::endl;
+        }
+        else {
+            throw std::runtime_error("Coordinate type not recognized");
+        }
+        // Prepares the operators
         momentumPowers_.resize(nMax_);
         momentumPowers_.resize(nMax_);
         // Here it's where the "physical" basis is defined
@@ -122,7 +135,7 @@ public:
      * This method populates the [terms_] member with the Hamiltonian coefficients
      */
     void create_terms() override {
-        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_);
+        auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_, coordinateType_);
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
@@ -131,7 +144,7 @@ public:
             auto numberOfNonZeroElements = std::distance(termVector.begin(), newEnd);
             std::stable_sort(termVector.begin(), newEnd, [](const auto& iVal, const auto& jVal) {
                 return std::abs(iVal) < std::abs(jVal);
-            });            
+            });
             int outerCounter = 0;
             while (outerCounter < numberOfNonZeroElements) {
                 int referenceValue = termVector[outerCounter];
@@ -186,8 +199,8 @@ public:
         return tag_handler_;
     }
 
-    /** 
-     * @brief Measurement associated with the n-mode Hamiltonian class 
+    /**
+     * @brief Measurement associated with the n-mode Hamiltonian class
      * For now, returns an empty container.
      */
     measurements_type measurements() const {
@@ -198,6 +211,7 @@ public:
     }
 
 private:
+
     /** Static class member indicating the highest value of the Taylor operator */
     static constexpr int maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
     /** Ref to the lattice object */
@@ -214,6 +228,8 @@ private:
     tag_type ident_;
     /** Tag for the powers of the position/momentum operators */
     std::vector<tag_type> positionPowers_, momentumPowers_;
+    /** Type associated with the vibrational coordinates */
+    WatsonCoordinateType coordinateType_;
 };
 
 #endif // DMRG_VIBRATIONAL

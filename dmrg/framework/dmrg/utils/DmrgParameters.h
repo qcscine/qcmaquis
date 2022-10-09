@@ -137,6 +137,7 @@ private:
 
         // Watson Hamiltonian-based simulations
         add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization");
+        add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
 
         // n-mode vibrational calculations
@@ -158,7 +159,7 @@ private:
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
         add_option("n_excitons", "Number of molecule composing the molecular aggregate");
 
-        // Tools 
+        // Tools
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
