@@ -28,6 +28,7 @@
 
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/WatsonFixture.h"
+#include "Fixtures/NModeFixture.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/MetaSweepSimulations/FEASTSimulator.h"
@@ -176,3 +177,50 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
 }
 
 #endif // HAVE_TrivialGroup
+
+#ifdef HAVE_NU1
+
+/** @brief DMRG[FEAST] test for the n-mode Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
+{
+  parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
+  parametersFADTwoBodyFingerPrint.set("init_state", "const");
+  parametersFADTwoBodyFingerPrint.set("optimization", "twosite");
+  parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
+  parametersFADTwoBodyFingerPrint.set("alpha_initial", 1.0E-8);
+  parametersFADTwoBodyFingerPrint.set("alpha_main", 1.0E-15);
+  parametersFADTwoBodyFingerPrint.set("alpha_final", 0.);
+  parametersFADTwoBodyFingerPrint.set("ngrowsweeps", 2);
+  parametersFADTwoBodyFingerPrint.set("nmainsweeps", 2);
+  parametersFADTwoBodyFingerPrint.set("max_bond_dimension", 100);
+  parametersFADTwoBodyFingerPrint.set("seed", 30061957);
+  // Ground-state calculation
+  maquis::DMRGInterface<double> interfaceGroundState(parametersFADTwoBodyFingerPrint);
+  interfaceGroundState.optimize();
+  auto groundStateEnergy = interfaceGroundState.energy();
+  // == DMRG[FEAST] ==
+  double energyGap = 10.;
+  auto eMin = groundStateEnergy - energyGap;
+  auto eMax = groundStateEnergy + energyGap;
+  // We can affort a smaller number of sweeps
+  parametersFADTwoBodyFingerPrint.set("nsweeps", 4);
+  // FEAST-specific parameters
+  parametersFADTwoBodyFingerPrint.set("feast_num_states", 1);
+  parametersFADTwoBodyFingerPrint.set("feast_max_iter", 2);
+  parametersFADTwoBodyFingerPrint.set("feast_emin", eMin);
+  parametersFADTwoBodyFingerPrint.set("feast_emax", eMax);
+  parametersFADTwoBodyFingerPrint.set("feast_num_points", 8);
+  parametersFADTwoBodyFingerPrint.set("feast_init_type", "default");
+  parametersFADTwoBodyFingerPrint.set("feast_integral_type", "full");
+  // Setup parameters for the linear system solver.
+  parametersFADTwoBodyFingerPrint.set("linsystem_precond", "no");
+  parametersFADTwoBodyFingerPrint.set("linsystem_krylov_dim", 50);
+  parametersFADTwoBodyFingerPrint.set("linsystem_tol", 1.0E-12);
+  parametersFADTwoBodyFingerPrint.set("linsystem_init", "last");
+  maquis::DMRGInterface<std::complex<double>> interfaceFEAST(parametersFADTwoBodyFingerPrint);
+  interfaceFEAST.runFEAST();
+  auto feastEnergy = maquis::real(interfaceFEAST.energy());
+  BOOST_CHECK_SMALL(std::abs((feastEnergy-groundStateEnergy)/groundStateEnergy), 1.0E-10);
+}
+
+#endif
