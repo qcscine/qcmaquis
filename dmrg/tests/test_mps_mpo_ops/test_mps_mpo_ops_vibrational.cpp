@@ -72,6 +72,23 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_None_BraKetHermitian, WatsonFixture)
     BOOST_CHECK_CLOSE(energy1, energy2, 1e-7);
 }
 
+BOOST_FIXTURE_TEST_CASE(Test_ExpVal_H2CO_BraKetHermitian, WatsonFixture)
+{
+    parametersH2COWatsonInternal.set("init_state", "const");
+    auto lattice = Lattice(parametersH2COWatsonInternal);
+    auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersH2COWatsonInternal);
+    auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
+    auto mpsConst = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatsonInternal)));
+    //
+    parametersH2COWatsonInternal.set("init_state", "default");
+    lattice = Lattice(parametersH2COWatsonInternal);
+    auto mpsDefault = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatsonInternal)));
+    //
+    auto energy1 = expval(mpsConst, mpsDefault, watsonHarmonicMPO);
+    auto energy2 = expval(mpsDefault, mpsConst, watsonHarmonicMPO);
+    BOOST_CHECK_CLOSE(energy1, energy2, 1.0e-7);
+}
+
 #endif // HAVE_TrivialGroup
 
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_NU1_SameBraKet, NModeFixture)

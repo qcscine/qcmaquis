@@ -37,7 +37,7 @@ from matplotlib import lines
 from VibrationalResultFile import ResultFileVibrationaleMeasurement
 
 def plotMutualInformation(mutualInformation, oneModalEntropy, numModals, L,
-                          scaling_area=400, alpha_scale=0.5):
+                          scaling_area=400, alpha_scale=0.5, plotTitle="Entanglement diagram"):
     """
     Generates the plot associated with the entanglement diagram.
     """
@@ -84,6 +84,7 @@ def plotMutualInformation(mutualInformation, oneModalEntropy, numModals, L,
     # black lines to separate the green areas
     plt.polar(theta_lines, r_outer, c="Black", linewidth=2, zorder=0)
     plt.polar(theta_lines, r_inner,c="Black", linewidth=2, zorder=0)
+    plt.title(plotTitle)
     for i in theta_marks:
         ax.plot((i, i), (rInnerCircle, rOuterCircle), c="Black", linewidth = 1, zorder =0)
     ax.set_xticklabels([])
@@ -117,18 +118,20 @@ def plotMutualInformation(mutualInformation, oneModalEntropy, numModals, L,
               fancybox=True, shadow=True)
     plt.show()
 
-def plotEntanglementDiagram(inputFileName: str):
+def plotEntanglementDiagram(inputFileName: str, plotTitle: str):
   resultFile = ResultFileVibrationaleMeasurement(inputFileName)
   oneModalEntropy = resultFile.getOneModalEntropy()
   mutualInformation = resultFile.getMutualInformation()
   numberOfModals = resultFile.getNumberOfModals()
   L = resultFile.getLatticeSize()
-  plotMutualInformation(mutualInformation, oneModalEntropy, numberOfModals, L)
+  plotMutualInformation(mutualInformation, oneModalEntropy, numberOfModals, L, plotTitle=plotTitle)
 
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-r", "--resultfile", type=str, help="Input result file", required=True)
+  parser.add_argument("-t", "--title", type=str, help="Plot title", required=False, default="Entanglement diagram")
   args = parser.parse_args() 
   inputFileName = args.resultfile
-  plotEntanglementDiagram(inputFileName)
+  plotTitle = args.title
+  plotEntanglementDiagram(inputFileName, plotTitle)

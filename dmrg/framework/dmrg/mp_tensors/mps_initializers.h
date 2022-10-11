@@ -396,17 +396,17 @@ public:
      * @param right_end_ Overall symmetry sector to which the MPS belongs.
      * @param site_type_ Vector with size == the lattice size, with the type of each site.
      */
-    basis_mps_init_generic(BaseParameters & params, const std::vector<Index<SymmGroup> >& phys_dims_,
+    basis_mps_init_generic(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-        : basis_index(params["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_),
-          right_end(right_end_), site_type(site_type_)
+        : basis_index(params_["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_),
+          right_end(right_end_), site_type(site_type_), params(params_)
     { }
 
     /** @brief Operator (), called when the MPS is constructed */
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
         // assert(basis_index.size() == mps.length());
-        auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(basis_index, phys_dims, site_type, mps.length());
+        auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
         mps = state_mps<Matrix>(state, phys_dims, site_type, right_end);
 #ifndef NDEBUG
         for (int i = 0 ; i < basis_index.size() ; i++ ) {
@@ -424,6 +424,7 @@ private:
     std::vector<Index<SymmGroup> > phys_dims;
     typename SymmGroup::charge right_end;
     std::vector<int> site_type;
+    BaseParameters& params;
 };
 
 template<class Matrix, class SymmGroup>
