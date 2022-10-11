@@ -1,0 +1,47 @@
+// +-------------------------------------------------------------+
+//  EXAMPLE 1: Electronic FEAST[DMRG] calculation for H2 molecule
+// +-------------------------------------------------------------+
+
+// -- General parameters --
+L                        = 4
+max_bond_dimension       = 100
+nsweeps                  = 40
+irrep                    = 0
+nelec                    = 2
+spin                     = 0
+symmetry                 = '2u1pg'
+u1_total_charge1         = 1
+u1_total_charge2         = 1
+LATTICE                  = "orbitals"
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+MODEL                    = "quantum_chemistry"
+integral_file            = "FCIDUMP_H2_TI"
+lattice_library          = "coded"
+model_library            = "coded"
+optimization             = singlesite
+use_compressed           = 0
+conv_thresh              = 0.100000E-40
+
+// -- SVD truncation --
+truncation_initial       = 1e-50
+truncation_final         = 1e-50
+
+// -- Mixing parameter --
+alpha_initial            = 1e-10
+alpha_main               = 1e-20
+alpha_final              = 1e-30
+
+// -- Initialization and storage information --
+init_state               = 'const'
+chkpfile                 = 'H2_2e4o.FEAST.SS.checkpoint_state.0.h5'
+resultfile               = 'H2_2e4o.FEAST.SS.results_state.0.h5'
+
+// -- FEAST-related options --
+feast_num_states         = 1
+feast_max_iter           = 1
+feast_emin               = -1.152
+feast_emax               = -1.151
+feast_num_points         = 8
+feast_integral_type      = "full"
+feast_truncation_type    = "end"
+feast_init_type          = "const"

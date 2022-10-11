@@ -114,7 +114,7 @@ public:
       throw std::runtime_error("I don't know this eigensolver.");
     // Loads the final results
     auto energy = resultOfLocalSiteProblem_.first + mpo_.getCoreEnergy();
-    maquis::cout << std::setprecision(10) << " Energy = " << energy << std::endl;
+    maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << std::endl;
     iterationResults_["Energy"] << energy;
     return resultOfLocalSiteProblem_.second;
   }

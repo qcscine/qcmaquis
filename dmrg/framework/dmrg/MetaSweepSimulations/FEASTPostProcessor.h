@@ -239,8 +239,8 @@ public:
     std::cout << " +----------------------------------------------------------+" << std::endl;
     for (int iState = 0; iState < energies.size(); iState++)
         std::cout << std::setw(13) << std::internal << iState
-                  << std::setw(23) << std::right << std::fixed << std::setprecision(10) << energiesPrev[iState]
-                  << std::setw(23) << std::right << std::fixed << std::setprecision(10) << energies[iState]
+                  << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                  << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
                   << std::endl;
     std::cout << " +----------------------------------------------------------+" << std::endl;
     std::cout << std::endl;
