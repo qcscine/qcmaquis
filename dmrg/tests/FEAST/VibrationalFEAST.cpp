@@ -121,6 +121,46 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
 }
 
+/*
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Ethylene, WatsonFixture)
+{
+  using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
+  using ModelType = Model<cmatrix, TrivialGroup>;
+  //
+  parametersEthyleneWatson.set("max_bond_dimension", 20);
+  parametersEthyleneWatson.set("init_state", "const");
+  parametersEthyleneWatson.set("optimization", "twosite");
+  parametersEthyleneWatson.set("symmetry", "none");
+  parametersEthyleneWatson.set("nsweeps", 10);
+  parametersEthyleneWatson.set("Nmax", 6);
+  parametersEthyleneWatson.set("watson_max_coupling", 2);
+  maquis::DMRGInterface<double> interfaceOptimizerGS(parametersEthyleneWatson);
+  interfaceOptimizerGS.optimize();
+  auto energyFromOptimizerGS = interfaceOptimizerGS.energy();
+  // FEAST
+  auto eMin = 11100.;
+  auto eMax = 11300.;
+  parametersEthyleneWatson.set("feast_num_states", 1);
+  parametersEthyleneWatson.set("feast_max_iter", 1);
+  parametersEthyleneWatson.set("feast_emin", eMin);
+  parametersEthyleneWatson.set("feast_emax", eMax);
+  parametersEthyleneWatson.set("feast_num_points", 8);
+  parametersEthyleneWatson.set("feast_init_type", "basis_state_generic_const");
+  parametersEthyleneWatson.set("feast_init_onv", "2,2,1,1,0,0,4,0,0,0,2,1");
+  parametersEthyleneWatson.set("feast_overlap_convergence_threshold", 1.0E-5);
+  parametersEthyleneWatson.set("feast_energy_convergence_threshold", 1.0E-5);
+  parametersEthyleneWatson.set("linsystem_krylov_dim", 50);
+  parametersEthyleneWatson.set("linsystem_tol", 1.0E-5);
+  auto vibrationalLattice = Lattice(parametersEthyleneWatson);
+  auto vibrationalModel = ModelType(vibrationalLattice, parametersEthyleneWatson);
+  auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
+  auto feastSimulator = FEASTSimulatorType(parametersEthyleneWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
+  feastSimulator.runFEAST();
+  auto feastEnergy = feastSimulator.getEnergy(0);
+  BOOST_CHECK_CLOSE(feastEnergy, energyFromOptimizerGS, 1.0E-6);
+}
+*/
+
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
 {
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;

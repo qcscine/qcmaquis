@@ -52,11 +52,35 @@ def plotOneModeRDM(inputFileName: str):
       offset += i
   plt.show()
 
+def plotNOONs(inputFileName: str):
+  resultFile = ResultFileVibrationaleMeasurement(inputFileName)
+  oneModeRDM = resultFile.getOneModeRDM()
+  numberOfModals = resultFile.getNumberOfModals()
+  overallCont = 0
+  fix, ax = plt.subplots()
+  for i in numberOfModals:
+    modeSpecificRDM = np.copy(oneModeRDM[overallCont: overallCont+i, overallCont: overallCont+i])
+    eigenValues, eigenVectors = np.linalg.eigh(modeSpecificRDM)
+    idx = eigenValues.argsort()[::-1]   
+    eigenValues = eigenValues[idx]
+    eigenVectors = eigenVectors[:,idx]
+    xVal = np.arange(0, i)
+    labelSpecific="Mode "+str(i)
+    ax.set_yscale('log')
+    ax.plot(xVal, eigenValues, label=labelSpecific)
+    overallCont += i
+  plt.show()
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-r", "--resultfile", type=str, help="Input result file", required=True)
+  parser.add_argument("-d", "--diagonalize", action="store_true", help="If present, diagonalizes the 1-mode RDM and calculates the corresponding NOs")
   args = parser.parse_args() 
   inputFileName = args.resultfile
+  doRdmDiagonalization = args.diagonalize
   plotOneModeRDM(inputFileName)
+  if doRdmDiagonalization:
+    plotNOONs(inputFileName)
+
 
 

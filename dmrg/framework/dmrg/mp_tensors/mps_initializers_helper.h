@@ -29,6 +29,7 @@
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
+#include "dmrg/utils/BaseParameters.h"
 
 /**
  * @brief Helper class for the MPS initialization.
@@ -132,14 +133,22 @@ public:
     auto state = state_type(size);
     int numberOfTypes = inputVec.size();
     std::vector<int> counterOfTypes(numberOfTypes, 0);
+    // If available, extracts the user-defined modals order
+    std::vector<int> modalsOrder(size), inverseModalsOrder(size);
+    if (!params.is_set("modals_order"))
+      for (int p = 0; p < size; ++p)
+        modalsOrder[p] = p;
+    else
+      modalsOrder = params["modals_order"].template as<std::vector<int> >();
+    // Generates the inverse order
+    for (int p = 0; p < modalsOrder.size(); ++p)
+      inverseModalsOrder[p] = std::distance(modalsOrder.begin(), std::find(modalsOrder.begin(), modalsOrder.end(), p));
+    // Fills the MPS.
     for (int iLattice = 0; iLattice < size; iLattice++) {
-      if (counterOfTypes[siteType[iLattice]] == inputVec[siteType[iLattice]]) {
-        state[iLattice] = physDim[siteType[iLattice]].element(0);
-      }
-      else {
-        state[iLattice] = physDim[siteType[iLattice]].element(1);
-      }
-      counterOfTypes[siteType[iLattice]]++;
+      auto positionOfSiteInNewLattice = inverseModalsOrder[iLattice];
+      auto type = siteType[positionOfSiteInNewLattice];
+      state[positionOfSiteInNewLattice] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);
+      counterOfTypes[type]++;
     }
     return state;
   }
