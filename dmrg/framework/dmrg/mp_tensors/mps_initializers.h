@@ -434,9 +434,9 @@ class basis_mps_init_generic_const : public mps_initializer<Matrix, SymmGroup>
 
 public:
   // -- Constructors --
-  basis_mps_init_generic_const(BaseParameters & params, const std::vector<Index<SymmGroup> >& phys_dims_,
+  basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-    : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_)
+    : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     std::stringstream ss(params["init_basis_state"].str());
     int ichar;
@@ -450,7 +450,7 @@ public:
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
     assert(basis_index.size() == mps.length());
-    auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(basis_index, phys_dims, site_type, mps.length());
+    auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
     mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false);
     // Actual MPS initialization
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
@@ -463,6 +463,7 @@ private:
   std::vector<Index<SymmGroup> > phys_dims;
   typename SymmGroup::charge right_end;
   std::vector<int> site_type;
+  BaseParameters& params;
 };
 
 template<class Matrix, class SymmGroup>
@@ -473,9 +474,9 @@ class basis_mps_init_generic_default : public mps_initializer<Matrix, SymmGroup>
 
 public:
   // -- Constructors --
-  basis_mps_init_generic_default(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
+  basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_)
+      : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     std::string onv = params["init_basis_state"].str();
     std::vector<std::string> splits;
@@ -491,7 +492,7 @@ public:
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
     assert(basis_index.size() == mps.length());
-    auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(basis_index, phys_dims, site_type, mps.length());
+    auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
     mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true);
     // Actual MPS initialization
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
@@ -505,6 +506,7 @@ private:
   std::vector<Index<SymmGroup> > phys_dims;
   typename SymmGroup::charge right_end;
   std::vector<int> site_type;
+  BaseParameters& params;
 };
 
 #endif

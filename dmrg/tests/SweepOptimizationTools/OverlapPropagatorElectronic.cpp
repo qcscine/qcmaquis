@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 #include "dmrg/models/model.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/models/lattice/lattice.h"

@@ -53,7 +53,7 @@ public:
   using ChargeType = typename SymmGroup::charge;
   using indexType = Index<SymmGroup>;
   using state_type = std::vector<boost::tuple<ChargeType, int> >;
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size)
   {
     throw std::runtime_error("GenerateIndexFromString method not available for this symmetry group");
@@ -68,7 +68,7 @@ public:
   using indexType = Index<TrivialGroup>;
   using state_type = std::vector<boost::tuple<typename TrivialGroup::charge, int> >;
   // General implementation
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
@@ -87,7 +87,7 @@ public:
   using indexType = Index<U1>;
   using state_type = std::vector<boost::tuple<typename U1::charge, int> >;
   // General implementation
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
@@ -126,7 +126,7 @@ public:
   using state_type = std::vector<boost::tuple<ChargeType, int> >;
 
   /** @brief Parser for the NU1 symmetry group */
-  static state_type GenerateIndexFromString(const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != physDim.size())
       throw std::runtime_error("Index list number of elements does not match the number of site types. Check the setting 'init_basis_state'.");
