@@ -27,6 +27,7 @@
 #define BOOST_TEST_MODULE BoundaryPropagatorElectronic
 
 #include <iostream>
+#include <boost/mpl/list.hpp>
 #include <boost/test/included/unit_test.hpp>
 #include "dmrg/models/model.h"
 #include "dmrg/models/generate_mpo.hpp"
