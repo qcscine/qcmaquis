@@ -30,8 +30,11 @@
 #include <stdexcept>
 #include <vector>
 #include "alps/numeric/matrix/algorithms.hpp"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/mpo_times_mps.hpp"
 
 namespace FeastHelper {
 
@@ -39,9 +42,12 @@ namespace FeastHelper {
 template <class SymmGroup>
 class FEASTPostProcessor {
 public:
+  using ChargeType = typename SymmGroup::charge;
+  using LatticeType = Lattice;
   using Matrix = cmatrix;
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
+  using ModelType = Model<Matrix, SymmGroup>;
   using RealValueType = double;
   using RealMatrixType = alps::numeric::matrix<RealValueType>;
   using RealVectorType = alps::numeric::vector<RealValueType>;
@@ -51,12 +57,17 @@ public:
   using ComplexVectorType = alps::numeric::vector<ComplexNumber>;
   using ResultContainerType = std::map<std::pair<int, int>, MPSType>;
 
-  FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w)
-    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w)
+  FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w, const ModelType& inputModel,
+                     const LatticeType& inputLattice, BaseParameters& parms)
+    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateVariance(false)
   {
     energies = std::vector<double>(nStates, 0);
     energiesPrev = std::vector<double>(nStates, 0);
     normVector = std::vector<double>(nStates, 0);
+    variance = std::vector<double>(nStates, 0);
+    totalQN = model.total_quantum_numbers(parms);
+    if (parms["feast_calculate_variance"] == "yes")
+      calculateVariance = true;
   }
 
   /** @brief Updates teh mps container */
@@ -229,21 +240,37 @@ public:
       if (!truncEach)
         result[iOutput] = compression::l2r_compress(result[iOutput], mMax, 1.0E-16);
     }
+    // If requested, calculates the variance
+    if (calculateVariance) {
+      for (int iState = 0; iState < variance.size(); iState++)
+        variance[iState] = this->getVariance(mpo, result[iState], mMax);
+    }
     return result;
   }
 
   /** @brief Prints the results of the FEAST calculation */
   void printResults() const {
-    std::cout << " +----------------------------------------------------------+" << std::endl;
-    std::cout << " |   State    |      Old energy      |      New energy      |" << std::endl;
-    std::cout << " +----------------------------------------------------------+" << std::endl;
+    maquis::cout << " +----------------------------------------------------------+" << std::endl;
+    maquis::cout << " |   State    |      Old energy      |      New energy      |" << std::endl;
+    maquis::cout << " +----------------------------------------------------------+" << std::endl;
     for (int iState = 0; iState < energies.size(); iState++)
-        std::cout << std::setw(13) << std::internal << iState
-                  << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
-                  << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
-                  << std::endl;
-    std::cout << " +----------------------------------------------------------+" << std::endl;
-    std::cout << std::endl;
+        maquis::cout << std::setw(13) << std::internal << iState
+                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
+                     << std::endl;
+    maquis::cout << " +----------------------------------------------------------+" << std::endl;
+    maquis::cout << std::endl;
+    // If requested, prints also the variance
+    if (calculateVariance) {
+      maquis::cout << " +-----------------------------------+" << std::endl;
+      maquis::cout << " |   State    |    Energy variance   |" << std::endl;
+      maquis::cout << " +-----------------------------------+" << std::endl;
+      for (int iState = 0; iState < energies.size(); iState++) {
+        maquis::cout << std::setw(13) << std::internal << iState
+                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << variance[iState]
+                     << std::endl;
+      }
+    }
   }
 
   /** @brief Getter for the vibrational energy */
@@ -274,14 +301,28 @@ private:
     return det;
   }
 
+  /** @brief Variance calculator -- needed to screen the FEAST eigenfunctions */
+  auto getVariance(const MPOType& mpo, const MPSType& inputMPS, int mMax) {
+    auto traitClass = MPOTimesMPSTraitClass<Matrix, SymmGroup>(inputMPS, model, lattice, totalQN, mMax);
+    auto outputMPS = traitClass.applyMPO(mpo);
+    auto squaredEnergy = (overlap(outputMPS, outputMPS) + 2.*maquis::real(overlap(outputMPS, inputMPS)*mpo.getCoreEnergy())
+                           + overlap(inputMPS, inputMPS)*std::norm(mpo.getCoreEnergy()))/norm(inputMPS);
+    auto energy = expval(inputMPS, mpo)/norm(inputMPS);
+    return maquis::real(squaredEnergy - std::norm(energy));
+  }
+
   // -- Class members --
-  std::shared_ptr<ResultContainerType> mpsContainer;
-  int nStates, nQuad;
-  std::vector<double> energies, energiesPrev, normVector;
-  ComplexMatrixType eigenVectors, eigenVectorsRescaled;
-  static constexpr int thresholdForRank_ = 1.0E-10;
-  RealVectorType eigenValues;
-  std::vector<ComplexNumber> weights;
+  std::shared_ptr<ResultContainerType> mpsContainer;                 // Data structure storing the result of the FEAST linear systems.
+  int nStates, nQuad;                                                // FEAST-specific integer parameters.
+  std::vector<double> energies, energiesPrev, normVector, variance;  // FEAST-specific double parameters.
+  ComplexMatrixType eigenVectors, eigenVectorsRescaled;              // FEAST --> eigenvalues transformation matrix.
+  static constexpr int thresholdForRank_ = 1.0E-10;                  // Threshold for rank.
+  RealVectorType eigenValues;                                        // FEAST Eigenvalues
+  std::vector<ComplexNumber> weights;                                // Quadrature weights.
+  const ModelType& model;                                            // DMRG model.
+  const LatticeType& lattice;                                        // DMRG lattice.
+  ChargeType totalQN;                                                // Overall quantum number associated with the target MPS.
+  bool calculateVariance;                                            // If true, calculates the variance for each FEAST state.
 };
 
 } // namespace FeastHelper

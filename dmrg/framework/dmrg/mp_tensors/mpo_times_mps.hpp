@@ -29,6 +29,7 @@
 #ifndef MAQUIS_DMRG_MPO_TIMES_MPS_HPP
 #define MAQUIS_DMRG_MPO_TIMES_MPS_HPP
 
+#include <exception>
 #include <map>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -36,6 +37,12 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_sectors.h"
+
+struct MPOTimesMPSException : public std::exception {
+    const char* what() const throw() {
+        return "MPS times MPO not implemented for this symmetry group"; 
+    }
+};
 
 template <class Matrix, class SymmGroup, class SymmType = void>
 class MPOTimesMPSTraitClass {
@@ -53,7 +60,7 @@ public:
      * @param model Model class
      * @param lattice DMRG lattice
      */
-    MPOTimesMPSTraitClass(const MPSType& mps, ModelType& model, const Lattice& lattice,
+    MPOTimesMPSTraitClass(const MPSType& mps, const ModelType& model, const Lattice& lattice,
                           ChargeType overallQN, int bondDimension_)
         : mpsRef(mps), modelRef(model), latticeRef(lattice), totalQN(overallQN), bondDimension(bondDimension_)
     {
@@ -529,7 +536,7 @@ public:
 private:
     // Class members
     const MPSType& mpsRef;
-    ModelType& modelRef;
+    const ModelType& modelRef;
     const Lattice& latticeRef;
     std::vector<Index<SymmGroup> > siteBases;           // Physical basis per site
     std::vector<int> siteTypes;                         // Type of each site
@@ -551,10 +558,11 @@ public:
     using ChargeType = typename SymmGroup::charge;
 
     /** @brief Class constructor */
-    MPOTimesMPSTraitClass(const MPSType& mps, ModelType& model, const Lattice& lattice,
+    MPOTimesMPSTraitClass(const MPSType& mps, const ModelType& model, const Lattice& lattice,
                           ChargeType overallQN, int bondDimension_) 
     {
-        throw std::runtime_error("MPOTimesMPSTraitClass not available for spin-adapted Hamiltonians");
+        throw MPOTimesMPSException();
+        //throw std::runtime_error("MPOTimesMPSTraitClass not available for spin-adapted Hamiltonians");
     }
 
     /** @brief General overload */
@@ -562,7 +570,8 @@ public:
                                                int site, std::vector< typename SymmGroup::charge> & in_delta,
                                                std::vector<Index<SymmGroup>> const& allowed_sectors)
     {
-        throw std::runtime_error("[mpo_times_mps] not yet implemented for SU2U1 symmetry");
+        throw MPOTimesMPSException();
+        //throw std::runtime_error("[mpo_times_mps] not yet implemented for SU2U1 symmetry");
     }
 
     /** @brief Single-operator specialization */
@@ -570,13 +579,15 @@ public:
                                                            MPSTensor<Matrix, SymmGroup> const & mps,
                                                            typename SymmGroup::charge & in_delta)
     {
-        throw std::runtime_error("[mpo_times_mps_singleop] not yet implemented for SU2U1 symmetry");
+        throw MPOTimesMPSException();
+        //throw std::runtime_error("[mpo_times_mps_singleop] not yet implemented for SU2U1 symmetry");
     }
 
     /** @brief AppplyOp method */
     MPSType applyMPO(const MPOType& mpo) 
     {
-        throw std::runtime_error("[applyMPO] not available for SU2U1 symmetry");
+        throw MPOTimesMPSException();
+        //throw std::runtime_error("[applyMPO] not available for SU2U1 symmetry");
     }
 };
 

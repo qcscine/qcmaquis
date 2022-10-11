@@ -60,8 +60,8 @@ class FEASTSimulator {
 public:
 
   /** @brief Class constructor */
-  FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& lattice, const MPOType& mpo)
-    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo)
+  FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
+    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice)
   {
     // Retrieve simulation parameters
     numStates = parameters["feast_num_states"].as<int>();
@@ -84,12 +84,12 @@ public:
       throw std::runtime_error("Parameter [feast_truncation_type] not recognized");
     // Generates the initial guess for the MPSs
     generateSeed(parms);
-    initializeGuess(parms, model, lattice);
+    initializeGuess(parms, model);
     quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
     this->generateComplexQuadrature();
     if (parameters["optimization"] == "twosite")
       isSingleSite = false;
-    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights);
+    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model, lattice, parameters);
     resultContainer = std::make_shared<ResultContainerType>();
   }
 
@@ -235,7 +235,7 @@ private:
   }
 
   /** @brief Generates the guess for FEAST */
-  void initializeGuess(BaseParameters& parms, const ModelType& model, const LatticeType& lattice) {
+  void initializeGuess(BaseParameters& parms, const ModelType& model) {
     std::vector<std::string> initStates;
     bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" || initType == "basis_state_generic_default");
     if (needToWriteONV) {
@@ -306,6 +306,7 @@ private:
   std::unique_ptr<PostProcessorType> postProcessor;              // Class managing FEAST postprocessing.
   std::vector<ComplexType> complexNodes, complexWeights;         // Quadrature rule for the complex circle.
   const MPOType& mpo_;                                           // Matrix product operator
+  const LatticeType& lattice;                                    // DMRG lattice object.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };

@@ -123,7 +123,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetri
   parametersH2.set("linsystem_krylov_dim", 50);
   parametersH2.set("linsystem_tol", 1.0E-10);
   parametersH2.set("linsystem_init", "last");
-  maquis::cout << "Running test for symmetry " << symm_traits::SymmetryNameTrait<S>::symmName() << std::endl;
   auto H2Lattice = Lattice(parametersH2);
   auto H2Model = ModelType(H2Lattice, parametersH2);
   auto H2MPO = make_mpo(H2Lattice, H2Model);
@@ -150,6 +149,50 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H
   maquis::DMRGInterface<double> interfaceFEASTReal(parametersH2);
   BOOST_CHECK_THROW(interfaceFEASTReal.runFEAST(), FEASTException);
 }
+
+#ifdef HAVE_TwoU1PG
+
+/**
+ * @brief Test FEAST for electronic calculations (we target the first excited state)
+ * Note that, unlike the other test-cases, here we benchmark against DMRG[IPI] and also
+ * repeat the FEAST iterations.
+ */
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_MoreGuesses, LiHFixture)
+{
+  using ComplexType = std::complex<double>;
+  using SymmGroup = TwoU1PG;
+  auto refEnergyGS = -7.58946787846878;
+  auto refEnergyES1 = -7.233190894380255;
+  auto refEnergyES2 = -7.182466097920102;
+  // Generic parameters
+  parametersLiH.set("max_bond_dimension", 20);
+  parametersLiH.set("optimization", "twosite");
+  parametersLiH.set("symmetry", "2u1pg");
+  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
+  parametersLiH.set("linsystem_precond", "yes");
+  parametersLiH.set("linsystem_init", "last");
+  parametersLiH.set("linsystem_max_it", 1);
+  parametersLiH.set("linsystem_tol", 1.0E-10);
+  parametersLiH.set("linsystem_krylov_dim", 20);
+  // FEAST parameters
+  parametersLiH.set("nsweeps", 5);
+  parametersLiH.set("feast_num_states", 1);
+  parametersLiH.set("feast_max_iter", 1);
+  parametersLiH.set("feast_num_points", 8);
+  parametersLiH.set("feast_init_type", "default");
+  parametersLiH.set("feast_overlap_convergence_threshold", 1.0E-5);
+  parametersLiH.set("feast_energy_convergence_threshold", 1.0E-6);
+  // Note that the interval includes two states, but we use three guesses.
+  parametersLiH.set("feast_emin", refEnergyGS - (refEnergyES1-refEnergyGS)/2.);
+  parametersLiH.set("feast_emax", refEnergyES1 + (refEnergyES2-refEnergyES1)/2.);
+  parametersLiH.set("feast_num_states", 2);
+  parametersLiH.set("feast_calculate_variance", "yes");
+  // Constructs the interface and runs FEAST
+  maquis::DMRGInterface<ComplexType> interfaceFEAST(parametersLiH);
+  interfaceFEAST.runFEAST();
+}
+
+#endif // HAVE_TwoU1PG
 
 #ifdef HAVE_SU2U1PG
 

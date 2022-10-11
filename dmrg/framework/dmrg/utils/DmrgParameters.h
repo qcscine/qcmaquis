@@ -196,6 +196,7 @@ private:
         add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
         add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
+        add_option("feast_calculate_variance", "If yes, calculates the variance associated with each FEAST state.", value("no"));
     }
 };
 
