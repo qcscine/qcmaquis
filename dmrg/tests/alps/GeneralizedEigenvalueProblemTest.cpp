@@ -32,9 +32,8 @@
 #include "alps/numeric/matrix/algorithms.hpp"
 #include "dmrg/sim/matrix_types.h"
 
-/** @brief Checks that the eigenvalues of a real matrix fulfill the trace property  */
+/** @brief Checks consistency between heef and ggev for a conventional eigenvalue problem */
 BOOST_AUTO_TEST_CASE(CheckGeneralizedEigenvalueProblemTrivial) {
-  // Initialization
   int size = 10;
   matrix hamiltonianMatrix(size, size, 0.0), leftEigenVectors(size, size, 0.0), 
     rightEigenVectors(size, size, 0.), overlap(size, size, 0.0);
@@ -54,4 +53,42 @@ BOOST_AUTO_TEST_CASE(CheckGeneralizedEigenvalueProblemTrivial) {
   alps::numeric::heev(hamiltonianMatrixCopy, eigenValuesReal);
   for (int iElement = 0; iElement < size; iElement++)
     BOOST_CHECK_CLOSE(std::real(eigenValues[iElement]), eigenValuesReal[iElement], 1.0E-10);
+}
+
+BOOST_AUTO_TEST_CASE(CheckGeneralizedEigenvalueLeftAndRight) {
+  int size = 2;
+  matrix hamiltonianMatrix(size, size, 0.0), leftEigenVectors(size, size, 0.0), 
+    rightEigenVectors(size, size, 0.), overlap(size, size, 0.0);
+  alps::numeric::vector<std::complex<double> > eigenValues(size, 0.0);
+  hamiltonianMatrix(0, 0) = -2.0;
+  hamiltonianMatrix(1, 1) = -1.0;
+  hamiltonianMatrix(1, 0) =  0.2;
+  hamiltonianMatrix(0, 1) =  0.3;
+  overlap(0, 0) = 1.0;
+  overlap(1, 1) = 1.0;
+  overlap(0, 1) = 0.2;
+  overlap(1, 0) = 0.2;
+  alps::numeric::ggev(hamiltonianMatrix, overlap, eigenValues, leftEigenVectors, rightEigenVectors);
+  // Verifies that the right eigenvalues are correct
+  for (int iRow = 0; iRow < size; iRow++) {
+    for (int iCol = 0; iCol < size; iCol++) {
+      double tmp = 0.;
+      for (int iDummy = 0; iDummy < size; iDummy++) {
+        tmp += hamiltonianMatrix(iRow, iDummy)*rightEigenVectors(iDummy, iCol);
+        tmp -= overlap(iRow, iDummy)*rightEigenVectors(iDummy, iCol)*std::real(eigenValues[iCol]);
+      }
+      BOOST_CHECK_SMALL(tmp, 1.0E-10);
+    }
+  }
+  // Verifies that the left eigenvalues are correct
+  for (int iRow = 0; iRow < size; iRow++) {
+    for (int iCol = 0; iCol < size; iCol++) {
+      double tmp = 0.;
+      for (int iDummy = 0; iDummy < size; iDummy++) {
+        tmp += leftEigenVectors(iDummy, iRow)*hamiltonianMatrix(iDummy, iCol);
+        tmp -= std::real(eigenValues[iRow])*leftEigenVectors(iDummy, iRow)*overlap(iDummy, iCol);
+      }
+      BOOST_CHECK_SMALL(tmp, 1.0E-10);
+    }
+  }
 }
