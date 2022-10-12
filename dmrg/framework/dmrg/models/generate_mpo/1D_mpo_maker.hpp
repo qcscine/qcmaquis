@@ -244,7 +244,7 @@ namespace generate_mpo
      */
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup>
-    make_destroy_mpo(const Lattice& lat, Model<Matrix, SymmGroup>& model, int iOrb, IonizedOrbital alphaOrBeta=IonizedOrbital::Up)
+    make_destroy_mpo(const Lattice& lat, const Model<Matrix, SymmGroup>& model, int iOrb, IonizedOrbital alphaOrBeta=IonizedOrbital::Up)
     {
       using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
       std::vector<int> pos(1, iOrb);
