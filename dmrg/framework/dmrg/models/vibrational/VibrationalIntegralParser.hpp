@@ -54,6 +54,7 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::VibrationalNMod
 NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
 {
     typedef Lattice::pos_t pos_t;
+    using InputType = double;
     std::vector<T> matrix_elements;
     std::vector<chem::index_type<chem::Hamiltonian::VibrationalNMode>> indices;
     // Data read from input file
@@ -69,7 +70,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
             if (line_string[0] == '#' || line_string == "")
                 continue;
             // initialize integral value
-            T integral;
+            InputType integral;
             // initialize splitted line
             std::vector<std::string> line_splitted;
             std::vector<std::size_t> size_vec;
@@ -86,7 +87,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
             boost::split(line_splitted, line_string, boost::is_any_of(" "), boost::token_compress_on);
             // Last value in string is assigned to the integral value
             integral = atof(line_splitted[line_splitted.size() - 1].c_str());
-            chem::integral_tuple<T, chem::Hamiltonian::VibrationalNMode> t;
+            chem::integral_tuple<InputType, chem::Hamiltonian::VibrationalNMode> t;
             t.second = integral;
             // Remove integral value from vector
             line_splitted.pop_back();
@@ -107,7 +108,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
                 }
             }
             if (std::abs(t.second) > parms["integral_cutoff"]) {
-                matrix_elements.push_back(t.second);
+                matrix_elements.push_back(static_cast<T>(t.second));
                 indices.push_back(t.first);
             }
         }
@@ -115,7 +116,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     // Serialized integral object
     else if (parms.is_set("integrals_binary")) {
         // parse serialized integrals
-        chem::integral_map<T, chem::Hamiltonian::VibrationalNMode> ints;
+        chem::integral_map<InputType, chem::Hamiltonian::VibrationalNMode> ints;
         std::stringstream ss(parms["integrals_binary"].as<std::string>());
         boost::archive::text_iarchive ia{ss};
         ia >> ints;
@@ -123,7 +124,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
         {
             if (std::abs(t.second) > parms["integral_cutoff"])
             {
-                matrix_elements.push_back(t.second);
+                matrix_elements.push_back(static_cast<T>(t.second));
                 indices.push_back(t.first);
             }
         }
@@ -178,6 +179,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     using pos_t = Lattice::pos_t;
     using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>;
     using RetType = std::vector< std::pair< KeyType, T> > ;
+    using InputType = double;
     // Set the number of indices which are expected in the FCIDUMP
     int maxCoupling = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
     // Determines the maximum many-body coupling degree. Per default read in all integrals that are given
@@ -208,7 +210,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         orb_file.open(integral_file.c_str());
         std::vector<double> raw;
         std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
-                    std::back_inserter(raw));
+                  std::back_inserter(raw));
         auto it = raw.begin();
         // == Main loop ==
         while (it != raw.end()) {
@@ -216,7 +218,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
             auto modeSet = std::set<int>(it+1, it+maxCoupling);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
-                T coefficient = *it++;
+                InputType coefficient = *it++;
                 KeyType tmp;
                 for (int idx = 0; idx < maxCoupling; idx++)
                     tmp[idx] = *(it+idx);
@@ -225,7 +227,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
                         tmp[idx] = inv_order[tmp[idx]-1]+1;
                     else if (tmp[idx] < 0)
                         tmp[idx] = -inv_order[-tmp[idx]-1]-1;
-                ret.push_back(std::make_pair(tmp, coefficient));
+                ret.push_back(std::make_pair(tmp, static_cast<T>(coefficient)));
                 // Internal coordinates
                 if (coordinateType == WatsonCoordinateType::InternalNormalModes) {
                     auto numberOfMomenta = std::count_if(tmp.begin(), tmp.end(), [](int input) { return input < 0; });
@@ -235,10 +237,9 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
                         assert(posFirst < tmp.size() && posSecond < tmp.size());
                         // Off-diagonal term
                         if (tmp[posFirst] != tmp[posSecond]) {
-                            std::cout << "SWAP " << posFirst << " " << posSecond << std::endl;
                             auto tmp2 = tmp;
                             std::swap(tmp2[posFirst], tmp2[posSecond]);
-                            ret.push_back(std::make_pair(tmp2, coefficient));
+                            ret.push_back(std::make_pair(tmp2, static_cast<T>(coefficient)));
                         }
                     }
                 }
@@ -251,15 +252,17 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     }
     else if (parms.is_set("integrals_binary")) {
         // parse serialized integrals
-        chem::integral_map<T, chem::Hamiltonian::VibrationalCanonical> ints;
-        std::stringstream ss(parms["integrals_binary"].as<std::string>());
+        chem::integral_map<InputType, chem::Hamiltonian::VibrationalCanonical> ints;
+        std::stringstream ss;
+        ss << parms["integrals_binary"].as<std::string>();
+        std::cout << parms["integrals_binary"].as<std::string>() << std::endl;
         boost::archive::text_iarchive ia{ss};
         ia >> ints;
         for (auto&& t: ints) {
             auto modeSet = std::set<int>(t.first.begin(), t.first.end());
             // Screen integrals
             if ((std::abs(t.second) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling))
-                ret.push_back(std::make_pair(t.first, t.second));
+                ret.push_back(std::make_pair(t.first, static_cast<T>(t.second)));
         }
     }
     return ret;
