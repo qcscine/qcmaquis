@@ -459,15 +459,17 @@ namespace alps {
                  double threshold=1.0E-16)
         {
             // Consistency check
+            using RealType = typename boost::numeric::bindings::remove_imaginary<T>::type;
             assert(num_rows(M) == num_cols(M));
             assert(num_rows(M) == num_rows(overlapMatrix));
             assert(num_cols(M) == num_cols(overlapMatrix));
             assert(evals.size() == num_rows(M));
-            T aNorm, bNorm;
+            typename boost::numeric::bindings::remove_imaginary<T>::type aNorm, bNorm;
             // Variable definition
             using VectorType = typename associated_vector<matrix<T, MemoryBlock> >::type;
-            VectorType alphaVec(num_rows(M), 0.), betaVec(num_rows(M), 0.),
-                leftPermutations(num_rows(M), 0.), rightPermutations(num_rows(M), 0.),
+            using RealVectorType  = typename associated_vector<matrix<RealType, MemoryBlock> >::type;
+            VectorType alphaVec(num_rows(M), 0.), betaVec(num_rows(M), 0.);
+            RealVectorType leftPermutations(num_rows(M), 0.), rightPermutations(num_rows(M), 0.),
                 eValCond(num_rows(M), 0.), eVecCond(num_rows(M), 0.);
             // Actual calculation
             fortran_int_t minSize = 1, maxSize = num_rows(M);
@@ -488,15 +490,17 @@ namespace alps {
                  double threshold=1.0E-16)
         {
             // Consistency check
+            using RealType = typename boost::numeric::bindings::remove_imaginary<T>::type;
             assert(num_rows(M) == num_cols(M));
             assert(num_rows(M) == num_rows(overlapMatrix));
             assert(num_cols(M) == num_cols(overlapMatrix));
             assert(evals.size() == num_rows(M));
-            T aNorm, bNorm;
+            RealType aNorm, bNorm;
             // Variable definition
             using VectorType = typename associated_vector<matrix<T, MemoryBlock> >::type;
-            VectorType alphaVecReal(num_rows(M), 0.), alphaVecImag(num_rows(M), 0.), betaVec(num_rows(M), 0.),
-                leftPermutations(num_rows(M), 0.), rightPermutations(num_rows(M), 0.),
+            using RealVectorType  = typename associated_vector<matrix<RealType, MemoryBlock> >::type;
+            VectorType alphaVecReal(num_rows(M), 0.), alphaVecImag(num_rows(M), 0.), betaVec(num_rows(M), 0.);
+            RealVectorType leftPermutations(num_rows(M), 0.), rightPermutations(num_rows(M), 0.),
                 eValCond(num_rows(M), 0.), eVecCond(num_rows(M), 0.);
             // Actual calculation
             fortran_int_t minSize = 1, maxSize = num_rows(M);
