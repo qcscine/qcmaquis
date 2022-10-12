@@ -442,6 +442,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
+  add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
   # Time-evolution tests
   if(BUILD_DMRG_EVOLVE)
     add_test(NAME Test_Time_Evolver COMMAND test_time_evolvers)

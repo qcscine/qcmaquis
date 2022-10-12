@@ -125,6 +125,10 @@ target_link_libraries(test_mpsjoin ${DMRG_APP_LIBRARIES})
 add_executable(test_wigner test_wigner.cpp)
 target_link_libraries(test_wigner ${DMRG_APP_LIBRARIES})
 
+# -- ALPS-related test --
+add_executable(test_generalized_eigenvalue_problem alps/GeneralizedEigenvalueProblemTest.cpp)
+target_link_libraries(test_generalized_eigenvalue_problem ${DMRG_APP_LIBRARIES})
+
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
