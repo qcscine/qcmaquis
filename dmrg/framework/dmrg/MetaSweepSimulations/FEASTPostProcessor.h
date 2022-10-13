@@ -105,19 +105,10 @@ public:
         }
       }
     }
-    // for (int iThread = 0; iThread < omp_get_max_threads(); iThread++) {
-    //     H += Hvec[iThread];
-    //     B += Bvec[iThread];
-    // }
-    // auto overlapDeterminant = calculateDeterminant(B);
-    // maquis::cout << std::setprecision(12);
-    // maquis::cout << std::scientific;
-    // maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
-    // maquis::cout << H << std::endl;
-    // maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
-    // maquis::cout << B << std::endl;
-    // maquis::cout << " Determinant of the overlap matrix " << overlapDeterminant << std::endl;
-    // maquis::cout << H(0, 0)/B(0, 0) << std::endl;
+    maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
+    maquis::cout << H << std::endl;
+    maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
+    maquis::cout << B << std::endl;
     for (int i = 0; i < nStates; i++)
       normVector[i] = std::sqrt(std::real(B(i, i)));
     for (int i = 0; i < nStates; i++) {
@@ -126,45 +117,31 @@ public:
         B(i, j) /= normVector[i]*normVector[j];
       }
     }
-    // auto overlapDeterminantAfter = calculateDeterminant(B);
-    // std::cout << "Determinant of the overlap matrix after " << overlapDeterminantAfter << std::endl;
     // == Matrix diagonalization ==
     // QR of the overlap
-    ComplexMatrixType U, V;
-    DiagonalMatrixType S;
-    alps::numeric::svd(B, U, V, S);
-    int rank = 0;
-    for (int iElement = 0; iElement < nStates; iElement++)
-      if (std::fabs(S(iElement, iElement)) > thresholdForRank_)
-        rank += 1;
-    // std::cout << " The FEAST overlap matrix has a rank " << rank << std::endl;
-    // cmat_type regularizedInverseSquareRoot = svd.matrixU().block(0, 0, n_states, rank_)*
-    //                                          svd.singularValues().head(rank_).array().rsqrt().matrix().asDiagonal();
-    ComplexMatrixType regularizedInverseSquareRoot(nStates, rank);
-    for (int iRow = 0; iRow < nStates; iRow++)
-      for (int iCol = 0; iCol < rank; iCol++)
-        regularizedInverseSquareRoot(iRow, iCol) = U(iRow, iCol)/std::sqrt(S(iCol, iCol));
-    // cmat_type lowdinHamiltonian = regularizedInverseSquareRoot.adjoint()*H*regularizedInverseSquareRoot;
-    ComplexMatrixType tmp(nStates, rank), lowdinHamiltonian(rank, rank);
-    gemm(H, regularizedInverseSquareRoot, tmp);
-    gemm(adjoint(regularizedInverseSquareRoot), tmp, lowdinHamiltonian);
-    // Eigen::SelfAdjointEigenSolver<cmat_type> tmpSolver(lowdinHamiltonian);
-    // rvec_type eigenvalues = tmpSolver.eigenvalues().real();
-    eigenValues = RealVectorType(rank);
-    eigenVectors = ComplexMatrixType(rank, rank);
-    // maquis::cout << "Regularized inverse square root" << std::endl;
-    // maquis::cout << regularizedInverseSquareRoot << std::endl;
-    // maquis::cout << "Lowding Hamiltonian" << std::endl;
-    // maquis::cout << lowdinHamiltonian << std::endl;
-    lowdinHamiltonian = (lowdinHamiltonian + adjoint(lowdinHamiltonian));
-    lowdinHamiltonian /= 2.;
-    alps::numeric::heev(lowdinHamiltonian, eigenVectors, eigenValues);
+    auto zeroComplex = ComplexNumber(0., 0.);
+    ComplexMatrixType leftEigenVectors(nStates, nStates, zeroComplex), rightEigenVectors(nStates, nStates, zeroComplex);
+    ComplexVectorType alphaVec(nStates, 0.), betaVec(nStates, zeroComplex);
+    alps::numeric::ggev(H, B, alphaVec, betaVec, leftEigenVectors, rightEigenVectors, thresholdForRank_);
+    // Retrieves energies
     energiesPrev = energies;
-    for (int iState = 0; iState < rank; iState++)
-      energies[iState] = eigenValues[iState];
-    std::sort(energies.begin(), energies.end());
-    eigenVectorsRescaled = ComplexMatrixType(rank, rank);
-    gemm(regularizedInverseSquareRoot, eigenVectors, eigenVectorsRescaled);
+    int rank = 0;
+    for (int iState = 0; iState < nStates; iState++) {
+      if (std::imag(alphaVec[iState]) > 1.0E-10 || std::imag(betaVec[iState]) > 1.0E-10)
+        maquis::cout << " WARNING: Energy of the " << iState << "-th state has a non-negligible imaginary part" << std::endl;
+      if (std::abs(betaVec[iState]) > thresholdForRank_) {
+        energies[iState] = maquis::real(alphaVec[iState]/betaVec[iState]);
+        rank += 1;
+      }
+      else {
+        energies[iState] = 0.;
+      }
+    }
+    // Prints out rank
+    maquis::cout << " Number of linearly independent FEAST basis vectors: " << rank << std::endl;
+    maquis::cout << std::endl;
+    // Final copy of the eigenvectors
+    feastEigenVectors = rightEigenVectors;
   };
 
   /**
@@ -194,7 +171,7 @@ public:
       for (int iInput = 0; iInput < nStates; iInput++) {
         for (int iQuad = 0; iQuad < nQuad; iQuad++) {
           MPSType mpsToAdd = mpsContainer->operator[](std::make_pair(iInput, iQuad));
-          auto scalingFactor = eigenVectorsRescaled(iInput, iOutput)*weights[iQuad]/normVector[iInput];
+          auto scalingFactor = feastEigenVectors(iInput, iOutput)*weights[iQuad]/normVector[iInput];
           mpsToAdd.scaleByScalar(scalingFactor);
           if (iQuad == 0) {
             mpsTransformed[std::make_pair(iOutput, iInput)] = mpsToAdd;
@@ -315,7 +292,7 @@ private:
   std::shared_ptr<ResultContainerType> mpsContainer;                 // Data structure storing the result of the FEAST linear systems.
   int nStates, nQuad;                                                // FEAST-specific integer parameters.
   std::vector<double> energies, energiesPrev, normVector, variance;  // FEAST-specific double parameters.
-  ComplexMatrixType eigenVectors, eigenVectorsRescaled;              // FEAST --> eigenvalues transformation matrix.
+  ComplexMatrixType feastEigenVectors;                               // FEAST --> eigenvalues transformation matrix.
   static constexpr int thresholdForRank_ = 1.0E-10;                  // Threshold for rank.
   RealVectorType eigenValues;                                        // FEAST Eigenvalues
   std::vector<ComplexNumber> weights;                                // Quadrature weights.

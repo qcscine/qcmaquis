@@ -286,8 +286,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   feastSimulatorTwoStates.runFEAST();
   auto feastEnergyGS = feastSimulatorTwoStates.getEnergy(0);
   auto feastEnergyES = feastSimulatorTwoStates.getEnergy(1);
-  BOOST_CHECK_CLOSE(feastEnergyGS, energyFromIpiGS, 1.0E-5);
-  BOOST_CHECK_CLOSE(feastEnergyES, energyFromIpiES1, 1.0E-5);
+  BOOST_CHECK_CLOSE(feastEnergyGS+feastEnergyES, energyFromIpiGS+energyFromIpiES1, 1.0E-5);
 }
 
 #endif // HAVE_SU2U1PG

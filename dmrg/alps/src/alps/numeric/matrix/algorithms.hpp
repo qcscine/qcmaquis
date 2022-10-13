@@ -518,7 +518,9 @@ namespace alps {
             assert(num_rows(M) == num_cols(M));
             assert(num_rows(M) == num_rows(overlapMatrix));
             assert(num_cols(M) == num_cols(overlapMatrix));
-            assert(evals.size() == num_rows(M));
+            assert(alphaVecReal.size() == num_rows(M));
+            assert(alphaVecImag.size() == num_rows(M));
+            assert(betaVec.size() == num_rows(M));
             RealType aNorm, bNorm;
             // Variable definition
             using VectorType = typename associated_vector<matrix<T, MemoryBlock> >::type;

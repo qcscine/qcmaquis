@@ -195,7 +195,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   // FEAST-specific parameters
-  parametersBilinearly.set("nsweeps", 5);
+  parametersBilinearly.set("nsweeps", 10);
   parametersBilinearly.set("feast_num_states", 1);
   parametersBilinearly.set("feast_max_iter", 1);
   parametersBilinearly.set("feast_emin", eMin);
