@@ -194,7 +194,7 @@ MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
         else
             ret[p] = join(a[p], b[p]);
     }
-    ret = compression::l2r_compress(ret, mMax, 0., false);
+    ret = compression::l2r_compress(ret, mMax, 0.);
     return ret;
 }
 
