@@ -131,7 +131,7 @@ private:
         add_option("MEASURE[Renyi2]", "", value(false));
 
         // Watson Hamiltonian-based simulations
-        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization");
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
 
