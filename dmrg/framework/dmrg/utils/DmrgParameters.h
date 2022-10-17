@@ -92,11 +92,6 @@ private:
         add_option("entanglement_spectra", "", value(0));
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
-        // n-mode vDMRG related parameters
-        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
-        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
-        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
-
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
@@ -138,10 +133,15 @@ private:
         // Watson Hamiltonian-based simulations
         add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization");
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
-        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
+        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
 
         // n-mode vibrational calculations
         add_option("nModeDumpIntegral", "If == yes, store the integrals in the result file", value("no"));
+
+        // n-mode vDMRG related parameters
+        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
+        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
+        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
         // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
