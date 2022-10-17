@@ -96,7 +96,7 @@ public:
         else if (property == "label" && pos.size() == 2)
             return boost::any(bond_label(pos[0], pos[1]));
         else if (property == "type" && pos.size() == 1)
-            return boost::any(0);
+            return boost::any(pos[0]);
         else if (property == "type" && pos.size() == 2)
             return boost::any(0);
         else if (property == "ParticleType" && pos.size() == 1) {

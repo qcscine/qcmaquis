@@ -88,6 +88,7 @@ public:
         int numModes =  parameters_["L"];
         positionPowers_.resize(numModes);
         momentumPowers_.resize(numModes);
+        physIndices_.resize(numModes);
 
         std::vector<int> nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
         if (nMaxVec.size()!= numModes && nMaxVec.size()!=1){
@@ -108,7 +109,7 @@ public:
             int overallDimension = nMax_ + maxCoupling_;
             
             // Here it's where the "physical" basis is defined
-            physIndices_.insert(std::make_pair(C, nMax_));
+            physIndices_[mode].insert(std::make_pair(C, nMax_));
             Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
             Matrix mident(overallDimension, overallDimension, 0.);
             // Loads the matrices
@@ -183,7 +184,7 @@ public:
     }
 
     /** @brief Getter for the physical dimension of a given type */
-    Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_; }
+    Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_[type]; }
 
     /** @brief Getter for the identity operator */
     tag_type identity_matrix_tag(size_t type) const { return ident_; }
@@ -239,7 +240,7 @@ private:
     /** Parameter container */
     BaseParameters& parameters_;
     /** Physical basis */
-    Index<TrivialGroup> physIndices_;
+    std::vector<Index<TrivialGroup>> physIndices_;
     /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler_;
     /** Tags of the elementary operators */
