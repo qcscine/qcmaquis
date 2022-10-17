@@ -15,8 +15,8 @@
  * available from http://alps.comp-phys.org/.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
  * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
@@ -73,7 +73,6 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
             InputType integral;
             // initialize splitted line
             std::vector<std::string> line_splitted;
-            std::vector<std::size_t> size_vec;
             // -- Main data parsing --
             // Trim leading and final spaces in the string.
             line_string.erase(line_string.begin(),
@@ -184,6 +183,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     int maxCoupling = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
     // Determines the maximum many-body coupling degree. Per default read in all integrals that are given
     int maxManyBodyCoupling = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : maxCoupling;
+    int maxInputManyBodyCoupling = (parms.is_set("watson_max_coupling_input")) ? parms["watson_max_coupling_input"] : maxCoupling;
     // Load ordering and determine inverse ordering
     std::vector<pos_t> inv_order;
     std::vector<pos_t> order(lat.size());
@@ -215,14 +215,14 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         // == Main loop ==
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
-            auto modeSet = std::set<int>(it+1, it+maxCoupling);
+            auto modeSet = std::set<int>(it+1, it+maxInputManyBodyCoupling);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
                 InputType coefficient = *it++;
                 KeyType tmp;
                 for (int idx = 0; idx < maxCoupling; idx++)
-                    tmp[idx] = *(it+idx);
-                for (int idx = 0; idx < maxCoupling; idx++)
+                    tmp[idx] = (idx < maxInputManyBodyCoupling) ? *(it+idx) : 0;
+                for (int idx = 0; idx < maxInputManyBodyCoupling; idx++)
                     if (tmp[idx] > 0)
                         tmp[idx] = inv_order[tmp[idx]-1]+1;
                     else if (tmp[idx] < 0)
@@ -247,7 +247,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
             else {
                 ++it;
             }
-            it += maxCoupling;
+            it += maxInputManyBodyCoupling;
         }
     }
     else if (parms.is_set("integrals_binary")) {
@@ -255,7 +255,6 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         chem::integral_map<InputType, chem::Hamiltonian::VibrationalCanonical> ints;
         std::stringstream ss;
         ss << parms["integrals_binary"].as<std::string>();
-        std::cout << parms["integrals_binary"].as<std::string>() << std::endl;
         boost::archive::text_iarchive ia{ss};
         ia >> ints;
         for (auto&& t: ints) {

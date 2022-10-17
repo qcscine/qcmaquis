@@ -191,8 +191,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_MoreGuesses, LiHFixture)
   maquis::DMRGInterface<ComplexType> interfaceFEAST(parametersLiH);
   interfaceFEAST.runFEAST();
 }
-
 #endif // HAVE_TwoU1PG
+
 
 #ifdef HAVE_SU2U1PG
 

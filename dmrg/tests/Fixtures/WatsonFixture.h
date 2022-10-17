@@ -72,6 +72,33 @@ struct WatsonFixture
         integralFileEthyleneHarmonic << " 8.12177325E+02  12  12  0  0  0  0  " << std::endl;
         integralFileEthyleneHarmonic << "-8.12177325E+02 -12 -12  0  0  0  0  " << std::endl;
         integralFileEthyleneHarmonic.close();
+        // Same as above, but with only two rows
+        integralFileEthyleneHarmonicTwoRows.open("integral_file_test_Watson_Ethylene_Harmonic_TwoRows");
+        integralFileEthyleneHarmonicTwoRows << " 2.06242167E+02   1   1 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-2.06242167E+02  -1  -1 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 2.37547247E+02   2   2 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-2.37547247E+02  -2  -2 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 2.41596974E+02   3   3 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-2.41596974E+02  -3  -3 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 2.62702319E+02   4   4 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-2.62702319E+02  -4  -4 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 3.11690974E+02   5   5 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-3.11690974E+02  -5  -5 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 3.42345676E+02   6   6 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-3.42345676E+02  -6  -6 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 3.69620153E+02   7   7 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-3.69620153E+02  -7  -7 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 4.18142252E+02   8   8 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-4.18142252E+02  -8  -8 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 7.85228686E+02   9   9 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-7.85228686E+02  -9  -9 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 7.89209319E+02  10  10 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-7.89209319E+02 -10 -10 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 8.05722986E+02  11  11 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-8.05722986E+02 -11 -11 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << " 8.12177325E+02  12  12 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows << "-8.12177325E+02 -12 -12 " << std::endl;
+        integralFileEthyleneHarmonicTwoRows.close();
         // Full sextic force field
         integralFileEthylene.open("integral_file_test_Watson_Ethylene_Sextic");
         integralFileEthylene << " 2.06242167E+02  1  1  0  0  0  0  " << std::endl;
@@ -3576,6 +3603,15 @@ struct WatsonFixture
         parametersEthyleneWatsonHarmonic.set("MODEL", "watson");
         parametersEthyleneWatsonHarmonic.set("Nmax", 8);
         parametersEthyleneWatsonHarmonic.set("integral_file", "integral_file_test_Watson_Ethylene_Harmonic");
+        parametersEthyleneWatsonHarmonic.set("watson_max_coupling_input", 6);
+        //
+        parametersEthyleneWatsonHarmonicTwoRows.set("L", 12);
+        parametersEthyleneWatsonHarmonicTwoRows.set("symmetry", "none");
+        parametersEthyleneWatsonHarmonicTwoRows.set("LATTICE", "watson lattice");
+        parametersEthyleneWatsonHarmonicTwoRows.set("MODEL", "watson");
+        parametersEthyleneWatsonHarmonicTwoRows.set("Nmax", 8);
+        parametersEthyleneWatsonHarmonicTwoRows.set("integral_file", "integral_file_test_Watson_Ethylene_Harmonic_TwoRows");
+        parametersEthyleneWatsonHarmonicTwoRows.set("watson_max_coupling_input", 2);
         //
         parametersEthyleneWatson.set("L", 12);
         parametersEthyleneWatson.set("symmetry", "none");
@@ -3583,6 +3619,7 @@ struct WatsonFixture
         parametersEthyleneWatson.set("MODEL", "watson");
         parametersEthyleneWatson.set("Nmax", 7);
         parametersEthyleneWatson.set("integral_file", "integral_file_test_Watson_Ethylene_Sextic");
+        parametersEthyleneWatson.set("watson_max_coupling_input", 6);
         //
         parametersH2COWatson.set("L", 6);
         parametersH2COWatson.set("symmetry", "none");
@@ -3590,6 +3627,7 @@ struct WatsonFixture
         parametersH2COWatson.set("MODEL", "watson");
         parametersH2COWatson.set("Nmax", 6);
         parametersH2COWatson.set("integral_file", "integral_file_test_Watson_H2CO_Coriolis");
+        parametersH2COWatson.set("watson_max_coupling_input", 6);
         //
         parametersH2COWatsonNoCoriolis.set("L", 6);
         parametersH2COWatsonNoCoriolis.set("symmetry", "none");
@@ -3597,6 +3635,7 @@ struct WatsonFixture
         parametersH2COWatsonNoCoriolis.set("MODEL", "watson");
         parametersH2COWatsonNoCoriolis.set("Nmax", 6);
         parametersH2COWatsonNoCoriolis.set("integral_file", "integral_file_test_Watson_H2CO_NoCoriolis");
+        parametersH2COWatsonNoCoriolis.set("watson_max_coupling_input", 6);
         //
         parametersH2COWatsonInternal.set("L", 6);
         parametersH2COWatsonInternal.set("symmetry", "none");
@@ -3605,6 +3644,7 @@ struct WatsonFixture
         parametersH2COWatsonInternal.set("Nmax", 6);
         parametersH2COWatsonInternal.set("integral_file", "integral_file_test_Watson_H2CO_Internal");
         parametersH2COWatsonInternal.set("watson_coordinate_type", "internal");
+        parametersH2COWatsonInternal.set("watson_max_coupling_input", 6);
         //
         parametersBilinearly.set("L", 6);
         parametersBilinearly.set("symmetry", "none");
@@ -3612,11 +3652,13 @@ struct WatsonFixture
         parametersBilinearly.set("MODEL", "watson");
         parametersBilinearly.set("Nmax", 10);
         parametersBilinearly.set("integrals_binary", maquis::serialize(integralsBilinearly));
+        parametersBilinearly.set("watson_max_coupling_input", 6);
     }
 
     /** @brief Class destructor (removes tmp files) */
     ~WatsonFixture() {
         std::remove("integral_file_test_Watson_Ethylene_Harmonic");
+        std::remove("integral_file_test_Watson_Ethylene_Harmonic_TwoRows");
         std::remove("integral_file_test_Watson_Ethylene_Sextic");
         std::remove("integral_file_test_Watson_H2CO_Coriolis");
         std::remove("integral_file_test_Watson_H2CO_NoCoriolis");
@@ -3624,9 +3666,10 @@ struct WatsonFixture
 
     // Class members
     DmrgParameters parametersEthyleneWatsonHarmonic, parametersEthyleneWatson, parametersBilinearly,
-        parametersH2COWatson, parametersH2COWatsonNoCoriolis, parametersH2COWatsonInternal;
+        parametersH2COWatson, parametersH2COWatsonNoCoriolis, parametersH2COWatsonInternal,
+        parametersEthyleneWatsonHarmonicTwoRows;
     std::ofstream integralFileEthyleneHarmonic, integralFileEthylene, integralFileH2CO, integralFileH2CONoCoriolis,
-        integralFileH2COInternal;
+        integralFileH2COInternal, integralFileEthyleneHarmonicTwoRows;
     double referenceHarmonicEnergy;
     MaquisIntegralType integralsBilinearly;
 };
