@@ -45,11 +45,23 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
     auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     int siteType = 0;
     const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8*12);
 #endif // HAVE_TrivialGroup
 }
 
 #ifdef HAVE_TrivialGroup
+
+/** Checks consistency for the physical dimensions for the ethylene Watson Hamiltonian with NMax vector initialization */
+BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene_NMaxVec, WatsonFixture)
+{
+    parametersEthyleneWatsonHarmonic.set("Nmax", "8,8,8,8,8,8,8,8,8,8,8,8");
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
+    int siteType = 0;
+    const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8*12);
+}
+
 
 /** Simple check on tags */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_Ethylene, WatsonFixture)
@@ -97,7 +109,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture)
     auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
     auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), parametersEthyleneWatsonHarmonic["Nmax"]);
+    int nMax = parametersEthyleneWatsonHarmonic["Nmax"];
+    int nModes = parametersEthyleneWatsonHarmonic["L"];
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax * nModes);
 }
 
 #endif // HAVE_TrivialGroup
