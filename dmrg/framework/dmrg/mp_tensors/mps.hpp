@@ -48,27 +48,20 @@ std::string MPS<Matrix, SymmGroup>::description() const
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS()
-: canonized_i(std::numeric_limits<size_t>::max())
-{ }
+    : canonized_i(std::numeric_limits<size_t>::max()) { }
 
 template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup>::MPS(size_t L)
-: data_(L)
-, canonized_i(std::numeric_limits<size_t>::max())
-{ }
+MPS<Matrix, SymmGroup>::MPS(size_t L): data_(L), canonized_i(std::numeric_limits<size_t>::max()) { }
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(std::initializer_list<MPSTensor<Matrix, SymmGroup> > l)
-: data_{l}, canonized_i(std::numeric_limits<size_t>::max())
-{ }
+    : data_{l}, canonized_i(std::numeric_limits<size_t>::max()) { }
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
-: data_(L)
-, canonized_i(std::numeric_limits<size_t>::max())
+    : data_(L), canonized_i(std::numeric_limits<size_t>::max())
 {
     init(*this);
-
     // MD: this is actually important
     //     it turned out, this is also quite dangerous: if a block is 1x2,
     //     normalize_left will resize it to 1x1
@@ -76,13 +69,14 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
     //     adhoc states will be broken (e.g. identity MPS)
     // for (int i = 0; i < L; ++i)
     //     (*this)[i].normalize_left(DefaultSolver());
-
     this->normalize_left();
 }
 
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::value_type const & MPS<Matrix, SymmGroup>::operator[](size_t i) const
-{ return data_[i]; }
+{
+    return data_[i];
+}
 
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](size_t i)
