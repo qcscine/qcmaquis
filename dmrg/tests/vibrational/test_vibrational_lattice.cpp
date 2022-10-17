@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_PropertyGetter_Watson_Ethylene, WatsonFixtu
     auto lattice = WatsonLattice(parametersEthyleneWatson);
     for (int iSite = 0; iSite < lattice.size(); iSite++) {
         auto siteType = lattice.get_prop<int>("type", iSite);
-        BOOST_CHECK_EQUAL(siteType, 0);
+        BOOST_CHECK_EQUAL(siteType, iSite);
     }
 }
 

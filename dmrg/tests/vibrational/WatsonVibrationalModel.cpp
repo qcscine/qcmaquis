@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
     auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     int siteType = 0;
     const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8*12);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8);
 #endif // HAVE_TrivialGroup
 }
 
@@ -57,9 +57,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene_NMaxVec, WatsonFixture)
     parametersEthyleneWatsonHarmonic.set("Nmax", "8,8,8,8,8,8,8,8,8,8,8,8");
     auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
     auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
-    int siteType = 0;
-    const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), 8*12);
+    int siteType = 5;
+    const auto& physicalDimensions5 = nModeModel.phys_dim(siteType);
+    BOOST_CHECK_EQUAL(physicalDimensions5.sum_of_sizes(), 8);
 }
 
 
@@ -111,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture)
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
     int nMax = parametersEthyleneWatsonHarmonic["Nmax"];
     int nModes = parametersEthyleneWatsonHarmonic["L"];
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax * nModes);
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax);
 }
 
 #endif // HAVE_TrivialGroup
