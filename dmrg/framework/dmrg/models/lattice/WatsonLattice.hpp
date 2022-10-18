@@ -55,7 +55,7 @@ public:
      * @brief Class constructor for the lattice
      * @param parameters parameter container
      */
-    WatsonLattice(BaseParameters& parameters) : L(parameters["L"]), maximum_vertex(1)
+    WatsonLattice(BaseParameters& parameters) : L(parameters["L"]), maximum_vertex(parameters["L"])
     { }
     
     /** @brief Returns the next position in the lattice */
