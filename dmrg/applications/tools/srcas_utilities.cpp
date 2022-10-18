@@ -50,12 +50,18 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     } else if (parms_["MODEL"] == "watson") {
         numModes_ = parms_["L"];
         maxDetStr_ = parms_["Nmax"].str();
-        for (int i=1; i<numModes_; i++) {
-            maxDetStr_ += ",";
-            maxDetStr_ += parms_["Nmax"].str();
+        detSpace_ = parms_["Nmax"].as<std::vector<int> >();
+        if (detSpace_.size()!=numModes_ && detSpace_.size()!=1){
+            throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
         }
-        std::vector<int> tmpVec(numModes_, std::stoi(parms_["Nmax"].str()));
-        detSpace_ = std::move(tmpVec);
+        if (detSpace_.size()!=numModes_) {
+            for (int i=1; i<numModes_; i++) {
+                maxDetStr_ += ",";
+                maxDetStr_ += parms_["Nmax"].str();
+            }
+            std::vector<int> tmpVec(numModes_, std::stoi(parms_["Nmax"].str()));
+            detSpace_ = std::move(tmpVec);
+        }
     }
 
     // If user set a starting det, use this, otherwise use "0,0,0, ... ,0"
