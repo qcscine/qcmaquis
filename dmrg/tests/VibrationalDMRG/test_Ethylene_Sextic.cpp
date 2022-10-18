@@ -109,7 +109,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, Watso
     // Creates the interface
     InterfaceType interfaceMod(parametersEthyleneWatson);
     interfaceMod.optimize();
-    BOOST_CHECK_CLOSE(interfaceMod.energy(), interface.energy(), 1.0E-8);
+    BOOST_CHECK_CLOSE(interfaceMod.energy(), interface.energy(), 1.0E-5);
 }
 
 /**
