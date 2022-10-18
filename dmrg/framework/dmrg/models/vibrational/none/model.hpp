@@ -89,6 +89,7 @@ public:
         positionPowers_.resize(numModes);
         momentumPowers_.resize(numModes);
         physIndices_.resize(numModes);
+        ident_.resize(numModes);
 
         std::vector<int> nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
         if (nMaxVec.size()!= numModes && nMaxVec.size()!=1){
@@ -97,19 +98,20 @@ public:
 
         // Loop over all modes
         for (int mode=0; mode < numModes; mode++){
+            int nMax;
             if (nMaxVec.size()==numModes) {
-                nMax_ = nMaxVec[mode];
+                nMax = nMaxVec[mode];
             } else {
-                nMax_ = nMaxVec[0];
+                nMax = nMaxVec[0];
             }
-            std::cout << "Nmax for mode " << mode << " is " << nMax_ << std::endl;
+            std::cout << "Nmax for mode " << mode << " is " << nMax << std::endl;
             op_t ident_op, position_op, momentum_op;
             std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
             TrivialGroup::charge C = TrivialGroup::IdentityCharge;
-            int overallDimension = nMax_ + maxCoupling_;
+            int overallDimension = nMax + maxCoupling_;
             
             // Here it's where the "physical" basis is defined
-            physIndices_[mode].insert(std::make_pair(C, nMax_));
+            physIndices_[mode].insert(std::make_pair(C, nMax));
             Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
             Matrix mident(overallDimension, overallDimension, 0.);
             // Loads the matrices
@@ -125,15 +127,15 @@ public:
             momentum_op.insert_block(mmom, C,C);
             ident_op.insert_block(mident, C,C);
             // -- Creates the powers of the position/momentum operator --
-            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling_, nMax_, ident_op, position_op);
-            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling_, nMax_, ident_op, momentum_op);
+            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxCoupling_, nMax, ident_op, position_op);
+            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxCoupling_, nMax, ident_op, momentum_op);
             // -- Create operator tag table --
-            ident_op.resize_block(0, nMax_, nMax_);
-            ident_ = tag_handler_->register_op(ident_op, tag_detail::bosonic);
+            ident_op.resize_block(0, nMax, nMax);
+            ident_[mode] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
             positionPowers_[mode].resize(maxCoupling_+1);
             momentumPowers_[mode].resize(maxCoupling_+1);
-            positionPowers_[mode][0] = ident_;
-            momentumPowers_[mode][0] = ident_;
+            positionPowers_[mode][0] = ident_[mode];
+            momentumPowers_[mode][0] = ident_[mode];
             for (int iOrder = 1; iOrder <= maxCoupling_; iOrder++) {
                 positionPowers_[mode][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
                 momentumPowers_[mode][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
@@ -187,7 +189,7 @@ public:
     Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_[type]; }
 
     /** @brief Getter for the identity operator */
-    tag_type identity_matrix_tag(size_t type) const { return ident_; }
+    tag_type identity_matrix_tag(size_t type) const { return ident_[type]; }
 
     /** @brief Getter for the filling operator */
     tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
@@ -205,9 +207,9 @@ public:
      */
     tag_type get_operator_tag(const std::string& name, size_t type) const {
         if (name == "id")
-            return ident_;
+            return ident_[type];
         else if (name == "fill")
-            return ident_;
+            return ident_[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -235,8 +237,6 @@ private:
     int maxCoupling_;
     /** Ref to the lattice object */
     const Lattice& lattice_;
-    /** Max excitation degree (assumed constant for all modes for the moment) */
-    int nMax_;
     /** Parameter container */
     BaseParameters& parameters_;
     /** Physical basis */
@@ -244,7 +244,7 @@ private:
     /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler_;
     /** Tags of the elementary operators */
-    tag_type ident_;
+    std::vector<tag_type> ident_;
     /** Tag for the powers of the position/momentum operators */
     std::vector<std::vector<tag_type>> positionPowers_, momentumPowers_;
     /** Type associated with the vibrational coordinates */
