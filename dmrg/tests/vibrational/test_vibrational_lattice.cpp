@@ -48,8 +48,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Watson_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_MaxVertexType_Watson_Ethylene, WatsonFixture)
 {
     auto lattice = WatsonLattice(parametersEthyleneWatson);
-    auto size = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(size, 1);
+    auto size = lattice.size();
+    auto numSiteTypes = lattice.maximum_vertex_type();
+    BOOST_CHECK_EQUAL(size, numSiteTypes);
 }
 
 /** @brief Checks that the property getter works properly */
