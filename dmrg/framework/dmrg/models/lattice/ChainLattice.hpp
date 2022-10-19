@@ -44,16 +44,10 @@ public:
     typedef lattice_impl::pos_t pos_t;
 
     ChainLattice (BaseParameters & parms, bool pbc_=false)
-    : L(parms["L"])
-    , a(parms["a"])
-    , pbc(pbc_)
-    { }
+        : L(parms["L"]), pbc(pbc_) { }
 
-    ChainLattice (int L_, bool pbc_=false, double a_=1.)
-    : L(L_)
-    , a(a_)
-    , pbc(pbc_)
-    { }
+    ChainLattice (int L_, bool pbc_=false)
+        : L(L_), pbc(pbc_) { }
 
     std::vector<pos_t> forward(pos_t i) const
     {
@@ -110,15 +104,9 @@ public:
         }
     }
 
-    pos_t size() const
-    {
-        return L;
-    }
+    pos_t size() const { return L; }
 
-    int maximum_vertex_type() const
-    {
-        return 0;
-    }
+    int maximum_vertex_type() const { return 0; }
 
 private:
 
@@ -136,9 +124,7 @@ private:
 
 private:
     int L;
-    double a;
     bool pbc;
-
 };
 
 #endif
