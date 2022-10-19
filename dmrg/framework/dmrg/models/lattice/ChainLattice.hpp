@@ -112,14 +112,14 @@ private:
 
     std::string site_label (int i) const
     {
-        return "( " + boost::lexical_cast<std::string>(a * i) + " )";
+        return "( " + boost::lexical_cast<std::string>(i) + " )";
     }
 
     std::string bond_label (int i, int j) const
     {
-        return (  "( " + boost::lexical_cast<std::string>(a * i) + " )"
+        return (  "( " + boost::lexical_cast<std::string>(i) + " )"
                 + " -- "
-                + "( " + boost::lexical_cast<std::string>(a * j) + " )");
+                + "( " + boost::lexical_cast<std::string>(j) + " )");
     }
 
 private:
