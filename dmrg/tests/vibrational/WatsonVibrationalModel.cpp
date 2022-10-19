@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixture) 
 {
     auto lattice = lattice_factory(parametersEthyleneWatsonHarmonic);
-    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice);
+    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice, WatsonCoordinateType::CartesianNormalModes);
     BOOST_CHECK_EQUAL(integrals.size(), 24);
     for (const auto iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
