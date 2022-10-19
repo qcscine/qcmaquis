@@ -83,7 +83,7 @@ public:
         else if (property == "type" && pos.size() == 2)
             return boost::any( 0 );
         else if (property == "x" && pos.size() == 1)
-            return boost::any( a * pos[0] );
+            return boost::any( pos[0] );
         else if (property == "at_open_boundary" && pos.size() == 1)
             return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L-1) );
         else if (property == "at_open_left_boundary" && pos.size() == 1)
