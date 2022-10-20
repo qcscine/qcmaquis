@@ -96,7 +96,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     for (int type = 0; type < site_bases.size(); ++type) {
         site_bases[type] = this->phys_dim(type);
 // #ifndef NDEBUG
-//         maquis::cout << "phys["<<type <<"]: " << site_bases[type] << std::endl;
+//         maquis::cout << "phys["<< type <<"]: " << site_bases[type] << std::endl;
 // #endif
     }
     // Generation of the initializer

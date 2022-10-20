@@ -93,6 +93,7 @@ public:
         positionPowers_.resize(numModes);
         momentumPowers_.resize(numModes);
         physIndices_.resize(numModes);
+        ident_.resize(numModes);
 
         std::vector<int> nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
         if (nMaxVec.size()!= numModes && nMaxVec.size()!=1){
@@ -107,7 +108,7 @@ public:
             TrivialGroup::charge C = TrivialGroup::IdentityCharge;
             int overallDimension = nMax_ + maxCoupling_;
             // Here it's where the "physical" basis is defined
-            physIndices_[mode].insert(std::make_pair(C, nMax_));
+            physIndices_[mode].insert(std::make_pair(C, nMax));
             Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
             Matrix mident(overallDimension, overallDimension, 0.);
             // Loads the matrices
@@ -195,7 +196,7 @@ public:
     Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_[type]; }
 
     /** @brief Getter for the identity operator */
-    tag_type identity_matrix_tag(size_t type) const { return ident_; }
+    tag_type identity_matrix_tag(size_t type) const { return ident_[type]; }
 
     /** @brief Getter for the filling operator */
     tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
@@ -213,9 +214,9 @@ public:
      */
     tag_type get_operator_tag(const std::string& name, size_t type) const {
         if (name == "id")
-            return ident_;
+            return ident_[type];
         else if (name == "fill")
-            return ident_;
+            return ident_[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -243,8 +244,6 @@ private:
     int maxCoupling_, maxManyBodyCoupling_, maxInputManyBodyCoupling_;
     /** Ref to the lattice object */
     const Lattice& lattice_;
-    /** Max excitation degree (assumed constant for all modes for the moment) */
-    int nMax_;
     /** Parameter container */
     BaseParameters& parameters_;
     /** Physical basis */
@@ -252,7 +251,7 @@ private:
     /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler_;
     /** Tags of the elementary operators */
-    tag_type ident_;
+    std::vector<tag_type> ident_;
     /** Tag for the powers of the position/momentum operators */
     std::vector<std::vector<tag_type>> positionPowers_, momentumPowers_;
     /** Type associated with the vibrational coordinates */
