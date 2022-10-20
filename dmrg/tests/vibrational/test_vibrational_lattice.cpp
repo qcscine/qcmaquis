@@ -48,8 +48,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Watson_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_MaxVertexType_Watson_Ethylene, WatsonFixture)
 {
     auto lattice = WatsonLattice(parametersEthyleneWatson);
-    auto size = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(size, 1);
+    auto size = lattice.getMaxType();
+    BOOST_CHECK_EQUAL(size, lattice.size());
 }
 
 /** @brief Checks that the property getter works properly */
@@ -78,16 +78,16 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Site_Types_2ModeSystem, NModeFixture)
 {
     auto lattice = NModeLattice(parametersTwoMode);
-    auto typeOfSites = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(typeOfSites, 1);
+    auto typeOfSites = lattice.getMaxType();
+    BOOST_CHECK_EQUAL(typeOfSites, 2);
 }
 
 /** @brief Checks the size of the lattice for the 4-mode input */
 BOOST_FIXTURE_TEST_CASE(Test_Site_Types_4ModeSystem, NModeFixture)
 {
     auto lattice = NModeLattice(parametersFourMode);
-    auto typeOfSites = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(typeOfSites, 3);
+    auto typeOfSites = lattice.getMaxType();
+    BOOST_CHECK_EQUAL(typeOfSites, 4);
 }
 
 /** @brief Checks the partition of the lattice for the 4-mode input */

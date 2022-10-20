@@ -83,18 +83,18 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
   rightBoundary.resize(latticeSize+1);
   leftBoundary[0] = mpsHF.left_boundary();
   for (int iSite = 0; iSite < latticeSize; iSite++)
-      leftBoundary[iSite+1] = contr::overlap_mpo_left_step(mpsHF[iSite], mpsHF[iSite], leftBoundary[iSite], mpo[iSite]);
+    leftBoundary[iSite+1] = contr::overlap_mpo_left_step(mpsHF[iSite], mpsHF[iSite], leftBoundary[iSite], mpo[iSite]);
   rightBoundary[latticeSize] = mpsHF.right_boundary();
   for (int iSite = latticeSize-1; iSite >= 0; iSite--)
-      rightBoundary[iSite] = contr::overlap_mpo_right_step(mpsHF[iSite], mpsHF[iSite], rightBoundary[iSite+1], mpo[iSite]);
+    rightBoundary[iSite] = contr::overlap_mpo_right_step(mpsHF[iSite], mpsHF[iSite], rightBoundary[iSite+1], mpo[iSite]);
   // Prepares the overlap boundaries
   OrthoContainer orthoLeft(latticeSize+1), orthoRight(latticeSize+1);
   orthoLeft[0] = mpsHF.left_boundary()[0];
   orthoRight[latticeSize] = mpsHF.right_boundary()[0];
   for (int iSite = 0; iSite < latticeSize; iSite++)
-      orthoLeft[iSite+1] = contr::overlap_left_step(mpsHF[iSite], mpsHF[iSite], orthoLeft[iSite]);
+    orthoLeft[iSite+1] = contr::overlap_left_step(mpsHF[iSite], mpsHF[iSite], orthoLeft[iSite]);
   for (int iSite = latticeSize-1; iSite >= 0; iSite--)
-      orthoRight[iSite] = contr::overlap_right_step(mpsHF[iSite], mpsHF[iSite], orthoRight[iSite+1]);
+    orthoRight[iSite] = contr::overlap_right_step(mpsHF[iSite], mpsHF[iSite], orthoRight[iSite+1]);
   // Prepares the SiteProblem object and the corresponding ortho object.
   auto siteProblem = std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
   auto rhs = contraction::site_ortho_boundaries(mpsHF[0], mpsHF[0], orthoLeft[0], orthoRight[1]);
