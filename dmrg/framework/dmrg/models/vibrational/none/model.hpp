@@ -102,11 +102,11 @@ public:
 
         // Loop over all modes
         for (int mode = 0; mode < numModes; mode++) {
-            nMax_ = (nMaxVec.size() == numModes) ? nMaxVec[mode] : nMaxVec[0];
+            int nMax = (nMaxVec.size() == numModes) ? nMaxVec[mode] : nMaxVec[0];
             op_t ident_op, position_op, momentum_op;
             std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
             TrivialGroup::charge C = TrivialGroup::IdentityCharge;
-            int overallDimension = nMax_ + maxCoupling_;
+            int overallDimension = nMax + maxCoupling_;
             // Here it's where the "physical" basis is defined
             physIndices_[mode].insert(std::make_pair(C, nMax));
             Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
@@ -124,15 +124,15 @@ public:
             momentum_op.insert_block(mmom, C,C);
             ident_op.insert_block(mident, C,C);
             // -- Creates the powers of the position/momentum operator --
-            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputManyBodyCoupling_, nMax_, ident_op, position_op);
-            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax_, ident_op, momentum_op);
+            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputManyBodyCoupling_, nMax, ident_op, position_op);
+            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax, ident_op, momentum_op);
             // -- Create operator tag table --
-            ident_op.resize_block(0, nMax_, nMax_);
-            ident_ = tag_handler_->register_op(ident_op, tag_detail::bosonic);
+            ident_op.resize_block(0, nMax, nMax);
+            ident_[mode] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
             positionPowers_[mode].resize(maxInputManyBodyCoupling_+1);
             momentumPowers_[mode].resize(maxInputManyBodyCoupling_+1);
-            positionPowers_[mode][0] = ident_;
-            momentumPowers_[mode][0] = ident_;
+            positionPowers_[mode][0] = ident_[mode];
+            momentumPowers_[mode][0] = ident_[mode];
             for (int iOrder = 1; iOrder <= maxInputManyBodyCoupling_; iOrder++) {
                 bool posAlreadyPresent = tag_handler_->hasRegistered(powersOfPositions_op[iOrder]);
                 bool momAlreadyPresent = tag_handler_->hasRegistered(powersOfMomentum_op[iOrder]);
