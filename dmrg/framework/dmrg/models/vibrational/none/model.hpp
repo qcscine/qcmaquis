@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
  *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
+ *               2022- by Nina Glaser <nglaser@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -27,7 +28,7 @@
 #ifndef MODELS_VIBRATIONAL_NONE_H
 #define MODELS_VIBRATIONAL_NONE_H
 
-#ifdef DMRG_VIBRATIONAL
+// #ifdef DMRG_VIBRATIONAL
 
 #include <set>
 #include <sstream>
@@ -90,25 +91,28 @@ public:
         maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
         maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
         int numModes =  parameters_["L"];
-        positionPowers_.resize(numModes);
-        momentumPowers_.resize(numModes);
         physIndices_.resize(numModes);
-        ident_.resize(numModes);
-
-        std::vector<int> nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
-        if (nMaxVec.size()!= numModes && nMaxVec.size()!=1){
+        // Analyzes consistency of nMax parameter
+        nMaxVec = parameters_["Nmax"].as<std::vector<int> >();
+        if (nMaxVec.size() == 1) {
+            auto nMax = nMaxVec[0];
+            nMaxVec = std::vector<int>(numModes, nMax);
+        }
+        else if (nMaxVec.size() != numModes) {
             throw std::runtime_error("Nmax needs to be either a single integer or a list with lenght L");
         }
-
+        // Loads the physical indices
+        TrivialGroup::charge C = TrivialGroup::IdentityCharge;
+        for (int iMode = 0; iMode < numModes; iMode++)
+            physIndices_[iMode].insert(std::make_pair(C, nMaxVec[iMode]));
+        // Decides how many different dimensions there are
+        std::set<int> nMaxUnique(nMaxVec.begin(), nMaxVec.end());
         // Loop over all modes
-        for (int mode = 0; mode < numModes; mode++) {
-            int nMax = (nMaxVec.size() == numModes) ? nMaxVec[mode] : nMaxVec[0];
+        for (const auto& nMax: nMaxUnique) {
             op_t ident_op, position_op, momentum_op;
             std::vector<op_t> powersOfPositions_op, powersOfMomentum_op;
-            TrivialGroup::charge C = TrivialGroup::IdentityCharge;
             int overallDimension = nMax + maxCoupling_;
             // Here it's where the "physical" basis is defined
-            physIndices_[mode].insert(std::make_pair(C, nMax));
             Matrix mpos(overallDimension, overallDimension, 0.), mmom(overallDimension, overallDimension, 0.);
             Matrix mident(overallDimension, overallDimension, 0.);
             // Loads the matrices
@@ -128,22 +132,14 @@ public:
             powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax, ident_op, momentum_op);
             // -- Create operator tag table --
             ident_op.resize_block(0, nMax, nMax);
-            ident_[mode] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
-            positionPowers_[mode].resize(maxInputManyBodyCoupling_+1);
-            momentumPowers_[mode].resize(maxInputManyBodyCoupling_+1);
-            positionPowers_[mode][0] = ident_[mode];
-            momentumPowers_[mode][0] = ident_[mode];
+            ident_[nMax] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
+            positionPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
+            momentumPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
+            positionPowers_[nMax][0] = ident_[nMax];
+            momentumPowers_[nMax][0] = ident_[nMax];
             for (int iOrder = 1; iOrder <= maxInputManyBodyCoupling_; iOrder++) {
-                bool posAlreadyPresent = tag_handler_->hasRegistered(powersOfPositions_op[iOrder]);
-                bool momAlreadyPresent = tag_handler_->hasRegistered(powersOfMomentum_op[iOrder]);
-                if (!posAlreadyPresent)
-                    positionPowers_[mode][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
-                else
-                    positionPowers_[mode][iOrder] = tag_handler_->checked_register(powersOfPositions_op[iOrder], tag_detail::bosonic).first;
-                if (!momAlreadyPresent)
-                    momentumPowers_[mode][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
-                else
-                    momentumPowers_[mode][iOrder] = tag_handler_->checked_register(powersOfMomentum_op[iOrder], tag_detail::bosonic).first;
+                positionPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
+                momentumPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
             }
         }
     }
@@ -180,9 +176,9 @@ public:
                 positions.push_back(abs(referenceValue)-1);
                 assert(innerCounter > 0);
                 if (referenceValue < 0)
-                    operators.push_back(momentumPowers_[mode][innerCounter]);
+                    operators.push_back(momentumPowers_[nMaxVec[mode]][innerCounter]);
                 else if (referenceValue > 0)
-                    operators.push_back(positionPowers_[mode][innerCounter]);
+                    operators.push_back(positionPowers_[nMaxVec[mode]][innerCounter]);
                 outerCounter += innerCounter;
             }
             assert(operators.size() == positions.size() && positions.size() <= maxInputManyBodyCoupling_);
@@ -196,7 +192,7 @@ public:
     Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_[type]; }
 
     /** @brief Getter for the identity operator */
-    tag_type identity_matrix_tag(size_t type) const { return ident_[type]; }
+    tag_type identity_matrix_tag(size_t type) const { return ident_.at(nMaxVec[type]); }
 
     /** @brief Getter for the filling operator */
     tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
@@ -214,9 +210,9 @@ public:
      */
     tag_type get_operator_tag(const std::string& name, size_t type) const {
         if (name == "id")
-            return ident_[type];
+            return ident_.at(nMaxVec[type]);
         else if (name == "fill")
-            return ident_[type];
+            return ident_.at(nMaxVec[type]);
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -251,13 +247,15 @@ private:
     /** Pointer to the tag_handler */
     std::shared_ptr<TagHandler<Matrix, TrivialGroup> >  tag_handler_;
     /** Tags of the elementary operators */
-    std::vector<tag_type> ident_;
+    std::unordered_map<int, tag_type> ident_;
     /** Tag for the powers of the position/momentum operators */
-    std::vector<std::vector<tag_type>> positionPowers_, momentumPowers_;
+    std::unordered_map<int, std::vector<tag_type>> positionPowers_, momentumPowers_;
     /** Type associated with the vibrational coordinates */
     WatsonCoordinateType coordinateType_;
+    /** Physical dimension for each site */
+    std::vector<int> nMaxVec;
 };
 
-#endif // DMRG_VIBRATIONAL
+// #endif // DMRG_VIBRATIONAL
 
 #endif

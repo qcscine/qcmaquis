@@ -111,7 +111,6 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture)
     auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
     int nMax = parametersEthyleneWatsonHarmonic["Nmax"];
-    int nModes = parametersEthyleneWatsonHarmonic["L"];
     BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax);
 }
 

@@ -101,8 +101,8 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Sextic_SingleSite, Watso
     parametersEthyleneWatson.set("alpha_main", 1.0E-15);
     parametersEthyleneWatson.set("alpha_final", 0.);
     parametersEthyleneWatson.set("Nmax", 7);
-    parametersEthyleneWatson.set("truncation_initial", 1.0E-16);
-    parametersEthyleneWatson.set("truncation_final", 1.0E-10);
+    parametersEthyleneWatson.set("truncation_initial", 1.0E-10);
+    parametersEthyleneWatson.set("truncation_final", 1.0E-8);
     // Creates the interface
     InterfaceType interface(parametersEthyleneWatson);
     interface.optimize();
