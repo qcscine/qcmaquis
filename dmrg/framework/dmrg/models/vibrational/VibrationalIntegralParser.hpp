@@ -212,6 +212,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
             auto modeSet = std::set<int>(it+1, it+maxInputManyBodyCoupling);
+            modeSet.erase(0);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
                 InputType coefficient = *it++;

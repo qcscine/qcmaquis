@@ -74,6 +74,9 @@ public:
         : lattice_(lattice), parameters_(parameters), tag_handler_(new table_type()), physIndices_(0)
     {
         // Model parameters
+        maquis::cout << std::endl;
+        maquis::cout << " == CONSTRUCTING WATSON HAMILTONIAN == " << std::endl;
+        maquis::cout << std::endl;
         if (parameters_["watson_coordinate_type"] == "cartesian") {
             coordinateType_ = WatsonCoordinateType::CartesianNormalModes;
             maquis::cout << " Coordinate type: Cartesian Normal Modes" << std::endl;
@@ -90,6 +93,10 @@ public:
         maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
         maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
         maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
+        maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl;
+        maquis::cout << " - Many-body coupling order expected as input: " << maxInputManyBodyCoupling_ << std::endl;
+        maquis::cout << " - Maximum many-body coupling order included in the Hamiltonian " << maxManyBodyCoupling_ << std::endl;
+        maquis::cout << std::endl;
         int numModes =  parameters_["L"];
         physIndices_.resize(numModes);
         // Analyzes consistency of nMax parameter
