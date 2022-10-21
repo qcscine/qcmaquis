@@ -138,7 +138,7 @@ private:
 
         // Watson Hamiltonian-based simulations
         add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
-        add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file");
+        add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
 
@@ -306,13 +306,13 @@ inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string 
     DmrgParameters parms(param_file);
 
     /// Load model parameters from second input (if needed)
-    std::string integral_file;
-    if (parms.is_set("integral_file") && model_fname.empty())
-        model_fname = parms["integral_file"].str();
+    std::string model_file;
+    if (parms.is_set("model_file") && model_fname.empty())
+        model_fname = parms["model_file"].str();
     if (!model_fname.empty()) {
         std::ifstream model_ifs(model_fname.c_str());
         if (!model_ifs)
-            throw std::runtime_error("Could not open model_parms file.");
+            throw std::runtime_error("Could not open model_file.");
         parms << ModelParameters(model_ifs);
     }
 
