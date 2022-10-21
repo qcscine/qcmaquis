@@ -108,20 +108,26 @@ private:
         add_option("init_basis_state", "local indexes for basis state init", value(""));
         add_option("ci_level", "number of electrons excited from HF determinant", "1,2,3,4,5,6");
 
-        add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
-        add_option("lattice_library", "", value("coded"));
-        add_option("model_library", "", value("coded"));
-        add_option("model_file", "path to model parameters", value(""));
-        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
-
-        //Default values for lattice, model etc. for quantum chemistry calculations
+        // Settings for lattice
+        add_option("L", "lattice size, i.e. number of sites");
         add_option("LATTICE", "", value("orbitals"));
+        add_option("lattice_library", "", value("coded"));
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
+        
+        // Settings for model etc. for quantum chemistry calculations
         add_option("MODEL","", value("quantum_chemistry"));
+        add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
+        add_option("model_library", "", value("coded"));
+
+        // Settings for integral read-in
+        add_option("integral_file", "path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
+        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
 
         add_option("beta_mode", "", value(0));
 
         add_option("NUMBER_EIGENVALUES", "", value(1));
+
+        // excited states calculation with ORTHO
         add_option("n_ortho_states", "", value(0));
         add_option("ortho_states", "comma separated list of filenames");
 
@@ -162,7 +168,7 @@ private:
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
-        // Vibrational SRCAS
+        // Vibrational SRCAS settings
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.9));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
@@ -300,9 +306,9 @@ inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string 
     DmrgParameters parms(param_file);
 
     /// Load model parameters from second input (if needed)
-    std::string model_file;
-    if (parms.is_set("model_file") && model_fname.empty())
-        model_fname = parms["model_file"].str();
+    std::string integral_file;
+    if (parms.is_set("integral_file") && model_fname.empty())
+        model_fname = parms["integral_file"].str();
     if (!model_fname.empty()) {
         std::ifstream model_ifs(model_fname.c_str());
         if (!model_ifs)
