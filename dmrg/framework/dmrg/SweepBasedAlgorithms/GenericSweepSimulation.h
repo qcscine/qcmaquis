@@ -27,6 +27,8 @@
 #ifndef GENERIC_SWEEPS_SIMULATION_H
 #define GENERIC_SWEEPS_SIMULATION_H
 
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/utils/BaseParameters.h"
@@ -47,6 +49,7 @@ template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType Swe
 class GenericSweepSimulation {
 public:
   // Types declaration
+  using ModelType = Model<Matrix, SymmGroup>;
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
@@ -57,11 +60,11 @@ public:
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
 
   /** @brief Class constructor */
-  GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms,
-                         std::string simulationName="Optimization", int initSite=0)
-    : mps_(mps), mpo_(mpo), parms_(parms), L_(mps_.length()), initSite_(initSite),
-      mpoContainer_(mpo_, mps_), mpsContainer_(mps), simulationName_(simulationName),
-      nSweeps_(0), currentSite_(initSite)
+  GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
+                         const Lattice& lattice, std::string simulationName="Optimization", int initSite=0)
+    : mps_(mps), parms_(parms), L_(mps_.length()), initSite_(initSite), mpoContainer_(mpo, mps),
+      mpsContainer_(mps), simulationName_(simulationName), nSweeps_(0), currentSite_(initSite),
+      indexOfMicroIteration_(0), lattice_(lattice), model_(model)
   {
     siteLeft_ = currentSite_;
     siteRight_ = currentSite_+1;
@@ -69,8 +72,8 @@ public:
     printGenericInfo();
     nSweeps_ = parms_["nsweeps"];
     lastSite_ = SweepTraitClass::getLastSite(L_);
-    boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpo_);
-    mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpo_, mps_, boundaryPropagator_, parms_);
+    boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
+    mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_);
   };
 
   /**
@@ -84,7 +87,6 @@ public:
     // == LOOP OVER THE SWEEPS ==
     for (int iSweep = 0; iSweep < nSweeps_; iSweep++)
       this->runSingleSweep(iSweep);
-    this->finalizeSweep();
   }
 
   /** @brief Runs a single sweep of a sweep-based optimization */
@@ -153,6 +155,7 @@ public:
       indexOfMicroIteration_ += 1;
       maquis::cout << std::endl;
     }
+    this->finalizeSweep();
   }
 
   /** @brief Gets the container with the results of each iteration */
@@ -280,7 +283,6 @@ protected:
 
 protected:
   MPSType& mps_;
-  const MPOType& mpo_;
   MPOContainerType mpoContainer_;
   MPSContainerType mpsContainer_;
   std::unique_ptr<SweepMPSUpdaterType> mpsUpdater_;
@@ -289,6 +291,8 @@ protected:
   results_collector iterationResults_;
   std::shared_ptr<BoundaryPropagatorType> boundaryPropagator_;
   std::string simulationName_;
+  const ModelType& model_;
+  const Lattice& lattice_;
 };
 
 #endif // GENERIC_SWEEPS_SIMULATION_H

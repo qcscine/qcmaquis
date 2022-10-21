@@ -30,6 +30,7 @@
 #include "GenericSweepSimulation.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
@@ -46,6 +47,7 @@ public:
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
   using SiteProblemType = SiteProblem<Matrix, SymmGroup>;
   using MPSType = typename Base::MPSType;
+  using ModelType = typename Base::ModelType;
   using MPOType = typename Base::MPOType;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
   using ValueType = typename MPSTensorType::value_type;
@@ -60,15 +62,15 @@ public:
   using Base::mps_;
   using Base::mpsContainer_;
   using Base::mpoContainer_;
-  using Base::mpo_;
   using Base::parms_;
   using Base::runSweepSimulation;
   using Base::siteLeft_;
   using Base::siteRight_;
 
   /** @brief Class constructor */
-  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite=0)
-    : Base(mps, mpo, parms, std::string("Optimization"), initSite), nOrtho_(0)
+  SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
+                               const Lattice& lattice, int initSite=0)
+    : Base(mps, mpo, parms, model, lattice, std::string("Optimization"), initSite), nOrtho_(0)
   {
     // mps_.canonize(initSite_);
     if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {
@@ -113,7 +115,7 @@ public:
     else
       throw std::runtime_error("I don't know this eigensolver.");
     // Loads the final results
-    auto energy = resultOfLocalSiteProblem_.first + mpo_.getCoreEnergy();
+    auto energy = resultOfLocalSiteProblem_.first + mpoContainer_.getMPO().getCoreEnergy();
     maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << std::endl;
     iterationResults_["Energy"] << energy;
     return resultOfLocalSiteProblem_.second;
