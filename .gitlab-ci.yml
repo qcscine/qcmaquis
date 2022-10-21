@@ -111,7 +111,7 @@ testVibrationalHamiltonians:
     - cd buildVibrational
     - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
 
-  buildVibrationalHamiltoniansUpToTwelveModes:
+buildVibrationalHamiltoniansUpToTwelveModes:
   stage: buildFinal
   needs: ["testRelativistic"]
   tags:
