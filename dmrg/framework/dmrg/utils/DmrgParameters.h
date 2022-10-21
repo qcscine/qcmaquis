@@ -115,6 +115,7 @@ private:
 
         add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
         add_option("lattice_library", "", value("coded"));
+        add_option("L", "Lattice size");
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
         add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
@@ -177,6 +178,7 @@ private:
         add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-5));
         add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(50));
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
+        add_option("linsystem_exact_error", "If yes, calculates the error associated with the linear system", value("no"));
 
         // Parameters related to DMRG[IPI]
         add_option("ipi_sweep_overlap_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
@@ -198,6 +200,7 @@ private:
         add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_calculate_variance", "If yes, calculates the variance associated with each FEAST state.", value("no"));
+        add_option("feast_calculate_exact_error", "If equal to yes, calculates the exact error associated with the solution to the linear system", "no");
     }
 };
 
