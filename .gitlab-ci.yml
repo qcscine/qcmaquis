@@ -111,28 +111,28 @@ testVibrationalHamiltonians:
     - cd buildVibrational
     - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
 
-  buildVibrationalHamiltoniansUpTo12Modes:
+  buildVibrationalHamiltoniansUpToTwelveModes:
   stage: buildFinal
   needs: ["testRelativistic"]
   tags:
     - default_docker
   script:
-    - mkdir buildVibrationalUpTo12Modes && cd buildVibrationalUpTo12Modes
+    - mkdir buildVibrationalUpToTwelveModes && cd buildVibrationalUpToTwelveModes
     - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NONE" -DBUILD_VIBRATIONAL=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 ../dmrg
     - make -j2
   artifacts:
     paths:
-      - buildVibrationalUpTo12Modes/
+      - buildVibrationalUpToTwelveModes/
     expire_in: 6h
     when: always
 
-testVibrationalHamiltoniansupTo12Modes:
+testVibrationalHamiltoniansupToTwelveModes:
   stage: testFinal
-  needs: ["buildVibrationalHamiltoniansUpTo12Modes"]
+  needs: ["buildVibrationalHamiltoniansUpToTwelveModes"]
   tags:
     - default_docker
   script:
-    - cd buildVibrationalUpTo12Modes/
+    - cd buildVibrationalUpToTwelveModes/
     - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
 
 buildVibronicHamiltonians:
