@@ -136,10 +136,8 @@ private:
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
 
-        // n-mode vibrational calculations
-        add_option("nModeDumpIntegral", "If == yes, store the integrals in the result file", value("no"));
-
         // n-mode vDMRG related parameters
+        add_option("nModeDumpIntegral", "If == yes, store the integrals in the result file", value("no"));
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
         add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
@@ -187,13 +185,13 @@ private:
 
         // Parameters related to the DMRG[FEAST] algorithm
         add_option("feast_num_states", "Number of states to be targeted by DMRG[FEAST]", value(1));
-        add_option("feast_max_iter", "Maximum number of FEAST iterations");
+        add_option("feast_max_iter", "Maximum number of FEAST iterations", value(1));
         add_option("feast_emin", "Lower bound for the complex contour integration");
         add_option("feast_emax", "Upper bound for the complex contour integration");
-        add_option("feast_num_points", "Number of quadrature points for approximating the integral");
+        add_option("feast_num_points", "Number of quadrature points for approximating the integral", value(8));
         add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
-        add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("const"));
+        add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("default"));
         add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
         add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
