@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#define BOOST_TEST_MODULE LinearSolver
+#define BOOST_TEST_MODULE LinearSolverVibrational
 
 #include "dmrg/LinearSystem/linsolver.h"
 #include "dmrg/mp_tensors/contractions/engine.h"
