@@ -69,11 +69,11 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
         
-        omp_for(size_t i, parallel::range<size_t>(0,L), {
+        for (int i = 0; i < L; i++) {
             parallel::guard proc(scheduler(i));
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
-        });
+        }
         
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
