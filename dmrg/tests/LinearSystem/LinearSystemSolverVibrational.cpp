@@ -110,7 +110,10 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
 
 #ifdef HAVE_TrivialGroup
 
-/** @brief Validates the linear solver for the complex case */
+/**
+ * @brief Validates the linear solver for the complex case.
+ * The test-case is, in this case, the bilinearly coupled harmonic oscillator.
+ */
 BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   // Types declaration
   using BoundaryType = Boundary<typename storage::constrained<cmatrix>::type, TrivialGroup>;
@@ -129,12 +132,12 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   auto latticeSize = mpo.length();
   // Generates the first MPS
   auto initializerPointerFirst = model.initializer(vibrationalLattice, parametersBilinearly);
-  auto firstMPS = MPS<cmatrix, TrivialGroup>(vibrationalLattice.size(), *initializerPointerFirst);
+  auto firstMPS = MPS<cmatrix, TrivialGroup>(latticeSize, *initializerPointerFirst);
   firstMPS.normalize_right();
-  // Generates the second MPS
-  parametersBilinearly.set("seed", 1989);
+  // Generates the second MPS (note that the seed is changed in order to ensure that the lhs != rhs)
+  parametersBilinearly.set("seed", 1991);
   auto initializerPointerSecond = model.initializer(vibrationalLattice, parametersBilinearly);
-  auto secondMPS = MPS<cmatrix, TrivialGroup>(vibrationalLattice.size(), *initializerPointerSecond);
+  auto secondMPS = MPS<cmatrix, TrivialGroup>(latticeSize, *initializerPointerSecond);
   secondMPS.normalize_right();
   // Prepares the boundaries
   std::vector<BoundaryType> leftBoundary, rightBoundary;
