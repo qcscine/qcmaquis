@@ -67,6 +67,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   parametersBenzene.set("linsystem_tol", 1.0E-10);
   parametersBenzene.set("linsystem_krylov_dim", 100);
   parametersBenzene.set("linsystem_solver", "GMRES");
+  parametersBenzene.set("linsystem_exact_error", "yes");
   // Set the shift of DMRG[IPI] as the energy - 1 Hartree
   parametersBenzene.set("nsweeps", 3);
   parametersBenzene.set("ipi_shift", energyFromInterface-0.1);
@@ -74,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   // Does the IPI iteration "by hand"
   int nIPI = 10;
   for (int iSweep = 0; iSweep < nIPI; iSweep++) {
-    auto linearSolver = SweepBasedLinearSolverSS(hfBenzeneMPS, benzeneMPO, parametersBenzene);
+    auto linearSolver = SweepBasedLinearSolverSS(hfBenzeneMPS, benzeneMPO, parametersBenzene, benzeneModel, benzeneLattice);
     linearSolver.runSweepSimulation();
     energyFromIPI.push_back(linearSolver.template getSpecificResult<double>("Energy"));
   }

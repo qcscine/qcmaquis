@@ -37,7 +37,7 @@ class Givens {
 public:
     
     /** @brief Default constructor */        
-    Givens() : activated_(false) {};
+    explicit Givens() : activated_(false), c_(0.) {};
 
     /** @brief Constructor from a pair */
     Givens(ScalarType x0, ScalarType x1) : activated_(true) {
@@ -70,12 +70,10 @@ public:
         if (std::abs(da) > std::abs(db))
             roe = da;
         auto scale = std::abs(da) + std::abs(db);
-        double z;
         if (scale < 1.0E-16) {
             c_ = 1.0;
             s_ = 0.0;
             r_ = 0.0;
-            z = 0.0;
         }
         else { 
           r_ = scale*std::sqrt(std::pow(da/scale, 2) + std::pow(db/scale, 2));
@@ -83,11 +81,6 @@ public:
             r_ *= -1.;
           c_ = da/r_;
           s_ = db/r_;
-          z = 1.0;
-          if (std::abs(da) > std::abs(db))
-            z = s_;
-          if (std::abs(db) > std::abs(da) && c_ != 0.)
-            z = 1.0/c_;
         }
         return std::make_pair(c_, s_);
     }

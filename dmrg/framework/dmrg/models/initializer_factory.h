@@ -86,10 +86,6 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_state"] == "const")
         return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "thin")
-        return initializer_ptr(new thin_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "thin_const")
-        return initializer_ptr(new thin_const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_state"] == "basis_state")
         return initializer_ptr(new basis_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
     else if (parms["init_state"] == "basis_state_generic")

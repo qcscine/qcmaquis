@@ -110,7 +110,7 @@ typename Matrix::value_type expvalFromRight(MPS<Matrix, SymmGroup> const & bra, 
         parallel::guard proc(scheduler(i));
         right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(bra[i], ket[i], right, mpo[i], false);
     }
-    return right.traces()[0]*overlap(bra, ket);
+    return right.traces()[0] + mpo.getCoreEnergy()*overlap(bra, ket);
 }
 
 /**

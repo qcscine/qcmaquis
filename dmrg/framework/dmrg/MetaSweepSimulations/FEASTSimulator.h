@@ -61,7 +61,8 @@ public:
 
   /** @brief Class constructor */
   FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
-    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice)
+    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice), calculateExactError(false),
+      model_(model)
   {
     // Retrieve simulation parameters
     numStates = parameters["feast_num_states"].as<int>();
@@ -76,6 +77,8 @@ public:
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
     initType = parameters["feast_init_type"].as<std::string>();
+    if (parameters["feast_calculate_exact_error"] == "yes")
+      calculateExactError = true;
     printHeader();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
@@ -84,12 +87,12 @@ public:
       throw std::runtime_error("Parameter [feast_truncation_type] not recognized");
     // Generates the initial guess for the MPSs
     generateSeed(parms);
-    initializeGuess(parms, model);
+    initializeGuess(parms, model_);
     quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
     this->generateComplexQuadrature();
     if (parameters["optimization"] == "twosite")
       isSingleSite = false;
-    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model, lattice, parameters);
+    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice, parameters);
     resultContainer = std::make_shared<ResultContainerType>();
   }
 
@@ -172,7 +175,7 @@ private:
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, 0);
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
           ssSimulator->setShift(complexNodes[quadPoint]);
           ssSimulator->runSweepSimulation();
           auto key = std::make_pair(iGuess, quadPoint);
@@ -184,7 +187,7 @@ private:
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, 0);
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
           tsSimulator->setShift(complexNodes[quadPoint]);
           tsSimulator->runSweepSimulation();
           resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
@@ -301,12 +304,14 @@ private:
   std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
   bool truncateEach;                                             // If true, truncates the MPS after each sum.
+  bool calculateExactError;                                      // If true, calculates the exact error associated with the linear system.
   std::shared_ptr<ResultContainerType> resultContainer;          // Member that stores the result of each linear system.
   std::vector<double> energies;                                  // FEAST energies at the current iteration.
   std::unique_ptr<PostProcessorType> postProcessor;              // Class managing FEAST postprocessing.
   std::vector<ComplexType> complexNodes, complexWeights;         // Quadrature rule for the complex circle.
   const MPOType& mpo_;                                           // Matrix product operator
   const LatticeType& lattice;                                    // DMRG lattice object.
+  const ModelType& model_;                                       // Model object.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };

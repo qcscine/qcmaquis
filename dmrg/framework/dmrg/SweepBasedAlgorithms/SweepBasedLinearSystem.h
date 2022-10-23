@@ -31,7 +31,9 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/LinearSystem/linsolver.h"
+#include "dmrg/LinearSystem/LinSystemTraitsClass.h"
 #include "dmrg/mp_tensors/siteproblem.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
@@ -47,6 +49,7 @@ public:
   using SweepTraitClass = SweepOptimizationTypeTrait<SweepType>;
   using SiteProblemType = SiteProblem<Matrix, SymmGroup>;
   using LinearSolverType = LinSolver<Matrix, SymmGroup>;
+  using ModelType =  typename Base::ModelType;
   using MPSType = typename Base::MPSType;
   using MPOType = typename Base::MPOType;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
@@ -59,27 +62,28 @@ public:
   using Base::initSite_;
   using Base::iterationResults_;
   using Base::lastSite_;
+  using Base::lattice_;
   using Base::L_;
+  using Base::model_;
   using Base::mps_;
   using Base::mpsContainer_;
   using Base::mpoContainer_;
-  using Base::mpo_;
   using Base::parms_;
   using Base::runSweepSimulation;
   using Base::siteLeft_;
   using Base::siteRight_;
 
   /** @brief Class constructor */
-  SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite=0)
-    : Base(mps, mpo, parms, std::string("Linear system solver"), initSite), adaptiveBondDimension_(false),
-      shiftParameter_(0.), isPrecond_(false)
+  SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
+                         const Lattice& lattice, int initSite=0)
+    : Base(mps, mpo, parms, model, lattice, std::string("Linear system solver"), initSite), adaptiveBondDimension_(false),
+      shiftParameter_(0.), isPrecond_(false), rhsMps_(mps)
   {
     /* // Folded simulation --> To be reactivated when implementing the folded operator 
     if (parms["pI_folded"] == "yes") {
         maquis::cout << " Activating folded treatment " << std::endl;
         isSquared = true;
     } */
-    rhsMps_ = mps;
     overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, initSite_);
     /* To be reactivated when implementing the folded operator 
     if (isSquared) {
@@ -96,9 +100,10 @@ public:
     // Note that we subtract the core energy to the shift parameter (the SiteProblem object
     // does not include that contribution)
     if (parms_.is_set("ipi_shift"))
-      shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpo_.getCoreEnergy();
+      shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpoContainer_.getMPO().getCoreEnergy();
     if (parms_["linsystem_precond"] == "yes")
       isPrecond_ = true;
+    calculateExactError_ = (parms_["linsystem_exact_error"] == "yes");
   }
 
   /** @brief Setter for the shift */
@@ -129,7 +134,7 @@ public:
     LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_);
     resultOfLocalSiteProblem_ = ls.res();
     // mps[site] = res.second;
-    iterationResults_["Energy"] << resultOfLocalSiteProblem_.first + maquis::real(mpo_.getCoreEnergy());
+    iterationResults_["Energy"] << resultOfLocalSiteProblem_.first + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
     return resultOfLocalSiteProblem_.second;
   }
 
@@ -161,6 +166,13 @@ public:
   /** @brief Operations to be executed at the end of the sweep */
   void finalizeSweep() override final {
     initSite_ = -1;
+    if (calculateExactError_) {
+      int mMax = parms_["max_bond_dimension"];
+      auto error = LinSystemTraitClass<Matrix, SymmGroup>::calculateError(mpsContainer_.getMPS(), rhsMps_, mpoContainer_.getMPO(), shiftParameter_,
+                                                                          model_, lattice_, model_.total_quantum_numbers(parms_), mMax);
+      maquis::cout << " Exact error = " << error << std::endl;
+      maquis::cout << std::endl;
+    }
   }
 
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
@@ -174,6 +186,7 @@ private:
   std::shared_ptr<BlockMatrixType> preconditioner_;               // If needed, stores the preconditioner.
   bool adaptiveBondDimension_;                                    // Whether to dynamically adapt the bond dimension.
   bool isPrecond_;                                                // If true, activates the preconditioning.
+  bool calculateExactError_;                                      // If true, calculates the exact error associated to the solution of the linear system.
   double truncationRatio_;                                        // Parameter for a DBSS-like solution of the linear system.
   ValueType shiftParameter_;                                      // Shift parameter for the linear system
   MPSTensorType rhs_;                                             // RHS of the local linear system (updated at each microiteration).

@@ -31,6 +31,8 @@
 #include "GenericSweepSimulation.h"
 #include "SweepBasedEnergyMinimization.h"
 #include "SweepBasedLinearSystem.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/utils/BaseParameters.h"
@@ -48,28 +50,31 @@ class SweepSimulationFactory {
   using PointerToTSSimulatorType = std::unique_ptr<GenericTSSimulationType>;
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
+  using ModelType = Model<Matrix, SymmGroup>;
 
 public:
   SweepSimulationFactory(std::string simulationName, SweepOptimizationType sweepType,
-                         MPSType& mps, const MPOType& mpo, BaseParameters& parms, int initSite)
+                         MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
+                         const Lattice& lattice, int initSite)
     : sweepType_(sweepType)
   {
     // Optimization
     if (simulationName == "optimize")
       if (sweepType_ == SweepOptimizationType::SingleSite)
-        ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, initSite);
+        ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, model, lattice, initSite);
       else if (sweepType_ == SweepOptimizationType::TwoSite)
-        tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, initSite);
+        tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, initSite);
     // Solution of a linear system
     if (simulationName == "linear_system")
       if (sweepType_ == SweepOptimizationType::SingleSite)
-        ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, initSite);
+        ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, model, lattice, initSite);
       else if (sweepType_ == SweepOptimizationType::TwoSite)
-        tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, initSite);
+        tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, model, lattice, initSite);
     if (!ssSimulator_ && !tsSimulator_)
       throw std::runtime_error("Error in parameters for [SweepSimulationFactory] object");
   };
 
+  /** @brief Runs a complete sweep-based optimization */
   void runSweepSimulation() {
     if (ssSimulator_)
       ssSimulator_->runSweepSimulation();
@@ -77,7 +82,7 @@ public:
       tsSimulator_->runSweepSimulation();
   }
 
-
+  /** @brief Runs a single sweep (back and forth) */
   void runSingleSweep(int iSweep) {
     if (ssSimulator_)
       ssSimulator_->runSingleSweep(iSweep);
@@ -85,6 +90,7 @@ public:
       tsSimulator_->runSingleSweep(iSweep);
   }
 
+  /** @brief Retrieves simulation results */
   auto getIterationResults() {
     if (ssSimulator_)
       return ssSimulator_->iteration_results();

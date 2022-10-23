@@ -62,6 +62,11 @@ public:
     return mpo_[site];
   }
 
+  /** @brief Getter for the MPO */
+  const auto& getMPO() const {
+    return mpo_;
+  }
+
   /** @brief Not implemented for the SS case */
   void updatePlacements(int microIterationIndex, int currentSite) { };
 
@@ -84,6 +89,11 @@ public:
   /** @brief Getter for the MPOTensor */
   const auto& getMPOTensor(int site) const {
     return twoSiteMPOCache_[site];
+  }
+
+  /** @brief Getter for the MPO */
+  const auto& getMPO() const {
+    return mpo_;
   }
 
   /** @brief Specific function needed for the two-site case */

@@ -250,6 +250,8 @@ public:
                      << std::setw(23) << std::right << std::fixed << std::setprecision(8) << variance[iState]
                      << std::endl;
       }
+      maquis::cout << " +-----------------------------------+" << std::endl;
+      maquis::cout << std::endl;
     }
   }
 
