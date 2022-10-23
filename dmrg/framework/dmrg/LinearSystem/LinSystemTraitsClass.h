@@ -53,11 +53,11 @@ public:
     // First term, (H - zI)^2. Note that we do not include the core contribution in H since it is
     // not included in the solution of the linear system as well.
     res += norm(outputMPS);
-    res -= 2.*maquis::real(shift*overlap(outputMPS, mps));
+    res -= 2.*maquis::real(shift*overlap(mps, outputMPS));
     res += std::norm(shift)*norm(mps);
     // Second term
-    res -= 2.*maquis::real(overlap(outputMPS, rhsMps));
-    res += 2.*maquis::real(shift*overlap(mps, rhsMps));
+    res -= 2.*maquis::real(overlap(rhsMps, outputMPS));
+    res += 2.*maquis::real(shift*overlap(rhsMps, mps));
     // Third term
     res += norm(rhsMps);
     return res;
