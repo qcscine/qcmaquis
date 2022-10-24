@@ -66,8 +66,7 @@ public:
     truncatedEnergy = std::vector<double>(nStates, 0);
     variance = std::vector<double>(nStates, 0);
     totalQN = model.total_quantum_numbers(parms);
-    if (parms["feast_calculate_variance"] == "yes")
-      calculateVariance = true;
+    calculateVariance = (parms["feast_calculate_variance"] == "yes");
   }
 
   /** @brief Updates teh mps container */
@@ -158,12 +157,13 @@ public:
     // Generates the MPS files for the new FEAST iteration
     // using MatrixOfMPSs = Eigen::Matrix< MPS<cMatrix, SymmGroup>, -1, -1>;
     // MatrixOfMPSs mps_transf(n_states, n_states);
+    using VectorOfMPSs = std::vector<MPSType>;
     using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
     MatrixOfMPSs mpsTransformed;
     // Variable definition
     int rank = energies.size();
     auto refNorm = ietl::two_norm(mpsContainer->begin()->second[0]);
-    std::vector<MPSType> result(rank);
+    auto result = std::make_shared<VectorOfMPSs>(rank);
     for (auto& iMPS: *mpsContainer)
       iMPS.second[0] /= refNorm;
     //#pragma omp parallel for collapse(2)
@@ -192,12 +192,12 @@ public:
     }
     //#pragma omp parallel for
     for (int iOutput = 0; iOutput < rank; iOutput++) {
-      result[iOutput] = mpsTransformed[std::make_pair(iOutput, 0)];
+      result->operator[](iOutput) = mpsTransformed[std::make_pair(iOutput, 0)];
       for (int iInput = 1; iInput < nStates; iInput++) {
         if (truncEach)
-          result[iOutput] = joinAndTruncate(result[iOutput], mpsTransformed[std::make_pair(iOutput, iInput)], mMax);
+          result->operator[](iOutput) = joinAndTruncate(result->operator[](iOutput), mpsTransformed[std::make_pair(iOutput, iInput)], mMax);
         else
-          result[iOutput] = join(result[iOutput], mpsTransformed[std::make_pair(iOutput, iInput)]);
+          result->operator[](iOutput) = join(result->operator[](iOutput), mpsTransformed[std::make_pair(iOutput, iInput)]);
         //#pragma omp critical (printEnergy) {
         // std::cout << " Truncated Energy for root " << iOutput << " before truncation = " <<
         //   expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
@@ -216,13 +216,13 @@ public:
         //}
       }
       if (!truncEach)
-        result[iOutput] = compression::l2r_compress(result[iOutput], mMax, 1.0E-16);
-      truncatedEnergy[iOutput] = maquis::real(expval(result[iOutput], mpo)/overlap(result[iOutput], result[iOutput]));
+        result->operator[](iOutput) = compression::l2r_compress(result->operator[](iOutput), mMax, 1.0E-16);
+      truncatedEnergy[iOutput] = maquis::real(expval(result->operator[](iOutput), mpo)/norm(result->operator[](iOutput)));
     }
     // If requested, calculates the variance
     if (calculateVariance) {
       for (int iState = 0; iState < variance.size(); iState++)
-        variance[iState] = this->getVariance(mpo, result[iState], mMax);
+        variance[iState] = this->getVariance(mpo, result->operator[](iState), mMax);
     }
     return result;
   }
@@ -250,6 +250,8 @@ public:
                      << std::setw(23) << std::right << std::fixed << std::setprecision(8) << variance[iState]
                      << std::endl;
       }
+      maquis::cout << " +-----------------------------------+" << std::endl;
+      maquis::cout << std::endl;
     }
   }
 

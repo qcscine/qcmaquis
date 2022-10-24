@@ -52,7 +52,7 @@ public:
     typedef maquis::results_map_type<ScalarType> results_map_type;
 
     /** @brief Class constructor */
-    DMRGInterface(DmrgParameters& parms_);
+    explicit DMRGInterface(DmrgParameters& parms_);
 
     /** @brief Class destructor */
     ~DMRGInterface();
@@ -71,6 +71,9 @@ public:
 
     /** @brief Gets the energy at the end of the simulation */
     ScalarType energy();
+
+    /** @brief Gets the energy at the end of the FEAST simulation */
+    ScalarType energyFEAST(int iState);
 
     /** @brief Gets the overlap of the MPS with a given determinant */
     ScalarType getCICoefficient(std::string determinantString);

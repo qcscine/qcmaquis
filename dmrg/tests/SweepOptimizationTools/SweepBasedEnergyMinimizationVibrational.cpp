@@ -58,7 +58,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerSS_Vibrational_Watson, Wat
   parametersEthyleneWatsonHarmonic.set("seed", 30031989);
   auto mpsDefault = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatsonHarmonic)));
   mpsDefault.normalize_right();
-  auto energyMinimizer = SweepBasedMinimizerSS(mpsDefault, watsonHarmonicMPO, parametersEthyleneWatsonHarmonic);
+  auto energyMinimizer = SweepBasedMinimizerSS(mpsDefault, watsonHarmonicMPO, parametersEthyleneWatsonHarmonic, watsonModel, lattice);
   energyMinimizer.runSweepSimulation();
   double optimalEnergyFromSweeper = energyMinimizer.getSpecificResult<double>("Energy");
   // Now does the same with the interface
@@ -87,7 +87,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerTS_Vibrational_Bilinearly,
   // TSOptimizer calculation
   auto mpsConst = MPS<matrix, TrivialGroup>(lattice.size(), *(bilinearlyModel.initializer(lattice, parametersBilinearly)));
   mpsConst.normalize_right();
-  auto energyMinimizer = SweepBasedMinimizerTS(mpsConst, bilinearlyMPO, parametersBilinearly);
+  auto energyMinimizer = SweepBasedMinimizerTS(mpsConst, bilinearlyMPO, parametersBilinearly, bilinearlyModel, lattice);
   energyMinimizer.runSweepSimulation();
   double optimalEnergyFromSweeper = energyMinimizer.getSpecificResult<double>("Energy");
   // Interface calculation

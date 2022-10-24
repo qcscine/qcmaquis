@@ -7,7 +7,7 @@
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2018         Leon Freitag <lefreita@ethz.ch>
- *               2021         Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021-        Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -49,39 +49,38 @@
 // The sim class for interface-based DMRG runs and measurements
 template <class Matrix, class SymmGroup>
 class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_sim<Matrix> {
-    // Types definition
-    using base = sim<Matrix, SymmGroup>;
-    using interface_base = abstract_interface_sim<Matrix>;
-    using opt_base_t = optimizer_base<Matrix, SymmGroup, storage::disk>;
-    using status_type = typename base::status_type;
-    using measurements_type = typename base::measurements_type;
-    using meas_with_results_type = typename interface_base::meas_with_results_type;
-    using results_map_type = typename interface_base::results_map_type;
-    using FactoryType = SweepSimulationFactory<Matrix, SymmGroup, storage::disk>;
-    using RealType = typename maquis::traits::real_type<Matrix>::type;
-    using FEASTLauncherType = FEASTLauncher<Matrix, SymmGroup>;
-
-    // Class inheritance from the sim object
-    using base::mps;
-    using base::mpo;
-    using base::parms;
-    using base::all_measurements;
-    using base::sweep_measurements;
-    using base::stop_callback;
-    using base::init_sweep;
-    using base::init_site;
-    using base::rfile;
-    using base::lat;
-    using base::model;
+  // Types definition
+  using base = sim<Matrix, SymmGroup>;
+  using interface_base = abstract_interface_sim<Matrix>;
+  using FEASTLauncherType = FEASTLauncher<Matrix, SymmGroup>;
+  using measurements_type = typename base::measurements_type;
+  using meas_with_results_type = typename interface_base::meas_with_results_type;
+  using MPSType = MPS<Matrix, SymmGroup>;
+  using opt_base_t = optimizer_base<Matrix, SymmGroup, storage::disk>;
+  using results_map_type = typename interface_base::results_map_type;
+  using FactoryType = SweepSimulationFactory<Matrix, SymmGroup, storage::disk>;
+  using RealType = typename maquis::traits::real_type<Matrix>::type;
+  using status_type = typename base::status_type;
+  // Class inheritance from the sim object
+  using base::mps;
+  using base::mpo;
+  using base::parms;
+  using base::all_measurements;
+  using base::sweep_measurements;
+  using base::stop_callback;
+  using base::init_sweep;
+  using base::init_site;
+  using base::rfile;
+  using base::lat;
+  using base::model;
 
 public:
-
   /**
    * @brief Class constructor
    * Note that the base class is here the [sim] object.
    * @param parms_ parameter container
    */
-  explicit interface_sim (DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
+  explicit interface_sim(DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) {
@@ -101,7 +100,7 @@ public:
   // TODO: fix the MPS that is actually extracted -- it should be not necessarily th 0-th one.
   void runFEASTSimulation() {
     try {
-      mps = FEASTLauncherType::runFEASTSimulation(parms, model, lat, mpo);
+      feastMPSs_ = FEASTLauncherType::runFEASTSimulation(parms, model, lat, mpo);
     }
     catch (std::exception& e) {
       throw;
@@ -220,11 +219,11 @@ public:
     if (parms["optimization"] == "singlesite")
       // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
-      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, init_site);
+      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, model, base::lat, init_site);
     else if(parms["optimization"] == "twosite")
       // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
-      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, init_site);
+      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, model, base::lat, init_site);
     else
         throw std::runtime_error("Don't know this optimizer");
     // Retrieve the measurements that should be always done.
@@ -404,6 +403,26 @@ public:
   /** @brief Gets the energy for the mps that is stored in the sim object */
   RealType get_energy() { return maquis::real(expval(mps, mpo)/overlap(mps, mps)); }
 
+  /** @brief Gets the FEAST eigenstates - throws an exception if FEAST is not run */
+  auto getFEASTEigenstates() {
+    if (!feastMPSs_)
+      throw std::runtime_error("FEAST eigenstate requested before running a FEAST simulation");
+    else
+      return feastMPSs_;
+  }
+
+  /** @brief Gets the FEAST energies -- throws an exception if FEAST is not run */
+  RealType getFEASTEnergy(int iState) const {
+    if (!feastMPSs_)
+      throw std::runtime_error("FEAST energy requested before running a FEAST simulation");
+    else if (iState >= feastMPSs_->size()) {
+      std::string errorMessage = "FEAST energy requested for the"+std::to_string(iState)+"-th state, but only "+std::to_string(feastMPSs_->size())+" states are available";
+      throw std::runtime_error(errorMessage);
+    }
+    else
+      return maquis::real(expval(feastMPSs_->operator[](iState), mpo)/norm(feastMPSs_->operator[](iState)));
+  }
+
   /**
    * @brief Method to extract a CI coefficient associated to a given determinant.
    *
@@ -422,7 +441,7 @@ public:
           modifiedParameters.set("hf_occ", determinantString);
       else
           modifiedParameters.set("init_basis_state", determinantString);
-      auto mpsOverlap = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, modifiedParameters)));
+      auto mpsOverlap = MPSType(lat.size(), *(model.initializer(lat, modifiedParameters)));
       return overlap(mpsOverlap, mps)/std::sqrt(norm(mpsOverlap)*norm(mps));
   }
 
@@ -526,18 +545,20 @@ private:
     return base::results_archive_path(status);
   }
 
+  /** @brief Dumps the simulation results to the checkpoint file */
   void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site) {
-      status_type status;
-      status["sweep"] = sweep;
-      status["site"]  = site;
-      return base::checkpoint_simulation(state, status);
+    status_type status;
+    status["sweep"] = sweep;
+    status["site"]  = site;
+    return base::checkpoint_simulation(state, status);
   }
 
-    // Class members
-    results_collector iteration_results_;
-    int last_sweep_;
-    std::unique_ptr<FactoryType> factory_;
-    std::vector<RealType> energies_;
+  // +-- Class members --+
+  results_collector iteration_results_;
+  int last_sweep_;
+  std::unique_ptr<FactoryType> factory_;
+  std::vector<RealType> energies_;
+  std::shared_ptr<std::vector<MPSType>> feastMPSs_;
 };
 
 #endif

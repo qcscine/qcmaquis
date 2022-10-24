@@ -86,7 +86,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixture) 
 {
     auto lattice = lattice_factory(parametersEthyleneWatsonHarmonic);
-    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice, WatsonCoordinateType::CartesianNormalModes);
+    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice, WatsonCoordinateType::CartesianNormalModes,
+                                                                       6, 6, 6);
     BOOST_CHECK_EQUAL(integrals.size(), 24);
     for (const auto iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
@@ -110,7 +111,6 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture)
     auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
     int nMax = parametersEthyleneWatsonHarmonic["Nmax"];
-    int nModes = parametersEthyleneWatsonHarmonic["L"];
     BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax);
 }
 

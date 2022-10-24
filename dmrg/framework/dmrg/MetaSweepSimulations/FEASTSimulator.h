@@ -61,7 +61,8 @@ public:
 
   /** @brief Class constructor */
   FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
-    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice)
+    : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice), calculateExactError(false),
+      model_(model), feastMPSs(), calculateVariance(false)
   {
     // Retrieve simulation parameters
     numStates = parameters["feast_num_states"].as<int>();
@@ -76,6 +77,9 @@ public:
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
     initType = parameters["feast_init_type"].as<std::string>();
+    if (parameters["feast_calculate_exact_error"] == "yes")
+      calculateExactError = true;
+    calculateVariance = (parameters["feast_calculate_variance"] == "yes");
     printHeader();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
@@ -84,12 +88,12 @@ public:
       throw std::runtime_error("Parameter [feast_truncation_type] not recognized");
     // Generates the initial guess for the MPSs
     generateSeed(parms);
-    initializeGuess(parms, model);
+    initializeGuess(parms, model_);
     quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
     this->generateComplexQuadrature();
     if (parameters["optimization"] == "twosite")
       isSingleSite = false;
-    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model, lattice, parameters);
+    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice, parameters);
     resultContainer = std::make_shared<ResultContainerType>();
   }
 
@@ -135,9 +139,22 @@ public:
     }
   }
 
+  /** @breif Getter for the guess */
+  auto getCurrentGuess(int iState) const {
+    if (iState >= mpsGuess.size())
+      throw std::runtime_error("FEAST: guess index not available");
+    else
+      return mpsGuess[iState];
+  }
+
   /** @brief Getter for the MPS guesses */
-  auto getCurrentGuess(int iState) {
-    return mpsGuess[iState];
+  auto getCurrentEigenvalues() {
+    return feastMPSs;
+  }
+
+  /** @brief Getter for the MPS guesses */
+  auto getCurrentEigenvalue(int iState) {
+    return feastMPSs->operator[](iState);
   }
 
   /** @brief Getter for the quadrature points */
@@ -155,8 +172,11 @@ private:
   /** @brief Runs a single iteration of DMRG[FEAST] */
   void runFeastSimulation() {
     // Variable initialization
+    if (feastMPSs)
+      for (int iState = 0; iState < feastMPSs->size(); iState++)
+        mpsGuess[iState] = feastMPSs->operator[](iState);
     // For each FEAST iteration, we have a loop over the number of quadrature points
-    // AND of the number of target states.
+    // *and* of the number of target states.
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
       maquis::cout << std::endl;
       maquis::cout << " == NEW QUADRATURE POINT ==" << std::endl;
@@ -171,8 +191,9 @@ private:
           maquis::cout << std::endl;
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
+          //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, 0);
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
           ssSimulator->setShift(complexNodes[quadPoint]);
           ssSimulator->runSweepSimulation();
           auto key = std::make_pair(iGuess, quadPoint);
@@ -183,8 +204,9 @@ private:
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
+          //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, 0);
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
           tsSimulator->setShift(complexNodes[quadPoint]);
           tsSimulator->runSweepSimulation();
           resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
@@ -195,8 +217,7 @@ private:
     // Diagonalizes the Hamiltonian matrix in the FEAST subspace
     postProcessor->updateContainer(resultContainer);
     postProcessor->solveEigenvalueProblem(mpo_);
-    mpsGuessPrev = mpsGuess;
-    mpsGuess = postProcessor->performBackTransformation(mpo_, mMax, truncateEach);
+    feastMPSs = postProcessor->performBackTransformation(mpo_, mMax, truncateEach);
     postProcessor->printResults();
     energies = postProcessor->getEnergies();
     // Final update of the iteration counter
@@ -208,8 +229,8 @@ private:
     auto overlaps = std::vector<double>(mpsGuess.size(), 0);
     int iMPS = 0;
     for (const auto& iCurrent: mpsGuess) {
-      for (const auto& iPrevious: mpsGuessPrev) {
-        auto localOverlap = std::abs(overlap(iCurrent, iPrevious));
+      for (const auto& iPrevious: *feastMPSs) {
+        auto localOverlap = std::abs(overlap(iCurrent, iPrevious))/std::sqrt(norm(iCurrent)*norm(iPrevious));
         if (localOverlap > overlaps[iMPS])
           overlaps[iMPS] = localOverlap;
       }
@@ -237,7 +258,8 @@ private:
   /** @brief Generates the guess for FEAST */
   void initializeGuess(BaseParameters& parms, const ModelType& model) {
     std::vector<std::string> initStates;
-    bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" || initType == "basis_state_generic_default");
+    bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" ||
+                           initType == "basis_state_generic_default" || initType == "hf");
     if (needToWriteONV) {
       std::string states = parms["feast_init_onv"].as<std::string>();
       initStates.resize(numStates);
@@ -248,8 +270,12 @@ private:
       auto parametersTmp = parms;
       parametersTmp["init_state"] = initType;
       parametersTmp["seed"] = seedForInit[iState];
-      if (needToWriteONV)
-        parametersTmp["init_basis_state"] = initStates[iState];
+      if (needToWriteONV) {
+        if (parametersTmp["MODEL"] == "quantum_chemistry")
+          parametersTmp["hf_occ"] = initStates[iState];
+        else
+          parametersTmp["init_basis_state"] = initStates[iState];
+      }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
     }
   }
@@ -282,6 +308,8 @@ private:
     maquis::cout << " - Truncation modality: " << truncModality << std::endl;
     maquis::cout << " - MPS guess type: " << initType << std::endl;
     maquis::cout << " - DMRG solver: " << ((isSingleSite) ? "single site" : "two site") << std::endl;
+    if (calculateVariance)
+      maquis::cout << " - Calculating variance for each eigenpair." << std::endl;
   }
 
   // -- Class members --
@@ -296,17 +324,21 @@ private:
   std::string intModality;                                       // "Full" for the full circle integration, "half" for the half-circle one.
   std::string truncModality;                                     // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
   std::string initType;                                          // Initialization strategy for each guess.
-  std::vector<MPSType> mpsGuess, mpsGuessPrev;                   // Stores the current guess for hte FEAST procedure.
+  std::vector<MPSType> mpsGuess;                                 // Stores the current guess for hte FEAST procedure.
+  std::shared_ptr<std::vector<MPSType>> feastMPSs;               // Final, back-transformed FEAST MPSs
   std::vector<int> seedForInit;                                  // Seed for random initialization.
   std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
   bool truncateEach;                                             // If true, truncates the MPS after each sum.
+  bool calculateExactError;                                      // If true, calculates the exact error associated with the linear system.
+  bool calculateVariance;                                        // If true, calculates the variance at the end of each FEAST iteration.
   std::shared_ptr<ResultContainerType> resultContainer;          // Member that stores the result of each linear system.
   std::vector<double> energies;                                  // FEAST energies at the current iteration.
   std::unique_ptr<PostProcessorType> postProcessor;              // Class managing FEAST postprocessing.
   std::vector<ComplexType> complexNodes, complexWeights;         // Quadrature rule for the complex circle.
   const MPOType& mpo_;                                           // Matrix product operator
   const LatticeType& lattice;                                    // DMRG lattice object.
+  const ModelType& model_;                                       // Model object.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };

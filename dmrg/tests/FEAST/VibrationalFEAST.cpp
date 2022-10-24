@@ -98,8 +98,9 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   // FEAST
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
+  parametersH2COWatsonNoCoriolis.set("nsweeps", 3);
   parametersH2COWatsonNoCoriolis.set("feast_num_states", 1);
-  parametersH2COWatsonNoCoriolis.set("feast_max_iter", 1);
+  parametersH2COWatsonNoCoriolis.set("feast_max_iter", 2);
   parametersH2COWatsonNoCoriolis.set("feast_emin", eMin);
   parametersH2COWatsonNoCoriolis.set("feast_emax", eMax);
   parametersH2COWatsonNoCoriolis.set("feast_num_points", 8);
@@ -107,11 +108,13 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("feast_init_onv", "3,2,1,1,2,0");
   parametersH2COWatsonNoCoriolis.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("feast_energy_convergence_threshold", 1.0E-5);
+  parametersH2COWatsonNoCoriolis.set("feast_calculate_variance", "yes");
   //
   parametersH2COWatsonNoCoriolis.set("linsystem_precond", "no");
   parametersH2COWatsonNoCoriolis.set("linsystem_krylov_dim", 50);
   parametersH2COWatsonNoCoriolis.set("linsystem_tol", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("linsystem_init", "last");
+  parametersH2COWatsonNoCoriolis.set("linsystem_exact_error", "yes");
   auto vibrationalLattice = Lattice(parametersH2COWatsonNoCoriolis);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatsonNoCoriolis);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);

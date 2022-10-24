@@ -51,10 +51,13 @@ public:
   using MPSType = MPS<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
-  SweepMPSContainer(const MPSType& mps) : mps_(mps) {};
+  explicit SweepMPSContainer(const MPSType& mps) : mps_(mps) {};
 
   /** @brief Getter for the MPOTensor */
   auto& getMPSTensor(int siteLeft) { return mps_[siteLeft]; }
+
+  /** @brief Gets the MPS */
+  const auto& getMPS() { return mps_; }
 
 private:
   const MPSType& mps_;
@@ -71,7 +74,7 @@ public:
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
-  SweepMPSContainer(const MPSType& mps) : mps_(mps) { };
+  explicit SweepMPSContainer(const MPSType& mps) : mps_(mps) { };
 
   /** @brief Getter for the MPOTensor */
   auto& getMPSTensor(int siteLeft) {
@@ -79,6 +82,9 @@ public:
     localMPS_ = tst.make_mps();
     return localMPS_;
   }
+
+  /** @brief Gets the MPS */
+  const auto& getMPS() { return mps_; }
 
 private:
   const MPSType& mps_;

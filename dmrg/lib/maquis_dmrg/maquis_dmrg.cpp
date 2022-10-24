@@ -141,6 +141,12 @@ namespace maquis
     }
 
     template <typename ScalarType>
+    ScalarType DMRGInterface<ScalarType>::energyFEAST(int iState)
+    {
+        return impl_->sim->getFEASTEnergy(iState);
+    }
+
+    template <typename ScalarType>
     ScalarType DMRGInterface<ScalarType>::getCICoefficient(std::string determinantString)
     {
         return impl_->sim->getCICoefficient(determinantString);

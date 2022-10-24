@@ -7,6 +7,7 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2018-2019    Leon Freitag <lefreita@ethz.ch>
+*               2022-        Alberto Baiardi <abaiardi@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -62,6 +63,7 @@ public:
     virtual void run(const std::string& runType) = 0;
     virtual void run_measure() = 0;
     virtual RealType get_energy() = 0;
+    virtual RealType getFEASTEnergy(int iState) const = 0;
     virtual results_collector& get_iteration_results() = 0;
     virtual int get_last_sweep() = 0;
     virtual results_map_type measure_out() =0;

@@ -54,7 +54,7 @@
 template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
-    sim(DmrgParameters &);
+    explicit sim(DmrgParameters &);
     virtual ~sim();
 
 protected:
