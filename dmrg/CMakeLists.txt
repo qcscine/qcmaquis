@@ -478,6 +478,8 @@ if(QCMAQUIS_TESTS)
     # Application tests
     add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
+    add_test(NAME Test_H2CO COMMAND test_H2CO)
+    add_test(NAME Test_Maleimide COMMAND test_Maleimide)
     add_test(NAME Test_Ethylene_nMode COMMAND test_Ethylene_nMode)
     add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
     if (BUILD_MPS2CI)

@@ -172,18 +172,14 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
 
 template<class T>
 inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>, T > >
-    WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType)
+    WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType,
+                         int maxCoupling, int maxManyBodyCoupling, int maxInputManyBodyCoupling)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
     using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>;
     using RetType = std::vector< std::pair< KeyType, T> > ;
     using InputType = double;
-    // Set the number of indices which are expected in the FCIDUMP
-    int maxCoupling = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
-    // Determines the maximum many-body coupling degree. Per default read in all integrals that are given
-    int maxManyBodyCoupling = (parms.is_set("watson_max_coupling")) ? parms["watson_max_coupling"] : maxCoupling;
-    int maxInputManyBodyCoupling = (parms.is_set("watson_max_coupling_input")) ? parms["watson_max_coupling_input"] : maxCoupling;
     // Load ordering and determine inverse ordering
     std::vector<pos_t> inv_order;
     std::vector<pos_t> order(lat.size());
@@ -216,6 +212,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         while (it != raw.end()) {
             // Computes the coupling degree of the Hamiltonian term
             auto modeSet = std::set<int>(it+1, it+maxInputManyBodyCoupling);
+            modeSet.erase(0);
             // Screen integrals
             if ((std::abs(*it) > parms["integral_cutoff"]) && (modeSet.size() <= maxManyBodyCoupling)) {
                 InputType coefficient = *it++;
