@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Sextic_SingleSite, Watso
     currQueen = srcas.getCurrentQueen();
     BOOST_CHECK_EQUAL(currQueen.size(), parametersEthyleneWatson["L"]);
     std::map<std::vector<int>, double> detTable = srcas.getDetTable();
-    BOOST_CHECK_EQUAL(detTable.size(), 141);
+    BOOST_CHECK_EQUAL(detTable.size(), 140);
     BOOST_CHECK_CLOSE(srcas.getCompleteness(), 1.0, 1.0E-01);
     srcas.printResults();
 }
