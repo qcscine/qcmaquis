@@ -225,16 +225,16 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("linsystem_tol", 1.0E-10);
   parametersBenzene.set("linsystem_krylov_dim", 10);
   // FEAST parameters
-  parametersBenzene.set("feast_max_iter", 1);
+  parametersBenzene.set("feast_max_iter", 2);
   parametersBenzene.set("feast_num_points", 8);
-  parametersBenzene.set("feast_init_type", "const");
+  parametersBenzene.set("feast_init_type", "default");
   parametersBenzene.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersBenzene.set("feast_energy_convergence_threshold", 1.0E-6);
   // Note that the interval includes two states, but we use three guesses.
   parametersBenzene.set("feast_emin", -230.8);
   parametersBenzene.set("feast_emax", -230.7);
-  parametersBenzene.set("feast_num_states", 1);
-  parametersBenzene.set("feast_calculate_variance", "yes");
+  parametersBenzene.set("feast_num_states", 2);
+  parametersBenzene.set("feast_calculate_variance", "no");
   // Constructs the interface and runs FEAST
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();

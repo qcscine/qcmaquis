@@ -86,6 +86,8 @@ if(BUILD_VIBRATIONAL)
     target_link_libraries(test_Maleimide ${DMRG_APP_LIBRARIES})
     add_executable(test_Ethylene_nMode VibrationalDMRG/test_Ethylene_nMode.cpp)
     target_link_libraries(test_Ethylene_nMode ${DMRG_APP_LIBRARIES})
+    add_executable(test_linear_system_solver_vibrational LinearSystem/LinearSystemSolverVibrational.cpp)
+    target_link_libraries(test_linear_system_solver_vibrational ${DMRG_APP_LIBRARIES})
 endif(BUILD_VIBRATIONAL)
 
 # == VIBRONIC TESTS ==
@@ -142,10 +144,10 @@ add_executable(test_overlap_propagator_electronic SweepOptimizationTools/Overlap
 target_link_libraries(test_overlap_propagator_electronic ${DMRG_APP_LIBRARIES})
 add_executable(test_boundary_propagator_electronic SweepOptimizationTools/BoundaryPropagatorElectronic.cpp)
 target_link_libraries(test_boundary_propagator_electronic ${DMRG_APP_LIBRARIES})
-add_executable(test_linear_system_solver LinearSystem/LinearSystemSolver.cpp)
-target_link_libraries(test_linear_system_solver ${DMRG_APP_LIBRARIES})
 add_executable(test_sweep_based_linear_system_electronic SweepOptimizationTools/SweepBasedLinearSystemElectronic.cpp)
 target_link_libraries(test_sweep_based_linear_system_electronic ${DMRG_APP_LIBRARIES})
+add_executable(test_linear_system_solver_electronic LinearSystem/LinearSystemSolverElectronic.cpp)
+target_link_libraries(test_linear_system_solver_electronic ${DMRG_APP_LIBRARIES})
 
 if(BUILD_DMRG_EVOLVE)
     add_executable(test_time_evolvers TimeEvolvers/TimeEvolvers.cpp)

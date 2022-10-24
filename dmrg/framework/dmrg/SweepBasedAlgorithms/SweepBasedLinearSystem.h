@@ -170,6 +170,7 @@ public:
       int mMax = parms_["max_bond_dimension"];
       auto error = LinSystemTraitClass<Matrix, SymmGroup>::calculateError(mpsContainer_.getMPS(), rhsMps_, mpoContainer_.getMPO(), shiftParameter_,
                                                                           model_, lattice_, model_.total_quantum_numbers(parms_), mMax);
+      maquis::cout << std::scientific << std::setprecision(16);
       maquis::cout << " Exact error = " << error << std::endl;
       maquis::cout << std::endl;
     }
@@ -178,6 +179,11 @@ public:
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
   bool normalizeAtEnd() override final {
     return false;
+  }
+
+  /** @brief Gets the system rhs */
+  auto getRhs() const {
+    return rhsMps_;
   }
 
 private:

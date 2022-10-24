@@ -126,7 +126,9 @@ void MPS<Matrix, SymmGroup>::normalize_left()
     canonize(length()-1);
     // now state is: A A A A A A M
     parallel::guard proc(scheduler(length()-1));
-    (*this)[length()-1].leftNormalize(DefaultSolver());
+    auto normalizationFactor = (*this)[length()-1].leftNormalizeAndReturn(DefaultSolver());
+    if (maquis::real(normalizationFactor.trace()) < 0.)
+        this->operator[](0) *= -1.;
     // now state is: A A A A A A A
     canonized_i = length()-1;
 }
@@ -138,7 +140,9 @@ void MPS<Matrix, SymmGroup>::normalize_right()
     canonize(0);
     // now state is: M B B B B B B
     parallel::guard proc(scheduler(0));
-    (*this)[0].rightNormalize(DefaultSolver());
+    auto normalizationFactor = (*this)[0].rightNormalizeAndReturn(DefaultSolver());
+    if (maquis::real(normalizationFactor.trace()) < 0)
+        this->operator[](0) *= -1.;
     // now state is: B B B B B B B
     canonized_i = 0;
 }
