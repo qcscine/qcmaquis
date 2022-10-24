@@ -92,11 +92,6 @@ private:
         add_option("entanglement_spectra", "", value(0));
         add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
-        // n-mode vDMRG related parameters
-        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
-        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
-        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
-
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
@@ -122,12 +117,23 @@ private:
 
         //Default values for lattice, model etc. for quantum chemistry calculations
         add_option("LATTICE", "", value("orbitals"));
+        add_option("lattice_library", "", value("coded"));
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
+        
+        // Settings for model etc. for quantum chemistry calculations
         add_option("MODEL","", value("quantum_chemistry"));
+        add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
+        add_option("model_library", "", value("coded"));
+
+        // Settings for integral read-in
+        add_option("integral_file", "path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
+        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
 
         add_option("beta_mode", "", value(0));
 
         add_option("NUMBER_EIGENVALUES", "", value(1));
+
+        // excited states calculation with ORTHO
         add_option("n_ortho_states", "", value(0));
         add_option("ortho_states", "comma separated list of filenames");
 
@@ -137,13 +143,16 @@ private:
         add_option("MEASURE[Renyi2]", "", value(false));
 
         // Watson Hamiltonian-based simulations
-        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization");
-        add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file");
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
+        add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
-        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG", value(6));
+        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
 
-        // n-mode vibrational calculations
+        // n-mode vDMRG related parameters
         add_option("nModeDumpIntegral", "If == yes, store the integrals in the result file", value("no"));
+        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
+        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
+        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
         // Pre-BO
         add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
@@ -165,7 +174,7 @@ private:
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
-        // Vibrational SRCAS
+        // Vibrational SRCAS settings
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.9));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
@@ -189,13 +198,13 @@ private:
 
         // Parameters related to the DMRG[FEAST] algorithm
         add_option("feast_num_states", "Number of states to be targeted by DMRG[FEAST]", value(1));
-        add_option("feast_max_iter", "Maximum number of FEAST iterations");
+        add_option("feast_max_iter", "Maximum number of FEAST iterations", value(1));
         add_option("feast_emin", "Lower bound for the complex contour integration");
         add_option("feast_emax", "Upper bound for the complex contour integration");
-        add_option("feast_num_points", "Number of quadrature points for approximating the integral");
+        add_option("feast_num_points", "Number of quadrature points for approximating the integral", value(8));
         add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
-        add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("const"));
+        add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("default"));
         add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
         add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
@@ -311,7 +320,7 @@ inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string 
     if (!model_fname.empty()) {
         std::ifstream model_ifs(model_fname.c_str());
         if (!model_ifs)
-            throw std::runtime_error("Could not open model_parms file.");
+            throw std::runtime_error("Could not open model_file.");
         parms << ModelParameters(model_ifs);
     }
 
