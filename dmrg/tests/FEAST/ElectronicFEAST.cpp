@@ -202,7 +202,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H
 //
 // #endif // HAVE_TwoU1PG
 
-/** @brief Test FEAST wit two guesses */
+/** @brief Test FEAST on Benzene with two guesses and an interval comprising 1 state */
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture)
 {
   // Generic data
@@ -238,19 +238,94 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("symmetry", "2u1");
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();
-  auto energy = maquis::real(interfaceBenzene.energyFEAST(0));
-  BOOST_CHECK_CLOSE(energy, referenceEnergy, 1.0E-8);
+  auto energy1 = maquis::real(interfaceBenzene.energyFEAST(0));
+  BOOST_CHECK_CLOSE(energy1, referenceEnergy, 1.0E-8);
 #endif // HAVE_TwoU1
   // Does the same for the point group case
 #ifdef HAVE_TwoU1PG
   parametersBenzene.set("symmetry", "2u1pg");
   maquis::DMRGInterface<ComplexType> interfaceBenzenePointGroup(parametersBenzene);
   interfaceBenzenePointGroup.runFEAST();
-  energy = maquis::real(interfaceBenzene.energyFEAST(0));
-  BOOST_CHECK_CLOSE(energy, referenceEnergy, 1.0E-8);
+  auto energy2 = maquis::real(interfaceBenzenePointGroup.energyFEAST(0));
+  BOOST_CHECK_CLOSE(energy2, referenceEnergy, 1.0E-8);
 #endif // HAVE_TwoU1PG
 }
 
+/**
+ * @brief Test FEAST on Benzene with 3 guesses and an interval comprising 2 states.
+ * Note that, to differentiate the test compared to the previous test case, we use
+ * the symmetry-adapted code.
+ */
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixture)
+{
+  // Generic data
+  using ComplexType = std::complex<double>;
+  auto referenceEnergy0 = -230.7555388354674;
+  auto referenceEnergy1 = -230.4936880170761;
+  // Generic parameters
+  parametersBenzene.set("max_bond_dimension", 200);
+  parametersBenzene.set("optimization", "twosite");
+  parametersBenzene.set("seed", 42);
+  parametersBenzene.set("nsweeps", 3);
+  parametersBenzene.set("truncation_initial", 1.0E-30);
+  parametersBenzene.set("truncation_final", 1.0E-30);
+  parametersBenzene.set("linsystem_exact_error", "no");
+  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
+  parametersBenzene.set("linsystem_init", "last");
+  parametersBenzene.set("linsystem_max_it", 1);
+  parametersBenzene.set("linsystem_tol", 1.0E-15);
+  parametersBenzene.set("linsystem_krylov_dim", 10);
+  // FEAST parameters
+  parametersBenzene.set("feast_max_iter", 5);
+  parametersBenzene.set("feast_num_points", 8);
+  parametersBenzene.set("feast_init_type", "default");
+  // parametersBenzene.set("feast_init_onv", "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
+  parametersBenzene.set("feast_overlap_convergence_threshold", 1.0E-5);
+  parametersBenzene.set("feast_energy_convergence_threshold", 1.0E-6);
+  // Note that the interval includes two states, but we use three guesses.
+  parametersBenzene.set("feast_emin", -230.75);
+  parametersBenzene.set("feast_emax", -230.48);
+  parametersBenzene.set("feast_num_states", 4);
+#ifdef HAVE_SU2U1
+  // Constructs the interface and runs FEAST.
+  // Only one state is included in the interval.
+  parametersBenzene.set("symmetry", "su2u1");
+  maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
+  interfaceBenzene.runFEAST();
+  std::vector<double> vectorOFEnergies = {maquis::real(interfaceBenzenePointGroup.energyFEAST(0)),
+                                          maquis::real(interfaceBenzenePointGroup.energyFEAST(1)),
+                                          maquis::real(interfaceBenzenePointGroup.energyFEAST(2)),
+                                          maquis::real(interfaceBenzenePointGroup.energyFEAST(3))};
+  std::sort(vectorOFEnergies.begin(), vectorOFEnergies.end());
+  // Now sets the intervals to be smaller.
+  parametersBenzene.set("feast_emin", vectorOFEnergies[0]-0.001);
+  parametersBenzene.set("feast_emax", vectorOFEnergies[0]+0.001);
+  maquis::DMRGInterface<ComplexType> interfaceBenzeneSmaller(parametersBenzene);
+  interfaceBenzene.runFEAST();
+  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzenePointGroup.energyFEAST(0)), referenceEnergy0, 1.0E-8);
+  // BOOST_CHECK_CLOSE(vectorOFEnergies[1], referenceEnergy1, 1.0E-8);
+#endif // HAVE_SU2U1
+  // Does the same for the point group case
+#ifdef HAVE_SU2U1PG
+  parametersBenzene.set("symmetry", "su2u1pg");
+  maquis::DMRGInterface<ComplexType> interfaceBenzenePointGroup(parametersBenzene);
+  interfaceBenzenePointGroup.runFEAST();
+  std::vector<double> vectorOFEnergies = {maquis::real(interfaceBenzenePointGroup.energyFEAST(0)),
+                                          maquis::real(interfaceBenzenePointGroup.energyFEAST(1)),
+                                          maquis::real(interfaceBenzenePointGroup.energyFEAST(2)),
+                                          maquis::real(interfaceBenzenePointGroup.energyFEAST(3))};
+  std::sort(vectorOFEnergies.begin(), vectorOFEnergies.end());
+  // Now sets the intervals to be smaller.
+  parametersBenzene.set("feast_emin", vectorOFEnergies[1]-0.001);
+  parametersBenzene.set("feast_emax", vectorOFEnergies[1]+0.001);
+  maquis::DMRGInterface<ComplexType> interfaceBenzeneSmallerPG(parametersBenzene);
+  interfaceBenzeneSmallerPG.runFEAST();
+  vectorOFEnergies = {maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), maquis::real(interfaceBenzeneSmallerPG.energyFEAST(1)),
+                      maquis::real(interfaceBenzeneSmallerPG.energyFEAST(2)), maquis::real(interfaceBenzeneSmallerPG.energyFEAST(3))};
+  std::sort(vectorOFEnergies.begin(), vectorOFEnergies.end());
+  BOOST_CHECK_CLOSE(maquis::real(vectorOFEnergies[0]), referenceEnergy1, 1.0E-8);
+#endif // HAVE_SU2U1PG
+}
 
 #ifdef HAVE_SU2U1PG
 

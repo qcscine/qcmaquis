@@ -66,8 +66,7 @@ public:
     truncatedEnergy = std::vector<double>(nStates, 0);
     variance = std::vector<double>(nStates, 0);
     totalQN = model.total_quantum_numbers(parms);
-    if (parms["feast_calculate_variance"] == "yes")
-      calculateVariance = true;
+    calculateVariance = (parms["feast_calculate_variance"] == "yes");
   }
 
   /** @brief Updates teh mps container */

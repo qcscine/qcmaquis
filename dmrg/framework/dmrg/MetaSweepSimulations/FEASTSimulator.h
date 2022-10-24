@@ -62,7 +62,7 @@ public:
   /** @brief Class constructor */
   FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
     : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice), calculateExactError(false),
-      model_(model), feastMPSs()
+      model_(model), feastMPSs(), calculateVariance(false)
   {
     // Retrieve simulation parameters
     numStates = parameters["feast_num_states"].as<int>();
@@ -79,6 +79,7 @@ public:
     initType = parameters["feast_init_type"].as<std::string>();
     if (parameters["feast_calculate_exact_error"] == "yes")
       calculateExactError = true;
+    calculateVariance = (parameters["feast_calculate_variance"] == "yes");
     printHeader();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
@@ -175,7 +176,7 @@ private:
       for (int iState = 0; iState < feastMPSs->size(); iState++)
         mpsGuess[iState] = feastMPSs->operator[](iState);
     // For each FEAST iteration, we have a loop over the number of quadrature points
-    // AND of the number of target states.
+    // *and* of the number of target states.
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
       maquis::cout << std::endl;
       maquis::cout << " == NEW QUADRATURE POINT ==" << std::endl;
@@ -190,6 +191,7 @@ private:
           maquis::cout << std::endl;
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
+          //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
           ssSimulator->setShift(complexNodes[quadPoint]);
@@ -202,6 +204,7 @@ private:
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
           maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
+          //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
           tsSimulator->setShift(complexNodes[quadPoint]);
@@ -227,7 +230,7 @@ private:
     int iMPS = 0;
     for (const auto& iCurrent: mpsGuess) {
       for (const auto& iPrevious: *feastMPSs) {
-        auto localOverlap = std::abs(overlap(iCurrent, iPrevious));
+        auto localOverlap = std::abs(overlap(iCurrent, iPrevious))/std::sqrt(norm(iCurrent)*norm(iPrevious));
         if (localOverlap > overlaps[iMPS])
           overlaps[iMPS] = localOverlap;
       }
@@ -255,7 +258,8 @@ private:
   /** @brief Generates the guess for FEAST */
   void initializeGuess(BaseParameters& parms, const ModelType& model) {
     std::vector<std::string> initStates;
-    bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" || initType == "basis_state_generic_default");
+    bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" ||
+                           initType == "basis_state_generic_default" || initType == "hf");
     if (needToWriteONV) {
       std::string states = parms["feast_init_onv"].as<std::string>();
       initStates.resize(numStates);
@@ -266,8 +270,12 @@ private:
       auto parametersTmp = parms;
       parametersTmp["init_state"] = initType;
       parametersTmp["seed"] = seedForInit[iState];
-      if (needToWriteONV)
-        parametersTmp["init_basis_state"] = initStates[iState];
+      if (needToWriteONV) {
+        if (parametersTmp["MODEL"] == "quantum_chemistry")
+          parametersTmp["hf_occ"] = initStates[iState];
+        else
+          parametersTmp["init_basis_state"] = initStates[iState];
+      }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
     }
   }
@@ -300,6 +308,8 @@ private:
     maquis::cout << " - Truncation modality: " << truncModality << std::endl;
     maquis::cout << " - MPS guess type: " << initType << std::endl;
     maquis::cout << " - DMRG solver: " << ((isSingleSite) ? "single site" : "two site") << std::endl;
+    if (calculateVariance)
+      maquis::cout << " - Calculating variance for each eigenpair." << std::endl;
   }
 
   // -- Class members --
@@ -321,6 +331,7 @@ private:
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
   bool truncateEach;                                             // If true, truncates the MPS after each sum.
   bool calculateExactError;                                      // If true, calculates the exact error associated with the linear system.
+  bool calculateVariance;                                        // If true, calculates the variance at the end of each FEAST iteration.
   std::shared_ptr<ResultContainerType> resultContainer;          // Member that stores the result of each linear system.
   std::vector<double> energies;                                  // FEAST energies at the current iteration.
   std::unique_ptr<PostProcessorType> postProcessor;              // Class managing FEAST postprocessing.
