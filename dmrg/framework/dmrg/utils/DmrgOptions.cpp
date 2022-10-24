@@ -85,7 +85,7 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
         parms = DmrgParameters(param_file);
 
         /// Load model parameters from second input (if needed)
-        std::string model_file;
+        std::string integral_file;
         if (parms.is_set("model_file") && model_fname.empty())
             model_fname = parms["model_file"].str();
         if (!model_fname.empty()) {

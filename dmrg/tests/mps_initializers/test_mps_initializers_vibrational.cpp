@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
   auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
   for (int iSite = 0; iSite < latticeSize; iSite++)
     siteTypes.push_back(lattice.get_prop<int>("type", iSite));
-  for (int iType = 0; iType <= lattice.maximum_vertex_type(); iType++)
+  for (int iType = 0; iType < lattice.getMaxType(); iType++)
     physCharges.push_back(nModeModel.phys_dim(iType));
   auto outputVector = HelperClassBasisVectorConverter<Symmetry>::GenerateIndexFromString(parametersFADTwoBody, inputVec, physCharges,
                                                                                          siteTypes, latticeSize);

@@ -77,9 +77,9 @@ public:
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
     initType = parameters["feast_init_type"].as<std::string>();
-    if (parameters["feast_calculate_exact_error"] == "yes")
+    if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
-    calculateVariance = (parameters["feast_calculate_variance"] == "yes");
+    calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");
     printHeader();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
@@ -257,24 +257,35 @@ private:
 
   /** @brief Generates the guess for FEAST */
   void initializeGuess(BaseParameters& parms, const ModelType& model) {
-    std::vector<std::string> initStates;
     bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" ||
                            initType == "basis_state_generic_default" || initType == "hf");
+    std::vector<std::string> specifiedStates;
+    int numSpecifiedStates = 0;
     if (needToWriteONV) {
       std::string states = parms["feast_init_onv"].as<std::string>();
-      initStates.resize(numStates);
-      boost::split(initStates, states, boost::is_any_of("|"));
+      boost::split(specifiedStates, states, boost::is_any_of("|"));
+      numSpecifiedStates = specifiedStates.size();
+      if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
+        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to some sort of basis_state_generic");
+      }
+      if (numSpecifiedStates != numStates) {
+        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with default" << std::endl;
+      }
     }
     // Generates the guess MPS
     for (int iState = 0; iState < numStates; iState++) {
       auto parametersTmp = parms;
-      parametersTmp.set("init_state", initType);
       parametersTmp.set("seed", seedForInit[iState]);
+      parametersTmp.set("init_state", initType);
       if (needToWriteONV) {
-        if (parametersTmp["MODEL"] == "quantum_chemistry")
-          parametersTmp.set("hf_occ", initStates[iState]);
-        else
-          parametersTmp.set("init_basis_state", initStates[iState]);
+        if (iState < numSpecifiedStates) {
+          if (parametersTmp["MODEL"] == "quantum_chemistry")
+            parametersTmp.set("hf_occ", specifiedStates[iState]);
+          else
+            parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
+        } else {
+          parametersTmp.set("init_state", "default"); // initialize the remaining states with the default
+        }
       }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
     }

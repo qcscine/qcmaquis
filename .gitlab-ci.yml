@@ -94,7 +94,7 @@ buildVibrationalHamiltonians:
     - default_docker
   script:
     - mkdir buildVibrational && cd buildVibrational
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DBUILD_VIBRATIONAL=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DBUILD_VIBRATIONAL=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 ../dmrg
     - make -j2
   artifacts:
     paths:

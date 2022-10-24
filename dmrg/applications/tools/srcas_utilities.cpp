@@ -50,12 +50,18 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
     } else if (parms_["MODEL"] == "watson") {
         numModes_ = parms_["L"];
         maxDetStr_ = parms_["Nmax"].str();
-        for (int i=1; i<numModes_; i++) {
-            maxDetStr_ += ",";
-            maxDetStr_ += parms_["Nmax"].str();
+        detSpace_ = parms_["Nmax"].as<std::vector<int> >();
+        if (detSpace_.size()!=numModes_ && detSpace_.size()!=1){
+            throw std::runtime_error("The Nmax parameter must be either a single integer, or a vector of lenght L");
         }
-        std::vector<int> tmpVec(numModes_, std::stoi(parms_["Nmax"].str()));
-        detSpace_ = std::move(tmpVec);
+        if (detSpace_.size()!=numModes_) {
+            for (int i=1; i<numModes_; i++) {
+                maxDetStr_ += ",";
+                maxDetStr_ += parms_["Nmax"].str();
+            }
+            std::vector<int> tmpVec(numModes_, std::stoi(parms_["Nmax"].str()));
+            detSpace_ = std::move(tmpVec);
+        }
     }
 
     // If user set a starting det, use this, otherwise use "0,0,0, ... ,0"
@@ -73,15 +79,16 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::printSRCASSettings() {
-    maquis::cout << "--- SRCAS SETTINGS ---" << std::endl;
-    maquis::cout << "MPS taken from:                      " << parms_["chkpfile"].str() << std::endl;
-    maquis::cout << "Determinant space is:                " << maxDetStr_ << std::endl;
-    maquis::cout << "Starting determinant is:             " << startingDet_ << std::endl;
-    maquis::cout << "CI coeff (overlap) threshold is:     " << parms_["srcas_overlapThreshold"] << std::endl;
-    maquis::cout << "SRCAS target completeness is:        " << parms_["srcas_targetCompleteness"] << std::endl;
-    maquis::cout << "Maximum number of iterations is:     " << parms_["srcas_maxNumIterations"] << std::endl;
-    maquis::cout << "Number of samples per iteration is:  " << parms_["srcas_numSamples"] << std::endl;
-    maquis::cout << "Random number seed is:               " << parms_["seed"] << std::endl;
+    maquis::cout << std::endl << "----- SRCAS SETTINGS -----" << std::endl;
+    maquis::cout << "MPS taken from:                            " << parms_["chkpfile"].str() << std::endl;
+    maquis::cout << "Determinant space is:                      " << maxDetStr_ << std::endl;
+    maquis::cout << "Starting determinant is:                   " << startingDet_ << std::endl;
+    maquis::cout << "CI coeff (overlap) threshold is:           " << parms_["srcas_overlapThreshold"] << std::endl;
+    maquis::cout << "SRCAS target completeness is:              " << parms_["srcas_targetCompleteness"] << std::endl;
+    maquis::cout << "Maximum number of iterations is:           " << parms_["srcas_maxNumIterations"] << std::endl;
+    maquis::cout << "Number of samples per iteration is:        " << parms_["srcas_numSamples"] << std::endl;
+    maquis::cout << "Random number seed is:                     " << parms_["seed"] << std::endl;
+    maquis::cout << "Fraction of proposed updates to accept is: " << parms_["srcas_samplingFraction"] << std::endl;
 }
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
@@ -123,7 +130,7 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet() {
             boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
             boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
             do {
-                if (uniformRandomNumber_() < samplingFraction_) // Only accept a fraction of the proposed updates to stay closer to reference det
+                if (uniformRandomNumber_() < parms_["srcas_samplingFraction"]) // Only accept a fraction of the proposed updates to stay closer to reference det
                     detTmp_[i] = poissonRandomNumber();
             } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
         }
@@ -137,7 +144,7 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet() {
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
 void SRCAS<ScalarType>::run() {
-    maquis::cout << std::endl << "--- Starting SRCAS ---" << std::endl << std::endl;
+    maquis::cout << std::endl << "----- Starting SRCAS -----" << std::endl << std::endl;
 
     // Starting det should always be added to the list
     ScalarType overlap = interface_->getCICoefficient(startingDet_);
