@@ -94,7 +94,7 @@ buildVibrationalHamiltonians:
     - default_docker
   script:
     - mkdir buildVibrational && cd buildVibrational
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DBUILD_VIBRATIONAL=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DBUILD_VIBRATIONAL=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -109,30 +109,6 @@ testVibrationalHamiltonians:
     - default_docker
   script:
     - cd buildVibrational
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
-
-buildVibrationalHamiltoniansUpToTwelveModes:
-  stage: buildFinal
-  needs: ["testRelativistic"]
-  tags:
-    - default_docker
-  script:
-    - mkdir buildVibrationalUpToTwelveModes && cd buildVibrationalUpToTwelveModes
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NONE" -DBUILD_VIBRATIONAL=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 ../dmrg
-    - make -j2
-  artifacts:
-    paths:
-      - buildVibrationalUpToTwelveModes/
-    expire_in: 6h
-    when: always
-
-testVibrationalHamiltoniansupToTwelveModes:
-  stage: testFinal
-  needs: ["buildVibrationalHamiltoniansUpToTwelveModes"]
-  tags:
-    - default_docker
-  script:
-    - cd buildVibrationalUpToTwelveModes/
     - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
 
 buildVibronicHamiltonians:
