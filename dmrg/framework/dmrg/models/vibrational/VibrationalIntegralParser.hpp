@@ -131,7 +131,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     else
         throw std::runtime_error("Integrals are not defined in the input.");
     // dump the integrals into the result file for reproducibility
-    if (parms["nModeDumpIntegral"] == "yes" && parms.is_set("resultfile")) {
+    if (parms["nmode_dumpIntegral"] == "yes" && parms.is_set("resultfile")) {
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
         indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::VibrationalNMode)*indices.size());
