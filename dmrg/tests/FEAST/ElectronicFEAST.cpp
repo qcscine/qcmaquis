@@ -202,8 +202,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H
 //
 // #endif // HAVE_TwoU1PG
 
-#ifdef HAVE_TwoU1
-
 /** @brief Test FEAST wit two guesses */
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture)
 {
@@ -213,7 +211,6 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   // Generic parameters
   parametersBenzene.set("max_bond_dimension", 100);
   parametersBenzene.set("optimization", "twosite");
-  parametersBenzene.set("symmetry", "2u1");
   parametersBenzene.set("seed", 42);
   parametersBenzene.set("nsweeps", 3);
   parametersBenzene.set("truncation_initial", 1.0E-30);
@@ -235,15 +232,25 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("feast_emax", -230.7);
   parametersBenzene.set("feast_num_states", 2);
   parametersBenzene.set("feast_calculate_variance", "no");
+#ifdef HAVE_TwoU1
   // Constructs the interface and runs FEAST.
   // Only one state is included in the interval.
+  parametersBenzene.set("symmetry", "2u1");
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();
   auto energy = maquis::real(interfaceBenzene.energyFEAST(0));
   BOOST_CHECK_CLOSE(energy, referenceEnergy, 1.0E-8);
+#endif // HAVE_TwoU1
+  // Does the same for the point group case
+#ifdef HAVE_TwoU1PG
+  parametersBenzene.set("symmetry", "2u1pg");
+  maquis::DMRGInterface<ComplexType> interfaceBenzenePointGroup(parametersBenzene);
+  interfaceBenzenePointGroup.runFEAST();
+  energy = maquis::real(interfaceBenzene.energyFEAST(0));
+  BOOST_CHECK_CLOSE(energy, referenceEnergy, 1.0E-8);
+#endif // HAVE_TwoU1PG
 }
 
-#endif // HAVE_TwoU1
 
 #ifdef HAVE_SU2U1PG
 
