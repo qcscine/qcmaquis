@@ -108,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("feast_init_onv", "3,2,1,1,2,0");
   parametersH2COWatsonNoCoriolis.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("feast_energy_convergence_threshold", 1.0E-5);
-  parametersH2COWatsonNoCoriolis.set("feast_calculate_variance", "yes");
+  parametersH2COWatsonNoCoriolis.set("feast_calculate_standard_eviation", "yes");
   //
   parametersH2COWatsonNoCoriolis.set("linsystem_precond", "no");
   parametersH2COWatsonNoCoriolis.set("linsystem_krylov_dim", 50);

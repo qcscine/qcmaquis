@@ -59,14 +59,15 @@ public:
 
   FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w, const ModelType& inputModel,
                      const LatticeType& inputLattice, BaseParameters& parms)
-    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateVariance(false)
+    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateStandardDeviation(false)
   {
     energies = std::vector<double>(nStates, 0);
     energiesPrev = std::vector<double>(nStates, 0);
     truncatedEnergy = std::vector<double>(nStates, 0);
-    variance = std::vector<double>(nStates, 0);
+    standardDeviations = std::vector<double>(nStates, 0);
     totalQN = model.total_quantum_numbers(parms);
-    calculateVariance = (parms["feast_calculate_variance"] == "yes");
+    if (parms["feast_calculate_standard_deviation"] == "yes")
+      calculateStandardDeviation = true;
   }
 
   /** @brief Updates teh mps container */
@@ -198,31 +199,15 @@ public:
           result->operator[](iOutput) = joinAndTruncate(result->operator[](iOutput), mpsTransformed[std::make_pair(iOutput, iInput)], mMax);
         else
           result->operator[](iOutput) = join(result->operator[](iOutput), mpsTransformed[std::make_pair(iOutput, iInput)]);
-        //#pragma omp critical (printEnergy) {
-        // std::cout << " Truncated Energy for root " << iOutput << " before truncation = " <<
-        //   expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
-        //}
-        //#pragma omp critical (printEnergy)
-        //{
-        // std::cout << " Truncated Energy for root " << iOutput << " = " <<
-        //   expval(mpsTransformed[std::make_pair(iOutput, 0)], mpo)/overlap(mpsTransformed[std::make_pair(iOutput, 0)], mpsTransformed[std::make_pair(iOutput, 0)]) << std::endl;
-        //}
-        //if (calculateVariance) {
-        //    auto norm = overlap(mps_transf(iOutput, 0), mps_transf(iOutput, 0));
-        //    auto energy = expval(mps_transf(iOutput, 0), mps_transf(iOutput, 0), mpo)/norm;
-        //    auto squaredEnergy = expval_squared(mps_transf(iOutput, 0), mps_transf(iOutput, 0), mpo)/norm;
-        //    varianceEnergy[iOutput] = std::sqrt(maquis::real(squaredEnergy) - std::norm(energy));
-        //    reducedVariance[iOutput] = std::sqrt(maquis::real(squaredEnergy)) - maquis::real(energy);
-        //}
       }
       if (!truncEach)
         result->operator[](iOutput) = compression::l2r_compress(result->operator[](iOutput), mMax, 1.0E-16);
       truncatedEnergy[iOutput] = maquis::real(expval(result->operator[](iOutput), mpo)/norm(result->operator[](iOutput)));
     }
-    // If requested, calculates the variance
-    if (calculateVariance) {
-      for (int iState = 0; iState < variance.size(); iState++)
-        variance[iState] = this->getVariance(mpo, result->operator[](iState), mMax);
+    // If requested, calculates the standard deviations
+    if (calculateStandardDeviation) {
+      for (int iState = 0; iState < standardDeviations.size(); iState++)
+        standardDeviations[iState] = this->getStandardDeviation(mpo, result->operator[](iState), mMax);
     }
     return result;
   }
@@ -240,17 +225,17 @@ public:
                      << std::endl;
     maquis::cout << " +---------------------------------------------------------------------------------+" << std::endl;
     maquis::cout << std::endl;
-    // If requested, prints also the variance
-    if (calculateVariance) {
-      maquis::cout << " +-----------------------------------+" << std::endl;
-      maquis::cout << " |   State    |    Energy variance   |" << std::endl;
-      maquis::cout << " +-----------------------------------+" << std::endl;
+    // If requested, prints also the standard deviations
+    if (calculateStandardDeviation) {
+      maquis::cout << " +---------------------------------------------+" << std::endl;
+      maquis::cout << " |   State    |    Energy standard deviation   |" << std::endl;
+      maquis::cout << " +---------------------------------------------+" << std::endl;
       for (int iState = 0; iState < energies.size(); iState++) {
         maquis::cout << std::setw(13) << std::internal << iState
-                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << variance[iState]
+                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << standardDeviations[iState]
                      << std::endl;
       }
-      maquis::cout << " +-----------------------------------+" << std::endl;
+      maquis::cout << " +---------------------------------------------+" << std::endl;
       maquis::cout << std::endl;
     }
   }
@@ -283,20 +268,22 @@ private:
     return det;
   }
 
-  /** @brief Variance calculator -- needed to screen the FEAST eigenfunctions */
-  auto getVariance(const MPOType& mpo, const MPSType& inputMPS, int mMax) {
+  /** @brief Standard deviation calculator -- needed to screen the FEAST eigenfunctions */
+  auto getStandardDeviation(const MPOType& mpo, const MPSType& inputMPS, int mMax) {
     auto traitClass = MPOTimesMPSTraitClass<Matrix, SymmGroup>(inputMPS, model, lattice, totalQN, mMax);
     auto outputMPS = traitClass.applyMPO(mpo);
     auto squaredEnergy = (overlap(outputMPS, outputMPS) + 2.*maquis::real(overlap(outputMPS, inputMPS)*mpo.getCoreEnergy())
-                           + overlap(inputMPS, inputMPS)*std::norm(mpo.getCoreEnergy()))/norm(inputMPS);
+                           + overlap(inputMPS, inputMPS)*std::norm(mpo.getCoreEnergy()))/norm(inputMPS); // this is <H^2>
     auto energy = expval(inputMPS, mpo)/norm(inputMPS);
-    return maquis::real(squaredEnergy - std::norm(energy));
+    auto energySquared = std::norm(energy); // this is <H>^2
+    return std::sqrt(maquis::real(squaredEnergy - energySquared));
   }
 
   // -- Class members --
   std::shared_ptr<ResultContainerType> mpsContainer;                     // Data structure storing the result of the FEAST linear systems.
   int nStates, nQuad;                                                    // FEAST-specific integer parameters.
-  std::vector<double> energies, energiesPrev, truncatedEnergy, variance; // FEAST-specific double parameters.
+  std::vector<double> energies, energiesPrev;                            // FEAST-specific double parameters.
+  std::vector<double> truncatedEnergy, standardDeviations;               // FEAST-specific double parameters for checks.
   ComplexMatrixType feastEigenVectors;                                   // FEAST --> eigenvalues transformation matrix.
   static constexpr int thresholdForRank_ = 1.0E-10;                      // Threshold for rank.
   RealVectorType eigenValues;                                            // FEAST Eigenvalues
@@ -304,7 +291,7 @@ private:
   const ModelType& model;                                                // DMRG model.
   const LatticeType& lattice;                                            // DMRG lattice.
   ChargeType totalQN;                                                    // Overall quantum number associated with the target MPS.
-  bool calculateVariance;                                                // If true, calculates the variance for each FEAST state.
+  bool calculateStandardDeviation;                                       // If true, calculates the standard deviation for each FEAST state.
 };
 
 } // namespace FeastHelper

@@ -63,7 +63,6 @@ class SRCAS {
         std::vector<int> detQueen_, detTmp_, detSpace_;
         int numModes_;
         double completeness_;
-        const double samplingFraction_ = 1.0/3.0; // Change this value to alter the speed of sampling across the Hilbert space
 
         std::map<std::vector<int>, ScalarType> hashTable_;
         typename std::map<std::vector<int>, ScalarType>::iterator iter_;
