@@ -123,6 +123,7 @@ struct LiHFixture
     parametersLiH.set("spin", 0);
     parametersLiH.set("u1_total_charge1", 1);
     parametersLiH.set("u1_total_charge2", 1);
+    parametersLiH.set("MODEL", "quantum_chemistry");
   }
   // Class members
   RealIntegralMapType integralsLiH;

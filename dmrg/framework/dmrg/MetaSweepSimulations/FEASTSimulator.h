@@ -268,13 +268,13 @@ private:
     // Generates the guess MPS
     for (int iState = 0; iState < numStates; iState++) {
       auto parametersTmp = parms;
-      parametersTmp["init_state"] = initType;
-      parametersTmp["seed"] = seedForInit[iState];
+      parametersTmp.set("init_state", initType);
+      parametersTmp.set("seed", seedForInit[iState]);
       if (needToWriteONV) {
         if (parametersTmp["MODEL"] == "quantum_chemistry")
-          parametersTmp["hf_occ"] = initStates[iState];
+          parametersTmp.set("hf_occ", initStates[iState]);
         else
-          parametersTmp["init_basis_state"] = initStates[iState];
+          parametersTmp.set("init_basis_state", initStates[iState]);
       }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
     }
