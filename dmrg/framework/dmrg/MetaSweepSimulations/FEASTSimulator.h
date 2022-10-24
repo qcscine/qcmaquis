@@ -77,7 +77,7 @@ public:
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
     initType = parameters["feast_init_type"].as<std::string>();
-    if (parameters["feast_calculate_exact_error"] == "yes")
+    if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
     printHeader();
     // Checks consistency of the input
