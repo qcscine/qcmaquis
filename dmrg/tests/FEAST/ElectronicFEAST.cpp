@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetri
   // Gets the energy via the interface
   maquis::DMRGInterface<ComplexType> interfaceFEAST(parametersH2);
   interfaceFEAST.runFEAST();
-  auto feastEnergyInterface = maquis::real(interfaceFEAST.energy());
+  auto feastEnergyInterface = maquis::real(interfaceFEAST.energyFEAST(0));
   // Final checks
   BOOST_CHECK_CLOSE(feastEnergy, feastEnergyInterface, 1.0E-6);
 }
@@ -235,15 +235,15 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("feast_emax", -230.7);
   parametersBenzene.set("feast_num_states", 2);
   parametersBenzene.set("feast_calculate_variance", "no");
-  // Constructs the interface and runs FEAST
+  // Constructs the interface and runs FEAST.
+  // Only one state is included in the interval.
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();
-  auto energy = maquis::real(interfaceBenzene.energy());
+  auto energy = maquis::real(interfaceBenzene.energyFEAST(0));
   BOOST_CHECK_CLOSE(energy, referenceEnergy, 1.0E-8);
 }
 
 #endif // HAVE_TwoU1
-
 
 #ifdef HAVE_SU2U1PG
 

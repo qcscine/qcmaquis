@@ -57,8 +57,9 @@ class FEASTLauncher<matrix, SymmGroup> {
   using ModelType = Model<matrix, SymmGroup>;
   using MPSType = MPS<matrix, SymmGroup>;
   using MPOType = MPO<matrix, SymmGroup>;
+  using RetType = std::shared_ptr<std::vector<MPSType>>;
 public:
-  static MPSType runFEASTSimulation(BaseParameters& parms, const ModelType& model,
+  static RetType runFEASTSimulation(BaseParameters& parms, const ModelType& model,
                                     const Lattice& lattice, const MPOType& mpo)
   {
     throw FEASTException();
@@ -71,14 +72,14 @@ class FEASTLauncher<cmatrix, SymmGroup> {
   using ModelType = Model<cmatrix, SymmGroup>;
   using MPSType = MPS<cmatrix, SymmGroup>;
   using MPOType = MPO<cmatrix, SymmGroup>;
+  using RetType = std::shared_ptr<std::vector<MPSType>>;
 public:
-  static MPSType runFEASTSimulation(BaseParameters& parms, const ModelType& model,
+  static RetType runFEASTSimulation(BaseParameters& parms, const ModelType& model,
                                     const Lattice& lattice, const MPOType& mpo)
   {
     auto feastSimulator = FEASTSimulatorType(parms, model, lattice, mpo);
     feastSimulator.runFEAST();
-    auto mps = feastSimulator.getCurrentGuess(0);
-    return mps;
+    return feastSimulator.getCurrentEigenvalues();
   }
 };
 

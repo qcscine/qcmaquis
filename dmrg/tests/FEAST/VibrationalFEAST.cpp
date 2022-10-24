@@ -53,8 +53,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
   auto feastSimulator = FEASTSimulatorType(parametersH2COWatson, vibrationalModel, vibrationalLattice, vibrationalMPO);
   // Checks consistency between guess MPS
-  auto firstMPS = feastSimulator.getCurrentGuess(0);
-  auto secondMPS = feastSimulator.getCurrentGuess(1);
+  auto firstMPS = feastSimulator.getCurrentEigenvalue(0);
+  auto secondMPS = feastSimulator.getCurrentEigenvalue(1);
   auto overlapBetweenMPS = overlap(firstMPS, secondMPS);
   BOOST_CHECK_SMALL(maquis::real(overlapBetweenMPS), 1.0E-15);
   // Checks consistency for quadrature points

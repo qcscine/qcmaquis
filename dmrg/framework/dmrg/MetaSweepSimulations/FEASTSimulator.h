@@ -62,7 +62,7 @@ public:
   /** @brief Class constructor */
   FEASTSimulator(BaseParameters& parms, const ModelType& model, const LatticeType& inputLattice, const MPOType& mpo)
     : currentIter(0), isSingleSite(true), parameters(parms), mpo_(mpo), lattice(inputLattice), calculateExactError(false),
-      model_(model)
+      model_(model), feastMPSs()
   {
     // Retrieve simulation parameters
     numStates = parameters["feast_num_states"].as<int>();
@@ -139,8 +139,13 @@ public:
   }
 
   /** @brief Getter for the MPS guesses */
-  auto getCurrentGuess(int iState) {
-    return mpsGuess[iState];
+  auto getCurrentEigenvalues() {
+    return feastMPSs;
+  }
+
+  /** @brief Getter for the MPS guesses */
+  auto getCurrentEigenvalue(int iState) {
+    return feastMPSs->operator[](iState);
   }
 
   /** @brief Getter for the quadrature points */
@@ -158,6 +163,9 @@ private:
   /** @brief Runs a single iteration of DMRG[FEAST] */
   void runFeastSimulation() {
     // Variable initialization
+    if (feastMPSs)
+      for (int iState = 0; iState < feastMPSs->size(); iState++)
+        mpsGuess[iState] = feastMPSs->operator[](iState);
     // For each FEAST iteration, we have a loop over the number of quadrature points
     // AND of the number of target states.
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
@@ -198,8 +206,7 @@ private:
     // Diagonalizes the Hamiltonian matrix in the FEAST subspace
     postProcessor->updateContainer(resultContainer);
     postProcessor->solveEigenvalueProblem(mpo_);
-    mpsGuessPrev = mpsGuess;
-    mpsGuess = postProcessor->performBackTransformation(mpo_, mMax, truncateEach);
+    feastMPSs = postProcessor->performBackTransformation(mpo_, mMax, truncateEach);
     postProcessor->printResults();
     energies = postProcessor->getEnergies();
     // Final update of the iteration counter
@@ -211,7 +218,7 @@ private:
     auto overlaps = std::vector<double>(mpsGuess.size(), 0);
     int iMPS = 0;
     for (const auto& iCurrent: mpsGuess) {
-      for (const auto& iPrevious: mpsGuessPrev) {
+      for (const auto& iPrevious: *feastMPSs) {
         auto localOverlap = std::abs(overlap(iCurrent, iPrevious));
         if (localOverlap > overlaps[iMPS])
           overlaps[iMPS] = localOverlap;
@@ -299,7 +306,8 @@ private:
   std::string intModality;                                       // "Full" for the full circle integration, "half" for the half-circle one.
   std::string truncModality;                                     // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
   std::string initType;                                          // Initialization strategy for each guess.
-  std::vector<MPSType> mpsGuess, mpsGuessPrev;                   // Stores the current guess for hte FEAST procedure.
+  std::vector<MPSType> mpsGuess;                                 // Stores the current guess for hte FEAST procedure.
+  std::shared_ptr<std::vector<MPSType>> feastMPSs;               // Final, back-transformed FEAST MPSs
   std::vector<int> seedForInit;                                  // Seed for random initialization.
   std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
