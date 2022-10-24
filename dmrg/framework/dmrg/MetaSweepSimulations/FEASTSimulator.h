@@ -138,6 +138,14 @@ public:
     }
   }
 
+  /** @breif Getter for the guess */
+  auto getCurrentGuess(int iState) const {
+    if (iState >= mpsGuess.size())
+      throw std::runtime_error("FEAST: guess index not available");
+    else
+      return mpsGuess[iState];
+  }
+
   /** @brief Getter for the MPS guesses */
   auto getCurrentEigenvalues() {
     return feastMPSs;
