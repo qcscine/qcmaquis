@@ -192,7 +192,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H
 //   parametersLiH.set("feast_emin", -7.6);
 //   parametersLiH.set("feast_emax", -7.5);
 //   parametersLiH.set("feast_num_states", 1);
-//   parametersLiH.set("feast_calculate_variance", "yes");
+//   parametersLiH.set("feast_calculate_standard_eviation", "yes");
 //   // Constructs the interface and runs FEAST
 //   maquis::DMRGInterface<ComplexType> interfaceFEASTGS(parametersLiH);
 //   interfaceFEASTGS.runFEAST();
@@ -234,7 +234,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   parametersBenzene.set("feast_emin", -230.8);
   parametersBenzene.set("feast_emax", -230.7);
   parametersBenzene.set("feast_num_states", 2);
-  parametersBenzene.set("feast_calculate_variance", "no");
+  parametersBenzene.set("feast_calculate_standard_eviation", "no");
   // Constructs the interface and runs FEAST
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();
