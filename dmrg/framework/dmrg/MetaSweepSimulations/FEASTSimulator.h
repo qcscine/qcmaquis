@@ -65,6 +65,7 @@ public:
       model_(model), feastMPSs(), calculateVariance(false)
   {
     // Retrieve simulation parameters
+    verbose_ = (parameters["feast_verbose"] == "yes");
     numStates = parameters["feast_num_states"].as<int>();
     maxFeastIter = parameters["feast_max_iter"].as<int>();
     eMin = parameters["feast_emin"].as<double>();
@@ -194,8 +195,14 @@ private:
           //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
+          if (verbose_)
+            ssSimulator->activateVerbosity();
+          else
+            ssSimulator->deactivateVerbosity();
           ssSimulator->setShift(complexNodes[quadPoint]);
           ssSimulator->runSweepSimulation();
+          if (!verbose_)
+            ssSimulator->printSummary();
           auto key = std::make_pair(iGuess, quadPoint);
           resultContainer->insert(std::make_pair(key, mpsTmp));
         }
@@ -207,8 +214,14 @@ private:
           //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
+          if (verbose_)
+            tsSimulator->activateVerbosity();
+          else
+            tsSimulator->deactivateVerbosity();
           tsSimulator->setShift(complexNodes[quadPoint]);
           tsSimulator->runSweepSimulation();
+          if (!verbose_)
+            tsSimulator->printSummary();
           resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
         }
       }
@@ -350,6 +363,7 @@ private:
   const MPOType& mpo_;                                           // Matrix product operator
   const LatticeType& lattice;                                    // DMRG lattice object.
   const ModelType& model_;                                       // Model object.
+  bool verbose_;                                                 // If true, activates the verbose treatment.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };

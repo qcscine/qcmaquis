@@ -204,6 +204,7 @@ private:
         add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_calculate_standard_deviation", "If yes, calculates the standard deviation associated with each FEAST state.", value("no"));
+        add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
     }
 };
 

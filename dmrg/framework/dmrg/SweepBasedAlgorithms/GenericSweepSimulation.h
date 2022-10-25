@@ -69,7 +69,6 @@ public:
     siteLeft_ = currentSite_;
     siteRight_ = currentSite_+1;
     mps_.normalize_right();
-    printGenericInfo();
     nSweeps_ = parms_["nsweeps"];
     lastSite_ = SweepTraitClass::getLastSite(L_);
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
@@ -86,6 +85,7 @@ public:
    */
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==
+    printGenericInfo();
     for (int iSweep = 0; iSweep < nSweeps_; iSweep++)
       this->runSingleSweep(iSweep);
   }
@@ -170,6 +170,12 @@ public:
       throw std::runtime_error("Trying to access non-existing simulation result");
     return boost::any_cast<CastType>(iterationResults_[resultName].get()[0]);
   }
+
+  /** @brief Activates the verbosity */
+  void activateVerbosity() { verbose_ = true; }
+
+  /** @brief Deactivates the verbosity */
+  void deactivateVerbosity() { verbose_ = false; }
 
 protected:
 

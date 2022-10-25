@@ -40,6 +40,7 @@
 #include "dmrg/utils/checks.h"
 #include "BoundaryPropagator.h"
 #include "OverlapPropagator.h"
+#include "SweepOptimizationTypeTrait.h"
 
 template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType SweepType>
 class SweepBasedLinearSystem : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
@@ -56,7 +57,9 @@ public:
   using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
   using ValueType = typename MPSTensorType::scalar_type;
   //
+  using Base::activateVerbosity;
   using Base::boundaryPropagator_;
+  using Base::deactivateVerbosity;
   using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
   using Base::initSite_;
@@ -80,13 +83,13 @@ public:
     : Base(mps, mpo, parms, model, lattice, std::string("Linear system solver"), initSite), adaptiveBondDimension_(false),
       shiftParameter_(0.), isPrecond_(false), rhsMps_(mps)
   {
-    /* // Folded simulation --> To be reactivated when implementing the folded operator 
+    /* // Folded simulation --> To be reactivated when implementing the folded operator
     if (parms["pI_folded"] == "yes") {
         maquis::cout << " Activating folded treatment " << std::endl;
         isSquared = true;
     } */
     overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, initSite_);
-    /* To be reactivated when implementing the folded operator 
+    /* To be reactivated when implementing the folded operator
     if (isSquared) {
       leftSquared_.resize(mpo.length()+1);
       rightSquared_.resize(mpo.length()+1);
@@ -177,6 +180,24 @@ public:
         maquis::cout << " Exact error = " << error << std::endl;
         maquis::cout << std::endl;
       }
+    }
+  }
+
+  /** @brief Prints a summary of the results of a minimization */
+  void printSummary() const {
+    // Prints header
+    maquis::cout << std::endl;
+    maquis::cout << " == SUMMARY OF THE SWEEP-BASED SOLUTION OF THE LINEAR SYSTEM == " << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " +----------------+----------------+----------------+" << std::endl;
+    maquis::cout << "   Microiteration |      Energy    |      Error      " << std::endl;
+    maquis::cout << " +----------------+----------------+----------------+" << std::endl;
+    for (int iIter = 0; iIter < energyPerMicroIter_.size(); iIter++) {
+      maquis::cout << std::setw(17) << std::right << iIter
+                   << std::setw(17) << std::setprecision(10) << std::scientific << std::right << energyPerMicroIter_[iIter]
+                   << std::setw(17) << std::setprecision(10) << std::scientific << std::right << errorPerMicroIter_[iIter] << std::endl;
+      if ((iIter+1)%(2*SweepTraitClass::getLastSite(L_)) == 0)
+        maquis::cout << " +----------------+----------------+----------------+" << std::endl;
     }
   }
 
