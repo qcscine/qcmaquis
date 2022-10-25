@@ -67,10 +67,10 @@ public:
    */
   LinSolver(std::shared_ptr<SiteProblem<Matrix, SymmGroup>> sp, const MPSTensorType& initialMPS,
             const MPSTensorType& rhsMPS, ScalarType shift, BaseParameters & parms,
-            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond)
-    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond) //, isFolded_(false)
+            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose)
+    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose)
+    //, isFolded_(false)
   {
-    verbose_ = (parms_["linsystem_verbose"] == "yes");
     if (parms_["linsystem_init"] == "zero")
       currentSolution_ = 0.*initialMPS;
     else
@@ -348,8 +348,7 @@ protected:
       R(3) = maquis::real(H(iter+1, iter));
       if (G2.isActivated())
         std::tie(R(1), R(2)) = G1.apply(R(1), R(2));
-      G1 = G2;      maquis::cout << " ------------------------------------- " << std::endl;
-
+      G1 = G2;
       G2 = GivensType(R(2), R(3));
       R(2) = G2.getR();
       R(3) = 0.0;

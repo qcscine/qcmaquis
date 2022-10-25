@@ -306,6 +306,9 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   // Does the same for the point group case
 #ifdef HAVE_SU2U1PG
   parametersBenzene.set("symmetry", "su2u1pg");
+  // We reset the upper and lower bounds to the "loose" values
+  parametersBenzene.set("feast_emin", -230.75);
+  parametersBenzene.set("feast_emax", -230.48);
   maquis::DMRGInterface<ComplexType> interfaceBenzenePG(parametersBenzene);
   interfaceBenzenePG.runFEAST();
   std::vector<double> vectorOFEnergiesPG = {maquis::real(interfaceBenzenePG.energyFEAST(0)),

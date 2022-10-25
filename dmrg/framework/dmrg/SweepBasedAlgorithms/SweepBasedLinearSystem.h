@@ -135,7 +135,7 @@ public:
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() override final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
-    LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_);
+    LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_, verbose_);
     auto resultOfLocalSiteProblem = ls.res();
     iterationResults_["Energy"] << std::get<0>(resultOfLocalSiteProblem) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
     energyPerMicroIter_.push_back(std::get<0>(resultOfLocalSiteProblem));
@@ -189,16 +189,17 @@ public:
     maquis::cout << std::endl;
     maquis::cout << " == SUMMARY OF THE SWEEP-BASED SOLUTION OF THE LINEAR SYSTEM == " << std::endl;
     maquis::cout << std::endl;
-    maquis::cout << " +----------------+----------------+----------------+" << std::endl;
-    maquis::cout << "   Microiteration |      Energy    |      Error      " << std::endl;
-    maquis::cout << " +----------------+----------------+----------------+" << std::endl;
+    maquis::cout << " +----------------+------------------+------------------+" << std::endl;
+    maquis::cout << "   Microiteration |      Energy      |       Error       " << std::endl;
+    maquis::cout << " +----------------+------------------+------------------+" << std::endl;
     for (int iIter = 0; iIter < energyPerMicroIter_.size(); iIter++) {
       maquis::cout << std::setw(17) << std::right << iIter
-                   << std::setw(17) << std::setprecision(10) << std::scientific << std::right << energyPerMicroIter_[iIter]
-                   << std::setw(17) << std::setprecision(10) << std::scientific << std::right << errorPerMicroIter_[iIter] << std::endl;
+                   << std::setw(19) << std::setprecision(10) << std::scientific << std::right << energyPerMicroIter_[iIter]
+                   << std::setw(19) << std::setprecision(10) << std::scientific << std::right << errorPerMicroIter_[iIter] << std::endl;
       if ((iIter+1)%(2*SweepTraitClass::getLastSite(L_)) == 0)
-        maquis::cout << " +----------------+----------------+----------------+" << std::endl;
+        maquis::cout << " +----------------+------------------+------------------+" << std::endl;
     }
+    maquis::cout << std::endl;
   }
 
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
