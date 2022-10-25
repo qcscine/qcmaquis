@@ -227,6 +227,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
 /** @brief DMRG[FEAST] test for the n-mode Hamiltonian */
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
 {
+  maquis::cout << "FINGERPRINT before otimization" << std::endl;
   parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
   parametersFADTwoBodyFingerPrint.set("init_state", "const");
   parametersFADTwoBodyFingerPrint.set("optimization", "twosite");
@@ -242,6 +243,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
   maquis::DMRGInterface<double> interfaceGroundState(parametersFADTwoBodyFingerPrint);
   interfaceGroundState.optimize();
   auto groundStateEnergy = interfaceGroundState.energy();
+  maquis::cout << "FINGERPRINT after otimization, before FEAST" << std::endl;
   // == DMRG[FEAST] ==
   double energyGap = 10.;
   auto eMin = groundStateEnergy - energyGap;
@@ -263,8 +265,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
   parametersFADTwoBodyFingerPrint.set("linsystem_init", "last");
   maquis::DMRGInterface<std::complex<double>> interfaceFEAST(parametersFADTwoBodyFingerPrint);
   interfaceFEAST.runFEAST();
-  auto feastEnergy = maquis::real(interfaceFEAST.energy());
-  BOOST_CHECK_SMALL(std::abs((feastEnergy-groundStateEnergy)/groundStateEnergy), 1.0E-10);
+  auto feastEnergy = maquis::real(interfaceFEAST.energyFEAST(0));
+  BOOST_CHECK_CLOSE(feastEnergy, groundStateEnergy, 1.0E-6);
 }
 
 #endif
