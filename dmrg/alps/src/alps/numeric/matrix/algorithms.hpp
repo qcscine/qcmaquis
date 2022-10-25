@@ -394,6 +394,11 @@ namespace alps {
            std::generate(elements(m).first, elements(m).second, g);
         }
 
+        // +===============================+
+        // == REAL-VALUED DIAGONALIZATION ==
+        // +===============================+
+
+        /** @brief Diagonalization returning eigenvalues and eigenvectors */
         template<typename T, class MemoryBlock>
         void heev(matrix<T, MemoryBlock> M, matrix<T, MemoryBlock> & evecs,
                   typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals)
@@ -416,6 +421,7 @@ namespace alps {
                           col(evecs, num_cols(M)-1-c).first);
         }
 
+        /** @brief Diagonalization returning eigenvalues */
         template<typename T, class MemoryBlock>
         void heev(matrix<T, MemoryBlock> M, typename associated_real_vector<matrix<T, MemoryBlock> >::type & evals)
         {
@@ -431,6 +437,7 @@ namespace alps {
             std::reverse(evals.begin(), evals.end());
         }
 
+        /** @brief Overload taking a diagonal matrix */
         template<typename T, class MemoryBlock>
         void heev(matrix<T, MemoryBlock> M,
                   matrix<T, MemoryBlock> & evecs,
@@ -442,6 +449,7 @@ namespace alps {
             evals = typename associated_real_diagonal_matrix<matrix<T, MemoryBlock> >::type(evals_);
         }
 
+        /** @brief Overload with a different name of [heev] */
         template<typename T, class MemoryBlock, class ThirdArgument>
         void syev(matrix<T, MemoryBlock> M,
                   matrix<T, MemoryBlock> & evecs,
@@ -450,9 +458,14 @@ namespace alps {
             heev(M, evecs, evals);
         }
 
+        // +=================================+
+        // == SOLUTION OF THE LINEAR SYSTEM ==
+        // +=================================+
+
         /**
          * @brief Routine to solve generalized eigenvalue problems 
-         * This overload retrieves separately the 
+         * This overload retrieves separately the left and right eigenvectors, as well
+         * as the alpha and beta components of the eigenvalues.
          */
         template<typename T, class MemoryBlock>
         typename boost::enable_if< boost::is_complex<T>, void>::type
