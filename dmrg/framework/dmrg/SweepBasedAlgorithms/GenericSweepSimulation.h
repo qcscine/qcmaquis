@@ -64,7 +64,7 @@ public:
                          const Lattice& lattice, std::string simulationName="Optimization", int initSite=0)
     : mps_(mps), parms_(parms), L_(mps_.length()), initSite_(initSite), mpoContainer_(mpo, mps),
       mpsContainer_(mps), simulationName_(simulationName), nSweeps_(0), currentSite_(initSite),
-      indexOfMicroIteration_(0), lattice_(lattice), model_(model)
+      indexOfMicroIteration_(0), lattice_(lattice), model_(model), verbose_(true)
   {
     siteLeft_ = currentSite_;
     siteRight_ = currentSite_+1;
@@ -74,6 +74,7 @@ public:
     lastSite_ = SweepTraitClass::getLastSite(L_);
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_);
+    verbose_ = (parms_["linsystem_verbose"] == "yes");
   };
 
   /**
@@ -153,7 +154,8 @@ public:
       }
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
-      maquis::cout << std::endl;
+      if (verbose_)
+        maquis::cout << std::endl;
     }
     this->finalizeSweep();
   }
@@ -245,40 +247,46 @@ protected:
 
   /** @brief Prints generic information about the */
   void printGenericInfo() const {
-    maquis::cout << std::endl;
-    maquis::cout << "+----------------------------------+" << std::endl;
-    maquis::cout << " NEW SwEEP-BASED SIMULATION STARTED" << std::endl;
-    maquis::cout << "+----------------------------------+" << std::endl;
-    maquis::cout << std::endl;
-    maquis::cout << " Simulation settings:" << std::endl;
-    maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
-    maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
-    if (nSweeps_ != 0)
-      maquis::cout << " - Overall number of sweeps: " << nSweeps_ << std::endl;
+    if (verbose_) {
+      maquis::cout << std::endl;
+      maquis::cout << "+----------------------------------+" << std::endl;
+      maquis::cout << " NEW SwEEP-BASED SIMULATION STARTED" << std::endl;
+      maquis::cout << "+----------------------------------+" << std::endl;
+      maquis::cout << std::endl;
+      maquis::cout << " Simulation settings:" << std::endl;
+      maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
+      maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
+      if (nSweeps_ != 0)
+        maquis::cout << " - Overall number of sweeps: " << nSweeps_ << std::endl;
+    }
   }
 
   /** @brief Prints info that are sweep-specific */
   void printSweepSpecificInfo(int iSweep) const {
-    maquis::cout << std::endl;
-    maquis::cout << " -------------------" << std::endl;
-    maquis::cout << "   SWEEP NUMBER " << iSweep << std::endl;
-    maquis::cout << " -------------------" << std::endl;
-    maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
-    maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
-    maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
-    maquis::cout << std::endl;
+    if (verbose_) {
+      maquis::cout << std::endl;
+      maquis::cout << " -------------------" << std::endl;
+      maquis::cout << "   SWEEP NUMBER " << iSweep << std::endl;
+      maquis::cout << " -------------------" << std::endl;
+      maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
+      maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
+      maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
+      maquis::cout << std::endl;
+    }
   }
 
   void printMicroiterInfo(SweepDirectionType sweepType) const {
-    maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
-    if (sweepType == SweepDirectionType::Forward)
-      maquis::cout << " , forward sweep" << std::endl;
-    else
-      maquis::cout << " , backward sweep" << std::endl;
-    maquis::cout << " - Optimization centered on site: " << currentSite_ << std::endl;
-    maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
-    maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
-    maquis::cout << std::endl;
+    if (verbose_) {
+      maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
+      if (sweepType == SweepDirectionType::Forward)
+        maquis::cout << " , forward sweep" << std::endl;
+      else
+        maquis::cout << " , backward sweep" << std::endl;
+      maquis::cout << " - Optimization centered on site: " << currentSite_ << std::endl;
+      maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
+      maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
+      maquis::cout << std::endl;
+    }
   }
 
 protected:
@@ -293,6 +301,7 @@ protected:
   std::string simulationName_;
   const ModelType& model_;
   const Lattice& lattice_;
+  bool verbose_;
 };
 
 #endif // GENERIC_SWEEPS_SIMULATION_H

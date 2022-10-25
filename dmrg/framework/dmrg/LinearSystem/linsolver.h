@@ -29,6 +29,7 @@
 #define LINSOLVER_H
 
 #include <complex>
+#include <tuple>
 // #include <Eigen/Core>
 // #include <Eigen/Dense>
 // #include <Eigen/IterativeLinearSolvers>
@@ -69,8 +70,7 @@ public:
             std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond)
     : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond) //, isFolded_(false)
   {
-    //if (params["pI_folded"] == "yes")
-    //    isFolded_ = true;
+    verbose_ = (parms_["linsystem_verbose"] == "yes");
     if (parms_["linsystem_init"] == "zero")
       currentSolution_ = 0.*initialMPS;
     else
@@ -84,14 +84,16 @@ public:
   }
 
   /** @brief Solves the linear system */
-  std::pair<energy_type, MPSTensorType> res() {
+  std::tuple<energy_type, energy_type, MPSTensorType> res() {
     int prec = maquis::cout.precision();
-    maquis::cout.precision(15);
-    maquis::cout << std::endl;
-    auto tmp2 = applyOperator(currentSolution_);
-    auto initError = ietl::two_norm(tmp2-rhsMPS_);
-    maquis::cout << " Initial ||Ax - b|| norm =  " << initError << std::endl;
-    maquis::cout << std::endl;
+    if (verbose_) {
+      maquis::cout.precision(15);
+      maquis::cout << std::endl;
+      auto tmp2 = applyOperator(currentSolution_);
+      auto initError = ietl::two_norm(tmp2-rhsMPS_);
+      maquis::cout << " Initial ||Ax - b|| norm =  " << initError << std::endl;
+      maquis::cout << std::endl;
+    }
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
       if (parms_["linsystem_solver"] == "GMRES")
         gmres();
@@ -100,19 +102,22 @@ public:
       else
         throw std::runtime_error("[linsystem_solver] parameter not recognized");
     }
-    tmp2 = applyOperator(currentSolution_);
-    auto finalError = ietl::two_norm(tmp2-rhsMPS_);
-    maquis::cout << std::endl;
-    maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
+    auto tmp3 = applyOperator(currentSolution_);
+    auto finalError = ietl::two_norm(tmp3-rhsMPS_);
+    if (verbose_) {
+      maquis::cout << std::endl;
+      maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
+    }
     // == Finalization ==
     // ietl::mult(sp, x, tmp2, 0, false);
-    ietl::mult(*sp_, currentSolution_, tmp2);
-    auto en = maquis::real(ietl::dot(currentSolution_, tmp2) / ietl::dot(currentSolution_, currentSolution_));
-    maquis::cout << " Final energy = " << en << std::endl;
-    maquis::cout << std::endl;
+    ietl::mult(*sp_, currentSolution_, tmp3);
+    auto en = maquis::real(ietl::dot(currentSolution_, tmp3) / ietl::dot(currentSolution_, currentSolution_));
+    if (verbose_) {
+      maquis::cout << " Final energy = " << en << std::endl;
+      maquis::cout << std::endl;
+    }
     maquis::cout.precision(prec);
-    std::pair<energy_type, MPSTensorType> r0 = std::make_pair(en, currentSolution_);
-    return r0;
+    return std::make_tuple(en, finalError, currentSolution_);
   };
 
   /** @brief Default class destructor */
@@ -125,9 +130,11 @@ protected:
    * The implementation is based on Saad's book on iterative methods.
    */
   void gmres() {
-    maquis::cout << " ------------------------------------- " << std::endl;
-    maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
-    maquis::cout << " ------------------------------------- " << std::endl;
+    if (verbose_) {
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
+    }
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
@@ -170,8 +177,10 @@ protected:
     y[0] = residual[0];
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
-      maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
-                   << residual[iter] << std::endl;
+      if (verbose_) {
+        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                     << residual[iter] << std::endl;
+      }
       // Begin of the Arnoldi part
       auto Av = applyOperator(vecSpace[iter]);
       if (iter > 0) {
@@ -241,6 +250,8 @@ protected:
       }
       */
       auto info = boost::numeric::bindings::lapack::gels(smallerMatrix, smallerVector);
+      if (info != 0)
+        throw std::runtime_error("Error in the solution of the linear systen");
       for (int iFinal = 0; iFinal < iter; iFinal++)
         currentSolution_ += smallerVector[iFinal]*vecSpace[iFinal];
         //currentSolution_ += result[iFinal]*vecSpace[iFinal];
@@ -258,9 +269,11 @@ protected:
   /** @brief Solve the linear system with MINRES (based on the PyKry python library). */
   void minres() {
     // Printing
-    maquis::cout << " --------------------------------- " << std::endl;
-    maquis::cout << " Iteration  | Rel. error estimate  " << std::endl;
-    maquis::cout << " --------------------------------- " << std::endl;
+    if (verbose_) {
+      maquis::cout << " --------------------------------- " << std::endl;
+      maquis::cout << " Iteration  | Rel. error estimate  " << std::endl;
+      maquis::cout << " --------------------------------- " << std::endl;
+    }
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
@@ -287,8 +300,10 @@ protected:
     MPSTensorType MAv;
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
-      maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
-                   << residual[iter] << std::endl;
+      if (verbose_) {
+        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                     << residual[iter] << std::endl;
+      }
       auto Av = applyOperator(vecSpace[iter]);
       if (iter > 0) {
         H(iter-1, iter) = H(iter, iter-1);
@@ -394,12 +409,13 @@ private:
   }
 
   /** @brief Just prints a line for the table of the results */
-  static void printEndl() {
-    maquis::cout << " --------------------------------- " << std::endl;
-    maquis::cout << std::endl;
-    maquis::cout << std::fixed;
+  void printEndl() {
+    if (verbose_) {
+      maquis::cout << " --------------------------------- " << std::endl;
+      maquis::cout << std::endl;
+      maquis::cout << std::fixed;
+    }
   }
-
 
   /* Private members */
   std::shared_ptr<SiteProblem<Matrix, SymmGroup>> sp_;       // Pointer to the site problem representing the linear system.
@@ -413,7 +429,7 @@ private:
   RealType gmresTol_;                                        // Convergence threshold for the iterative solution to the linear system.
   RealType rhsNorm_;                                         // Norm of the rhs term.
   static constexpr double zeroThresh_ = 1.0E-16;             // Numerical zero
-  // bool isFolded_;
+  bool verbose_;                                             // Verbosity flag
 };
 
 #endif

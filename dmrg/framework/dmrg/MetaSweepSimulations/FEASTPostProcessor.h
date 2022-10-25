@@ -123,6 +123,10 @@ public:
     ComplexMatrixType leftEigenVectors(nStates, nStates, zeroComplex), rightEigenVectors(nStates, nStates, zeroComplex);
     ComplexVectorType alphaVec(nStates, 0.), betaVec(nStates, zeroComplex);
     alps::numeric::ggev(H, B, alphaVec, betaVec, leftEigenVectors, rightEigenVectors, thresholdForRank_);
+    // maquis::cout << " Left eigenvectors" << std::endl;
+    // maquis::cout << leftEigenVectors << std::endl;
+    // maquis::cout << " Right eigenvectors" << std::endl;
+    // maquis::cout << rightEigenVectors << std::endl;
     // Retrieves energies
     energiesPrev = energies;
     int rank = 0;
@@ -142,7 +146,6 @@ public:
     maquis::cout << std::endl;
     // Final copy of the eigenvectors
     feastEigenVectors = rightEigenVectors;
-    // maquis::cout << feastEigenVectors << std::endl;
   };
 
   /**
@@ -171,35 +174,54 @@ public:
     // Actual back-transformation
     for (int iOutput = 0; iOutput < rank; iOutput++) {
       for (int iInput = 0; iInput < nStates; iInput++) {
-        for (int iQuad = 0; iQuad < nQuad; iQuad++) {
-          MPSType mpsToAdd = mpsContainer->operator[](std::make_pair(iInput, iQuad));
-          auto scalingFactor = feastEigenVectors(iInput, iOutput)*weights[iQuad]; // /normVector[iInput];
-          mpsToAdd.scaleByScalar(scalingFactor);
-          if (iQuad == 0) {
-            mpsTransformed[std::make_pair(iOutput, iInput)] = mpsToAdd;
-          }
-          else {
-            if (std::abs(scalingFactor) > thresholdForRank_) {
-              if (truncEach)
-                mpsTransformed[std::make_pair(iOutput, iInput)] = joinAndTruncate(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd, mMax);
-              else
-                mpsTransformed[std::make_pair(iOutput, iInput)] = join(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd);
+        // maquis::cout << "(" << iInput << "," << iOutput << ") = " << feastEigenVectors(iInput, iOutput) << std::endl;
+        if (std::abs(feastEigenVectors(iInput, iOutput)) > thresholdForRank_) {
+          for (int iQuad = 0; iQuad < nQuad; iQuad++) {
+            // maquis::cout << " - iQuad = " << weights[iQuad] << std::endl;
+            MPSType mpsToAdd = mpsContainer->operator[](std::make_pair(iInput, iQuad));
+            auto scalingFactor = feastEigenVectors(iInput, iOutput)*weights[iQuad]; // /normVector[iInput];
+            // std::cout << scalingFactor << std::endl;
+            mpsToAdd.scaleByScalar(scalingFactor);
+            if (iQuad == 0) {
+              mpsTransformed[std::make_pair(iOutput, iInput)] = mpsToAdd;
+            }
+            else {
+              if (std::abs(scalingFactor) > thresholdForRank_) {
+                if (truncEach)
+                  mpsTransformed[std::make_pair(iOutput, iInput)] = joinAndTruncate(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd, mMax);
+                else
+                  mpsTransformed[std::make_pair(iOutput, iInput)] = join(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd);
+              }
             }
           }
+          if (!truncEach)
+            mpsTransformed[std::make_pair(iOutput, iInput)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, iInput)], mMax, thresholdForRank_);
         }
-        if (!truncEach)
-          mpsTransformed[std::make_pair(iOutput, iInput)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, iInput)], mMax, 1.0E-16);
       }
     }
     //#pragma omp parallel for
     for (int iOutput = 0; iOutput < rank; iOutput++) {
-      result->operator[](iOutput) = mpsTransformed[std::make_pair(iOutput, 0)];
-      for (int iInput = 1; iInput < nStates; iInput++) {
-        if (truncEach)
-          result->operator[](iOutput) = joinAndTruncate(result->operator[](iOutput), mpsTransformed[std::make_pair(iOutput, iInput)], mMax);
+      // Finds the first non-zero MPSs
+      bool found=false;
+      int iFirstInput = 0;
+      while (!found) {
+        auto position = mpsTransformed.find(std::make_pair(iOutput, iFirstInput));
+        if (position != mpsTransformed.end())
+          found = true;
         else
-          result->operator[](iOutput) = join(result->operator[](iOutput), mpsTransformed[std::make_pair(iOutput, iInput)]);
+          iFirstInput += 1;
       }
+      result->operator[](iOutput) = mpsTransformed[std::make_pair(iOutput, iFirstInput)];
+      for (int iInput = iFirstInput+1; iInput < nStates; iInput++) {
+        auto key = std::make_pair(iOutput, iInput);
+        if (mpsTransformed.find(key) != mpsTransformed.end()) {
+          if (truncEach)
+            result->operator[](iOutput) = joinAndTruncate(result->operator[](iOutput), mpsTransformed[key], mMax);
+          else
+            result->operator[](iOutput) = join(result->operator[](iOutput), mpsTransformed[key]);
+        }
+      }
+      result->operator[](iOutput).normalize_right();
       if (!truncEach)
         result->operator[](iOutput) = compression::l2r_compress(result->operator[](iOutput), mMax, 1.0E-16);
       truncatedEnergy[iOutput] = maquis::real(expval(result->operator[](iOutput), mpo)/norm(result->operator[](iOutput)));

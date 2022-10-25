@@ -108,7 +108,7 @@ public:
   inline void updateLeftBoundary(int iSite) {
     if (iSite > 0 && iSite <= L_) {
       Storage::drop(left_[iSite]);
-      std::cout << " Updating left boundary for site " << iSite << std::endl;
+      // std::cout << " Updating left boundary for site " << iSite << std::endl;
       left_[iSite] = Contraction::overlap_mpo_left_step(mps_[iSite-1], mps_[iSite-1],
                                                         left_[iSite-1], mpo_[iSite-1]);
       Storage::StoreToFile(left_[iSite-1]);
@@ -126,7 +126,7 @@ public:
   inline void updateRightBoundary(int iSite) {
     if (iSite >= 0 && iSite < L_) {
       Storage::drop(right_[iSite]);
-      std::cout << " Updating right boundary for site " << iSite << std::endl;
+      // std::cout << " Updating right boundary for site " << iSite << std::endl;
       right_[iSite] = Contraction::overlap_mpo_right_step(mps_[iSite], mps_[iSite],
                                                           right_[iSite+1], mpo_[iSite]);
       Storage::StoreToFile(right_[iSite+1]);

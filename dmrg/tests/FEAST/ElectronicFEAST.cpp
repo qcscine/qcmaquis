@@ -153,47 +153,48 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H
 
  #ifdef HAVE_TwoU1PG
 
-// /** @brief Test FEAST wit two guesses */
-// BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
-// {
-//   // Generic data
-//   using ComplexType = std::complex<double>;
-//   auto refEnergyGS = -7.904357504731657;
-//   // Generic parameters
-//   parametersLiH.set("max_bond_dimension", 50);
-//   parametersLiH.set("optimization", "twosite");
-//   parametersLiH.set("symmetry", "2u1pg");
-//   parametersLiH.set("seed", 4);
-//   parametersLiH.set("nsweeps", 5);
-//   parametersLiH.set("nmainsweeps", 2);
-//   parametersLiH.set("ngrowsweeps", 2);
-//   parametersLiH.set("truncation_initial", 1.0E-30);
-//   parametersLiH.set("truncation_final", 1.0E-30);
-//   parametersLiH.set("linsystem_exact_error", "yes");
-//   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
-//   // parametersLiH.set("linsystem_precond", "yes");
-//   parametersLiH.set("linsystem_init", "last");
-//   parametersLiH.set("linsystem_max_it", 1);
-//   parametersLiH.set("linsystem_tol", 1.0E-10);
-//   parametersLiH.set("linsystem_krylov_dim", 50);
-//   parametersLiH.set("linsystem_exact_error", "yes");
-//   // FEAST parameters
-//   parametersLiH.set("feast_max_iter", 2);
-//   parametersLiH.set("feast_num_points", 8);
-//   parametersLiH.set("feast_init_type", "default");
-//   parametersLiH.set("feast_overlap_convergence_threshold", 1.0E-5);
-//   parametersLiH.set("feast_energy_convergence_threshold", 1.0E-6);
-//   // Note that the interval includes two states, but we use three guesses.
-//   parametersLiH.set("feast_emin", refEnergyGS-0.001);
-//   parametersLiH.set("feast_emax", refEnergyGS+0.001);
-//   parametersLiH.set("feast_num_states", 2);
-//   parametersLiH.set("feast_calculate_standard_deviation", "yes");
-//   // Constructs the interface and runs FEAST
-//   maquis::DMRGInterface<ComplexType> interfaceFEASTGS(parametersLiH);
-//   interfaceFEASTGS.runFEAST();
-//   auto energyGS = maquis::real(interfaceFEASTGS.energyFEAST(0));
-//   BOOST_CHECK_CLOSE(energyGS, refEnergyGS, 1.0E-10);
-// }
+/** @brief Test FEAST wit two guesses */
+BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
+{
+  // Generic data
+  using ComplexType = std::complex<double>;
+  auto refEnergyGS = -7.904357504731657;
+  // Generic parameters
+  parametersLiH.set("max_bond_dimension", 50);
+  parametersLiH.set("optimization", "twosite");
+  parametersLiH.set("symmetry", "2u1pg");
+  parametersLiH.set("seed", 4);
+  parametersLiH.set("nsweeps", 5);
+  parametersLiH.set("nmainsweeps", 2);
+  parametersLiH.set("ngrowsweeps", 2);
+  parametersLiH.set("truncation_initial", 1.0E-30);
+  parametersLiH.set("truncation_final", 1.0E-30);
+  parametersLiH.set("linsystem_exact_error", "yes");
+  // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
+  // parametersLiH.set("linsystem_precond", "yes");
+  parametersLiH.set("linsystem_init", "last");
+  parametersLiH.set("linsystem_max_it", 1);
+  parametersLiH.set("linsystem_tol", 1.0E-10);
+  parametersLiH.set("linsystem_krylov_dim", 50);
+  parametersLiH.set("linsystem_exact_error", "yes");
+  parametersLiH.set("linsystem_verbose", "no");
+  // FEAST parameters
+  parametersLiH.set("feast_max_iter", 2);
+  parametersLiH.set("feast_num_points", 8);
+  parametersLiH.set("feast_init_type", "default");
+  parametersLiH.set("feast_overlap_convergence_threshold", 1.0E-5);
+  parametersLiH.set("feast_energy_convergence_threshold", 1.0E-6);
+  // Note that the interval includes two states, but we use three guesses.
+  parametersLiH.set("feast_emin", refEnergyGS-0.001);
+  parametersLiH.set("feast_emax", refEnergyGS+0.001);
+  parametersLiH.set("feast_num_states", 2);
+  parametersLiH.set("feast_calculate_standard_deviation", "yes");
+  // Constructs the interface and runs FEAST
+  maquis::DMRGInterface<ComplexType> interfaceFEASTGS(parametersLiH);
+  interfaceFEASTGS.runFEAST();
+  auto energyGS = maquis::real(interfaceFEASTGS.energyFEAST(0));
+  BOOST_CHECK_CLOSE(energyGS, refEnergyGS, 1.0E-10);
+}
 
 #endif // HAVE_TwoU1PG
 

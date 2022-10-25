@@ -72,6 +72,7 @@ public:
   using Base::runSweepSimulation;
   using Base::siteLeft_;
   using Base::siteRight_;
+  using Base::verbose_;
 
   /** @brief Class constructor */
   SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
@@ -132,10 +133,11 @@ public:
   MPSTensorType solveLocalProblem() override final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_);
-    resultOfLocalSiteProblem_ = ls.res();
-    // mps[site] = res.second;
-    iterationResults_["Energy"] << resultOfLocalSiteProblem_.first + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
-    return resultOfLocalSiteProblem_.second;
+    auto resultOfLocalSiteProblem = ls.res();
+    iterationResults_["Energy"] << std::get<0>(resultOfLocalSiteProblem) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
+    energyPerMicroIter_.push_back(std::get<0>(resultOfLocalSiteProblem));
+    errorPerMicroIter_.push_back(std::get<1>(resultOfLocalSiteProblem));
+    return std::get<2>(resultOfLocalSiteProblem);
   }
 
   /** @brief Propagates the boundaries */
@@ -170,9 +172,11 @@ public:
       int mMax = parms_["max_bond_dimension"];
       auto error = LinSystemTraitClass<Matrix, SymmGroup>::calculateError(mpsContainer_.getMPS(), rhsMps_, mpoContainer_.getMPO(), shiftParameter_,
                                                                           model_, lattice_, model_.total_quantum_numbers(parms_), mMax);
-      maquis::cout << std::scientific << std::setprecision(16);
-      maquis::cout << " Exact error = " << error << std::endl;
-      maquis::cout << std::endl;
+      if (verbose_) {
+        maquis::cout << std::scientific << std::setprecision(16);
+        maquis::cout << " Exact error = " << error << std::endl;
+        maquis::cout << std::endl;
+      }
     }
   }
 
@@ -198,7 +202,7 @@ private:
   MPSTensorType rhs_;                                             // RHS of the local linear system (updated at each microiteration).
   std::unique_ptr<OverlapPropagatorType> overlapPropagator_;      // Object needed to store the partial MPS/MPS contraction
   std::shared_ptr<SiteProblemType> siteProblem_;                  // Site problem associated with the solution of the linear system.
-  std::pair<ValueType, MPSTensorType > resultOfLocalSiteProblem_; // TO CHECK IF NEEDED
+  std::vector<double> energyPerMicroIter_, errorPerMicroIter_;    // Backup of results along the propagation.
 };
 
 #endif // SWEEP_BASED_LINEAR_SYSTEM_H
