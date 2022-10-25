@@ -270,9 +270,9 @@ protected:
   void minres() {
     // Printing
     if (verbose_) {
-      maquis::cout << " --------------------------------- " << std::endl;
-      maquis::cout << " Iteration  | Rel. error estimate  " << std::endl;
-      maquis::cout << " --------------------------------- " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
     }
     // Sets up the initial value of all parameters.
     int iter = 0;
@@ -348,7 +348,8 @@ protected:
       R(3) = maquis::real(H(iter+1, iter));
       if (G2.isActivated())
         std::tie(R(1), R(2)) = G1.apply(R(1), R(2));
-      G1 = G2;
+      G1 = G2;      maquis::cout << " ------------------------------------- " << std::endl;
+
       G2 = GivensType(R(2), R(3));
       R(2) = G2.getR();
       R(3) = 0.0;
@@ -411,7 +412,7 @@ private:
   /** @brief Just prints a line for the table of the results */
   void printEndl() {
     if (verbose_) {
-      maquis::cout << " --------------------------------- " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
       maquis::cout << std::endl;
       maquis::cout << std::fixed;
     }
