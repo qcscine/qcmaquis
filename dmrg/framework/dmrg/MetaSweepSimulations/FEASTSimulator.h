@@ -94,7 +94,8 @@ public:
     this->generateComplexQuadrature();
     if (parameters["optimization"] == "twosite")
       isSingleSite = false;
-    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice, parameters);
+    postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice,
+                                                        parameters, eMin, eMax);
     resultContainer = std::make_shared<ResultContainerType>();
   }
 
@@ -150,12 +151,12 @@ public:
 
   /** @brief Getter for the MPS guesses */
   auto getCurrentEigenvalues() {
-    return feastMPSs;
+    return screenedMPSs;
   }
 
   /** @brief Getter for the MPS guesses */
   auto getCurrentEigenvalue(int iState) {
-    return feastMPSs->operator[](iState);
+    return screenedMPSs->operator[](iState);
   }
 
   /** @brief Getter for the quadrature points */
@@ -231,8 +232,9 @@ private:
     postProcessor->updateContainer(resultContainer);
     postProcessor->solveEigenvalueProblem(mpo_);
     feastMPSs = postProcessor->performBackTransformation(mpo_, mMax, truncateEach);
+    screenedMPSs = postProcessor->getScreenedMPSs();
     postProcessor->printResults();
-    energies = postProcessor->getEnergies();
+    energies = postProcessor->getScreenedEnergies();
     // Final update of the iteration counter
     currentIter += 1;
   }
@@ -349,7 +351,7 @@ private:
   std::string truncModality;                                     // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
   std::string initType;                                          // Initialization strategy for each guess.
   std::vector<MPSType> mpsGuess;                                 // Stores the current guess for hte FEAST procedure.
-  std::shared_ptr<std::vector<MPSType>> feastMPSs;               // Final, back-transformed FEAST MPSs
+  std::shared_ptr<std::vector<MPSType>> feastMPSs, screenedMPSs; // Final, back-transformed FEAST MPSs
   std::vector<int> seedForInit;                                  // Seed for random initialization.
   std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
   bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.

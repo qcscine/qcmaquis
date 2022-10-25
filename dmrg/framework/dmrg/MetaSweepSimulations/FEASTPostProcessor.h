@@ -38,6 +38,9 @@
 
 namespace FeastHelper {
 
+/** @brief Enum class representing whether a root is accepted or not */
+enum class EigenvalueSelection {Accepted, NotInInterval, HighVariance };
+
 /** @brief Class devoted to the post-processing of the FEAST data */
 template <class SymmGroup>
 class FEASTPostProcessor {
@@ -56,18 +59,24 @@ public:
   using DiagonalMatrixType = typename alps::numeric::associated_real_diagonal_matrix<ComplexMatrixType>::type;
   using ComplexVectorType = alps::numeric::vector<ComplexNumber>;
   using ResultContainerType = std::map<std::pair<int, int>, MPSType>;
+  using VectorOfMPSs = std::vector<MPSType>;
+  using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
 
   FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w, const ModelType& inputModel,
-                     const LatticeType& inputLattice, BaseParameters& parms)
-    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateStandardDeviation(false)
+                     const LatticeType& inputLattice, BaseParameters& parms_, double eMin_, double eMax_)
+    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateStandardDeviation(false),
+      eMin(eMin_), eMax(eMax_), parms(parms_), screenedEnergies()
   {
     energies = std::vector<double>(nStates, 0);
     energiesPrev = std::vector<double>(nStates, 0);
     truncatedEnergy = std::vector<double>(nStates, 0);
     standardDeviations = std::vector<double>(nStates, 0);
+    accepted = std::vector<EigenvalueSelection>(nStates, EigenvalueSelection::Accepted);
     totalQN = model.total_quantum_numbers(parms);
-    if (parms["feast_calculate_standard_deviation"] == "yes")
-      calculateStandardDeviation = true;
+    calculateStandardDeviation = (parms["feast_calculate_standard_deviation"] == "yes");
+    screenStandardDeviation = parms.is_set("feast_standard_deviation_threshold");
+    if (screenStandardDeviation)
+      standardDeviationScreening = parms["feast_standard_deviation_threshold"].as<double>();
   }
 
   /** @brief Updates teh mps container */
@@ -118,32 +127,31 @@ public:
     //   }
     // }
     // == Matrix diagonalization ==
-    // QR of the overlap
     auto zeroComplex = ComplexNumber(0., 0.);
     ComplexMatrixType leftEigenVectors(nStates, nStates, zeroComplex), rightEigenVectors(nStates, nStates, zeroComplex);
     ComplexVectorType alphaVec(nStates, 0.), betaVec(nStates, zeroComplex);
     alps::numeric::ggev(H, B, alphaVec, betaVec, leftEigenVectors, rightEigenVectors, thresholdForRank_);
-    // maquis::cout << " Left eigenvectors" << std::endl;
-    // maquis::cout << leftEigenVectors << std::endl;
-    // maquis::cout << " Right eigenvectors" << std::endl;
-    // maquis::cout << rightEigenVectors << std::endl;
+    // // Calculates the overlap in the right eigenvectors basis
+    // ComplexMatrixType overlapEigenvectorBasis(nStates, nStates);
+    // gemm(adjoint(rightEigenVectors), rightEigenVectors, overlapEigenvectorBasis);
+    // RealVectorType overlapEigenValues(nStates);
+    // heev(overlapEigenvectorBasis, overlapEigenValues);
+    // std::cout << overlapEigenValues << std::endl;
     // Retrieves energies
     energiesPrev = energies;
-    int rank = 0;
     for (int iState = 0; iState < nStates; iState++) {
       if (std::imag(alphaVec[iState]) > 1.0E-10 || std::imag(betaVec[iState]) > 1.0E-10)
         maquis::cout << " WARNING: Energy of the " << iState << "-th state has a non-negligible imaginary part" << std::endl;
       if (std::abs(betaVec[iState]) > thresholdForRank_) {
         energies[iState] = maquis::real(alphaVec[iState]/betaVec[iState]);
-        rank += 1;
+        accepted[iState] = (energies[iState] > eMin && energies[iState] < eMax) ? EigenvalueSelection::Accepted
+                                                                                : EigenvalueSelection::NotInInterval;
       }
       else {
         energies[iState] = 0.;
+        accepted[iState] = EigenvalueSelection::NotInInterval;
       }
     }
-    // Prints out rank
-    maquis::cout << " Number of linearly independent FEAST basis vectors: " << rank << std::endl;
-    maquis::cout << std::endl;
     // Final copy of the eigenvectors
     feastEigenVectors = rightEigenVectors;
   };
@@ -161,77 +169,99 @@ public:
     // Generates the MPS files for the new FEAST iteration
     // using MatrixOfMPSs = Eigen::Matrix< MPS<cMatrix, SymmGroup>, -1, -1>;
     // MatrixOfMPSs mps_transf(n_states, n_states);
-    using VectorOfMPSs = std::vector<MPSType>;
-    using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
     MatrixOfMPSs mpsTransformed;
     // Variable definition
-    int rank = energies.size();
     auto refNorm = ietl::two_norm(mpsContainer->begin()->second[0]);
-    auto result = std::make_shared<VectorOfMPSs>(rank);
+    currentFEASTMPSs = std::make_shared<VectorOfMPSs>(nStates);
     for (auto& iMPS: *mpsContainer)
       iMPS.second[0] /= refNorm;
-    //#pragma omp parallel for collapse(2)
     // Actual back-transformation
-    for (int iOutput = 0; iOutput < rank; iOutput++) {
-      for (int iInput = 0; iInput < nStates; iInput++) {
-        // maquis::cout << "(" << iInput << "," << iOutput << ") = " << feastEigenVectors(iInput, iOutput) << std::endl;
-        if (std::abs(feastEigenVectors(iInput, iOutput)) > thresholdForRank_) {
-          for (int iQuad = 0; iQuad < nQuad; iQuad++) {
-            // maquis::cout << " - iQuad = " << weights[iQuad] << std::endl;
-            MPSType mpsToAdd = mpsContainer->operator[](std::make_pair(iInput, iQuad));
-            auto scalingFactor = feastEigenVectors(iInput, iOutput)*weights[iQuad]; // /normVector[iInput];
-            // std::cout << scalingFactor << std::endl;
-            mpsToAdd.scaleByScalar(scalingFactor);
-            if (iQuad == 0) {
-              mpsTransformed[std::make_pair(iOutput, iInput)] = mpsToAdd;
-            }
-            else {
-              if (std::abs(scalingFactor) > thresholdForRank_) {
-                if (truncEach)
-                  mpsTransformed[std::make_pair(iOutput, iInput)] = joinAndTruncate(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd, mMax);
-                else
-                  mpsTransformed[std::make_pair(iOutput, iInput)] = join(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd);
+    //#pragma omp parallel for collapse(2)
+    for (int iOutput = 0; iOutput < nStates; iOutput++) {
+      if (accepted[iOutput] == EigenvalueSelection::Accepted) {
+        for (int iInput = 0; iInput < nStates; iInput++) {
+          // maquis::cout << "(" << iInput << "," << iOutput << ") = " << feastEigenVectors(iInput, iOutput) << std::endl;
+          if (std::abs(feastEigenVectors(iInput, iOutput)) > thresholdForRank_) {
+            for (int iQuad = 0; iQuad < nQuad; iQuad++) {
+              // maquis::cout << " - iQuad = " << weights[iQuad] << std::endl;
+              MPSType mpsToAdd = mpsContainer->operator[](std::make_pair(iInput, iQuad));
+              auto scalingFactor = feastEigenVectors(iInput, iOutput)*weights[iQuad]; // /normVector[iInput];
+              // std::cout << scalingFactor << std::endl;
+              mpsToAdd.scaleByScalar(scalingFactor);
+              if (iQuad == 0) {
+                mpsTransformed[std::make_pair(iOutput, iInput)] = mpsToAdd;
+              }
+              else {
+                if (std::abs(scalingFactor) > thresholdForRank_) {
+                  if (truncEach)
+                    mpsTransformed[std::make_pair(iOutput, iInput)] = joinAndTruncate(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd, mMax);
+                  else
+                    mpsTransformed[std::make_pair(iOutput, iInput)] = join(mpsTransformed[std::make_pair(iOutput, iInput)], mpsToAdd);
+                }
               }
             }
+            if (!truncEach)
+              mpsTransformed[std::make_pair(iOutput, iInput)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, iInput)], mMax, thresholdForRank_);
           }
-          if (!truncEach)
-            mpsTransformed[std::make_pair(iOutput, iInput)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, iInput)], mMax, thresholdForRank_);
         }
       }
     }
     //#pragma omp parallel for
-    for (int iOutput = 0; iOutput < rank; iOutput++) {
-      // Finds the first non-zero MPSs
-      bool found=false;
-      int iFirstInput = 0;
-      while (!found) {
-        auto position = mpsTransformed.find(std::make_pair(iOutput, iFirstInput));
-        if (position != mpsTransformed.end())
-          found = true;
-        else
-          iFirstInput += 1;
-      }
-      result->operator[](iOutput) = mpsTransformed[std::make_pair(iOutput, iFirstInput)];
-      for (int iInput = iFirstInput+1; iInput < nStates; iInput++) {
-        auto key = std::make_pair(iOutput, iInput);
-        if (mpsTransformed.find(key) != mpsTransformed.end()) {
-          if (truncEach)
-            result->operator[](iOutput) = joinAndTruncate(result->operator[](iOutput), mpsTransformed[key], mMax);
+    for (int iOutput = 0; iOutput < nStates; iOutput++) {
+      // If the state has been accepted,
+      if (accepted[iOutput] == EigenvalueSelection::Accepted) {
+        // Finds the first non-zero MPSs
+        bool found=false;
+        int iFirstInput = 0;
+        while (!found) {
+          auto position = mpsTransformed.find(std::make_pair(iOutput, iFirstInput));
+          if (position != mpsTransformed.end())
+            found = true;
           else
-            result->operator[](iOutput) = join(result->operator[](iOutput), mpsTransformed[key]);
+            iFirstInput += 1;
+        }
+        currentFEASTMPSs->operator[](iOutput) = mpsTransformed[std::make_pair(iOutput, iFirstInput)];
+        for (int iInput = iFirstInput+1; iInput < nStates; iInput++) {
+          auto key = std::make_pair(iOutput, iInput);
+          if (mpsTransformed.find(key) != mpsTransformed.end()) {
+            if (truncEach)
+              currentFEASTMPSs->operator[](iOutput) = joinAndTruncate(currentFEASTMPSs->operator[](iOutput), mpsTransformed[key], mMax);
+            else
+              currentFEASTMPSs->operator[](iOutput) = join(currentFEASTMPSs->operator[](iOutput), mpsTransformed[key]);
+          }
+        }
+        currentFEASTMPSs->operator[](iOutput).normalize_right();
+        if (!truncEach)
+          currentFEASTMPSs->operator[](iOutput) = compression::l2r_compress(currentFEASTMPSs->operator[](iOutput), mMax, 1.0E-16);
+        truncatedEnergy[iOutput] = maquis::real(expval(currentFEASTMPSs->operator[](iOutput), mpo)/norm(currentFEASTMPSs->operator[](iOutput)));
+        // If requested, calculates the standard deviations
+        if (calculateStandardDeviation) {
+          for (int iState = 0; iState < standardDeviations.size(); iState++)
+            standardDeviations[iState] = this->getStandardDeviation(mpo, currentFEASTMPSs->operator[](iState), mMax);
         }
       }
-      result->operator[](iOutput).normalize_right();
-      if (!truncEach)
-        result->operator[](iOutput) = compression::l2r_compress(result->operator[](iOutput), mMax, 1.0E-16);
-      truncatedEnergy[iOutput] = maquis::real(expval(result->operator[](iOutput), mpo)/norm(result->operator[](iOutput)));
+      // If the state has not been accepted, just regenerates a random vector
+      else {
+        currentFEASTMPSs->operator[](iOutput) = generateRandomMPS();
+        currentFEASTMPSs->operator[](iOutput).normalize_right();
+      }
     }
-    // If requested, calculates the standard deviations
-    if (calculateStandardDeviation) {
-      for (int iState = 0; iState < standardDeviations.size(); iState++)
-        standardDeviations[iState] = this->getStandardDeviation(mpo, result->operator[](iState), mMax);
+    // If a variance-based screening has been requested, overrides again with a random value
+    if (screenStandardDeviation && calculateStandardDeviation) {
+      for (int iState = 0; iState < nStates; iState++) {
+        if (std::abs(standardDeviations[iState]) > standardDeviationScreening && accepted[iState] == EigenvalueSelection::Accepted) {
+          accepted[iState] = EigenvalueSelection::HighVariance;
+          currentFEASTMPSs->operator[](iState) = generateRandomMPS();
+          currentFEASTMPSs->operator[](iState).normalize_right();
+        }
+      }
     }
-    return result;
+    // Finalizes
+    screenedEnergies.clear();
+    for (int iState = 0; iState < energies.size(); iState++)
+      if (accepted[iState] == EigenvalueSelection::Accepted)
+        screenedEnergies.push_back(energies[iState]);
+    return currentFEASTMPSs;
   }
 
   /** @brief Prints the results of the FEAST calculation */
@@ -239,12 +269,30 @@ public:
     maquis::cout << " +----------------------------------------------------------+----------------------+" << std::endl;
     maquis::cout << " |   State    |      Old energy      |      New energy      |   Truncated energy   |" << std::endl;
     maquis::cout << " +----------------------------------------------------------+----------------------+" << std::endl;
-    for (int iState = 0; iState < energies.size(); iState++)
-        maquis::cout << std::setw(13) << std::internal << iState
-                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
-                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
-                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << truncatedEnergy[iState]
-                     << std::endl;
+    for (int iState = 0; iState < energies.size(); iState++) {
+      switch (accepted[iState]) {
+        case EigenvalueSelection::Accepted:
+          maquis::cout << std::setw(13) << std::internal << iState
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << truncatedEnergy[iState]
+                       << "  --> ROOT ACCEPTED";
+          break;
+        case EigenvalueSelection::NotInInterval:
+          maquis::cout << std::setw(13) << std::internal << iState
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
+                       << "          #########      --> ROOT NOT ACCEPTED: energy outside boundary";
+          break;
+        case EigenvalueSelection::HighVariance:
+          maquis::cout << std::setw(13) << std::internal << iState
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
+                       << "          #########      --> ROOT NOT ACCEPTED: variance too high";
+          break;
+      }
+      maquis::cout << std::endl;
+    }
     maquis::cout << " +---------------------------------------------------------------------------------+" << std::endl;
     maquis::cout << std::endl;
     // If requested, prints also the standard deviations
@@ -267,6 +315,20 @@ public:
     return energies;
   }
 
+  /** @brief Getter for the vibrational energy */
+  auto getScreenedEnergies() const {
+    return screenedEnergies;
+  }
+
+  /** @brief Getter for the screened MPSs */
+  auto getScreenedMPSs() const {
+    auto screenedMPS = std::make_shared<VectorOfMPSs>();
+    for (int iState = 0; iState < currentFEASTMPSs->size(); iState++)
+      if (accepted[iState] == EigenvalueSelection::Accepted)
+        screenedMPS->push_back(currentFEASTMPSs->operator[](iState));
+    return screenedMPS;
+  }
+
   /** @brief Gets the overall energy variation */
   auto getOverallEnergyVariation() const {
     auto overallSum = std::accumulate(energies.begin(), energies.end(), 0.);
@@ -275,6 +337,14 @@ public:
   }
 
 private:
+
+  /** @brief Generates a random MPS */
+  auto generateRandomMPS() {
+    auto tmpParms = parms;
+    tmpParms.set("init_state", "default");
+    tmpParms.set("seed", std::rand());
+    return MPSType(lattice.size(), *(model.initializer(lattice, tmpParms)));
+  }
 
   /** @brief Static method to calculate determinant */
   static ComplexNumber calculateDeterminant(ComplexMatrixType inputMatrix) {
@@ -302,18 +372,23 @@ private:
   }
 
   // -- Class members --
-  std::shared_ptr<ResultContainerType> mpsContainer;                     // Data structure storing the result of the FEAST linear systems.
-  int nStates, nQuad;                                                    // FEAST-specific integer parameters.
-  std::vector<double> energies, energiesPrev;                            // FEAST-specific double parameters.
-  std::vector<double> truncatedEnergy, standardDeviations;               // FEAST-specific double parameters for checks.
-  ComplexMatrixType feastEigenVectors;                                   // FEAST --> eigenvalues transformation matrix.
-  static constexpr int thresholdForRank_ = 1.0E-10;                      // Threshold for rank.
-  RealVectorType eigenValues;                                            // FEAST Eigenvalues
-  std::vector<ComplexNumber> weights;                                    // Quadrature weights.
-  const ModelType& model;                                                // DMRG model.
-  const LatticeType& lattice;                                            // DMRG lattice.
-  ChargeType totalQN;                                                    // Overall quantum number associated with the target MPS.
-  bool calculateStandardDeviation;                                       // If true, calculates the standard deviation for each FEAST state.
+  BaseParameters& parms;                                         // Parameter container
+  std::shared_ptr<ResultContainerType> mpsContainer;             // Data structure storing the result of the FEAST linear systems.
+  int nStates, nQuad;                                            // FEAST-specific integer parameters.
+  std::vector<double> energies, energiesPrev, screenedEnergies;  // FEAST-specific double parameters.
+  std::vector<EigenvalueSelection> accepted;                     // Eigenpairs that are accepted.
+  std::vector<double> truncatedEnergy, standardDeviations;       // FEAST-specific double parameters for checks.
+  ComplexMatrixType feastEigenVectors;                           // FEAST --> eigenvalues transformation matrix.
+  static constexpr int thresholdForRank_ = 1.0E-10;              // Threshold for rank.
+  RealVectorType eigenValues;                                    // FEAST Eigenvalues
+  std::vector<ComplexNumber> weights;                            // Quadrature weights.
+  const ModelType& model;                                        // DMRG model.
+  const LatticeType& lattice;                                    // DMRG lattice.
+  ChargeType totalQN;                                            // Overall quantum number associated with the target MPS.
+  bool calculateStandardDeviation, screenStandardDeviation;      // If true, calculates the standard deviation for each FEAST state.
+  double eMin, eMax;                                             // FEAST integration boundaries.
+  double standardDeviationScreening;                             // Screening parameter for the standard deviation
+  std::shared_ptr<VectorOfMPSs> currentFEASTMPSs;                // Current approximation to the FEAST eigenvalues;
 };
 
 } // namespace FeastHelper
