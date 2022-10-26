@@ -192,7 +192,7 @@ private:
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           maquis::cout << std::endl;
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
-          maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
+          // maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
           //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
@@ -211,7 +211,7 @@ private:
       else {
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
-          maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
+          // maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
           //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
           auto mpsTmp = mpsGuess[iGuess];
           auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
