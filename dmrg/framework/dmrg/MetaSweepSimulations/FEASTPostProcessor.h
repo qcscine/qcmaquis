@@ -235,10 +235,8 @@ public:
           currentFEASTMPSs->operator[](iOutput) = compression::l2r_compress(currentFEASTMPSs->operator[](iOutput), mMax, 1.0E-16);
         truncatedEnergy[iOutput] = maquis::real(expval(currentFEASTMPSs->operator[](iOutput), mpo)/norm(currentFEASTMPSs->operator[](iOutput)));
         // If requested, calculates the standard deviations
-        if (calculateStandardDeviation) {
-          for (int iState = 0; iState < standardDeviations.size(); iState++)
-            standardDeviations[iState] = this->getStandardDeviation(mpo, currentFEASTMPSs->operator[](iState), mMax);
-        }
+        if (calculateStandardDeviation)
+          standardDeviations[iOutput] = this->getStandardDeviation(mpo, currentFEASTMPSs->operator[](iOutput), mMax);
       }
       // If the state has not been accepted, just regenerates a random vector
       else {
@@ -301,9 +299,14 @@ public:
       maquis::cout << " |   State    |    Energy standard deviation   |" << std::endl;
       maquis::cout << " +---------------------------------------------+" << std::endl;
       for (int iState = 0; iState < energies.size(); iState++) {
-        maquis::cout << std::setw(13) << std::internal << iState
-                     << std::setw(23) << std::right << std::fixed << std::setprecision(8) << standardDeviations[iState]
-                     << std::endl;
+        if (accepted[iState] == EigenvalueSelection::Accepted) {
+          maquis::cout << std::setw(13) << std::internal << iState
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << standardDeviations[iState]
+                       << std::endl;
+        } else {
+          maquis::cout << std::setw(13) << std::internal << iState
+            << "             #########             --> ROOT NOT ACCEPTED: variance not calculated" << std::endl;
+        }
       }
       maquis::cout << " +---------------------------------------------+" << std::endl;
       maquis::cout << std::endl;
