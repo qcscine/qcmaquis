@@ -104,7 +104,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
   auto linearSolver = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond, true);
   auto result = linearSolver.res();
   // First check: since H*psi = E*psi, and we set rhs=psi, the solution to the linear system should be the inverse of the energy.
-  auto norm = 1./ietl::two_norm(result.second);
+  auto norm = 1./ietl::two_norm(std::get<2>(result));
   BOOST_CHECK_CLOSE(norm, referenceHarmonicEnergy, 1.0E-8);
 #endif // HAVE_TrivialGroup
 }
@@ -171,7 +171,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   auto zShift = std::complex<double>(392., -521.);
   auto linearSolver = LinSolver(siteProblem, firstMPS[0], rhs, zShift, parametersBilinearly, precond, true);
   auto result = linearSolver.res();
-  firstMPS[0] = result.second;
+  firstMPS[0] = std::get<2>(result);
   std::complex<double> lhsTerm = expval(firstMPS, mpo)-zShift*overlap(firstMPS, firstMPS);
   std::complex<double> rhsTerm = overlap(firstMPS, secondMPS);
   BOOST_CHECK_CLOSE(std::abs(lhsTerm), std::abs(rhsTerm), 1.0E-10);
