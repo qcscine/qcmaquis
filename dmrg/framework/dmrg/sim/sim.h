@@ -66,7 +66,7 @@ protected:
     measurements_type iteration_measurements(int sweep);
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
-    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
+    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&, std::string filename = "");
 
 protected:
     DmrgParameters& parms;

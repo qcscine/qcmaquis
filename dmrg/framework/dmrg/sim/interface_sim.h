@@ -105,6 +105,20 @@ public:
     catch (std::exception& e) {
       throw;
     }
+    if (feastMPSs_) {
+      for (int iState = 0; iState < feastMPSs_->size(); ++iState) {
+        std::string filename = "FEAST_" + std::to_string(iState);
+        checkpoint_simulation(feastMPSs_->operator[](iState), -1, -1, filename);
+      }
+    }
+    if (parms.is_set("resultfile")) {
+      std::string rfile =  parms["resultfile"].str();   
+      if (!rfile.empty()) {
+        storage::archive ar(rfile, "w");
+        ar["/parameters"] << parms;
+        ar["/version"] << DMRG_VERSION_STRING;
+      }
+    }
   }
 
   // TO BE REACTIVATED AS SOON AS THE TIME EVOLUTION IS INCLUDED IN THE GENERIC SWEEP-BASED ENGINE
@@ -313,7 +327,7 @@ public:
         last_sweep_ = sweep;
         bool stopped = stop_callback();
         if (stopped || (sweep + 1) % chkp_each == 0 || (sweep + 1) == parms["nsweeps"])
-            checkpoint_simulation(mps, sweep, -1);
+          checkpoint_simulation(mps, sweep, -1);
         if (stopped)
             break;
       }
@@ -552,11 +566,11 @@ private:
   }
 
   /** @brief Dumps the simulation results to the checkpoint file */
-  void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site) {
+  void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site, std::string filename = "") {
     status_type status;
     status["sweep"] = sweep;
     status["site"]  = site;
-    return base::checkpoint_simulation(state, status);
+    return base::checkpoint_simulation(state, status, filename);
   }
 
   // +-- Class members --+

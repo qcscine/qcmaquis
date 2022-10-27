@@ -216,15 +216,20 @@ sim<Matrix, SymmGroup>::~sim()
 }
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
-{
-    if (!dns && !chkpfile.empty()) {
+void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status, std::string filename)
+{   
+    std::string chkpfilename;
+    if (filename.empty())
+        chkpfilename = chkpfile;
+    else
+        chkpfilename = chkpfile + "_" + filename;
+    if (!dns && !chkpfilename.empty()) {
         /// save state to chkp dir
-        save(chkpfile, state);
+        save(chkpfilename, state);
 
         /// save status
         if(!parallel::master()) return;
-        storage::archive ar(chkpfile+"/props.h5", "w");
+        storage::archive ar(chkpfilename+"/props.h5", "w");
         ar["/status"] << status;
     }
 }
