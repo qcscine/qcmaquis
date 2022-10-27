@@ -306,7 +306,7 @@ inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string 
     /// Load parameters
     std::ifstream param_file(parms_fname.c_str());
     if (!param_file)
-        throw std::runtime_error("Could not open parameter file.");
+        throw std::runtime_error("Could not open parameter file " + parms_fname);
     DmrgParameters parms(param_file);
 
     /// Load model parameters from second input (if needed)
