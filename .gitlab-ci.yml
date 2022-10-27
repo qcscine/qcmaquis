@@ -33,7 +33,7 @@ testElectronic:
     - default_docker
   script:
     - cd buildElectronic
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
 # Relativistic electronic-structure tests
 
@@ -59,7 +59,7 @@ testRelativistic:
     - default_docker
   script:
     - cd buildRelativistic
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
 # Non-electronic-structure tests
 
@@ -85,7 +85,7 @@ testPreBO:
     - default_docker
   script:
     - cd buildNU1
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
 buildVibrationalHamiltonians:
   stage: buildFinal
@@ -109,7 +109,7 @@ testVibrationalHamiltonians:
     - default_docker
   script:
     - cd buildVibrational
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
 buildVibronicHamiltonians:
   stage: buildFinal
@@ -133,7 +133,7 @@ testVibronicHamiltonians:
     - default_docker
   script:
     - cd buildVibronic
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j4
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
 # Pipeline for the TD-DMRG case
 
@@ -158,7 +158,7 @@ testTDConventional:
     - default_docker
   script:
     - cd buildTDConventional
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
 build-TD-with-all-symmetries:
   stage: buildAdvanced
@@ -182,4 +182,4 @@ testTDAllSymmetries:
     - default_docker
   script:
     - cd buildTDAllSymmetries
-    - make CTEST_OUTPUT_ON_FAILURE=1 test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test

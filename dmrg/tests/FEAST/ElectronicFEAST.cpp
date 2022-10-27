@@ -198,24 +198,29 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
 
 #endif // HAVE_TwoU1PG
 
-/** @brief Test FEAST on Benzene with two guesses and an interval comprising 1 state */
+/** 
+ * @brief Test FEAST on Benzene with two guesses and an interval comprising 1 state 
+ * Note that the threshold used in the test is rather high (1.0E-5) because we use 
+ * a bond dimension (50) which does not allow to match precisely the reference energy,
+ * which was obtained from a fully converged DMRG calculation.
+ */
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture)
 {
   // Generic data
   using ComplexType = std::complex<double>;
   auto referenceEnergy = -230.7555388354673;
   // Generic parameters
-  parametersBenzene.set("max_bond_dimension", 100);
+  parametersBenzene.set("max_bond_dimension", 50);
   parametersBenzene.set("optimization", "twosite");
   parametersBenzene.set("seed", 42);
-  parametersBenzene.set("nsweeps", 3);
+  parametersBenzene.set("nsweeps", 2);
   parametersBenzene.set("truncation_initial", 1.0E-30);
   parametersBenzene.set("truncation_final", 1.0E-30);
-  parametersBenzene.set("linsystem_exact_error", "yes");
+  // parametersBenzene.set("linsystem_exact_error", "yes");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
-  parametersBenzene.set("linsystem_tol", 1.0E-10);
+  parametersBenzene.set("linsystem_tol", 1.0E-8);
   parametersBenzene.set("linsystem_krylov_dim", 10);
   // FEAST parameters
   parametersBenzene.set("feast_max_iter", 2);
@@ -237,7 +242,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   maquis::DMRGInterface<ComplexType> interfaceBenzene(parametersBenzene);
   interfaceBenzene.runFEAST();
   auto energy1 = maquis::real(interfaceBenzene.energyFEAST(0));
-  BOOST_CHECK_CLOSE(energy1, referenceEnergy, 1.0E-8);
+  BOOST_CHECK_CLOSE(energy1, referenceEnergy, 1.0E-5);
 #endif // HAVE_TwoU1
   // Does the same for the point group case
 #ifdef HAVE_TwoU1PG
@@ -245,7 +250,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   maquis::DMRGInterface<ComplexType> interfaceBenzenePointGroup(parametersBenzene);
   interfaceBenzenePointGroup.runFEAST();
   auto energy2 = maquis::real(interfaceBenzenePointGroup.energyFEAST(0));
-  BOOST_CHECK_CLOSE(energy2, referenceEnergy, 1.0E-8);
+  BOOST_CHECK_CLOSE(energy2, referenceEnergy, 1.0E-5);
 #endif // HAVE_TwoU1PG
 }
 
@@ -253,6 +258,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
  * @brief Test FEAST on Benzene with 3 guesses and an interval comprising 2 states.
  * Note that, to differentiate the test compared to the previous test case, we use
  * the symmetry-adapted code.
+ * Note that, as for the test above, the check threshold is low because -- to keep
+ * the test short -- we use a relatively low value for the bond dimension.
  */
 BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixture)
 {
@@ -261,20 +268,20 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   auto referenceEnergy0 = -230.7555388354674;
   auto referenceEnergy1 = -230.4936880170761;
   // Generic parameters
-  parametersBenzene.set("max_bond_dimension", 200);
+  parametersBenzene.set("max_bond_dimension", 50);
   parametersBenzene.set("optimization", "twosite");
   parametersBenzene.set("seed", 42);
-  parametersBenzene.set("nsweeps", 3);
+  parametersBenzene.set("nsweeps", 2);
   parametersBenzene.set("truncation_initial", 1.0E-30);
   parametersBenzene.set("truncation_final", 1.0E-30);
   parametersBenzene.set("linsystem_exact_error", "no");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
-  parametersBenzene.set("linsystem_tol", 1.0E-15);
+  parametersBenzene.set("linsystem_tol", 1.0E-8);
   parametersBenzene.set("linsystem_krylov_dim", 10);
   // FEAST parameters
-  parametersBenzene.set("feast_max_iter", 5);
+  parametersBenzene.set("feast_max_iter", 2);
   parametersBenzene.set("feast_num_points", 8);
   parametersBenzene.set("feast_init_type", "default");
   // parametersBenzene.set("feast_init_onv", "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
@@ -283,7 +290,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   // Note that the interval includes two states, but we use three guesses.
   parametersBenzene.set("feast_emin", -230.80);
   parametersBenzene.set("feast_emax", -230.48);
-  parametersBenzene.set("feast_num_states", 4);
+  parametersBenzene.set("feast_num_states", 3);
 #ifdef HAVE_SU2U1
   // Constructs the interface and runs FEAST.
   // Only one state is included in the interval.
