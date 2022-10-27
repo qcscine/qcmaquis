@@ -59,14 +59,24 @@ int main(int argc, char ** argv)
             throw std::runtime_error("This app supports only vibrational Hamiltonians");
         maquis::cout.precision(10);
         maquis::cout << "---------------------- VIBRATIONAL SRCAS ----------------------" << std::endl << std::endl;
-        // Creates the simulation object
-        using ScalarType = double;
-        using InterfaceType = maquis::DMRGInterface<ScalarType>;
-        std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
-        SRCAS<ScalarType> srcas(opt.parms, interface);
-        srcas.printSRCASSettings();
-        srcas.run();
-        srcas.printResults();
+        // Creates the simulation object either with real or complex coefficients
+        if (opt.parms["COMPLEX"]) {
+            using ScalarType = std::complex<double>;
+            using InterfaceType = maquis::DMRGInterface<ScalarType>;
+            std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+            SRCAS<ScalarType> srcas(opt.parms, interface);
+            srcas.printSRCASSettings();
+            srcas.run();
+            srcas.printResults();
+        } else {
+            using ScalarType = double;
+            using InterfaceType = maquis::DMRGInterface<ScalarType>;
+            std::shared_ptr<InterfaceType> interface = std::make_shared<InterfaceType>(opt.parms);
+            SRCAS<ScalarType> srcas(opt.parms, interface);
+            srcas.printSRCASSettings();
+            srcas.run();
+            srcas.printResults();
+        }
     }
     else {
         throw std::runtime_error("Parameters in inputfile corrupted");
