@@ -108,16 +108,10 @@ public:
     if (feastMPSs_) {
       for (int iState = 0; iState < feastMPSs_->size(); ++iState) {
         std::string filename = "FEAST_" + std::to_string(iState);
-        checkpoint_simulation(feastMPSs_->operator[](iState), -1, -1, filename);
+        checkpoint_simulation(feastMPSs_->operator[](iState), 1, -1, filename);
+        dumpParameters(filename);
       }
-    }
-    if (parms.is_set("resultfile")) {
-      std::string rfile =  parms["resultfile"].str();   
-      if (!rfile.empty()) {
-        storage::archive ar(rfile, "w");
-        ar["/parameters"] << parms;
-        ar["/version"] << DMRG_VERSION_STRING;
-      }
+      dumpParametersAndIterResults(-1);
     }
   }
 
@@ -571,6 +565,18 @@ private:
     status["sweep"] = sweep;
     status["site"]  = site;
     return base::checkpoint_simulation(state, status, filename);
+  }
+
+  void dumpParameters(std::string filename = "") {
+    std::string chkpfilename;
+    if (filename.empty())
+      chkpfilename = base::chkpfile;
+    else
+      chkpfilename = base::chkpfile + "_" + filename;
+    if (!chkpfilename.empty()) {
+      storage::archive ar(chkpfilename+"/props.h5", "w");
+      ar["/parameters"] << parms;
+    }
   }
 
   // +-- Class members --+
