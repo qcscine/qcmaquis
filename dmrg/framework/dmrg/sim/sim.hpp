@@ -220,9 +220,9 @@ void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const&
 {   
     std::string chkpfilename;
     if (filename.empty())
-        chkpfilename = chkpfile;
+        chkpfilename = chkpfolder();
     else
-        chkpfilename = chkpfile + "_" + filename;
+        chkpfilename = chkpfolder() + "_" + filename;
     if (!dns && !chkpfilename.empty()) {
         /// save state to chkp dir
         save(chkpfilename, state);
