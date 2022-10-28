@@ -74,6 +74,12 @@ protected:
     bool restore;
     bool dns;
     std::string chkpfile;
+    std::string chkpfolder() const {
+        if (parms.is_set("chkpfile"))
+            return parms["chkpfile"].str();
+        else
+            return std::string();
+    }
     std::string rfile() const
     {
         if (parms.is_set("resultfile"))
