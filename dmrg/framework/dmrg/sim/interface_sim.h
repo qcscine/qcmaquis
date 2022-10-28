@@ -71,6 +71,7 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
   using base::init_sweep;
   using base::init_site;
   using base::rfile;
+  using base::chkpfolder;
   using base::lat;
   using base::model;
 
@@ -111,7 +112,6 @@ public:
         checkpoint_simulation(feastMPSs_->operator[](iState), 1, -1, filename);
         dumpParameters(filename);
       }
-      dumpParametersAndIterResults(-1);
     }
   }
 
@@ -568,12 +568,12 @@ private:
   }
 
   void dumpParameters(std::string filename = "") {
-    std::string chkpfilename;
-    if (filename.empty())
-      chkpfilename = base::chkpfile;
-    else
-      chkpfilename = base::chkpfile + "_" + filename;
-    if (!chkpfilename.empty()) {
+    if (!chkpfolder().empty()) {
+      std::string chkpfilename;
+      if (filename.empty())
+        chkpfilename = chkpfolder();
+      else
+        chkpfilename = chkpfolder() + "_" + filename;
       storage::archive ar(chkpfilename+"/props.h5", "w");
       ar["/parameters"] << parms;
     }
