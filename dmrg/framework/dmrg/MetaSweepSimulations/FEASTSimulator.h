@@ -179,54 +179,51 @@ private:
         mpsGuess[iState] = feastMPSs->operator[](iState);
     // For each FEAST iteration, we have a loop over the number of quadrature points
     // *and* of the number of target states.
+#pragma omp parallel for collapse(2)
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
-      maquis::cout << std::endl;
-      maquis::cout << " == NEW QUADRATURE POINT ==" << std::endl;
-      maquis::cout << std::endl;
-      maquis::cout << " - Node: " << complexNodes[quadPoint] << std::endl;
-      maquis::cout << " - Weight: " << complexWeights[quadPoint] << std::endl;
-      maquis::cout << std::endl;
-      // Here there is a bit of code repetition because the pointer type is different for SS and TS.
-      maquis::cout << std::endl;
-      if (isSingleSite) {
-        for (int iGuess = 0; iGuess < numStates; iGuess++) {
-          maquis::cout << std::endl;
-          maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
-          // maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
-          //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
-          auto mpsTmp = mpsGuess[iGuess];
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
+      for (int iGuess = 0; iGuess < numStates; iGuess++) {
+        auto localParameters = parameters;
+        auto mpsTmp = mpsGuess[iGuess];
+        auto mpoTmp = mpo_;
+        // Here there is a bit of code repetition because the pointer type is different for SS and TS.
+        if (isSingleSite) {
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpoTmp, localParameters, model_, lattice, 0);
           if (verbose_)
             ssSimulator->activateVerbosity();
           else
-            ssSimulator->deactivateVerbosity();
           ssSimulator->setShift(complexNodes[quadPoint]);
+            ssSimulator->deactivateVerbosity();
           ssSimulator->runSweepSimulation();
-          if (!verbose_)
-            ssSimulator->printSummary();
-          auto key = std::make_pair(iGuess, quadPoint);
-          resultContainer->insert(std::make_pair(key, mpsTmp));
+#pragma omp critical (PrintResults)
+          {
+            if (!verbose_) {
+              printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
+              ssSimulator->printSummary();
+            }
+          }
         }
-      }
-      else {
-        for (int iGuess = 0; iGuess < numStates; iGuess++) {
-          maquis::cout << " == Solving linear system for the guess " << iGuess << " ==" << std::endl;
-          // maquis::cout << " - Using seed: " << seedForInit[iGuess] << std::endl;
-          //maquis::cout << " - Initial energy: " << expval(mpsGuess[iGuess], mpo_)/norm(mpsGuess[iGuess]) << std::endl;
-          auto mpsTmp = mpsGuess[iGuess];
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, parameters, model_, lattice, 0);
+        else {
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpoTmp, localParameters, model_, lattice, 0);
           if (verbose_)
             tsSimulator->activateVerbosity();
           else
             tsSimulator->deactivateVerbosity();
           tsSimulator->setShift(complexNodes[quadPoint]);
           tsSimulator->runSweepSimulation();
-          if (!verbose_)
-            tsSimulator->printSummary();
+#pragma omp critical (PrintResults)
+          {
+            if (!verbose_) {
+              printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
+              tsSimulator->printSummary();
+            }
+          }
+        }
+        // Final update of the results
+#pragma omp critical (UpdateOfResults)
+        {
           resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
         }
       }
-      maquis::cout << std::endl;
     }
     // Diagonalizes the Hamiltonian matrix in the FEAST subspace
     postProcessor->updateContainer(resultContainer);
@@ -336,6 +333,17 @@ private:
     maquis::cout << " - DMRG solver: " << ((isSingleSite) ? "single site" : "two site") << std::endl;
     if (calculateVariance)
       maquis::cout << " - Calculating variance for each eigenpair." << std::endl;
+  }
+
+  /** @brief Prints the header for the solution of a given linear system */
+  static void printLinearSystemHeader(ComplexType node, ComplexType weight, int iGuess) {
+    maquis::cout << std::endl;
+    maquis::cout << " == NEW FEAST LINEAR SYSTEM ==" << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " - Node: " << node << std::endl;
+    maquis::cout << " - Weight: " << weight << std::endl;
+    maquis::cout << " - Guess number: " << iGuess << std::endl;
+    maquis::cout << std::endl;
   }
 
   // -- Class members --
