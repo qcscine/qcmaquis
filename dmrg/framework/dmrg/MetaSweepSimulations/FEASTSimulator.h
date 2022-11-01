@@ -184,10 +184,9 @@ private:
       for (int iGuess = 0; iGuess < numStates; iGuess++) {
         auto localParameters = parameters;
         auto mpsTmp = mpsGuess[iGuess];
-        auto mpoTmp = mpo_;
         // Here there is a bit of code repetition because the pointer type is different for SS and TS.
         if (isSingleSite) {
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpoTmp, localParameters, model_, lattice, 0);
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
           if (verbose_)
             ssSimulator->activateVerbosity();
           else
@@ -203,7 +202,7 @@ private:
           }
         }
         else {
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpoTmp, localParameters, model_, lattice, 0);
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
           if (verbose_)
             tsSimulator->activateVerbosity();
           else
