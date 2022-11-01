@@ -95,27 +95,17 @@ public:
         }
 
         for (; _site < 2*L-2; ++_site) {
-    /* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
-        | |                        |
-       site 1                      |
-          |         left to right  | right to left, lr = -1
-          site 2                   |                               */
-
             int lr, site1, site2;
             if (_site < L-1) {
                 site = to_site(L, _site);
                 lr = 1;
                 site1 = site;
                 site2 = site+1;
-                ts_cache_mpo[site1].placement_l = mpo[site1].placement_l;
-                ts_cache_mpo[site1].placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
             } else {
                 site = to_site(L, _site);
                 lr = -1;
                 site1 = site-1;
                 site2 = site;
-                ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
 
             //if (lr == +1) mps.canonize(site1);
@@ -123,17 +113,6 @@ public:
 
             maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
-
-            // MD: some changes needed to re-enable it.
-//            if (parms.template get<bool>("beta_mode")) {
-//                if (sweep == 0 && lr == 1) {
-//                    mpo = zero_after(mpo_orig, 0);
-//                    if (site == 0)
-//                        this->init_left_right(mpo, 0);
-//                } else if (sweep == 0 && lr == -1 && site == L-1) {
-//                    mpo = mpo_orig;
-//                }
-//            }
 
             if (_site != L-1)
             {

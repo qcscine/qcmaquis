@@ -31,7 +31,6 @@
 #include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/utils/parallel/placement.hpp"
 
 /**
  * @brief This class serves as a wrapper around the boundary propagation routine.
@@ -65,7 +64,6 @@ public:
   BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite=0)
     : initSite_(initSite), L_(mps.length()), mps_(mps), mpo_(mpo)
   {
-    parallel::construct_placements(mpo_);
     left_.resize(L_+1);
     right_.resize(L_+1);
     // Generation of the left boundary

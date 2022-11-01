@@ -42,7 +42,6 @@
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
-#include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 #include "dmrg/evolve/TimeEvolvers/timeevolver.h"
 #include "dmrg/evolve/siteshifter.h"

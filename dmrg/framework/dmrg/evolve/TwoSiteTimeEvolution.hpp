@@ -129,18 +129,10 @@ public:
         lr = 1;
         site1 = site;
         site2 = site+1;
-        ts_cache_mpo[site1].placement_l = mpo_[site1].placement_l;
-        ts_cache_mpo[site1].placement_r = parallel::get_right_placement(ts_cache_mpo[site1],
-                                                                        mpo_[site1].placement_l,
-                                                                        mpo_[site2].placement_r);
       } else {
         lr = -1;
         site1 = site-1;
         site2 = site;
-        ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1],
-                                                                       mpo_[site1].placement_l,
-                                                                       mpo_[site2].placement_r);
-        ts_cache_mpo[site1].placement_r = mpo_[site2].placement_r;
       }
       // Printing
       print_header(sweep, site1, site2, lr);

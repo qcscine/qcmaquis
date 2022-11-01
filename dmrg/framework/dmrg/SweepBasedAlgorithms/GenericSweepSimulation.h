@@ -108,7 +108,6 @@ public:
       siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(currentSite_, sweepType);
       siteRight_ = SweepTraitClass::getIndexOfRightBoundary(currentSite_, sweepType);
       printMicroiterInfo(sweepType);
-      mpoContainer_.updatePlacements(indexOfMicroIteration_, siteLeft_);
       // We must be careful here because, for the two-site case, there is the risk of fetching twice the boundaries.
       // In fact, we run the optimization of sites (L-1, L) twice consequently
       //TODO ALB THIS SHOULD BE FIXED PROPERLY!
