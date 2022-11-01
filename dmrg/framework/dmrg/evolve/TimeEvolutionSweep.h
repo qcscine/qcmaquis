@@ -135,7 +135,6 @@ protected:
    */
   void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
   {
-    parallel::construct_placements(mpo_);
     Storage::drop(left_[0]);
     left_[0] = mps_.left_boundary();
     for (size_t i = 0; i < site; ++i) {
