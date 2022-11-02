@@ -184,11 +184,11 @@ private:
     auto initialTime = std::chrono::high_resolution_clock::now();
     //
 #pragma omp parallel
-  {
+    {
 #pragma omp single
     {
-      #pragma omp taskloop
       for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
+#pragma omp taskloop
         for (int iGuess = 0; iGuess < numStates; iGuess++) {
           auto localParameters = parameters;
           auto mpsTmp = mpsGuess[iGuess];
