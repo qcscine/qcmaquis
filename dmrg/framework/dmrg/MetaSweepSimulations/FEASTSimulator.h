@@ -183,60 +183,56 @@ private:
     // *and* of the number of target states.
     auto initialTime = std::chrono::high_resolution_clock::now();
     //
-#pragma omp parallel
-    {
-#pragma omp single
-    {
-      for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
-#pragma omp taskloop
-        for (int iGuess = 0; iGuess < numStates; iGuess++) {
-          auto localParameters = parameters;
-          auto mpsTmp = mpsGuess[iGuess];
-          // Here there is a bit of code repetition because the pointer type is different for SS and TS.
-          if (isSingleSite) {
-            auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
-            if (verbose_) {
-              ssSimulator->activateVerbosity();
-            }
-            else {
-              ssSimulator->deactivateVerbosity();
-            }
-            ssSimulator->setShift(complexNodes[quadPoint]);
-            ssSimulator->runSweepSimulation();
+#pragma omp parallel for collapse(2)
+    for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
+      for (int iGuess = 0; iGuess < numStates; iGuess++) {
+        auto localParameters = parameters;
+        auto mpsTmp = mpsGuess[iGuess];
+        // Here there is a bit of code repetition because the pointer type is different for SS and TS.
+        if (isSingleSite) {
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
+          if (verbose_)
+            ssSimulator->activateVerbosity();
+          else
+            ssSimulator->deactivateVerbosity();
+          ssSimulator->setShift(complexNodes[quadPoint]);
+          auto initialInnerTime = std::chrono::high_resolution_clock::now();
+          ssSimulator->runSweepSimulation();
+          auto finalInnerTime = std::chrono::high_resolution_clock::now();
+          auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(finalInnerTime - initialInnerTime)).count();
 #pragma omp critical (PrintResults)
-            {
-              if (!verbose_) {
-                printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
-                ssSimulator->printSummary();
-              }
-            }
-          }
-          else {
-            auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
-            if (verbose_) {
-              tsSimulator->activateVerbosity();
-            }
-            else {
-              tsSimulator->deactivateVerbosity();
-            }
-            tsSimulator->setShift(complexNodes[quadPoint]);
-            tsSimulator->runSweepSimulation();
-#pragma omp critical (PrintResults)
-            {
-              if (!verbose_) {
-                printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
-                tsSimulator->printSummary();
-              }
-            }
-          }
-#pragma omp critical (UpdateOfResults)
           {
-            // Final update of the results
-            resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
+            if (!verbose_) {
+              printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess, duration);
+              ssSimulator->printSummary();
+            }
           }
         }
+        else {
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
+          if (verbose_)
+            tsSimulator->activateVerbosity();
+          else
+            tsSimulator->deactivateVerbosity();
+          tsSimulator->setShift(complexNodes[quadPoint]);
+          auto initialInnerTime = std::chrono::high_resolution_clock::now();
+          tsSimulator->runSweepSimulation();
+          auto finalInnerTime = std::chrono::high_resolution_clock::now();
+          auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(finalInnerTime - initialInnerTime)).count();
+#pragma omp critical (PrintResults)
+          {
+            if (!verbose_) {
+              printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess, duration);
+              tsSimulator->printSummary();
+            }
+          }
+        }
+#pragma omp critical (UpdateOfResults)
+        {
+          // Final update of the results
+          resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
+        }
       }
-    }
     }
     auto finalTime = std::chrono::high_resolution_clock::now();
     if (printTimings_) {
@@ -354,13 +350,14 @@ private:
   }
 
   /** @brief Prints the header for the solution of a given linear system */
-  static void printLinearSystemHeader(ComplexType node, ComplexType weight, int iGuess) {
+  static void printLinearSystemHeader(ComplexType node, ComplexType weight, int iGuess, int time) {
     maquis::cout << std::endl;
     maquis::cout << " == NEW FEAST LINEAR SYSTEM ==" << std::endl;
     maquis::cout << std::endl;
     maquis::cout << " - Node: " << node << std::endl;
     maquis::cout << " - Weight: " << weight << std::endl;
     maquis::cout << " - Guess number: " << iGuess << std::endl;
+    maquis::cout << " - Time elapsed in linear system solver: " << time << " milliseconds" << std::endl;
     maquis::cout << std::endl;
   }
 
