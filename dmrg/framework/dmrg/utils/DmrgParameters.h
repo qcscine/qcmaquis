@@ -206,6 +206,7 @@ private:
         add_option("feast_calculate_standard_deviation", "If yes, calculates the standard deviation associated with each FEAST state.", value("no"));
         add_option("feast_verbose", "If yes, activate verbose output for FEAST", value("no"));
         add_option("feast_standard_deviation_threshold", "If set, uses this threshold to accept/reject an eigenpair");
+        add_option("feast_print_timings", "If equal to yes, prints timings spent in each step", value("yes"));
     }
 };
 

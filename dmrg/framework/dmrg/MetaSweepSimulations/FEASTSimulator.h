@@ -27,6 +27,7 @@
 #ifndef FEAST_SIMULATOR
 #define FEAST_SIMULATOR
 
+#include <omp.h>
 #include <cstdlib>
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
@@ -66,6 +67,7 @@ public:
   {
     // Retrieve simulation parameters
     verbose_ = (parameters["feast_verbose"] == "yes");
+    printTimings_ = (parameters["feast_print_timings"] == "yes");
     numStates = parameters["feast_num_states"].as<int>();
     maxFeastIter = parameters["feast_max_iter"].as<int>();
     eMin = parameters["feast_emin"].as<double>();
@@ -179,50 +181,67 @@ private:
         mpsGuess[iState] = feastMPSs->operator[](iState);
     // For each FEAST iteration, we have a loop over the number of quadrature points
     // *and* of the number of target states.
-#pragma omp parallel for collapse(2)
-    for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
-      for (int iGuess = 0; iGuess < numStates; iGuess++) {
-        auto localParameters = parameters;
-        auto mpsTmp = mpsGuess[iGuess];
-        // Here there is a bit of code repetition because the pointer type is different for SS and TS.
-        if (isSingleSite) {
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
-          if (verbose_)
-            ssSimulator->activateVerbosity();
-          else
-          ssSimulator->setShift(complexNodes[quadPoint]);
-            ssSimulator->deactivateVerbosity();
-          ssSimulator->runSweepSimulation();
+    auto initialTime = std::chrono::high_resolution_clock::now();
+    //
+#pragma omp parallel
+  {
+#pragma omp single
+    {
+      #pragma omp taskloop
+      for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
+        for (int iGuess = 0; iGuess < numStates; iGuess++) {
+          auto localParameters = parameters;
+          auto mpsTmp = mpsGuess[iGuess];
+          // Here there is a bit of code repetition because the pointer type is different for SS and TS.
+          if (isSingleSite) {
+            auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
+            if (verbose_) {
+              ssSimulator->activateVerbosity();
+            }
+            else {
+              ssSimulator->deactivateVerbosity();
+            }
+            ssSimulator->setShift(complexNodes[quadPoint]);
+            ssSimulator->runSweepSimulation();
 #pragma omp critical (PrintResults)
-          {
-            if (!verbose_) {
-              printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
-              ssSimulator->printSummary();
+            {
+              if (!verbose_) {
+                printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
+                ssSimulator->printSummary();
+              }
             }
           }
-        }
-        else {
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
-          if (verbose_)
-            tsSimulator->activateVerbosity();
-          else
-            tsSimulator->deactivateVerbosity();
-          tsSimulator->setShift(complexNodes[quadPoint]);
-          tsSimulator->runSweepSimulation();
+          else {
+            auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
+            if (verbose_) {
+              tsSimulator->activateVerbosity();
+            }
+            else {
+              tsSimulator->deactivateVerbosity();
+            }
+            tsSimulator->setShift(complexNodes[quadPoint]);
+            tsSimulator->runSweepSimulation();
 #pragma omp critical (PrintResults)
-          {
-            if (!verbose_) {
-              printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
-              tsSimulator->printSummary();
+            {
+              if (!verbose_) {
+                printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess);
+                tsSimulator->printSummary();
+              }
             }
           }
-        }
-        // Final update of the results
 #pragma omp critical (UpdateOfResults)
-        {
-          resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
+          {
+            // Final update of the results
+            resultContainer->insert(std::make_pair(std::make_pair(iGuess, quadPoint), mpsTmp));
+          }
         }
       }
+    }
+    }
+    auto finalTime = std::chrono::high_resolution_clock::now();
+    if (printTimings_) {
+      double elapsed = std::chrono::duration<double>(finalTime - initialTime).count();
+      maquis::cout << " --> Time elapsed to solve the FEAST problem " << elapsed << "." << std::endl;
     }
     // Diagonalizes the Hamiltonian matrix in the FEAST subspace
     postProcessor->updateContainer(resultContainer);
@@ -372,7 +391,7 @@ private:
   const MPOType& mpo_;                                           // Matrix product operator
   const LatticeType& lattice;                                    // DMRG lattice object.
   const ModelType& model_;                                       // Model object.
-  bool verbose_;                                                 // If true, activates the verbose treatment.
+  bool verbose_, printTimings_;                                  // Verbosity flags.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };
