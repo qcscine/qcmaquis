@@ -56,12 +56,9 @@ public:
   using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
   using ValueType = typename MPSTensorType::scalar_type;
   //
-  using Base::activateVerbosity;
   using Base::boundaryPropagator_;
-  using Base::deactivateVerbosity;
   using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
-  using Base::initSite_;
   using Base::iterationResults_;
   using Base::lastSite_;
   using Base::lattice_;
@@ -78,16 +75,16 @@ public:
 
   /** @brief Class constructor */
   SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
-                         const Lattice& lattice, int initSite=0)
-    : Base(mps, mpo, parms, model, lattice, std::string("Linear system solver"), initSite), adaptiveBondDimension_(false),
-      shiftParameter_(0.), isPrecond_(false), rhsMps_(mps)
+                         const Lattice& lattice, bool verbose)
+    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Linear system solver")),
+      adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false), rhsMps_(mps)
   {
     /* // Folded simulation --> To be reactivated when implementing the folded operator
     if (parms["pI_folded"] == "yes") {
         maquis::cout << " Activating folded treatment " << std::endl;
         isSquared = true;
     } */
-    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_, initSite_);
+    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_);
     /* To be reactivated when implementing the folded operator
     if (isSquared) {
       leftSquared_.resize(mpo.length()+1);
@@ -169,7 +166,6 @@ public:
 
   /** @brief Operations to be executed at the end of the sweep */
   void finalizeSweep() override final {
-    initSite_ = -1;
     if (calculateExactError_) {
       int mMax = parms_["max_bond_dimension"];
       auto error = LinSystemTraitClass<Matrix, SymmGroup>::calculateError(mpsContainer_.getMPS(), rhsMps_, mpoContainer_.getMPO(), shiftParameter_,

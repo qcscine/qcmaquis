@@ -54,7 +54,6 @@ public:
   using Base::boundaryPropagator_;
   using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
-  using Base::initSite_;
   using Base::iterationResults_;
   using Base::lastSite_;
   using Base::L_;
@@ -68,10 +67,9 @@ public:
 
   /** @brief Class constructor */
   SweepBasedEnergyMinimization(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
-                               const Lattice& lattice, int initSite=0)
-    : Base(mps, mpo, parms, model, lattice, std::string("Optimization"), initSite), nOrtho_(0)
+                               const Lattice& lattice, bool verbose)
+    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Optimization")), nOrtho_(0)
   {
-    // mps_.canonize(initSite_);
     if (parms_.is_set("ortho_states") && parms_["ortho_states"] != "") {
       files_ = parms_["ortho_states"].str();
       std::vector<std::string> files;
@@ -144,9 +142,7 @@ public:
   }
 
   /** @brief Operations to be executed at the end of the sweep */
-  void finalizeSweep() override final {
-    initSite_ = -1;
-  }
+  void finalizeSweep() override final { }
 
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
   bool normalizeAtEnd() override final {

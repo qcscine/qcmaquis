@@ -61,10 +61,10 @@ public:
 
   /** @brief Class constructor */
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
-                         const Lattice& lattice, std::string simulationName="Optimization", int initSite=0)
-    : mps_(mps), parms_(parms), L_(mps_.length()), initSite_(initSite), mpoContainer_(mpo, mps),
-      mpsContainer_(mps), simulationName_(simulationName), nSweeps_(0), currentSite_(initSite),
-      indexOfMicroIteration_(0), lattice_(lattice), model_(model), verbose_(true)
+                         const Lattice& lattice, bool verbose, std::string simulationName="Optimization")
+    : mps_(mps), parms_(parms), L_(mps_.length()), mpoContainer_(mpo, mps), mpsContainer_(mps),
+      simulationName_(simulationName), nSweeps_(0), currentSite_(0), indexOfMicroIteration_(0),
+      lattice_(lattice), model_(model), verbose_(verbose)
   {
     siteLeft_ = currentSite_;
     siteRight_ = currentSite_+1;
@@ -72,8 +72,7 @@ public:
     nSweeps_ = parms_["nsweeps"];
     lastSite_ = SweepTraitClass::getLastSite(L_);
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
-    mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_);
-    verbose_ = (parms_["linsystem_verbose"] == "yes");
+    mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
   };
 
   /**
@@ -169,12 +168,6 @@ public:
       throw std::runtime_error("Trying to access non-existing simulation result");
     return boost::any_cast<CastType>(iterationResults_[resultName].get()[0]);
   }
-
-  /** @brief Activates the verbosity */
-  void activateVerbosity() { verbose_ = true; }
-
-  /** @brief Deactivates the verbosity */
-  void deactivateVerbosity() { verbose_ = false; }
 
 protected:
 
@@ -299,7 +292,7 @@ protected:
   MPOContainerType mpoContainer_;
   MPSContainerType mpsContainer_;
   std::unique_ptr<SweepMPSUpdaterType> mpsUpdater_;
-  int initSite_, L_, indexOfMicroIteration_, currentSite_, lastSite_, siteLeft_, siteRight_, nSweeps_;
+  int L_, indexOfMicroIteration_, currentSite_, lastSite_, siteLeft_, siteRight_, nSweeps_;
   BaseParameters& parms_;
   results_collector iterationResults_;
   std::shared_ptr<BoundaryPropagatorType> boundaryPropagator_;

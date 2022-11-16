@@ -56,8 +56,8 @@ public:
 
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
-                  BaseParameters& parms)
-    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms)
+                  BaseParameters& parms, bool verbose)
+    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms), verbose_(verbose)
   {
     L_ = mps_.size();
   };
@@ -73,7 +73,7 @@ public:
       if (siteLeft < L_-1) {
         truncationOutput = mps_.grow_l2r_sweep(mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
                                                boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
-                                               cutoff, mMax);
+                                               cutoff, mMax, true, verbose_);
       }
       else if (normalizeEnd) {
         mps_[siteLeft].leftNormalize(DefaultSolver());
@@ -83,8 +83,8 @@ public:
     else if (sweepDirection == SweepDirectionType::Backward) {
       if (siteLeft > 0) {
         truncationOutput = mps_.grow_r2l_sweep(mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                               boundaryPropagator_->getRightBoundary(siteRight), siteLeft,
-                                               alpha, cutoff, mMax);
+                                               boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
+                                               cutoff, mMax, true, verbose_);
       }
       else if (normalizeEnd) {
         mps_[siteLeft].rightNormalize(DefaultSolver());
@@ -99,6 +99,7 @@ private:
   MPSType& mps_;
   BaseParameters& parms_;
   int L_;
+  bool verbose_;
 };
 
 /** @brief Specialization for the two-site case */
@@ -114,8 +115,8 @@ public:
 
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
-                  BaseParameters& parms)
-    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms)
+                  BaseParameters& parms, bool verbose)
+    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms), verbose_(verbose)
   {
     L_ = mps_.size();
   };
@@ -168,6 +169,7 @@ private:
   MPSType& mps_;
   BaseParameters& parms_;
   int L_;
+  bool verbose_;
 };
 
 #endif // SWEEP_MPS_UPDATER

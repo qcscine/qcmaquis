@@ -227,11 +227,11 @@ public:
     if (parms["optimization"] == "singlesite")
       // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
-      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, model, base::lat, init_site);
+      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, model, base::lat);
     else if(parms["optimization"] == "twosite")
       // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
-      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, model, base::lat, init_site);
+      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, model, base::lat);
     else
         throw std::runtime_error("Don't know this optimizer");
     // Retrieve the measurements that should be always done.

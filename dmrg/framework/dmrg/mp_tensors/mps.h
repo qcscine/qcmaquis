@@ -92,13 +92,15 @@ public:
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      double cutoff, std::size_t Mmax,
+                                      bool perturbDM, bool verbose);
     template<class OtherMatrix>
     truncation_results grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      double cutoff, std::size_t Mmax,
+                                      bool perturbDM, bool verbose);
 
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;

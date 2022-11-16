@@ -123,7 +123,7 @@ public:
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                           Boundary<OtherMatrix, SymmGroup> const & left,
-                          MPOTensor<Matrix, SymmGroup> const & mpo, 
+                          MPOTensor<Matrix, SymmGroup> const & mpo,
                           bool isHermitian=true)
     {
         return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, lbtm_functor>
@@ -147,10 +147,10 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & left,
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax,
-                                bool perturbDM)
+                                bool perturbDM, bool verbose)
     {
         return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, lbtm_functor>
-               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM);
+               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     }
 
     static MPSTensor<Matrix, SymmGroup>
@@ -167,10 +167,10 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & left,
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax,
-                                bool perturbDM)
+                                bool perturbDM, bool verbose)
     {
         return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, rbtm_functor>
-               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM);
+               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     }
 
     static MPSTensor<Matrix, SymmGroup>

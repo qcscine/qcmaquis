@@ -190,11 +190,7 @@ private:
         auto mpsTmp = mpsGuess[iGuess];
         // Here there is a bit of code repetition because the pointer type is different for SS and TS.
         if (isSingleSite) {
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
-          if (verbose_)
-            ssSimulator->activateVerbosity();
-          else
-            ssSimulator->deactivateVerbosity();
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, verbose_);
           ssSimulator->setShift(complexNodes[quadPoint]);
           auto initialInnerTime = std::chrono::high_resolution_clock::now();
           ssSimulator->runSweepSimulation();
@@ -209,11 +205,7 @@ private:
           }
         }
         else {
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, 0);
-          if (verbose_)
-            tsSimulator->activateVerbosity();
-          else
-            tsSimulator->deactivateVerbosity();
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, verbose_);
           tsSimulator->setShift(complexNodes[quadPoint]);
           auto initialInnerTime = std::chrono::high_resolution_clock::now();
           tsSimulator->runSweepSimulation();

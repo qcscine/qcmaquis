@@ -234,14 +234,13 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
                                        std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+                                       double cutoff, std::size_t Mmax,
+                                       bool perturbDM, bool verbose)
 { // canonized_i invalided through (*this)[]
+    using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-
-    boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, true);
-
+    boost::tie(new_mps, trunc) = Contractor::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
                                                     (*this)[l], new_mps);
     (*this)[l] = new_mps;
@@ -255,14 +254,13 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
                                        std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+                                       double cutoff, std::size_t Mmax,
+                                       bool perturbDM, bool verbose)
 { // canonized_i invalided through (*this)[]
+    using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-
-    boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, true);
-
+    boost::tie(new_mps, trunc) = Contractor::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;

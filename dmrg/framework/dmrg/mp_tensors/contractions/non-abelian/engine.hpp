@@ -149,10 +149,11 @@ public:
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
                                 Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax, bool perturbDM)
+                                double alpha, double cutoff, std::size_t Mmax,
+                                bool perturbDM, bool verbose)
     {
         return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
-               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM);
+               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     }
 
     static MPSTensor<Matrix, SymmGroup>
@@ -168,10 +169,11 @@ public:
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
                                 Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax, bool perturbDM)
+                                double alpha, double cutoff, std::size_t Mmax,
+                                bool perturbDM, bool verbose)
     {
         return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
-               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM);
+               (mps, mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
     }
 
     static MPSTensor<Matrix, SymmGroup>
@@ -209,7 +211,7 @@ public:
                 bool isHermitian=true);
 
     static block_matrix<Matrix, SymmGroup>
-    zerosite_hamil2(block_matrix<Matrix, SymmGroup> bra_tensor, block_matrix<Matrix, SymmGroup> ket_tensor, 
+    zerosite_hamil2(block_matrix<Matrix, SymmGroup> bra_tensor, block_matrix<Matrix, SymmGroup> ket_tensor,
                     Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
                     MPOTensor<Matrix, SymmGroup> const & mpo_left, MPOTensor<Matrix, SymmGroup> const & mpo_right,
                     bool isHermitian=true);

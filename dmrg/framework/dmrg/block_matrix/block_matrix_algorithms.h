@@ -69,7 +69,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A, block_matrix<Matrix2, Symm
     // Types definition
     using charge = typename SymmGroup::charge;
     using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
-    // 
+    //
     C.clear();
     assert(B.basis().is_sorted());
     const_iterator B_begin = B.basis().begin();
@@ -111,7 +111,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
  * In addition to performing the matrix-matrix multiplication, this routine
  * also "trims" the row index by keeping only the blocks that are present
  * in [ref_left_basis].
- * 
+ *
  * @param A First input matrix
  * @param B Second input matrix
  * @param C Output matrix
@@ -146,7 +146,7 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
  * In addition to performing the matrix-matrix multiplication, this routine
  * also "trims" the column index by keeping only the blocks that are present
  * in [ref_right_basis].
- * 
+ *
  * @param A First input matrix
  * @param B Second input matrix
  * @param C Output matrix
@@ -398,10 +398,10 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
-    // if (verbose) {
-    //     maquis::cout << "Bond dimension before truncation: " << old_basis.sum_of_sizes() << std::endl;
-    //     maquis::cout << "Bond dimension after truncation: " << bond_dimension << std::endl;
-    // }
+    if (verbose) {
+        maquis::cout << "Bond dimension before truncation: " << old_basis.sum_of_sizes() << std::endl;
+        maquis::cout << "Bond dimension after truncation: " << bond_dimension << std::endl;
+    }
 
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
@@ -468,11 +468,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  bool verbose = true)
 {
     assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef USE_AMBIENT
-    heev_merged(M, evecs, evals);
-    #else
     heev(M, evecs, evals);
-    #endif
     Index<SymmGroup> old_basis = evals.left_basis();
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
