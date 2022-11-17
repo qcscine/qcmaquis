@@ -56,14 +56,15 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         boost::tie(res, trunc) =
           contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_l2r_sweep(tmp, mpo[site_ref_],
                                                                                       left[site_ref_], right[site_ref_+1],
-                                                                                      alpha, cutoff, Mmax, perturb_dm);
+                                                                                      alpha, cutoff, Mmax, perturb_dm, true);
         res.make_left_paired();
         MPS_[site_ref_].make_left_paired();
         gemm(transpose(conjugate(res.data())), MPS_[site_ref_].data(), zerosite_tensor_);
         left[site_ref_+1] = contr::overlap_mpo_left_step(res, res, left[site_ref_], mpo[site_ref_]);
         MPS_[site_ref_] = res;
         MPS_[site_ref_+1].multiply_from_left(zerosite_tensor_);
-    } else {
+    }
+    else {
         // Simple check
         assert(site_ref_ > 0) ;
         tmp.make_right_paired() ;
@@ -72,7 +73,7 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         boost::tie(res, trunc)
           = contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_r2l_sweep(tmp, mpo[site_ref_],
                                                                                         left[site_ref_], right[site_ref_+1],
-                                                                                        alpha, cutoff, Mmax, perturb_dm);
+                                                                                        alpha, cutoff, Mmax, perturb_dm, true);
         // MPS perturbation
         res.make_right_paired();
         MPS_[site_ref_].make_right_paired();
@@ -103,7 +104,7 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
         boost::tie(res, trunc) =
           contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_l2r_sweep(tmp, mpo[site_ref_],
                                                                                       left[site_ref_], right[site_ref_+1],
-                                                                                      alpha, cutoff, Mmax, perturb_dm);
+                                                                                      alpha, cutoff, Mmax, perturb_dm, true);
         res.make_left_paired();
         MPS_[site_ref_].make_left_paired();
         gemm(transpose(conjugate(res.data())), MPS_[site_ref_].data(), zerosite_tensor_);
@@ -113,17 +114,17 @@ truncation_results SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::shift
             perform_propagation(mpo[site_ref_], mpo[site_ref_+1], left[site_ref_+1], right[site_ref_+1]);
         MPS_[site_ref_] = res;
         MPS_[site_ref_+1].multiply_from_left(zerosite_tensor_);
-    } else {
+    }
+    else {
         // Simple check
         assert(site_ref_ > 0) ;
         tmp.make_right_paired() ;
-        auto idx_old = MPS_[site_ref_].data().left_basis();
         perturber_->perturb_mps(tmp, site_ref_, false);
         // Actual calculation
         boost::tie(res, trunc)
           = contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_r2l_sweep(tmp, mpo[site_ref_],
                                                                                         left[site_ref_], right[site_ref_+1],
-                                                                                        alpha, cutoff, Mmax, perturb_dm);
+                                                                                        alpha, cutoff, Mmax, perturb_dm, true);
         // MPS perturbation
         res.make_right_paired();
         MPS_[site_ref_].make_right_paired();
