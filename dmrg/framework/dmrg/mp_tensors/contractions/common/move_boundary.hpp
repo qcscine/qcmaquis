@@ -107,13 +107,12 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     index_type loop_max = mpo.col_dim();
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.col_dim());
-#pragma omp parallel for
-    for (int b2 = 0; b2 < loop_max; b2++) {
+    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
         Kernel()(b2, contr_grid, left, t, mpo, mps.data().basis(), mps.data().basis(), 
                  right_i, out_left_i, in_right_pb, out_left_pb, true);
         swap(ret[b2], contr_grid(0,0));
-    }
+    });
     return ret;
 }
 
@@ -138,12 +137,11 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
-#pragma omp parallel for
-    for (int b1 = 0; b1 < loop_max; b1++) {
+    omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         // parallel::guard group(scheduler(b1), parallel::groups_granularity);
         Kernel()(b1, ret[b1], right, t, mpo, mps.data().basis(), mps.data().basis(),
                  left_i, out_right_i, in_left_pb, out_right_pb, true);
-    }
+    });
     return ret;
 }
 
@@ -179,14 +177,13 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor
     }
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(loop_max);
-#pragma omp parallel for
-    for (int b2 = 0; b2 < loop_max; b2++) {
+    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.right_skip(b2) && isHermitian)
             continue;
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
         Kernel()(b2, contr_grid, left, t, mpo, ket_basis_transpose, bra_basis, right_i, out_left_i, in_right_pb, out_left_pb, isHermitian);
         typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2], MPOTensor_detail::get_spin(mpo, b2, false));
-    }
+    });
     /*
     // hermiticity check
     omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
@@ -239,8 +236,7 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
     DualIndex<SymmGroup> bra_basis = bra_tensor.data().basis();
     bra_tensor.make_right_paired();
     block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-#pragma omp parallel for
-    for (int b1 = 0; b1 < loop_max; b1++) {
+    omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.left_skip(b1) && isHermitian)
             continue;
         Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), bra_basis, left_i, out_right_i, in_left_pb, out_right_pb, isHermitian);
@@ -248,7 +244,7 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
         typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp, MPOTensor_detail::get_spin(mpo, b1, true));
         //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
         swap(ret[b1], tmp);
-    }
+    });
     return ret;
 }
 
@@ -294,8 +290,7 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
     // During the for cycle, which is run in parallel, a vector of block_matrix object is populated, which
     // is the grid attribute of the ContractionGrid object. The grid vector is then contracted back with
     // the bra tensor.
-#pragma omp parallel for
-    for (int b2 = 0; b2 < loop_max; b2++) {
+    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.right_skip(b2))
             continue;
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
@@ -303,7 +298,7 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
                  in_right_pb, out_left_pb, true);
         // Final contraction with the MPS
         ret[b2] = contr_grid(0,0);
-    }
+    });
     return ret;
 };
 
@@ -337,12 +332,11 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     index_type loop_max = mpo.row_dim();
     // Main loop
     auto now = std::chrono::high_resolution_clock::now();
-#pragma omp parallel for
-    for (int b1 = 0; b1 < loop_max; b1++) {
+    omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.left_skip(b1))
             continue;
         Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, true);
-    }
+    });
     return ret;
 }
 
