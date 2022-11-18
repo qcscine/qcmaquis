@@ -209,7 +209,8 @@ namespace contraction {
         void populateData() {
             int loop_max = left.aux_dim();
             // Loop over the elements
-             omp_for(int b1, parallel::range(0,loop_max), {
+#pragma omp parallel for
+            for (int b1 = 0; b1 < loop_max; b1++) {
                 // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_row_non_zeros(b1) == 1)
                     continue;
@@ -226,7 +227,7 @@ namespace contraction {
                 else {
                     typename Gemm::gemm_trim_left()(transpose(left[b1]), bm, data_[b1], ref_left_basis);
                 }
-            });
+            }
         }
         
         // Class members
@@ -291,7 +292,8 @@ namespace contraction {
         void populateData() {
             // Preliminary operations
             int loop_max = right.aux_dim();
-            omp_for(int b2, parallel::range(0,loop_max), {
+#pragma omp parallel for
+            for (int b2 = 0; b2 < loop_max; b2++) {
                 // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_col_non_zeros(b2) == 1)
                     continue;
@@ -310,7 +312,7 @@ namespace contraction {
                 else {
                     typename Gemm::gemm_trim_right()(bm, right[b2], data_[b2], ref_right_basis);
                 }
-            });
+            }
         }
 
         std::size_t aux_dim() const {
