@@ -110,8 +110,29 @@ site_hamil_lbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
         std::swap(ket_basis_transpose[i].ls, ket_basis_transpose[i].rs);
     }
     bra_tensor.make_right_paired();
-#pragma omp parallel for
-    for (int b2 = 0; b2 < loop_max; b2++) {
+    DualIndex<SymmGroup> bra_basis = bra_tensor.data().basis();
+#ifdef USE_AMBIENT
+        {
+            block_matrix<Matrix, SymmGroup> empty;
+            swap(ket_tensor.data(), empty); // deallocating mpstensor before exiting the stack
+        }
+        parallel::sync();
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
+
+        parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
+            SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+        });
+        omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
+            contr_grid.multiply_column(b2, right[b2]);
+        });
+        t.clear();
+        parallel::sync();
+
+        swap(ret.data(), contr_grid.reduce());
+        parallel::sync();
+
+#else
+    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
         block_matrix<Matrix, SymmGroup> tmp, tmp2;
         typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy cp = mpo.column(b2);
@@ -140,7 +161,8 @@ site_hamil_lbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
         parallel_critical
         for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
             ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
-    }
+    });
+#endif
     return ret;
 }
 
@@ -173,8 +195,7 @@ site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
     ret.left_i = bra_tensor.row_dim();
     ret.right_i = bra_tensor.col_dim();
     index_type loop_max = mpo.row_dim();
-#pragma omp parallel for
-    for (int b1 = 0; b1 < loop_max; b1++) {
+    omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         block_matrix<Matrix, SymmGroup> tmp, tmp2;
         SU2::task_capsule<Matrix, SymmGroup> tasks_cap;
         SU2::rbtm_tasks(b1, t, mpo, ket_tensor.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb, tasks_cap);
@@ -194,7 +215,7 @@ site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
         parallel_critical
         for (std::size_t k = 0; k < tmp2.n_blocks(); ++k)
             collector.match_and_add_block(tmp2[k], tmp2.basis().left_charge(k), tmp2.basis().right_charge(k));
-    }
+    });
     reshape_right_to_left_new(physical_i, left_i, right_i, collector, ret.data());
     DualIndex<SymmGroup> kb2 = ket_tensor.data().basis();
     if (!(kb1 == kb2))
