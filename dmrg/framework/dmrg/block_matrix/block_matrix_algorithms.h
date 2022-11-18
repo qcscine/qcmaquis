@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2022- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -26,6 +27,8 @@
 
 #ifndef BLOCK_MATRIX_ALGORITHMS_H
 #define BLOCK_MATRIX_ALGORITHMS_H
+
+#include "BlockMatrixAlgorithmsHelper.h"
 
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/utils.hpp"
@@ -207,73 +210,14 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
     parallel::scheduler_balanced scheduler(M);
-
     evecs = block_matrix<Matrix, SymmGroup>(M.basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-    std::size_t loop_max = M.n_blocks();
-
-    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+    omp_for(size_t k, parallel::range<size_t>(0,M.n_blocks()), {
         parallel::guard proc(scheduler(k));
         heev(M[k], evecs[k], evals[k]);
+        BlockMatrixAlgorithmsHelperClass<Matrix, SymmGroup>::adjustPhase(evecs[k]);
     });
 }
-
-#ifdef USE_AMBIENT
-
-template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
-                block_matrix<Matrix, SymmGroup> & U,
-                block_matrix<Matrix, SymmGroup> & V,
-                block_matrix<DiagMatrix, SymmGroup> & S)
-{
-    parallel::scheduler_inplace scheduler;
-
-    Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
-    for (std::size_t i = 0; i < M.n_blocks(); ++i)
-        m[i].second = std::min(r[i].second, c[i].second);
-
-    U = block_matrix<Matrix, SymmGroup>(r, m);
-    V = block_matrix<Matrix, SymmGroup>(m, c);
-    S = block_matrix<DiagMatrix, SymmGroup>(m, m);
-
-    ambient::for_each_redist(M.blocks().first, M.blocks().second,
-                             [](const Matrix& m){ merge(m); },
-                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
-                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    parallel::sync();
-
-    std::size_t loop_max = M.n_blocks();
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(M[k]));
-        svd_merged(M[k], U[k], V[k], S[k]);
-    }
-    parallel::sync_mkl_parallel();
-}
-
-template<class Matrix, class DiagMatrix, class SymmGroup>
-void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
-                 block_matrix<Matrix, SymmGroup> & evecs,
-                 block_matrix<DiagMatrix, SymmGroup> & evals)
-{
-    parallel::scheduler_inplace scheduler;
-
-    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-
-    ambient::for_each_redist(M.blocks().first, M.blocks().second,
-                             [](const Matrix& m){ merge(m); },
-                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
-                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    parallel::sync();
-
-    std::size_t loop_max = M.n_blocks();
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(M[k]));
-        heev_merged(M[k], evecs[k], evals[k]);
-    }
-    parallel::sync_mkl_parallel();
-}
-#endif
 
 template <class T>
 typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
