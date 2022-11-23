@@ -83,7 +83,6 @@ public:
     if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");
-    printHeader();
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
       throw std::runtime_error("Parameter [feast_integral_type] not recognized");
@@ -99,6 +98,7 @@ public:
     postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice,
                                                         parameters, eMin, eMax);
     resultContainer = std::make_shared<ResultContainerType>();
+    printHeader();
   }
 
   /** @brief FEAST simulation (which is composed by multiple FEAST iterations) */
