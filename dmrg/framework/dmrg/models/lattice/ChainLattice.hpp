@@ -44,16 +44,10 @@ public:
     typedef lattice_impl::pos_t pos_t;
 
     ChainLattice (BaseParameters & parms, bool pbc_=false)
-    : L(parms["L"])
-    , a(parms["a"])
-    , pbc(pbc_)
-    { }
+        : L(parms["L"]), pbc(pbc_) { }
 
-    ChainLattice (int L_, bool pbc_=false, double a_=1.)
-    : L(L_)
-    , a(a_)
-    , pbc(pbc_)
-    { }
+    ChainLattice (int L_, bool pbc_=false)
+        : L(L_), pbc(pbc_) { }
 
     std::vector<pos_t> forward(pos_t i) const
     {
@@ -89,7 +83,7 @@ public:
         else if (property == "type" && pos.size() == 2)
             return boost::any( 0 );
         else if (property == "x" && pos.size() == 1)
-            return boost::any( a * pos[0] );
+            return boost::any( pos[0] );
         else if (property == "at_open_boundary" && pos.size() == 1)
             return boost::any( (!pbc) && (pos[0]==0 || pos[0]==L-1) );
         else if (property == "at_open_left_boundary" && pos.size() == 1)
@@ -110,35 +104,27 @@ public:
         }
     }
 
-    pos_t size() const
-    {
-        return L;
-    }
+    pos_t size() const { return L; }
 
-    int maximum_vertex_type() const
-    {
-        return 0;
-    }
+    int maximum_vertex_type() const { return 0; }
 
 private:
 
     std::string site_label (int i) const
     {
-        return "( " + boost::lexical_cast<std::string>(a * i) + " )";
+        return "( " + boost::lexical_cast<std::string>(i) + " )";
     }
 
     std::string bond_label (int i, int j) const
     {
-        return (  "( " + boost::lexical_cast<std::string>(a * i) + " )"
+        return (  "( " + boost::lexical_cast<std::string>(i) + " )"
                 + " -- "
-                + "( " + boost::lexical_cast<std::string>(a * j) + " )");
+                + "( " + boost::lexical_cast<std::string>(j) + " )");
     }
 
 private:
     int L;
-    double a;
     bool pbc;
-
 };
 
 #endif

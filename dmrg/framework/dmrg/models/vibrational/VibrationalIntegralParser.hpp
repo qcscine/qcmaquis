@@ -9,17 +9,17 @@
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -30,22 +30,23 @@
 #ifdef DMRG_VIBRATIONAL
 
 #include "integral_interface.h"
+#include "dmrg/models/vibrational/VibrationalHelperClass.hpp"
 
 namespace Vibrational {
 namespace detail {
 
 /**
  * @brief Integral parser for potential operators encoded in the n-mode representation
- * 
+ *
  * Reads the FF from an input file and creates the Hamiltonian for the n-mode representation.
  * The potential is given in the following form:
  * i-n i-m                   float_1   --> 1-body term (the first index is the mode, the second the basis set)
  * i-n i-m j-p j-q           float_2   --> 2-body term (again, the indexes of the mode are the same).
  * i-n i-m j-p j-q k-v k-w   float_3   --> 3-body term.
- * 
+ *
  * @param parms  Parameter container
  * @param lat DMRG lattice
- * @param line_string string to be parsed 
+ * @param line_string string to be parsed
  * @return std::pair< std::vector< std::size_t > , T > integer representation of the parsed string
  */
 template <class T>
@@ -146,23 +147,23 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
 
 /**
  * @brief Integral file parser for the PES expressed as a Taylor expansion.
- * 
+ *
  * This routine expects to parse an integral file that is written in the following format:
- * 
+ *
  * coefficient    i   j   k   l   m   n   ... (#Indices shoud be == OrderNONE)
- * 
+ *
  * Each line of the file is associated with a SQ operator expressed as:
- * 
+ *
  * coeff * o_i * o_j * o_k * o_l * o_m * o_n * ...
- * 
+ *
  * where the operator o_i is:
  *  - (b_i^\dagger + b_i) if i > 0
  *  - i*(b_{-i}^\dagger - b_{-i}) if i < 0
  *  - the identity if i == 0
- * 
+ *
  * Note that the dimension of the array depends on the maximum allowed coupling degree, which is taken from interal_interface.h
  * and can be set at compile time.
- * 
+ *
  * @tparam T scalar type associated with the Hamiltonian (real for most vibrational calculations)
  * @param parms parameter container
  * @param lat DMRG lattice object
@@ -170,8 +171,8 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
  */
 
 template<class T>
-inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>, T > > 
-    WatsonIntegralParser(BaseParameters & parms, Lattice const & lat) 
+inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>, T > >
+    WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
@@ -225,6 +226,22 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
                     else if (tmp[idx] < 0)
                         tmp[idx] = -inv_order[-tmp[idx]-1]-1;
                 ret.push_back(std::make_pair(tmp, coefficient));
+                // Internal coordinates
+                if (coordinateType == WatsonCoordinateType::InternalNormalModes) {
+                    auto numberOfMomenta = std::count_if(tmp.begin(), tmp.end(), [](int input) { return input < 0; });
+                    if (numberOfMomenta == 2) {
+                        auto posFirst = std::distance(tmp.begin(), std::find_if(tmp.begin(), tmp.end(), [](int input) { return input < 0; }));
+                        auto posSecond = std::distance(tmp.begin(), std::find_if(tmp.begin()+posFirst+1, tmp.end(), [](int input) { return input < 0; }));
+                        assert(posFirst < tmp.size() && posSecond < tmp.size());
+                        // Off-diagonal term
+                        if (tmp[posFirst] != tmp[posSecond]) {
+                            std::cout << "SWAP " << posFirst << " " << posSecond << std::endl;
+                            auto tmp2 = tmp;
+                            std::swap(tmp2[posFirst], tmp2[posSecond]);
+                            ret.push_back(std::make_pair(tmp2, coefficient));
+                        }
+                    }
+                }
             }
             else {
                 ++it;
