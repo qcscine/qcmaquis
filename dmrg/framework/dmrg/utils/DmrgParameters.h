@@ -114,7 +114,7 @@ private:
         add_option("ci_level", "number of electrons excited from HF determinant", "1,2,3,4,5,6");
 
         // Initialization from a checkpoint file
-        add_option("init_file", "Name of the checkpoint from which to take the MPS");
+        add_option("initfile", "Name of the checkpoint from which to take the MPS");
 
         add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
         add_option("lattice_library", "", value("coded"));
