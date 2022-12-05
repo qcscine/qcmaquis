@@ -81,23 +81,34 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     bool hasSU2 = symm_traits::HasSU2<SymmGroup>::value;
 
     dmrg_random::engine.seed(parms["seed"]);
-    // check possible orbital order in existing MPS before(!) model initialization
-    if (!chkpfile.empty())
-    {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
-            maquis::checks::orbital_order_check(parms, chkpfile);
+
+    // Figures out 1) whether the MPS should be restored and 2) the file where to look into
+    bool loadFromOtherChkp = false;
+    std::string referenceName;
+    if (parms.is_set("initfile")) {
+      loadFromOtherChkp = true;
+      restore = true;
+      referenceName = parms["initfile"].as<std::string>();
+    }
+    else if (!chkpfile.empty()) {
+      restore = true;
+      referenceName = chkpfile;
+    }
+
+    // Check possible orbital order in existing MPS before(!) model initialization
+    if (restore) {
+      boost::filesystem::path p(referenceName);
+        maquis::checks::orbital_order_check(parms, referenceName);
     }
 
     // Load MPS from checkpoint
-    if (!chkpfile.empty())
+    if (restore)
     {
-        boost::filesystem::path p(chkpfile);
+        boost::filesystem::path p(referenceName);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
-            storage::archive ar_in(chkpfile+"/props.h5");
-            restore = true;
-            if (ar_in.is_scalar("/status/sweep"))
+            storage::archive ar_in(referenceName+"/props.h5");
+            if (ar_in.is_scalar("/status/sweep") && !loadFromOtherChkp)
             {
                 ar_in["/status/sweep"] >> init_sweep;
 
@@ -111,8 +122,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
             }
             // load checkpoint
             maquis::cout << "Loading checkpoint from " << p.c_str() << std::endl;
-            maquis::checks::symmetry_check(parms, chkpfile);
-            load(chkpfile, mps);
+            maquis::checks::symmetry_check(parms, referenceName);
+            load(referenceName, mps);
 
             // Try to load some necessary parameters from checkpoint if they're not found in the input file
             if (parms["MODEL"] == "quantum chemistry") {
@@ -167,7 +178,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     // Final check on the checkpoint MPS after model has been initialised
     // Otherwise, does a fresh MPS initialization
     if (restore) {
-        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
+        maquis::checks::right_end_check(referenceName, mps, model.total_quantum_numbers(parms));
     }
     else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
@@ -183,7 +194,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    if (!dns && !chkpfile.empty())
+    if (!dns && !referenceName.empty())
     {
         if (!boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
