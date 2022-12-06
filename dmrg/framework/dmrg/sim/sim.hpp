@@ -87,66 +87,58 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     std::string referenceName;
     if (parms.is_set("initfile")) {
       loadFromOtherChkp = true;
-      restore = true;
       referenceName = parms["initfile"].as<std::string>();
     }
     else if (!chkpfile.empty()) {
-      restore = true;
       referenceName = chkpfile;
     }
-
-    // Check possible orbital order in existing MPS before(!) model initialization
-    if (restore) {
-      boost::filesystem::path p(referenceName);
-        maquis::checks::orbital_order_check(parms, referenceName);
-    }
+    
+    // Checks if the reference checkpoint actually exists
+    boost::filesystem::path p(referenceName);
+    if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
+      restore = true;
 
     // Load MPS from checkpoint
-    if (restore)
-    {
-        boost::filesystem::path p(referenceName);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
-        {
-            storage::archive ar_in(referenceName+"/props.h5");
-            if (ar_in.is_scalar("/status/sweep") && !loadFromOtherChkp)
-            {
-                ar_in["/status/sweep"] >> init_sweep;
-
-                if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
-                    ar_in["/status/site"] >> init_site;
-
-                if (init_site == -1)
-                    ++init_sweep;
-
-                maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
-            }
-            // load checkpoint
-            maquis::cout << "Loading checkpoint from " << p.c_str() << std::endl;
-            maquis::checks::symmetry_check(parms, referenceName);
-            load(referenceName, mps);
-
-            // Try to load some necessary parameters from checkpoint if they're not found in the input file
-            if (parms["MODEL"] == "quantum chemistry") {
-                std::vector<std::string> parms_toload{ "L", "site_types", "orbital_order", "symmetry"};
-                if (hasSU2) {
-                    parms_toload.push_back("nelec");
-                    parms_toload.push_back("spin");
-                }
-                else if(has2U1) {
-                    parms_toload.push_back("u1_total_charge1");
-                    parms_toload.push_back("u1_total_charge2");
-                }
-                if (hasPG)
-                    parms_toload.push_back("irrep");
-                // Try loading integrals too, unless integral_file is set
-                // TODO: use this also with "integrals"
-                if (!parms.is_set("integral_file") && !parms.is_set("integrals"))
-                    parms_toload.push_back("integrals_binary");
-                //
-                sim_detail::load_if_not_exists(parms_toload, parms, ar_in);
-                sim_detail::print_important_parameters<SymmGroup>(parms);
-            }
+    if (restore) {
+      // Check possible orbital order in existing MPS before(!) model initialization
+      if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
+        maquis::checks::orbital_order_check(parms, referenceName);
+      //
+      storage::archive ar_in(referenceName+"/props.h5");
+      if (ar_in.is_scalar("/status/sweep") && !loadFromOtherChkp)
+      {
+          ar_in["/status/sweep"] >> init_sweep;
+          if (ar_in.is_data("/status/site") && ar_in.is_scalar("/status/site"))
+              ar_in["/status/site"] >> init_site;
+          if (init_site == -1)
+              ++init_sweep;
+          maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
+      }
+      // load checkpoint
+      maquis::cout << "Loading checkpoint from " << p.c_str() << std::endl;
+      maquis::checks::symmetry_check(parms, referenceName);
+      load(referenceName, mps);
+      // Try to load some necessary parameters from checkpoint if they're not found in the input file
+      if (parms["MODEL"] == "quantum chemistry") {
+        std::vector<std::string> parms_toload{ "L", "site_types", "orbital_order", "symmetry"};
+        if (hasSU2) {
+            parms_toload.push_back("nelec");
+            parms_toload.push_back("spin");
         }
+        else if(has2U1) {
+            parms_toload.push_back("u1_total_charge1");
+            parms_toload.push_back("u1_total_charge2");
+        }
+        if (hasPG)
+            parms_toload.push_back("irrep");
+        // Try loading integrals too, unless integral_file is set
+        // TODO: use this also with "integrals"
+        if (!parms.is_set("integral_file") && !parms.is_set("integrals"))
+            parms_toload.push_back("integrals_binary");
+        //
+        sim_detail::load_if_not_exists(parms_toload, parms, ar_in);
+        sim_detail::print_important_parameters<SymmGroup>(parms);
+      }
     }
 
     // Initialise Wigner cache for SU2
