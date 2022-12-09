@@ -41,23 +41,22 @@ class U1
 {
 public:
 
-	typedef int charge;
+  typedef int charge;
   typedef int subcharge;
 
-	static const charge IdentityCharge = 0;
+  static const charge IdentityCharge = 0;
   static const bool finite = false;
 
-	static charge fuse(charge a, charge b) { return a + b; }
+  static charge fuse(charge a, charge b) { return a + b; }
+  static charge particleNumber(charge a) { return a; }
 
-	static charge particleNumber(charge a) { return a; }
-
-	template<int R> static charge fuse(const boost::array<charge, R> &v)
-	{
-		charge ret = 0;
-		for (int i = 0; i < R; i++)
-			ret += v[i];
-		return ret;
-	}
+  template<int R> static charge fuse(const boost::array<charge, R> &v)
+  {
+    charge ret = 0;
+    for (int i = 0; i < R; i++)
+      ret += v[i];
+    return ret;
+ }
 };
 
 template <class Archive>
