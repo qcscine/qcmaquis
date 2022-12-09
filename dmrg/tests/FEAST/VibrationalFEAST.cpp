@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("feast_emax", eMax);
   parametersH2COWatsonNoCoriolis.set("feast_num_points", 8);
   parametersH2COWatsonNoCoriolis.set("init_type", "basis_state_generic_const");
-  parametersH2COWatsonNoCoriolis.set("init_basis_state", "3,2,1,1,2,0");
+  parametersH2COWatsonNoCoriolis.set("init_space", "3,2,1,1,2,0");
   parametersH2COWatsonNoCoriolis.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("feast_energy_convergence_threshold", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("feast_calculate_standard_deviation", "yes");
@@ -149,7 +149,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Ethylene, WatsonFixture)
   parametersEthyleneWatson.set("feast_emax", eMax);
   parametersEthyleneWatson.set("feast_num_points", 8);
   parametersEthyleneWatson.set("init_type", "basis_state_generic_const");
-  parametersEthyleneWatson.set("init_basis_state", "2,2,1,1,0,0,4,0,0,0,2,1");
+  parametersEthyleneWatson.set("init_space", "2,2,1,1,0,0,4,0,0,0,2,1");
   parametersEthyleneWatson.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersEthyleneWatson.set("feast_energy_convergence_threshold", 1.0E-5);
   parametersEthyleneWatson.set("linsystem_krylov_dim", 50);
@@ -205,7 +205,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   parametersBilinearly.set("feast_emax", eMax);
   parametersBilinearly.set("feast_num_points", 8);
   parametersBilinearly.set("init_type", "basis_state_generic_default");
-  parametersBilinearly.set("init_basis_state", "2,0,1,2,1,2");
+  parametersBilinearly.set("init_space", "2,0,1,2,1,2");
   // Setup parameters for the linear system solver.
   parametersBilinearly.set("linsystem_precond", "no");
   parametersBilinearly.set("linsystem_krylov_dim", 10);

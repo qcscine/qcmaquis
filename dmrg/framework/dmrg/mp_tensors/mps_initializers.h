@@ -249,7 +249,7 @@ public:
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
     : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
-    std::stringstream ss(params["init_basis_state"].str());
+    std::stringstream ss(params["init_space"].str());
     int ichar;
     while (ss >> ichar) {
         basis_index.push_back(ichar);
@@ -292,7 +292,7 @@ public:
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
       : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
-    std::string onv = params["init_basis_state"].str();
+    std::string onv = params["init_space"].str();
     std::vector<std::string> splits;
     std::string split;
     std::istringstream ss(onv);
