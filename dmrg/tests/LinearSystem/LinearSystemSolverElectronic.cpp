@@ -46,7 +46,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
 #ifdef HAVE_TwoU1PG
   using SimulatorType = SweepBasedLinearSystem<cmatrix, TwoU1PG, storage::disk, SweepOptimizationType::TwoSite>;
   parametersBenzene.set("max_bond_dimension", 100);
-  parametersBenzene.set("init_state", "hf");
+  parametersBenzene.set("init_type", "hf");
   parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
   parametersBenzene.set("nsweeps", 10);
   parametersBenzene.set("truncation_initial", 1.0E-30);

@@ -82,21 +82,21 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     }
 
     // Generation of the initializer
-    if (parms["init_state"] == "default")
+    if (parms["init_type"] == "default")
         return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "const")
+    else if (parms["init_type"] == "const")
         return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "basis_state")
+    else if (parms["init_type"] == "basis_state")
         return initializer_ptr(new basis_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
-    else if (parms["init_state"] == "basis_state_generic")
+    else if (parms["init_type"] == "basis_state_generic")
         return initializer_ptr(new basis_mps_init_generic<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "basis_state_generic_const")
+    else if (parms["init_type"] == "basis_state_generic_const")
         return initializer_ptr(new basis_mps_init_generic_const<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "basis_state_generic_default")
+    else if (parms["init_type"] == "basis_state_generic_default")
         return initializer_ptr(new basis_mps_init_generic_default<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_state"] == "coherent")
+    else if (parms["init_type"] == "coherent")
         return initializer_ptr(new coherent_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
-    else if (parms["init_state"] == "hf")
+    else if (parms["init_type"] == "hf")
         return detail::call_hf_init<Matrix, SymmGroup>::call(parms, site_bases, initc, site_types);
     else {
         throw std::runtime_error("Don't know this initial state.");

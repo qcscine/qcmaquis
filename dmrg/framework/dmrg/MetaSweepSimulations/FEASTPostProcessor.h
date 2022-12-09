@@ -344,7 +344,7 @@ private:
   /** @brief Generates a random MPS */
   auto generateRandomMPS() {
     auto tmpParms = parms;
-    tmpParms.set("init_state", "default");
+    tmpParms.set("init_type", "default");
     tmpParms.set("seed", std::rand());
     return MPSType(lattice.size(), *(model.initializer(lattice, tmpParms)));
   }

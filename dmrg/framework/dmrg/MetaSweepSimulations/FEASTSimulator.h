@@ -79,7 +79,7 @@ public:
     intModality = parameters["feast_integral_type"].as<std::string>();
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
-    initType = parameters["feast_init_type"].as<std::string>();
+    initType = parameters["init_type"].as<std::string>();
     if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");
@@ -280,7 +280,7 @@ private:
     std::vector<std::string> specifiedStates;
     int numSpecifiedStates = 0;
     if (needToWriteONV) {
-      std::string states = parms["feast_init_onv"].as<std::string>();
+      std::string states = parms["init_basis_state"].as<std::string>();
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
@@ -294,7 +294,7 @@ private:
     for (int iState = 0; iState < numStates; iState++) {
       auto parametersTmp = parms;
       parametersTmp.set("seed", seedForInit[iState]);
-      parametersTmp.set("init_state", initType);
+      parametersTmp.set("init_type", initType);
       if (needToWriteONV) {
         if (iState < numSpecifiedStates) {
           if (parametersTmp["MODEL"] == "quantum_chemistry")
@@ -302,7 +302,7 @@ private:
           else
             parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
         } else {
-          parametersTmp.set("init_state", "default"); // initialize the remaining states with the default
+          parametersTmp.set("init_type", "default"); // initialize the remaining states with the default
         }
       }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));

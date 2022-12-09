@@ -41,7 +41,7 @@
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_HarmonicEnergy_Vibronic, VibronicFixture)
 {
 #ifdef HAVE_U1
-    parametersVibronicPyrazineRedDim.set("init_state", "basis_state_generic");
+    parametersVibronicPyrazineRedDim.set("init_type", "basis_state_generic");
     parametersVibronicPyrazineRedDim.set("init_basis_state", "1,0,0,0,0,0");
     auto vibronicLattice = Lattice(parametersVibronicPyrazineRedDim);
     auto vibronicModel = Model<matrix, U1>(vibronicLattice, parametersVibronicPyrazineRedDim);
@@ -60,14 +60,14 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_HarmonicEnergy_Vibronic, VibronicFixture)
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_HarmonicEnergyDifference_Vibronic, VibronicFixture)
 {
     // Creates the vibrational ground state
-    parametersVibronicPyrazineRedDim.set("init_state", "basis_state_generic");
+    parametersVibronicPyrazineRedDim.set("init_type", "basis_state_generic");
     parametersVibronicPyrazineRedDim.set("init_basis_state", "1,0,0,0,0,0");
     auto vibronicLattice = Lattice(parametersVibronicPyrazineRedDim);
     auto vibronicModel = Model<matrix, U1>(vibronicLattice, parametersVibronicPyrazineRedDim);
     auto vibronicHarmonicMPO = make_mpo(vibronicLattice, vibronicModel);
     auto mpsGroundState = MPS<matrix, U1>(vibronicLattice.size(), *(vibronicModel.initializer(vibronicLattice, parametersVibronicPyrazineRedDim)));
     // Creates the vibrationally excited state
-    parametersVibronicPyrazineRedDim.set("init_state", "basis_state_generic");
+    parametersVibronicPyrazineRedDim.set("init_type", "basis_state_generic");
     parametersVibronicPyrazineRedDim.set("init_basis_state", "1,0,1,1,0,0");
     auto mpsExcitedState = MPS<matrix, U1>(vibronicLattice.size(), *(vibronicModel.initializer(vibronicLattice, parametersVibronicPyrazineRedDim)));
     // Calculates energy difference
@@ -84,7 +84,7 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_HarmonicEnergyDifference_Excitonic, Vibro
 {
     // General setup
     parametersExcitonicAggregate.set("vibronic_sorting", "intertwined");
-    parametersExcitonicAggregate.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregate.set("init_type", "basis_state_generic");
     parametersExcitonicAggregate.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     auto excitonicLattice = Lattice(parametersExcitonicAggregate);
     auto excitonicModel = Model<matrix, U1>(excitonicLattice, parametersExcitonicAggregate);
@@ -105,13 +105,13 @@ BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_HarmonicEnergyDifference_Excitonic, Vibro
 /** @brief Checks that < bra | H | ket > == < ket | H | bra > */
 BOOST_FIXTURE_TEST_CASE(Test_ExpVal_U1_BraKetHermitian_Vibronic, VibronicFixture)
 {
-    parametersVibronicPyrazineRedDimFull.set("init_state", "const");
+    parametersVibronicPyrazineRedDimFull.set("init_type", "const");
     auto vibronicLattice = Lattice(parametersVibronicPyrazineRedDimFull);
     auto vibronicModel = Model<matrix, U1>(vibronicLattice, parametersVibronicPyrazineRedDimFull);
     auto vibronicMPO = make_mpo(vibronicLattice, vibronicModel);
     auto mpsConst = MPS<matrix, U1>(vibronicLattice.size(), *(vibronicModel.initializer(vibronicLattice, parametersVibronicPyrazineRedDimFull)));
     //
-    parametersVibronicPyrazineRedDimFull.set("init_state", "default");
+    parametersVibronicPyrazineRedDimFull.set("init_type", "default");
     vibronicLattice = Lattice(parametersVibronicPyrazineRedDimFull);
     auto mpsDefault = MPS<matrix, U1>(vibronicLattice.size(), *(vibronicModel.initializer(vibronicLattice, parametersVibronicPyrazineRedDimFull)));
     //

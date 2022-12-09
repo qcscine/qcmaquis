@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Vibrational_NU1, NModeFixture)
   using Symmetry = NU1_template<2>;
   using MPSType = MPS<matrix, Symmetry>;
   // Populates the physical indices
-  parametersFADTwoBody.set("init_state", "const");
+  parametersFADTwoBody.set("init_type", "const");
   auto lattice = Lattice(parametersFADTwoBody);
   int latticeSize = lattice.size();
   auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADTwoBody);

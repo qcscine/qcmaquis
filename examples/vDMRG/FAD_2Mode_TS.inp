@@ -24,7 +24,7 @@ truncation_initial       = 1e-50
 truncation_final         = 1e-50
 
 // -- Initialization and storage information --
-init_state               = 'const'
+init_type               = 'const'
 chkpfile                 = 'FAD_2Mode_TS.checkpoint_state.0.h5'
 resultfile               = 'FAD_2Mode_TS.results_state.0.h5'
 

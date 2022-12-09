@@ -187,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE( TestRealTimeExcitonic, VibronicFixture )
     parametersExcitonicAggregateTwoSites.set("time_step", 0.01);
     parametersExcitonicAggregateTwoSites.set("nsweeps", 2);
     parametersExcitonicAggregateTwoSites.set("max_bond_dimension", 50);
-    parametersExcitonicAggregateTwoSites.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregateTwoSites.set("init_type", "basis_state_generic");
     parametersExcitonicAggregateTwoSites.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     // Single-site evolution
     maquis::cout << "Running SS real-time evolution test for Excitonic model " << std::endl;

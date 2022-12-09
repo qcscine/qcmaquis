@@ -46,13 +46,13 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Vibronic, VibronicFixture )
 #ifdef HAVE_U1
     // ONV1 
     parametersExcitonicAggregate.set("vibronic_sorting", "intertwined");
-    parametersExcitonicAggregate.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregate.set("init_type", "basis_state_generic");
     parametersExcitonicAggregate.set("init_basis_state", "1,1,1,2,3,4,1,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     auto excitonicLattice = Lattice(parametersExcitonicAggregate);
     auto excitonicModel = Model<matrix, U1>(excitonicLattice, parametersExcitonicAggregate);
     auto mpsHF1 = MPS<matrix, U1>(excitonicLattice.size(), *(excitonicModel.initializer(excitonicLattice, parametersExcitonicAggregate)));
     // ONV2
-    parametersExcitonicAggregate.set("init_state", "basis_state_generic");
+    parametersExcitonicAggregate.set("init_type", "basis_state_generic");
     parametersExcitonicAggregate.set("init_basis_state", "0,1,1,2,3,4,1,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
     excitonicLattice = Lattice(parametersExcitonicAggregate);
     excitonicModel = Model<matrix, U1>(excitonicLattice, parametersExcitonicAggregate);
@@ -74,9 +74,9 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Hermitian_Excitonic, VibronicFixture )
     auto lattice = Lattice(parametersExcitonicAggregate);
     auto model = Model<matrix, U1>(lattice, parametersExcitonicAggregate);
     // Modifies the init parameters to create two different MPSs
-    parametersExcitonicAggregate.set("init_state", "const");
+    parametersExcitonicAggregate.set("init_type", "const");
     auto mpsConst = MPS<matrix, U1>(lattice.size(), *(model.initializer(lattice, parametersExcitonicAggregate)));
-    parametersExcitonicAggregate.set("init_state", "default");
+    parametersExcitonicAggregate.set("init_type", "default");
     auto mpsDefault = MPS<matrix, U1>(lattice.size(), *(model.initializer(lattice, parametersExcitonicAggregate)));
     // Calculates the overlap
     double overlapOriginal = overlap(mpsConst, mpsDefault);

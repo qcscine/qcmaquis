@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test1 )
     optimizer.push_back("twosite");
 
     // Attention: const guess in test, so that the results are deterministic.
-    p.set("init_state", "const");
+    p.set("init_type", "const");
     // Measure RDMs
     p.set("MEASURE[1rdm]","1");
     p.set("MEASURE[mutinf]","1");

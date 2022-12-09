@@ -41,7 +41,7 @@ DmrgParameters cpp_parms;
                                     int* site_types_,
                                     double conv_thresh_, int m_,
                                     bool meas_2rdm_, bool entropy_, bool magnetism_,
-                                    const std::string& init_state_, const std::string& optimization_,
+                                    const std::string& init_type_, const std::string& optimization_,
                                     int ietl_jcd_maxiter_,
                                     double ietl_jcd_tol_, double truncation_initial_,
                                     double truncation_final_, double integral_cutoff_,
@@ -52,7 +52,7 @@ DmrgParameters cpp_parms;
         maquis::prepare_relativistic(cpp_parms, magnetism_);
         // optimization conditions
         cpp_parms.set("orbital_order", orb_order_);
-        cpp_parms.set("init_state", init_state_);
+        cpp_parms.set("init_type", init_type_);
         cpp_parms.set("optimization", optimization_);
         cpp_parms.set("integral_cutoff", integral_cutoff_);
         cpp_parms.set("truncation_initial", truncation_initial_);

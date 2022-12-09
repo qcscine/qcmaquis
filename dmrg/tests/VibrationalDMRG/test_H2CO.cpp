@@ -38,7 +38,7 @@ BOOST_FIXTURE_TEST_CASE(Test_DMRG_, WatsonFixture)
 #ifdef HAVE_TrivialGroup
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
-  parametersH2COWatsonNoCoriolis.set("init_state", "basis_state_generic");
+  parametersH2COWatsonNoCoriolis.set("init_type", "basis_state_generic");
   parametersH2COWatsonNoCoriolis.set("init_basis_state", "0,0,0,0,0,0");
   parametersH2COWatsonNoCoriolis.set("optimization", "singlesite");
   parametersH2COWatsonNoCoriolis.set("alpha_initial", 1.0E-8);

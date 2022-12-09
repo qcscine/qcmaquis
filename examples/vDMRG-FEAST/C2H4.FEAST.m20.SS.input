@@ -39,5 +39,5 @@ feast_emax                       = 11100
 feast_num_points                 = 8
 feast_integral_type              = "full"
 feast_truncation_type            = "end"
-feast_init_type                  = "basis_state_generic_default"
-feast_init_onv                   = "2,1,0,1,2,1,0,1,2,1,0,1"
+init_type                  = "basis_state_generic_default"
+init_basis_state                   = "2,1,0,1,2,1,0,1,2,1,0,1"

@@ -56,7 +56,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Ethylene_nMode, EthyleneNModeFixture)
 {
 #ifdef HAVE_NU1
 #if DMRG_NUMSYMM == 12
-    parametersEthyleneNMode.set("init_state", "basis_state_generic");
+    parametersEthyleneNMode.set("init_type", "basis_state_generic");
     parametersEthyleneNMode.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
     parametersEthyleneNMode.set("nsweeps", 50);
     parametersEthyleneNMode.set("ngrowsweeps", 10);
