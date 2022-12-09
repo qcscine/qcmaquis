@@ -260,10 +260,13 @@ public:
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
+    maquis::cout << "In basis_mps_init_generic_const()" << std::endl;
     assert(basis_index.size() == mps.length());
+    maquis::cout << "In basis_mps_init_generic_const() after assert" << std::endl;
+
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false);
     // Actual MPS initialization
+    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, params["max_bond_dimension"]);
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
   }
@@ -304,7 +307,7 @@ public:
   {
     assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true);
+    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, params["max_bond_dimension"]);
     // Actual MPS initialization
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
