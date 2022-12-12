@@ -164,8 +164,19 @@ class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
 public:
   basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
                  std::vector<int> const& site_type_)
-    : occupation(params["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_), site_type(site_type_)
-  { }
+    : phys_dims(phys_dims_), site_type(site_type_)
+  { 
+    std::string states = params["init_basis_state"].as<std::string>();
+    std::vector<std::string> specifiedStates;
+    boost::split(specifiedStates, states, boost::is_any_of("|"));
+    std::stringstream ss(specifiedStates[0]);
+    int ichar;
+    while (ss >> ichar) {
+        occupation.push_back(ichar);
+        ss.ignore(1);
+    }
+  }
+
 
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
@@ -209,9 +220,20 @@ public:
      */
     basis_mps_init_generic(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-        : basis_index(params_["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_),
+        : phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
-    { }
+    { 
+      std::string states = params["init_basis_state"].as<std::string>();
+      std::vector<std::string> specifiedStates;
+      boost::split(specifiedStates, states, boost::is_any_of("|"));
+      std::stringstream ss(specifiedStates[0]);
+      int ichar;
+      while (ss >> ichar) {
+        basis_index.push_back(ichar);
+        ss.ignore(1);
+      }
+    }
+
 
     /** @brief Operator (), called when the MPS is constructed */
     void operator()(MPS<Matrix, SymmGroup> & mps)
@@ -250,6 +272,8 @@ public:
     : init_bond_dimension(params_["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     std::stringstream ss(params["init_space"].str());
+    if (params["init_space"].str().empty())
+      throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
     int ichar;
     while (ss >> ichar) {
         basis_index.push_back(ichar);
@@ -260,10 +284,7 @@ public:
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
-    maquis::cout << "In basis_mps_init_generic_const()" << std::endl;
     assert(basis_index.size() == mps.length());
-    maquis::cout << "In basis_mps_init_generic_const() after assert" << std::endl;
-
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
     // Actual MPS initialization
     mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, init_bond_dimension);
@@ -296,6 +317,8 @@ public:
       : init_bond_dimension(params_["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     std::string onv = params["init_space"].str();
+    if (onv.empty())
+      throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
     std::vector<std::string> splits;
     std::string split;
     std::istringstream ss(onv);
