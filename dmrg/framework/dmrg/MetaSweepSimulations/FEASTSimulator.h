@@ -287,7 +287,7 @@ private:
         throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to some sort of basis_state_generic");
       }
       if (numSpecifiedStates != numStates) {
-        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with default" << std::endl;
+        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
       }
     }
     // Generates the guess MPS
@@ -302,7 +302,7 @@ private:
           else
             parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
         } else {
-          parametersTmp.set("init_type", "default"); // initialize the remaining states with the default
+          parametersTmp.set("init_type", "basis_state_generic_default"); // initialize the remaining states with the generic_default
         }
       }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));
