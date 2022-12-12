@@ -247,7 +247,7 @@ public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-    : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+    : init_bond_dimension(params_["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     std::stringstream ss(params["init_space"].str());
     int ichar;
@@ -266,9 +266,12 @@ public:
 
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
     // Actual MPS initialization
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, params["max_bond_dimension"]);
+    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, init_bond_dimension);
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+    for (int i = 0; i < mps.length(); i++) {
+      mps[i].divide_by_scalar(mps[i].scalar_norm());
+    }
   }
 private:
   // -- ATTRIBUTES --
@@ -290,7 +293,7 @@ public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+      : init_bond_dimension(params_["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     std::string onv = params["init_space"].str();
     std::vector<std::string> splits;
@@ -307,10 +310,13 @@ public:
   {
     assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, params["max_bond_dimension"]);
+    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, init_bond_dimension);
     // Actual MPS initialization
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+    for (int i = 0; i < mps.length(); i++) {
+      mps[i].divide_by_scalar(mps[i].scalar_norm());
+    }
   }
 
 private:
