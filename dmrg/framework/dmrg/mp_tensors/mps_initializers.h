@@ -269,11 +269,12 @@ public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : basis_index(params["init_space"].as<std::vector<int> >()), init_bond_dimension(params_["init_bond_dimension"]),
+      : init_bond_dimension(params_["init_bond_dimension"]),
         phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
+    basis_index = params["init_space"].as<std::vector<int> >(); 
   }
 
   // Operator called when initialization occurs
@@ -309,11 +310,12 @@ public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : basis_index(params["init_space"].as<std::vector<int> >()), init_bond_dimension(params_["init_bond_dimension"]),
+      : init_bond_dimension(params_["init_bond_dimension"]),
         phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
+    basis_index = params["init_space"].as<std::vector<int> >(); 
   }
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
