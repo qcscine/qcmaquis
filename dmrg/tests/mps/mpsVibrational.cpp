@@ -90,4 +90,24 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Vibrational_NU1_gc_equal_to_generic_or_const, N
   BOOST_CHECK_CLOSE(std::sqrt(normAfter2/normBefore2), 3., 5.0E-14);
 }
 
+BOOST_FIXTURE_TEST_CASE(Test_MPS_Vibrational_NU1_gd_equal_to_default, NModeFixture)
+{
+  using Symmetry = NU1_template<2>;
+  using MPSType = MPS<matrix, Symmetry>;
+  // Populates the physical indices
+  parametersFADTwoBody.set("init_type", "basis_state_generic_default");
+  parametersFADTwoBody.set("init_space", "10,10");
+  auto lattice = Lattice(parametersFADTwoBody);
+  auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADTwoBody);
+  auto mpsGDfull = MPSType(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBody)));
+  parametersFADTwoBody.set("init_type", "default");
+  auto mpsD = MPSType(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBody)));
+  double overlap_GDfull_D = overlap(mpsGDfull, mpsD)/std::sqrt(norm(mpsGDfull)*norm(mpsD));
+  BOOST_CHECK_CLOSE(overlap_GDfull_D, 1., 1.0E-14);
+  double normBefore2 = norm(mpsGDfull);
+  mpsGDfull.scaleByScalar(3.);
+  double normAfter2 = norm(mpsGDfull);
+  BOOST_CHECK_CLOSE(std::sqrt(normAfter2/normBefore2), 3., 5.0E-14);
+}
+
 #endif
