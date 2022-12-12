@@ -269,16 +269,11 @@ public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-    : init_bond_dimension(params_["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+      : basis_index(params["init_space"].as<std::vector<int> >()), init_bond_dimension(params_["init_bond_dimension"]),
+        phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
-    std::stringstream ss(params["init_space"].str());
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
-    int ichar;
-    while (ss >> ichar) {
-        basis_index.push_back(ichar);
-        ss.ignore(1);
-    }
   }
 
   // Operator called when initialization occurs
@@ -314,19 +309,11 @@ public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : init_bond_dimension(params_["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+      : basis_index(params["init_space"].as<std::vector<int> >()), init_bond_dimension(params_["init_bond_dimension"]),
+        phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
-    std::string onv = params["init_space"].str();
-    if (onv.empty())
+    if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
-    std::vector<std::string> splits;
-    std::string split;
-    std::istringstream ss(onv);
-    while (std::getline(ss, split, ',')) {
-      splits.push_back(split);
-    }
-    for (const auto& idx: splits)
-      basis_index.push_back(std::stoi(idx));
   }
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
