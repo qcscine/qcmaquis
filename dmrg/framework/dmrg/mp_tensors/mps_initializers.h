@@ -36,10 +36,11 @@
 #include <boost/tokenizer.hpp>
 
 #include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/utils/random.hpp"
+
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"
-
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers_helper.h"
@@ -60,7 +61,10 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
   default_mps_init(BaseParameters & parms, std::vector<Index<SymmGroup> > const& phys_dims_,
                    typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
     : init_bond_dimension(parms["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_),
-      site_type(site_type_) { }
+      site_type(site_type_)
+  {
+    dmrg_random::engine.seed(parms["seed"]);
+  }
 
   /**
    * @brief Functor operator called to generate the MPS
@@ -315,7 +319,8 @@ public:
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
-    basis_index = params["init_space"].as<std::vector<int> >(); 
+    basis_index = params["init_space"].as<std::vector<int> >();
+    dmrg_random::engine.seed(params["seed"]);
   }
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)

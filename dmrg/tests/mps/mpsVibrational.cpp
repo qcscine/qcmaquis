@@ -97,6 +97,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Vibrational_NU1_gd_equal_to_default, NModeFixtu
   // Populates the physical indices
   parametersFADTwoBody.set("init_type", "basis_state_generic_default");
   parametersFADTwoBody.set("init_space", "10,10");
+  parametersFADTwoBody.set("seed", "77");
   auto lattice = Lattice(parametersFADTwoBody);
   auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADTwoBody);
   auto mpsGDfull = MPSType(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBody)));
