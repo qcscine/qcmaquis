@@ -63,7 +63,8 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
     : init_bond_dimension(parms["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_),
       site_type(site_type_)
   {
-    dmrg_random::engine.seed(parms["seed"]);
+    if (parms.is_set("seed"))
+      dmrg_random::engine.seed(parms["seed"]);
   }
 
   /**
@@ -80,12 +81,11 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
   void init_sectors(MPS<Matrix, SymmGroup> & mps, size_t Mmax, bool fillrand=true, typename Matrix::value_type val=0)
   {
     parallel::scheduler_balanced scheduler(mps.length());
-    std::size_t L = mps.length();
-    // maquis::cout << "Right end: " << right_end << std::endl;
     // Compute the indexes which are allowed by symmetry
     std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
     // Populates the MPS tensor
     //omp_for(size_t i, parallel::range<size_t>(0, L), {
+    std::size_t L = mps.length();
     for (int i = 0; i < L; i++) {
       parallel::guard proc(scheduler(i));
       mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
@@ -320,7 +320,8 @@ public:
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
     basis_index = params["init_space"].as<std::vector<int> >();
-    dmrg_random::engine.seed(params["seed"]);
+    if (params.is_set("seed"))
+      dmrg_random::engine.seed(params["seed"]);
   }
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
