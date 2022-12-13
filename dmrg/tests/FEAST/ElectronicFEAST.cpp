@@ -324,7 +324,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("feast_emax", vectorOFEnergiesPG[1]+0.001);
   maquis::DMRGInterface<ComplexType> interfaceBenzeneSmallerPG(parametersBenzene);
   interfaceBenzeneSmallerPG.runFEAST();
-  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), referenceEnergy1, 1.0E-8);
+  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), referenceEnergy1, 1.0E-7);
 #endif // HAVE_SU2U1PG
 }
 
