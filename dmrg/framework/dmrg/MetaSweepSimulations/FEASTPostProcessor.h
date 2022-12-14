@@ -201,7 +201,7 @@ public:
               }
             }
             if (!truncEach)
-              mpsTransformed[std::make_pair(iOutput, iInput)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, iInput)], mMax, thresholdForRank_);
+              mpsTransformed[std::make_pair(iOutput, iInput)] = compression::l2r_compress(mpsTransformed[std::make_pair(iOutput, iInput)], mMax, thresholdForRank_, false);
           }
         }
       }

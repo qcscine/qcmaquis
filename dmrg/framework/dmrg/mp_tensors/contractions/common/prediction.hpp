@@ -40,7 +40,7 @@ template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Ker
 static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
 predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<Matrix, SymmGroup> const & mpo,
                             Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
-                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM, bool verbose)
+                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM, bool verbose=false)
 {
     mps.make_left_paired();
     block_matrix<Matrix, SymmGroup> U, V, dm;
@@ -95,7 +95,7 @@ template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Ker
 static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
 predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<Matrix, SymmGroup> const & mpo,
                             Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
-                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM, bool verbose)
+                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM, bool verbose=false)
 {
     // Initialization
     mps.make_right_paired();
