@@ -271,7 +271,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("max_bond_dimension", 50);
   parametersBenzene.set("optimization", "twosite");
   parametersBenzene.set("seed", 42);
-  parametersBenzene.set("nsweeps", 2);
+  parametersBenzene.set("nsweeps", 5);
   parametersBenzene.set("truncation_initial", 1.0E-30);
   parametersBenzene.set("truncation_final", 1.0E-30);
   parametersBenzene.set("linsystem_exact_error", "no");
@@ -281,7 +281,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("linsystem_tol", 1.0E-8);
   parametersBenzene.set("linsystem_krylov_dim", 10);
   // FEAST parameters
-  parametersBenzene.set("feast_max_iter", 2);
+  parametersBenzene.set("feast_max_iter", 3);
   parametersBenzene.set("feast_num_points", 8);
   parametersBenzene.set("init_type", "default");
   // parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
@@ -324,7 +324,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("feast_emax", vectorOFEnergiesPG[1]+0.001);
   maquis::DMRGInterface<ComplexType> interfaceBenzeneSmallerPG(parametersBenzene);
   interfaceBenzeneSmallerPG.runFEAST();
-  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), referenceEnergy1, 1.0E-7);
+  BOOST_CHECK_CLOSE(maquis::real(interfaceBenzeneSmallerPG.energyFEAST(0)), referenceEnergy1, 1.0E-8);
 #endif // HAVE_SU2U1PG
 }
 
