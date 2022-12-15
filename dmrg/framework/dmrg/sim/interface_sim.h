@@ -450,7 +450,7 @@ public:
   typename Matrix::value_type getCICoefficient(std::string determinantString) override {
       auto modifiedParameters = parms;
       std::string initState = (parms["MODEL"] == "quantum_chemistry") ? "hf" : "basis_state_generic";
-      modifiedParameters.set("init_state", initState);
+      modifiedParameters.set("init_type", initState);
       if (parms["MODEL"] == "quantum_chemistry")
           modifiedParameters.set("hf_occ", determinantString);
       else

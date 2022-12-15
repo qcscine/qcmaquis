@@ -50,7 +50,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
 {
 #ifdef HAVE_NU1
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "const");
+    parametersFADTwoBody.set("init_type", "const");
     parametersFADTwoBody.set("nsweeps", 20);
     parametersFADTwoBody.set("max_bond_dimension", 100);
     parametersFADTwoBody.set("MODEL", "nmode");
@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADOneBodyBinary.set("init_state", "const");
+    parametersFADOneBodyBinary.set("init_type", "const");
     parametersFADOneBodyBinary.set("nsweeps", 20);
     parametersFADOneBodyBinary.set("max_bond_dimension",100);
     parametersFADOneBodyBinary.set("MODEL", "nmode");
@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_1ModeHamiltonian_ExcitedState, NModeFi
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBodyFingerPrint.set("init_state", "const");
+    parametersFADTwoBodyFingerPrint.set("init_type", "const");
     parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
     parametersFADTwoBodyFingerPrint.set("max_bond_dimension", 100);
     parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
@@ -154,7 +154,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_FingerprintHamiltonian_Sorting, NModeF
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "const");
+    parametersFADTwoBody.set("init_type", "const");
     parametersFADTwoBody.set("seed", 16071991);
     parametersFADTwoBody.set("nsweeps", 1);
     parametersFADTwoBody.set("max_bond_dimension", 20);
@@ -186,7 +186,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_MeasOneParticle, NModeFixt
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_type", "default");
     parametersFADTwoBody.set("seed", 16071991);
     parametersFADTwoBody.set("nsweeps", 10);
     parametersFADTwoBody.set("max_bond_dimension", 20);
@@ -286,7 +286,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_Subadditivity, NModeFixtur
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem_ModeRDM, NModeFixture)
 {
     // Adds the final input parameters
-    parametersFADTwoBody.set("init_state", "default");
+    parametersFADTwoBody.set("init_type", "default");
     parametersFADTwoBody.set("seed", 30031989);
     parametersFADTwoBody.set("nsweeps", 10);
     parametersFADTwoBody.set("max_bond_dimension", 20);

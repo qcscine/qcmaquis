@@ -52,7 +52,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   using ModelType = Model<cmatrix, S>;
   //
   parametersH2.set("max_bond_dimension", 10);
-  parametersH2.set("init_state", "default");
+  parametersH2.set("init_type", "default");
   parametersH2.set("seed", 19893003);
   parametersH2.set("optimization", "twosite");
   parametersH2.set("nsweeps", 5);
@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2, S, symmetries, H2Fixt
   parametersH2.set("feast_emin", eMin);
   parametersH2.set("feast_emax", eMax);
   parametersH2.set("feast_num_points", 8);
-  parametersH2.set("feast_init_type", "default");
+  parametersH2.set("init_type", "default");
   parametersH2.set("linsystem_precond", "no");
   parametersH2.set("linsystem_krylov_dim", 50);
   parametersH2.set("linsystem_tol", 1.0E-5);
@@ -119,7 +119,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetri
   parametersH2.set("feast_emin", -0.981);
   parametersH2.set("feast_emax", -0.98);
   parametersH2.set("feast_num_points", 8);
-  parametersH2.set("feast_init_type", "const");
+  parametersH2.set("init_type", "const");
   parametersH2.set("linsystem_precond", "no");
   parametersH2.set("linsystem_krylov_dim", 50);
   parametersH2.set("linsystem_tol", 1.0E-10);
@@ -142,7 +142,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Interface, S, symmetri
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_FEAST_Electronic_H2_Real, S, symmetries, H2Fixture)
 {
   parametersH2.set("max_bond_dimension", 10);
-  parametersH2.set("init_state", "default");
+  parametersH2.set("init_type", "default");
   parametersH2.set("seed", 19893003);
   parametersH2.set("optimization", "twosite");
   parametersH2.set("nsweeps", 5);
@@ -181,7 +181,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   // FEAST parameters
   parametersLiH.set("feast_max_iter", 2);
   parametersLiH.set("feast_num_points", 8);
-  parametersLiH.set("feast_init_type", "default");
+  parametersLiH.set("init_type", "default");
   parametersLiH.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersLiH.set("feast_energy_convergence_threshold", 1.0E-6);
   // Note that the interval includes two states, but we use three guesses.
@@ -225,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_TwoGuesses, BenzeneFixture
   // FEAST parameters
   parametersBenzene.set("feast_max_iter", 2);
   parametersBenzene.set("feast_num_points", 8);
-  parametersBenzene.set("feast_init_type", "default");
+  parametersBenzene.set("init_type", "default");
   parametersBenzene.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersBenzene.set("feast_energy_convergence_threshold", 1.0E-6);
   // Note that the interval includes two states, but we use three guesses.
@@ -271,7 +271,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("max_bond_dimension", 50);
   parametersBenzene.set("optimization", "twosite");
   parametersBenzene.set("seed", 42);
-  parametersBenzene.set("nsweeps", 2);
+  parametersBenzene.set("nsweeps", 5);
   parametersBenzene.set("truncation_initial", 1.0E-30);
   parametersBenzene.set("truncation_final", 1.0E-30);
   parametersBenzene.set("linsystem_exact_error", "no");
@@ -281,10 +281,10 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_Benzene_ThreeGuesses, BenzeneFixtu
   parametersBenzene.set("linsystem_tol", 1.0E-8);
   parametersBenzene.set("linsystem_krylov_dim", 10);
   // FEAST parameters
-  parametersBenzene.set("feast_max_iter", 2);
+  parametersBenzene.set("feast_max_iter", 3);
   parametersBenzene.set("feast_num_points", 8);
-  parametersBenzene.set("feast_init_type", "default");
-  // parametersBenzene.set("feast_init_onv", "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
+  parametersBenzene.set("init_type", "default");
+  // parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|4,4,1,4,1,1|4,1,4,1,4,1");
   parametersBenzene.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersBenzene.set("feast_energy_convergence_threshold", 1.0E-6);
   // Note that the interval includes two states, but we use three guesses.
@@ -341,11 +341,11 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   using ModelType = Model<cmatrix, SU2U1PG>;
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_state", "hf");
+  parametersLiH.set("init_type", "hf");
   parametersLiH.set("hf_occ", "4,1,1,1");
   parametersLiH.set("optimization", "twosite");
   parametersLiH.set("symmetry", "su2u1pg");
-  parametersLiH.set("init_state", "const");
+  parametersLiH.set("init_type", "const");
   // IPI-specific parameters
   parametersLiH.set("ipi_sweep_overlap_threshold", 1.0E-5);
   parametersLiH.set("ipi_sweep_energy_threshold", 1.0E-5);
@@ -381,7 +381,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   parametersLiH.set("feast_num_states", 1);
   parametersLiH.set("feast_max_iter", 3);
   parametersLiH.set("feast_num_points", 8);
-  parametersLiH.set("feast_init_type", "default");
+  parametersLiH.set("init_type", "default");
   parametersLiH.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersLiH.set("feast_energy_convergence_threshold", 1.0E-6);
   //

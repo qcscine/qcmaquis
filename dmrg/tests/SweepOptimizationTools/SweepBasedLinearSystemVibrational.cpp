@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   parametersBilinearly.set("truncation_main", 1.0E-15);
   auto bilinearlyLattice = Lattice(parametersBilinearly);
   auto bilinearlyModel = Model<matrix, TrivialGroup>(bilinearlyLattice, parametersBilinearly);
-  parametersBilinearly.set("init_state", "const");
+  parametersBilinearly.set("init_type", "const");
   auto bilinearlyMPS = MPS<matrix, TrivialGroup>(bilinearlyLattice.size(),
                                                  *(bilinearlyModel.initializer(bilinearlyLattice, parametersBilinearly)));
   bilinearlyMPS.normalize_right();

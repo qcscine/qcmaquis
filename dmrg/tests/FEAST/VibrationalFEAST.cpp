@@ -46,8 +46,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_MPS_Getter, WatsonFixture)
   parametersH2COWatson.set("feast_emin", 0.);
   parametersH2COWatson.set("feast_emax", 6000.);
   parametersH2COWatson.set("feast_num_points", 8);
-  parametersH2COWatson.set("feast_init_type", "basis_state_generic");
-  parametersH2COWatson.set("feast_init_onv", "0,0,0,0,0,0|1,0,0,0,0,0");
+  parametersH2COWatson.set("init_type", "basis_state_generic");
+  parametersH2COWatson.set("init_basis_state", "0,0,0,0,0,0|1,0,0,0,0,0");
   auto vibrationalLattice = Lattice(parametersH2COWatson);
   auto vibrationalModel = ModelType(vibrationalLattice, parametersH2COWatson);
   auto vibrationalMPO = make_mpo(vibrationalLattice, vibrationalModel);
@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
   parametersH2COWatsonNoCoriolis.set("max_bond_dimension", 50);
-  parametersH2COWatsonNoCoriolis.set("init_state", "const");
+  parametersH2COWatsonNoCoriolis.set("init_type", "const");
   parametersH2COWatsonNoCoriolis.set("optimization", "singlesite");
   parametersH2COWatsonNoCoriolis.set("symmetry", "none");
   parametersH2COWatsonNoCoriolis.set("nsweeps", 20);
@@ -104,8 +104,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   parametersH2COWatsonNoCoriolis.set("feast_emin", eMin);
   parametersH2COWatsonNoCoriolis.set("feast_emax", eMax);
   parametersH2COWatsonNoCoriolis.set("feast_num_points", 8);
-  parametersH2COWatsonNoCoriolis.set("feast_init_type", "basis_state_generic_const");
-  parametersH2COWatsonNoCoriolis.set("feast_init_onv", "3,2,1,1,2,0");
+  parametersH2COWatsonNoCoriolis.set("init_type", "basis_state_generic_const");
+  parametersH2COWatsonNoCoriolis.set("init_space", "3,2,1,1,2,0");
   parametersH2COWatsonNoCoriolis.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("feast_energy_convergence_threshold", 1.0E-5);
   parametersH2COWatsonNoCoriolis.set("feast_calculate_standard_deviation", "yes");
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Ethylene, WatsonFixture)
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
   parametersEthyleneWatson.set("max_bond_dimension", 20);
-  parametersEthyleneWatson.set("init_state", "const");
+  parametersEthyleneWatson.set("init_type", "const");
   parametersEthyleneWatson.set("optimization", "twosite");
   parametersEthyleneWatson.set("symmetry", "none");
   parametersEthyleneWatson.set("nsweeps", 10);
@@ -148,8 +148,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Ethylene, WatsonFixture)
   parametersEthyleneWatson.set("feast_emin", eMin);
   parametersEthyleneWatson.set("feast_emax", eMax);
   parametersEthyleneWatson.set("feast_num_points", 8);
-  parametersEthyleneWatson.set("feast_init_type", "basis_state_generic_const");
-  parametersEthyleneWatson.set("feast_init_onv", "2,2,1,1,0,0,4,0,0,0,2,1");
+  parametersEthyleneWatson.set("init_type", "basis_state_generic_const");
+  parametersEthyleneWatson.set("init_space", "2,2,1,1,0,0,4,0,0,0,2,1");
   parametersEthyleneWatson.set("feast_overlap_convergence_threshold", 1.0E-5);
   parametersEthyleneWatson.set("feast_energy_convergence_threshold", 1.0E-5);
   parametersEthyleneWatson.set("linsystem_krylov_dim", 50);
@@ -169,7 +169,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   using FEASTSimulatorType = FEASTSimulator<TrivialGroup>;
   using ModelType = Model<cmatrix, TrivialGroup>;
   //
-  parametersBilinearly.set("init_state", "basis_state_generic");
+  parametersBilinearly.set("init_type", "basis_state_generic");
   parametersBilinearly.set("init_basis_state", "0,0,0,0,0,0");
   parametersBilinearly.set("optimization", "singlesite");
   parametersBilinearly.set("alpha_initial", 1.0E-8);
@@ -204,8 +204,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   parametersBilinearly.set("feast_emin", eMin);
   parametersBilinearly.set("feast_emax", eMax);
   parametersBilinearly.set("feast_num_points", 8);
-  parametersBilinearly.set("feast_init_type", "basis_state_generic_default");
-  parametersBilinearly.set("feast_init_onv", "2,0,1,2,1,2");
+  parametersBilinearly.set("init_type", "basis_state_generic_default");
+  parametersBilinearly.set("init_space", "2,0,1,2,1,2");
   // Setup parameters for the linear system solver.
   parametersBilinearly.set("linsystem_precond", "no");
   parametersBilinearly.set("linsystem_krylov_dim", 10);
@@ -229,7 +229,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
 {
   maquis::cout << "FINGERPRINT before otimization" << std::endl;
   parametersFADTwoBodyFingerPrint.set("nsweeps", 20);
-  parametersFADTwoBodyFingerPrint.set("init_state", "const");
+  parametersFADTwoBodyFingerPrint.set("init_type", "const");
   parametersFADTwoBodyFingerPrint.set("optimization", "twosite");
   parametersFADTwoBodyFingerPrint.set("twosite_truncation", "heev_truncate");
   parametersFADTwoBodyFingerPrint.set("alpha_initial", 1.0E-8);
@@ -256,7 +256,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_FAD_Fingerprint, NModeFixture)
   parametersFADTwoBodyFingerPrint.set("feast_emin", eMin);
   parametersFADTwoBodyFingerPrint.set("feast_emax", eMax);
   parametersFADTwoBodyFingerPrint.set("feast_num_points", 8);
-  parametersFADTwoBodyFingerPrint.set("feast_init_type", "default");
+  parametersFADTwoBodyFingerPrint.set("init_type", "default");
   parametersFADTwoBodyFingerPrint.set("feast_integral_type", "full");
   // Setup parameters for the linear system solver.
   parametersFADTwoBodyFingerPrint.set("linsystem_precond", "no");

@@ -79,7 +79,7 @@ public:
     intModality = parameters["feast_integral_type"].as<std::string>();
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
-    initType = parameters["feast_init_type"].as<std::string>();
+    initType = parameters["init_type"].as<std::string>();
     if (parameters["linsystem_exact_error"] == "yes")
       calculateExactError = true;
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");
@@ -275,26 +275,25 @@ private:
 
   /** @brief Generates the guess for FEAST */
   void initializeGuess(BaseParameters& parms, const ModelType& model) {
-    bool needToWriteONV = (initType == "basis_state_generic" || initType == "basis_state_generic_const" ||
-                           initType == "basis_state_generic_default" || initType == "hf");
+    bool needToWriteONV = (initType == "basis_state_generic" || initType == "hf");
     std::vector<std::string> specifiedStates;
     int numSpecifiedStates = 0;
     if (needToWriteONV) {
-      std::string states = parms["feast_init_onv"].as<std::string>();
+      std::string states = parms["init_basis_state"].as<std::string>();
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
-        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to some sort of basis_state_generic");
+        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to basis_state_generic/hf");
       }
       if (numSpecifiedStates != numStates) {
-        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with default" << std::endl;
+        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
       }
     }
     // Generates the guess MPS
     for (int iState = 0; iState < numStates; iState++) {
       auto parametersTmp = parms;
       parametersTmp.set("seed", seedForInit[iState]);
-      parametersTmp.set("init_state", initType);
+      parametersTmp.set("init_type", initType);
       if (needToWriteONV) {
         if (iState < numSpecifiedStates) {
           if (parametersTmp["MODEL"] == "quantum_chemistry")
@@ -302,7 +301,7 @@ private:
           else
             parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
         } else {
-          parametersTmp.set("init_state", "default"); // initialize the remaining states with the default
+          parametersTmp.set("init_type", "basis_state_generic_default"); // initialize the remaining states with the generic_default
         }
       }
       mpsGuess.push_back(MPSType(lattice.size(), *(model.initializer(lattice, parametersTmp))));

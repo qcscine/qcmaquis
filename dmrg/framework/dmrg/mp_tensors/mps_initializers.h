@@ -36,10 +36,11 @@
 #include <boost/tokenizer.hpp>
 
 #include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/utils/random.hpp"
+
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"
-
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers_helper.h"
@@ -60,7 +61,11 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
   default_mps_init(BaseParameters & parms, std::vector<Index<SymmGroup> > const& phys_dims_,
                    typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
     : init_bond_dimension(parms["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_),
-      site_type(site_type_) { }
+      site_type(site_type_)
+  {
+    if (parms.is_set("seed"))
+      dmrg_random::engine.seed(parms["seed"]);
+  }
 
   /**
    * @brief Functor operator called to generate the MPS
@@ -76,12 +81,11 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
   void init_sectors(MPS<Matrix, SymmGroup> & mps, size_t Mmax, bool fillrand=true, typename Matrix::value_type val=0)
   {
     parallel::scheduler_balanced scheduler(mps.length());
-    std::size_t L = mps.length();
-    // maquis::cout << "Right end: " << right_end << std::endl;
     // Compute the indexes which are allowed by symmetry
     std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
     // Populates the MPS tensor
     //omp_for(size_t i, parallel::range<size_t>(0, L), {
+    std::size_t L = mps.length();
     for (int i = 0; i < L; i++) {
       parallel::guard proc(scheduler(i));
       mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
@@ -164,8 +168,19 @@ class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
 public:
   basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
                  std::vector<int> const& site_type_)
-    : occupation(params["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_), site_type(site_type_)
-  { }
+    : phys_dims(phys_dims_), site_type(site_type_)
+  { 
+    std::string states = params["init_basis_state"].as<std::string>();
+    std::vector<std::string> specifiedStates;
+    boost::split(specifiedStates, states, boost::is_any_of("|"));
+    std::stringstream ss(specifiedStates[0]);
+    int ichar;
+    while (ss >> ichar) {
+        occupation.push_back(ichar);
+        ss.ignore(1);
+    }
+  }
+
 
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
@@ -209,9 +224,20 @@ public:
      */
     basis_mps_init_generic(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-        : basis_index(params_["init_basis_state"].as<std::vector<int> >()), phys_dims(phys_dims_),
+        : phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
-    { }
+    { 
+      std::string states = params["init_basis_state"].as<std::string>();
+      std::vector<std::string> specifiedStates;
+      boost::split(specifiedStates, states, boost::is_any_of("|"));
+      std::stringstream ss(specifiedStates[0]);
+      int ichar;
+      while (ss >> ichar) {
+        basis_index.push_back(ichar);
+        ss.ignore(1);
+      }
+    }
+
 
     /** @brief Operator (), called when the MPS is constructed */
     void operator()(MPS<Matrix, SymmGroup> & mps)
@@ -247,14 +273,12 @@ public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-    : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+      : init_bond_dimension(params_["init_bond_dimension"]),
+        phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
-    std::stringstream ss(params["init_basis_state"].str());
-    int ichar;
-    while (ss >> ichar) {
-        basis_index.push_back(ichar);
-        ss.ignore(1);
-    }
+    if (params["init_space"].str().empty())
+      throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
+    basis_index = params["init_space"].as<std::vector<int> >(); 
   }
 
   // Operator called when initialization occurs
@@ -262,10 +286,13 @@ public:
   {
     assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false);
     // Actual MPS initialization
+    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, init_bond_dimension);
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+    for (int i = 0; i < mps.length(); i++) {
+      mps[i].divide_by_scalar(mps[i].scalar_norm());
+    }
   }
 private:
   // -- ATTRIBUTES --
@@ -287,27 +314,27 @@ public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : init_bond_dimension(1), phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+      : init_bond_dimension(params_["init_bond_dimension"]),
+        phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
-    std::string onv = params["init_basis_state"].str();
-    std::vector<std::string> splits;
-    std::string split;
-    std::istringstream ss(onv);
-    while (std::getline(ss, split, ',')) {
-      splits.push_back(split);
-    }
-    for (const auto& idx: splits)
-      basis_index.push_back(std::stoi(idx));
+    if (params["init_space"].str().empty())
+      throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");
+    basis_index = params["init_space"].as<std::vector<int> >();
+    if (params.is_set("seed"))
+      dmrg_random::engine.seed(params["seed"]);
   }
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
     assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true);
+    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, init_bond_dimension);
     // Actual MPS initialization
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+    for (int i = 0; i < mps.length(); i++) {
+      mps[i].divide_by_scalar(mps[i].scalar_norm());
+    }
   }
 
 private:

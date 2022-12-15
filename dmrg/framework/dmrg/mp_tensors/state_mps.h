@@ -82,8 +82,9 @@ template <class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> state_mps_const(std::vector<boost::tuple<typename SymmGroup::charge, int> > const & state,
                                        std::vector<Index<SymmGroup> > const& phys_dims, std::vector<int> const& site_type,
                                        typename SymmGroup::charge right_end = SymmGroup::IdentityCharge, bool fillRand=false,
-                                       int mdim=1)
+                                       int mMax=1)
 {
+  int mdim=1;
   // Types definition
   typedef typename SymmGroup::charge charge;
   MPS<Matrix, SymmGroup> mps(state.size());
@@ -116,6 +117,47 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector<boost::tuple<typename SymmGro
       mps[i].data()(newc, new_i[0].first)(b_in, 0) = fillRand ? dmrg_random::uniform(0., 1.) : 1.;
     }
     curr_i = new_i;
+  }
+  return mps;
+}
+
+// Special case NU1
+// @brief Same as above, but does not populate only the i-th position in the ONV, but all positions up to i for each mode
+template <class Matrix, int N>
+MPS<Matrix, NU1_template<N>> state_mps_const(std::vector<boost::tuple<typename NU1_template<N>::charge, int> > const & state,
+                                       std::vector<Index<NU1_template<N>> > const& phys_dims, std::vector<int> const& site_type,
+                                       typename NU1_template<N>::charge right_end = NU1_template<N>::IdentityCharge, bool fillRand=false,
+                                       int mMax = 1)
+{
+  // Types definition
+  using SymmGroup = NU1_template<N>;
+  typedef typename SymmGroup::charge charge;
+  MPS<Matrix, SymmGroup> mps(state.size());
+  std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mMax);
+  // loop over all sites
+  for (int i = 0; i < state.size(); ++i) {
+    auto populate = boost::get<1>(state[i]); // state should be now pair of charge and int as bool (const/rand or zero)
+    if (populate) {
+      mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillRand, 1.0);
+    } else {
+      mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], false, 0);
+      mps[i].make_left_paired();
+      // Get the product basis between the physical basis and the symmetry block of the left renormalized basis
+      ProductBasis<SymmGroup> left(phys_dims[site_type[i]], allowed[i]);
+      for (int iBlock = 0; iBlock < allowed[i].size(); iBlock++) {
+        charge newc = allowed[i][iBlock].first;
+        if (allowed[i+1].has(newc)){
+          auto offset = left(SymmGroup::IdentityCharge, newc);
+          block_matrix<Matrix, SymmGroup> & block = mps[i].data();
+          Matrix &m = block(newc, newc);
+          for (int rowInBlock = offset; rowInBlock < allowed[i][iBlock].second + offset; rowInBlock++){
+            for (int columnInBlock = 0; columnInBlock < allowed[i+1].size_of_block(newc); columnInBlock++) {
+              m(rowInBlock, columnInBlock) = fillRand ? dmrg_random::uniform(0., 1.) : 1.;
+            }
+          }
+        }
+      }
+    }
   }
   return mps;
 }

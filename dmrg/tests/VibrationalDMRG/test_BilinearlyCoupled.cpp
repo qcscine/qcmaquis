@@ -44,7 +44,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled, WatsonFixture)
 #ifdef HAVE_TrivialGroup
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
-  parametersBilinearly.set("init_state", "basis_state_generic");
+  parametersBilinearly.set("init_type", "basis_state_generic");
   parametersBilinearly.set("init_basis_state", "0,0,0,0,0,0");
   parametersBilinearly.set("optimization", "singlesite");
   parametersBilinearly.set("alpha_initial", 1.0E-8);
@@ -70,7 +70,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_BilinearlyCoupled_nMax, WatsonFix
 {
   using InterfaceType = maquis::DMRGInterface<double>;
   // Adds the final input parameters
-  parametersBilinearly.set("init_state", "basis_state_generic");
+  parametersBilinearly.set("init_type", "basis_state_generic");
   parametersBilinearly.set("init_basis_state", "0,0,0,0,0,0");
   parametersBilinearly.set("optimization", "singlesite");
   parametersBilinearly.set("alpha_initial", 1.0E-8);

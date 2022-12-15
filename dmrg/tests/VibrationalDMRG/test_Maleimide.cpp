@@ -45,7 +45,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture)
   using InterfaceType = maquis::DMRGInterface<double>;
   using MPSType = MPS<matrix, TrivialGroup>;
   // Adds the final input parameters
-  parametersMaleimideOneBody.set("init_state", "const");
+  parametersMaleimideOneBody.set("init_type", "const");
   parametersMaleimideOneBody.set("nsweeps", 10);
   parametersMaleimideOneBody.set("ngrowsweeps", 2);
   parametersMaleimideOneBody.set("nmainsweeps", 2);
@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Maleimide, MaleimideFixture)
   interface.optimize();
   auto energyFromInterface = maquis::real(interface.energy());
   // Now calculates the energy of the HF determinant
-  parametersMaleimideOneBody.set("init_state", "basis_state_generic");
+  parametersMaleimideOneBody.set("init_type", "basis_state_generic");
   parametersMaleimideOneBody.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
   auto maleimideLattice = Lattice(parametersMaleimideOneBody);
   auto maleimideModel = Model<matrix, TrivialGroup>(maleimideLattice, parametersMaleimideOneBody);

@@ -44,10 +44,10 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
 {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_state", "default");
+  parametersLiH.set("init_type", "default");
   parametersLiH.set("seed", 42);
   parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
-  parametersLiH.set("init_state", "const");
+  parametersLiH.set("init_type", "const");
   parametersLiH.set("nsweeps", 20);
   parametersLiH.set("ngrowsweeps", 2);
   parametersLiH.set("nmainsweeps", 5);

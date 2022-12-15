@@ -103,9 +103,10 @@ private:
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
 
-        add_option("init_state", "", value("default"));
+        add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*, etc.", value("default"));
         add_option("init_coeff", "coefficients for coherent init", value(""));
-        add_option("init_basis_state", "local indexes for basis state init", value(""));
+        add_option("init_basis_state", "local indexes (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
+        add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
         add_option("ci_level", "number of electrons excited from HF determinant", "1,2,3,4,5,6");
 
         // Settings for lattice
@@ -199,8 +200,6 @@ private:
         add_option("feast_num_points", "Number of quadrature points for approximating the integral", value(8));
         add_option("feast_integral_type", "`full' for the complete integration, `half' for the semicircle integration", value("full"));
         add_option("feast_truncation_type", "`each' for truncating the MPS after each sum, `end' if the truncation must be done only at the end", value("end"));
-        add_option("feast_init_type", "Initialization of the first guess for the FEAST iteration", value("default"));
-        add_option("feast_init_onv", "ONV to be used to initialize the MPS guess (used if [feast_init_type] is [basis_state_generic_*])");
         add_option("feast_overlap_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_energy_convergence_threshold", "Threshold to assess the convergence of the FEAST procedure", value(1.0E-5));
         add_option("feast_calculate_standard_deviation", "If yes, calculates the standard deviation associated with each FEAST state.", value("no"));

@@ -49,7 +49,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Harmonic, WatsonFixture)
 {
     using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
-    parametersEthyleneWatson.set("init_state", "basis_state_generic");
+    parametersEthyleneWatson.set("init_type", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
     parametersEthyleneWatsonHarmonic.set("nsweeps", 5);
     parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 20);
@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_Ethylene_Sextic_SingleSite, Watso
 {
     using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
-    parametersEthyleneWatson.set("init_state", "basis_state_generic");
+    parametersEthyleneWatson.set("init_type", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
     parametersEthyleneWatson.set("nsweeps", 20);
     parametersEthyleneWatson.set("max_bond_dimension", 50);
@@ -122,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
 {
     using InterfaceType = maquis::DMRGInterface<double>;
     // Adds the final input parameters
-    parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
+    parametersFADOneBodyBinary.set("init_type", "basis_state_generic");
     parametersFADOneBodyBinary.set("init_basis_state", "0");
     parametersFADOneBodyBinary.set("nsweeps", 2);
     parametersFADOneBodyBinary.set("max_bond_dimension",100);
@@ -150,7 +150,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     parametersFADOneBodyBinary.set("chkpfile", "ES.checkpoint.h5");
     parametersFADOneBodyBinary.set("resfule", "ES.results.h5");
     parametersFADOneBodyBinary.set("nsweeps", 20);
-    parametersFADOneBodyBinary.set("init_state", "const");
+    parametersFADOneBodyBinary.set("init_type", "const");
     parametersFADOneBodyBinary.set("n_ortho_states", 1);
     parametersFADOneBodyBinary.set("ortho_states", "GS.checkpoint.h5");
     // Creates a new interface object and reruns the optimization
@@ -158,7 +158,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_SRCAS_FAD_1ModeHamiltonian_ExcitedState
     interfaceES->optimize();
     auto esEnergy = interfaceES->energy();
     // Creates SRCAS object for excited state
-    parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
+    parametersFADOneBodyBinary.set("init_type", "basis_state_generic");
     parametersFADOneBodyBinary.set("init_basis_state", "1");
     SRCAS<double> srcasES(parametersFADOneBodyBinary, interfaceES);
     currQueen = srcasES.getCurrentQueen();

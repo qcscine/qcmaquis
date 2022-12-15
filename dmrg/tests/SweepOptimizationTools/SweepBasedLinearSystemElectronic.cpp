@@ -50,7 +50,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   auto benzeneLattice = Lattice(parametersBenzene);
   auto benzeneModel = Model<matrix, TwoU1PG>(benzeneLattice, parametersBenzene);
   auto benzeneMPO = make_mpo(benzeneLattice, benzeneModel);
-  parametersBenzene.set("init_state", "hf");
+  parametersBenzene.set("init_type", "hf");
   parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
   auto hfBenzeneMPS = MPS<matrix, TwoU1PG>(benzeneLattice.size(), *(benzeneModel.initializer(benzeneLattice, parametersBenzene)));
   hfBenzeneMPS.normalize_right();
@@ -92,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benze
   parametersBenzene.set("max_bond_dimension", 100);
   parametersBenzene.set("optimization", "twosite");
   parametersBenzene.set("symmetry", "su2u1pg");
-  parametersBenzene.set("init_state", "const");
+  parametersBenzene.set("init_type", "const");
   // Optimization-specific parameters
   parametersBenzene.set("nsweeps", 10);
   parametersBenzene.set("chkpfile", "GS.Benzene.chkp.h5");

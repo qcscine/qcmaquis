@@ -58,7 +58,7 @@ TwoU1PG
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorBoundaryPropagator, S, symmetries, BenzeneFixture)
 {
   using BoundaryPropagatorType = BoundaryPropagator<matrix, S, storage::disk>;
-  parametersBenzene.set("init_state", "const");
+  parametersBenzene.set("init_type", "const");
   auto latticeBenzene = Lattice(parametersBenzene);
   auto modelBenzene = Model<matrix, S>(latticeBenzene, parametersBenzene);
   auto mpoBenzene = make_mpo(latticeBenzene, modelBenzene);

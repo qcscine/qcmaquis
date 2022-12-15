@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_NU1, NModeFixture)
 {
   using Symmetry = NU1_template<1>;
-  parametersFADOneBody.set("init_state", "basis_state_generic");
+  parametersFADOneBody.set("init_type", "basis_state_generic");
   parametersFADOneBody.set("init_basis_state", "0");
   // Populates the physical indices
   auto lattice = Lattice(parametersFADOneBody);
@@ -99,7 +99,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_NU1, NModeFi
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_FromBinary_NU1, NModeFixture)
 {
   using Symmetry = NU1_template<1>;
-  parametersFADOneBodyBinary.set("init_state", "basis_state_generic");
+  parametersFADOneBodyBinary.set("init_type", "basis_state_generic");
   parametersFADOneBodyBinary.set("init_basis_state", "10");
   // Populates the physical indices
   auto lattice = Lattice(parametersFADOneBodyBinary);
@@ -116,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_OneMode_Energy_FromBinary_N
 BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_Energy_NU1, NModeFixture)
 {
   using Symmetry = NU1_template<2>;
-  parametersFADTwoBody.set("init_state", "basis_state_generic");
+  parametersFADTwoBody.set("init_type", "basis_state_generic");
   parametersFADTwoBody.set("init_basis_state", "2,3");
   // Populates the physical indices
   auto lattice = Lattice(parametersFADTwoBody);
@@ -135,7 +135,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_NU1_ArbitrarySortin
 {
   using Symmetry = NU1_template<5>;
   // Conventional sorting
-  parametersFADTwoBodyFingerPrint.set("init_state", "basis_state_generic");
+  parametersFADTwoBodyFingerPrint.set("init_type", "basis_state_generic");
   parametersFADTwoBodyFingerPrint.set("init_basis_state", "0,0,0,0,0");
   auto lattice = Lattice(parametersFADTwoBodyFingerPrint);
   auto nModeModel = Model<matrix, Symmetry>(lattice, parametersFADTwoBodyFingerPrint);

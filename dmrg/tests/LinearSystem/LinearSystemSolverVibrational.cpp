@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
   auto mpo = make_mpo(vibrationalLattice, model);
   auto latticeSize = mpo.length();
   // Generates the MPS.
-  parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
+  parametersEthyleneWatsonHarmonic.set("init_type", "basis_state_generic");
   parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
   auto mpsHF = MPS<matrix, TrivialGroup>(vibrationalLattice.size(),
                                          *(model.initializer(vibrationalLattice, parametersEthyleneWatsonHarmonic)));
@@ -125,7 +125,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   using LinSolver = LinSolver<cmatrix, TrivialGroup>;
   // Prepares the lattice, the model, and the corresponding MPO
   parametersBilinearly.set("max_bond_dimension", 10);
-  parametersBilinearly.set("init_state", "default");
+  parametersBilinearly.set("init_type", "default");
   parametersBilinearly.set("seed", 1989);
   auto vibrationalLattice = Lattice(parametersBilinearly);
   auto model = Model<cmatrix, TrivialGroup>(vibrationalLattice, parametersBilinearly);

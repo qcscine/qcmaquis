@@ -31,6 +31,8 @@
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/utils/BaseParameters.h"
 
+#include <boost/tuple/tuple.hpp>
+
 /**
  * @brief Helper class for the MPS initialization.
  *
@@ -125,7 +127,12 @@ public:
   using ChargeType = typename NU1::charge;
   using state_type = std::vector<boost::tuple<ChargeType, int> >;
 
-  /** @brief Parser for the NU1 symmetry group */
+  /** @brief Parser for the NU1 symmetry group
+  * This function has two-fold functionality:
+  * If the init_type is basis_state_generic, it returns the elements,
+  * but if the init_type is basis_state_generic_const or basis_state_generic_default,
+  * then it returns the charge and the integer to inidcate wether this site should be populated (1) or not (0)
+  */
   static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != physDim.size())
@@ -147,7 +154,13 @@ public:
     for (int iLattice = 0; iLattice < size; iLattice++) {
       auto positionOfSiteInNewLattice = inverseModalsOrder[iLattice];
       auto type = siteType[positionOfSiteInNewLattice];
-      state[positionOfSiteInNewLattice] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);
+      if (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default") {
+        boost::tuple<ChargeType, bool> truePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 1);
+        boost::tuple<ChargeType, bool> falsePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 0);   
+        state[positionOfSiteInNewLattice] = (counterOfTypes[type] <= inputVec[type]) ? truePair : falsePair;
+      } else {
+        state[positionOfSiteInNewLattice] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);
+      }
       counterOfTypes[type]++;
     }
     return state;

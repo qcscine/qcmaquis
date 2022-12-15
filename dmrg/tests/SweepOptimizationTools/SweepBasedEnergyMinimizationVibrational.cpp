@@ -54,7 +54,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerSS_Vibrational_Watson, Wat
   auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
   auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatsonHarmonic);
   auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
-  parametersEthyleneWatsonHarmonic.set("init_state", "default");
+  parametersEthyleneWatsonHarmonic.set("init_type", "default");
   parametersEthyleneWatsonHarmonic.set("seed", 30031989);
   auto mpsDefault = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersEthyleneWatsonHarmonic)));
   mpsDefault.normalize_right();
@@ -83,7 +83,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedEnergyMinimizerTS_Vibrational_Bilinearly,
   auto lattice = Lattice(parametersBilinearly);
   auto bilinearlyModel = Model<matrix, TrivialGroup>(lattice, parametersBilinearly);
   auto bilinearlyMPO = make_mpo(lattice, bilinearlyModel);
-  parametersBilinearly.set("init_state", "const");
+  parametersBilinearly.set("init_type", "const");
   // TSOptimizer calculation
   auto mpsConst = MPS<matrix, TrivialGroup>(lattice.size(), *(bilinearlyModel.initializer(lattice, parametersBilinearly)));
   mpsConst.normalize_right();
