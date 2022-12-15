@@ -44,20 +44,37 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_SSvsTS, S, symmetries, LiHFixture
 {
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_type", "default");
-  parametersLiH.set("seed", 42);
   parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
   parametersLiH.set("init_type", "const");
   parametersLiH.set("nsweeps", 20);
   parametersLiH.set("ngrowsweeps", 2);
   parametersLiH.set("nmainsweeps", 5);
+  parametersLiH.set("optimizer", "singlesite");
   // Constructs the interface for the SS optimizer
   maquis::DMRGInterface<double> ssOptimizer(parametersLiH);
   ssOptimizer.optimize();
   auto energyFromSS = ssOptimizer.energy();
   // Now runs the TS optimizer
+  parametersLiH.set("optimizer", "twosite");
   maquis::DMRGInterface<double> tsOptimizer(parametersLiH);
   tsOptimizer.optimize();
   auto energyFromTS = tsOptimizer.energy();
   BOOST_CHECK_CLOSE(energyFromSS, energyFromTS, 1.0E-8);
 }
+
+///** @brief Test conventional DMRG with dumping the boundaries to File */
+//BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_LiH_DMRG_BoundaryStorage, S, symmetries, LiHFixture)
+//{
+//  // Generic parameters
+//  parametersLiH.set("max_bond_dimension", 50);
+//  parametersLiH.set("init_type", "const");
+//  parametersLiH.set("seed", 42);
+//  parametersLiH.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
+//  parametersLiH.set("nsweeps", 20);
+//  parametersLiH.set("optimization", "twosite");
+//  parametersLiH.set("storagedir", "tmp");
+//  maquis::DMRGInterface<double> optimizer(parametersLiH);
+//  optimizer.optimize();
+//  // auto energyFromTS = optimizer.energy();
+//  // BOOST_CHECK_CLOSE(energyFromSS, energyFromTS, 1.0E-8);
+//}
