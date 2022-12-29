@@ -65,9 +65,9 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
   auto lhsMps = rhsMps;
   // Generates the simulator and resets the shift to a meaningless complex number.
   auto zShift = std::complex<double>(392., -521.);
-  std::cout << "ALB BEFORE " << overlap(lhsMps, rhsMps) << std::endl;
+  // std::cout << "ALB BEFORE " << overlap(lhsMps, rhsMps) << std::endl;
   auto simulator = SimulatorType(lhsMps, benzeneMPO, parametersBenzene, benzeneModel, benzeneLattice, 0);
-  std::cout << "ALB AFTER " << overlap(lhsMps, rhsMps) << std::endl;
+  // std::cout << "ALB AFTER " << overlap(lhsMps, rhsMps) << std::endl;
   simulator.setShift(zShift);
   simulator.runSweepSimulation();
   // std::cout << "ALB2" << std::endl;
