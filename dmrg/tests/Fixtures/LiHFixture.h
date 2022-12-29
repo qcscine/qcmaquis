@@ -40,7 +40,7 @@ struct LiHFixture
 {
 // Types definition
   using RealIntegralMapType = typename maquis::integral_map<double>;
-    
+
   /** @brief Constructor for the fixture class */
   LiHFixture() {
     // Real-valued integrals
@@ -128,6 +128,7 @@ struct LiHFixture
   // Class members
   RealIntegralMapType integralsLiH;
   DmrgParameters parametersLiH;
+  double referenceEnergy = -7.90435750473166; // This reference is taken from test2.cpp
 };
 
 #endif

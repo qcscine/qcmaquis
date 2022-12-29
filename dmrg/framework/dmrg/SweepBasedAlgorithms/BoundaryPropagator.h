@@ -66,7 +66,6 @@ public:
   {
     left_.resize(L_+1);
     right_.resize(L_+1);
-    // Generation of the left boundary
     generateLeftBoundary();
     generateRightBoundary();
   }
