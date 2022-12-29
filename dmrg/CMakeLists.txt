@@ -444,6 +444,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
   add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
+  add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
   # Time-evolution tests
   if(BUILD_DMRG_EVOLVE)
     add_test(NAME Test_Time_Evolver COMMAND test_time_evolvers)
