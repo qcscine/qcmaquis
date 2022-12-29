@@ -187,7 +187,7 @@ MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
     assert( a.length() == b.length() );
     int nOfSites = a.length();
     MPS<Matrix, SymmGroup> ret(nOfSites);
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int p = 0; p < nOfSites; ++p) {
         if (p == 0)
             ret[0] = join(a[0], b[0], l_boundary_f);
