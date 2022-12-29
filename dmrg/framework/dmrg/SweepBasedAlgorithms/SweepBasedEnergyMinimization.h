@@ -55,7 +55,6 @@ public:
   using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
   using Base::iterationResults_;
-  using Base::lastSite_;
   using Base::L_;
   using Base::mps_;
   using Base::mpsContainer_;
@@ -95,6 +94,7 @@ public:
   void prepareMicroiteration() override final {
     siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
                                                      mpoContainer_.getMPOTensor(siteLeft_));
+    // std::cout << "Initial energy " << siteProblem_->get_energy(mpsContainer_.getMPSTensor(siteLeft_)) + mpoContainer_.getMPO().getCoreEnergy() << std::endl;
     if (overlapPropagator_)
       for (int iState = 0; iState < nOrtho_; iState++)
         orthoLocal_[iState] = overlapPropagator_->template getOrthogonalVector<SweepType>(iState, siteLeft_, siteRight_);
@@ -120,14 +120,15 @@ public:
 
   /** @brief Propagates the boundaries */
   void propagateBoundaries() override final {
-    auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
+    auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
-    if (sweepType == SweepDirectionType::Forward) {
+    if (sweepType == SweepDirectionType::Forward &&
+        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
       boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
     }
-    else if (sweepType == SweepDirectionType::Backward) {
+    else {
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);

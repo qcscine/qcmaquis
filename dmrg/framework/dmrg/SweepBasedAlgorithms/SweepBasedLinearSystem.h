@@ -57,10 +57,8 @@ public:
   using ValueType = typename MPSTensorType::scalar_type;
   //
   using Base::boundaryPropagator_;
-  using Base::getSpecificResult;
   using Base::indexOfMicroIteration_;
   using Base::iterationResults_;
-  using Base::lastSite_;
   using Base::lattice_;
   using Base::L_;
   using Base::model_;
@@ -68,7 +66,6 @@ public:
   using Base::mpsContainer_;
   using Base::mpoContainer_;
   using Base::parms_;
-  using Base::runSweepSimulation;
   using Base::siteLeft_;
   using Base::siteRight_;
   using Base::verbose_;
@@ -141,15 +138,17 @@ public:
 
   /** @brief Propagates the boundaries */
   void propagateBoundaries() override final {
-    auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
+    auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
-    if (sweepType == SweepDirectionType::Forward) {
-      rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1, DefaultSolver());
+    if (sweepType == SweepDirectionType::Forward &&
+        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
+      rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1);
       boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
     }
-    else if (sweepType == SweepDirectionType::Backward) {
+    else {
+      auto mpsCopy = rhsMps_;
       rhsMps_.move_normalization_r2l(siteRight_-1, siteRight_-2);
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
@@ -191,7 +190,7 @@ public:
       maquis::cout << std::setw(17) << std::right << iIter
                    << std::setw(19) << std::setprecision(10) << std::scientific << std::right << energyPerMicroIter_[iIter]
                    << std::setw(19) << std::setprecision(10) << std::scientific << std::right << errorPerMicroIter_[iIter] << std::endl;
-      if ((iIter+1)%(2*SweepTraitClass::getLastSite(L_)) == 0)
+      if ((iIter+1)%(SweepTraitClass::getNumberOfMicroiterations(L_)) == 0)
         maquis::cout << " +----------------+------------------+------------------+" << std::endl;
     }
     maquis::cout << std::endl;

@@ -63,13 +63,13 @@ public:
   };
 
   /** @brief Method to update the MPS for a given site */
-  auto updateMPS(int siteLeft, int siteRight, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS,
+  auto updateMPS(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
                  double alpha, double cutoff, double mMax, bool normalizeEnd) {
     // Printing
     mps_[siteLeft] = inputMPS;
     truncation_results truncationOutput;
     // Forward sweep case
-    if (sweepDirection == SweepDirectionType::Forward) {
+    if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       if (siteLeft < L_-1) {
         truncationOutput = mps_.grow_l2r_sweep(mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
                                                boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
@@ -80,7 +80,7 @@ public:
       }
     }
     // Backward case
-    else if (sweepDirection == SweepDirectionType::Backward) {
+    else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
       if (siteLeft > 0) {
         truncationOutput = mps_.grow_r2l_sweep(mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
                                                boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
@@ -122,7 +122,7 @@ public:
   };
 
   /** @brief Method to update the MPS for a given site */
-  auto updateMPS(int siteLeft, int siteRight, SweepDirectionType sweepDirection, const MPSTensorType& inputMPS,
+  auto updateMPS(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
                  double alpha, double cutoff, double mMax, bool normalizeEnd)
   {
     // Converts back the MPS into the two-site tensor
@@ -130,7 +130,7 @@ public:
     tst << inputMPS;
     truncation_results truncationOutput;
     // Actual truncation
-    if (sweepDirection == SweepDirectionType::Forward) {
+    if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       // Write back result from optimization
       if (parms_["twosite_truncation"] == "svd")
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
@@ -146,7 +146,7 @@ public:
       }
 
     }
-    else if (sweepDirection == SweepDirectionType::Backward) {
+    else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
       if (parms_["twosite_truncation"] == "svd")
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
       else

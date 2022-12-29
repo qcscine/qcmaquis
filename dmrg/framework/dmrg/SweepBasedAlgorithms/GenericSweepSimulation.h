@@ -63,14 +63,13 @@ public:
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                          const Lattice& lattice, bool verbose, std::string simulationName="Optimization")
     : mps_(mps), parms_(parms), L_(mps_.length()), mpoContainer_(mpo, mps), mpsContainer_(mps),
-      simulationName_(simulationName), nSweeps_(0), currentSite_(0), indexOfMicroIteration_(0),
+      simulationName_(simulationName), nSweeps_(0), indexOfMicroIteration_(0),
       lattice_(lattice), model_(model), verbose_(verbose)
   {
-    siteLeft_ = currentSite_;
-    siteRight_ = currentSite_+1;
+    siteLeft_ = 0;
+    siteRight_ = 1;
     mps_.normalize_right();
     nSweeps_ = parms_["nsweeps"];
-    lastSite_ = SweepTraitClass::getLastSite(L_);
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
   };
@@ -91,70 +90,80 @@ public:
 
   /** @brief Runs a single sweep of a sweep-based optimization */
   void runSingleSweep(int iSweep) {
+    // Prints header
+    if (iSweep == 0)
+      printGenericInfo();
     // Preparatory operations.
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
     this->printSweepSpecificInfo(iSweep);
-    currentSite_ = SweepTraitClass::convertMicroIterationToSite(L_, indexOfMicroIteration_);
+    auto sweepType = SweepDirectionType::Forward;
+    this->updateSites();
     // Prefetches the boundaries that will be needed for the first sweep
-    Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(currentSite_, SweepDirectionType::Forward)));
-    Storage::prefetch(boundaryPropagator_->getRightBoundary(SweepTraitClass::getIndexOfRightBoundary(currentSite_, SweepDirectionType::Forward)));
+    Storage::prefetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
+    Storage::prefetch(boundaryPropagator_->getRightBoundary(siteRight_));
+    auto numberOfMicroIterations = SweepTraitClass::getNumberOfMicroiterations(L_);
     // == LOOP OVER THE MICROITERATIONS ==
-    while (indexOfMicroIteration_ < 2*lastSite_) {
-      // Calculates the relevant indices on the DMRG lattice.
-      auto sweepType = (indexOfMicroIteration_ < lastSite_) ? SweepDirectionType::Forward : SweepDirectionType::Backward;
-      currentSite_ = SweepTraitClass::convertMicroIterationToSite(L_, indexOfMicroIteration_);
-      siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(currentSite_, sweepType);
-      siteRight_ = SweepTraitClass::getIndexOfRightBoundary(currentSite_, sweepType);
+    while (indexOfMicroIteration_ < numberOfMicroIterations) {
+      // Useful local variables
+      sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
+      auto changeDirection = SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_);
+      // Syncs the storage
+      // if (sweepType == SweepDirectionType::Backward && indexOfMicroIteration_ == lastSite_) {
+      //   std::cout << "Synchronizing storage" << std::endl;
+      //   Storage::sync();
+      // }
+      this->updateSites();
       printMicroiterInfo(sweepType);
-      // We must be careful here because, for the two-site case, there is the risk of fetching twice the boundaries.
-      // In fact, we run the optimization of sites (L-1, L) twice consequently
-      //TODO ALB THIS SHOULD BE FIXED PROPERLY!
-      if (SweepTraitClass::countEndSiteTwice_ && indexOfMicroIteration_ != lastSite_) {
+      // Gets the boundary that are needed. Note that, in a forward sweep, the left boundary is assumed
+      // to have been generated during the previous boundary update and, therefore, is not fetched.
+      if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0)
         Storage::fetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
+      if (sweepType == SweepDirectionType::Forward)
         Storage::fetch(boundaryPropagator_->getRightBoundary(siteRight_));
-      }
       // Starts prefetching what will be needed in the following microiteration.
       // Note that, for instance, we don't prefetch the left boundary for the l2r sweep because
       // this will be taken care in the boundary propagation (in other words, there is no
       // need to prefetch the left boundary since it will be anyways modified by the boundary
       // propagation)
       if (sweepType == SweepDirectionType::Forward) {
-        auto nextIndex = SweepTraitClass::getIndexOfNextRightBoundary(currentSite_, sweepType);
-        if (nextIndex <= L_)
-          Storage::prefetch(boundaryPropagator_->getRightBoundary(nextIndex));
+        auto sweepTypeNext = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_+1);
+        if (sweepTypeNext == sweepType)
+          Storage::prefetch(boundaryPropagator_->getRightBoundary(SweepTraitClass::getIndexOfRightBoundary(L_, indexOfMicroIteration_+1)));
+        else if (sweepTypeNext != SweepDirectionType::EndOfLattice)
+          Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(L_, indexOfMicroIteration_+1)));
       }
       else if (sweepType == SweepDirectionType::Backward) {
-        auto nextIndex = SweepTraitClass::getIndexOfNextLeftBoundary(currentSite_, sweepType);
-        if (nextIndex >= 0)
-          Storage::prefetch(boundaryPropagator_->getLeftBoundary(nextIndex));
+        if (indexOfMicroIteration_ != numberOfMicroIterations-1)
+          Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(L_, indexOfMicroIteration_+1)));
       }
       // == SOLUTION OF THE LOCAL PROBLEM ==
       this->prepareMicroiteration();
       auto outputTensor = this->solveLocalProblem();
       // == MPS UPDATE ==
-      auto truncationResults = mpsUpdater_->updateMPS(siteLeft_, siteRight_, sweepType, outputTensor, this->getAlpha(iSweep),
+      auto boundaryGrowthModality = (sweepType == SweepDirectionType::Forward && !changeDirection) ? GrowBoundaryModality::LeftToRight 
+                                                                                                   : GrowBoundaryModality::RightToLeft;
+      auto truncationResults = mpsUpdater_->updateMPS(siteLeft_, siteRight_, boundaryGrowthModality, outputTensor, this->getAlpha(iSweep),
                                                       this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd());
       // == BOUNDARY PROPAGATION ==
-      this->propagateBoundaries();
-      // After the boundary propagation we can do two operations at the memory level.
-      // 1) we can drop the memory of the right boundary (in the case of a l2r sweep).
-      //    In fact, that memory will anyways be overwritten by the r2l sweep that
-      //    will follow.
-      // 2) We can write to file the left boundary that we are "leaving behind"
-      if (sweepType == SweepDirectionType::Forward && siteLeft_ != L_-1) {
+      // First, drops the memory of the right boundary (in the case of a l2r sweep).
+      // The memory will anyways be overwritten by the r2l sweep that will follow.
+      // Note also that, if we are at a point at which we reverse the direction of the boundary
+      // propagation, we don't drop the right boundary because the next step will be a r2l sweep
+      // and, therefore, that element of the right boundary won't be overwritten.
+      if (sweepType == SweepDirectionType::Forward && !changeDirection)
         Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
-        Storage::StoreToFile(boundaryPropagator_->getLeftBoundary(siteLeft_));
-      }
-      else if (sweepType == SweepDirectionType::Backward && siteLeft_ != 0) {
+      else // if (sweepType == SweepDirectionType::Backward)
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
-        Storage::StoreToFile(boundaryPropagator_->getRightBoundary(siteRight_));
-      }
+      // Updates the boundary
+      this->propagateBoundaries();
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
       if (verbose_)
         maquis::cout << std::endl;
     }
+    // At the end, just stores to file the final right boundary (if needed, one can use it for the next sweep)
+    // Storage::StoreToFile(boundaryPropagator_->getRightBoundary(siteRight_-1));
     this->finalizeSweep();
   }
 
@@ -243,6 +252,12 @@ protected:
     return Mmax;
   }
 
+  /** @brief Updates the index of the sites */
+  void updateSites() {
+    siteLeft_ = SweepTraitClass::getIndexOfLeftBoundary(L_, indexOfMicroIteration_);
+    siteRight_ = SweepTraitClass::getIndexOfRightBoundary(L_, indexOfMicroIteration_);
+  }
+
   /** @brief Prints generic information about the */
   void printGenericInfo() const {
     if (verbose_) {
@@ -255,7 +270,7 @@ protected:
       maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
       maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
       if (nSweeps_ != 0)
-        maquis::cout << " - Overall number of sweeps: " << nSweeps_ << std::endl;
+        maquis::cout << " - Maximum number of sweeps: " << nSweeps_ << std::endl;
     }
   }
 
@@ -280,7 +295,6 @@ protected:
         maquis::cout << " , forward sweep" << std::endl;
       else
         maquis::cout << " , backward sweep" << std::endl;
-      maquis::cout << " - Optimization centered on site: " << currentSite_ << std::endl;
       maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;
@@ -292,7 +306,7 @@ protected:
   MPOContainerType mpoContainer_;
   MPSContainerType mpsContainer_;
   std::unique_ptr<SweepMPSUpdaterType> mpsUpdater_;
-  int L_, indexOfMicroIteration_, currentSite_, lastSite_, siteLeft_, siteRight_, nSweeps_;
+  int L_, indexOfMicroIteration_, siteLeft_, siteRight_, nSweeps_;
   BaseParameters& parms_;
   results_collector iterationResults_;
   std::shared_ptr<BoundaryPropagatorType> boundaryPropagator_;
