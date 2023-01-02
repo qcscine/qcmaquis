@@ -94,6 +94,18 @@ public:
     return right_[iSite];
   }
 
+  /** @brief Getter for the left boundary vector */
+  auto& getLeftBoundaries() { return left_; }
+
+  /** @brief Const getter for the left boundary vector */
+  const auto& getLeftBoundaries() const { return left_; }
+
+  /** @brief Getter for the right boundary */
+  auto& getRightBoundaries() { return right_; }
+
+  /** @brief Const getter for the right boundary */
+  const auto& getRightBoundary() const { return right_; }
+
   /**
    * @brief Propagation of the left boundary.
    *
