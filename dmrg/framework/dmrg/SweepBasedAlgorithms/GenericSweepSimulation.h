@@ -141,10 +141,10 @@ public:
       this->prepareMicroiteration();
       auto outputTensor = this->solveLocalProblem();
       // == MPS UPDATE ==
-      auto boundaryGrowthModality = (sweepType == SweepDirectionType::Forward && !changeDirection) ? GrowBoundaryModality::LeftToRight 
+      auto boundaryGrowthModality = (sweepType == SweepDirectionType::Forward && !changeDirection) ? GrowBoundaryModality::LeftToRight
                                                                                                    : GrowBoundaryModality::RightToLeft;
-      auto truncationResults = mpsUpdater_->updateMPS(siteLeft_, siteRight_, boundaryGrowthModality, outputTensor, this->getAlpha(iSweep),
-                                                      this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd());
+      auto truncationResults = mpsUpdater_->generateUnitaryFactor(siteLeft_, siteRight_, boundaryGrowthModality, outputTensor, this->getAlpha(iSweep),
+                                                                  this->get_cutoff(iSweep), this->get_Mmax(iSweep));
       // == BOUNDARY PROPAGATION ==
       // First, drops the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
@@ -157,6 +157,7 @@ public:
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
       // Updates the boundary
       this->propagateBoundaries();
+      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
       if (verbose_)

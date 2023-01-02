@@ -77,18 +77,17 @@ predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<
 
 template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
 static MPSTensor<Matrix, SymmGroup>
-predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
-                          MPSTensor<Matrix, SymmGroup> const & psi,
-                          MPSTensor<Matrix, SymmGroup> const & A)
+predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> mpsNextSite,
+                          const MPSTensor<Matrix, SymmGroup>& mpsCurrentSite,
+                          const MPSTensor<Matrix, SymmGroup>& U)
 {
-    psi.make_left_paired();
-    A.make_left_paired();
-
+    mpsCurrentSite.make_left_paired();
+    U.make_left_paired();
     block_matrix<Matrix, SymmGroup> tmp;
-    typename Gemm::gemm()(transpose(conjugate(A.data())), psi.data(), tmp);
-    B.multiply_from_left(tmp);
-
-    return B;
+    // The factor to be included in the following site is SU^T = U^TM
+    typename Gemm::gemm()(transpose(conjugate(U.data())), mpsCurrentSite.data(), tmp);
+    mpsNextSite.multiply_from_left(tmp);
+    return mpsNextSite;
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>

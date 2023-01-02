@@ -31,6 +31,7 @@
 #include "GenericSweepSimulation.h"
 #include "SweepBasedEnergyMinimization.h"
 #include "SweepBasedLinearSystem.h"
+// #include "SweepBasedTimeEvolution.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
@@ -46,6 +47,8 @@ class SweepSimulationFactory {
   using OptimizationTSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using LinearSystemSSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
   using LinearSystemTSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
+  // using EvolverSSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
+  // using EvolverTSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using PointerToSSSimulatorType = std::unique_ptr<GenericSSSimulationType>;
   using PointerToTSSimulatorType = std::unique_ptr<GenericTSSimulationType>;
   using MPSType = MPS<Matrix, SymmGroup>;
@@ -64,13 +67,23 @@ public:
       else if (sweepType_ == SweepOptimizationType::TwoSite)
         tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, true);
     // Solution of a linear system
-    if (simulationName == "linear_system") {
+    else if (simulationName == "linear_system") {
       bool verbose = parms["linsystem_verbose"] == "yes";
       if (sweepType_ == SweepOptimizationType::SingleSite)
         ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       else if (sweepType_ == SweepOptimizationType::TwoSite)
         tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, model, lattice, verbose);
     }
+    // else if (simulationName == "evolve") {
+    //   if (sweepType_ == SweepOptimizationType::SingleSite)
+    //     ssSimulator_ = std::make_unique<EvolverSSSimulationType>(mps, mpo, parms, model, lattice, true);
+    //   else if (sweepType_ == SweepOptimizationType::TwoSite)
+    //     tsSimulator_ = std::make_unique<EvolverTSSimulationType>(mps, mpo, parms, model, lattice, true);
+    // }
+    else {
+      throw std::runtime_error("Sweep-based simulation type not recognized");
+    }
+    // Final check
     if (!ssSimulator_ && !tsSimulator_)
       throw std::runtime_error("Error in parameters for [SweepSimulationFactory] object");
   };

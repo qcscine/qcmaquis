@@ -26,7 +26,6 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "contractions.h"
-
 #include "dmrg/utils/archive.h"
 
 #include <limits>
@@ -230,12 +229,9 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 truncation_results
-MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                       Boundary<OtherMatrix, SymmGroup> const & left,
-                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax,
-                                       bool perturbDM, bool verbose)
+MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo, Boundary<OtherMatrix, SymmGroup> const & left,
+                                       Boundary<OtherMatrix, SymmGroup> const & right, std::size_t l, double alpha,
+                                       double cutoff, std::size_t Mmax, bool perturbDM, bool verbose)
 { // canonized_i invalided through (*this)[]
     using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
@@ -249,19 +245,15 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 truncation_results
-MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                       Boundary<OtherMatrix, SymmGroup> const & left,
-                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax,
-                                       bool perturbDM, bool verbose)
+MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo, Boundary<OtherMatrix, SymmGroup> const & left,
+                                       Boundary<OtherMatrix, SymmGroup> const & right, std::size_t l, double alpha,
+                                       double cutoff, std::size_t Mmax, bool perturbDM, bool verbose)
 { // canonized_i invalided through (*this)[]
     using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
     boost::tie(new_mps, trunc) = Contractor::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
-    (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
-                                                          (*this)[l], new_mps);
+    (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
