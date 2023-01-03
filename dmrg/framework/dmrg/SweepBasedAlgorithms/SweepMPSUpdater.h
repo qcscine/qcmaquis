@@ -125,7 +125,7 @@ public:
     if (loadedUnitaryFactor_) {
       if (boundaryModality == GrowBoundaryModality::LeftToRight) {
         if (site < L_-1) {
-          auto zsp = ZeroSiteProblemType(mpo_[site], mpo_[site+1], boundaryPropagator_->getLeftBoundary(site),
+          auto zsp = ZeroSiteProblemType(mpo_[site], mpo_[site+1], boundaryPropagator_->getLeftBoundary(site+1),
                                          boundaryPropagator_->getRightBoundary(site+1));
           timeEvolver->evolve(zsp, zeroSiteTensor_, false, false);
         }
@@ -231,9 +231,17 @@ public:
   using TimeEvolverType = TimeEvolver<Matrix, SymmGroup, BaseParameters>;
   void performBackPropagation(GrowBoundaryModality boundaryModality, int siteLeft, int siteRight, std::shared_ptr<TimeEvolverType> timeEvolver) {
     if (loadedUnitaryFactor_) {
-      if (siteRight != L_-1) {
-        SiteProblemType sp2(boundaryPropagator_->getLeftBoundary(siteRight), boundaryPropagator_->getLeftBoundary(siteRight+1), mpo_[siteRight]);
-        timeEvolver->evolve(sp2, mps_[siteRight], false, false);
+      if (boundaryModality == GrowBoundaryModality::LeftToRight) {
+        if (siteRight != L_-1) {
+          SiteProblemType sp2(boundaryPropagator_->getLeftBoundary(siteRight-1), boundaryPropagator_->getRightBoundary(siteRight), mpo_[siteRight-1]);
+          timeEvolver->evolve(sp2, mps_[siteRight-1], false, false);
+        }
+      }
+      else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
+        if (siteLeft != 0) {
+          SiteProblemType sp2(boundaryPropagator_->getLeftBoundary(siteLeft), boundaryPropagator_->getRightBoundary(siteLeft+1), mpo_[siteLeft]);
+          timeEvolver->evolve(sp2, mps_[siteLeft], false, false);
+        }
       }
     }
     else {
