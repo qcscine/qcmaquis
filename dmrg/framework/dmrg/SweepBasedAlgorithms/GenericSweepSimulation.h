@@ -97,7 +97,6 @@ public:
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
     this->printSweepSpecificInfo(iSweep);
-    auto sweepType = SweepDirectionType::Forward;
     this->updateSites();
     // Prefetches the boundaries that will be needed for the first sweep
     Storage::prefetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
@@ -106,7 +105,7 @@ public:
     // == LOOP OVER THE MICROITERATIONS ==
     while (indexOfMicroIteration_ < numberOfMicroIterations) {
       // Useful local variables
-      sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
+      auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
       auto changeDirection = SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_);
       // Syncs the storage
       // if (sweepType == SweepDirectionType::Backward && indexOfMicroIteration_ == lastSite_) {
@@ -158,7 +157,7 @@ public:
       // Updates the boundary
       this->propagateBoundaries();
       this->propagateOtherTensors();
-      // this->performBackPropagation();
+      this->performBackPropagation(boundaryGrowthModality);
       mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
@@ -209,7 +208,14 @@ protected:
    * @brief Propagates other tensor networks that may be needed.
    * Note that this method is called *after* the back-propagation.
    */
-  virtual void propagateOtherTensors() = 0;
+  virtual void propagateOtherTensors() {};
+
+  /**
+   * @brief Back-propagation step.
+   * By default, nothing is done. However, this function can be defined by
+   * derived class to perform a back-propagation step.
+   */
+  virtual void performBackPropagation(GrowBoundaryModality boundaryGrowthModality) {};
 
   /** @brief Boundary propagation method */
   void propagateBoundaries() {
@@ -306,6 +312,7 @@ protected:
     }
   }
 
+  /** @brief Prints information regarding the current microiteration */
   void printMicroiterInfo(SweepDirectionType sweepType) const {
     if (verbose_) {
       maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
@@ -318,6 +325,10 @@ protected:
       maquis::cout << std::endl;
     }
   }
+
+  /** @brief Checks whether the current microiteration is associated with a terminal site */
+  inline bool isTerminal() const { return indexOfMicroIteration_ == 0 ||
+                                          SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_); }
 
 protected:
   MPSType& mps_;

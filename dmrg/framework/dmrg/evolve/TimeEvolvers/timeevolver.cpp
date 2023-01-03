@@ -111,8 +111,9 @@ void TimeEvolver<Matrix, SymmGroup, ParameterType>::add_to_current_time(time_typ
 
 template<class Matrix, class SymmGroup, class ParameterType>
 template<class SiteProblem, class MatrixType>
-void TimeEvolver<Matrix, SymmGroup, ParameterType>::evolve(SiteProblem const& site_problem, MatrixType& matrix,
-                                                           bool is_forward) const
+void TimeEvolver<Matrix, SymmGroup, ParameterType>::evolve(const SiteProblem& siteProblem, MatrixType& matrix,
+                                                           bool isForward, bool isTerminal) const
 {
-  time_evolution_algorithm_->evolve(site_problem, matrix, is_forward, time_current_, time_step_);
+  auto actualTimeStep = (isTerminal) ? 2*time_step_ : time_step_;
+  time_evolution_algorithm_->evolve(siteProblem, matrix, isForward, time_current_, actualTimeStep);
 }

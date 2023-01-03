@@ -156,7 +156,7 @@ public:
       SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
       // == MAIN PART: performs the sweep ==
       std::pair< typename MPSTensor<Matrix, SymmGroup>::magnitude_type, MPSTensor<Matrix, SymmGroup> > res;
-      time_evolver_->evolve(sp, twin_mps, false);
+      time_evolver_->evolve(sp, twin_mps, false, false);
       if (site1 == 0)
         energy = ietl::get_energy(sp, twin_mps);
       res = std::make_pair(energy, twin_mps);
@@ -202,7 +202,7 @@ public:
         if (site2 != L_-1) {
           if (do_backpropagation_) {
             SiteProblem<Matrix, SymmGroup> sp2(left_[site2], right_[site2+1], mpo_[site2]);
-            time_evolver_->evolve(sp2, mps_[site2], true);
+            time_evolver_->evolve(sp2, mps_[site2], true, false);
           }
         } else {
           time_evolver_->add_to_current_time(time_step_);
@@ -221,7 +221,7 @@ public:
         if (site1 != 0) {
           if (do_backpropagation_) {
             SiteProblem<Matrix, SymmGroup> sp2(left_[site1], right_[site1+1], mpo_[site1]);
-            time_evolver_->evolve(sp2, mps_[site1], true);
+            time_evolver_->evolve(sp2, mps_[site1], true, false);
           }
         } else {
           time_evolver_->add_to_current_time(time_step_);

@@ -49,12 +49,13 @@ class SweepMPSContainer<Matrix, SymmGroup, SweepOptimizationType::SingleSite> {
 public:
   // Type declaration
   using MPSType = MPS<Matrix, SymmGroup>;
+  using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
   explicit SweepMPSContainer(const MPSType& mps) : mps_(mps) {};
 
-  /** @brief Getter for the MPOTensor */
-  auto& getMPSTensor(int siteLeft) { return mps_[siteLeft]; }
+  /** @brief Const getter for the MPSTensor of a given site */
+  const MPSTensorType& getMPSTensor(int siteLeft) const { return mps_[siteLeft]; }
 
   /** @brief Gets the MPS */
   const auto& getMPS() { return mps_; }
@@ -76,10 +77,9 @@ public:
   /** @brief Class constructor */
   explicit SweepMPSContainer(const MPSType& mps) : mps_(mps) { };
 
-  /** @brief Getter for the MPOTensor */
-  auto& getMPSTensor(int siteLeft) {
-    TwoSiteTensor<Matrix, SymmGroup> tst(mps_[siteLeft], mps_[siteLeft+1]);
-    localMPS_ = tst.make_mps();
+  /** @brief Const getter for the MPSTensor */
+  const MPSTensorType& getMPSTensor(int siteLeft) const {
+    generateTwoSiteTensor(siteLeft);
     return localMPS_;
   }
 
@@ -87,8 +87,16 @@ public:
   const auto& getMPS() { return mps_; }
 
 private:
+
+  /** @brief Generates the two-site tensor */
+  void generateTwoSiteTensor(int site) const {
+    TwoSiteTensor<Matrix, SymmGroup> tst(mps_[site], mps_[site+1]);
+    localMPS_ = tst.make_mps();
+  }
+
+  // Class members
   const MPSType& mps_;
-  MPSTensorType localMPS_;
+  mutable MPSTensorType localMPS_;
 };
 
 #endif // SWEEP_MPO_CONTAINER

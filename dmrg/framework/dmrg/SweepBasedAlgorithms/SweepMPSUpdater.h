@@ -125,16 +125,16 @@ public:
     if (loadedUnitaryFactor_) {
       if (boundaryModality == GrowBoundaryModality::LeftToRight) {
         if (site < L_-1) {
-          auto zsp = ZeroSiteProblemType(mpo_[site], mpo_[site+1], boundaryPropagator_.getLeftBoundary(site),
-                                         boundaryPropagator_.getRightBoundary(site+1));
-          timeEvolver->evolve(zsp, zeroSiteTensor_, true);
+          auto zsp = ZeroSiteProblemType(mpo_[site], mpo_[site+1], boundaryPropagator_->getLeftBoundary(site),
+                                         boundaryPropagator_->getRightBoundary(site+1));
+          timeEvolver->evolve(zsp, zeroSiteTensor_, false, false);
         }
       }
       else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
         if (site > 0) {
-          auto zsp = ZeroSiteProblemType(mpo_[site-1], mpo_[site], boundaryPropagator_.getLeftBoundary(site),
-                                         boundaryPropagator_.getRightBoundary(site));
-          timeEvolver->evolve(zsp, zeroSiteTensor_, true);
+          auto zsp = ZeroSiteProblemType(mpo_[site-1], mpo_[site], boundaryPropagator_->getLeftBoundary(site),
+                                         boundaryPropagator_->getRightBoundary(site));
+          timeEvolver->evolve(zsp, zeroSiteTensor_, false, false);
         }
       }
     }
@@ -233,7 +233,7 @@ public:
     if (loadedUnitaryFactor_) {
       if (siteRight != L_-1) {
         SiteProblemType sp2(boundaryPropagator_->getLeftBoundary(siteRight), boundaryPropagator_->getLeftBoundary(siteRight+1), mpo_[siteRight]);
-        timeEvolver->evolve(sp2, mps_[siteRight], true);
+        timeEvolver->evolve(sp2, mps_[siteRight], false, false);
       }
     }
     else {

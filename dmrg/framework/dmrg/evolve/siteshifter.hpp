@@ -147,6 +147,6 @@ void SiteShifter<Matrix, SymmGroup, TimeEvolver, Perturber>::perform_propagation
         std::cout << std::endl ;
         std::cout << "Backward propagating the ZeroSiteTensor object " << std::endl ;
         auto zsp = ZeroSiteProblem<Matrix, SymmGroup>(mpo_ten_left, mpo_ten_right, left, right);
-        time_evolver_->evolve(zsp, zerosite_tensor_, true);
+        time_evolver_->evolve(zsp, zerosite_tensor_, true, false);
     }
 }
