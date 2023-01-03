@@ -132,7 +132,7 @@ public:
       // +-----------------+
       std::cout << std::endl;
       std::cout << "Forward propagating the " << site << "-th MPSTensor " << std::endl;
-      time_evolver_->evolve(sp, mps_[site], false, false);
+      time_evolver_->evolve(sp, mps_[site], true, false);
       if (site == 0) {
           energy = ietl::get_energy(sp, mps_[site]);
           res.first = energy;
