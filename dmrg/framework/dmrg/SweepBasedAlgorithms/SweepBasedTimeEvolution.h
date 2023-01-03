@@ -73,7 +73,7 @@ public:
   /** @brief Class constructor */
   SweepBasedTimeEvolution(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                           const Lattice& lattice, bool verbose)
-    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), perturbMPS_(false)
+    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), perturbMPS_(false), doBackpropagation_(true)
   {
     // Generate classes needed for propagation
     timeEvolver_ = std::make_shared<TimeEvolverType>(parms_);

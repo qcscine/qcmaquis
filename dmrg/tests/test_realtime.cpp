@@ -50,7 +50,7 @@
  * The data are obtained for CAS(6, 6) and based on the cc-pVDZ basis set.
  * The data are stored in the BenzeneFixture class.
  */
-BOOST_FIXTURE_TEST_CASE( TestRealTime, BenzeneFixture )
+BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
 {
   std::vector<std::string> symmetries;
   #ifdef HAVE_SU2U1PG
@@ -131,7 +131,7 @@ BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
  * @brief Tests that the energy is conserved along a relativistic TD-DMRG propagation.
  * The data are obtained for N2+ and the 3-21G basis set.
  */
-BOOST_FIXTURE_TEST_CASE( TestRealTimeRelativistic, TestTimeEvolverFixture )
+BOOST_FIXTURE_TEST_CASE(TestRealTimeRelativistic, TestTimeEvolverFixture)
 {
   // Generic settings
   parametersRelativistic.set("imaginary_time", "no");
@@ -222,12 +222,13 @@ BOOST_FIXTURE_TEST_CASE( TestRealTimePreBO, PreBOTestTimeEvolverFixture )
 #ifdef DMRG_VIBRONIC
 
 /** @brief Tests that the energy is conserved along an Excitonic TD-DMRG propagation. */
-BOOST_FIXTURE_TEST_CASE( TestRealTimeExcitonic, VibronicFixture )
+BOOST_FIXTURE_TEST_CASE(TestRealTimeExcitonic, VibronicFixture)
 {
 #ifdef HAVE_U1
   // Generic settings
   parametersExcitonicAggregateTwoSites.set("imaginary_time", "no");
   parametersExcitonicAggregateTwoSites.set("TD_backpropagation", "yes");
+  parametersExcitonicAggregateTwoSites.set("TD_noise", "yes");
   parametersExcitonicAggregateTwoSites.set("propagator_maxiter", 30);
   parametersExcitonicAggregateTwoSites.set("propagator_accuracy", 1.0E-10);
   parametersExcitonicAggregateTwoSites.set("time_units", "as");
@@ -236,7 +237,6 @@ BOOST_FIXTURE_TEST_CASE( TestRealTimeExcitonic, VibronicFixture )
   parametersExcitonicAggregateTwoSites.set("max_bond_dimension", 50);
   parametersExcitonicAggregateTwoSites.set("init_type", "basis_state_generic");
   parametersExcitonicAggregateTwoSites.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
-  parametersExcitonicAggregateTwoSites.set("TD_noise", "yes");
   parametersExcitonicAggregateTwoSites.set("alpha_initial", 1.0E-15);
   parametersExcitonicAggregateTwoSites.set("alpha_main", 1.0E-20);
   parametersExcitonicAggregateTwoSites.set("alpha_final", 0.);
