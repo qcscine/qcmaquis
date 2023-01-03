@@ -144,7 +144,7 @@ public:
       auto boundaryGrowthModality = (sweepType == SweepDirectionType::Forward && !changeDirection) ? GrowBoundaryModality::LeftToRight
                                                                                                    : GrowBoundaryModality::RightToLeft;
       auto truncationResults = mpsUpdater_->generateUnitaryFactor(siteLeft_, siteRight_, boundaryGrowthModality, outputTensor, this->getAlpha(iSweep),
-                                                                  this->get_cutoff(iSweep), this->get_Mmax(iSweep));
+                                                                  this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd());
       // == BOUNDARY PROPAGATION ==
       // First, drops the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
@@ -157,6 +157,8 @@ public:
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
       // Updates the boundary
       this->propagateBoundaries();
+      this->propagateOtherTensors();
+      // this->performBackPropagation();
       mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
@@ -194,16 +196,31 @@ protected:
   /** @brief Runs the actual sweep simulation */
   virtual MPSTensorType solveLocalProblem() = 0;
 
+  /** @brief Whether the MPS should be normalized at the end of a sweep */
   virtual bool normalizeAtEnd() = 0;
-
-  /** @brief Boundary propagation method */
-  virtual void propagateBoundaries() = 0;
 
   /** @brief Collects the operation to be run at the end of a micro iteration */
   virtual void finalizeMicroIteration(const truncation_results& trunc) = 0;
 
   /** @brief Collects the operation to be run at the end of the simulation */
   virtual void finalizeSweep() = 0;
+
+  /**
+   * @brief Propagates other tensor networks that may be needed.
+   * Note that this method is called *after* the back-propagation.
+   */
+  virtual void propagateOtherTensors() = 0;
+
+  /** @brief Boundary propagation method */
+  void propagateBoundaries() {
+    auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
+    // Boundary propagation
+    if (sweepType == SweepDirectionType::Forward &&
+        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_))
+      boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
+    else
+      boundaryPropagator_->updateRightBoundary(siteRight_-1);
+  };
 
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)

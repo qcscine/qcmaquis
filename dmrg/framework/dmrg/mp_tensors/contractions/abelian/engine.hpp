@@ -5,6 +5,7 @@
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -161,6 +162,14 @@ public:
         return common::predict_lanczos_l2r_sweep<Matrix, OtherMatrix, SymmGroup, abelian::Gemms>(B, psi, A);
     }
 
+    static block_matrix<Matrix, SymmGroup>
+    getZeroSiteTensorL2R(MPSTensor<Matrix, SymmGroup> B,
+                         MPSTensor<Matrix, SymmGroup> const & psi,
+                         MPSTensor<Matrix, SymmGroup> const & A)
+    {
+        return common::getZeroSiteTensorL2R<Matrix, OtherMatrix, SymmGroup, abelian::Gemms>(B, psi, A);
+    }
+
     static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -179,6 +188,14 @@ public:
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
         return common::predict_lanczos_r2l_sweep<Matrix, OtherMatrix, SymmGroup, abelian::Gemms>(B, psi, A);
+    }
+
+    static block_matrix<Matrix, SymmGroup>
+    getZeroSiteTensorR2L(MPSTensor<Matrix, SymmGroup> B,
+                         MPSTensor<Matrix, SymmGroup> const & psi,
+                         MPSTensor<Matrix, SymmGroup> const & A)
+    {
+        return common::getZeroSiteTensorR2L<Matrix, OtherMatrix, SymmGroup, abelian::Gemms>(B, psi, A);
     }
 
     static Boundary<OtherMatrix, SymmGroup>

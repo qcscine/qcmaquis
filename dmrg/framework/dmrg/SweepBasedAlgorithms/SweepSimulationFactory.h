@@ -61,18 +61,23 @@ public:
     : sweepType_(sweepType)
   {
     // Optimization
-    if (simulationName == "optimize")
-      if (sweepType_ == SweepOptimizationType::SingleSite)
+    if (simulationName == "optimize") {
+      if (sweepType_ == SweepOptimizationType::SingleSite) {
         ssSimulator_ = std::make_unique<OptimizationSSSimulationType>(mps, mpo, parms, model, lattice, true);
-      else if (sweepType_ == SweepOptimizationType::TwoSite)
+      }
+      else if (sweepType_ == SweepOptimizationType::TwoSite) {
         tsSimulator_ = std::make_unique<OptimizationTSSimulationType>(mps, mpo, parms, model, lattice, true);
+      }
+    }
     // Solution of a linear system
     else if (simulationName == "linear_system") {
       bool verbose = parms["linsystem_verbose"] == "yes";
-      if (sweepType_ == SweepOptimizationType::SingleSite)
+      if (sweepType_ == SweepOptimizationType::SingleSite) {
         ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, model, lattice, verbose);
-      else if (sweepType_ == SweepOptimizationType::TwoSite)
+      }
+      else if (sweepType_ == SweepOptimizationType::TwoSite) {
         tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, model, lattice, verbose);
+      }
     }
     // else if (simulationName == "evolve") {
     //   if (sweepType_ == SweepOptimizationType::SingleSite)

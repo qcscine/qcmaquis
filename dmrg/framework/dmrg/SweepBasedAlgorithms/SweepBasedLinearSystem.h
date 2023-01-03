@@ -136,21 +136,19 @@ public:
     return std::get<2>(resultOfLocalSiteProblem);
   }
 
-  /** @brief Propagates the boundaries */
-  void propagateBoundaries() override final {
+  /** @brief Propagates the orthogonal vector */
+  void propagateOtherTensors() override final {
     auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
     if (sweepType == SweepDirectionType::Forward &&
         !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
       rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1);
-      boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
       if (overlapPropagator_)
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
     }
     else {
       auto mpsCopy = rhsMps_;
       rhsMps_.move_normalization_r2l(siteRight_-1, siteRight_-2);
-      boundaryPropagator_->updateRightBoundary(siteRight_-1);
       if (overlapPropagator_)
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
     }

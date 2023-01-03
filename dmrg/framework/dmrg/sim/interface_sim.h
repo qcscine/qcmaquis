@@ -115,12 +115,6 @@ public:
     }
   }
 
-  // TO BE REACTIVATED AS SOON AS THE TIME EVOLUTION IS INCLUDED IN THE GENERIC SWEEP-BASED ENGINE
-  // /** @brief Runs a TD-DMRG evolution */
-  // void evolve() {
-  //   //this->runAlternatingLeastSquares("evolve")
-  // }
-
   /** @brief Runs a IPI-based simulation */
   void runInversePowerIteration() {
     // Exctracts all relevant parameters

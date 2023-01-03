@@ -51,6 +51,7 @@ template<class Matrix, class SymmGroup, class Storage>
 class SweepMPSUpdater<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite> {
 public:
   // Type declaration
+  using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
   using BoundaryPropagatorType = BoundaryPropagator<Matrix, SymmGroup, Storage>;
   using Contractor = typename contraction::Engine<Matrix, Matrix, SymmGroup>;
   using MPSType = MPS<Matrix, SymmGroup>;
@@ -70,12 +71,13 @@ public:
 
   /** @brief Method to perform the truncated SVD the MPS for a given site */
   auto generateUnitaryFactor(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
-                             double alpha, double cutoff, double mMax)
+                             double alpha, double cutoff, double mMax, bool normalizeEnd)
   {
     loadedUnitaryFactor_ = true;
     mps_[siteLeft] = inputMPS;
     truncation_results truncationOutput;
     bool perturbDM = true;
+    MPSTensorType unitaryFactor;
     // Forward sweep case
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       if (siteLeft < L_-1) {
@@ -84,9 +86,14 @@ public:
                                                 boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                 cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor_, truncationOutput) = Contractor::predict_new_state_l2r_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                               boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
-                                                                                               perturbDM, verbose_);
+        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
+                                                                                              boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
+                                                                                              perturbDM, verbose_);
+        zeroSiteTensor_ = Contractor::getZeroSiteTensorL2R(mps_[siteLeft+1], mps_[siteLeft], unitaryFactor);
+        mps_[siteLeft] = unitaryFactor;
+      }
+      else if (normalizeEnd) {
+        mps_[siteLeft].leftNormalize(DefaultSolver());
       }
     }
     // Backward case
@@ -97,9 +104,14 @@ public:
                                                  boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                  cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor_, truncationOutput) = Contractor::predict_new_state_r2l_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                               boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
-                                                                                               perturbDM, verbose_);
+        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
+                                                                                              boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
+                                                                                              perturbDM, verbose_);
+        zeroSiteTensor_ = Contractor::getZeroSiteTensorR2L(mps_[siteLeft-1], mps_[siteLeft], unitaryFactor);
+        mps_[siteLeft] = unitaryFactor;
+      }
+      else if (normalizeEnd) {
+        mps_[siteLeft].rightNormalize(DefaultSolver());
       }
     }
     return truncationOutput;
@@ -109,25 +121,18 @@ public:
   void performBackPropagation(GrowBoundaryModality boundaryModality, int siteLeft, int siteRight, std::shared_ptr<TimeEvolverType> timeEvolver) {
     int site = siteLeft;
     if (loadedUnitaryFactor_) {
-      MPSTensorType zeroSiteTensor;
       if (boundaryModality == GrowBoundaryModality::LeftToRight) {
         if (site < L_-1) {
-          unitaryFactor_.make_left_paired();
-          mps_[site].make_left_paired();
-          gemm(transpose(conjugate(unitaryFactor_.data())), mps_[site].data(), zeroSiteTensor);
           auto zsp = ZeroSiteProblemType(mpo_[site], mpo_[site+1], boundaryPropagator_.getLeftBoundary(site),
                                          boundaryPropagator_.getRightBoundary(site+1));
-          timeEvolver->evolve(zsp, zeroSiteTensor, true);
+          timeEvolver->evolve(zsp, zeroSiteTensor_, true);
         }
       }
       else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
         if (site > 0) {
-          unitaryFactor_.make_right_paired();
-          mps_[site].make_right_paired();
-          gemm(mps_[site].data(), transpose(conjugate(unitaryFactor_.data())), zeroSiteTensor);
           auto zsp = ZeroSiteProblemType(mpo_[site-1], mpo_[site], boundaryPropagator_.getLeftBoundary(site),
                                          boundaryPropagator_.getRightBoundary(site));
-          timeEvolver->evolve(zsp, zeroSiteTensor, true);
+          timeEvolver->evolve(zsp, zeroSiteTensor_, true);
         }
       }
     }
@@ -141,20 +146,16 @@ public:
     int site = siteLeft;
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       if (site < L_-1) {
-        mps_[site+1] = Contractor::predict_lanczos_l2r_sweep(mps_[site+1], mps_[site], unitaryFactor_);
-        mps_[site] = unitaryFactor_;
-      }
-      else if (normalizeEnd) {
-        mps_[site].leftNormalize(DefaultSolver());
+        // mps_[site+1] = Contractor::predict_lanczos_l2r_sweep(mps_[site+1], mps_[site], unitaryFactor_);
+        // mps_[site] = unitaryFactor_;
+        mps_[site+1].multiply_from_left(zeroSiteTensor_);
       }
     }
     else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
       if (site > 0) {
-        mps_[site-1] = Contractor::predict_lanczos_r2l_sweep(mps_[site-1], mps_[site], unitaryFactor_);
-        mps_[site] = unitaryFactor_;
-      }
-      else if (normalizeEnd) {
-        mps_[site].rightNormalize(DefaultSolver());
+        // mps_[site-1] = Contractor::predict_lanczos_r2l_sweep(mps_[site-1], mps_[site], unitaryFactor_);
+        // mps_[site] = unitaryFactor_;
+        mps_[site-1].multiply_from_right(zeroSiteTensor_);
       }
     }
     loadedUnitaryFactor_ = false;
@@ -164,7 +165,7 @@ private:
   std::shared_ptr<BoundaryPropagatorType> boundaryPropagator_;
   const MPOType& mpo_;
   MPSType& mps_;
-  MPSTensorType unitaryFactor_;
+  BlockMatrixType zeroSiteTensor_;
   BaseParameters& parms_;
   int L_;
   bool verbose_, loadedUnitaryFactor_;
@@ -195,7 +196,7 @@ public:
 
   /** @brief Method to perform the truncated SVD the MPS for a given site */
   auto generateUnitaryFactor(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
-                             double alpha, double cutoff, double mMax)
+                             double alpha, double cutoff, double mMax, bool normalizeEnd)
   {
     // Converts back the MPS into the two-site tensor. Note that here the tst is *not* the contraction of
     // mps_[siteLeft] and mps_[siteLeft+1], since tst << inputMPS overwrites this contraction. mps_[siteLeft]
@@ -236,7 +237,10 @@ public:
     }
   }
 
-  /** @brief Final merging of the unitary factor */
+  /**
+   * @brief Final merging of the unitary factor.
+   * Remember that, in the two-site case, siteRight = siteLeft+2.
+   */
   void mergeUnitaryFactor(GrowBoundaryModality boundaryModality, int siteLeft, int siteRight, bool normalizeEnd) {
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       // TODO Check if this is really needed
@@ -247,7 +251,6 @@ public:
       else if (normalizeEnd) {
         mps_[siteLeft+1].leftNormalize(DefaultSolver());
       }
-
     }
     else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
       // TODO Check if this is really needed

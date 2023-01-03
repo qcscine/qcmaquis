@@ -119,19 +119,17 @@ public:
   }
 
   /** @brief Propagates the boundaries */
-  void propagateBoundaries() override final {
+  void propagateOtherTensors() override final {
     auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
-    if (sweepType == SweepDirectionType::Forward &&
-        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
-      boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
-      if (overlapPropagator_)
+    if (overlapPropagator_) {
+      if (sweepType == SweepDirectionType::Forward &&
+          !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
-    }
-    else {
-      boundaryPropagator_->updateRightBoundary(siteRight_-1);
-      if (overlapPropagator_)
+      }
+      else {
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
+      }
     }
   }
 
