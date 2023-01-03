@@ -71,12 +71,11 @@ public:
 
   /** @brief Method to perform the truncated SVD the MPS for a given site */
   auto generateUnitaryFactor(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
-                             double alpha, double cutoff, double mMax, bool normalizeEnd)
+                             double alpha, double cutoff, double mMax, bool normalizeEnd, bool perturbDM)
   {
     loadedUnitaryFactor_ = true;
     mps_[siteLeft] = inputMPS;
     truncation_results truncationOutput;
-    bool perturbDM = true;
     MPSTensorType unitaryFactor;
     // Forward sweep case
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
@@ -198,7 +197,7 @@ public:
 
   /** @brief Method to perform the truncated SVD the MPS for a given site */
   auto generateUnitaryFactor(int siteLeft, int siteRight, GrowBoundaryModality boundaryModality, const MPSTensorType& inputMPS,
-                             double alpha, double cutoff, double mMax, bool normalizeEnd)
+                             double alpha, double cutoff, double mMax, bool normalizeEnd, bool perturbDM)
   {
     // Converts back the MPS into the two-site tensor. Note that here the tst is *not* the contraction of
     // mps_[siteLeft] and mps_[siteLeft+1], since tst << inputMPS overwrites this contraction. mps_[siteLeft]
@@ -213,14 +212,14 @@ public:
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
       else
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                               mpo_[siteLeft]);
+                                                                                               mpo_[siteLeft], perturbDM);
     }
     else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
       if (parms_["twosite_truncation"] == "svd")
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
       else
         boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(siteRight),
-                                                                                               mpo_[siteLeft+1]);
+                                                                                               mpo_[siteLeft+1], perturbDM);
     }
     loadedUnitaryFactor_= true;
     return truncationOutput;

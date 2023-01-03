@@ -73,13 +73,15 @@ public:
   /** @brief Class constructor */
   SweepBasedTimeEvolution(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                           const Lattice& lattice, bool verbose)
-    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution"))
+    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), perturbMPS_(false)
   {
     // Generate classes needed for propagation
     timeEvolver_ = std::make_shared<TimeEvolverType>(parms_);
     timeStep_ = timeEvolver_->get_time();
     if (parms_["TD_backpropagation"] == "no")
       doBackpropagation_ = false;
+    if (parms_["TD_noise"] == "yes")
+      perturbMPS_ = true;
     // == TODO Move this in the [GenericSweepBasedSimulation] part ==
     // perturber_ = std::make_shared< PerturberType >(left_, right_, mpo_, parms_);
   }
@@ -110,8 +112,8 @@ public:
     if (siteLeft_ == 0) {
       auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + mpoContainer_.getMPO().getCoreEnergy();
       resultOfLocalSiteProblem_.first = energy;
+      maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
     }
-    maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
     iterationResults_["Energy"] << resultOfLocalSiteProblem_.first;
     resultOfLocalSiteProblem_.second = mpsToPropagate;
     return resultOfLocalSiteProblem_.second;
@@ -141,12 +143,17 @@ public:
     return true;
   }
 
+  /** @brief Whether to appy the noise-based perturbation */
+  bool activatePerturbation() override final {
+    return perturbMPS_;
+  }
+
 private:
   // Class members
   std::shared_ptr< TimeEvolver< Matrix, SymmGroup, BaseParameters > > timeEvolver_;
   std::unique_ptr<SiteProblemType> siteProblem_;
   std::pair<ValueType, MPSTensorType > resultOfLocalSiteProblem_;
-  bool doBackpropagation_;
+  bool doBackpropagation_, perturbMPS_;
   double timeStep_;
   // std::shared_ptr< SiteShifter< Matrix, SymmGroup, TimeEvolver<Matrix, SymmGroup, BaseParameters>, PerturberType > > site_shifter_;
   // std::shared_ptr<PerturberType> perturber_;

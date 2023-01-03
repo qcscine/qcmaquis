@@ -132,7 +132,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     auto initialEnergy = maquis::real(expval(mps, mpo));
     // Prepares the TimeEvolver and forwards propagates it
     auto timeEvolver = TimeEvolver<cmatrix, S, DmrgParameters>(p);
-    timeEvolver.evolve(sp0, mps[0], true);
+    timeEvolver.evolve(sp0, mps[0], true, false);
     auto normAfterPropagation = std::sqrt(maquis::real(ietl::dot(mps[0], mps[0])));
     BOOST_CHECK_CLOSE(normAfterPropagation, 1., 1e-10);
     // Calculates the final energy from the apply method
@@ -143,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationSiteproblem, S, symmetrie
     auto finalEnergy = maquis::real(expval(mps, mpo));
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1e-10);
     // And now with the back-propagation
-    timeEvolver.evolve(sp0, mps[0], false);
+    timeEvolver.evolve(sp0, mps[0], false, false);
     finalEnergy = maquis::real(expval(mps, mpo));
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1e-10);
 }
@@ -203,7 +203,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyConservationZeroSiteproblem, S, symme
     ZeroSiteProblem<cmatrix, S> zsp(mpo[0], mpo[1], left[1], right[1]);
     // Prepares the TimeEvolver and forwards propagates it
     auto timeEvolver = TimeEvolver<cmatrix, S, DmrgParameters>(p);
-    timeEvolver.evolve(zsp, RMat, true);
+    timeEvolver.evolve(zsp, RMat, true, false);
     auto sigmaVectorBM = zsp.apply(RMat);
     auto finalEnergy = maquis::real(sigmaVectorBM.scalar_overlap(RMat)) + mpo.getCoreEnergy();
     BOOST_CHECK_CLOSE(initialEnergy, finalEnergy, 1e-10);
@@ -259,7 +259,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyDecreaseSiteproblem, S, symmetries, T
     // Prepares the TimeEvolver and forwards propagates it
     auto timeEvolver = TimeEvolver<cmatrix, S, DmrgParameters>(p);
     BOOST_TEST(timeEvolver.isImag());
-    timeEvolver.evolve(sp0, mps[0], false);
+    timeEvolver.evolve(sp0, mps[0], false, false);
     mps[0] /= ietl::two_norm(mps[0]);
     // Calculates the final energy as expval
     auto finalEnergy = maquis::real(expval(mps, mpo));

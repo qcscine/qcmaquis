@@ -99,6 +99,7 @@ private:
         add_option("time_units", "Units in which the time-step is expressed");
         add_option("imaginary_time", "Equal to yes for iTD-DMRG, no for TD-DMRG", value("no"));
         add_option("TD_backpropagation", "Equal to yes if the back-propagation step should be done, no otherwise", value("yes"));
+        add_option("TD_noise", "If set to yes, activates the noise. By default this option is deactivated.", value("no"));
 
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));

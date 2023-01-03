@@ -143,7 +143,8 @@ public:
       auto boundaryGrowthModality = (sweepType == SweepDirectionType::Forward && !changeDirection) ? GrowBoundaryModality::LeftToRight
                                                                                                    : GrowBoundaryModality::RightToLeft;
       auto truncationResults = mpsUpdater_->generateUnitaryFactor(siteLeft_, siteRight_, boundaryGrowthModality, outputTensor, this->getAlpha(iSweep),
-                                                                  this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd());
+                                                                  this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd(),
+                                                                  this->activatePerturbation());
       // == BOUNDARY PROPAGATION ==
       // First, drops the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
@@ -198,6 +199,15 @@ protected:
   /** @brief Whether the MPS should be normalized at the end of a sweep */
   virtual bool normalizeAtEnd() = 0;
 
+  /**
+   * @brief Whether to activate noise.
+   *
+   * By default, noise is activated. However, this choice can be funneled to the
+   * derived class -- this is the case for TD simulations, where the noise may
+   * compromise the energy conservation.
+   */
+  virtual bool activatePerturbation() { return true; }
+
   /** @brief Collects the operation to be run at the end of a micro iteration */
   virtual void finalizeMicroIteration(const truncation_results& trunc) = 0;
 
@@ -208,7 +218,7 @@ protected:
    * @brief Propagates other tensor networks that may be needed.
    * Note that this method is called *after* the back-propagation.
    */
-  virtual void propagateOtherTensors() {};
+  virtual void propagateOtherTensors() {}
 
   /**
    * @brief Back-propagation step.

@@ -37,7 +37,7 @@
 #include <sys/stat.h>
 
 #include "dmrg/sim/sim.h"
-#include "dmrg/optimize/optimize.h"
+// #include "dmrg/optimize/optimize.h"
 #include "dmrg/evolve/TimeEvolutionSweep.h"
 #include "dmrg/mp_tensors/mpo_times_mps.hpp"
 #include "dmrg/models/chem/measure_transform.hpp"
@@ -56,7 +56,6 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
   using measurements_type = typename base::measurements_type;
   using meas_with_results_type = typename interface_base::meas_with_results_type;
   using MPSType = MPS<Matrix, SymmGroup>;
-  using opt_base_t = optimizer_base<Matrix, SymmGroup, storage::disk>;
   using results_map_type = typename interface_base::results_map_type;
   using FactoryType = SweepSimulationFactory<Matrix, SymmGroup, storage::disk>;
   using RealType = typename maquis::traits::real_type<Matrix>::type;
@@ -269,6 +268,7 @@ public:
 
   /** @brief Runs a propagation calculation */
   //AB For now it's mostly copy-pasted from optimize, should be rewritten in a cleaner way.
+  /*
   void evolve()
   {
 #ifdef DMRG_TD
@@ -328,6 +328,7 @@ public:
     }
 #endif // DMRG_TD
   }
+  */
 
   /** @brief Runs a measurement calculation */
   void run_measure()

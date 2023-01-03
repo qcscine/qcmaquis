@@ -60,7 +60,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSingleSiteEvolution, S, symmetri
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitals);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitals)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -80,7 +79,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorTwoSiteEvolution, S, symmetries,
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitals);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitals)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -100,7 +98,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestSingleSiteImaginaryTimeVsTI, S, symmetries,
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitalsImaginary);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitalsImaginary)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -127,7 +124,6 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestTwoSiteImaginaryTimeVsTI, S, symmetries, Te
     auto model = Model<cmatrix, S>(lat, parametersH2FourOrbitalsImaginary);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersH2FourOrbitalsImaginary)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
@@ -160,7 +156,6 @@ BOOST_FIXTURE_TEST_CASE(TestTwoSiteRealTimeVsTIRelativistic, TestTimeEvolverFixt
     auto model = Model<cmatrix, S>(lat, parametersRelativistic);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersRelativistic)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // We modify the parameters taken from the fixture class, which are set on the 
     // imaginary-time case.
@@ -190,7 +185,6 @@ BOOST_FIXTURE_TEST_CASE(TestSingleSiteImaginaryTimeVsTIRelativistic, TestTimeEvo
     auto model = Model<cmatrix, S>(lat, parametersRelativistic);
     auto mpo = make_mpo(lat, model);
     auto mps = MPS<cmatrix, S>(lat.size(), *(model.initializer(lat, parametersRelativistic)));
-    auto latticeSize = mpo.length();
     mps.normalize_right();
     // Prepares the boundaries
     time_stopper stop_callback(10000.);
