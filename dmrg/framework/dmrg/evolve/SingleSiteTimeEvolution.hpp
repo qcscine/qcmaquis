@@ -207,7 +207,7 @@ public:
       maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
       parallel::meminfo();
       if (stop_callback())
-          throw dmrg::time_limit(sweep, _site + 1);
+        throw dmrg::time_limit(sweep, _site + 1);
     }
     performFinalOperations();
   };

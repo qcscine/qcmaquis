@@ -33,6 +33,7 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/mp_tensors/ts_ops.h"
+#include "dmrg/mp_tensors/zerositeproblem.h"
 #include "BoundaryPropagator.h"
 #include "SweepOptimizationTypeTrait.h"
 
@@ -57,7 +58,6 @@ public:
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
   using MPOType = MPO<Matrix, SymmGroup>;
-  using TimeEvolverType = TimeEvolver<Matrix, SymmGroup, BaseParameters>;
   using ZeroSiteProblemType = ZeroSiteProblem<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
@@ -117,6 +117,8 @@ public:
     return truncationOutput;
   }
 
+#ifdef DMRG_TD
+  using TimeEvolverType = TimeEvolver<Matrix, SymmGroup, BaseParameters>;
   /** @brief Method to perform the back-propagation step */
   void performBackPropagation(GrowBoundaryModality boundaryModality, int siteLeft, int siteRight, std::shared_ptr<TimeEvolverType> timeEvolver) {
     int site = siteLeft;
@@ -140,6 +142,7 @@ public:
       throw std::runtime_error("ERROR: trying to back-propagate before performing the SVD");
     }
   }
+#endif // DMRG_TD
 
   /** @brief Moves the normalization to the previous/next site (depending whether it's l2r or r2l sweep) */
   void mergeUnitaryFactor(GrowBoundaryModality boundaryModality, int siteLeft, int siteRight, bool normalizeEnd) {
@@ -182,7 +185,6 @@ public:
   using MPSType = MPS<Matrix, SymmGroup>;
   using MPSTensorType = MPSTensor<Matrix, SymmGroup>;
   using SiteProblemType = SiteProblem<Matrix, SymmGroup>;
-  using TimeEvolverType = TimeEvolver<Matrix, SymmGroup, BaseParameters>;
   using TwoSiteTensorType = TwoSiteTensor<Matrix, SymmGroup>;
 
   /** @brief Class constructor */
@@ -225,6 +227,8 @@ public:
   }
 
   /** @brief Back-propagates the tensor */
+#ifdef DMRG_TD
+  using TimeEvolverType = TimeEvolver<Matrix, SymmGroup, BaseParameters>;
   void performBackPropagation(GrowBoundaryModality boundaryModality, int siteLeft, int siteRight, std::shared_ptr<TimeEvolverType> timeEvolver) {
     if (loadedUnitaryFactor_) {
       if (siteRight != L_-1) {
@@ -236,6 +240,7 @@ public:
       throw std::runtime_error("ERROR: trying to back-propagate before performing SVD");
     }
   }
+#endif // DMRG_TD
 
   /**
    * @brief Final merging of the unitary factor.
