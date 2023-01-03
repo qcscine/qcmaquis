@@ -29,7 +29,7 @@
 template<class Matrix, class SymmGroup>
 template<class SiteProblem, class MatrixType>
 void RKEvolver<Matrix, SymmGroup>::evolve_kernel(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward,
-                                                 time_type time_current, time_type time_step) const
+                                                 TimeType time_current, TimeType time_step) const
 {
   // Typedef
   typedef typename MatrixType::value_type ArgType;

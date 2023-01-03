@@ -257,11 +257,10 @@ private:
      * @param lr: direction of the sweep
      */
     void print_header(int& sweep, int& site1, int& site2, int& lr){
-        char buffer[50] ;
-        int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
-        std::cout << " +--------------------------------------------+" << std::endl ;
-        std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
-        std::cout << " +--------------------------------------------+" << std::endl;
+      int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
+      std::cout << " +--------------------------------------------+" << std::endl ;
+      std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
+      std::cout << " +--------------------------------------------+" << std::endl;
     }
 };
 

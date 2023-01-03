@@ -103,12 +103,12 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Time evolution method */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const {
+              bool is_forward, time_type time_current, time_type time_step) const override final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
   void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const {
+              bool is_forward, time_type time_current, time_type time_step) const override final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
