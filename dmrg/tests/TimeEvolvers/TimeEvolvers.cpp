@@ -259,7 +259,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestEnergyDecreaseSiteproblem, S, symmetries, T
     // Prepares the TimeEvolver and forwards propagates it
     auto timeEvolver = TimeEvolver<cmatrix, S, DmrgParameters>(p);
     BOOST_TEST(timeEvolver.isImag());
-    timeEvolver.evolve(sp0, mps[0], false, false);
+    timeEvolver.evolve(sp0, mps[0], true, false);
     mps[0] /= ietl::two_norm(mps[0]);
     // Calculates the final energy as expval
     auto finalEnergy = maquis::real(expval(mps, mpo));
