@@ -18,7 +18,7 @@ build-electronic:
     - default_docker
   script:
     - mkdir buildElectronic && cd buildElectronic
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release  ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_FEAST ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -94,7 +94,7 @@ buildVibrationalHamiltonians:
     - default_docker
   script:
     - mkdir buildVibrational && cd buildVibrational
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRATIONAL=ON -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NU1;NONE" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRATIONAL=ON -DBUILD_DMRG_FEAST -DBUILD_MPS2CI=ON -DDMRG_NUMSYMM=5 -DDMRG_ORDERNONE=12 ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -135,7 +135,11 @@ testVibronicHamiltonians:
     - cd buildVibronic
     - make CTEST_OUTPUT_ON_FAILURE=1 test
 
-# Pipeline for the TD-DMRG case
+# +-----------------------------+
+#  Pipeline for the TD-DMRG case
+# +-----------------------------+
+
+# Tests TD-DMRG with Electronic Hamiltonians
 
 build-TD-conventional:
   stage: buildBasic
@@ -160,6 +164,8 @@ testTDConventional:
     - cd buildTDConventional
     - make CTEST_OUTPUT_ON_FAILURE=1 test
 
+# Tests TD-DMRG with all Hamiltonians
+
 build-TD-with-all-symmetries:
   stage: buildAdvanced
   needs: ["testTDConventional"]
@@ -183,3 +189,4 @@ testTDAllSymmetries:
   script:
     - cd buildTDAllSymmetries
     - make CTEST_OUTPUT_ON_FAILURE=1 test
+

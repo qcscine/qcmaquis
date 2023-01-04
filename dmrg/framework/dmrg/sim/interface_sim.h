@@ -100,6 +100,7 @@ public:
   /** @brief Runs a FEAST simulation */
   // TODO: fix the MPS that is actually extracted -- it should be not necessarily th 0-th one.
   void runFEASTSimulation() {
+#ifdef DMRG_FEAST
     try {
       feastMPSs_ = FEASTLauncherType::runFEASTSimulation(parms, model, lat, mpo);
     }
@@ -113,6 +114,9 @@ public:
         dumpParameters(filename);
       }
     }
+#else
+    throw std::runtime_error("Activate the BUILD_DMRG_FEAST Cmake flag for using DMRG[FEAST]");
+#endif
   }
 
   /** @brief Runs a IPI-based simulation */
@@ -391,7 +395,7 @@ public:
     for (auto&& meas: all_measurements)
       ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(), "/spectrum/results", mps).meas_out(meas);
     // Measurements that require SU2U1->2U1 transformation
-    #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
+#if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
     BaseParameters parms_meas;
     parms_meas = parms.twou1_measurements();
     if (!parms_meas.empty()) {
@@ -400,7 +404,7 @@ public:
       // Merge transformed measurements with the remaining results
       ret.insert(transformed_meas.begin(), transformed_meas.end());
     }
-    #endif
+#endif
     return ret;
   }
 
