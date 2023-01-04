@@ -31,7 +31,9 @@
 #include "GenericSweepSimulation.h"
 #include "SweepBasedEnergyMinimization.h"
 #include "SweepBasedLinearSystem.h"
+#ifdef DMRG_TD
 #include "SweepBasedTimeEvolution.h"
+#endif // DMRG_TD
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
@@ -47,8 +49,10 @@ class SweepSimulationFactory {
   using OptimizationTSSimulationType = SweepBasedEnergyMinimization<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
   using LinearSystemSSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
   using LinearSystemTSSimulationType = SweepBasedLinearSystem<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
+#ifdef DMRG_TD
   using EvolverSSSimulationType = SweepBasedTimeEvolution<Matrix, SymmGroup, Storage, SweepOptimizationType::SingleSite>;
   using EvolverTSSimulationType = SweepBasedTimeEvolution<Matrix, SymmGroup, Storage, SweepOptimizationType::TwoSite>;
+#endif // DMRG_TD
   using PointerToSSSimulatorType = std::unique_ptr<GenericSSSimulationType>;
   using PointerToTSSimulatorType = std::unique_ptr<GenericTSSimulationType>;
   using MPSType = MPS<Matrix, SymmGroup>;
@@ -79,6 +83,7 @@ public:
         tsSimulator_ = std::make_unique<LinearSystemTSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       }
     }
+#ifdef DMRG_TD
     else if (simulationName == "evolve") {
       if (sweepType_ == SweepOptimizationType::SingleSite) {
         ssSimulator_ = std::make_unique<EvolverSSSimulationType>(mps, mpo, parms, model, lattice, true);
@@ -87,6 +92,7 @@ public:
         tsSimulator_ = std::make_unique<EvolverTSSimulationType>(mps, mpo, parms, model, lattice, true);
       }
     }
+#endif // DMRG_TD
     else {
       throw std::runtime_error("Sweep-based simulation type not recognized");
     }

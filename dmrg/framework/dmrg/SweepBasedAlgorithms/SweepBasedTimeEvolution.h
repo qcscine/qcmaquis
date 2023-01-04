@@ -37,7 +37,7 @@
 #include "dmrg/utils/checks.h"
 #include "BoundaryPropagator.h"
 
-// #ifdef DMRG_TD
+#ifdef DMRG_TD
 
 template<class Matrix, class SymmGroup, class Storage, SweepOptimizationType SweepType>
 class SweepBasedTimeEvolution : public GenericSweepSimulation<Matrix, SymmGroup, Storage, SweepType> {
@@ -159,6 +159,6 @@ private:
   // std::shared_ptr<PerturberType> perturber_;
 };
 
-// #endif // DMRG_TD
+#endif // DMRG_TD
 
 #endif // SWEEP_BASED_TIME_EVOLUTION_H
