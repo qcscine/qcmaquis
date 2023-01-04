@@ -73,7 +73,8 @@ public:
   /** @brief Class constructor */
   SweepBasedTimeEvolution(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                           const Lattice& lattice, bool verbose)
-    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), perturbMPS_(false), doBackpropagation_(true)
+    : Base(mps, mpo, parms, model, lattice, verbose, std::string("Time Evolution")), perturbMPS_(false), doBackpropagation_(true),
+      isImaginaryTime_(false)
   {
     // Generate classes needed for propagation
     timeEvolver_ = std::make_shared<TimeEvolverType>(parms_);
@@ -82,6 +83,8 @@ public:
       doBackpropagation_ = false;
     if (parms_["TD_noise"] == "yes")
       perturbMPS_ = true;
+    if (parms_["imaginary_time"] == "yes")
+      isImaginaryTime_ = true;
     // == TODO Move this in the [GenericSweepBasedSimulation] part ==
     // perturber_ = std::make_shared< PerturberType >(left_, right_, mpo_, parms_);
   }
@@ -109,8 +112,8 @@ public:
     timeEvolver_->evolve(*(siteProblem_.get()), mpsToPropagate, true, isTerminal());
     // Note that the energy is calculated only once per sweep -- it will (or should) anyways be conserved,
     // so it's not useful to print the value of the energy for each microiteration.
-    if (siteLeft_ == 0) {
-      auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + mpoContainer_.getMPO().getCoreEnergy();
+    if (siteLeft_ == 0 || isImaginaryTime_) {
+      auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
       resultOfLocalSiteProblem_.first = energy;
       maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
     }
@@ -152,8 +155,8 @@ private:
   // Class members
   std::shared_ptr< TimeEvolver< Matrix, SymmGroup, BaseParameters > > timeEvolver_;
   std::unique_ptr<SiteProblemType> siteProblem_;
-  std::pair<ValueType, MPSTensorType > resultOfLocalSiteProblem_;
-  bool doBackpropagation_, perturbMPS_;
+  std::pair<double, MPSTensorType > resultOfLocalSiteProblem_;
+  bool doBackpropagation_, perturbMPS_, isImaginaryTime_;
   double timeStep_;
   // std::shared_ptr< SiteShifter< Matrix, SymmGroup, TimeEvolver<Matrix, SymmGroup, BaseParameters>, PerturberType > > site_shifter_;
   // std::shared_ptr<PerturberType> perturber_;
