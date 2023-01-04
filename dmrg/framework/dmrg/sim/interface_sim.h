@@ -151,16 +151,17 @@ public:
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
       energyDifference = std::fabs(nextEnergy - previousEnergy);
-      auto mpsOverlap = overlap(mpsBackup, this->mps);
+      auto mpsOverlap = overlap(mpsBackup, this->mps)/std::sqrt(norm(mpsBackup)*norm(this->mps));
       auto precision = std::cout.precision();
       maquis::cout << " == RESULTS FOR THE " << nIpiIterations << "-th iteration ==" << std::endl;
       std::cout.precision(10);
       maquis::cout << " - Energy difference for iteration = " << nIpiIterations << " = " << energyDifference << std::endl;
       maquis::cout << " - MPS overlap with solution at previous iteration = " << std::fabs(mpsOverlap) << std::endl;
+      maquis::cout << std::endl;
       std::cout.precision(precision);
       // Checks convergence and, if not reached, starts a new IPI iteration
       if (nIpiIterations == numberOfOuterIterations || energyDifference < energyConvergenceThreshold ||
-          std::fabs(mpsOverlap) < overlapConvergenceThreshold)
+          std::fabs(1.-std::fabs(mpsOverlap)) < overlapConvergenceThreshold)
       {
         maquis::cout << " --> CONVERGENCE REACHED" << std::endl;
         convergedOuter = true;
@@ -171,43 +172,7 @@ public:
         mpsBackup = this->mps;
       }
     }
-
-    //
-    /*
-                bool converged = false;
-                if ((sweep + 1) % meas_each == 0 || (sweep + 1) == parms["nsweeps"]) {
-                    int prev_sweep = sweep - meas_each;
-                    if (prev_sweep >= 0) {
-                        std::vector<real_type> energies;
-                        std::vector<real_type> energies_prev;
-                        ar[results_archive_path(sweep) + "/results/Energy/mean/value"] >> energies;
-                        real_type emin = *std::min_element(energies.begin(), energies.end());
-                        ar[results_archive_path(prev_sweep) + "/results/Energy/mean/value"] >> energies_prev;
-                        real_type emin_prev = *std::min_element(energies_prev.begin(), energies_prev.end());
-                        real_type e_diff = std::abs(emin - emin_prev);
-                        maquis::cout << " == CONVERGENCE CHECK == " << std::endl;
-                        maquis::cout << " Difference in energy wrt previous sweep: " << e_diff << std::endl;
-                        real_type e_diff_IPI;
-                        // Here we assess the convergence wrt the "outer" loop
-                    }
-                    relSweep += 1;
-                }
-                bool stopped = stop_callback() || converged;
-                if (stopped || (sweep + 1) % chkp_each == 0 || (sweep + 1) == parms["nsweeps"])
-                    checkpoint_simulation(mps, mps_sa, sweep, -1);
-                if (stopped)
-                    break;
-            }
-        } catch (dmrg::time_limit const&e) {
-            maquis::cout << e.what() << " checkpointing partial result." << std::endl;
-            checkpoint_simulation(mps, mps_sa, e.sweep(), e.site());
-            {
-                storage::archive ar(rfile, "w");
-                ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
-            }
-        }
-        */
-    }
+  }
 
   /**
    * @brief Generic ALS-based optimization.
