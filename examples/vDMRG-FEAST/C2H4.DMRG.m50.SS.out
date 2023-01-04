@@ -9,9 +9,17 @@
   for details see the publication: 
   S. Keller et al., J. Chem. Phys. 143, 244118 (2015)
 
-This binary contains symmetries: nu1 none 2u1pg su2u1pg 
-DMRG version 3.1.1-d73fa8556f9b5e106aa2a543f6571f6bc888ba07 (VibrationalExcitedStates) release-3.1.2-gitlab
-Temporary storage is disabled
+This binary contains symmetries: none 2u1pg su2u1pg 
+DMRG version 2.2.0-71e7a872448d7ca55631324ad7a208ea2764832b (VibrationalExcitedStates) release-3.1.2-gitlab
+Disk storage of boundaries disabled
+
+ == CONSTRUCTING WATSON HAMILTONIAN == 
+
+ Coordinate type: Cartesian Normal Modes
+ - Maximum many-body coupling order supported: 12
+ - Many-body coupling order expected as input: 12
+ - Maximum many-body coupling order included in the Hamiltonian 12
+
 coeff: 206.242167
 operators: {0,3}
 
@@ -925,18 +933,6 @@ MPO Bond 9: 20/0
 MPO Bond 10: 5/0
 MPO Bond 11: 1/0
 MPS initialization has finished...
-TSMPOTensor: 1x23,  23 operators, 23 tags
-TSMPOTensor: 20x30,  46 operators, 46 tags
-TSMPOTensor: 23x27,  51 operators, 51 tags
-TSMPOTensor: 30x29,  65 operators, 65 tags
-TSMPOTensor: 27x33,  72 operators, 72 tags
-TSMPOTensor: 29x37,  81 operators, 81 tags
-TSMPOTensor: 33x31,  81 operators, 81 tags
-TSMPOTensor: 37x33,  84 operators, 84 tags
-TSMPOTensor: 31x20,  62 operators, 62 tags
-TSMPOTensor: 33x5,  38 operators, 38 tags
-TSMPOTensor: 20x1,  20 operators, 20 tags
-Total number of tags: 623
 
 +----------------------------------+
  NEW SwEEP-BASED SIMULATION STARTED
@@ -945,17 +941,7 @@ Total number of tags: 623
  Simulation settings:
  - Simulation type: Optimization
  - Sweep-based modality: Two site
- Updating right boundary for site 11
- Updating right boundary for site 10
- Updating right boundary for site 9
- Updating right boundary for site 8
- Updating right boundary for site 7
- Updating right boundary for site 6
- Updating right boundary for site 5
- Updating right boundary for site 4
- Updating right boundary for site 3
- Updating right boundary for site 2
- Updating right boundary for site 1
+ - Maximum number of sweeps: 20
 
  -------------------
    SWEEP NUMBER 0
@@ -965,202 +951,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 28984.96885671381
- Updating left boundary for site 1
+ Energy = 28984.96885671384
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
  Energy = 28881.65318258476
- Updating left boundary for site 2
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 27865.23885583302
- Updating left boundary for site 3
+ Energy = 27865.23885583325
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 27072.20857059555
- Updating left boundary for site 4
+ Energy = 27072.20857059985
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 24194.57822122581
- Updating left boundary for site 5
+ Energy = 24194.57822122688
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 23211.61989992034
- Updating left boundary for site 6
+ Energy = 23211.61989992704
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 19233.34870178473
- Updating left boundary for site 7
+ Energy = 19233.34870178825
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 16391.11226398066
- Updating left boundary for site 8
+ Energy = 16391.11226398236
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 13351.42662864684
- Updating left boundary for site 9
+ Energy = 13351.42662864674
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.81767853351
- Updating left boundary for site 10
+ Energy = 11612.81767853036
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.76935534945
- Updating left boundary for site 11
+ Energy = 11612.76935535135
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.76935504232
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.74721611602
- Updating right boundary for site 10
+ Energy = 11612.74721611983
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.40770494936
- Updating right boundary for site 9
+ Energy = 11612.40770495476
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
  Energy = 11611.49562073307
- Updating right boundary for site 8
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11598.57523262216
- Updating right boundary for site 7
+ Energy = 11598.57523259882
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11433.49878788431
- Updating right boundary for site 6
+ Energy = 11433.49878763843
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11356.07184976261
- Updating right boundary for site 5
+ Energy = 11356.07184895822
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11152.44631558705
- Updating right boundary for site 4
+ Energy = 11152.44629145261
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.69984699014
- Updating right boundary for site 3
+ Energy = 11010.69984934642
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.65167798987
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.65161514038
- Updating right boundary for site 1
+ Energy = 11010.65168110727
 
 
  -------------------
@@ -1171,202 +1099,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
- Jacobi-Davidson diagonalization converged after 6 iterations.
- Energy = 11010.65161513746
- Updating left boundary for site 1
+ Jacobi-Davidson diagonalization converged after 10 iterations.
+ Energy = 11010.65161825411
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.65157925024
- Updating left boundary for site 2
+ Energy = 11010.65158237155
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.64910191494
- Updating left boundary for site 3
+ Energy = 11010.64910508491
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.61939881472
- Updating left boundary for site 4
+ Energy = 11010.61940151181
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.53950299235
- Updating left boundary for site 5
+ Energy = 11010.53950325815
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.17385545775
- Updating left boundary for site 6
+ Energy = 11010.17385368799
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.86561448999
- Updating left boundary for site 7
+ Energy = 11009.86561451589
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85834916363
- Updating left boundary for site 8
+ Energy = 11009.85834916902
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85835787367
- Updating left boundary for site 9
+ Energy = 11009.85835787739
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85835787317
- Updating left boundary for site 10
+ Energy = 11009.85835787099
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85835787257
- Updating left boundary for site 11
+ Energy = 11009.85835787468
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85835787257
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85835787256
- Updating right boundary for site 10
+ Energy = 11009.85835787469
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85835787316
- Updating right boundary for site 9
+ Energy = 11009.85835787651
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85834874179
- Updating right boundary for site 8
+ Energy = 11009.85834873743
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85765576127
- Updating right boundary for site 7
+ Energy = 11009.85765576178
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85740663439
- Updating right boundary for site 6
+ Energy = 11009.85740664205
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85770283131
- Updating right boundary for site 5
+ Energy = 11009.85770283241
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85780436833
- Updating right boundary for site 4
+ Energy = 11009.85780437127
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 5 iterations.
- Energy = 11009.85780436848
- Updating right boundary for site 3
+ Energy = 11009.85780436872
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780436851
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780436852
- Updating right boundary for site 1
+ Energy = 11009.85780436901
 
 
  -------------------
@@ -1377,202 +1247,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780436852
- Updating left boundary for site 1
+ Energy = 11009.85780436901
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780436853
- Updating left boundary for site 2
+ Energy = 11009.857804369
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780436854
- Updating left boundary for site 3
+ Energy = 11009.85780436904
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11009.85780436622
- Updating left boundary for site 4
+ Energy = 11009.85780437148
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8577028182
- Updating left boundary for site 5
+ Energy = 11009.85770281669
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85712674034
- Updating left boundary for site 6
+ Energy = 11009.85712673625
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711972459
- Updating left boundary for site 7
+ Energy = 11009.85711972234
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779503657
- Updating left boundary for site 8
+ Energy = 11009.85779502907
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780418349
- Updating left boundary for site 9
+ Energy = 11009.85780418491
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780418429
- Updating left boundary for site 10
+ Energy = 11009.85780418434
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780418428
- Updating left boundary for site 11
+ Energy = 11009.85780418434
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780418429
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578041843
- Updating right boundary for site 10
+ Energy = 11009.85780418437
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780418425
- Updating right boundary for site 9
+ Energy = 11009.85780418429
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779503285
- Updating right boundary for site 8
+ Energy = 11009.8577950368
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711901698
- Updating right boundary for site 7
+ Energy = 11009.85711901455
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710853196
- Updating right boundary for site 6
+ Energy = 11009.85710853121
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768386805
- Updating right boundary for site 5
+ Energy = 11009.85768386818
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778458846
- Updating right boundary for site 4
+ Energy = 11009.85778458809
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778458905
- Updating right boundary for site 3
+ Energy = 11009.85778458898
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778458902
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.857784589
- Updating right boundary for site 1
+ Energy = 11009.85778458901
 
 
  -------------------
@@ -1583,202 +1395,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.857784589
- Updating left boundary for site 1
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778458901
- Updating left boundary for site 2
+ Energy = 11009.85778458898
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778458901
- Updating left boundary for site 3
+ Energy = 11009.857784589
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778458894
- Updating left boundary for site 4
+ Energy = 11009.85778458892
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768386849
- Updating left boundary for site 5
+ Energy = 11009.85768386469
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710704696
- Updating left boundary for site 6
+ Energy = 11009.85710704541
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711551551
- Updating left boundary for site 7
+ Energy = 11009.85711551546
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779066514
- Updating left boundary for site 8
+ Energy = 11009.85779066297
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.8577998061
- Updating left boundary for site 9
+ Energy = 11009.85779980514
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8577998038
- Updating left boundary for site 10
+ Energy = 11009.85779980378
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779980381
- Updating left boundary for site 11
+ Energy = 11009.85779980378
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779980381
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8577998038
- Updating right boundary for site 10
-
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
- - Left boundaries taken from index: 8
- - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85779980379
- Updating right boundary for site 9
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 12  , backward sweep
+ - Left boundaries taken from index: 8
+ - Right boundaries taken from index: 10
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11009.85779980376
+
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779066694
- Updating right boundary for site 8
+ Energy = 11009.85779066567
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711548835
- Updating right boundary for site 7
+ Energy = 11009.85711548931
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710691505
- Updating right boundary for site 6
+ Energy = 11009.85710691781
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768301794
- Updating right boundary for site 5
+ Energy = 11009.8576830183
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778355286
- Updating right boundary for site 4
+ Energy = 11009.85778355264
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778355041
- Updating right boundary for site 3
+ Energy = 11009.85778355034
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778355041
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778355044
- Updating right boundary for site 1
+ Energy = 11009.85778355036
 
 
  -------------------
@@ -1789,202 +1543,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778355043
- Updating left boundary for site 1
+ Energy = 11009.85778355036
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778355043
- Updating left boundary for site 2
+ Energy = 11009.85778355035
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778355043
- Updating left boundary for site 3
-
- MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
- - Left boundaries taken from index: 3
- - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778355033
- Updating left boundary for site 4
+
+ MICROITERATION NUMBER = 3  , forward sweep
+ - Left boundaries taken from index: 3
+ - Right boundaries taken from index: 5
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11009.85778355025
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768301561
- Updating left boundary for site 5
+ Energy = 11009.85768301567
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710682189
- Updating left boundary for site 6
+ Energy = 11009.85710682221
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571153104
- Updating left boundary for site 7
+ Energy = 11009.85711530991
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779045106
- Updating left boundary for site 8
+ Energy = 11009.85779044904
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779955505
- Updating left boundary for site 9
+ Energy = 11009.85779955415
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779955312
- Updating left boundary for site 10
+ Energy = 11009.8577995531
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779955312
- Updating left boundary for site 11
+ Energy = 11009.8577995531
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779955312
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779955313
- Updating right boundary for site 10
+ Energy = 11009.85779955311
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779955317
- Updating right boundary for site 9
+ Energy = 11009.85779955315
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779045086
- Updating right boundary for site 8
+ Energy = 11009.85779045303
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711526164
- Updating right boundary for site 7
+ Energy = 11009.85711525919
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710803877
- Updating right boundary for site 6
+ Energy = 11009.85710803763
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768321458
- Updating right boundary for site 5
+ Energy = 11009.85768321266
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778368812
- Updating right boundary for site 4
+ Energy = 11009.8577836885
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778368704
- Updating right boundary for site 3
+ Energy = 11009.85778368703
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778368706
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778368705
- Updating right boundary for site 1
+ Energy = 11009.85778368703
 
 
  -------------------
@@ -1995,202 +1691,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778368705
- Updating left boundary for site 1
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778368705
- Updating left boundary for site 2
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778368705
- Updating left boundary for site 3
+ Energy = 11009.85778368704
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778368693
- Updating left boundary for site 4
+ Energy = 11009.85778368694
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768321626
- Updating left boundary for site 5
+ Energy = 11009.85768321571
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710800938
- Updating left boundary for site 6
+ Energy = 11009.85710800903
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571154006
- Updating left boundary for site 7
+ Energy = 11009.85711540271
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.857790675
- Updating left boundary for site 8
+ Energy = 11009.85779067798
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779974314
- Updating left boundary for site 9
+ Energy = 11009.85779974895
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779974619
- Updating left boundary for site 10
+ Energy = 11009.85779974615
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779974619
- Updating left boundary for site 11
+ Energy = 11009.85779974617
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779974619
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779974618
- Updating right boundary for site 10
+ Energy = 11009.85779974615
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779974614
- Updating right boundary for site 9
+ Energy = 11009.8577997461
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779068245
- Updating right boundary for site 8
+ Energy = 11009.85779068025
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711535463
- Updating right boundary for site 7
+ Energy = 11009.85711535132
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710918705
- Updating right boundary for site 6
+ Energy = 11009.85710918986
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768349545
- Updating right boundary for site 5
+ Energy = 11009.85768349533
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778394131
- Updating right boundary for site 4
+ Energy = 11009.85778393949
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393978
- Updating right boundary for site 3
+ Energy = 11009.85778393976
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393977
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393977
- Updating right boundary for site 1
+ Energy = 11009.85778393975
 
 
  -------------------
@@ -2201,202 +1839,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393978
- Updating left boundary for site 1
+ Energy = 11009.85778393976
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393979
- Updating left boundary for site 2
+ Energy = 11009.85778393976
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393977
- Updating left boundary for site 3
+ Energy = 11009.85778393975
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778393973
- Updating left boundary for site 4
+ Energy = 11009.85778393965
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768349644
- Updating left boundary for site 5
+ Energy = 11009.85768349698
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85710916095
- Updating left boundary for site 6
+ Energy = 11009.8571091587
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711551398
- Updating left boundary for site 7
+ Energy = 11009.8571155135
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779092738
- Updating left boundary for site 8
+ Energy = 11009.85779093317
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779996399
- Updating left boundary for site 9
+ Energy = 11009.85779996443
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779996657
- Updating left boundary for site 10
+ Energy = 11009.85779996659
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779996661
- Updating left boundary for site 11
+ Energy = 11009.85779996662
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779996661
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85779996658
- Updating right boundary for site 10
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85779996658
- Updating right boundary for site 9
+ Energy = 11009.85779996656
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779093177
- Updating right boundary for site 8
+ Energy = 11009.85779092788
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711548029
- Updating right boundary for site 7
+ Energy = 11009.85711548114
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571101377
- Updating right boundary for site 6
+ Energy = 11009.8571101391
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768374582
- Updating right boundary for site 5
+ Energy = 11009.85768374613
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778416785
- Updating right boundary for site 4
+ Energy = 11009.85778416744
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416951
- Updating right boundary for site 3
+ Energy = 11009.85778416952
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416956
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416955
- Updating right boundary for site 1
+ Energy = 11009.85778416954
 
 
  -------------------
@@ -2407,202 +1987,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416956
- Updating left boundary for site 1
+ Energy = 11009.85778416954
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416955
- Updating left boundary for site 2
+ Energy = 11009.85778416954
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416951
- Updating left boundary for site 3
+ Energy = 11009.8577841695
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778416945
- Updating left boundary for site 4
+ Energy = 11009.85778416944
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768374801
- Updating left boundary for site 5
+ Energy = 11009.85768374912
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711011384
- Updating left boundary for site 6
+ Energy = 11009.85711011662
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711562363
- Updating left boundary for site 7
+ Energy = 11009.85711562534
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779114221
- Updating left boundary for site 8
+ Energy = 11009.8577911432
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780015893
- Updating left boundary for site 9
+ Energy = 11009.85780015573
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11009.85780015659
+
+ MICROITERATION NUMBER = 10  , forward sweep
+ - Left boundaries taken from index: 10
+ - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.8578001566
- Updating left boundary for site 10
-
- MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780015662
- Updating left boundary for site 11
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780015662
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780015661
- Updating right boundary for site 10
+ Energy = 11009.85780015658
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780015665
- Updating right boundary for site 9
+ Energy = 11009.8578001566
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779114132
- Updating right boundary for site 8
+ Energy = 11009.85779114547
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711560259
- Updating right boundary for site 7
+ Energy = 11009.85711559991
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711090145
- Updating right boundary for site 6
+ Energy = 11009.8571109029
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768395714
- Updating right boundary for site 5
+ Energy = 11009.85768395855
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778435951
- Updating right boundary for site 4
+ Energy = 11009.85778436137
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778436041
- Updating right boundary for site 3
+ Energy = 11009.85778436038
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778436039
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778436038
- Updating right boundary for site 1
 
 
  -------------------
@@ -2613,202 +2135,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11009.85778436039
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778436038
- Updating left boundary for site 1
-
- MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 1
- - Right boundaries taken from index: 3
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778436039
- Updating left boundary for site 2
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778436039
- Updating left boundary for site 3
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778436039
- Updating left boundary for site 4
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768395631
- Updating left boundary for site 5
+ Energy = 11009.85768395589
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711087729
- Updating left boundary for site 6
+ Energy = 11009.85711088115
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711571359
- Updating left boundary for site 7
+ Energy = 11009.85711571365
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779132304
- Updating left boundary for site 8
+ Energy = 11009.8577913218
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780031497
- Updating left boundary for site 9
+ Energy = 11009.85780031241
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.8578003136
- Updating left boundary for site 10
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780031362
- Updating left boundary for site 11
+ Energy = 11009.85780031361
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780031362
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.8578003136
- Updating right boundary for site 10
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.8578003136
- Updating right boundary for site 9
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779132346
- Updating right boundary for site 8
+ Energy = 11009.85779132476
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711570254
- Updating right boundary for site 7
+ Energy = 11009.85711569822
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711150861
- Updating right boundary for site 6
+ Energy = 11009.85711151368
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768413214
- Updating right boundary for site 5
+ Energy = 11009.85768413017
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8577845178
- Updating right boundary for site 4
+ Energy = 11009.85778451473
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778451665
- Updating right boundary for site 3
+ Energy = 11009.85778451664
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778451665
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778451666
- Updating right boundary for site 1
 
 
  -------------------
@@ -2819,202 +2283,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778451666
- Updating left boundary for site 1
+ Energy = 11009.85778451664
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778451665
- Updating left boundary for site 2
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778451663
- Updating left boundary for site 3
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778451663
- Updating left boundary for site 4
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768412874
- Updating left boundary for site 5
+ Energy = 11009.85768413023
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711149392
- Updating left boundary for site 6
+ Energy = 11009.85711149079
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711579465
- Updating left boundary for site 7
+ Energy = 11009.85711579814
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779146525
- Updating left boundary for site 8
+ Energy = 11009.85779146661
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780044013
- Updating left boundary for site 9
+ Energy = 11009.85780044362
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780044309
- Updating left boundary for site 10
+ Energy = 11009.85780044307
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780044308
- Updating left boundary for site 11
+ Energy = 11009.85780044307
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780044308
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85780044309
- Updating right boundary for site 10
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780044303
- Updating right boundary for site 9
+ Energy = 11009.85780044301
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779146466
- Updating right boundary for site 8
+ Energy = 11009.85779146565
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711578517
- Updating right boundary for site 7
+ Energy = 11009.85711578564
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711200234
- Updating right boundary for site 6
+ Energy = 11009.85711200624
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768427499
- Updating right boundary for site 5
+ Energy = 11009.85768427302
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778464599
- Updating right boundary for site 4
+ Energy = 11009.85778464337
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778464497
- Updating right boundary for site 3
+ Energy = 11009.85778464496
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778464501
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778464502
- Updating right boundary for site 1
+ Energy = 11009.85778464497
 
 
  -------------------
@@ -3025,202 +2431,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778464502
- Updating left boundary for site 1
+ Energy = 11009.85778464498
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778464502
- Updating left boundary for site 2
+ Energy = 11009.85778464498
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778464498
- Updating left boundary for site 3
+ Energy = 11009.85778464495
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778464493
- Updating left boundary for site 4
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768427415
- Updating left boundary for site 5
+ Energy = 11009.85768427386
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711198967
- Updating left boundary for site 6
+ Energy = 11009.85711198898
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711586236
- Updating left boundary for site 7
+ Energy = 11009.8571158571
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779159024
- Updating left boundary for site 8
+ Energy = 11009.85779159109
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780055037
- Updating left boundary for site 9
+ Energy = 11009.85780054927
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780055066
- Updating left boundary for site 10
+ Energy = 11009.85780055064
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780055066
- Updating left boundary for site 11
+ Energy = 11009.85780055064
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780055066
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780055067
- Updating right boundary for site 10
+ Energy = 11009.85780055062
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578005507
- Updating right boundary for site 9
+ Energy = 11009.85780055062
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779158988
- Updating right boundary for site 8
+ Energy = 11009.85779159109
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711585345
- Updating right boundary for site 7
+ Energy = 11009.85711585505
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711240306
- Updating right boundary for site 6
+ Energy = 11009.85711240276
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768439619
- Updating right boundary for site 5
+ Energy = 11009.85768439568
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778475037
- Updating right boundary for site 4
+ Energy = 11009.85778475323
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475135
- Updating right boundary for site 3
+ Energy = 11009.85778475132
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475134
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475133
- Updating right boundary for site 1
+ Energy = 11009.85778475131
 
 
  -------------------
@@ -3231,202 +2579,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475133
- Updating left boundary for site 1
+ Energy = 11009.85778475132
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475135
- Updating left boundary for site 2
+ Energy = 11009.85778475132
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475134
- Updating left boundary for site 3
+ Energy = 11009.8577847513
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778475131
- Updating left boundary for site 4
+ Energy = 11009.85778475127
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768439347
- Updating left boundary for site 5
+ Energy = 11009.85768439354
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711239502
- Updating left boundary for site 6
+ Energy = 11009.85711239561
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711591512
- Updating left boundary for site 7
+ Energy = 11009.85711591415
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779168942
- Updating left boundary for site 8
+ Energy = 11009.85779168789
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780064222
- Updating left boundary for site 9
+ Energy = 11009.85780063787
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780064084
- Updating left boundary for site 10
+ Energy = 11009.85780064079
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780064084
- Updating left boundary for site 11
+ Energy = 11009.8578006408
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780064084
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780064084
- Updating right boundary for site 10
+ Energy = 11009.85780064078
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780064077
- Updating right boundary for site 9
+ Energy = 11009.85780064079
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779169053
- Updating right boundary for site 8
+ Energy = 11009.85779169163
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711591141
- Updating right boundary for site 7
+ Energy = 11009.85711590717
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711274027
- Updating right boundary for site 6
+ Energy = 11009.85711273865
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768449463
- Updating right boundary for site 5
+ Energy = 11009.85768449593
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778484237
- Updating right boundary for site 4
+ Energy = 11009.85778484045
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778484025
- Updating right boundary for site 3
+ Energy = 11009.85778484022
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778484023
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778484023
- Updating right boundary for site 1
+ Energy = 11009.85778484021
 
 
  -------------------
@@ -3437,202 +2727,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778484023
- Updating left boundary for site 1
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778484024
- Updating left boundary for site 2
+ Energy = 11009.85778484023
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778484026
- Updating left boundary for site 3
+ Energy = 11009.85778484023
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778484022
- Updating left boundary for site 4
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8576844956
- Updating left boundary for site 5
+ Energy = 11009.85768449169
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711272648
- Updating left boundary for site 6
+ Energy = 11009.85711272798
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711596322
- Updating left boundary for site 7
+ Energy = 11009.85711596416
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779177332
- Updating left boundary for site 8
+ Energy = 11009.85779177645
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.8578007186
- Updating left boundary for site 9
+ Energy = 11009.85780071949
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780071713
- Updating left boundary for site 10
+ Energy = 11009.85780071711
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780071714
- Updating left boundary for site 11
+ Energy = 11009.85780071711
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780071714
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780071713
- Updating right boundary for site 10
+ Energy = 11009.85780071712
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780071715
- Updating right boundary for site 9
+ Energy = 11009.85780071714
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779177003
- Updating right boundary for site 8
+ Energy = 11009.85779177334
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711595711
- Updating right boundary for site 7
+ Energy = 11009.85711595615
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711301266
- Updating right boundary for site 6
+ Energy = 11009.85711301541
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768458071
- Updating right boundary for site 5
+ Energy = 11009.85768457871
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778491609
- Updating right boundary for site 4
+ Energy = 11009.85778491412
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778491534
- Updating right boundary for site 3
+ Energy = 11009.85778491532
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8577849154
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778491538
- Updating right boundary for site 1
+ Energy = 11009.85778491536
 
 
  -------------------
@@ -3643,202 +2875,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778491538
- Updating left boundary for site 1
+ Energy = 11009.85778491535
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778491541
- Updating left boundary for site 2
+ Energy = 11009.85778491538
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778491533
- Updating left boundary for site 3
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778491531
- Updating left boundary for site 4
+ Energy = 11009.8577849153
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768457768
- Updating left boundary for site 5
+ Energy = 11009.85768458184
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711300396
- Updating left boundary for site 6
+ Energy = 11009.85711300817
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711600281
- Updating left boundary for site 7
+ Energy = 11009.85711600133
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779184843
- Updating left boundary for site 8
+ Energy = 11009.85779184669
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780078212
- Updating left boundary for site 9
+ Energy = 11009.85780078132
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780078231
- Updating left boundary for site 10
+ Energy = 11009.85780078229
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780078231
- Updating left boundary for site 11
+ Energy = 11009.85780078229
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780078231
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578007823
- Updating right boundary for site 10
+ Energy = 11009.85780078229
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780078231
- Updating right boundary for site 9
+ Energy = 11009.85780078226
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779184586
- Updating right boundary for site 8
+ Energy = 11009.85779184301
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711599714
- Updating right boundary for site 7
+ Energy = 11009.8571159958
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711324725
- Updating right boundary for site 6
+ Energy = 11009.8571132501
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768465408
- Updating right boundary for site 5
+ Energy = 11009.85768465517
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778497974
- Updating right boundary for site 4
+ Energy = 11009.85778497845
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778497942
- Updating right boundary for site 3
+ Energy = 11009.85778497939
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778497937
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778497938
- Updating right boundary for site 1
 
 
  -------------------
@@ -3849,202 +3023,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778497938
- Updating left boundary for site 1
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778497939
- Updating left boundary for site 2
+ Energy = 11009.85778497938
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778497939
- Updating left boundary for site 3
+ Energy = 11009.85778497941
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778497941
- Updating left boundary for site 4
+ Energy = 11009.85778497944
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768465569
- Updating left boundary for site 5
+ Energy = 11009.85768465238
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711324152
- Updating left boundary for site 6
+ Energy = 11009.85711324216
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571160362
- Updating left boundary for site 7
+ Energy = 11009.85711603407
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779190491
- Updating left boundary for site 8
+ Energy = 11009.85779190585
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780084145
- Updating left boundary for site 9
+ Energy = 11009.85780083681
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85780083838
- Updating left boundary for site 10
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578008384
- Updating left boundary for site 11
+ Energy = 11009.85780083838
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578008384
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85780083837
- Updating right boundary for site 10
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780083836
- Updating right boundary for site 9
+ Energy = 11009.85780083837
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779191282
- Updating right boundary for site 8
+ Energy = 11009.85779190434
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711603297
- Updating right boundary for site 7
+ Energy = 11009.85711603343
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711344895
- Updating right boundary for site 6
+ Energy = 11009.85711345065
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768471667
- Updating right boundary for site 5
+ Energy = 11009.85768471647
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778503221
- Updating right boundary for site 4
+ Energy = 11009.85778503652
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778503448
- Updating right boundary for site 3
+ Energy = 11009.85778503451
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778503449
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778503447
- Updating right boundary for site 1
 
 
  -------------------
@@ -4055,202 +3171,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778503447
- Updating left boundary for site 1
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778503448
- Updating left boundary for site 2
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778503449
- Updating left boundary for site 3
+ Energy = 11009.85778503451
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778503445
- Updating left boundary for site 4
+ Energy = 11009.85778503443
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768471641
- Updating left boundary for site 5
+ Energy = 11009.85768471661
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571134421
- Updating left boundary for site 6
+ Energy = 11009.85711344583
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711606047
- Updating left boundary for site 7
+ Energy = 11009.85711605926
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779196327
- Updating left boundary for site 8
+ Energy = 11009.85779196677
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780088775
- Updating left boundary for site 9
+ Energy = 11009.85780088865
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780088708
- Updating left boundary for site 10
+ Energy = 11009.85780088707
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780088708
- Updating left boundary for site 11
+ Energy = 11009.85780088707
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780088708
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780088708
- Updating right boundary for site 10
+ Energy = 11009.85780088706
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780088705
- Updating right boundary for site 9
+ Energy = 11009.85780088706
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779196557
- Updating right boundary for site 8
+ Energy = 11009.85779195993
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711606209
- Updating right boundary for site 7
+ Energy = 11009.85711606095
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711362255
- Updating right boundary for site 6
+ Energy = 11009.85711361966
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768477276
- Updating right boundary for site 5
+ Energy = 11009.85768477021
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778508394
- Updating right boundary for site 4
+ Energy = 11009.85778508323
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778508228
- Updating right boundary for site 3
+ Energy = 11009.85778508227
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778508228
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778508228
- Updating right boundary for site 1
+ Energy = 11009.85778508226
 
 
  -------------------
@@ -4261,202 +3319,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778508228
- Updating left boundary for site 1
+ Energy = 11009.85778508227
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778508227
- Updating left boundary for site 2
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778508228
- Updating left boundary for site 3
+ Energy = 11009.85778508225
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778508224
- Updating left boundary for site 4
+ Energy = 11009.85778508225
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768477532
- Updating left boundary for site 5
+ Energy = 11009.85768477346
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711361666
- Updating left boundary for site 6
+ Energy = 11009.85711361897
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711608352
- Updating left boundary for site 7
+ Energy = 11009.85711608426
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779201173
- Updating left boundary for site 8
+ Energy = 11009.8577920085
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780092866
- Updating left boundary for site 9
+ Energy = 11009.85780093187
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780092962
- Updating left boundary for site 10
+ Energy = 11009.8578009296
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780092961
- Updating left boundary for site 11
+ Energy = 11009.85780092959
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780092961
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780092963
- Updating right boundary for site 10
+ Energy = 11009.85780092961
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780092963
- Updating right boundary for site 9
+ Energy = 11009.85780092959
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.8577920071
- Updating right boundary for site 8
+ Energy = 11009.85779201055
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711608391
- Updating right boundary for site 7
+ Energy = 11009.85711608524
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711377058
- Updating right boundary for site 6
+ Energy = 11009.85711376981
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768481859
- Updating right boundary for site 5
+ Energy = 11009.85768482085
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778512403
- Updating right boundary for site 4
+ Energy = 11009.85778512331
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778512402
- Updating right boundary for site 3
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778512403
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778512401
- Updating right boundary for site 1
 
 
  -------------------
@@ -4467,202 +3467,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778512401
- Updating left boundary for site 1
+ Energy = 11009.85778512402
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778512403
- Updating left boundary for site 2
+ Energy = 11009.85778512402
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778512402
- Updating left boundary for site 3
+ Energy = 11009.85778512401
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778512402
- Updating left boundary for site 4
+ Energy = 11009.85778512397
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768482287
- Updating left boundary for site 5
+ Energy = 11009.85768481972
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571137638
- Updating left boundary for site 6
+ Energy = 11009.85711376596
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711610755
- Updating left boundary for site 7
+ Energy = 11009.85711611104
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8577920534
- Updating left boundary for site 8
+ Energy = 11009.85779205128
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780096896
- Updating left boundary for site 9
+ Energy = 11009.85780096566
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
- - Left boundaries taken from index: 9
- - Right boundaries taken from index: 11
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780096709
- Updating left boundary for site 10
-
- MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780096706
- Updating left boundary for site 11
-
- MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780096706
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85780096708
- Updating right boundary for site 10
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 10  , forward sweep
+ - Left boundaries taken from index: 10
+ - Right boundaries taken from index: 12
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11009.85780096706
+
+ MICROITERATION NUMBER = 11  , backward sweep
+ - Left boundaries taken from index: 9
+ - Right boundaries taken from index: 11
+
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11009.85780096707
+
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.857800967
- Updating right boundary for site 9
+ Energy = 11009.85780096702
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779205165
- Updating right boundary for site 8
+ Energy = 11009.85779204999
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711610613
- Updating right boundary for site 7
+ Energy = 11009.85711610645
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.857113901
- Updating right boundary for site 6
+ Energy = 11009.85711390425
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768486227
- Updating right boundary for site 5
+ Energy = 11009.85768486417
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8577851618
- Updating right boundary for site 4
+ Energy = 11009.8577851614
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8577851607
- Updating right boundary for site 3
+ Energy = 11009.85778516072
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778516069
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8577851607
- Updating right boundary for site 1
 
 
  -------------------
@@ -4673,202 +3615,144 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8577851607
- Updating left boundary for site 1
+ Energy = 11009.85778516071
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778516068
- Updating left boundary for site 2
+ Energy = 11009.85778516069
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778516071
- Updating left boundary for site 3
+ Energy = 11009.85778516073
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778516072
- Updating left boundary for site 4
+ Energy = 11009.85778516076
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768486101
- Updating left boundary for site 5
+ Energy = 11009.8576848623
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711389624
- Updating left boundary for site 6
+ Energy = 11009.85711389632
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711613035
- Updating left boundary for site 7
+ Energy = 11009.8571161287
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779209037
- Updating left boundary for site 8
+ Energy = 11009.8577920897
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780099929
- Updating left boundary for site 9
+ Energy = 11009.85780100288
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85780100021
- Updating left boundary for site 10
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.8578010002
- Updating left boundary for site 11
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578010002
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.8578010002
- Updating right boundary for site 10
+ Energy = 11009.85780100021
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780100025
- Updating right boundary for site 9
+ Energy = 11009.85780100021
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779208598
- Updating right boundary for site 8
+ Energy = 11009.85779208398
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571161257
- Updating right boundary for site 7
+ Energy = 11009.85711612478
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711401525
- Updating right boundary for site 6
+ Energy = 11009.85711401468
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768490411
- Updating right boundary for site 5
+ Energy = 11009.85768489938
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778519312
- Updating right boundary for site 4
+ Energy = 11009.85778519271
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778519322
- Updating right boundary for site 3
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778519323
- Updating right boundary for site 2
-
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778519324
- Updating right boundary for site 1
 
 
  -------------------
@@ -4879,201 +3763,143 @@ Total number of tags: 623
  - Truncation parameter: 0
 
  MICROITERATION NUMBER = 0  , forward sweep
- - Optimization centered on site: 0
  - Left boundaries taken from index: 0
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778519324
- Updating left boundary for site 1
 
  MICROITERATION NUMBER = 1  , forward sweep
- - Optimization centered on site: 1
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778519323
- Updating left boundary for site 2
+ Energy = 11009.85778519321
 
  MICROITERATION NUMBER = 2  , forward sweep
- - Optimization centered on site: 2
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778519323
- Updating left boundary for site 3
+ Energy = 11009.85778519322
 
  MICROITERATION NUMBER = 3  , forward sweep
- - Optimization centered on site: 3
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778519321
- Updating left boundary for site 4
+ Energy = 11009.85778519322
 
  MICROITERATION NUMBER = 4  , forward sweep
- - Optimization centered on site: 4
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768490228
- Updating left boundary for site 5
+ Energy = 11009.85768490249
 
  MICROITERATION NUMBER = 5  , forward sweep
- - Optimization centered on site: 5
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711401199
- Updating left boundary for site 6
+ Energy = 11009.85711401514
 
  MICROITERATION NUMBER = 6  , forward sweep
- - Optimization centered on site: 6
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.8571161447
- Updating left boundary for site 7
+ Energy = 11009.8571161473
 
  MICROITERATION NUMBER = 7  , forward sweep
- - Optimization centered on site: 7
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85779212396
- Updating left boundary for site 8
+ Energy = 11009.85779212424
 
  MICROITERATION NUMBER = 8  , forward sweep
- - Optimization centered on site: 8
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85780102791
- Updating left boundary for site 9
+ Energy = 11009.85780102972
 
  MICROITERATION NUMBER = 9  , forward sweep
- - Optimization centered on site: 9
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780102975
- Updating left boundary for site 10
+ Energy = 11009.85780102972
 
  MICROITERATION NUMBER = 10  , forward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780102974
- Updating left boundary for site 11
+ Energy = 11009.85780102973
 
  MICROITERATION NUMBER = 11  , backward sweep
- - Optimization centered on site: 11
- - Left boundaries taken from index: 10
- - Right boundaries taken from index: 12
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780102974
- Updating right boundary for site 11
-
- MICROITERATION NUMBER = 12  , backward sweep
- - Optimization centered on site: 10
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85780102974
- Updating right boundary for site 10
+ Energy = 11009.85780102973
 
- MICROITERATION NUMBER = 13  , backward sweep
- - Optimization centered on site: 9
+ MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85780102977
- Updating right boundary for site 9
 
- MICROITERATION NUMBER = 14  , backward sweep
- - Optimization centered on site: 8
+ MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 9 iterations.
- Energy = 11009.85779212083
- Updating right boundary for site 8
+ Energy = 11009.85779211966
 
- MICROITERATION NUMBER = 15  , backward sweep
- - Optimization centered on site: 7
+ MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711614316
- Updating right boundary for site 7
+ Energy = 11009.85711614649
 
- MICROITERATION NUMBER = 16  , backward sweep
- - Optimization centered on site: 6
+ MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85711412051
- Updating right boundary for site 6
+ Energy = 11009.85711412021
 
- MICROITERATION NUMBER = 17  , backward sweep
- - Optimization centered on site: 5
+ MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85768493328
- Updating right boundary for site 5
+ Energy = 11009.85768493348
 
- MICROITERATION NUMBER = 18  , backward sweep
- - Optimization centered on site: 4
+ MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.85778522124
- Updating right boundary for site 4
+ Energy = 11009.85778522095
 
- MICROITERATION NUMBER = 19  , backward sweep
- - Optimization centered on site: 3
+ MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778522217
- Updating right boundary for site 3
+ Energy = 11009.85778522216
 
- MICROITERATION NUMBER = 20  , backward sweep
- - Optimization centered on site: 2
+ MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
  Energy = 11009.85778522218
- Updating right boundary for site 2
 
- MICROITERATION NUMBER = 21  , backward sweep
- - Optimization centered on site: 1
- - Left boundaries taken from index: 0
- - Right boundaries taken from index: 2
-
- Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11009.85778522218
- Updating right boundary for site 1
-
-Task took 16.650727 seconds.
+Task took 102.83005 seconds.
