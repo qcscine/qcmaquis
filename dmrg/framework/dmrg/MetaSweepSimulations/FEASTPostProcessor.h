@@ -139,6 +139,7 @@ public:
     // std::cout << overlapEigenValues << std::endl;
     // Retrieves energies
     energiesPrev = energies;
+    screenedEnergiesPrev = screenedEnergies;
     for (int iState = 0; iState < nStates; iState++) {
       if (std::imag(alphaVec[iState]) > 1.0E-10 || std::imag(betaVec[iState]) > 1.0E-10)
         maquis::cout << " WARNING: Energy of the " << iState << "-th state has a non-negligible imaginary part" << std::endl;
@@ -334,8 +335,8 @@ public:
 
   /** @brief Gets the overall energy variation */
   auto getOverallEnergyVariation() const {
-    auto overallSum = std::accumulate(energies.begin(), energies.end(), 0.);
-    auto oldOverallSum = std::accumulate(energiesPrev.begin(), energiesPrev.end(), 0.);
+    auto overallSum = std::accumulate(screenedEnergies.begin(), screenedEnergies.end(), 0.);
+    auto oldOverallSum = std::accumulate(screenedEnergiesPrev.begin(), screenedEnergiesPrev.end(), 0.);
     return std::abs(overallSum-oldOverallSum);
   }
 
@@ -378,7 +379,8 @@ private:
   BaseParameters& parms;                                         // Parameter container
   std::shared_ptr<ResultContainerType> mpsContainer;             // Data structure storing the result of the FEAST linear systems.
   int nStates, nQuad;                                            // FEAST-specific integer parameters.
-  std::vector<double> energies, energiesPrev, screenedEnergies;  // FEAST-specific double parameters.
+  std::vector<double> energies, energiesPrev, screenedEnergies,  // Energies (possibly screened) at the current and previous iteration.
+    screenedEnergiesPrev;
   std::vector<EigenvalueSelection> accepted;                     // Eigenpairs that are accepted.
   std::vector<double> truncatedEnergy, standardDeviations;       // FEAST-specific double parameters for checks.
   ComplexMatrixType feastEigenVectors;                           // FEAST --> eigenvalues transformation matrix.

@@ -114,15 +114,16 @@ public:
       maquis::cout << "   FEAST iteration " <<  currentIter << std::endl;
       maquis::cout << " ---------------------" << std::endl;
       this->runFeastSimulation();
-      // Checks overlap convergence criterion
-      auto overlapVector = this->getOverlapMatrix();
-      double overlapDifference = std::accumulate(overlapVector.begin(), overlapVector.end(), 0., [](int sum, double overlap) {
-        return sum + (1.-std::abs(overlap));
-      });
-      // Checks the energy convergence criterion
-      auto energyDifference = postProcessor->getOverallEnergyVariation();
       // Prints information about convergence
       if (currentIter > 1) {
+        // Checks overlap convergence criterion
+        auto overlapVector = this->getOverlapMatrix();
+        double overlapDifference = std::accumulate(overlapVector.begin(), overlapVector.end(), 0., [](int sum, double overlap) {
+          return sum + (1.-std::abs(overlap));
+        });
+        // Checks the energy convergence criterion
+        auto energyDifference = postProcessor->getOverallEnergyVariation();
+        // Final printing
         maquis::cout << std::endl;
         maquis::cout << " +-- CONVERGENCE CHECK --+" << std::endl;
         maquis::cout << std::endl;
@@ -130,11 +131,20 @@ public:
         maquis::cout << std::scientific << std::setprecision(16);
         maquis::cout << "  - Overall MPS variation: " << overlapDifference << std::endl;
         maquis::cout << "  - Overall energy variation: " << energyDifference << std::endl;
-        converged = (currentIter == maxFeastIter) || ((overlapDifference < feastThresholdOverlap)
-                                                       && (energyDifference < feastThresholdEnergy));
+        bool hasReachedConvergence = ((overlapDifference < feastThresholdOverlap) && (energyDifference < feastThresholdEnergy));
+        converged = (currentIter == maxFeastIter) || hasReachedConvergence;
         maquis::cout << std::endl;
-        maquis::cout << ((converged) ? " --> CONVERGENCE REACHED"
-                                     : " --> CONVERGENCE NOT REACHED, WILL START NEW ITERATION") << std::endl;
+        if (converged) {
+          if (currentIter == maxFeastIter && !hasReachedConvergence) {
+            maquis::cout << " --> MAXIMUM NUMBER OF FEAST ITERATION REACHED, STOPPING DMRG[FEAST]" << std::endl;
+          }
+          else {
+            maquis::cout << " --> CONVERGENCE REACHED" << std::endl;
+          }
+        }
+        else {
+          maquis::cout << " --> CONVERGENCE NOT REACHED, WILL START NEW ITERATION" << std::endl;
+        }
         maquis::cout << std::endl;
       }
       else {
@@ -176,6 +186,8 @@ private:
   /** @brief Runs a single iteration of DMRG[FEAST] */
   void runFeastSimulation() {
     // Variable initialization
+    // Note that, if this is not the first FEAST iteration, then the feastMPSs vector is defined
+    // and we can generate the initial guesses from the results of the previous FEAST iteration. 
     if (feastMPSs)
       for (int iState = 0; iState < feastMPSs->size(); iState++)
         mpsGuess[iState] = feastMPSs->operator[](iState);
@@ -235,6 +247,8 @@ private:
     postProcessor->updateContainer(resultContainer);
     postProcessor->solveEigenvalueProblem(mpo_);
     feastMPSs = postProcessor->performBackTransformation(mpo_, mMax, truncateEach);
+    if (screenedMPSs)
+      screenedMPSsPrevious = screenedMPSs;
     screenedMPSs = postProcessor->getScreenedMPSs();
     postProcessor->printResults();
     energies = postProcessor->getScreenedEnergies();
@@ -244,16 +258,28 @@ private:
 
   /** @brief Get overlap variation */
   auto getOverlapMatrix() const {
-    auto overlaps = std::vector<double>(mpsGuess.size(), 0);
+    auto overlaps = std::vector<double>(screenedMPSs->size(), 0);
+    maquis::cout << std::endl;
+    maquis::cout << " == OVERLAP CONVERGENCE CHECK == " << std::endl;
+    maquis::cout << std::endl;
+    // Finds, among the previous MPSs, the ones which have the largest overlap
+    // with the current FEAST MPSs.
     int iMPS = 0;
-    for (const auto& iCurrent: mpsGuess) {
-      for (const auto& iPrevious: *feastMPSs) {
+    for (const auto& iCurrent: *screenedMPSs) {
+      int iFound = 0, iRef = 0;
+      for (const auto& iPrevious: *screenedMPSsPrevious) {
         auto localOverlap = std::abs(overlap(iCurrent, iPrevious))/std::sqrt(norm(iCurrent)*norm(iPrevious));
-        if (localOverlap > overlaps[iMPS])
+        if (localOverlap > overlaps[iMPS]) {
           overlaps[iMPS] = localOverlap;
+          iRef = iFound;
+        }
+        iFound += 1;
       }
+      maquis::cout << " State " << iMPS << " has the largest overlap with state " << iRef << " of the previous iteration, overlap = " 
+                   << overlaps[iMPS] << std::endl;
       iMPS += 1;
     }
+    maquis::cout << std::endl;
     return overlaps;
   }
 
@@ -353,33 +379,33 @@ private:
   }
 
   // -- Class members --
-  BaseParameters parameters;                                     // Parameter container
-  int currentIter;                                               // Index of the current FEAST iteration.
-  int numStates;                                                 // Number of states to be targeted.
-  int maxFeastIter;                                              // Maximum number of FEAST iterations.
-  int mMax;                                                      // Maximum value of the bond dimension.
-  double eMin, eMax;                                             // Lower and upper bound for the complex contour integral.
-  double feastThresholdEnergy, feastThresholdOverlap;            // Threshold to assess the convergence of DMRG[FEAST] (both energy and overlap).
-  int numQuadraturePoint;                                        // Number of quadrature point.
-  std::string intModality;                                       // "Full" for the full circle integration, "half" for the half-circle one.
-  std::string truncModality;                                     // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
-  std::string initType;                                          // Initialization strategy for each guess.
-  std::vector<MPSType> mpsGuess;                                 // Stores the current guess for hte FEAST procedure.
-  std::shared_ptr<std::vector<MPSType>> feastMPSs, screenedMPSs; // Final, back-transformed FEAST MPSs
-  std::vector<int> seedForInit;                                  // Seed for random initialization.
-  std::vector<typename FeastHelper::QuadraturePoint> quadPoints; // Vector with the quadrature points and weight.
-  bool isSingleSite;                                             // If true, runs a single-site calculation, otherwise runs a two-sites one.
-  bool truncateEach;                                             // If true, truncates the MPS after each sum.
-  bool calculateExactError;                                      // If true, calculates the exact error associated with the linear system.
-  bool calculateVariance;                                        // If true, calculates the variance at the end of each FEAST iteration.
-  std::shared_ptr<ResultContainerType> resultContainer;          // Member that stores the result of each linear system.
-  std::vector<double> energies;                                  // FEAST energies at the current iteration.
-  std::unique_ptr<PostProcessorType> postProcessor;              // Class managing FEAST postprocessing.
-  std::vector<ComplexType> complexNodes, complexWeights;         // Quadrature rule for the complex circle.
-  const MPOType& mpo_;                                           // Matrix product operator
-  const LatticeType& lattice;                                    // DMRG lattice object.
-  const ModelType& model_;                                       // Model object.
-  bool verbose_, printTimings_;                                  // Verbosity flags.
+  BaseParameters parameters;                                                           // Parameter container
+  int currentIter;                                                                     // Index of the current FEAST iteration.
+  int numStates;                                                                       // Number of states to be targeted.
+  int maxFeastIter;                                                                    // Maximum number of FEAST iterations.
+  int mMax;                                                                            // Maximum value of the bond dimension.
+  double eMin, eMax;                                                                   // Lower and upper bound for the complex contour integral.
+  double feastThresholdEnergy, feastThresholdOverlap;                                  // Threshold to assess the convergence of DMRG[FEAST] (both energy and overlap).
+  int numQuadraturePoint;                                                              // Number of quadrature point.
+  std::string intModality;                                                             // "Full" for the full circle integration, "half" for the half-circle one.
+  std::string truncModality;                                                           // "Each" if the MPS must be truncated after each sum, "end" if the truncation must be done only at the end.
+  std::string initType;                                                                // Initialization strategy for each guess.
+  std::vector<MPSType> mpsGuess;                                                       // Stores the current guess for hte FEAST procedure.
+  std::shared_ptr<std::vector<MPSType>> feastMPSs, screenedMPSs, screenedMPSsPrevious; // Final, back-transformed FEAST MPSs, and their screened counterpart.
+  std::vector<int> seedForInit;                                                        // Seed for random initialization.
+  std::vector<typename FeastHelper::QuadraturePoint> quadPoints;                       // Vector with the quadrature points and weight.
+  bool isSingleSite;                                                                   // If true, runs a single-site calculation, otherwise runs a two-sites one.
+  bool truncateEach;                                                                   // If true, truncates the MPS after each sum.
+  bool calculateExactError;                                                            // If true, calculates the exact error associated with the linear system.
+  bool calculateVariance;                                                              // If true, calculates the variance at the end of each FEAST iteration.
+  std::shared_ptr<ResultContainerType> resultContainer;                                // Member that stores the result of each linear system.
+  std::vector<double> energies;                                                        // FEAST energies at the current iteration.
+  std::unique_ptr<PostProcessorType> postProcessor;                                    // Class managing FEAST postprocessing.
+  std::vector<ComplexType> complexNodes, complexWeights;                               // Quadrature rule for the complex circle.
+  const MPOType& mpo_;                                                                 // Matrix product operator
+  const LatticeType& lattice;                                                          // DMRG lattice object.
+  const ModelType& model_;                                                             // Model object.
+  bool verbose_, printTimings_;                                                        // Verbosity flags.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };
