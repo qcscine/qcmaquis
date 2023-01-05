@@ -17,6 +17,8 @@ L                                = 12
 MODEL                            = "watson" 
 Nmax                             = 3
 
+watson_max_coupling              = 2
+
 integral_file                    = "PES_Ethylene" 
 integral_cutoff                  = 1.0E-10
 

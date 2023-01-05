@@ -18,7 +18,7 @@ Disk storage of boundaries disabled
  Coordinate type: Cartesian Normal Modes
  - Maximum many-body coupling order supported: 12
  - Many-body coupling order expected as input: 12
- - Maximum many-body coupling order included in the Hamiltonian 12
+ - Maximum many-body coupling order included in the Hamiltonian 2
 
 coeff: 206.242167
 operators: {0,3}
@@ -101,30 +101,6 @@ operators: {0,3} {7,1}
 coeff: -88.6839569
 operators: {0,3} {9,1}
 
-coeff: -7.05859622
-operators: {0,1} {1,1} {3,1}
-
-coeff: 22.1485879
-operators: {0,1} {4,1} {6,1}
-
-coeff: 112.382752
-operators: {0,1} {4,1} {8,1}
-
-coeff: -75.6974731
-operators: {0,1} {5,1} {11,1}
-
-coeff: 116.21346
-operators: {0,1} {6,1} {10,1}
-
-coeff: -88.2384953
-operators: {0,1} {7,1} {11,1}
-
-coeff: -9.50569755
-operators: {0,1} {8,1} {10,1}
-
-coeff: 9.53442367
-operators: {0,1} {9,1} {11,1}
-
 coeff: 3.25530812
 operators: {1,3} {5,1}
 
@@ -134,15 +110,6 @@ operators: {1,3} {7,1}
 coeff: -70.014269
 operators: {1,3} {9,1}
 
-coeff: -34.5546833
-operators: {1,1} {2,1} {6,1}
-
-coeff: 148.366671
-operators: {1,1} {2,1} {8,1}
-
-coeff: -137.788363
-operators: {1,1} {3,1} {11,1}
-
 coeff: 11.7797428
 operators: {2,3} {5,1}
 
@@ -151,12 +118,6 @@ operators: {2,3} {7,1}
 
 coeff: -76.4722834
 operators: {2,3} {9,1}
-
-coeff: -10.137423
-operators: {2,1} {3,1} {4,1}
-
-coeff: -138.301785
-operators: {2,1} {3,1} {10,1}
 
 coeff: -7.9266107
 operators: {3,3} {5,1}
@@ -176,21 +137,6 @@ operators: {4,3} {7,1}
 coeff: -30.7378718
 operators: {4,3} {9,1}
 
-coeff: -41.6302351
-operators: {4,1} {5,1} {10,1}
-
-coeff: 73.9421558
-operators: {4,1} {6,1} {11,1}
-
-coeff: -61.6319928
-operators: {4,1} {7,1} {10,1}
-
-coeff: -9.9011479
-operators: {4,1} {8,1} {11,1}
-
-coeff: 13.9734949
-operators: {4,1} {9,1} {10,1}
-
 coeff: -5.80244663
 operators: {5,5}
 
@@ -203,14 +149,8 @@ operators: {5,3} {9,1}
 coeff: 8.10440271
 operators: {5,1} {6,3}
 
-coeff: -32.9077759
-operators: {5,1} {6,1} {8,1}
-
 coeff: -29.6137297
 operators: {5,1} {7,3}
-
-coeff: -12.5185045
-operators: {5,1} {7,1} {9,1}
 
 coeff: -3.10494254
 operators: {5,1} {8,3}
@@ -229,15 +169,6 @@ operators: {6,3} {7,1}
 
 coeff: -26.8182508
 operators: {6,3} {9,1}
-
-coeff: -44.4044233
-operators: {6,1} {7,1} {8,1}
-
-coeff: 4.78637341
-operators: {6,1} {8,1} {9,1}
-
-coeff: 30.7061738
-operators: {6,1} {10,1} {11,1}
 
 coeff: 17.8376159
 operators: {7,5}
@@ -259,9 +190,6 @@ operators: {7,1} {11,3}
 
 coeff: 166.20415
 operators: {8,3} {9,1}
-
-coeff: -352.267129
-operators: {8,1} {10,1} {11,1}
 
 coeff: 54.5306574
 operators: {9,5}
@@ -290,29 +218,14 @@ operators: {0,3} {3,3}
 coeff: 6.25679108
 operators: {0,3} {4,3}
 
-coeff: -2.9821817
-operators: {0,3} {4,1} {10,1}
-
 coeff: 4.78984981
 operators: {0,3} {5,3}
-
-coeff: 7.55770767
-operators: {0,3} {5,1} {7,1}
-
-coeff: -1.32215118
-operators: {0,3} {5,1} {9,1}
 
 coeff: 6.97139119
 operators: {0,3} {6,3}
 
-coeff: -2.18467562
-operators: {0,3} {6,1} {8,1}
-
 coeff: 3.78037817
 operators: {0,3} {7,3}
-
-coeff: -3.2206705
-operators: {0,3} {7,1} {9,1}
 
 coeff: -13.8007222
 operators: {0,3} {8,3}
@@ -325,108 +238,6 @@ operators: {0,3} {10,3}
 
 coeff: -14.0157326
 operators: {0,3} {11,3}
-
-coeff: -0.317532528
-operators: {0,1} {1,3} {11,1}
-
-coeff: 11.2856366
-operators: {0,1} {1,1} {2,1} {4,1}
-
-coeff: -0.00110084075
-operators: {0,1} {1,1} {2,1} {10,1}
-
-coeff: 6.3607775
-operators: {0,1} {1,1} {3,1} {5,1}
-
-coeff: 7.9283894
-operators: {0,1} {1,1} {3,1} {7,1}
-
-coeff: -3.04118902
-operators: {0,1} {1,1} {3,1} {9,1}
-
-coeff: 0.848541861
-operators: {0,1} {2,3} {11,1}
-
-coeff: -11.1191465
-operators: {0,1} {2,1} {3,1} {6,1}
-
-coeff: 2.03648006
-operators: {0,1} {2,1} {3,1} {8,1}
-
-coeff: -1.05581724
-operators: {0,1} {3,3} {11,1}
-
-coeff: -3.25439667
-operators: {0,1} {4,3} {11,1}
-
-coeff: -10.3736122
-operators: {0,1} {4,1} {5,1} {6,1}
-
-coeff: 2.79474815
-operators: {0,1} {4,1} {5,1} {8,1}
-
-coeff: -12.8515234
-operators: {0,1} {4,1} {6,1} {7,1}
-
-coeff: 5.74894977
-operators: {0,1} {4,1} {6,1} {9,1}
-
-coeff: 5.55235672
-operators: {0,1} {4,1} {7,1} {8,1}
-
-coeff: 37.573071
-operators: {0,1} {4,1} {8,1} {9,1}
-
-coeff: -39.3724825
-operators: {0,1} {4,1} {10,1} {11,1}
-
-coeff: 1.5403137
-operators: {0,1} {5,3} {11,1}
-
-coeff: -3.43212212
-operators: {0,1} {5,1} {6,1} {10,1}
-
-coeff: 1.45807973
-operators: {0,1} {5,1} {7,1} {11,1}
-
-coeff: 27.6773202
-operators: {0,1} {5,1} {8,1} {10,1}
-
-coeff: -27.3801566
-operators: {0,1} {5,1} {9,1} {11,1}
-
-coeff: 2.42555544
-operators: {0,1} {6,3} {11,1}
-
-coeff: -1.63604124
-operators: {0,1} {6,1} {7,1} {10,1}
-
-coeff: -40.6828535
-operators: {0,1} {6,1} {8,1} {11,1}
-
-coeff: 41.2413622
-operators: {0,1} {6,1} {9,1} {10,1}
-
-coeff: -0.406003332
-operators: {0,1} {7,3} {11,1}
-
-coeff: 29.5974642
-operators: {0,1} {7,1} {8,1} {10,1}
-
-coeff: -29.2380722
-operators: {0,1} {7,1} {9,1} {11,1}
-
-coeff: 1.59921998
-operators: {0,1} {8,3} {11,1}
-
-coeff: -4.00198183
-operators: {0,1} {8,1} {9,1} {10,1}
-
-coeff: 2.22184229
-operators: {0,1} {9,3} {11,1}
-
-coeff: -2.70524603
-operators: {0,1} {10,3} {11,1}
 
 coeff: -0.949637866
 operators: {0,1} {11,5}
@@ -443,29 +254,14 @@ operators: {1,3} {3,3}
 coeff: 1.79624887
 operators: {1,3} {4,3}
 
-coeff: -1.2880977
-operators: {1,3} {4,1} {10,1}
-
 coeff: 0.110709314
 operators: {1,3} {5,3}
-
-coeff: 1.87552625
-operators: {1,3} {5,1} {7,1}
-
-coeff: 0.863517574
-operators: {1,3} {5,1} {9,1}
 
 coeff: 1.40988993
 operators: {1,3} {6,3}
 
-coeff: 1.68830631
-operators: {1,3} {6,1} {8,1}
-
 coeff: 0.102980766
 operators: {1,3} {7,3}
-
-coeff: 0.556723332
-operators: {1,3} {7,1} {9,1}
 
 coeff: -11.9130411
 operators: {1,3} {8,3}
@@ -479,51 +275,6 @@ operators: {1,3} {10,3}
 coeff: -13.0644846
 operators: {1,3} {11,3}
 
-coeff: -1.61456207
-operators: {1,1} {2,1} {4,1} {11,1}
-
-coeff: -3.0041253
-operators: {1,1} {2,1} {5,1} {6,1}
-
-coeff: -3.3308654
-operators: {1,1} {2,1} {5,1} {8,1}
-
-coeff: -3.47686237
-operators: {1,1} {2,1} {6,1} {7,1}
-
-coeff: -4.37395042
-operators: {1,1} {2,1} {6,1} {9,1}
-
-coeff: -0.442689286
-operators: {1,1} {2,1} {7,1} {8,1}
-
-coeff: 48.8308988
-operators: {1,1} {2,1} {8,1} {9,1}
-
-coeff: -54.673344
-operators: {1,1} {2,1} {10,1} {11,1}
-
-coeff: -6.81405303
-operators: {1,1} {3,1} {4,1} {6,1}
-
-coeff: 2.9711241
-operators: {1,1} {3,1} {4,1} {8,1}
-
-coeff: 1.66414356
-operators: {1,1} {3,1} {5,1} {11,1}
-
-coeff: -2.95987477
-operators: {1,1} {3,1} {6,1} {10,1}
-
-coeff: 1.30846636
-operators: {1,1} {3,1} {7,1} {11,1}
-
-coeff: 45.804653
-operators: {1,1} {3,1} {8,1} {10,1}
-
-coeff: -45.0238845
-operators: {1,1} {3,1} {9,1} {11,1}
-
 coeff: 2.40157054
 operators: {2,7}
 
@@ -533,29 +284,14 @@ operators: {2,3} {3,3}
 coeff: 1.63625114
 operators: {2,3} {4,3}
 
-coeff: -0.529258359
-operators: {2,3} {4,1} {10,1}
-
 coeff: 0.487241399
 operators: {2,3} {5,3}
-
-coeff: 1.02830083
-operators: {2,3} {5,1} {7,1}
-
-coeff: 2.31162556
-operators: {2,3} {5,1} {9,1}
 
 coeff: 1.03279563
 operators: {2,3} {6,3}
 
-coeff: 2.70799581
-operators: {2,3} {6,1} {8,1}
-
 coeff: 0.437068574
 operators: {2,3} {7,3}
-
-coeff: 0.673733776
-operators: {2,3} {7,1} {9,1}
 
 coeff: -12.6690983
 operators: {2,3} {8,3}
@@ -569,59 +305,20 @@ operators: {2,3} {10,3}
 coeff: -14.1618026
 operators: {2,3} {11,3}
 
-coeff: 3.80933377
-operators: {2,1} {3,1} {4,1} {5,1}
-
-coeff: 4.39096281
-operators: {2,1} {3,1} {4,1} {7,1}
-
-coeff: -2.98999638
-operators: {2,1} {3,1} {4,1} {9,1}
-
-coeff: 2.56880262
-operators: {2,1} {3,1} {5,1} {10,1}
-
-coeff: -3.34233264
-operators: {2,1} {3,1} {6,1} {11,1}
-
-coeff: 1.15946294
-operators: {2,1} {3,1} {7,1} {10,1}
-
-coeff: 47.3556971
-operators: {2,1} {3,1} {8,1} {11,1}
-
-coeff: -46.4900921
-operators: {2,1} {3,1} {9,1} {10,1}
-
 coeff: 1.06808739
 operators: {3,7}
 
 coeff: 1.33758405
 operators: {3,3} {4,3}
 
-coeff: -1.14681868
-operators: {3,3} {4,1} {10,1}
-
 coeff: -0.01713467
 operators: {3,3} {5,3}
-
-coeff: 0.586613494
-operators: {3,3} {5,1} {7,1}
-
-coeff: -0.620560041
-operators: {3,3} {5,1} {9,1}
 
 coeff: 0.629745437
 operators: {3,3} {6,3}
 
-coeff: -0.73229473
-operators: {3,3} {6,1} {8,1}
-
 coeff: 0.583380931
 operators: {3,3} {7,3}
-
-coeff: -0.464822704
-operators: {3,3} {7,1} {9,1}
 
 coeff: -10.6114822
 operators: {3,3} {8,3}
@@ -644,23 +341,11 @@ operators: {4,5} {10,1}
 coeff: 1.01640924
 operators: {4,3} {5,3}
 
-coeff: 2.8694418
-operators: {4,3} {5,1} {7,1}
-
-coeff: -2.26421629
-operators: {4,3} {5,1} {9,1}
-
 coeff: 2.82290435
 operators: {4,3} {6,3}
 
-coeff: -2.16890607
-operators: {4,3} {6,1} {8,1}
-
 coeff: 0.653938091
 operators: {4,3} {7,3}
-
-coeff: -1.42963897
-operators: {4,3} {7,1} {9,1}
 
 coeff: -6.73697303
 operators: {4,3} {8,3}
@@ -674,56 +359,8 @@ operators: {4,3} {10,3}
 coeff: -7.07560237
 operators: {4,3} {11,3}
 
-coeff: 0.138451241
-operators: {4,1} {5,3} {10,1}
-
-coeff: -1.05090099
-operators: {4,1} {5,1} {6,1} {11,1}
-
-coeff: 0.896401505
-operators: {4,1} {5,1} {7,1} {10,1}
-
-coeff: 19.44746
-operators: {4,1} {5,1} {8,1} {11,1}
-
-coeff: -19.5067212
-operators: {4,1} {5,1} {9,1} {10,1}
-
-coeff: 0.942401665
-operators: {4,1} {6,3} {10,1}
-
-coeff: -0.219874131
-operators: {4,1} {6,1} {7,1} {11,1}
-
-coeff: -28.6852274
-operators: {4,1} {6,1} {8,1} {10,1}
-
-coeff: 28.3727219
-operators: {4,1} {6,1} {9,1} {11,1}
-
-coeff: -0.909490902
-operators: {4,1} {7,3} {10,1}
-
-coeff: 20.7508271
-operators: {4,1} {7,1} {8,1} {11,1}
-
-coeff: -20.1798804
-operators: {4,1} {7,1} {9,1} {10,1}
-
-coeff: 1.43299831
-operators: {4,1} {8,3} {10,1}
-
-coeff: -3.44020404
-operators: {4,1} {8,1} {9,1} {11,1}
-
-coeff: 2.02160478
-operators: {4,1} {9,3} {10,1}
-
 coeff: -0.492376893
 operators: {4,1} {10,5}
-
-coeff: -1.43361326
-operators: {4,1} {10,1} {11,3}
 
 coeff: 0.278303187
 operators: {5,7}
@@ -737,14 +374,8 @@ operators: {5,5} {9,1}
 coeff: 0.270849193
 operators: {5,3} {6,3}
 
-coeff: 1.31958682
-operators: {5,3} {6,1} {8,1}
-
 coeff: 2.14662351
 operators: {5,3} {7,3}
-
-coeff: -0.0054511205
-operators: {5,3} {7,1} {9,1}
 
 coeff: -3.18596979
 operators: {5,3} {8,3}
@@ -758,53 +389,11 @@ operators: {5,3} {10,3}
 coeff: -3.83997057
 operators: {5,3} {11,3}
 
-coeff: 1.29547185
-operators: {5,1} {6,3} {7,1}
-
-coeff: 1.63060205
-operators: {5,1} {6,3} {9,1}
-
-coeff: 1.71785081
-operators: {5,1} {6,1} {7,1} {8,1}
-
-coeff: -18.0619433
-operators: {5,1} {6,1} {8,1} {9,1}
-
-coeff: 22.5679446
-operators: {5,1} {6,1} {10,1} {11,1}
-
 coeff: -1.6383404
 operators: {5,1} {7,5}
 
-coeff: 1.70921419
-operators: {5,1} {7,3} {9,1}
-
-coeff: -6.63746094
-operators: {5,1} {7,1} {8,3}
-
-coeff: -6.85696808
-operators: {5,1} {7,1} {9,3}
-
-coeff: -8.19502665
-operators: {5,1} {7,1} {10,3}
-
-coeff: -8.31737984
-operators: {5,1} {7,1} {11,3}
-
-coeff: -0.203495947
-operators: {5,1} {8,3} {9,1}
-
-coeff: 4.70290325
-operators: {5,1} {8,1} {10,1} {11,1}
-
 coeff: 0.0811578932
 operators: {5,1} {9,5}
-
-coeff: -2.17640676
-operators: {5,1} {9,1} {10,3}
-
-coeff: -2.1975688
-operators: {5,1} {9,1} {11,3}
 
 coeff: 0.286873328
 operators: {6,7}
@@ -814,9 +403,6 @@ operators: {6,5} {8,1}
 
 coeff: 0.898205533
 operators: {6,3} {7,3}
-
-coeff: 1.41184527
-operators: {6,3} {7,1} {9,1}
 
 coeff: -6.76873678
 operators: {6,3} {8,3}
@@ -830,29 +416,8 @@ operators: {6,3} {10,3}
 coeff: -8.49417873
 operators: {6,3} {11,3}
 
-coeff: 0.237233809
-operators: {6,1} {7,3} {8,1}
-
-coeff: -19.5361841
-operators: {6,1} {7,1} {8,1} {9,1}
-
-coeff: 24.9589891
-operators: {6,1} {7,1} {10,1} {11,1}
-
 coeff: 0.24955443
 operators: {6,1} {8,5}
-
-coeff: 1.30854206
-operators: {6,1} {8,1} {9,3}
-
-coeff: -2.10993706
-operators: {6,1} {8,1} {10,3}
-
-coeff: -2.04101824
-operators: {6,1} {8,1} {11,3}
-
-coeff: 3.42881157
-operators: {6,1} {9,1} {10,1} {11,1}
 
 coeff: 0.70798856
 operators: {7,7}
@@ -872,20 +437,8 @@ operators: {7,3} {10,3}
 coeff: -4.66876093
 operators: {7,3} {11,3}
 
-coeff: 2.82160752
-operators: {7,1} {8,3} {9,1}
-
-coeff: -1.4356564
-operators: {7,1} {8,1} {10,1} {11,1}
-
 coeff: 1.11416579
 operators: {7,1} {9,5}
-
-coeff: 1.16853839
-operators: {7,1} {9,1} {10,3}
-
-coeff: 0.996510417
-operators: {7,1} {9,1} {11,3}
 
 coeff: 2.63841745
 operators: {8,7}
@@ -898,9 +451,6 @@ operators: {8,3} {10,3}
 
 coeff: 16.8757396
 operators: {8,3} {11,3}
-
-coeff: -67.725222
-operators: {8,1} {9,1} {10,1} {11,1}
 
 coeff: 2.49209421
 operators: {9,7}
@@ -920,16 +470,16 @@ operators: {10,3} {11,3}
 coeff: 2.93599421
 operators: {11,7}
 
-MPO Bond 0: 20/0
-MPO Bond 1: 23/0
-MPO Bond 2: 30/0
-MPO Bond 3: 27/0
-MPO Bond 4: 29/0
-MPO Bond 5: 33/0
-MPO Bond 6: 37/0
-MPO Bond 7: 31/0
-MPO Bond 8: 33/0
-MPO Bond 9: 20/0
+MPO Bond 0: 18/0
+MPO Bond 1: 17/0
+MPO Bond 2: 16/0
+MPO Bond 3: 15/0
+MPO Bond 4: 16/0
+MPO Bond 5: 16/0
+MPO Bond 6: 17/0
+MPO Bond 7: 14/0
+MPO Bond 8: 11/0
+MPO Bond 9: 8/0
 MPO Bond 10: 5/0
 MPO Bond 11: 1/0
 MPS initialization has finished...
@@ -955,140 +505,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 28984.96885671384
+ Energy = 31803.70513962539
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 28881.65318258476
+ Energy = 31549.85228753011
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 27865.23885583291
+ Energy = 30397.90096377151
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 27072.2085705961
+ Energy = 29384.1965309007
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 24194.57822122534
+ Energy = 26360.95496372003
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 23211.61989991966
+ Energy = 24118.66612391414
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 19233.34870178659
+ Energy = 19011.80891420693
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 16391.11226398267
+ Energy = 16349.06223685084
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 13351.42662864778
+ Energy = 13060.36308839676
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.81767853089
+ Energy = 11175.61315680322
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.76935535507
+ Energy = 11175.61016560412
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.74721611649
+ Energy = 11175.60789811221
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11612.40770495351
+ Energy = 11175.60375247798
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11611.49618219701
+ Energy = 11175.55920148923
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11598.5533199719
+ Energy = 11175.26570047344
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11433.5315234957
+ Energy = 11145.57732287254
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11356.17434929809
+ Energy = 11071.75224829676
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11152.36238788319
+ Energy = 11047.2021143043
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.34249079131
+ Energy = 11047.08585657825
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.32859484497
+ Energy = 11047.08507430949
 
 
  -------------------
@@ -1103,140 +653,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.32859403096
+ Energy = 11047.08506920995
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.32859280819
+ Energy = 11047.08506820808
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.3276672141
+ Energy = 11047.08504641567
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.31390078844
+ Energy = 11047.08500953252
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11011.24057266218
+ Energy = 11047.08496472424
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.87178323724
+ Energy = 11047.08468769907
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.09721267697
+ Energy = 11047.08365905937
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
  Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.03376931636
+ Energy = 11047.08358577671
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0316882961
+ Jacobi-Davidson diagonalization converged after 9 iterations.
+ Energy = 11047.08358594188
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0319768456
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08358594568
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
- Jacobi-Davidson diagonalization converged after 4 iterations.
- Energy = 11010.03197684762
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835859457
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 7 iterations.
- Energy = 11010.03197684166
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08358594568
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.03168820517
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08358594761
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.02970226765
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08358575448
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00445221636
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08358256513
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.01568357184
+ Jacobi-Davidson diagonalization converged after 9 iterations.
+ Energy = 11047.08356303445
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.01188717424
+ Jacobi-Davidson diagonalization converged after 9 iterations.
+ Energy = 11047.08356294823
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.01060195129
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08356319708
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0111182905
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356319583
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0112246592
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356319585
 
 
  -------------------
@@ -1251,140 +801,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.011224661
+ Energy = 11047.08356319585
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.01122466101
+ Energy = 11047.08356319585
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0111182908
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356319585
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.01039616145
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356319583
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00677622207
+ Jacobi-Davidson diagonalization converged after 6 iterations.
+ Energy = 11047.08356294726
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00021593568
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356243
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98272103558
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08355908619
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00739401158
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835625314
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00921305811
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08356272231
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00950665762
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356272288
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00950665827
+ Energy = 11047.08356272289
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00950666082
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356272289
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00921305958
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08356272189
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00739186081
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356253615
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98267499701
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08355908599
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9982034327
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356193031
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00395605545
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356224257
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00741103902
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835624855
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00813029857
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356248847
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00823788623
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356248849
 
 
  -------------------
@@ -1399,140 +949,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00823788337
+ Energy = 11047.0835624885
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00823788338
+ Energy = 11047.0835624885
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00813029706
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356248848
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00741021529
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08356248791
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00391629799
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356224413
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99774108643
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356169538
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98191648345
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08355723296
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00669080031
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356065903
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00850916768
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08356083868
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00880311839
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356083897
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00880311497
+ Energy = 11047.08356083897
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 4 iterations.
- Energy = 11010.00880311727
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08356083897
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0085091699
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.0835608394
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00669107455
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08356066245
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98192718033
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08355722515
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9975980024
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.083553466
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00368860099
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835538466
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00719024904
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08355409765
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00787141713
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08355409464
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.0079810996
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08355409467
 
 
  -------------------
@@ -1547,140 +1097,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00798109659
+ Energy = 11047.08355409467
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00798109658
+ Energy = 11047.08355409466
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00787142275
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08355409463
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00719017798
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08355409481
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00368717366
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08355385034
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99753649178
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08355323533
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98181063999
+ Jacobi-Davidson diagonalization converged after 9 iterations.
+ Energy = 11047.08354508537
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00657856626
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354830261
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00840501583
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835484798
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00869880937
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354847877
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00869881075
+ Energy = 11047.08354847878
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00869880997
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354847878
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00840501069
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354848041
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0065788005
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354830051
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98182215507
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354502836
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99753398993
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354629121
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00364867256
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354690806
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715899634
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354715358
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00781518696
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354715331
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00792554287
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354715334
 
 
  -------------------
@@ -1695,140 +1245,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00792554209
+ Energy = 11047.08354715334
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00792554208
+ Energy = 11047.08354715335
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00781518535
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354715332
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715899198
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354715071
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00364605079
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354690734
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99751821172
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354624645
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98179381269
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354349655
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00654347629
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354677876
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00837572163
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354694928
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00866934805
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354695215
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.0086693466
+ Energy = 11047.08354695216
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00866934732
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354695215
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0083757192
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354695273
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0065436526
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354677871
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180436304
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354349379
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99753404085
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354599822
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00363819181
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354665566
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715503447
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354689825
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00779562695
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354689726
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00790628895
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354689728
 
 
  -------------------
@@ -1843,140 +1393,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00790629149
+ Energy = 11047.08354689728
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.0079062915
+ Energy = 11047.08354689727
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00779562577
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354689724
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715503247
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354689988
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00363582018
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354665583
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99752792257
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354598284
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98179372004
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354341362
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00652600078
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354670747
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00836250792
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354688261
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00865597641
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354688431
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00865597883
+ Energy = 11047.08354688431
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00865597753
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354688431
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00836251174
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354688556
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00652614939
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354670952
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9818023377
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354341246
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99754392202
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354595292
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00363378577
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354661897
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715571751
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354686807
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00778525319
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354686491
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00789610245
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354686495
 
 
  -------------------
@@ -1991,140 +1541,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00789609973
+ Energy = 11047.08354686498
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00789609973
+ Energy = 11047.08354686496
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00778525519
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354686491
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715572295
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354686592
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00363195011
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354662388
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99754094724
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354594656
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98179600614
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354339095
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00651433404
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835466883
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0083542171
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354686285
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00864755647
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354686425
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00864755989
+ Energy = 11047.08354686425
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00864756011
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354686424
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00835421703
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354686307
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00651445204
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354669031
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180293533
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354338893
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.997554382
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354593215
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00363099571
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354660934
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715690437
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354685224
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00777817336
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685147
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00788914033
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685149
 
 
  -------------------
@@ -2139,140 +1689,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00788913819
+ Energy = 11047.08354685149
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00788913821
+ Energy = 11047.08354685148
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00777816981
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685146
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715690633
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354685328
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362966899
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354660798
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99755276532
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354592663
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98179804799
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354337686
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00650545376
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667594
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00834809883
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835468577
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00864134531
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685506
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00864134184
+ Energy = 11047.08354685506
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.0086413396
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685506
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00834810499
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.0835468563
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00650555312
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667995
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9818036141
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354337512
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99756363178
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354592519
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362881629
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354660351
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0071578002
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835468492
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00777275696
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468451
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00788380501
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684509
 
 
  -------------------
@@ -2287,140 +1837,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00788380822
+ Energy = 11047.0835468451
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00788380822
+ Energy = 11047.08354684509
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00777275601
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468451
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0071577989
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684676
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362792609
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835466022
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99756270203
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835459193
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.981799455
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336982
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0064983373
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667359
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00834325766
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354685179
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00863642526
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685068
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00863642361
+ Energy = 11047.08354685068
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00863642371
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354685068
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00834326285
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354685165
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00649841268
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667588
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9818039575
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336972
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99757144462
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354592262
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362701569
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659994
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715832267
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354683946
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00776839977
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684205
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00787952283
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684205
 
 
  -------------------
@@ -2435,140 +1985,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787952027
+ Energy = 11047.08354684205
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787952027
+ Energy = 11047.08354684205
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00776839634
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684203
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715832801
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684212
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362645678
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659614
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99757089067
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354592029
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180030979
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354337103
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00649249502
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835466758
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833929685
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835468499
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00863240353
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684853
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00863240637
+ Energy = 11047.08354684853
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00863240758
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684854
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0083392976
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354685053
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00649255948
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666955
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180401069
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.0835433687
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99757793781
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835459177
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362550162
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659598
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715853343
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354683836
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00776481205
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684057
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00787598799
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684057
 
 
  -------------------
@@ -2583,140 +2133,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787598555
+ Energy = 11047.08354684057
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787598557
+ Energy = 11047.08354684057
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00776481655
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684055
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715853685
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684001
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362519424
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659796
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99757760466
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591819
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180078451
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.0835433688
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00648763284
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667215
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833600238
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684856
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00862906643
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468475
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00862906673
+ Energy = 11047.08354684751
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00862906443
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468475
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833599568
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684827
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00648768386
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667258
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180385898
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336795
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9975833241
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591625
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362421199
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659891
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715852011
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684382
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00776181838
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683981
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00787303173
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683981
 
 
  -------------------
@@ -2731,140 +2281,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787303166
+ Energy = 11047.08354683982
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787303167
+ Energy = 11047.08354683981
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0077618237
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683982
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715852435
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354683736
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362409067
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659368
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9975831013
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835459167
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180101511
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336559
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00648356053
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666674
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833322239
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684996
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00862625894
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684698
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00862626075
+ Energy = 11047.083546847
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00862626167
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684698
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833322451
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684736
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00648360038
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666956
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180360068
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336747
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99758776361
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591793
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362313102
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659669
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715835378
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684077
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775929712
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683948
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.0078705416
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683948
 
 
  -------------------
@@ -2879,140 +2429,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787054279
+ Energy = 11047.08354683949
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00787054282
+ Energy = 11047.08354683948
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775930147
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683948
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0071583524
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683947
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362313443
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659654
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99758762992
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591888
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180109858
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336858
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00648012527
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667131
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833086564
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684707
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00862388885
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684673
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00862388744
+ Energy = 11047.08354684674
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00862388856
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684674
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00833086694
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684587
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00648015609
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835466667
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9818032947
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336482
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759144155
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591414
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362220733
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659433
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715809089
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835468411
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775716197
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683931
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786843664
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683931
 
 
  -------------------
@@ -3027,140 +2577,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786843528
+ Energy = 11047.08354683933
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786843528
+ Energy = 11047.0835468393
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775716414
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683929
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715809087
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683926
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0036222998
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659359
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759135488
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591442
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180111014
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336569
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647721473
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666917
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832885691
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684515
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00862187258
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684663
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00862187189
+ Energy = 11047.08354684662
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00862187439
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684663
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832885955
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.0835468449
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647723792
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667231
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180299254
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336659
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759449238
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591351
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362142802
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659762
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715776356
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684227
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775535525
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683923
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786664709
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683922
 
 
  -------------------
@@ -3175,140 +2725,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786664549
+ Energy = 11047.08354683925
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786664548
+ Energy = 11047.08354683922
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775535488
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683923
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715777025
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468392
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362157578
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659349
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759443006
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835459135
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180108663
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.0835433684
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647474976
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666943
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832714874
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684589
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0086201557
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684656
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00862015622
+ Energy = 11047.08354684655
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00862015386
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684657
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832714978
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684906
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647476818
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667349
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180270629
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336635
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759700896
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591523
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0036207669
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659571
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715741956
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354683673
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775380787
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683918
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786512086
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683918
 
 
  -------------------
@@ -3323,140 +2873,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786512306
+ Energy = 11047.08354683919
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786512308
+ Energy = 11047.08354683919
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775380678
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683919
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.007157418
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683915
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362094702
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659763
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9975969728
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591664
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180105477
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336785
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647265717
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666755
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832568587
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684907
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00861869705
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684655
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00861869404
+ Energy = 11047.08354684654
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00861869565
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684655
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832568534
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684589
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.006472671
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666796
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180245
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336578
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759911192
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591303
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362020747
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659817
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715707339
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684348
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775249754
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683916
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786382739
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683916
 
 
  -------------------
@@ -3471,140 +3021,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786382717
+ Energy = 11047.08354683917
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786382718
+ Energy = 11047.08354683916
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775249575
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683917
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715706719
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683913
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00362040485
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659289
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99759908549
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591479
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180101507
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336731
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647087756
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666922
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832443532
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684645
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00861744659
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684652
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00861744733
+ Energy = 11047.08354684653
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00861744563
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684651
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.008324441
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684768
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00647088637
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667029
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180222204
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336861
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99760085446
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835459156
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0036197325
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659488
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715672701
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684191
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775137734
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683915
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786272112
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683915
 
 
  -------------------
@@ -3619,140 +3169,140 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786272391
+ Energy = 11047.08354683917
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786272391
+ Energy = 11047.08354683915
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775137872
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683914
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715672895
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683912
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00361993415
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659483
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99760083792
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591288
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180098894
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336943
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00646936378
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666729
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832337026
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684508
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0086163808
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684651
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00861638448
+ Energy = 11047.08354684651
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00861638604
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468465
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832337228
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.08354684875
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00646937208
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354667238
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180203378
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336734
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99760230911
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591793
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00361933281
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659313
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715640659
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684202
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775042735
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468391
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786178645
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683912
 
 
  -------------------
@@ -3767,139 +3317,139 @@ MPS initialization has finished...
  - Right boundaries taken from index: 2
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786178483
+ Energy = 11047.08354683912
 
  MICROITERATION NUMBER = 1  , forward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00786178485
+ Energy = 11047.08354683912
 
  MICROITERATION NUMBER = 2  , forward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00775042846
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683911
 
  MICROITERATION NUMBER = 3  , forward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715640458
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683909
 
  MICROITERATION NUMBER = 4  , forward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.0036195345
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659697
 
  MICROITERATION NUMBER = 5  , forward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.99760229852
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591503
 
  MICROITERATION NUMBER = 6  , forward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180096888
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336668
 
  MICROITERATION NUMBER = 7  , forward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00646808613
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.0835466675
 
  MICROITERATION NUMBER = 8  , forward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832245709
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.08354684857
 
  MICROITERATION NUMBER = 9  , forward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00861547781
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354684651
 
  MICROITERATION NUMBER = 10  , forward sweep
  - Left boundaries taken from index: 10
  - Right boundaries taken from index: 12
 
  Jacobi-Davidson diagonalization converged after 1 iterations.
- Energy = 11010.00861547865
+ Energy = 11047.08354684651
 
  MICROITERATION NUMBER = 11  , backward sweep
  - Left boundaries taken from index: 9
  - Right boundaries taken from index: 11
 
- Jacobi-Davidson diagonalization converged after 3 iterations.
- Energy = 11010.00861547961
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.0835468465
 
  MICROITERATION NUMBER = 12  , backward sweep
  - Left boundaries taken from index: 8
  - Right boundaries taken from index: 10
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00832245793
+ Jacobi-Davidson diagonalization converged after 2 iterations.
+ Energy = 11047.0835468455
 
  MICROITERATION NUMBER = 13  , backward sweep
  - Left boundaries taken from index: 7
  - Right boundaries taken from index: 9
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00646808513
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354666847
 
  MICROITERATION NUMBER = 14  , backward sweep
  - Left boundaries taken from index: 6
  - Right boundaries taken from index: 8
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.98180187104
+ Jacobi-Davidson diagonalization converged after 8 iterations.
+ Energy = 11047.08354336463
 
  MICROITERATION NUMBER = 15  , backward sweep
  - Left boundaries taken from index: 5
  - Right boundaries taken from index: 7
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11009.9976035171
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354591741
 
  MICROITERATION NUMBER = 16  , backward sweep
  - Left boundaries taken from index: 4
  - Right boundaries taken from index: 6
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00361899567
+ Jacobi-Davidson diagonalization converged after 7 iterations.
+ Energy = 11047.08354659745
 
  MICROITERATION NUMBER = 17  , backward sweep
  - Left boundaries taken from index: 3
  - Right boundaries taken from index: 5
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00715610023
+ Jacobi-Davidson diagonalization converged after 4 iterations.
+ Energy = 11047.0835468372
 
  MICROITERATION NUMBER = 18  , backward sweep
  - Left boundaries taken from index: 2
  - Right boundaries taken from index: 4
 
- Jacobi-Davidson diagonalization converged after 10 iterations.
- Energy = 11010.00774962178
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683911
 
  MICROITERATION NUMBER = 19  , backward sweep
  - Left boundaries taken from index: 1
  - Right boundaries taken from index: 3
 
- Jacobi-Davidson diagonalization converged after 8 iterations.
- Energy = 11010.00786098677
+ Jacobi-Davidson diagonalization converged after 1 iterations.
+ Energy = 11047.08354683911
 
-Task took 11.597557 seconds.
+Task took 15.378843 seconds.
