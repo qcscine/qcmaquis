@@ -135,12 +135,13 @@ private:
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
 
+
         // Settings for integral read-in
         add_option("integral_file", "path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
         add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
         add_option("beta_mode", "", value(0));
 
-        // excited states calculation with ORTHO
+        // Excited states calculation with ORTHO
         add_option("n_ortho_states", "", value(0));
         add_option("ortho_states", "comma separated list of filenames");
 
@@ -148,6 +149,9 @@ private:
         add_option("MEASURE[EnergyVariance]", "", value(0));
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
+
+        // Electronic-structure calculations
+        add_option("irrep", "Index of the irreducible representation associated with the wave function", value(0));
 
         // Watson Hamiltonian-based simulations
         add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
