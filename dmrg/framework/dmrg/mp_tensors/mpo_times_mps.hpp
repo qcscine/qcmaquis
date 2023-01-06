@@ -587,7 +587,6 @@ public:
     MPSType applyMPO(const MPOType& mpo) 
     {
         throw MPOTimesMPSException();
-        //throw std::runtime_error("[applyMPO] not available for SU2U1 symmetry");
     }
 };
 

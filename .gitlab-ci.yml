@@ -37,6 +37,8 @@ testElectronic:
 
 # Relativistic electronic-structure tests
 
+# Relativistic electronic-structure tests
+
 build-relativistic:
   stage: buildAdvanced
   needs: ["testElectronic"]

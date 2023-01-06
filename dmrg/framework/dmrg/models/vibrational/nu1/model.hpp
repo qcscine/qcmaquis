@@ -311,6 +311,7 @@ private:
         while (2*jCont < ham_term.size() && ham_term[2*jCont] != -1);
     }
 
+private:
     const Lattice& lattice;
     int lattice_size, num_modes, maxCouplingDegree;
     BaseParameters& parameters;

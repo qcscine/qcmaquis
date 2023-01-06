@@ -128,6 +128,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 if (mpo2.has(it.index(), b3))
                     summands.insert(it.index());
             // Evaluates the sum over b2 and returns the (b1, b3) element of the MPOTensor
+            // Evaluates the sum over b2 and returns the (b1, b3) element of the MPOTensor 
             auto coupled_ops = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
             for (auto it = coupled_ops.begin(); it != coupled_ops.end(); ++it) {
                 tag_type new_tag = kron_handler.get_kronecker_table()->register_op(it->second);

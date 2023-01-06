@@ -20,7 +20,7 @@ Nmax                             = 6
 integral_file                    = "PES_Ethylene" 
 integral_cutoff                  = 1.0E-10
 
-init_type                       = "basis_state_generic"
+init_state                       = "basis_state_generic"
 init_basis_state                 = "0,0,0,0,0,0,0,0,0,0,0,0"
 chkpfile                         = "C2H4.vDMRG.m20.TS.checkpoint.h5" 
 resultfile                       = "C2H4.vDMRG.m20.TS.resfile.h5"

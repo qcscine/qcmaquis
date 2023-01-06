@@ -212,7 +212,7 @@ public:
         return common::generate_right_mpo_basis<Matrix, OtherMatrix, SymmGroup, abelian::Gemms, rbtm_functor>(bra_tensor, ket_tensor, right, mpo);
     }
 
-        // non-generic method
+    // non-generic method
 
     static MPSTensor<Matrix, SymmGroup>
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,

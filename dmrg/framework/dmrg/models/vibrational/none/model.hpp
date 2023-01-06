@@ -196,10 +196,17 @@ public:
     }
 
     /** @brief Getter for the physical dimension of a given type */
+<<<<<<< HEAD
     Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices_[type]; }
 
     /** @brief Getter for the identity operator */
     tag_type identity_matrix_tag(size_t type) const { return ident_.at(nMaxVec[type]); }
+=======
+    Index<TrivialGroup> const& phys_dim(size_t type) const { return physIndices; }
+
+    /** @brief Getter for the identity operator */
+    tag_type identity_matrix_tag(size_t type) const { return ident; }
+>>>>>>> libqcmaquis
 
     /** @brief Getter for the filling operator */
     tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
