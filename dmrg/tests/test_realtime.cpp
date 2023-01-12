@@ -234,7 +234,7 @@ BOOST_FIXTURE_TEST_CASE(TestRealTimeExcitonic, VibronicFixture)
   parametersExcitonicAggregateTwoSites.set("time_units", "as");
   parametersExcitonicAggregateTwoSites.set("time_step", 0.01);
   parametersExcitonicAggregateTwoSites.set("nsweeps", 2);
-  parametersExcitonicAggregateTwoSites.set("max_bond_dimension", 50);
+  parametersExcitonicAggregateTwoSites.set("max_bond_dimension", 100);
   parametersExcitonicAggregateTwoSites.set("init_type", "basis_state_generic");
   parametersExcitonicAggregateTwoSites.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0");
   parametersExcitonicAggregateTwoSites.set("alpha_initial", 1.0E-15);
