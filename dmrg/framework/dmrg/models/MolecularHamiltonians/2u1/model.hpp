@@ -170,19 +170,25 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
     std::pair<std::vector<tag_type>, std::vector<value_type> > ddcu = tag_handler->get_product_tags(destroy_down_for_meas, create_up);
     std::pair<std::vector<tag_type>, std::vector<value_type> > ducd = tag_handler->get_product_tags(destroy_up, create_down_for_meas);
 
-    // #define HERMITIAN(op1, op2) for (int hh=0; hh < op1.size(); ++hh) tag_handler->hermitian_pair(op1[hh], op2[hh]);
-    // HERMITIAN(create_up, destroy_up)
-    // HERMITIAN(create_down, destroy_down)
-    // HERMITIAN(create_down_for_meas, destroy_down_for_meas)
-    // HERMITIAN(cutf.first, ftdu.first)
-    // HERMITIAN(cdtf.first, ftdd.first)
-    // HERMITIAN(e2d, d2e)
-    // HERMITIAN(cund.first, dund.first)
-    // HERMITIAN(cdnu.first, ddnu.first)
-    // HERMITIAN(cundtf.first, ftdund.first)
-    // HERMITIAN(cdnutf.first, ftddnu.first)
-    // HERMITIAN(ddcu.first, ducd.first)
-    // #undef HERMITIAN
+    // Note that the Hermitian pairs are registered only if the Hamiltonian is Hermitean.
+    // TODO: In principle, also for the transcorrelated case the registration of the hermitean pairs should
+    //       work, needs more testing to understand why it does not work.
+    if (!isTranscorrelated_) {
+        int numberOfTypes = create_up.size();
+        for (int opType=0; opType < numberOfTypes; opType++) {
+            tag_handler->hermitian_pair(create_up[opType], destroy_up[opType]);
+            tag_handler->hermitian_pair(create_down[opType], destroy_down[opType]);
+            tag_handler->hermitian_pair(create_down_for_meas[opType], destroy_down_for_meas[opType]);
+            tag_handler->hermitian_pair(cutf.first[opType], ftdu.first[opType]);
+            tag_handler->hermitian_pair(cdtf.first[opType], ftdd.first[opType]);
+            tag_handler->hermitian_pair(e2d[opType], d2e[opType]);
+            tag_handler->hermitian_pair(cund.first[opType], dund.first[opType]);
+            tag_handler->hermitian_pair(cdnu.first[opType], ddnu.first[opType]);
+            tag_handler->hermitian_pair(cundtf.first[opType], ftdund.first[opType]);
+            tag_handler->hermitian_pair(cdnutf.first[opType], ftddnu.first[opType]);
+            tag_handler->hermitian_pair(ddcu.first[opType], ducd.first[opType]);
+        }
+    }
 }
 
 /** @brief Create the Hamiltonian terms */
@@ -221,7 +227,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         }
         // One-body contribution
         else if (k == -1 && l == -1 && m==-1 && n==-1) {
-            std::vector< std::array<int, 2> > posVector = isTranscorrelated_ ? std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})}) 
+            std::vector< std::array<int, 2> > posVector = isTranscorrelated_ ? std::vector<std::array<int, 2>>({std::array<int, 2>({i, j})})
                                                                              : TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j);
             for (auto& iOp: oneBodyElementaryOperators) {
                 for (auto& iTerm: posVector) {
@@ -244,7 +250,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
             for (auto& iOp: twoBodyElementaryOperators) {
                 for (auto& iTerm: tmp) {
                     std::vector< pos_t > posVector = { iTerm[0], iTerm[2], iTerm[3], iTerm[1] };
-                    if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) && 
+                    if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                         !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
                         auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement/2.);
                         addTerm(mapOfOperators, term);
@@ -267,7 +273,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                         std::vector< OperatorType > opVector2 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::CreateBeta,
                                                                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
                         std::vector< OperatorType > opVector3 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                                                 OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};                                                
+                                                                 OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
                         std::vector< OperatorType > opVector4 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::CreateAlpha,
                                                                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
                         std::vector< OperatorType > opVector5 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::CreateAlpha,
@@ -275,7 +281,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                         std::vector< OperatorType > opVector6 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::CreateBeta,
                                                                  OperatorType::DestroyBeta, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
                         std::vector< OperatorType > opVector7 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateBeta,
-                                                                 OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};                                               
+                                                                 OperatorType::DestroyBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
                         std::vector< OperatorType > opVector8 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::CreateAlpha,
                                                                  OperatorType::DestroyAlpha, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
                         std::vector< std::vector< OperatorType > > threeBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4,
@@ -283,10 +289,10 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                         for (auto& iOp: threeBodyElementaryOperators) {
                             for (auto& iTerm: tmp) {
                                 std::vector< pos_t > posVector = { iTerm[0], iTerm[2], iTerm[4], iTerm[5], iTerm[3], iTerm[1] };
-                                if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) && 
+                                if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                                     !(posVector[0] == posVector[2] && iOp[0] == iOp[2]) &&
                                     !(posVector[1] == posVector[2] && iOp[1] == iOp[2]) &&
-                                    !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) && 
+                                    !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) &&
                                     !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
                                     !(posVector[4] == posVector[3] && iOp[4] == iOp[3]))
                                 {
@@ -307,7 +313,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     for (const auto& idx: mapOfOperators)
         this->terms_.push_back(term_descriptor(idx.first, idx.second, true));
     // Registers all Hermitian conjugate
-    /* 
+    /*
     int originalSize = tag_handler->total_size();
     for (int iTag = 0; iTag < originalSize; iTag++) {
         auto fermType = (tag_handler->is_fermionic(iTag)) ? tag_detail::fermionic : tag_detail::bosonic;

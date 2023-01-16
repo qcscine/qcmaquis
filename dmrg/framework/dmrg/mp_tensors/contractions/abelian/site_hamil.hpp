@@ -59,7 +59,6 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmGroup
     contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo, indexForTrim, isHermitian);
     Index<SymmGroup> right_i = ket_tensor.col_dim(),
                      out_left_i = physical_i * left_i;
-    Index<SymmGroup> right_i_bra = bra_tensor.col_dim();
     common_subset(out_left_i, right_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,

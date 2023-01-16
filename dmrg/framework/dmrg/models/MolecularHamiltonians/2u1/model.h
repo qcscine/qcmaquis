@@ -65,7 +65,7 @@ class qc_model : public model_impl<Matrix, SymmGroup>
     using pos_t = typename Lattice::pos_t;
     using value_type = typename Matrix::value_type;
     using one_matrix = typename alps::numeric::associated_one_matrix<Matrix>::type;
-    using MapOfOperatorsType = std::unordered_map< std::vector< std::pair< int, unsigned int> >, value_type, 
+    using MapOfOperatorsType = std::unordered_map< std::vector< std::pair< int, unsigned int> >, value_type,
                                                    boost::hash< std::vector< std::pair< int, unsigned int> > > >;
 public:
 
@@ -79,9 +79,7 @@ public:
 
     void update(BaseParameters const& p)
     {
-        // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
-        return;
     }
 
     // For this model: site_type == point group irrep
@@ -394,7 +392,7 @@ public:
 
                     value = it.second;
                     boost::split( value_split, value, boost::is_any_of(";"));
-                    if(value_split.size() > 1)
+                    if (value_split.size() > 1)
                     	bra_ckp = value_split[0];
                     else
                     	bra_ckp = it.second;
@@ -870,10 +868,9 @@ public:
 
             // 1-RDM and transition-1RDM
             else if (std::regex_match(lhs, what, expression_oneptdm) ||
-                    std::regex_match(lhs, what, expression_transition_oneptdm) ||
-                    std::regex_match(lhs, what, expression_oneptspdm))
-                    {
-
+                     std::regex_match(lhs, what, expression_transition_oneptdm) ||
+                     std::regex_match(lhs, what, expression_oneptspdm))
+            {
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){
                     name = "transition_oneptdm";

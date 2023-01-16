@@ -252,7 +252,6 @@ namespace generate_mpo
       tag_type opDestroy = model.get_operator_tag(name, lat.template get_prop<typename SymmGroup::subcharge>("type", pos[0]));
       tag_type ops_[1] = {opDestroy};
       std::vector<tag_type> ops(ops_, ops_+1);
-      term_descriptor<typename Matrix::value_type> term = generate_mpo::arrange_operators(pos, ops, model.operators_table());
       std::vector<tag_type> identities, fillings;
       for (std::size_t idx = 0; idx <= lat.maximum_vertex_type(); idx++) {
         identities.push_back(model.identity_matrix_tag(idx));
