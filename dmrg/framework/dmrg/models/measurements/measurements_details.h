@@ -59,29 +59,30 @@ namespace measurements_details {
 				Lattice const & lat)
         {
             typedef typename TagHandler<matrix, symm>::op_t op_t;
-
-		charge acc = symm::IdentityCharge;
+		    charge acc = symm::IdentityCharge;
             for (std::size_t p = 0; p < term.size(); ++p) {
-		    charge local = symm::IdentityCharge;
-		    if (tag_handler->is_fermionic(term.operator_tag(p)))
+		        charge local = symm::IdentityCharge;
+		        if (tag_handler->is_fermionic(term.operator_tag(p))) {
                     // stknecht: this check does not work properly for U1DG. FIXME!
-                    if(symm_traits::HasU1DG<symm>::value)
-                        if( p % 2 == 0)
-		                symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
-                        else
-		                symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
-                    else
+                    if(symm_traits::HasU1DG<symm>::value) {
+                        if( p % 2 == 0) {
+		                    symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+                        }
+                        else {
+		                    symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
+                        }
+                    }
+                    else {
     		            symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
-
+                    }
                     //maquis::cout << " index " << p << " --> accumulated charge (before) " << acc << " local charge " << local << std::endl;
-		    acc = symm::fuse(acc, local);
-            //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;
+		            acc = symm::fuse(acc, local);
+                }
+                //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;
             }
-
-		if (acc == symm::IdentityCharge)
-            	return true;
-
-		return false;
+	        if (acc == symm::IdentityCharge)
+                return true;
+		    return false;
         }
     };
 
