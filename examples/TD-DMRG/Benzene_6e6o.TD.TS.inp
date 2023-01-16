@@ -25,7 +25,7 @@ truncation_initial       = 1e-50
 truncation_final         = 1e-50
 
 // -- Initialization and storage information --
-init_state               = 'default'
+init_type               = 'default'
 chkpfile                 = 'Benzene_6e6o.TD.TS.checkpoint_state.0.h5'
 resultfile               = 'Benzene_6e6o.TD.TS.results_state.0.h5'
 

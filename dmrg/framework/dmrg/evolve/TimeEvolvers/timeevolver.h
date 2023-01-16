@@ -70,7 +70,7 @@ class TimeEvolver {
 
   /* Time-evolution methods */
   template<class SiteProblem, class MatrixType>
-  void evolve(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward) const;
+  void evolve(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, bool isTerminal) const;
 
  private:
   /* Private attributes */

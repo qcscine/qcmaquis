@@ -358,7 +358,8 @@ namespace ietl
     // C L A S S :   J A C O B I _ D A V I D S O N ////////////////////////////////////
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
+    
+    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) :
     matrix_(matrix),
     vecspace_(vec),
     M(1,1),
@@ -397,7 +398,7 @@ namespace ietl
         
         // Start with t=v_o, starting guess
         ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
-        ietl::project(V[0],vecspace_);
+        ietl::project(V[0], vecspace_);
         
         // Start iteration
         do {

@@ -27,6 +27,7 @@
 #define BOOST_TEST_MODULE TimeEvolutionSweep
 
 #include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/mpl/assert.hpp>
 #include "utils/fpcomparison.h"
 #include <iostream>

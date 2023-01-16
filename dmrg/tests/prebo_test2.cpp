@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
              {    0.0007706595,    0.0000101362,    0.0007840622,    0.0036272786,    0.0047812823,    0.0000070624},
              {    0.0000002699,    0.0000000141,    0.0000002797,    0.0000332957,    0.0000070624,    0.0000445343}};
 
-
+    p.set("max_bond_dimension", 100);
     p.set("integrals_binary", maquis::serialize(integrals));
     p.set("L", 6);
     p.set("LATTICE", "preBO lattice");
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
     optimizer.push_back("twosite");
 
     // Attention: const guess in test, so that the results are deterministic.
-    p.set("init_state", "const");
+    p.set("init_type", "const");
     // Measure RDMs
     p.set("MEASURE[1rdm]","1");
     p.set("MEASURE[mutinf]","1");
@@ -274,7 +274,7 @@ BOOST_AUTO_TEST_CASE( PreBO_Test2 )
 
         maquis::cout << "Running Pre-BO test for symmetry nu1 with optimization: " << o << std::endl;
 
-        maquis::DMRGInterface<double, Hamiltonian::PreBO> interface(p);
+        maquis::DMRGInterface<double> interface(p);
         interface.optimize();
 
         // test energy

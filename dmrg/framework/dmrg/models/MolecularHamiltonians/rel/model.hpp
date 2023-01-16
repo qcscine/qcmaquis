@@ -30,7 +30,7 @@
 #define REL_QC_MODEL_HPP
 
 template <class SymmGroup>
-rel_qc_model<SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_) 
+rel_qc_model<SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_)
     : lat(lat_), parms(parms_), tag_handler(new table_type())
 {
     // Initialize double group table

@@ -132,7 +132,7 @@ public:
       // +-----------------+
       std::cout << std::endl;
       std::cout << "Forward propagating the " << site << "-th MPSTensor " << std::endl;
-      time_evolver_->evolve(sp, mps_[site], false);
+      time_evolver_->evolve(sp, mps_[site], true, false);
       if (site == 0) {
           energy = ietl::get_energy(sp, mps_[site]);
           res.first = energy;
@@ -175,7 +175,7 @@ public:
           maquis::cout << " Alpha = " << alpha << std::endl;
           trunc = site_shifter_->shiftSiteTD(mpo_, left_, right_, alpha, cutoff, Mmax, Mmax, perturber_->is_perturb_dm());
           Storage::drop(right_[site+1]);
-          Storage::evict(left_[site]);
+          Storage::StoreToFile(left_[site]);
           site_shifter_->forward_shift();
         } else {
           time_evolver_->add_to_current_time(time_step_effective);
@@ -188,7 +188,7 @@ public:
           maquis::cout << " Alpha = " << alpha << std::endl;
           trunc = site_shifter_->shiftSiteTD(mpo_, left_, right_, alpha, cutoff, Mmax, Mmax, perturber_->is_perturb_dm());
           Storage::drop(left_[site]);
-          Storage::evict(right_[site+1]);
+          Storage::StoreToFile(right_[site+1]);
           site_shifter_->backward_shift();
         } else {
           time_evolver_->add_to_current_time(time_step_effective);
@@ -207,7 +207,7 @@ public:
       maquis::cout << " Sweep has been running for " << elapsed << " seconds. \n" << std::endl;
       parallel::meminfo();
       if (stop_callback())
-          throw dmrg::time_limit(sweep, _site + 1);
+        throw dmrg::time_limit(sweep, _site + 1);
     }
     performFinalOperations();
   };
@@ -228,7 +228,7 @@ private:
     } else {
         a = 2*sweep+2;
         n = sprintf(buffer, "  Sweep number %3d - site number %3d", a, site);
-    } 
+    }
     std::cout << " +-----------------------------------+" << std::endl;
     std::cout << buffer << std::endl;
     std::cout << " +-----------------------------------+" << std::endl;

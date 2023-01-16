@@ -45,7 +45,7 @@
 namespace measurements {
 
 template <class Matrix, class SymmGroup>
-class TaggedNRankRDM<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> > 
+class TaggedNRankRDM<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
   : public measurement<Matrix, SymmGroup>
 {
   typedef measurement<Matrix, SymmGroup> base;

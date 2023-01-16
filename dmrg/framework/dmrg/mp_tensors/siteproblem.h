@@ -59,7 +59,7 @@ struct SiteProblem
     {
         MPSTensor<Matrix, SymmGroup> y;
         ietl::mult(*this, x, y);
-        auto res = ietl::dot(x,y)/ietl::dot(x,x);
+        auto res = ietl::dot(x, y)/ietl::dot(x, x);
         x.make_left_paired();
         return maquis::real(res);
     }

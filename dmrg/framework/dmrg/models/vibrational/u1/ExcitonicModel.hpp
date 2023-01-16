@@ -77,7 +77,7 @@ public:
     {
         // Maximum order of the coupling terms that are supported.
         // For the excitonic Hamiltonian, this will be 
-        maxCoupling = VibrationalModelTraitClass<U1>::maximumNumberOfCouplings;
+        maxCoupling = chem::getIndexDim(chem::Hamiltonian::Excitonic);
         // Vibronic interaction definition
         J_ = model["J_coupling"].as<value_type>();
         epsilon_ = model["J_excitation"].as<value_type>();

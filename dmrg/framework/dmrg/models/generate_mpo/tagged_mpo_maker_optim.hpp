@@ -45,7 +45,7 @@
 namespace generate_mpo {
 
 namespace detail {
-    
+
 /**
  * @brief Structure representing the key of a prempo object
  *
@@ -106,7 +106,7 @@ std::ostream& operator << (std::ostream& os, detail::prempo_key<pos_t, tag_type,
  * fillings: tag associated with the filling operator
  * lenght: lattice size
  * tag_handler: map in which all the operators are stored as tags
- * prempo: vector of prempo_map_type objects, which are map associating pairs of prempo_key objects to values 
+ * prempo: vector of prempo_map_type objects, which are map associating pairs of prempo_key objects to values
  *         (i.e., coefficients of the Hamiltonian). The pair of objects, which are the keyword for the dictionary,
  *         are the labels which are associated to the MPO bond, i.e. the operators which have been
  *         applied before and/or after the current site
@@ -118,35 +118,35 @@ std::ostream& operator << (std::ostream& os, detail::prempo_key<pos_t, tag_type,
 template<class Matrix, class SymmGroup>
 class TaggedMPOMaker
 {
-    typedef typename Matrix::value_type scale_type;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-    typedef Lattice::pos_t pos_t;
-    typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;
-    typedef typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t pos_op_type;
-    typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
-    typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
-    typedef std::vector<tag_type> tag_vec;
-    typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
-    typedef std::pair<tag_type, scale_type> prempo_value_type;
-        // TODO: consider moving to hashmap
-    typedef std::multimap<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
-                          compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > > prempo_map_type;
+    using scale_type = typename Matrix::value_type;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+    using pos_t = Lattice::pos_t;
+    using tag_type = typename OperatorTagTerm<Matrix, SymmGroup>::tag_type;
+    using pos_op_type = typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t;
+    using tag_block = boost::tuple<std::size_t, std::size_t, tag_type, scale_type>;
+    using term_descriptor = ::term_descriptor<typename Matrix::value_type>;
+    using tag_vec = std::vector<tag_type>;
+    using prempo_key_type = detail::prempo_key<pos_t, tag_type, index_type>;
+    using prempo_value_type = std::pair<tag_type, scale_type>;
+    // TODO: consider moving to hashmap
+    using prempo_map_type =  std::multimap<std::pair<prempo_key_type, prempo_key_type>, prempo_value_type,
+                                           compare_pair_inverse<std::pair<prempo_key_type, prempo_key_type> > >;
     enum merge_kind {attach, detach};
 
 public:
-
     /** @brief Class constructor from a lattice and a model */
     TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model)
-    : lat(lat_), length(lat.size()), tag_handler(model.operators_table()), prempo(length),
-      trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
-      leftmost_right(length), rightmost_left(0), finalized(false), verbose(true), core_energy(0.)
+        : lat(lat_), length(lat.size()), tag_handler(model.operators_table()), prempo(length),
+          trivial_left(prempo_key_type::trivial_left), trivial_right(prempo_key_type::trivial_right),
+          leftmost_right(length), rightmost_left(0), finalized(false), verbose(true), core_energy(0.)
     {
-        for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
-        {
-            identities.push_back(model.identity_matrix_tag(p));
-            fillings.push_back(model.filling_matrix_tag(p));
-            try { identities_full.push_back(model.get_operator_tag("ident_full", p)); }
+        for (int iType = 0; iType < lat.getMaxType(); iType++) {
+            identities.push_back(model.identity_matrix_tag(iType));
+            fillings.push_back(model.filling_matrix_tag(iType));
+            try {
+                identities_full.push_back(model.get_operator_tag("ident_full", iType));
+            }
             catch (std::runtime_error const & e) {}
         }
         for (const auto& iTerm: model.hamiltonian_terms())
@@ -154,8 +154,7 @@ public:
     }
 
     /**
-     * @brief Class constructor from a lattice and a vector of terms 
-     *
+     * @brief Class constructor from a lattice and a vector of terms.
      * This method should be used for constructing operators != from the Hamiltonian.
      */
     TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & i_f_, tag_vec const & f_,
@@ -172,8 +171,7 @@ public:
 
 
     /**
-     * @brief Class constructor from a lattice and a vector of terms
-     *
+     * @brief Class constructor from a lattice and a vector of terms.
      * This method should be used for constructing operators != from the Hamiltonian.
      */
     TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & f_,
@@ -296,7 +294,7 @@ public:
                 }
             }
             MPOTensor_detail::Hermitian h_(LeftHerm, RightHerm, LeftPhase, RightPhase);
-            // Construction of the MPO tensor 
+            // Construction of the MPO tensor
             if (p == 0)
                 mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor,
                                  tag_handler->get_operator_table(), h_, left_spins, right_spins));
@@ -341,10 +339,10 @@ private:
         }
     }
 
-    /** 
-     * @brief Adds a term composed by 2 SQ operators 
+    /**
+     * @brief Adds a term composed by 2 SQ operators
      * @param term_descriptor term: term to be added
-     */ 
+     */
     void add_2term(term_descriptor const& term)
     {
         // Preliminary operations
@@ -387,10 +385,10 @@ private:
         assert(mpo_spin.get() == 0); // H is a spin 0 operator
     }
 
-    /** 
-     * @brief Adds a term composed by 3 SQ operators 
+    /**
+     * @brief Adds a term composed by 3 SQ operators
      * @param term_descriptor term: term to be added
-     */ 
+     */
     /*
     void add_3term(term_descriptor const& term)
     {
@@ -513,20 +511,20 @@ private:
         }
         SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > mpo_spin;
         std::vector<pos_op_type> ops_left, ops_right;
-        // Thresh is the index after which we switch from fork to merge behaviour 
+        // Thresh is the index after which we switch from fork to merge behaviour
         int thresh;
         if (nops % 2 == 1 || prefer_fork)
             thresh = nops/2;
         else
             thresh = nops/2 - 1;
-        // == FORKING OPERATORS == 
+        // == FORKING OPERATORS ==
         prempo_key_type k1 = trivial_left;
         for (std::size_t i = 0; i < thresh; ++i) {
           mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
           ops_left.push_back(term[i]);
           prempo_key_type k2(ops_left);
           k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
-          // Checks how many fermionic operators are left - if the number is odd, will insert the filling, 
+          // Checks how many fermionic operators are left - if the number is odd, will insert the filling,
           // otherwise will insert the identity
           if (tag_handler->is_fermionic(term.operator_tag(i)))
             v_nferm[v_part_type[i]] -= 1;
@@ -547,7 +545,7 @@ private:
             v_nferm[v_part_type[thresh]] -= 1;
         v_trivial_fill[v_part_type[thresh]] = (v_nferm[v_part_type[thresh]] % 2 == 0);
         insert_filling(term.position(thresh)+1, term.position(thresh+1), k1, v_trivial_fill, mpo_spin.get() > 1);
-        // == MERGE OPERATOR == 
+        // == MERGE OPERATOR ==
         for (std::size_t i = thresh+1; i < nops; i++) {
             // Extract position and then type
             ops_right.resize(0);
@@ -573,7 +571,7 @@ private:
         assert(mpo_spin.get() == 0); // H is a spin 0 operator
     }
 
-    /** 
+    /**
      * @brief Adds a term to the MPO using the naive construction
      *
      * Note that in this case the filling operators must be included in the terms_,
@@ -643,7 +641,7 @@ private:
      * @param merge_kind merge_behaviour: detach if a new branch should not be created, attach otherwise
      */
     prempo_key_type insert_operator(pos_t p, std::pair<prempo_key_type, prempo_key_type> kk, prempo_value_type val,
-                                    merge_kind merge_behavior=detach, bool is_left=false)
+                                    merge_kind merge_behavior=detach)
     {
         /// merge_behavior == detach: a new branch will be created, in case op already exist, an offset is used
         /// merge_behavior == attach: if operator tags match, keep the same branch
@@ -653,50 +651,6 @@ private:
             if (prempo[p].count(kk) == 0)
                 prempo[p].insert( make_pair(kk, val) );
         return kk.second;
-        /*
-        // Here remember that the insert method for a C++ map, if it already finds the elements, returns an
-        // iterator pointing at those elements, together with a boolean which is set to false.
-        // At this point, the algorithm is basically looking if there are already operators with the same bond
-        std::pair<typename prempo_map_type::iterator, bool> match = prempo[p].insert( make_pair(kk, val) );
-        if (merge_behavior == detach) {
-            // If the value has not been inserted, it means that it is already there. For this reason,
-            // generate a "fake" couple of prempo_key operators, sets the offset of kk at the maximum and finds the
-            // first free position after kk. Then insert at this precise position
-            if (!match.second) {
-                std::pair<prempo_key_type, prempo_key_type> kk_max = kk;
-                if (is_left)
-                    kk_max.second.offset = std::numeric_limits<index_type>::max();
-                else
-                    kk_max.first.offset = std::numeric_limits<index_type>::max();
-                typename prempo_map_type::iterator highest_offset = prempo[p].upper_bound(kk_max);
-                --highest_offset;
-                if (is_left)
-                    kk.second.offset = highest_offset->first.second.offset + 1;
-                else
-                    kk.first.offset = highest_offset->first.first.offset + 1;
-                prempo[p].insert(highest_offset, make_pair(kk, val));
-            }
-        }
-        else {
-            // The control done here has to met two conditions
-            // 1) the pair (kk, val) should not be already present in the list
-            // 2) the second element of the match object, which means the second element of the map object (i.e. the
-            //    couple of tag/scale), has to be different from the one of the operator which is inserted
-            while (!match.second && match.first->second != val) {
-                if (is_left)
-                    kk.second.offset += 1;
-                else
-                    kk.first.offset += 1;
-                match = prempo[p].insert(make_pair(kk, val));
-            }
-        }
-        prempo_key_type ret ;
-        if (is_left)
-            ret = kk.second ;
-        else
-            ret = kk.first ;
-        return ret ;
-        */
     }
 
     /**
@@ -732,7 +686,7 @@ private:
 
     /**
      * @brief Finds the conjugate key of a given entry.
-     * 
+     *
      * Note that, in the model construction, we register pairs of Hermitian conjugate *elementary*
      * operators (i.e., operators that act on a single site).
      */
@@ -744,7 +698,7 @@ private:
         //    return std::make_pair(k, std::make_pair(1,1));
         prempo_key_type conj = k;
         // Loop over all the elements of the prempo_key_type operator and finds the corresponding
-        // Hermitian conjugate. Note that it is sufficient that one of the key has no correpsonding 
+        // Hermitian conjugate. Note that it is sufficient that one of the key has no corresponding
         // conjugate to not register the hermitian conjugate.
         for (tag_type i = 0; i < k.pos_op.size(); ++i) {
             //if (k.pos_op[i].second == tag_handler->herm_conj(k.pos_op[i].second))

@@ -86,12 +86,13 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeRelativistic, TestTimeEvolverFixture )
     // Two-site evolutions
     parametersRelativistic.set("optimization", "twosite");
     parametersRelativistic.set("time_step", 10.);
-    parametersRelativistic.set("nsweeps", 40);
+    parametersRelativistic.set("nsweeps", 100);
     // TD
     maquis::DMRGInterface<std::complex<double>> interfaceTD(parametersRelativistic);
     interfaceTD.evolve();
     auto energyTD = std::real(interfaceTD.energy());
     // TI
+    parametersRelativistic.set("nsweeps", 40);
     maquis::DMRGInterface<std::complex<double>> interfaceTI(parametersRelativistic);
     interfaceTI.optimize();
     auto energyTI = std::real(interfaceTI.energy());
@@ -133,7 +134,7 @@ BOOST_FIXTURE_TEST_CASE( TestImaginaryTimePreBO, PreBOTestTimeEvolverFixture )
 BOOST_FIXTURE_TEST_CASE( TestImaginaryTimeVibronic, VibronicFixture )
 {
 #ifdef HAVE_U1
-    parametersVibronicPyrazineRedDimFull.set("init_state", "basis_state_generic");
+    parametersVibronicPyrazineRedDimFull.set("init_type", "basis_state_generic");
     parametersVibronicPyrazineRedDimFull.set("init_basis_state", "1,0,0,0,0,0");
     parametersVibronicPyrazineRedDimFull.set("nsweeps", 20);
     parametersVibronicPyrazineRedDimFull.set("max_bond_dimension", 20);

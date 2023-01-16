@@ -215,7 +215,7 @@ BOOST_AUTO_TEST_CASE( Test_HiRDM )
         {
             maquis::DMRGInterface<double> interface(p);
             interface.optimize();
-
+            BOOST_CHECK_CLOSE(interface.energy(), -7.28748092964907, 1.0E-7);
             auto&& meas_trans3rdm = interface.measurements().at("transition_threeptdm");
 
             const rdm_measurement ref_3tdm = {
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE( Test_HiRDM )
                 }
             };
 
-            test_detail::check_measurement_mat(meas_trans3rdm, ref_3tdm);
+            test_detail::check_measurement_mat(meas_trans3rdm, ref_3tdm, true);
         }
         boost::filesystem::remove_all(checkpoint_path);
     }

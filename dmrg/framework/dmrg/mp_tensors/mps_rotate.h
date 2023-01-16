@@ -122,10 +122,10 @@ namespace mps_rotate
             typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
             typedef typename SymmGroup::subcharge sc_t;
             std::vector<tag_type> ident, fill;
-            for (std::size_t i = 0; i <= lat.maximum_vertex_type(); ++i)
+            for (int iSite = 0; iSite < lat.getMaxType(); iSite++)
             {
-                ident.push_back(model.identity_matrix_tag(i));
-                fill.push_back(model.filling_matrix_tag(i));
+                ident.push_back(model.identity_matrix_tag(iSite));
+                fill.push_back(model.filling_matrix_tag(iSite));
             }
 
             std::vector<MPO<Matrix, SymmGroup> > ret;

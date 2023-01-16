@@ -27,40 +27,70 @@
 #ifndef CHARGE_DETAIL_H
 #define CHARGE_DETAIL_H
 
+#include "dmrg/block_matrix/symmetry.h"
 
-/** @brief Charge details class */
+/** 
+ * @brief Charge details class 
+ * 
+ * Class containing symmetry specific functions.
+ * For now, the following methods are implemented:
+ * 
+ *  - `physical`: checks if a given charge is *physical* so it represents a
+ *     valid state independently on the specificity of the system.
+ *  - `hasLessParticleThan`: compare two charges and checks if the first one 
+ *     has a numbero of particles that is <= than the second one. Such a comparison
+ *     is implemented (and makes sense) only for U1-like groups.
+ */
 template<class SymmGroup>
 class ChargeDetailClass {
 public:
-    static bool physical(typename SymmGroup::charge c) { return true; }
+    using ChargeType = typename SymmGroup::charge;
+    static bool physical(ChargeType c) { return true; }
+    static bool hasLessParticleThan(const ChargeType& inputCharge, const ChargeType& lowerCharge) {
+        return true; 
+    };
 };
 
 /** @brief U1 specialization */
 template<>
 class ChargeDetailClass<U1> {
 public:
-    static bool physical(U1::charge c) { return c >= 0; }
+    using ChargeType = typename U1::charge;
+    static bool physical(ChargeType c) { return c >= 0; }
+    static bool hasLessParticleThan(const ChargeType& inputCharge, const ChargeType& refCharge) { return inputCharge <= refCharge; };
 };
 
 /** @brief TwoU1PG specialization */
 template<>
 class ChargeDetailClass<TwoU1PG> {
 public:
-    static bool physical(TwoU1PG::charge c) { return c[0] >= 0 && c[1] >= 0; }
+    using ChargeType = typename TwoU1PG::charge;
+    static bool physical(ChargeType c) { return c[0] >= 0 && c[1] >= 0; }
+    static bool hasLessParticleThan(const ChargeType& inputCharge, const ChargeType& refCharge) { 
+        return inputCharge[0] <= refCharge[0] && inputCharge[1] <= refCharge[1];
+    };
 };
 
 /** @brief SU2U1 specialization */
 template <>
 class ChargeDetailClass<SU2U1> {
 public:
-    static bool physical(SU2U1::charge c) { return SU2U1::spin(c) >= 0; }
+    using ChargeType = typename SU2U1::charge;
+    static bool physical(ChargeType c) { return SU2U1::spin(c) >= 0; }
+    static bool hasLessParticleThan(const ChargeType& inputCharge, const ChargeType& lowerCharge) {
+        return true;
+    }
 };
 
 /** @brief SU2U1PG specialization */
 template <>
 class ChargeDetailClass<SU2U1PG> {
 public:
-    static bool physical(SU2U1PG::charge c) { return SU2U1PG::spin(c) >= 0; }
+    using ChargeType = SU2U1PG::charge;
+    static bool physical(ChargeType c) { return SU2U1PG::spin(c) >= 0; }
+    static bool hasLessParticleThan(const ChargeType& inputCharge, const ChargeType& lowerCharge) {
+        return true;
+    }
 };
 
 
@@ -70,7 +100,11 @@ class ChargeDetailClass<NU1_template<N>> {
 public:
     using ChargeType = typename NU1_template<N>::charge;
     static bool physical(ChargeType c) {
-        return std::all_of(c.begin(), c.end(), [&](int tmp) { return (/*tmp <= 1 &&*/ tmp >= 0); });
+        return std::all_of(c.begin(), c.end(), [&](int tmp) { return (tmp >= 0); });
+    }
+    static bool hasLessParticleThan(const ChargeType& inputCharge, const ChargeType& lowerCharge) { 
+        return std::mismatch(inputCharge.begin(), inputCharge.end(), lowerCharge.begin(), lowerCharge.end(),
+                             std::less_equal<>{}) == std::make_pair(inputCharge.end(), lowerCharge.end());
     }
 };
 

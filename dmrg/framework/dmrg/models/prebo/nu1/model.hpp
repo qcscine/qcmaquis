@@ -200,10 +200,10 @@ public:
         std::vector<tag_type> identities;
         std::vector<tag_type> fillings;
 
-        for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
+        for (int iType = 0; iType < lat.getMaxType(); iType++)
         {
-            identities.push_back(this->identity_matrix_tag(p));
-            fillings.push_back(this->filling_matrix_tag(p));
+            identities.push_back(this->identity_matrix_tag(iType));
+            fillings.push_back(this->filling_matrix_tag(iType));
         }
 
         std::regex expression_1ParticleRDM("^MEASURE\\[1rdm\\]");

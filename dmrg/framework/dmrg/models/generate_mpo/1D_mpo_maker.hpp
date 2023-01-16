@@ -254,9 +254,9 @@ namespace generate_mpo
       std::vector<tag_type> ops(ops_, ops_+1);
       term_descriptor<typename Matrix::value_type> term = generate_mpo::arrange_operators(pos, ops, model.operators_table());
       std::vector<tag_type> identities, fillings;
-      for (std::size_t idx = 0; idx <= lat.maximum_vertex_type(); idx++) {
-        identities.push_back(model.identity_matrix_tag(idx));
-        fillings.push_back(model.filling_matrix_tag(idx));
+      for (int iType = 0; iType < lat.getMaxType(); iType++) {
+        identities.push_back(model.identity_matrix_tag(iType));
+        fillings.push_back(model.filling_matrix_tag(iType));
       }
       return generate_mpo::make_1D_mpo(pos, ops, identities, fillings, model.operators_table(), lat);
     }

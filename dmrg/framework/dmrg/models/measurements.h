@@ -86,7 +86,7 @@ public:
             ar[archive_path] << meas;
         }
 
-        return std::make_pair(meas.get_labels_num(),meas.get_vec_results());
+        return std::make_pair(meas.get_labels_num(), meas.get_vec_results());
     }
 
 

@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
         storage::archive ar_in(mps_in_file + "/props.h5");
         BaseParameters parms;
         ar_in["/parameters"] >> parms;
-        parms.set("init_state", "const");
+        parms.set("init_type", "const");
 #if defined(USE_SU2U1)
         parms.set("symmetry", "2u1");
 #elif defined(USE_SU2U1PG)

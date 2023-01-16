@@ -53,7 +53,6 @@ struct BenzeneFixture
 {
     // Types definition
     using RealIntegralMapType = typename maquis::integral_map<double>;
-    using ComplexIntegralMapType = typename maquis::integral_map<std::complex<double>>;
     /** @brief Constructor for the fixture class */
     BenzeneFixture() {
         // Real-valued integrals
@@ -316,7 +315,7 @@ struct BenzeneFixture
         parametersBenzeneRealTime.set("site_types", "0,0,0,0,0,0");
         parametersBenzeneRealTime.set("L", 6);
         parametersBenzeneRealTime.set("irrep", 0);
-        parametersBenzeneRealTime.set("init_state", "hf");
+        parametersBenzeneRealTime.set("init_type", "hf");
         parametersBenzeneRealTime.set("hf_occ", "4,4,4,1,1,1");
         parametersBenzeneRealTime.set("nsweeps", 20);
         parametersBenzeneRealTime.set("max_bond_dimension", 100);
@@ -371,7 +370,7 @@ struct BenzeneFixture
         parametersBenzene.set("u1_total_charge2", 3);
         parametersBenzene.set("truncation_initial", 1.0E-30);
         parametersBenzene.set("truncation_final", 1.0E-30);
-        parametersBenzene.set("init_state", "hf");
+        parametersBenzene.set("init_type", "hf");
         parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
         parametersBenzene.set("ietl_jcd_tol", 1.0E-15);
     }

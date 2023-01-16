@@ -35,6 +35,7 @@
 #include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 /* external */
+#include <cmath>
 #include <alps/numeric/matrix/algorithms.hpp>
 
 #ifdef DMRG_PREBO
@@ -132,7 +133,7 @@ namespace measurements {
                                 }
                                 double entropy = 0;
                                 for (auto const w: OneOrbRDM) {
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -171,7 +172,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -220,7 +221,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -270,7 +271,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -289,7 +290,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -424,7 +425,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -443,7 +444,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -492,7 +493,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -542,7 +543,7 @@ namespace measurements {
                                     alps::numeric::vector<double> evals(block.num_rows(), 0.0);
                                     alps::numeric::syev(block, evecs, evals);
                                     for (size_t it = 0; it < evals.size(); it++) {
-                                        if (!isnan(evals(it)))
+                                        if (!std::isnan(evals(it)))
                                             trace += evals(it);
                                         if (evals(it) > 1e-15)
                                             entropy += evals(it) * std::log(evals(it));
@@ -561,7 +562,7 @@ namespace measurements {
                                     MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                     MPO<Matrix, NU1> mpoc = mpo;
                                     w = maquis::real(expval(ket_mps, mpoc));
-                                    if (!isnan(w))
+                                    if (!std::isnan(w))
                                         trace += w;
                                     if (w > 1e-15)
                                         entropy += w * std::log(w);
@@ -582,7 +583,7 @@ namespace measurements {
                                         MPO<Matrix, NU1> mpo = mpom.create_mpo();
                                         MPO<Matrix, NU1> mpoc = mpo;
                                         auto w = maquis::real(expval(ket_mps, mpoc));
-                                        if (!isnan(w))
+                                        if (!std::isnan(w))
                                             trace += w;
                                         if (w > 1e-15)
                                             entropy += w * std::log(w);

@@ -58,7 +58,8 @@ public:
      * @param positions vector with the position where each operator acts.
      * @param operators vector with the operators.
      * @param tag_handler map keeping track of the operator <--> tag association
-     * @return
+     * @return std::pair< term_descriptor, bool > First element is the tag, second element is true if the 
+     *                                            term to be added is zero.
      */
      static std::pair<term_descriptor, bool> arrange_operators(const positions_type& positions, const operators_type& operators,
                                                                value_type& scaling, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler)

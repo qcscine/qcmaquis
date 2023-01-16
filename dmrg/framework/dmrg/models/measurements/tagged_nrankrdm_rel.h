@@ -221,7 +221,7 @@ protected:
             measured = true;
             MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
             //value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-            value += (this->cast_to_real) ? maquis::real(operator_terms[synop].second * expval(bra_mps, ket_mps_local, mpo)) 
+            value += (this->cast_to_real) ? maquis::real(operator_terms[synop].second * expval(bra_mps, ket_mps_local, mpo))
                                           : operator_terms[synop].second * expval(bra_mps, ket_mps_local, mpo);
           }
 
@@ -249,7 +249,7 @@ protected:
       }
     }
   }
-  
+
 private:
   Lattice lattice;
   std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
