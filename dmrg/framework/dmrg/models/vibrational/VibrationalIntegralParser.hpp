@@ -134,7 +134,8 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
     if (parms["nmode_dumpIntegral"] == "yes" && parms.is_set("resultfile")) {
         // dump indices but starting with 1 and with 0 as originally in the FCIDUMP
         std::vector<Lattice::pos_t> indices_vec;
-        indices_vec.reserve(chem::getIndexDim(chem::Hamiltonian::VibrationalNMode)*indices.size());
+        auto indexDim = chem::getIndexDim(chem::Hamiltonian::VibrationalNMode, chem::HamiltonianTransformation::Conventional);
+        indices_vec.reserve(indexDim*indices.size());
         for (auto&& idx: indices)
             for (auto&& i: idx)
                 indices_vec.push_back(i);
@@ -171,13 +172,13 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
  */
 
 template<class T>
-inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>, T > >
+inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>, T > >
     WatsonIntegralParser(BaseParameters& parms, const Lattice& lat, WatsonCoordinateType coordinateType,
                          int maxCoupling, int maxManyBodyCoupling, int maxInputManyBodyCoupling)
 {
     // Types definition
     using pos_t = Lattice::pos_t;
-    using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical)>;
+    using KeyType = std::array<int, chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical, chem::HamiltonianTransformation::Conventional)>;
     using RetType = std::vector< std::pair< KeyType, T> > ;
     using InputType = double;
     // Load ordering and determine inverse ordering

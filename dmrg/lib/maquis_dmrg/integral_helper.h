@@ -75,7 +75,7 @@ constexpr int getIndexDim(const Hamiltonian& type, const HamiltonianTransformati
             indexDim = 4;
             break;
         case Hamiltonian::VibrationalCanonical:
-            indexDim = 6;
+            indexDim = ORDER_NONE; // This value is defined in the top level CMakeLists.txt and can be set as a compile flag           
             break;
         // Note that we support so-far only up to 3-body terms
         case Hamiltonian::VibrationalNMode:
