@@ -392,7 +392,7 @@ By default, \qcm{} calculates excited states with the methods described in Ref.~
 Specifically, the first excited state is obtained with a DMRG optimization that is constrained onto the space orthogonal to the ground state.
 The second excited state is obtained with an optimization orthogonal to the ground and first excited state, and so on.
 Excited states are, therefore, calculated sequentially.
-Table~\ref{tab:es_kw} describes the keywords to be activated to run excited-state DMRG calculations.
+Table~\ref{tab:eskw} describes the keywords to be activated to run excited-state DMRG calculations.
 
 \begin{table}[htbp!]
   \centering
@@ -414,22 +414,17 @@ Table~\ref{tab:es_kw} describes the keywords to be activated to run excited-stat
 \end{table}
 
 \noindent \textbf{Note}: two other methods for calculating excited states, DMRG[IPI] and DMRG[FEAST], will be presented below.
-\qcm\ currently supports them only for vibrational-structure calculations.
+\textbf{\qcm\ currently supports them only for vibrational-structure calculations}.
 
 \subsection{Keywords for expectation value calculations}
 \label{subsec:prop-qcm}
 
 \qcm\ can (in principle) compute expectation values for any one- or two-particle operator that can be formulated in second quantization.
-Table~\ref{tab:expval} comprises a list of the available property keywords available in \qcm.
-
-The one-particle reduced density matrix as well as the one-particle spin-density matrix are implicitly computed from the expectation values of some of the operators contained in \texttt{MEASURE[ChemEntropy]}.
-
-If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be transformed into 2U1 group with the \texttt{mps\_transform(\_pg)} tool (see Section~\ref{sec:tools-qcm})
 
 \begin{table}
  \footnotesize
- \label{tab:expval}
  \caption{Expectation value calculations available in the release version of \qcm.}
+ \label{tab:expval}
   \begin{tabular}{cV{8.5cm}}
     \toprule
     Keyword & Description \\
@@ -466,6 +461,12 @@ If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be tra
 	\bottomrule
   \end{tabular}
 \end{table}
+
+Table~\ref{tab:expval} comprises a list of the available property keywords available in \qcm.
+
+The one-particle reduced density matrix as well as the one-particle spin-density matrix are implicitly computed from the expectation values of some of the operators contained in \texttt{MEASURE[ChemEntropy]}.
+
+If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be transformed into 2U1 group with the \texttt{mps\_transform(\_pg)} executable, which is compiled when the CMake variable \texttt{BUILD\_MPS\_TRANSFORM} is set to \texttt{ON}.
 
 \clearpage
 
@@ -518,6 +519,53 @@ If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be tra
 Listing~\ref{lst:qcm} provides an input example for a ground-state electronic-structure DMRG-CASCI calculation based on an active space comprising 8 electrons and 8 orbitals.
 We assume that an integral file \texttt{FCIDUMP} has been generated with an external software (e.g., \textsl{OpenMolcas}) and placed in the same directory with the input file.
 We indicate the mandatory keywords in red, and the optional ones in blue.
+
+\section{Explicitly-correlated calculations with \qcm{}}
+\label{sec:Transcorrelated}
+
+\qcm\ supports explicitly-correlated electronic-structure calculations based on the transcorrelated DMRG (tcDMRG) method.\cite{Baiardi2020_tcDMRG,Baiardi2022_tcDMRG-Molecules}
+tcDMRG combines DMRG with the transcorrelated approach originally introduced by Boys and Handy.\cite{Boys1969_Transcorrelated}
+tcDMRG relies on the following \textit{ansatz} for the ground-state wave function,
+
+\begin{equation}
+  \vert \Psi \rangle = e^{\mathcal{J}} \vert \Psi_\text{MPS} \rangle \, ,
+  \label{eq:TranscorrelatedAnsatz}
+\end{equation}
+%
+\textit{i.e.} a product of a \emph{fixed} correlation function, whose form depends on the Hamiltonian under analysis, and a matrix product state.
+The correlator $e^{\mathcal{J}}$ is revolved into the Hamiltonian \textit{via} similarity transformation.
+As discussed in Ref.~\citenum{Luo2018_TranscorrelatedFCIQMC}, this yields a non-Hermitian operator (the transcorrelated Hamiltonian) whose right eigenvector is $\vert \Psi_\text{MPS} \rangle$, and whose eigenvalues are the same as for the original Hamiltonian.
+The correlator can be chosen to enforce a given property of the ground-state wave function that is difficult to encode in a MPS.
+In Fermi--Hubbard Hamiltonians, $e^{\mathcal{J}}$ is usually chosen to be the so-called Gutzwiller correlator \cite{Dobrautz2019_tcFCIQMC-FermiHubbard,Baiardi2020_tcDMRG}.
+By penalizing configurations in which two electrons are located on the same site, a Gutzwiller correlator enhances the description of electron-electron correlation effects.
+In molecular systems, choosing $e^{\mathcal{J}}$ to be a Jastrow factor \cite{Guther2021_Transcorrelated-Molecules,Baiardi2022_tcDMRG-Molecules} enables enhancing the wave function accuracy in the short-range limit. \\
+
+In any case, the transcorrelated Hamiltonian is not Hermitian.
+Therefore, its ground-state energy cannot be optimized by straightforwardly applying the variational principle.
+tcDMRG overcomes this problem by performing the optimization with the imaginary-time variant of the tangent space TD-DMRG algorithm,\cite{Haegeman2016_TangentSpace} which is equally stable when applied to Hermitian and non-Hermitian Hamiltonians. \\
+
+In the following, we will describe how to run tcDMRG calculations in these cases.
+
+\subsection{tcDMRG for Fermi--Hubbard Hamiltonians}
+\label{subsec:tcDMRG-FH}
+
+\qcm\ supports tcDMRG calculations on the two-dimensional Fermi--Hubbard Hamiltonian both in real- and in momentum-space representation.\cite{Baiardi2020_tcDMRG}
+Being inherently two-dimensional systems, these Hamiltonians are particularly hard targets for DMRG due to the presence of long-range interactions.
+As discussed in Ref.~\citenum{Baiardi2020_tcDMRG}, transcorrelation can enhance the DMRG accuracy for the two-dimensional Fermi--Hubbard Hamiltonian in the momentum-space representation.
+Conversely, it does not impact the DMRG accuracy for the real-space representation. \\
+In order to run DMRG calculation on the two-dimensional Fermi--Hubbard Hamiltonians, the following keywords must be set:
+
+\begin{itemize}
+  \item \texttt{U\_FermiHubbard}: scaling factor associated with the potential energy term.
+  \item \texttt{t\_FermiHubbard}: scaling factor associated with the hopping term along both the $x$ and the $y$ directions.
+  \item \texttt{tx\_FermiHubbard}: scaling factor associated with the hopping term along the $x$ direction.
+  \item \texttt{ty\_FermiHubbard}: scaling factor associated with the hopping term along the $x$ direction.s
+  \item \texttt{width\_FermiHubbard}: width of the lattice.
+  \item \texttt{height\_FermiHubbard}: height of the lattice.
+\end{itemize}
+
+To activate tcDMRG, the \texttt{transcorrelated\_hamiltonian} keyword should be set to \texttt{yes}.
+Furthermore, the scaling factor for the Gutzwiller correlator can be defined through the \texttt{J\_Transcorrelated} keyword.
 
 \section{\qcm{} vibrational DMRG module}
 \label{sec:vDMRG}
