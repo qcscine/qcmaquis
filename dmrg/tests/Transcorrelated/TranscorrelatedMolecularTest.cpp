@@ -89,7 +89,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
         auto mpo = make_mpo(lattice, model);
         std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
         for (const auto& iString: fullCIDeterminantsH2) {
-            iParameter.set("init_state", "hf");
+            iParameter.set("init_type", "hf");
             iParameter.set("hf_occ", iString);
             vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, iParameter))));
         }
@@ -116,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
     parametersH2Transcorrelated.set("simulation_type", "TD");
     parametersH2Transcorrelated.set("COMPLEX", 1);
     parametersH2Transcorrelated.set("time_units", "fs");
-    parametersH2Transcorrelated.set("init_state", "hf");
+    parametersH2Transcorrelated.set("init_type", "hf");
     parametersH2Transcorrelated.set("hf_occ", "4,1,1,1,1,1,1,1,1,1");
     parametersH2Transcorrelated.set("optimization", "twosite");
     maquis::DMRGInterface<double> interface(parametersH2Transcorrelated);
@@ -128,7 +128,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI_Transcorrelated, Transco
     auto mpo = make_mpo(lattice, model);
     std::vector<MPS<matrix, TwoU1>> vectorOfMPS;
     for (const auto& iString: fullCIDeterminantsH2) {
-        parametersH2Transcorrelated.set("init_state", "hf");
+        parametersH2Transcorrelated.set("init_type", "hf");
         parametersH2Transcorrelated.set("hf_occ", iString);
         vectorOfMPS.push_back(MPS<matrix, TwoU1>(lattice.size(), *(model.initializer(lattice, parametersH2Transcorrelated))));
     }

@@ -98,7 +98,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Test_MPS_Rotate, S, symmetries )
                             2.7058886172869296e-14, -2.360032375940198e-21,   8.5930102972685836e-15, 1.0000000000000000e+00,  1.2627019978663527e-14, 2.1938496646804564e-20,
                             2.0386219974664904e-07, -1.4480716638155465e-14, 6.2371582961645389e-08, -1.2627026030907235e-14,  0.99999999999997713,    8.5518084530118431e-14,
                             3.5550050708238511e-13, -1.0559927432976027e-16, 1.0907985818199059e-13, -2.1938507203576664e-20, -8.5518163806719196e-14, 1.0000000000000000e+00});
-    int scale_inactive = 1;
+    double scale_inactive = 1;
+    f.mps.normalize_right();
     auto initialNorm = norm(f.mps);
     mps_rotate::rotate_mps(f.mps, t, scale_inactive);
     auto finalNorm = norm(f.mps);
