@@ -227,17 +227,14 @@ namespace mps_rotate
 
     // MPS compression to keep the dimensions reasonable
     template <class Matrix, class SymmGroup>
-    void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text="")
+    void compress_mps(MPS<Matrix, SymmGroup>& mps, std::string text="")
     {
         maquis::cout << "- MPS compression - input MPS: "<< text << std::endl;
-
-        typename Matrix::value_type final_norm        = norm(mps);
+        // typename Matrix::value_type final_norm        = norm(mps);
         typename Matrix::value_type compression_trace = 1.0;
-
         mps = compression::l2r_compress(mps, 8000, 1e-8, compression_trace);
-        maquis::cout << "- compression trace          : "<< compression_trace << std::endl;
-        mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
-
+        maquis::cout << "- (Relative) norm reduction : "<< compression_trace << std::endl;
+        // mps[0].multiply_by_scalar(compression_trace*sqrt(final_norm));
     }
 
     // MPS rotation as described in Sections III.b.2.b and III.b.2.c
@@ -288,7 +285,6 @@ namespace mps_rotate
         for (pos_t j = 0; j < L; ++j)
         {
             maquis::cout << "ROTATION of site "<< j << std::endl << "---------------- "<<      std::endl;
-
             // scale the j-th MPS tensor wrt the occupation of the j-th orbital
 
             scale_MPSTensor<Matrix, SymmGroup>(mps[j], t(j,j));
@@ -308,7 +304,6 @@ namespace mps_rotate
 
             maquis::cout << "- first correction MPS obtained - "<<      std::endl;
             //debug::mps_print_ci(mps_prime, "dets.txt");
-
 
             mps = join(mps, mps_prime);
             //debug::mps_print(mps, "Intermediate MPS at site ");
