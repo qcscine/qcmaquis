@@ -125,7 +125,7 @@ private:
 
         // Parameters related to the transcorrelation
         add_option("transcorrelated_hamiltonian", "If yes, transcorrelates (if possible) the Hamiltonian", value("no"));
-        add_option("J_Transcorrelated", "Scalar factor for the Jastrow exponent", value(0.));
+        add_option("J_Transcorrelated", "Scalar factor for the Gutzwiller correlator (used only for Fermi--Hubbard Hamiltonians)", value(0.));
         add_option("transcorrelated_3body", "If no, does not add the three-body part of the transcorrelated Hamiltonian", value("yes"));
         add_option("transcorrelated_3body_max_coupling", "Maximum many-body coupling order for the transcorrelated Hamiltonian", value(6));
         add_option("transcorrelated_nsweeps_TI", "Number of preliminary TI-DMRG sweeps for a tcDMRG calculation", value(5));
@@ -146,7 +146,7 @@ private:
         add_option("L", "Lattice size");
         add_option("lattice_library", "", value("coded"));
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
-        
+
         // Settings for model etc. for quantum chemistry calculations
         add_option("MODEL","", value("quantum_chemistry"));
         add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
