@@ -72,8 +72,6 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
 #endif // HAVE_TwoU1
 }
 
-#if defined(HAVE_TwoU1) and defined(DMRG_TD)
-
 /**
  * @brief Test on tcDMRG with no correlation parameter.
  *
@@ -87,6 +85,7 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimevsTIFermiHubbard_RealSpace2x2, Transcor
  */
 BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelated_J0, TranscorrelatedFixture)
 {
+#if defined(HAVE_TwoU1) and defined(DMRG_TC)
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("nsweeps", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("max_bond_dimension", 10);
   parameters2x2_RealSpace_U4_2Alpha1Beta.set("propagator_maxiter", 10);
@@ -106,7 +105,10 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   interfaceTC.runTranscorrelated();
   auto energyTC = std::real(interfaceTC.energy());
   BOOST_CHECK_CLOSE(energyTD, energyTC, 1.0E-8);
+#endif // HAVE_TwoU1 and DMRG_TC
 }
+
+#if defined(HAVE_TwoU1) and defined(DMRG_TC)
 
 /**
  * @brief Checks consistency of calculations with +/- the same correlation parameter.
@@ -345,4 +347,4 @@ BOOST_FIXTURE_TEST_CASE(TestImaginaryTimeFermiHubbard_RealSpace2x2_Transcorrelat
   }
 }
 
-#endif // HAVE_TwoU1 and DMRG_TD
+#endif // HAVE_TwoU1 and DMRG_TC

@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
- *               2022- by Alberto Baiardi <lefreita@ethz.ch>
+ * Copyright (C) 2023 Institute for Theoretical Physics, ETH Zurich
+ *               2023- by Alberto Baiardi <lefreita@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  *****************************************************************************/
 
 #include "utils/io.hpp" // has to be first include because of impi
-#include <cmath>
-#include <iterator>
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -46,8 +44,9 @@ int main(int argc, char ** argv)
             << "  copyright (c) 2012-2016 by Sebastian Keller" << std::endl
             << "  copyright (c) 2016-2021 by Alberto Baiardi, Leon Freitag," << std::endl
             << "  Stefan Knecht, Yingjin Ma" << std::endl
-            << "  For details on DMRG[FEAST] see the publication:" << std::endl
-            << "  A. Baiardi, A.~K.~Kelemen, M.~Reiher, J. Chem. Theory Comput. 18, 415 (2022)" << std::endl;
+            << "  For details on tcDMRG see the following publications:" << std::endl
+            << "   - A. Baiardi, M. Reiher, J. Chem. Phys. 153, 164115 (2020)" << std::endl
+            << "   - A. Baiardi, M. Lesiuk, M. Reiher, J. Chem. Theory Comput. 18, 4203 (2022)" << std::endl;
   DmrgOptions opt(argc, argv);
   if (opt.valid) {
     maquis::cout.precision(10);
@@ -55,8 +54,8 @@ int main(int argc, char ** argv)
     DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"]+1)
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
-    maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
-    interface.runFEAST();
+    maquis::DMRGInterface<double> interface(opt.parms);
+    interface.runTranscorrelated();
     gettimeofday(&then, NULL);
     double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
     DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")

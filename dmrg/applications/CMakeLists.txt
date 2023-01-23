@@ -1,14 +1,18 @@
 add_subdirectory(dmrg)
 add_subdirectory(measure)
+
 if (BUILD_INIT)
   add_subdirectory(init)
 endif(BUILD_INIT)
+
 if (BUILD_CIDEAS)
   add_subdirectory(cideas)
 endif(BUILD_CIDEAS)
+
 if (BUILD_MPS_ROTATE)
   add_subdirectory(rotate)
 endif (BUILD_MPS_ROTATE)
+
 if (BUILD_MPS_COMPRESS)
   # mps_compress does not work!!
   add_subdirectory(compress)
@@ -21,5 +25,9 @@ endif (BUILD_DMRG_EVOLVE)
 if (BUILD_DMRG_FEAST)
   add_subdirectory(feast)
 endif (BUILD_DMRG_FEAST)
+
+if (BUILD_TRANSCORRELATED_DMRG)
+  add_subdirectory(tcDMRG)
+endif (BUILD_TRANSCORRELATED_DMRG)
 
 add_subdirectory(tools)

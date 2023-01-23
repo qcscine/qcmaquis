@@ -247,6 +247,7 @@ public:
    */
   void runTranscorrelated()
   {
+  #ifdef DMRG_TC
     // Extracts the relevant parameters
     int nSweepsTI = parms["transcorrelated_nsweeps_TI"];
     int nSweepsTC = parms["transcorrelated_nsweeps_TC"];
@@ -285,6 +286,9 @@ public:
       mpo = make_mpo(base::lat, transcorrelatedModel);
       this->runAlternatingLeastSquares("evolve", nSweepsTC, energyThreshold, transcorrelatedModel, transcorrelatedParametersContainer);
     }
+  #else
+    throw std:runtime_error("Activate the [BUILD_TRANSCORRELATED_DMRG] Cmake flag before running a tcDMRG calculation.").
+  #endif // DMRG_TC
   }
 
   /** @brief Runs a propagation calculation */
