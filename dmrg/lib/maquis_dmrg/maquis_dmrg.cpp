@@ -122,7 +122,8 @@ namespace maquis
     }
 
     template <typename ScalarType>
-    void DMRGInterface<ScalarType>::runFEAST() {
+    void DMRGInterface<ScalarType>::runFEAST()
+    {
         try {
             impl_->sim->run("feast");
         }
@@ -131,6 +132,19 @@ namespace maquis
             maquis::cerr << e.what() << std::endl;
             throw;
             //exit(1);
+        }
+    }
+
+    template <typename ScalarType>
+    void DMRGInterface<ScalarType>::runTranscorrelated()
+    {
+        try {
+            impl_->sim->run("transcorrelated");
+        }
+        catch (std::exception& e) {
+            maquis::cerr << "Exception thrown!" << std::endl;
+            maquis::cerr << e.what() << std::endl;
+            throw;
         }
     }
 
@@ -174,6 +188,12 @@ namespace maquis
     void DMRGInterface<ScalarType>::update_integrals(const integral_map<ScalarType> & integrals)
     {
         impl_->sim->update_integrals(integrals);
+    }
+
+    template <typename ScalarType>
+    void DMRGInterface<ScalarType>::update_integrals(std::string fileName)
+    {
+        impl_->sim->update_integrals(fileName);
     }
 
     template <typename ScalarType>

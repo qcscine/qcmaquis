@@ -102,6 +102,7 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
     using IntegralMapType = integral_map<T, HamiltonianType, Transcorrelated>;
     static constexpr int numberOfIntegers = getIndexDim(HamiltonianType, Transcorrelated);
     static constexpr bool isHermitian = (Transcorrelated == HamiltonianTransformation::Conventional);
+    std::string integralFileName = TranscorrelatedTraitClass<Transcorrelated>::getIntegralFileName();
     //
     std::vector<int> inv_order;
     std::vector<T> matrix_elements;
@@ -142,8 +143,9 @@ parse_integrals(BaseParameters& parms, const Lattice& lat, bool do_align=true)
         orb_string = std::unique_ptr<std::istringstream>(new std::istringstream(integrals));
     }
     // Integrals provided as a file
-    else if (parms.is_set("integral_file")) {
-        std::string integral_file = parms["integral_file"];
+    else if (parms.is_set(integralFileName)) {
+        maquis::cout << "Retrieving integrals from the file " << parms[integralFileName] << std::endl;
+        std::string integral_file = parms[integralFileName];
         if (!boost::filesystem::exists(integral_file))
             throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
         orb_string = std::unique_ptr<std::ifstream>(new std::ifstream(integral_file.c_str()));

@@ -66,6 +66,9 @@ public:
     /** @brief Run a DMRG[IPI] calculation */
     void runInversePowerIteration();
 
+    /** @brief Run a tcDMRG calculation */
+    void runTranscorrelated();
+
     /** @brief Run a DMRG[FEAST] calculation */
     void runFEAST();
 
@@ -97,6 +100,7 @@ public:
     const results_map_type & measurements();
 
     /** @brief Updates the integrals and re-initialize the model */
+    void update_integrals(std::string fileName);
     void update_integrals(const integral_map<ScalarType> & integrals);
 
     // Get RDMs

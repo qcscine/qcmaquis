@@ -189,6 +189,8 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
             tag_handler->hermitian_pair(ddcu.first[opType], ducd.first[opType]);
         }
     }
+    if (isTranscorrelated_)
+        maquis::cout << "Transcorrelated Hamiltonian modality activated" << std::endl;
 }
 
 /** @brief Create the Hamiltonian terms */
@@ -331,7 +333,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         }
     }
     */
-    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
+    maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms" << std::endl;
 }
 
 /** @brief Adds an operator to the underyling operator map */

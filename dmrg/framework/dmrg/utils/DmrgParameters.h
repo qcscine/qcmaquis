@@ -128,6 +128,9 @@ private:
         add_option("J_Transcorrelated", "Scalar factor for the Jastrow exponent", value(0.));
         add_option("transcorrelated_3body", "If no, does not add the three-body part of the transcorrelated Hamiltonian", value("yes"));
         add_option("transcorrelated_3body_max_coupling", "Maximum many-body coupling order for the transcorrelated Hamiltonian", value(6));
+        add_option("transcorrelated_nsweeps_TI", "Number of preliminary TI-DMRG sweeps for a tcDMRG calculation", value(5));
+        add_option("transcorrelated_nsweeps_TC", "Number of iTD-DMRG sweeps for a tcDMRG calculation", value(20));
+        add_option("transcorrelated_integral_file", "Name of the file storing the transcorrelated integrals");
 
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
@@ -152,7 +155,7 @@ private:
 
 
         // Settings for integral read-in
-        add_option("integral_file", "path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
+        add_option("integral_file", "path to model parameters, e.g. FCIDUMP-style integral file");
         add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
         add_option("beta_mode", "", value(0));
 

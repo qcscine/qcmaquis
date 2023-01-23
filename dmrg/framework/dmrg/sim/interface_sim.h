@@ -56,6 +56,7 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
   using measurements_type = typename base::measurements_type;
   using meas_with_results_type = typename interface_base::meas_with_results_type;
   using MPSType = MPS<Matrix, SymmGroup>;
+  using ModelType = Model<Matrix, SymmGroup>;
   using results_map_type = typename interface_base::results_map_type;
   using FactoryType = SweepSimulationFactory<Matrix, SymmGroup, storage::disk>;
   using RealType = typename maquis::traits::real_type<Matrix>::type;
@@ -80,21 +81,23 @@ public:
    * Note that the base class is here the [sim] object.
    * @param parms_ parameter container
    */
-  explicit interface_sim(DmrgParameters & parms_) : base(parms_), last_sweep_(init_sweep-1) { }
+  explicit interface_sim(DmrgParameters& parms_) : base(parms_), last_sweep_(init_sweep-1) { }
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) {
     if (simulationType == "optimize")
-      this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
+      this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
     else if (simulationType == "evolve")
-      this->runAlternatingLeastSquares("evolve", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
+      this->runAlternatingLeastSquares("evolve", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
       //this->evolve();
     else if (simulationType == "solve_linear_system")
-      this->runAlternatingLeastSquares("linear_system", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
+      this->runAlternatingLeastSquares("linear_system", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>(), model, parms);
     else if (simulationType == "ipi")
       this->runInversePowerIteration();
     else if (simulationType == "feast")
       this->runFEASTSimulation();
+    else if (simulationType == "transcorrelated")
+      this->runTranscorrelated();
   }
 
   /** @brief Runs a FEAST simulation */
@@ -146,7 +149,7 @@ public:
     // IPI macroiteration
     while (!convergedOuter) {
       double nextEnergy, energyDifference;
-      this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0.);
+      this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0., model, parms);
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
@@ -180,23 +183,20 @@ public:
    * the energy minimization) with the ALS algorithm. At the end, dumps the MPS, the energy, as well as the
    * measurements that were requested to be done at each microiteration.
    */
-  void runAlternatingLeastSquares(std::string simulationType, int nSweeps, double energyThreshold)
+  void runAlternatingLeastSquares(std::string simulationType, int nSweeps, double energyThreshold, const ModelType& inputModel,
+                                  DmrgParameters& inputParameters)
   {
     // Reads in input parameters
-    int meas_each = parms["measure_each"];
-    int chkp_each = parms["chkp_each"];
+    int meas_each = inputParameters["measure_each"];
+    int chkp_each = inputParameters["chkp_each"];
     // -- Optimizer initialization --
     //std::shared_ptr<opt_base_t> optimizer;
-    if (parms["optimization"] == "singlesite")
-      // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-      //                 (mps, mpo, parms, stop_callback, lat, init_site) );
-      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, model, base::lat);
-    else if(parms["optimization"] == "twosite")
-      // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-      //                 (mps, mpo, parms, stop_callback, lat, init_site) );
-      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, model, base::lat);
+    if (inputParameters["optimization"] == "singlesite")
+      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, inputParameters, inputModel, base::lat);
+    else if(inputParameters["optimization"] == "twosite")
+      factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, inputParameters, inputModel, base::lat);
     else
-        throw std::runtime_error("Don't know this optimizer");
+      throw std::runtime_error("Don't know this optimizer");
     // Retrieve the measurements that should be always done.
     auto always_measurements = this->iteration_measurements(init_sweep);
     auto firstEnergy = this->get_energy();
@@ -232,6 +232,58 @@ public:
       checkpoint_simulation(mps, e.sweep(), e.site());
       dumpParametersAndIterResults(e.sweep());
       dumpEnergy(e.sweep());
+    }
+  }
+
+  /**
+   * @brief Runs a transcorrelated DMRG calculation.
+   *
+   * This simulation is composed by two steps:
+   *
+   *  1) a first TI-DMRG calculation associated with the non-transcorrelated form
+   *     of the target Hamiltonian.
+   *  2) a second imaginary-time TD-DMRG calculation, which starts from the MPS
+   *     optimized in the previous step.
+   */
+  void runTranscorrelated()
+  {
+    // Extracts the relevant parameters
+    int nSweepsTI = parms["transcorrelated_nsweeps_TI"];
+    int nSweepsTC = parms["transcorrelated_nsweeps_TC"];
+    double energyThreshold = parms["conv_thresh"];
+    // Prints header
+    maquis::cout << std::endl;
+    maquis::cout << " ============================== " << std::endl;
+    maquis::cout << "   STARTING tcDMRG SIMULATION = " << std::endl;
+    maquis::cout << " ============================== " << std::endl;
+    maquis::cout << std::endl;
+    maquis::cout << " Number of sweeps for the preliminary TI-DMRG step:   " << nSweepsTI << std::endl;
+    maquis::cout << " Number of sweeps for the tcDMRG step:  " << nSweepsTC << std::endl;
+    maquis::cout << " Energy convergence threshold: " << energyThreshold << std::endl;
+    maquis::cout << std::endl;
+    // Preliminary TI calculation
+    if (nSweepsTI > 0) {
+      maquis::cout << std::endl;
+      maquis::cout << " == STARTING THE TI-DMRG OPTIMIZATION == " << std::endl;
+      maquis::cout << std::endl;
+      auto conventionalParameterContainer = parms;
+      auto conventionalModel = ModelType(lat, conventionalParameterContainer);
+      mpo = make_mpo(base::lat, conventionalModel);
+      this->runAlternatingLeastSquares("optimize", nSweepsTI, energyThreshold, conventionalModel, conventionalParameterContainer);
+    }
+    // iTD-DMRG propagation
+    init_sweep = nSweepsTI;
+    if (nSweepsTC > 0) {
+      maquis::cout << std::endl;
+      maquis::cout << " == STARTING THE IMAGINARY-TIME TD-DMRG PROPAGATION  == " << std::endl;
+      maquis::cout << std::endl;
+      // Generates the transcorrelated model
+      auto transcorrelatedParametersContainer = parms;
+      transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
+      transcorrelatedParametersContainer.set("imaginary_time", "yes");
+      auto transcorrelatedModel = ModelType(lat, transcorrelatedParametersContainer);
+      mpo = make_mpo(base::lat, transcorrelatedModel);
+      this->runAlternatingLeastSquares("evolve", nSweepsTC, energyThreshold, transcorrelatedModel, transcorrelatedParametersContainer);
     }
   }
 
@@ -427,8 +479,8 @@ public:
   /** @brief Updates the integral and regenerates the data that depends on it */
   void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
   {
-      if (parms.is_set("integral_file") || parms.is_set("integrals"))
-          throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
+      // if (parms.is_set("integral_file") || parms.is_set("integrals"))
+      //     throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
       parms.set("integrals_binary", chem::serialize(integrals));
       // construct new model and mpo with new integrals
       // hope this doesn't give any memory leaks
@@ -438,6 +490,18 @@ public:
       maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms));
       all_measurements = model.measurements();
       all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+  }
+
+  /** @brief Updates the integrals from a new file */
+  void update_integrals(std::string fileName)
+  {
+    parms.set("integral_file", fileName);
+    model = Model<Matrix, SymmGroup>(lat, parms);
+    mpo = make_mpo(lat, model);
+    // check if MPS is still OK
+    maquis::checks::right_end_check(mps, model.total_quantum_numbers(parms));
+    all_measurements = model.measurements();
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
   }
 
   results_collector& get_iteration_results()

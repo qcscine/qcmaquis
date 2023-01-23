@@ -38,6 +38,22 @@ enum class Hamiltonian {Electronic, RelativisticElectronic,
 
 enum class HamiltonianTransformation {Conventional, Transcorrelated};
 
+template<HamiltonianTransformation Transformation>
+class TranscorrelatedTraitClass;
+
+template<>
+class TranscorrelatedTraitClass<HamiltonianTransformation::Conventional> {
+public:
+    static std::string getIntegralFileName() { return "integral_file"; }
+};
+
+template<>
+class TranscorrelatedTraitClass<HamiltonianTransformation::Transcorrelated> {
+public:
+    static std::string getIntegralFileName() { return "transcorrelated_integral_file"; };
+};
+
+
 /** 
  * @brief Constexpr function returning the index of the Hamiltonian map
  * 
