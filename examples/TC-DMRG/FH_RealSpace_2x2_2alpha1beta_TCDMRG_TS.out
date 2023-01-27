@@ -1,1257 +1,840 @@
   SCINE QCMaquis 
   Quantum Chemical Density Matrix Renormalization group
   available from https://scine.ethz.ch/download/qcmaquis
-  based on the ALPS MPS codes from http://alps.comp-phys.org/
+  based on the ALPS MPS codes from http://alps.comp-phys.org
   copyright (c) 2015-2018 Laboratory of Physical Chemistry, ETH Zurich
   copyright (c) 2012-2016 by Sebastian Keller
-  copyright (c) 2016-2018 by Alberto Baiardi, Leon Freitag, 
-  Stefan Knecht, Yingjin Ma 
-  for details see the publication: 
-  S. Keller et al., J. Chem. Phys. 143, 244118 (2015)
+  copyright (c) 2016-2021 by Alberto Baiardi, Leon Freitag,
+  Stefan Knecht, Yingjin Ma
+  For details on tcDMRG see the following publications:
+   - A. Baiardi, M. Reiher, J. Chem. Phys. 153, 164115 (2020)
+   - A. Baiardi, M. Lesiuk, M. Reiher, J. Chem. Theory Comput. 18, 4203 (2022)
+This binary contains symmetries: 2u1 2u1pg su2u1 su2u1pg 
+DMRG version 2.2.0-d079a0dde1ac78067a7519de4616c1b3ce837539 (TranscorrelatedHamiltonian) release-3.1.2-gitlab
+Disk storage of boundaries disabled
+Will start again at site -1 in sweep 20
+Loading checkpoint from FH_RealSpace_2x2_2alpha1beta_TCDMRG_TS.checkpoint_state.0.h5
+ Hamiltonian Norm = 9.797958971
+ Non-Hermtian Hamiltonian Norm = 0
+MPO Bond 0: 10/0
+MPO Bond 1: 10/0
+MPO Bond 2: 6/0
+MPO Bond 3: 1/0
+MPS initialization has finished...
 
-This binary contains symmetries: u1dg 2u1 2u1pg su2u1pg 
-DMRG version 3.1.0-3c82dd191d31fa8dbdb9df0cd85119715eb59324 (TranscorrelatedHamiltonian) release-3.0.6-gitlab
-Temporary storage is disabled
+ ============================== 
+   STARTING tcDMRG SIMULATION = 
+ ============================== 
+
+ Number of sweeps for the preliminary TI-DMRG step:   5
+ Number of sweeps for the tcDMRG step:  20
+ Energy convergence threshold: -1
+
+
+ == STARTING THE TI-DMRG OPTIMIZATION == 
+
+ Hamiltonian Norm = 9.797958971
+ Non-Hermtian Hamiltonian Norm = 0
+MPO Bond 0: 10/0
+MPO Bond 1: 10/0
+MPO Bond 2: 6/0
+MPO Bond 3: 1/0
+
+ == STARTING THE IMAGINARY-TIME TD-DMRG PROPAGATION  == 
+
+ Hamiltonian Norm = 10.79379223
+ Non-Hermtian Hamiltonian Norm = 4.291973565
 MPO Bond 0: 18/0
 MPO Bond 1: 18/0
 MPO Bond 2: 10/0
 MPO Bond 3: 1/0
-site_types: 0 0 0 0 
-phys[0]: |( <1,1>: 1 )( <1,0>: 1 )( <0,1>: 1 )( <0,0>: 1 )|
-Right end: <2,1>
-init norm: (0.01388888889,0)
-MPS site 0
-|( <0,0>: 1 )|
-Sum: 1
-|( <1,1>: 1 )( <1,0>: 1 )( <0,1>: 1 )( <0,0>: 1 )|
-Sum: 4
-MPS site 1
-|( <1,1>: 1 )( <1,0>: 1 )( <0,1>: 1 )( <0,0>: 1 )|
-Sum: 4
-|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 2 )( <1,0>: 2 )( <0,1>: 1 )( <0,0>: 1 )|
-Sum: 8
-MPS site 2
-|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 2 )( <1,0>: 2 )( <0,1>: 1 )( <0,0>: 1 )|
-Sum: 8
-|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 1 )( <1,0>: 1 )|
-Sum: 4
-MPS site 3
-|( <2,1>: 1 )( <2,0>: 1 )( <1,1>: 1 )( <1,0>: 1 )|
-Sum: 4
-|( <2,1>: 1 )|
-Sum: 1
-
-site 0 activating sector <1,1>
-site 1 activating sector <2,1>
-site 2 activating sector <2,1>
-site 3 activating sector <2,1>
-MPS initialization has finished...
-Expecting 0 states to orthogonalize to.
-Boundaries are partially initialized...
-Boundaries are fully initialized...
-Done init_left_right
-TSMPOTensor: 18x1,  18 operators, 18 tags
-TSMPOTensor: 1x18,  18 operators, 18 tags
-TSMPOTensor: 18x10,  27 operators, 27 tags
-Total number of tags: 63
-
-Sweep 0, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016405083
-Energy 1 -6.55770590996582
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000744299
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019984241 seconds.
-
-Sweep 0, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.019688476
-Energy 1 -6.62602759766802
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.00080174
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.043178201 seconds.
-
-Sweep 0, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016579793
-Energy 1 -7.41650426276341
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000615127
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.062745946 seconds.
-
-Sweep 0, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016779941
-Energy -1 -6.56966246833254
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000396175
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.082048028 seconds.
-
-Sweep 0, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020616753
-Energy -1 -7.31099914600018
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000471848
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.105854453 seconds.
-
-Sweep 0, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.014934054
-Energy -1 -6.68297241944773
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000351532
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.123722629 seconds.
-
-Sweep 1, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.015189332
-Energy 1 -7.39065858419445
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000635354
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.018258808 seconds.
-
-Sweep 1, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020192707
-Energy 1 -7.20594845298391
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000760677
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.041840863 seconds.
-
-Sweep 1, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016621749
-Energy 1 -6.50564431086377
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000601639
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.061507009 seconds.
-
-Sweep 1, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016828553
-Energy -1 -6.34345944733991
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.00039989
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.081047157 seconds.
-
-Sweep 1, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020013479
-Energy -1 -6.45707418710437
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000466556
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.104242811 seconds.
-
-Sweep 1, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.015268345
-Energy -1 -6.41621501219982
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000410218
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.122485125 seconds.
-
-Sweep 2, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.018864805
-Energy 1 -6.41898558498606
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000631549
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.021923172 seconds.
-
-Sweep 2, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020355646
-Energy 1 -6.41702723692598
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000895788
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.045880153 seconds.
-
-Sweep 2, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016647752
-Energy 1 -6.42284368605998
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.003601548
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.068618217 seconds.
-
-Sweep 2, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016785748
-Energy -1 -6.41770655481024
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000402555
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.087992822 seconds.
-
-Sweep 2, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020198539
-Energy -1 -6.41974140781289
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000479763
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.111772737 seconds.
-
-Sweep 2, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.01701159
-Energy -1 -6.41845208620827
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000421479
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.131927333 seconds.
-
-Sweep 3, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016149716
-Energy 1 -6.41658920070642
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000676428
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019221947 seconds.
-
-Sweep 3, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020646187
-Energy 1 -6.4155976101602
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000777139
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.043191694 seconds.
-
-Sweep 3, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016730375
-Energy 1 -6.41746786115298
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000580629
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.062754018 seconds.
-
-Sweep 3, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016874805
-Energy -1 -6.41658685259727
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000371643
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.081971346 seconds.
-
-Sweep 3, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020491463
-Energy -1 -6.41691228662076
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000456197
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.105457946 seconds.
-
-Sweep 3, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.01622283
-Energy -1 -6.41764499566465
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000364011
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.124564044 seconds.
-
-Sweep 4, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016452832
-Energy 1 -6.41572872820637
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000649788
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019427389 seconds.
-
-Sweep 4, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020890338
-Energy 1 -6.41631670262514
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000811069
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.043727324 seconds.
-
-Sweep 4, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016704869
-Energy 1 -6.41785399183526
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000576123
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.063281241 seconds.
-
-Sweep 4, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016768949
-Energy -1 -6.41633257322534
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000372415
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.082454018 seconds.
-
-Sweep 4, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020253297
-Energy -1 -6.4169940330597
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000457
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.105901603 seconds.
-
-Sweep 4, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016301633
-Energy -1 -6.41829410712407
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000357473
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.125162695 seconds.
-
-Sweep 5, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016130851
-Energy 1 -6.41567334315799
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.00071434
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.01938278 seconds.
-
-Sweep 5, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020715473
-Energy 1 -6.41685376448937
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000775095
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.043390381 seconds.
-
-Sweep 5, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016942932
-Energy 1 -6.41849004643069
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000580738
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.063151933 seconds.
-
-Sweep 5, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016685124
-Energy -1 -6.41589969660251
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000376809
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.082609956 seconds.
-
-Sweep 5, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020401521
-Energy -1 -6.41711461361043
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000458756
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.106094785 seconds.
-
-Sweep 5, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016304302
-Energy -1 -6.41869418619035
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000359881
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.125274985 seconds.
-
-Sweep 6, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016488754
-Energy 1 -6.41612648881624
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000650787
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019527261 seconds.
-
-Sweep 6, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.023273924
-Energy 1 -6.41737016526255
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000789187
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.046231028 seconds.
-
-Sweep 6, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017215637
-Energy 1 -6.41878383855643
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000589435
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.066322084 seconds.
-
-Sweep 6, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016857969
-Energy -1 -6.41619411400667
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000373983
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.085537306 seconds.
-
-Sweep 6, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020438082
-Energy -1 -6.41738405020497
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000454507
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.10898249 seconds.
-
-Sweep 6, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016434238
-Energy -1 -6.4187789423053
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000380564
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.12834194 seconds.
-
-Sweep 7, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016349208
-Energy 1 -6.41623831323592
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000684879
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019464745 seconds.
-
-Sweep 7, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020957075
-Energy 1 -6.41744012197348
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000769422
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.043756164 seconds.
-
-Sweep 7, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017027532
-Energy 1 -6.41882227312024
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000574138
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.06364384 seconds.
-
-Sweep 7, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017105555
-Energy -1 -6.41630344370212
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000495007
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.083311372 seconds.
-
-Sweep 7, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020796409
-Energy -1 -6.41745013416871
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000453156
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.107145305 seconds.
-
-Sweep 7, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016532347
-Energy -1 -6.41879417357167
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000385688
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.126569584 seconds.
-
-Sweep 8, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016453475
-Energy 1 -6.4163409164404
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000714452
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019483591 seconds.
-
-Sweep 8, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020896641
-Energy 1 -6.4174721384255
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000758244
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.04368558 seconds.
-
-Sweep 8, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016944305
-Energy 1 -6.41881184767253
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000590945
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.063458757 seconds.
-
-Sweep 8, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016903873
-Energy -1 -6.41639523362997
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000403611
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.082777238 seconds.
-
-Sweep 8, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.02064974
-Energy -1 -6.41748040266589
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000521062
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.106520276 seconds.
-
-Sweep 8, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016363506
-Energy -1 -6.41879144574688
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000354335
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.125843942 seconds.
-
-Sweep 9, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.01656228
-Energy 1 -6.41643656920171
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000660159
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019657785 seconds.
-
-Sweep 9, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020872514
-Energy 1 -6.41749517390533
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000799526
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.043889284 seconds.
-
-Sweep 9, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017031704
-Energy 1 -6.4187956996238
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000625123
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.063824315 seconds.
-
-Sweep 9, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016883134
-Energy -1 -6.41648521383926
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000377702
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.083117801 seconds.
-
-Sweep 9, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.02082325
-Energy -1 -6.4175046931431
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000470519
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.106958097 seconds.
-
-Sweep 9, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016347233
-Energy -1 -6.41878255329128
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.001836144
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.127778938 seconds.
-
-Sweep 10, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016538826
-Energy 1 -6.41652820843234
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000678226
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019656416 seconds.
-
-Sweep 10, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021141283
-Energy 1 -6.41751759920932
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000796213
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044255905 seconds.
-
-Sweep 10, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017320413
-Energy 1 -6.41878072624531
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000703899
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.064530777 seconds.
-
-Sweep 10, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016613738
-Energy -1 -6.41657404755809
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000394345
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.083606613 seconds.
-
-Sweep 10, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020832013
-Energy -1 -6.41752854863582
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000464308
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.107512045 seconds.
-
-Sweep 10, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016700293
-Energy -1 -6.41877158945291
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000365826
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.127121611 seconds.
-
-Sweep 11, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016557505
-Energy 1 -6.41661722832864
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000683638
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.01954911 seconds.
-
-Sweep 11, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021283001
-Energy 1 -6.41754117089303
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000789389
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.04429255 seconds.
-
-Sweep 11, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017267257
-Energy 1 -6.41876737113122
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.0005888
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.064439031 seconds.
-
-Sweep 11, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017247087
-Energy -1 -6.41666136973184
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000405663
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.084184525 seconds.
-
-Sweep 11, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020837668
-Energy -1 -6.41755314840163
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000455583
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.108064066 seconds.
-
-Sweep 11, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017555896
-Energy -1 -6.41876020946691
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000382634
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.128662889 seconds.
-
-Sweep 12, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016509652
-Energy 1 -6.41670406146354
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000665071
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019616513 seconds.
-
-Sweep 12, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021134578
-Energy 1 -6.41756601375015
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000760681
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044031044 seconds.
-
-Sweep 12, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017865127
-Energy 1 -6.41875522870901
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000581163
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.064757403 seconds.
-
-Sweep 12, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016798788
-Energy -1 -6.41674691084701
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.00039009
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.083977738 seconds.
-
-Sweep 12, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020752339
-Energy -1 -6.4175787223837
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.00048037
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.107804897 seconds.
-
-Sweep 12, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016475367
-Energy -1 -6.41874907508724
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000390781
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.127304895 seconds.
-
-Sweep 13, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016594584
-Energy 1 -6.41678879791383
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000668957
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019649902 seconds.
-
-Sweep 13, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.02158223
-Energy 1 -6.4175919625932
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000796152
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044643511 seconds.
-
-Sweep 13, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.018961963
-Energy 1 -6.4187439728904
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000605315
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.066745541 seconds.
-
-Sweep 13, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016968044
-Energy -1 -6.41683050046504
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000391063
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.086216131 seconds.
-
-Sweep 13, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020651222
-Energy -1 -6.41760523754459
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000462667
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.110083571 seconds.
-
-Sweep 13, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016372597
-Energy -1 -6.41873841295157
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000404754
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.129498432 seconds.
-
-Sweep 14, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016698862
-Energy 1 -6.41687143787358
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000668501
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.019771076 seconds.
-
-Sweep 14, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021094049
-Energy 1 -6.41761885730815
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000767806
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044174792 seconds.
-
-Sweep 14, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017157191
-Energy 1 -6.41873343113039
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000593691
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.064313547 seconds.
-
-Sweep 14, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016984408
-Energy -1 -6.41691202094008
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000410928
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.083747978 seconds.
-
-Sweep 14, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020824952
-Energy -1 -6.41763256856931
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000452556
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.107712415 seconds.
-
-Sweep 14, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016378726
-Energy -1 -6.41872828552413
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000374931
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.127066761 seconds.
-
-Sweep 15, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016486284
-Energy 1 -6.4169519321268
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000711672
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.0196327 seconds.
-
-Sweep 15, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021042054
-Energy 1 -6.4176465266089
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000845562
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044146482 seconds.
-
-Sweep 15, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017144202
-Energy 1 -6.41872347877849
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.00057448
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.064178425 seconds.
-
-Sweep 15, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016928745
-Energy -1 -6.41699152233235
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000381748
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.083581643 seconds.
-
-Sweep 15, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020994686
-Energy -1 -6.41766028853097
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000492433
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.107695571 seconds.
-
-Sweep 15, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017290752
-Energy -1 -6.41871829047121
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000380519
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.128008363 seconds.
-
-Sweep 16, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017294577
-Energy 1 -6.41702978032045
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000668717
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.020454436 seconds.
-
-Sweep 16, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021243022
-Energy 1 -6.41767443710264
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000775174
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.04499723 seconds.
-
-Sweep 16, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017432055
-Energy 1 -6.41871396972814
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000614276
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.065394683 seconds.
-
-Sweep 16, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017137745
-Energy -1 -6.41706843640371
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.00038825
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.084962908 seconds.
-
-Sweep 16, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021074139
-Energy -1 -6.41768891279045
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000465175
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.109063405 seconds.
-
-Sweep 16, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016935118
-Energy -1 -6.41870936494314
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000379558
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.129041431 seconds.
-
-Sweep 17, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016740756
-Energy 1 -6.41710600187524
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.0007792
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.020001391 seconds.
-
-Sweep 17, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021338125
-Energy 1 -6.41770346873332
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000789607
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.04466937 seconds.
-
-Sweep 17, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017697282
-Energy 1 -6.41870521835529
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000592537
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.065215205 seconds.
-
-Sweep 17, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017271785
-Energy -1 -6.41714331532761
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000381432
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.084923113 seconds.
-
-Sweep 17, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020794133
-Energy -1 -6.41771794148365
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000455543
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.108794373 seconds.
-
-Sweep 17, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016667358
-Energy -1 -6.4187007638071
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000386173
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.128444217 seconds.
-
-Sweep 18, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016686617
-Energy 1 -6.41717973004634
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000690121
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.01981064 seconds.
-
-Sweep 18, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.02157374
-Energy 1 -6.41773258633782
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.00078981
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044837475 seconds.
-
-Sweep 18, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017310259
-Energy 1 -6.41869675621312
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000605646
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.065079539 seconds.
-
-Sweep 18, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017151156
-Energy -1 -6.41721579482869
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000408459
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.084677197 seconds.
-
-Sweep 18, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021032398
-Energy -1 -6.4177471535948
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000470981
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.108825361 seconds.
-
-Sweep 18, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016769002
-Energy -1 -6.41869253761742
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000870578
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.129129105 seconds.
-
-Sweep 19, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017179085
-Energy 1 -6.41725104883129
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000668434
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.020267231 seconds.
-
-Sweep 19, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.021153693
-Energy 1 -6.41776184679014
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000781285
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.044812064 seconds.
-
-Sweep 19, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017487359
-Energy 1 -6.41868866184813
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000591292
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.06518222 seconds.
-
-Sweep 19, optimizing sites 2 and 3
-JCD used 10 iterations.
-Time elapsed in JCD: 0.017261271
-Energy -1 -6.41728587371378
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000382047
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.084846047 seconds.
-
-Sweep 19, optimizing sites 1 and 2
-JCD used 10 iterations.
-Time elapsed in JCD: 0.020932915
-Energy -1 -6.41777646210607
-Sum: 8 -> 8
-Time elapsed in TRUNC: 0.000466687
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.108962353 seconds.
-
-Sweep 19, optimizing sites 0 and 1
-JCD used 10 iterations.
-Time elapsed in JCD: 0.016730372
-Energy -1 -6.4186846607389
-Sum: 4 -> 4
-Time elapsed in TRUNC: 0.000378054
-Propagating t with norm 1
-Memory usage : 857456 833156 
-Sweep has been running for 0.128782357 seconds.
-Task took 3.488782 seconds.
+
++------------------------------------------+
+  DETAILS ABOUT SITE-CENTERED TIME EVOLVER
++------------------------------------------+
+
+ - Propagation type: Imaginary-time
+ - Time step: 0.2067068729
+ - Propagation algorithm: yes
+Arnoldi approximation of the propagator
+
+ -------------------
+   SWEEP NUMBER 5
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5504E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4494E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1235E-11 
++------------+------------+
+ Energy = -6.418502927978202
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4495E-11 
++------------+------------+
+ Energy = -6.418502927978202
+
+
+ -------------------
+   SWEEP NUMBER 6
+ -------------------
+ - Noise parameter: 0.0001
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4495E-11 
++------------+------------+
+ Energy = -6.418502927978204
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1236E-11 
++------------+------------+
+ Energy = -6.418502927978204
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4496E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+
+ -------------------
+   SWEEP NUMBER 7
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4495E-11 
++------------+------------+
+ Energy = -6.418502927978205
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1236E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4496E-11 
++------------+------------+
+ Energy = -6.418502927978203
+
+
+ -------------------
+   SWEEP NUMBER 8
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978205
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4497E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1239E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4498E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+
+ -------------------
+   SWEEP NUMBER 9
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4498E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1241E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4499E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+
+ -------------------
+   SWEEP NUMBER 10
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4500E-11 
++------------+------------+
+ Energy = -6.418502927978206
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1241E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4500E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+
+ -------------------
+   SWEEP NUMBER 11
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978209
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1243E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+
+ -------------------
+   SWEEP NUMBER 12
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5507E-11 
++------------+------------+
+ Energy = -6.418502927978207
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1243E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+
+ -------------------
+   SWEEP NUMBER 13
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5507E-11 
++------------+------------+
+ Energy = -6.418502927978211
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978209
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1244E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978209
+
+
+ -------------------
+   SWEEP NUMBER 14
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5506E-11 
++------------+------------+
+ Energy = -6.418502927978211
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978208
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1246E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.41850292797821
+
+
+ -------------------
+   SWEEP NUMBER 15
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5505E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978211
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1246E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+
+ -------------------
+   SWEEP NUMBER 16
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5504E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1247E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978212
+
+
+ -------------------
+   SWEEP NUMBER 17
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5503E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1248E-11 
++------------+------------+
+ Energy = -6.418502927978213
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+
+ -------------------
+   SWEEP NUMBER 18
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5503E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1249E-11 
++------------+------------+
+ Energy = -6.418502927978215
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+
+ -------------------
+   SWEEP NUMBER 19
+ -------------------
+ - Noise parameter: 1e-08
+ - Maximum bond dimension: 50
+ - Truncation parameter: 1e-16
+
+ MICROITERATION NUMBER = 0  , forward sweep
+ - Left boundaries taken from index: 0
+ - Right boundaries taken from index: 2
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  8.5502E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 1  , forward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+ MICROITERATION NUMBER = 2  , forward sweep
+ - Left boundaries taken from index: 2
+ - Right boundaries taken from index: 4
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.1248E-11 
++------------+------------+
+ Energy = -6.418502927978219
+
+ MICROITERATION NUMBER = 3  , backward sweep
+ - Left boundaries taken from index: 1
+ - Right boundaries taken from index: 3
+
++------------+------------+
+  ITERATION  |   ERROR 
++------------+------------+
+    1        |  9.4501E-11 
++------------+------------+
+ Energy = -6.418502927978214
+
+Task took 2.735238 seconds.

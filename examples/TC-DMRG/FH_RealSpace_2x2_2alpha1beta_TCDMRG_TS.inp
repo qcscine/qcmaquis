@@ -1,9 +1,10 @@
-// +------------------------------------------------------------------+
-//  EXAMPLE 1: TC-DMRG[SS] with a 2x2 Real-Space Fermi-Hubbard Lattice 
-// +------------------------------------------------------------------+
+// +-----------------------------------------------------------------+
+//  EXAMPLE: TC-DMRG[S] with a 2x2 Real-Space Fermi-Hubbard Lattice 
+// +----------------------------------------------------------------+
 
 // -- General parameters --
-nsweeps                     = 20
+transcorrelated_nsweep_TI   = 10
+transcorrelated_nsweep_TC   = 10
 L                           = 4
 max_bond_dimension          = 100
 width_FermiHubbard          = 2
@@ -24,18 +25,14 @@ hf_occ                      = "4,3,1,1"
 // -- TD-specific quantities --
 propagator_maxiter          = 10
 propagator_accuracy         = 1.0E-10
-imaginary_time              = "yes"
 TD_backpropagation          = "no"
-simulation_type             = TD
-COMPLEX                     = 1
 time_units                  = as
 time_step                   = 10
 
 // -- Transcorrelated parameters -- 
-transcorrelated_hamiltonian = "yes"
 J_Transcorrelated           = 0.5 
 hamiltonian_units           = Hartree
 
 // -- Initialization and storage information --
 chkpfile                    = 'FH_RealSpace_2x2_2alpha1beta_TCDMRG_TS.checkpoint_state.0.h5'
-resultfile                  = 'FH_RealSpace_2x2_2alpha1beta_TCDMRG_TS.results_state.0.h5'
+resultfile                  = 'FH_RealSpace_2x2_2alpha1beta_TCDMRG_TS.resfile.0.h5'
