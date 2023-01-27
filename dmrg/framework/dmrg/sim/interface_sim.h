@@ -287,7 +287,7 @@ public:
       this->runAlternatingLeastSquares("evolve", init_sweep+nSweepsTC, energyThreshold, transcorrelatedModel, transcorrelatedParametersContainer);
     }
   #else
-    throw std:runtime_error("Activate the [BUILD_TRANSCORRELATED_DMRG] Cmake flag before running a tcDMRG calculation.");
+    throw std::runtime_error("Activate the [BUILD_TRANSCORRELATED_DMRG] Cmake flag before running a tcDMRG calculation.");
   #endif // DMRG_TC
   }
 

@@ -180,6 +180,7 @@ public:
             term = jw.getTerm(posVector, opVector, tag_handler, true, coeff);
             addTerm(mapOfOperators, term);
         }
+        // Two-body operator
         for (int iSite = 0; iSite < height*width; iSite++) {
             for (int jSite = 0; jSite < height*width; jSite++) {
                 for (int deltaSite = 0; deltaSite < height*width; deltaSite++) {
@@ -226,7 +227,8 @@ public:
                 }
             }
         }
-        if (isTranscorrelated) {
+        // Three-body operator
+        if (isTranscorrelated && parms["transcorrelated_3body"] == "yes") {
             for (int iSite = 0; iSite < height*width; iSite++) {
             for (int jSite = 0; jSite < height*width; jSite++) {
             for (int kSite = 0; kSite < height*width; kSite++) {
