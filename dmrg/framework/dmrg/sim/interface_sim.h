@@ -284,7 +284,7 @@ public:
       transcorrelatedParametersContainer.set("imaginary_time", "yes");
       auto transcorrelatedModel = ModelType(lat, transcorrelatedParametersContainer);
       mpo = make_mpo(base::lat, transcorrelatedModel);
-      this->runAlternatingLeastSquares("evolve", nSweepsTC, energyThreshold, transcorrelatedModel, transcorrelatedParametersContainer);
+      this->runAlternatingLeastSquares("evolve", init_sweep+nSweepsTC, energyThreshold, transcorrelatedModel, transcorrelatedParametersContainer);
     }
   #else
     throw std:runtime_error("Activate the [BUILD_TRANSCORRELATED_DMRG] Cmake flag before running a tcDMRG calculation.");
