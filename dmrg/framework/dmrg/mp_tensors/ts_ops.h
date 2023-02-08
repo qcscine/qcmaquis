@@ -6,22 +6,22 @@
  *                    Laboratory for Physical Chemistry, ETH Zurich
  *               2013-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -113,7 +113,6 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     using boost::tuples::get;
     // Variable declaration
     assert(mpo1.col_dim() == mpo2.row_dim());
-    bool shared = (mpo1.get_operator_table() == mpo2.get_operator_table());
     KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
     prempo_t prempo;
     index_type b1, b2, b3;
@@ -128,6 +127,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
             for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it)
                 if (mpo2.has(it.index(), b3))
                     summands.insert(it.index());
+            // Evaluates the sum over b2 and returns the (b1, b3) element of the MPOTensor
             // Evaluates the sum over b2 and returns the (b1, b3) element of the MPOTensor 
             auto coupled_ops = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
             for (auto it = coupled_ops.begin(); it != coupled_ops.end(); ++it) {
@@ -139,17 +139,17 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     // Creates the final MPO
     MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table(),
                                                 mpo1.herm_info * mpo2.herm_info, mpo1.row_spin_dim(), mpo2.col_spin_dim());
-    #ifdef MAQUIS_OPENMP
-    #pragma omp critical
-    #endif
-    maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
-                 << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
+    // #ifdef MAQUIS_OPENMP
+    // #pragma omp critical
+    // #endif
+    // maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size()
+    //              << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
     return mpo_big_tag;
 }
 
 /**
  * @brief Generates the TwoSite MPO associated with a given MPO object.
- * 
+ *
  * Note that the (iSite)-th element of the output MPO is the two-site MPO for sites (iSite, iSite+1)
  *
  * @param mpo_orig Input MPO
@@ -170,7 +170,7 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     std::size_t ntags=0;
     for (int p=0; p<mpo_out.length(); ++p)
         ntags += mpo_out[p].get_operator_table()->size();
-    maquis::cout << "Total number of tags: " << ntags << std::endl;
+    // maquis::cout << "Total number of tags: " << ntags << std::endl;
 }
 
 #endif

@@ -208,7 +208,6 @@ namespace contraction {
          */
         void populateData() {
             int loop_max = left.aux_dim();
-            parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
             // Loop over the elements
              omp_for(int b1, parallel::range(0,loop_max), {
                 // exploit single use sparsity (delay multiplication until the object is used)
@@ -216,7 +215,6 @@ namespace contraction {
                     continue;
                 // exploit hermiticity if available
                 if (mpo.herm_info.left_skip(b1) && isHermitian_) {
-                    parallel::guard group(scheduler(b1), parallel::groups_granularity);
                     if (correctConjugate) {
                         std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
                         typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1], ref_left_basis, scales);
@@ -293,7 +291,6 @@ namespace contraction {
         void populateData() {
             // Preliminary operations
             int loop_max = right.aux_dim();
-            parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
             omp_for(int b2, parallel::range(0,loop_max), {
                 // exploit single use sparsity (delay multiplication until the object is used)
                 if (mpo.num_col_non_zeros(b2) == 1)
@@ -301,7 +298,6 @@ namespace contraction {
                 // exploit hermiticity if available
                 if (mpo.herm_info.right_skip(b2) && isHermitian_)
                 {
-                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
                     block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(b2)]);
                     if (correctConjugate) {
                         std::vector<value_type> scales = conjugate_phases(trv, mpo, b2, false, true);
@@ -312,7 +308,6 @@ namespace contraction {
                     }
                 }
                 else {
-                    parallel::guard group(scheduler(b2), parallel::groups_granularity);
                     typename Gemm::gemm_trim_right()(bm, right[b2], data_[b2], ref_right_basis);
                 }
             });
@@ -341,13 +336,11 @@ namespace contraction {
             {
                 if (mpo.herm_info.right_skip(k) && isHermitian_)
                 {
-                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                     block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(k)]);
                     //return typename Gemm::gemm_trim_right()(mps.data(), trv);
                     return SU2::gemm_trim_right_pretend(bm.basis(), trv, ref_right_basis);
                 }
                 else {
-                    //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                     //return typename Gemm::gemm_trim_right_pretend()(mps.data(), right[k]);
                     return SU2::gemm_trim_right_pretend(bm.basis(), right[k], ref_right_basis);
                 }
@@ -365,7 +358,6 @@ namespace contraction {
                 {
                     if (mpo.herm_info.right_skip(k) && isHermitian_)
                     {
-                        //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                         //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
                         block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(k)]);
                         if (correctConjugate) {
@@ -378,7 +370,6 @@ namespace contraction {
                         }
                     }
                     else {
-                        //parallel::guard group(scheduler(b2), parallel::groups_granularity);
                         //typename Gemm::gemm_trim_right()(mps.data(), right[k], storage);
                         typename Gemm::gemm_trim_right()(bm, right[k], data_[k], ref_right_basis);
                     }

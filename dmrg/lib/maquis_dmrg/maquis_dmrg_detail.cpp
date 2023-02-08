@@ -134,7 +134,7 @@ namespace maquis {
         storage::archive ar_in(checkpoint_name + "/props.h5");
 
         ar_in["/parameters"] >> parms;
-        parms.set("init_state", "const");
+        parms.set("init_type", "const");
     #if defined(HAVE_SU2U1PG)
         parms.set("symmetry", "2u1pg");
     #elif defined(HAVE_SU2U1)

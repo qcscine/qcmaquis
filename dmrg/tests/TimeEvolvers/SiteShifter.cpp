@@ -27,12 +27,12 @@
 #define BOOST_TEST_MODULE TimeEvolvers
 
 #include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 #include "utils/fpcomparison.h"
 #include <iostream>
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/mp_tensors/boundary.h"
-#include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/siteproblem.h"
@@ -66,7 +66,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestConstructorSiteShifter, S, symmetries, Test
     using SiteShifterType = SiteShifter<matrix, S, TimeEvolverType, PerturberType>;
     // The parameters are not really used
     DmrgParameters p;
-    p.set("integrals_binary", maquis::serialize(integrals));
+    p.set("integrals_binary", maquis::serialize(integralsDouble));
     p.set("site_types", "0,0,0,0");
     p.set("L", 4);
     p.set("irrep", 0);

@@ -33,9 +33,8 @@
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/prebo/nu1/model.hpp"
 #include "dmrg/sim/matrix_types.h"
-#include <iostream>
-
 #include "maquis_dmrg.h"
+#include <iostream>
 
 /** 
  * @brief Fixture class that contains all data that are globally used by the tests 

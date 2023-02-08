@@ -51,6 +51,18 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
 
 #ifdef HAVE_TrivialGroup
 
+/** Checks consistency for the physical dimensions for the ethylene Watson Hamiltonian with NMax vector initialization */
+BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene_NMaxVec, WatsonFixture)
+{
+    parametersEthyleneWatsonHarmonic.set("Nmax", "8,8,8,8,8,8,8,8,8,8,8,8");
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
+    int siteType = 5;
+    const auto& physicalDimensions5 = nModeModel.phys_dim(siteType);
+    BOOST_CHECK_EQUAL(physicalDimensions5.sum_of_sizes(), 8);
+}
+
+
 /** Simple check on tags */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_Ethylene, WatsonFixture)
 {
@@ -74,7 +86,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixture) 
 {
     auto lattice = lattice_factory(parametersEthyleneWatsonHarmonic);
-    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice);
+    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice, WatsonCoordinateType::CartesianNormalModes,
+                                                                       6, 6, 6);
     BOOST_CHECK_EQUAL(integrals.size(), 24);
     for (const auto iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
@@ -97,7 +110,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture)
     auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
     auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), parametersEthyleneWatsonHarmonic["Nmax"]);
+    int nMax = parametersEthyleneWatsonHarmonic["Nmax"];
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax);
 }
 
 #endif // HAVE_TrivialGroup

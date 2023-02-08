@@ -114,19 +114,13 @@ public:
     index_type num_col_non_zeros(index_type col_i) const;
     index_type num_one_rows() const;
     index_type num_one_cols() const;
-
-    mutable std::vector<int> placement_l;
-    mutable std::vector<int> placement_r;
-    mutable std::vector<int> exceptions_l;
-    mutable std::vector<int> exceptions_r;
-
     MPOTensor_detail::Hermitian herm_info;
+
 private:
     index_type left_i, right_i;
     spin_index left_spins, right_spins;
     std::vector<index_type> row_non_zeros, col_non_zeros;
     index_type num_one_rows_, num_one_cols_;
-
     CSCMatrix col_tags;
     RowIndex row_index;
     op_table_ptr operator_table;

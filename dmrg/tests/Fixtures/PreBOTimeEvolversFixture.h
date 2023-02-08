@@ -721,7 +721,7 @@ struct PreBOTestTimeEvolverFixture
           iParam.get().set("MODEL", "PreBO");
           iParam.get().set("nsweeps", 20);
           iParam.get().set("symmetry", "nu1");
-          iParam.get().set("init_state", "const");
+          iParam.get().set("init_type", "const");
         }
         // TD-related parameters
         for (const auto& iParam: allParametersComplex) {

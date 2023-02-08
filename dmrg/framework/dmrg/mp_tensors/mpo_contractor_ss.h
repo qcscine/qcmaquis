@@ -27,14 +27,13 @@
 #ifndef MP_TENSORS_MPO_CONTRACTOR_SS_H
 #define MP_TENSORS_MPO_CONTRACTOR_SS_H
 
-#include <boost/random.hpp>
-
 #include "dmrg/optimize/ietl_lanczos_solver.h"
-
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
+
 #ifdef HAVE_ARPACK
 #include "dmrg/optimize/arpackpp_solver.h"
 #endif
+
 #include "dmrg/mp_tensors/siteproblem.h"
 #include "dmrg/utils/BaseParameters.h"
 
@@ -95,7 +94,7 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     block_matrix<Matrix, SymmGroup> t;
-                    t = mpsp[site].normalize_left(DefaultSolver());
+                    t = mpsp[site].leftNormalizeAndReturn(DefaultSolver());
                     mpsp[site+1].multiply_from_left(t);
                 }
 
@@ -104,7 +103,7 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     block_matrix<Matrix, SymmGroup> t;
-                    t = mpsp[site].normalize_right(DefaultSolver());
+                    t = mpsp[site].rightNormalizeAndReturn(DefaultSolver());
                     mpsp[site-1].multiply_from_right(t);
                 }
 
@@ -149,22 +148,22 @@ private:
 
         Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
-        Storage::evict(left_[0]);
+        Storage::StoreToFile(left_[0]);
 
         for (int i = 0; i < L; ++i) {
             Storage::drop(left_[i+1]);
             left_[i+1] = contr::overlap_mpo_left_step(mpsp[i], mps[i], left_[i], mpo[i]);
-            Storage::evict(left_[i+1]);
+            Storage::StoreToFile(left_[i+1]);
         }
 
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
-        Storage::evict(right_[L]);
+        Storage::StoreToFile(right_[L]);
 
         for(int i = L-1; i >= 0; --i) {
             Storage::drop(right_[i]);
             right_[i] = contr::overlap_mpo_right_step(mpsp[i], mps[i], right_[i+1], mpo[i]);
-            Storage::evict(right_[i]);
+            Storage::StoreToFile(right_[i]);
         }
     }
 

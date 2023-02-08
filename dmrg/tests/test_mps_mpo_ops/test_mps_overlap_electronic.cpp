@@ -65,9 +65,9 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_Overlap_Hermitian_Electronic, S, symm
     auto lattice = Lattice(parametersBenzene);
     auto model = Model<matrix, S>(lattice, parametersBenzene);
     // Modifies the init parameters to create two different MPSs
-    parametersBenzene.set("init_state", "const");
+    parametersBenzene.set("init_type", "const");
     auto mpsConst = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersBenzene)));
-    parametersBenzene.set("init_state", "default");
+    parametersBenzene.set("init_type", "default");
     auto mpsDefault = MPS<matrix, S>(lattice.size(), *(model.initializer(lattice, parametersBenzene)));
     // Calculates the overlap
     double overlapOriginal = overlap(mpsConst, mpsDefault);
@@ -84,9 +84,9 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Hermitian_Electronic_Complex, Relativi
     auto lattice = Lattice(parametersComplex);
     auto model = Model<cmatrix, U1DG>(lattice, parametersComplex);
     // Modifies the init parameters to create two different MPSs
-    parametersComplex.set("init_state", "const");
+    parametersComplex.set("init_type", "const");
     auto mpsConst = MPS<cmatrix, U1DG>(lattice.size(), *(model.initializer(lattice, parametersComplex)));
-    parametersComplex.set("init_state", "default");
+    parametersComplex.set("init_type", "default");
     auto mpsDefault = MPS<cmatrix, U1DG>(lattice.size(), *(model.initializer(lattice, parametersComplex)));
     // Calculates the overlap
     std::complex<double> overlapOriginal = overlap(mpsConst, mpsDefault);

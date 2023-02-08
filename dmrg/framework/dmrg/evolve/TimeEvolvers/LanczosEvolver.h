@@ -103,12 +103,12 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Time evolution method */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const {
+              bool is_forward, time_type time_current, time_type time_step) const override final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
   void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const {
+              bool is_forward, time_type time_current, time_type time_step) const override final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
@@ -121,9 +121,9 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Private method interfacing to Eigen matrix exponential calculator */
   template<class MatrixType, class VectorType>
-  void apply_exponential(MatrixType& hamiltonian_matrix, VectorType& ret, size_t local_dim_) const;
+  void apply_exponential(MatrixType& hamiltonian_matrix, VectorType& ret, size_t local_dim_, bool isForward) const;
   template<class SiteProblem, class MatrixType>
-  MatrixType applyOperator(const MatrixType& inputVec, const SiteProblem& site_problem, int idExp, time_type time_current, bool is_forward) const;
+  MatrixType applyOperator(const MatrixType& inputVec, const SiteProblem& site_problem, int idExp, time_type time_current) const;
 
   /* Real --> Complex conversion routines */
   template< class ArgType, typename std::enable_if< std::is_same<double, ArgType >::value>::type * = nullptr >

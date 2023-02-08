@@ -241,19 +241,15 @@ namespace detail {
     }
 
     template <class Matrix, class SymmGroup>
-    inline
-    std::vector<Index<SymmGroup> > make_2u1_site_basis(int L, int Nup, int Ndown, std::string site_types)
+    inline std::vector<Index<SymmGroup> > make_2u1_site_basis(int L, int Nup, int Ndown, std::string site_types)
     {
         BaseParameters parms = set_2u1_parameters(L, Nup, Ndown);
         parms.set("site_types", site_types);
-
         Lattice lat(parms);
         Model<Matrix, SymmGroup> model(lat, parms);
-
         std::vector<Index<SymmGroup> > site_bases;
-        for (int i = 0; i <= lat.maximum_vertex_type(); ++i)
-            site_bases.push_back(model.phys_dim(i));
-
+        for (int iType = 0; iType < lat.getMaxType(); iType++)
+            site_bases.push_back(model.phys_dim(iType));
         return site_bases;
     }
 }

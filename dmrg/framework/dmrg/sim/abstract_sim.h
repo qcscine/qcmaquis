@@ -7,6 +7,7 @@
 *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
 *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
 *               2018-2019    Leon Freitag <lefreita@ethz.ch>
+*               2022-        Alberto Baiardi <abaiardi@ethz.ch>
 *
 * This software is part of the ALPS Applications, published under the ALPS
 * Application License; you can use, redistribute it and/or modify it under
@@ -37,7 +38,7 @@
 class abstract_sim {
 public:
     virtual ~abstract_sim() {}
-    virtual void run(std::string runType) = 0;
+    virtual void run(const std::string& runType) = 0;
 };
 
 /**
@@ -54,18 +55,21 @@ template <class Matrix>
 class abstract_interface_sim {
 public:
     // warning, these types are defiled in model_impl already
-    typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
-    typedef std::map<std::string, meas_with_results_type> results_map_type;
+    using meas_with_results_type = std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> >;
+    using results_map_type = std::map<std::string, meas_with_results_type>;
+    using RealType = typename maquis::traits::real_type<Matrix>::type;
 
     virtual ~abstract_interface_sim() {}
-    virtual void run(std::string runType) = 0;
+    virtual void run(const std::string& runType) = 0;
     virtual void run_measure() = 0;
-    virtual typename Matrix::value_type get_energy() = 0;
+    virtual RealType get_energy() = 0;
+    virtual RealType getFEASTEnergy(int iState) const = 0;
     virtual results_collector& get_iteration_results() = 0;
     virtual int get_last_sweep() = 0;
     virtual results_map_type measure_out() =0;
     virtual void update_integrals(const chem::integral_map<typename Matrix::value_type> &)=0;
     virtual typename Matrix::value_type get_overlap(const std::string &) = 0;
+    virtual typename Matrix::value_type getCICoefficient(std::string ciVector) = 0;
 //  virtual std::string ... get_fiedler_order
 };
 
