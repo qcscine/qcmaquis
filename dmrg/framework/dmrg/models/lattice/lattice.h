@@ -82,7 +82,8 @@ public:
 
     virtual pos_t size() const = 0;
     
-    virtual int maximum_vertex_type() const = 0;
+    /** @brief Getter for the number of types available in the lattice */
+    virtual int getMaxType() const = 0;
 
 };
 
@@ -134,7 +135,8 @@ public:
 
     pos_t size() const { return impl_->size(); }
 
-    int maximum_vertex_type() const { return impl_->maximum_vertex_type(); };
+    /** @brief Getter for the number of types available in the lattice */
+    int getMaxType() const { return impl_->getMaxType(); };
 
 private:
     impl_ptr impl_;

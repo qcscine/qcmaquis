@@ -50,7 +50,7 @@
                                     int* site_types,
                                     double conv_thresh, int m,
                                     bool meas_2rdm, bool entropy, bool magnetism,
-                                    const std::string& init_state, const std::string& optimization,
+                                    const std::string& init_type, const std::string& optimization,
                                     int ietl_jcd_maxiter,
                                     double ietl_jcd_tol, double truncation_initial,
                                     double truncation_final, double integral_cutoff,

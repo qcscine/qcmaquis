@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2017 Institute for Theoretical Physics, ETH Zurich
  *               2017- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -35,11 +35,13 @@
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models//model_helper.hpp"
 #include "dmrg/models/vibrational/VibrationalIntegralParser.hpp"
+#include "dmrg/models/model_helper.hpp"
+#include "VibrationalRDM.h"
 
 /**
  * @brief Class implementing the n-mode vibrational Hamiltonian
- * 
- * This Hamiltonian relies on the SQ formalism introduced by Ove Christiansen in 
+ *
+ * This Hamiltonian relies on the SQ formalism introduced by Ove Christiansen in
  * JCP, 120, 2140 (2004) and, unlike the more common canonical quantization,
  * introduces a pair of SQ operators per modals *and* per mode. In this way,
  * it is possible to encode entirely generic potential operators that are expressed
@@ -64,11 +66,11 @@ class NMode : public model_impl<Matrix, NU1_template<N>> {
     using value_type = typename Matrix::value_type;
     using charge_type = typename NU1::charge;
 public:
-    
+
     /**
      * @brief Class constructor
-     * @param lattice_ object representing the DMRG lattice
-     * @param parameters_ container with the DMRG parameters
+     * @param lattice object representing the DMRG lattice
+     * @param parameters container with the DMRG parameters
      * @param verbose if true, prints information regarding the Hamiltonian terms
      */
     NMode(const Lattice& lattice_, BaseParameters& parameters_, bool verbose)
@@ -80,7 +82,7 @@ public:
         // == BUILDS ALL THE RELEVANT CHARGES ==
         // The ones we are interested in are:
         // - the empty charge
-        // - the charges in which a given mode is populated by 1 quentum
+        // - the charges in which a given mode is populated by 1 quantum
         charge_type empty_state(0);
         std::vector<charge_type> excited_states(num_modes, 0);
         for (std::size_t idx = 0; idx < num_modes; idx++)
@@ -126,7 +128,7 @@ public:
         create = modelHelper<Matrix, NU1>::register_all_types(create_op, tag_detail::bosonic, tag_handler);
         destroy = modelHelper<Matrix, NU1>::register_all_types(destroy_op, tag_detail::bosonic, tag_handler);
         count = modelHelper<Matrix, NU1>::register_all_types(count_op, tag_detail::bosonic, tag_handler);
-        // Registers the hermitian pairs 
+        // Registers the hermitian pairs
         modelHelper<Matrix, NU1>::registerHermitianConjugates(create, destroy, tag_handler);
     }
 
@@ -138,15 +140,17 @@ public:
 
     void create_terms() override {
         std::cout << "Parsing integral file" << std::endl;
-        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<value_type>(parameters, lattice);
+        auto Hamiltonian_term = Vibrational::detail::NModeIntegralParser<double>(parameters, lattice);
         int hamiltonianSize = Hamiltonian_term.first.size();
         std::cout << "Processing Second-Quantization Hamiltonian" << std::endl;
         for (int iTerm = 0; iTerm < hamiltonianSize; iTerm++) {
             positions_type positions;
             operators_type operators;
             convertLineToOperators(Hamiltonian_term.first[iTerm], positions, operators);
-            if (positions.size()/2 <= maxCouplingDegree)
-                modelHelper<Matrix, NU1>::add_term(positions, operators, Hamiltonian_term.second[iTerm], tag_handler, this->terms_);
+            if (positions.size()/2 <= maxCouplingDegree) {
+                auto matrixElement = static_cast<value_type>(Hamiltonian_term.second[iTerm]);
+                modelHelper<Matrix, NU1>::add_term(positions, operators, matrixElement, tag_handler, this->terms_);
+            }
         }
         std::cout << "Second-Quantization Hamiltonian processed" << std::endl;
     }
@@ -160,9 +164,9 @@ public:
     /** @brief Getter for the filling operator */
     tag_type filling_matrix_tag(size_t type) const { return identity_matrix_tag(type); }
 
-    /** 
-     * @brief Gets the quantum number associated with the wfn 
-     * 
+    /**
+     * @brief Gets the quantum number associated with the wfn
+     *
      * The quantum number is generated by assigning 1 quantum to each mode.
      */
     typename NU1::charge total_quantum_numbers(BaseParameters &parms) const {
@@ -196,188 +200,90 @@ public:
         return tag_handler;
     }
 
-    /** @brief Measurement associated with the n-mode Hamiltonian class */
+    /**
+     * @brief Measurement associated with the n-mode Hamiltonian class
+     * Note that we currently support one- and two-modal RDM.
+     */
     measurements_type measurements() const {
-        typedef std::vector<op_t> op_vec;
-        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         measurements_type meas;
-        /*
-        if (model["MEASURE[One Modal RDM]"]) {
-            std::string name;
-            std::vector<operators_type> op;
-            std::vector<float_t> coeffs;
-            //need to calculate the one modal reduced density matrix for every mode
-            for (int jj = 0; jj < lattice_size; ++jj) {
-                //this is for the operator 1 - a+a
-                name = "onemodalRDM_" + std::to_string(jj) + "_00";
-                op = {count, ident};
-                coeffs = {-1.0, 1.0};
-                meas.push_back(new measurements::onemodalRDM<Matrix, NU1>(this->lat, name, jj, op,
-                                                                          coeffs, this->tag_handler, this->ident));
-
-                //this is for the operator a+a
-                name = "onemodalRDM_" + std::to_string(jj) + "_11";
-                op = {count};
-                coeffs = {1.0};
-                meas.push_back(new measurements::onemodalRDM<Matrix, NU1>(this->lat, name, jj, op,
-                                                                          coeffs, this->tag_handler, this->ident));
-
-            }
-
+        // == One-modal RDM ==
+        std::string name;
+        std::vector< std::vector< operators_type >> ops;
+        std::vector<float_t> coeffs;
+        // One-mode RDM
+        if (this->parameters.is_set("MEASURE[One Mode RDM]")) {
+            name = "onemodeRDM";
+            ops = {{create, destroy}};
+            coeffs = {1.0};
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::AddAll));
         }
-        if (model["MEASURE[Two Modal RDM]"]) {
-
-
-            std::string name;
-            std::vector<tag_type > ops;
-            std::vector<pos_t > pos;
-
-
-            for (int jj = 0; jj < lattice_size; ++jj) {
-                for (int kk = jj + 1; kk < lattice_size; ++kk) {
-
-                    size_t j_type = lat.get_prop<int>("type", jj);
-                    size_t k_type = lat.get_prop<int>("type", kk);
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {ident[j_type]};
-                            pos = {jj};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type]};
-                            pos = {jj};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[k_type]};
-                            pos = {kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_00";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type]};
-                            pos = {jj};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-
-
-                        {
-                            term_descriptor term;
-
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_11";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-
-
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {create[j_type], destroy[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_12";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                        {
-                            term_descriptor term;
-                            ops = {destroy[j_type], create[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_21";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {count[k_type]};
-                            pos = {kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = -1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_22";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-                    }
-
-                    {
-                        std::vector<term_descriptor> termvec;
-                        {
-                            term_descriptor term;
-                            ops = {count[j_type], count[k_type]};
-                            pos = {jj, kk};
-                            term = arrange_operators(pos, ops, tag_handler);
-                            term.coeff = 1.0;
-                            termvec.push_back(term);
-                        }
-                        name = "twomodeRDM_" + std::to_string(jj) + "_" + std::to_string(kk) + "_33";
-                        meas.push_back(new measurements::twomodalRDM<Matrix, NU1>(this->lat, name, termvec, this->tag_handler, this->ident, jj, kk));
-
-                    }
-
-                }
-            }
+        if (this->parameters.is_set("MEASURE[One Modal RDM]")) {
+            // Calculate the one modal reduced density matrix for every mode
+            // 1) operator 1 - a+a
+            name = "onemodalRDM_00";
+            ops = {{count}, {ident}};
+            coeffs = {-1.0, 1.0};
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+            // 2) operator a+a
+            name = "onemodalRDM_11";
+            ops = {{count}};
+            coeffs = {1.0};
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
         }
-        */
+        // == Two-modal RDM ==
+        if (this->parameters.is_set("MEASURE[Two Modal RDM]")) {
+            // 0-0 element of the two-particle RDM
+            ops = {{ident, ident}, {count, ident}, {ident, count}, {count, count}};
+            coeffs = {1.0, -1.0, -1.0, 1.0};
+            name = "twomodeRDM_00";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+            // 1-1 element of the two-particle RDM
+            ops = {{count, ident}, {count, count}};
+            coeffs = {1.0, -1.0};
+            name = "twomodeRDM_11";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+            // 1-2 element of the two-particle RDM
+            ops = {{create, destroy}};
+            coeffs = {1.0};
+            name = "twomodeRDM_12";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+            // 2-1 element of the two-particle RDM
+            ops = {{destroy, create}};
+            coeffs = {1.0};
+            name = "twomodeRDM_21";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+            // 2-2 element of the two-particle RDM
+            ops = {{ident, count}, {count, count}};
+            coeffs = {1.0, -1.0};
+            name = "twomodeRDM_22";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+            // 3-3 element of the two-particle RDM
+            ops = {{count, count}};
+            coeffs = {1.0};
+            name = "twomodeRDM_33";
+            meas.push_back(new measurements::VibrationalRDM<Matrix, N>(lattice, name, ops, coeffs, this->tag_handler, this->ident,
+                                                                       measurements::VibrationalRDMModality::ExcludeSame));
+        }
         return meas;
     }
 
 private:
     /**
      * @brief Converter of an input line to operators
-     * 
-     * Note that, so far, we assume the lattice to be sorted so that we first have 
+     *
+     * Note that, so far, we assume the lattice to be sorted so that we first have
      * all the modals associated with the first mode, then all the modals assicated
      * with the second mode and so on.
      * Generic sortings are NYI.
-     * 
+     *
      * @param ham_term term to be parsed (array of integer numbers)
      * @param pos (output) vector with the position where operator are acting
      * @param ops (output) vector with the operators
@@ -391,8 +297,9 @@ private:
         pos.reserve(ham_term.size());
         do {
             // Retrieves matrix element
-            auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
-            auto index  = ham_term[2*jCont+1] + offset;
+            // auto offset = lattice.get_prop<int>("sublatticePos", ham_term[2*jCont]-1);
+            // auto index  = ham_term[2*jCont+1] + offset;
+            auto index = lattice.get_prop<int>("absolutePositionInLattice", ham_term[2*jCont]-1, ham_term[2*jCont+1]);
             assert(index < lattice_size);
             pos.push_back(index);
             if (jCont % 2 == 0)

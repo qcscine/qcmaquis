@@ -54,6 +54,8 @@ public:
     typedef typename Matrix::value_type value_type;
     typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
     typedef std::size_t size_type;
+    using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
+    using BlockMatrixDiagonalType = block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>;
 
     MPSTensor(Index<SymmGroup> const & sd = Index<SymmGroup>(),
               Index<SymmGroup> const & ld = Index<SymmGroup>(),
@@ -86,14 +88,11 @@ public:
     bool isrightnormalized(bool test = false) const;
     bool isnormalized(bool test = false) const;
 
-    block_matrix<Matrix, SymmGroup> normalize_left(DecompMethod method = DefaultSolver(),
-                                                   bool multiplied = true,
-                                                   double truncation = 0,
-                                                   Index<SymmGroup> bond_dim = Index<SymmGroup>());
-    block_matrix<Matrix, SymmGroup> normalize_right(DecompMethod method = DefaultSolver(),
-                                                    bool multiplied = true,
-                                                    double truncation = 0,
-                                                    Index<SymmGroup> bond_dim = Index<SymmGroup>());
+    block_matrix<Matrix, SymmGroup> leftNormalizeAndReturn(DecompMethod method = DefaultSolver());
+    block_matrix<Matrix, SymmGroup> rightNormalizeAndReturn(DecompMethod method = DefaultSolver());
+
+    void leftNormalize(DecompMethod method = DefaultSolver());
+    void rightNormalize(DecompMethod method = DefaultSolver());
 
     void shift_aux_charges(typename SymmGroup::charge);
 
@@ -110,9 +109,9 @@ public:
     // this is completely useless in C++, only exists for consistency with Python
     MPSTensor copy() const;
 
-    block_matrix<Matrix, SymmGroup> & data();
-    block_matrix<Matrix, SymmGroup> const & data() const;
-    block_matrix<Matrix, SymmGroup> const & const_data() const;
+    BlockMatrixType & data();
+    BlockMatrixType const & data() const;
+    BlockMatrixType const & const_data() const;
 
     std::vector<block_matrix<Matrix, SymmGroup> > to_list() const;
 
@@ -135,6 +134,7 @@ public:
     friend void swap(MPSTensor& a, MPSTensor& b){
         a.swap_with(b);
     }
+
     template<class Matrix_, class SymmGroup_>
     friend MPSTensor<Matrix_, SymmGroup_> join(MPSTensor<Matrix_, SymmGroup_> const &, MPSTensor<Matrix_, SymmGroup_> const &, boundary_flag_t);
 
@@ -148,6 +148,13 @@ public:
 
     Index<SymmGroup> phys_i, left_i, right_i;
 private:
+
+    // Linear algebra methods
+    void performQR(BlockMatrixType& Q, BlockMatrixType& R);
+    void performLQ(BlockMatrixType& L, BlockMatrixType& Q);
+    void performSVD(BlockMatrixType& U, BlockMatrixType& V, BlockMatrixDiagonalType& S);
+
+    // Class members
     mutable block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
     Indicator cur_normalization;

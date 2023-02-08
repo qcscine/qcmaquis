@@ -76,6 +76,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
 {
     // Types declaration
     using opt_base_t = optimizer_base<matrix, S, storage::disk>;
+    int nSweeps = 50;
     // Conventional calculation
     parametersBenzene.set("hf_occ", "4,4,2,1,1,1");
     parametersBenzene.set("u1_total_charge1", 2);
@@ -91,7 +92,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     parametersBenzene.set("u1_total_charge2", 3);
     // Add noise to "move" the optimization away from the local energy minimum
     parametersBenzene.set("twosite_truncation", "heev_truncation");
-    parametersBenzene.set("ngrowsweeps", 20);
+    parametersBenzene.set("nsweeps", nSweeps);
+    parametersBenzene.set("ngrowsweeps", 10);
     parametersBenzene.set("nmainsweeps", 10);
     parametersBenzene.set("alpha_initial", 1.0E-6);
     parametersBenzene.set("alpha_main", 1.0E-10);
@@ -109,7 +111,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     auto stop_callback = time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
     std::shared_ptr<opt_base_t> optimizer;
     optimizer.reset( new ts_optimize<matrix, S, storage::disk>(ionizedMPS, mpo, parametersBenzene, stop_callback, lattice, 0) );
-    for (int sweep=0; sweep < 20; ++sweep)
+    for (int sweep=0; sweep < nSweeps; ++sweep)
       optimizer->sweep(sweep);
     auto energyByHand = expval(ionizedMPS, mpo)/norm(ionizedMPS);
     // This check could be made stricter, but with more sweeps

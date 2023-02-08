@@ -47,7 +47,6 @@ using std::endl;
 #include "dmrg/models/chem/util.h"
 
 #include "ci_encode.hpp"
-#include "sampling.hpp"
 
 typedef TwoU1PG grp;
 

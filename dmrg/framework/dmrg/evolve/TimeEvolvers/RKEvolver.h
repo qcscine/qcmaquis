@@ -42,32 +42,32 @@ class RKEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
   /* Types definition */
   using base = TimeEvolutionAlgorithm<Matrix, SymmGroup>;
   using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
-  using time_type = typename base::time_type;
+  using TimeType = typename base::time_type;
   using base::has_td_part_;
   using base::is_imag_;
   using base::time_step_;
   using base::apply_hamiltonian;
 
-  /* Class constructor */
-  RKEvolver(time_type time_step, bool has_td_part, bool is_imag) : base(time_step, has_td_part, is_imag) {};
+  /** @brief Class constructor */
+  RKEvolver(TimeType time_step, bool has_td_part, bool is_imag) : base(time_step, has_td_part, is_imag) {};
 
-  /* Time-evolution method. Interfaces calling the main kernel routine */
+  /** @brief Evolution of a MPSTensor */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const
-  {
+              bool is_forward, TimeType time_current, TimeType time_step) const override final {
     this->evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
-  };
-  void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const
-  {
-    this->evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
-  };
- private:
+  }
 
+  /** @brief Evolution of a ZeroSite Tensor */
+  void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
+              bool is_forward, TimeType time_current, TimeType time_step) const override final {
+    this->evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
+  }
+
+ private:
   /* Kernel for the time evolution */
   template<class SiteProblem, class MatrixType>
-  void evolve_kernel(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, time_type time_current,
-                     time_type time_step) const;
+  void evolve_kernel(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward, TimeType time_current,
+                     TimeType time_step) const;
 
   /* Routine for the rescaling of the matrix to obtain, in the end, a complex value */
   template< class ArgType, class MatrixType, typename std::enable_if< std::is_same<double, ArgType >::value>::type * = nullptr >

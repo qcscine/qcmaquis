@@ -47,7 +47,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
   // Generates the HF MPS
-  parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
+  parametersEthyleneWatsonHarmonic.set("init_type", "basis_state_generic");
   parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
   parametersEthyleneWatsonHarmonic.set("Nmax", 6);
@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
 {
   // Generates the HF MPS
-  parametersEthyleneWatsonHarmonic.set("init_state", "const");
+  parametersEthyleneWatsonHarmonic.set("init_type", "const");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
   parametersEthyleneWatsonHarmonic.set("Nmax", 4);
   auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
@@ -89,13 +89,31 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
 };
 
+/** @brief Check Hermiticity of None operator with Coriolis */
+BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Hermiticity_None, WatsonFixture)
+{
+  // Generates the HF MPS
+  parametersH2COWatson.set("init_type", "const");
+  parametersH2COWatson.set("max_bond_dimension", 200);
+  auto lattice = Lattice(parametersH2COWatson);
+  auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersH2COWatson);
+  auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
+  auto mps1 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
+  // Calculates the default guess
+  parametersH2COWatson.set("init_type", "default");
+  auto mps2 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
+  auto energy1 = expval(mps1, mps2, watsonHarmonicMPO);
+  auto energy2 = expval(mps2, mps1, watsonHarmonicMPO);
+  BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-11);
+};
+
 /**
  * @brief Checks that the H^2 expectation value, caluclated via [mpo_times_mps] and expva, gives coherent results.
  */
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Variance_None, WatsonFixture)
 {
   // Generates the HF MPS
-  parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
+  parametersEthyleneWatsonHarmonic.set("init_type", "basis_state_generic");
   parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 10000);
   parametersEthyleneWatsonHarmonic.set("Nmax", 2);
@@ -122,7 +140,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Variance_None, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_NU1, NModeFixture)
 {
 #ifdef HAVE_NU1
-  parametersFADTwoBody.set("init_state", "default");
+  parametersFADTwoBody.set("init_type", "default");
   parametersFADTwoBody.set("max_bond_dimension", 10);
   auto lattice = Lattice(parametersFADTwoBody);
   auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);

@@ -81,10 +81,10 @@ public:
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
-                      MPOTensor<Matrix, SymmGroup> const& mpo);
+                      MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation);
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
-                      MPOTensor<Matrix, SymmGroup> const& mpo);
+                      MPOTensor<Matrix, SymmGroup> const& mpo, bool activatePerturbation);
     
     void clear();
     void swap_with(TwoSiteTensor & b);

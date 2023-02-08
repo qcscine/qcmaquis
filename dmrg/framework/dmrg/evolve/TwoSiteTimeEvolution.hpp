@@ -129,18 +129,10 @@ public:
         lr = 1;
         site1 = site;
         site2 = site+1;
-        ts_cache_mpo[site1].placement_l = mpo_[site1].placement_l;
-        ts_cache_mpo[site1].placement_r = parallel::get_right_placement(ts_cache_mpo[site1],
-                                                                        mpo_[site1].placement_l,
-                                                                        mpo_[site2].placement_r);
       } else {
         lr = -1;
         site1 = site-1;
         site2 = site;
-        ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1],
-                                                                       mpo_[site1].placement_l,
-                                                                       mpo_[site2].placement_r);
-        ts_cache_mpo[site1].placement_r = mpo_[site2].placement_r;
       }
       // Printing
       print_header(sweep, site1, site2, lr);
@@ -164,7 +156,7 @@ public:
       SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
       // == MAIN PART: performs the sweep ==
       std::pair< typename MPSTensor<Matrix, SymmGroup>::magnitude_type, MPSTensor<Matrix, SymmGroup> > res;
-      time_evolver_->evolve(sp, twin_mps, false);
+      time_evolver_->evolve(sp, twin_mps, true, false);
       if (site1 == 0)
         energy = ietl::get_energy(sp, twin_mps);
       res = std::make_pair(energy, twin_mps);
@@ -203,14 +195,14 @@ public:
         if (parms_["twosite_truncation"] == "svd")
           boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_l2r(Mmax, cutoff);
         else
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1]);
+          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo_[site1], true);
         mps_[site2] /= ietl::two_norm(mps_[site2]);
         two_vec.clear();
         this->boundary_left_step(mpo_, site1);
         if (site2 != L_-1) {
           if (do_backpropagation_) {
             SiteProblem<Matrix, SymmGroup> sp2(left_[site2], right_[site2+1], mpo_[site2]);
-            time_evolver_->evolve(sp2, mps_[site2], true);
+            time_evolver_->evolve(sp2, mps_[site2], false, false);
           }
         } else {
           time_evolver_->add_to_current_time(time_step_);
@@ -222,14 +214,14 @@ public:
         if (parms_["twosite_truncation"] == "svd")
           boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.split_mps_r2l(Mmax, cutoff);
         else
-          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2]);
+          boost::tie(mps_[site1], mps_[site2], trunc) = two_vec.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo_[site2], true);
         two_vec.clear();
         mps_[site1] /= ietl::two_norm(mps_[site1]);
         this->boundary_right_step(mpo_, site2);
         if (site1 != 0) {
           if (do_backpropagation_) {
             SiteProblem<Matrix, SymmGroup> sp2(left_[site1], right_[site1+1], mpo_[site1]);
-            time_evolver_->evolve(sp2, mps_[site1], true);
+            time_evolver_->evolve(sp2, mps_[site1], false, false);
           }
         } else {
           time_evolver_->add_to_current_time(time_step_);
@@ -265,11 +257,10 @@ private:
      * @param lr: direction of the sweep
      */
     void print_header(int& sweep, int& site1, int& site2, int& lr){
-        char buffer[50] ;
-        int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
-        std::cout << " +--------------------------------------------+" << std::endl ;
-        std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
-        std::cout << " +--------------------------------------------+" << std::endl;
+      int a = (lr == 1) ? 2*sweep+1 : 2*sweep+2;
+      std::cout << " +--------------------------------------------+" << std::endl ;
+      std::cout << "  Sweep number " << a << " - site numbers " << site1 << " and " << site2 << std::endl;
+      std::cout << " +--------------------------------------------+" << std::endl;
     }
 };
 

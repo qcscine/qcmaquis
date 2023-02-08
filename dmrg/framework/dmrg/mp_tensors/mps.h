@@ -76,6 +76,9 @@ public:
     size_t canonization(bool=false) const;
     void canonize(size_t center, DecompMethod method = DefaultSolver());
 
+    void setComplexPartToZero();
+    void scaleByScalar(scalar_type scalingFactor);
+
     void normalize_left();
     void normalize_right();
 
@@ -89,13 +92,15 @@ public:
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      double cutoff, std::size_t Mmax,
+                                      bool perturbDM, bool verbose);
     template<class OtherMatrix>
     truncation_results grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      double cutoff, std::size_t Mmax,
+                                      bool perturbDM, bool verbose);
 
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
@@ -150,6 +155,50 @@ MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
     return ret;
 }
 
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> join_general(MPS<Matrix, SymmGroup> const & a,
+                                    MPS<Matrix, SymmGroup> const & b,
+                                    typename MPSTensor<Matrix, SymmGroup>::scalar_type alpha=1.,
+                                    typename MPSTensor<Matrix, SymmGroup>::scalar_type beta=1.)
+
+{
+    assert( a.length() == b.length() );
+
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    aright.multiply_by_scalar(alpha);
+    bright.multiply_by_scalar(beta);
+
+    MPS<Matrix, SymmGroup> ret(a.length());
+    ret[0] = join(a[0],b[0],l_boundary_f);
+    ret[a.length()-1] = join(aright,bright,r_boundary_f);
+    for (std::size_t p = 1; p < a.length()-1; ++p)
+        ret[p] = join(a[p], b[p]);
+    return ret;
+}
+
+#include "dmrg/mp_tensors/compression.h"
+
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
+                                       MPS<Matrix, SymmGroup> & b,
+                                       int mMax)
+
+{
+    assert( a.length() == b.length() );
+    int nOfSites = a.length();
+    MPS<Matrix, SymmGroup> ret(nOfSites);
+#pragma omp parallel for
+    for (int p = 0; p < nOfSites; ++p) {
+        if (p == 0)
+            ret[0] = join(a[0], b[0], l_boundary_f);
+        else if (p == nOfSites-1)
+            ret[nOfSites-1] = join(a[nOfSites-1], b[nOfSites-1], r_boundary_f);
+        else
+            ret[p] = join(a[p], b[p]);
+    }
+    ret = compression::l2r_compress(ret, mMax, 0.);
+    return ret;
+}
 
 template<class Matrix, class SymmGroup>
 Boundary<Matrix, SymmGroup>

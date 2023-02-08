@@ -43,7 +43,6 @@
 /* add test for omp */
 BOOST_AUTO_TEST_CASE(BlockMatrixCheckOMP) {
     block_matrix<matrix, TwoU1> ba;
-
     #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < 100; ++i) {
         matrix m(1, 1, i*1.);
@@ -55,7 +54,6 @@ BOOST_AUTO_TEST_CASE(BlockMatrixCheckOMP) {
         }
     }
     //#pragma omp critical
-
     BOOST_CHECK_EQUAL(ba.n_blocks(), 100);
 }
 #endif

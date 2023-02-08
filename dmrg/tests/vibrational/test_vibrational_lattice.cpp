@@ -48,8 +48,9 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_Watson_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Lattice_MaxVertexType_Watson_Ethylene, WatsonFixture)
 {
     auto lattice = WatsonLattice(parametersEthyleneWatson);
-    auto size = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(size, 1);
+    auto size = lattice.size();
+    auto numSiteTypes = lattice.getMaxType();
+    BOOST_CHECK_EQUAL(size, numSiteTypes);
 }
 
 /** @brief Checks that the property getter works properly */
@@ -58,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_PropertyGetter_Watson_Ethylene, WatsonFixtu
     auto lattice = WatsonLattice(parametersEthyleneWatson);
     for (int iSite = 0; iSite < lattice.size(); iSite++) {
         auto siteType = lattice.get_prop<int>("type", iSite);
-        BOOST_CHECK_EQUAL(siteType, 0);
+        BOOST_CHECK_EQUAL(siteType, iSite);
     }
 }
 
@@ -78,16 +79,16 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_Size_2ModeSystem, NModeFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Site_Types_2ModeSystem, NModeFixture)
 {
     auto lattice = NModeLattice(parametersTwoMode);
-    auto typeOfSites = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(typeOfSites, 1);
+    auto typeOfSites = lattice.getMaxType();
+    BOOST_CHECK_EQUAL(typeOfSites, 2);
 }
 
 /** @brief Checks the size of the lattice for the 4-mode input */
 BOOST_FIXTURE_TEST_CASE(Test_Site_Types_4ModeSystem, NModeFixture)
 {
     auto lattice = NModeLattice(parametersFourMode);
-    auto typeOfSites = lattice.maximum_vertex_type();
-    BOOST_CHECK_EQUAL(typeOfSites, 3);
+    auto typeOfSites = lattice.getMaxType();
+    BOOST_CHECK_EQUAL(typeOfSites, 4);
 }
 
 /** @brief Checks the partition of the lattice for the 4-mode input */
@@ -105,6 +106,33 @@ BOOST_FIXTURE_TEST_CASE(Test_Lattice_From_Parameters, NModeFixture)
 {
     auto lattice = lattice_factory(parametersFADOneBody);
     BOOST_CHECK_EQUAL(lattice->size(), 39);
+}
+
+/** @brief Validates the implementation of a generic sorting for an n-mode Lattice */
+BOOST_FIXTURE_TEST_CASE(Test_Lattice_NMode_Arbitrary_Sorting, NModeFixture) {
+    DmrgParameters parametersArbitrarySorting;
+    std::string order = "22,27,24,49,48,52,50,51,56,55,86,84,85,57,54,53,47,28,23,46,26,25,20,19,17,18,16,15,14,13,12,10,11,9,8,7,6,5,4,3,2,1,0,79,77,76,74,72,61,60,62,63,70,64,69,";
+    order += "65,67,68,66,59,71,58,73,29,30,33,34,32,31,35,36,37,75,38,81,39,40,41,78,82,42,80,43,83,44,45,21";
+    parametersArbitrarySorting.set("modals_order", order);
+    parametersArbitrarySorting.set("symmetry", "nu1");
+    parametersArbitrarySorting.set("model_library", "coded");
+    parametersArbitrarySorting.set("lattice_library", "coded");
+    parametersArbitrarySorting.set("LATTICE", "nmode lattice");
+    parametersArbitrarySorting.set("L", 87);
+    parametersArbitrarySorting.set("nmode_num_modes", 3);
+    parametersArbitrarySorting.set("nmode_num_basis", "29,29,29");
+    parametersArbitrarySorting.set("MODEL", "nmode");
+    auto lattice = NModeLattice(parametersArbitrarySorting);
+    // Checks that all elements appear only once
+    std::set<int> visitedElements;
+    for (int iMode = 0; iMode < 3; iMode++) {
+        for (int iModal = 0; iModal < 29; iModal++) {
+            auto tmpPos = lattice.get_prop<int>("absolutePositionInLattice", iMode, iModal);
+            BOOST_CHECK(visitedElements.find(tmpPos) == visitedElements.end());
+            visitedElements.insert(tmpPos);
+        }
+    }
+    BOOST_CHECK_EQUAL(visitedElements.size(), 87);
 }
 
 #endif // HAVE_NU1

@@ -108,7 +108,7 @@ std::vector<int> get_right_placement(const MPOTensor<Matrix, SymmGroup>& mpo, co
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<std::vector<int> > construct_placements(const MPO<Matrix, SymmGroup>& mpo){
+std::vector<std::vector<int> > construct_placements(const MPO<Matrix, SymmGroup>& mpo) {
     std::vector<std::vector<int> > placements(mpo.length()+1);
     std::vector<std::pair<std::vector<int>, std::vector<int> > > exceptions(mpo.length()+1);
     placements[0].push_back(0); // left_[0] has only 1 element

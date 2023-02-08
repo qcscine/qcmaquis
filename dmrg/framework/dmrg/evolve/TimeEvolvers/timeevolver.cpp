@@ -63,6 +63,7 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
     throw std::runtime_error("Units for the Hamiltonian not yet supported");
   }
   // Checks if it has a TD part
+  /*
   if (parms.is_set("TD_perturbation")) {
     has_td_part_ = true;
     std::string intAlgo = parms["TD_integration_algorithm"];
@@ -81,8 +82,9 @@ TimeEvolver<Matrix, SymmGroup, ParameterType>::TimeEvolver(ParameterType& parms)
       throw std::runtime_error("TD integration algorithm not recognized");
     }
   } else {
-    time_evolution_algorithm_ = std::make_unique< LanczosTI >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
-  }
+  */
+  time_evolution_algorithm_ = std::make_unique< LanczosTI >(time_step_, has_td_part_, is_imag_, accuracy_, max_iterations_);
+  //}
 };
 
 template<class Matrix, class SymmGroup, class ParameterType>
@@ -111,8 +113,9 @@ void TimeEvolver<Matrix, SymmGroup, ParameterType>::add_to_current_time(time_typ
 
 template<class Matrix, class SymmGroup, class ParameterType>
 template<class SiteProblem, class MatrixType>
-void TimeEvolver<Matrix, SymmGroup, ParameterType>::evolve(SiteProblem const& site_problem, MatrixType& matrix,
-                                                           bool is_forward) const
+void TimeEvolver<Matrix, SymmGroup, ParameterType>::evolve(const SiteProblem& siteProblem, MatrixType& matrix,
+                                                           bool isForward, bool isTerminal) const
 {
-  time_evolution_algorithm_->evolve(site_problem, matrix, is_forward, time_current_, time_step_);
+  auto actualTimeStep = (isTerminal) ? 2*time_step_ : time_step_;
+  time_evolution_algorithm_->evolve(siteProblem, matrix, isForward, time_current_, actualTimeStep);
 }

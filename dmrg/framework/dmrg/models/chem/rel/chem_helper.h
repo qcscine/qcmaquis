@@ -41,13 +41,14 @@ namespace detail {
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
+        using InputType = std::complex<double>;
 
         RelChemHelper(BaseParameters & parms, Lattice const & lat_,
                    std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_,
                    std::shared_ptr<TagHandler<M, S> > tag_handler_)
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
+			boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -132,12 +133,9 @@ namespace detail {
         std::vector<tag_type> const & fill;
         std::shared_ptr<TagHandler<M, S> > tag_handler;
         Lattice const & lat;
-
         std::vector<value_type> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;
-
-        std::map<IndexTuple, value_type> coefficients;
-
+        std::map<IndexTuple, InputType> coefficients;
         std::map<EightTuple, term_descriptor> four_terms;
         std::map<SixTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;

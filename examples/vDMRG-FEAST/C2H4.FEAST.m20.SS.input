@@ -1,0 +1,45 @@
+nsweeps                          = 20
+ngrowsweeps                      = 5
+nmainsweeps                      = 5
+max_bond_dimension               = 20
+
+truncation_initial               = 0
+truncation_final                 = 0
+
+optimization                     = twosite
+symmetry                         = none
+
+model_library                    = coded
+lattice_library                  = coded
+LATTICE                          = "watson lattice"
+L                                = 12
+
+MODEL                            = "watson"
+Nmax                             = 3
+
+watson_max_coupling              = 2
+
+integral_file                    = "PES_Ethylene"
+integral_cutoff                  = 1.0E-10
+
+chkpfile                         = "C2H4.FEAST.m20.SS.checkpoint.h5"
+resultfile                       = "C2H4.FEAST.m20.SS.resfile.h5"
+
+// -- Solution of the local linear system --
+linsystem_init                   = "last"
+linsystem_max_it                 = 1
+linsystem_tol                    = 1.0E-10
+linsystem_krylov_dim             = 10
+linsystem_solver                 = "GMRES"
+linsystem_precond                = "yes"
+
+// -- FEAST-related options --
+feast_num_states                 = 1
+feast_max_iter                   = 3
+feast_emin                       = 10900
+feast_emax                       = 11100
+feast_num_points                 = 8
+feast_integral_type              = "full"
+feast_truncation_type            = "end"
+init_type                        = "basis_state_generic_default"
+init_space                       = "2,1,0,1,2,1,0,1,2,1,0,1"

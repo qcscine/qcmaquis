@@ -58,11 +58,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Left_Electronic, S, sym
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal)));
     // Generates the const guess. Note that the bond dimension will be != than that of the HF
     // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersPreBOReal.set("init_state", "const");
+    parametersPreBOReal.set("init_type", "const");
     auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
     auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal)));
     // Generates the default guess
-    parametersPreBOReal.set("init_state", "default");
+    parametersPreBOReal.set("init_type", "default");
     auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
     auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal)));
     // Calculates the MPO (any model would work here)
@@ -90,11 +90,11 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPS_MPO_Hermitian_Right_Electronic, S, sy
     auto mpsHF = MPS<matrix, S>(lattice.size(), *(modelHF.initializer(lattice, parametersPreBOReal)));
     // Generates the const guess. Note that the bond dimension will be != than that of the HF
     // guess, so we check that the contraction routines work also for MPS with different bond dimension.
-    parametersPreBOReal.set("init_state", "const");
+    parametersPreBOReal.set("init_type", "const");
     auto modelConst = Model<matrix, S>(lattice, parametersPreBOReal);
     auto mpsConst = MPS<matrix, S>(lattice.size(), *(modelConst.initializer(lattice, parametersPreBOReal)));
     // Generates the default guess
-    parametersPreBOReal.set("init_state", "default");
+    parametersPreBOReal.set("init_type", "default");
     auto modelDefault = Model<matrix, S>(lattice, parametersPreBOReal);
     auto mpsDefault = MPS<matrix, S>(lattice.size(), *(modelDefault.initializer(lattice, parametersPreBOReal)));
     // Calculates the MPO (any model would work here)

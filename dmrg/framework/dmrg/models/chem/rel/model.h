@@ -48,20 +48,18 @@
 #include "dmrg/models/chem/rel/chem_helper.h"
 #include "dmrg/utils/checks.h"
 
-template<class Matrix, class SymmGroup>
-class rel_qc_model : public model_impl<Matrix, SymmGroup>
+template<class SymmGroup>
+class rel_qc_model : public model_impl<cmatrix, SymmGroup>
 {
+    using Matrix = cmatrix;
     typedef model_impl<Matrix, SymmGroup> base;
-
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
-
     typedef typename base::term_descriptor term_descriptor;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-
     typedef typename Lattice::pos_t pos_t;
     typedef typename Matrix::value_type value_type;
     typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
@@ -76,7 +74,6 @@ public:
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
-        return;
     }
 
     Index<SymmGroup> const & phys_dim(size_t type) const

@@ -554,7 +554,7 @@ private:
 template <class Matrix, class SymmGroup>
 typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGroup>::initializer(Lattice const& lat, BaseParameters & p_) const
 {
-    if ( p_["init_state"] == "local_quantumnumbers" ) {
+    if ( p_["init_type"] == "local_quantumnumbers" ) {
         int max_site_type = 0;
         std::vector<int> site_types(lat.size(), 0);
         for (int p = 0; p < lat.size(); ++p) {

@@ -9,5 +9,8 @@ set(DMRG_APP_LIBRARIES maquis_dmrg dmrg_models dmrg_utils ${DMRG_LIBRARIES})
 add_executable(dmrg dmrg.cpp)
 target_link_libraries(dmrg ${DMRG_APP_LIBRARIES})
 
+add_executable(dmrgIPI dmrg_ipi.cpp)
+target_link_libraries(dmrgIPI ${DMRG_APP_LIBRARIES})
+
 # *** Install
-install(TARGETS dmrg RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS dmrgIPI RUNTIME DESTINATION bin COMPONENT applications)

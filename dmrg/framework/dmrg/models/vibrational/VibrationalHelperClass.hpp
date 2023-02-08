@@ -27,6 +27,9 @@
 #ifndef VIBRATIONAL_MODEL_HELPER_CLASS_H
 #define VIBRATIONAL_MODEL_HELPER_CLASS_H
 
+/** @brief Enum class representing the coordinate type */
+enum class WatsonCoordinateType { CartesianNormalModes, InternalNormalModes };
+
 template<class Matrix, class SymmGroup>
 class VibrationalHelpers {
 public:

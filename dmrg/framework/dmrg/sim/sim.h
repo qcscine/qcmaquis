@@ -55,7 +55,7 @@
 template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
-    sim(DmrgParameters &);
+    explicit sim(DmrgParameters &);
     virtual ~sim();
 
 protected:
@@ -67,7 +67,7 @@ protected:
     measurements_type iteration_measurements(int sweep);
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
-    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
+    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&, std::string filename = "");
 
 protected:
     DmrgParameters& parms;
@@ -75,6 +75,12 @@ protected:
     bool restore;
     bool dns;
     std::string chkpfile;
+    std::string chkpfolder() const {
+        if (parms.is_set("chkpfile"))
+            return parms["chkpfile"].str();
+        else
+            return std::string();
+    }
     std::string rfile() const
     {
         if (parms.is_set("resultfile"))

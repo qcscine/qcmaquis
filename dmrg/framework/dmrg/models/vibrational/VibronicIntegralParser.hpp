@@ -30,7 +30,6 @@
 //#ifdef DMRG_VIBRATIONAL
 
 #include "integral_interface.h"
-#include "VibrationalModelTraitClass.hpp"
 #include "dmrg/models/lattice/lattice.h"
 
 namespace Vibrational {

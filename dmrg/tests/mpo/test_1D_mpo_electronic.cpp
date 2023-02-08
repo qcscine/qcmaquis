@@ -48,7 +48,7 @@ TwoU1PG
 BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_ExpVal, S, symmetries, H2Fixture ) 
 {
     // Generates the HF MPS
-    parametersH2.set("init_state", "hf");
+    parametersH2.set("init_type", "hf");
     parametersH2.set("hf_occ", "4,1");
     auto lattice = Lattice(parametersH2);
     auto model = Model<matrix, S>(lattice, parametersH2);

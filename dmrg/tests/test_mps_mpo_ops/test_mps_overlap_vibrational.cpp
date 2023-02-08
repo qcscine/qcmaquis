@@ -44,13 +44,13 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Vibrational, WatsonFixture )
 {
 #ifdef HAVE_TrivialGroup
     // ONV1 
-    parametersEthyleneWatson.set("init_state", "basis_state_generic");
+    parametersEthyleneWatson.set("init_type", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
     auto lattice = Lattice(parametersEthyleneWatson);
     auto model = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatson);
     auto mpsHF1 = MPS<matrix, TrivialGroup>(lattice.size(), *(model.initializer(lattice, parametersEthyleneWatson)));
     // ONV2
-    parametersEthyleneWatson.set("init_state", "basis_state_generic");
+    parametersEthyleneWatson.set("init_type", "basis_state_generic");
     parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,1,0,0,0");
     lattice = Lattice(parametersEthyleneWatson);
     model = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatson);
@@ -72,9 +72,9 @@ BOOST_FIXTURE_TEST_CASE( Test_MPS_Overlap_Hermitian_Vibrational, WatsonFixture )
     auto lattice = Lattice(parametersEthyleneWatson);
     auto model = Model<matrix, TrivialGroup>(lattice, parametersEthyleneWatson);
     // Modifies the init parameters to create two different MPSs
-    parametersEthyleneWatson.set("init_state", "const");
+    parametersEthyleneWatson.set("init_type", "const");
     auto mpsConst = MPS<matrix, TrivialGroup>(lattice.size(), *(model.initializer(lattice, parametersEthyleneWatson)));
-    parametersEthyleneWatson.set("init_state", "default");
+    parametersEthyleneWatson.set("init_type", "default");
     auto mpsDefault = MPS<matrix, TrivialGroup>(lattice.size(), *(model.initializer(lattice, parametersEthyleneWatson)));
     // Calculates the overlap
     double overlapOriginal = overlap(mpsConst, mpsDefault);
