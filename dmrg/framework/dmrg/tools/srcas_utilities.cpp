@@ -329,7 +329,7 @@ double SRCAS<ScalarType>::calculateCompleteness () {
                     nUnpaired++;
             }
             if (nUnpaired>0)
-                factor /= pow(nUnpaired, 2.0);
+                factor /= pow(2.0, nUnpaired);
         }
         sum_ci2 += factor * pow(std::abs(iter_->second),2.0);
     }
