@@ -190,7 +190,7 @@ private:
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
         add_option("srcas_overlapThreshold", "Threshold for overlap coefficient for being added to the determinant list", value(0.001));
-        add_option("srcas_samplingSeed", "Controls the speed of sampling across the Hilbert space, as this parameter determines the number of simultaneously accepted changes.", value(0.333));
+        add_option("srcas_samplingSpeed", "Controls the speed of sampling across the Hilbert space, as this parameter determines the number of simultaneously accepted changes.", value(0.333));
 
         // Solution of linear systems
         add_option("linsystem_precond", "If yes, applies a preconditioner to the linear system solver", value("no"));
