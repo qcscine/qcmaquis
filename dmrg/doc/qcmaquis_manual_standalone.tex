@@ -47,7 +47,7 @@
 %
     keywords=[1]{L,nelec,spin,nsweeps,max_bond_dimension,integral_file,
 				 init_type,LATTICE,lattice_library,MODEL,model_library,irrep,symmetry},
-	morekeywords=[2]{conv_thresh,integral_cutoff,truncation_initial,truncation_final,
+	morekeywords=[2]{conv_thresh,integral_cutoff,truncation_initial,truncation_main,
 					 MEASURE,chkpfile,resultfile,storagedir},
 	keywordstyle=[1]\color{green!20!red},
 	keywordstyle=[2]\color{green!20!blue},
@@ -506,7 +506,7 @@ If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be tra
   conv_thresh          = 1.0e-6
   // Threshold for the SVD truncation for the initial and sweeps
   truncation_initial   = 1.0e-16
-  truncation_final     = 1.0e-7
+  truncation_main     = 1.0e-7
   // Threshold below which integrals inside the integral_file are neglected
   integral_cutoff      = 1.0e-10
   // Path to the scratch folder (reduces RAM usage)

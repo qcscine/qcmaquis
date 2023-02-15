@@ -10,7 +10,7 @@ ngrowsweeps = 1
 max_bond_dimension = 1000
 
 truncation_initial = 0.0001
-truncation_final = 1e-10
+truncation_main = 1e-10
 
 alpha_initial = 0.01
 alpha_main = 1e-6

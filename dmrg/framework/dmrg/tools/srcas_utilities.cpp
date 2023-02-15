@@ -39,7 +39,7 @@
 template <typename ScalarType> // real or complex
 SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceType> interface) :
     interface_(interface), uniformDist_(0.,1.), uniformRandomNumber_(generator_,uniformDist_),
-    geomDist_(1.0-parameters["srcas_samplingSeed"]), geometricRandomNumber_(generator_,geomDist_),
+    geomDist_(1.0-parameters["srcas_samplingSpeed"]), geometricRandomNumber_(generator_,geomDist_),
     parms_(parameters)
 {
     generator_.seed(parms_["seed"]);
@@ -64,7 +64,10 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
             detSpace_ = std::move(tmpVec);
         }
     } else if (parms_["MODEL"] == "quantum_chemistry") {
-        numParticles_ = parms_["nelec"];
+        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg")
+            numParticles_ = parms_["nelec"];
+        else
+            numParticles_ = int(parms_["u1_total_charge1"])+ int(parms_["u1_total_charge2"]);
         maxDetStr_ = "4";
         for (int i=1; i<parms_["L"]; i++) {
             maxDetStr_ += ",4";
@@ -128,7 +131,7 @@ void SRCAS<ScalarType>::printSRCASSettings() {
     maquis::cout << "Maximum number of iterations is:            " << parms_["srcas_maxNumIterations"] << std::endl;
     maquis::cout << "Number of samples per iteration is:         " << parms_["srcas_numSamples"] << std::endl;
     maquis::cout << "Random number seed is:                      " << parms_["seed"] << std::endl;
-    maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSeed"] << std::endl;
+    maquis::cout << "Sampling speed for simultaneous updates is: " << parms_["srcas_samplingSpeed"] << std::endl;
 }
 
 template <typename ScalarType> // real or complex, nmode or canonical (watson)
@@ -227,7 +230,7 @@ std::vector<int> SRCAS<ScalarType>::generateNewDet() {
             boost::poisson_distribution<> poissonDist(detTmp_[i]+0.5); // poisson distribution centered on the current modal
             boost::variate_generator<boost::mt19937&, boost::poisson_distribution<>> poissonRandomNumber(generator_,poissonDist);
             do {
-                if (uniformRandomNumber_() < parms_["srcas_samplingSeed"]) // Only accept a fraction of the proposed updates to stay closer to reference det
+                if (uniformRandomNumber_() < parms_["srcas_samplingSpeed"]) // Only accept a fraction of the proposed updates to stay closer to reference det
                     detTmp_[i] = poissonRandomNumber();
             } while (!(detTmp_[i] < detSpace_[i])); // Only accept valid occupations
         }
@@ -329,7 +332,7 @@ double SRCAS<ScalarType>::calculateCompleteness () {
                     nUnpaired++;
             }
             if (nUnpaired>0)
-                factor /= pow(nUnpaired, 2.0);
+                factor /= pow(2.0, nUnpaired);
         }
         sum_ci2 += factor * pow(std::abs(iter_->second),2.0);
     }

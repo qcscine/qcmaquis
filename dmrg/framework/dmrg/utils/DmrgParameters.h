@@ -50,60 +50,127 @@ private:
     {
         using parameters::value;
 
+        // General settings
+        add_option("seed", "Seed for all random number generators, for instance in the random MPS initalization, the SRCAS sampling, etc.", value(42));
         add_option("COMPLEX", "use complex numbers", value(false));
         add_option("MAGNETIC", "external magnetic field applied", value(false));
 
-        add_option("truncation_initial", "Initial value for the truncation error", value(1e-16));
-        add_option("truncation_final", "Final value for the truncation", value(1e-16));
+        // MPS bond dimension settings
+        add_option("init_bond_dimension", "Bond dimension m with which the MPS is initialized for init types containing *const, *default", value(5));
+        add_option("max_bond_dimension", "Maximum value m of the MPS bond dimension");
+        add_option("sweep_bond_dimensions", "Comma-seperated list of n bond dimensions to be used in the n first sweeps");
 
-        add_option("init_bond_dimension", "", value(5));
-        add_option("max_bond_dimension", "");
-        add_option("sweep_bond_dimensions", "");
+        // Settings for further truncating than the maximum bond dimension
+        add_option("truncation_initial", "Initial value for the truncation error during ngrowsweeps", value(1e-16));
+        add_option("truncation_main", "Final value for the truncation error during nmainsweeps", value(1e-16));
 
+        // Settings related to the MPS optimization algorithm
         add_option("optimization", "singlesite or twosite", value("twosite"));
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
 
-        add_option("alpha_initial","", value(1e-2));
-        add_option("alpha_main", "", value(1e-4));
-        add_option("alpha_final", "", value(1e-8));
-
-        // Jacobi-Davidson-related options
-        add_option("eigensolver", "", value("IETL_JCD"));
-        add_option("ietl_jcd_tol", "", value(1e-8));
-        add_option("ietl_jcd_gmres", "", value(0));
-        add_option("ietl_jcd_maxiter", "", value(10));
-
-        add_option("nsweeps", "Number of sweeps of the optimization", 10);
+        // Number of sweeps for different calculation phases
+        add_option("nsweeps", "Overall number of sweeps of the calculation", 10);
         add_option("ngrowsweeps", "Number of the grow sweeps (used for the truncation and noise parameters)", 2);
         add_option("nmainsweeps", "Number of main sweeps (used for the truncation and noise parameters)", 5);
 
-        add_option("resultfile", "");
-        add_option("chkpfile", "");
+        // Setting to terminate DMRG before nsweeps are completed
+        add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(-1));
+        add_option("run_seconds", "", value(0));
+
+        // Noise to be added to the MPS during the optimization/evolution
+        add_option("alpha_initial", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during ngrowsweeps", value(1e-2));
+        add_option("alpha_main", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during nmainweeps", value(1e-4));
+        add_option("alpha_final", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during the remainder of nsweeps", value(1e-8));
+
+        // MPS initialization settings 
+        add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
+        add_option("init_coeff", "Coefficients for coherent init", value(""));
+        add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
+        add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
+        add_option("ci_level", "Number of electrons excited from HF determinant", "1,2,3,4,5,6");
+        add_option("hf_occ", "Comma separated list of orbital occupancies for Hartree Fock initial state");
+
+        // Settings for lattice
+        add_option("LATTICE", "Definition of the mapping from single-particle basis onto the DMRG lattice", value("orbitals"));
+        add_option("L", "Length of the DMRG lattice");
+        add_option("lattice_library", "", value("coded"));
+        add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
+        add_option("orbital_order", "Comma separated list of orbital numbers");
+        
+        // Settings for model
+        add_option("MODEL","Type of Hamiltonian", value("quantum_chemistry"));
+        add_option("symmetry", "Total symmetry group of the MPS, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
+        add_option("model_library", "", value("coded"));
+        add_option("model_file", "path to model parameters", value(""));
+        
+        // Settings for integral read-in
+        add_option("integral_file", "Path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
+        add_option("integral_cutoff", "Ignore integrals below a certain magnitude", value(0));
+
+        // Jacobi-Davidson-related options
+        add_option("eigensolver", "", value("IETL_JCD"));
+        add_option("ietl_jcd_tol", "Convergence threshold for JCD at each site", value(1e-8));
+        add_option("ietl_jcd_gmres", "", value(0));
+        add_option("ietl_jcd_maxiter", "Maximum number of iterations in JCD at each site", value(10));
+
+        // Storing/updating settings
+        add_option("resultfile", "Path and name of file in which to store the results");
+        add_option("chkpfile", "Path and name of folder in which to store the MPS");
+        add_option("measure_each", "Compute the expectation values every 2*measure_each sweeps", value(1));
+        add_option("chkp_each", "Update the checkpoint every 2*chkp_each sweeps", value(1));
+        add_option("storagedir", "Scratch directory for temporary files", value(""));
 
         add_option("donotsave", "", value(0));
-        add_option("run_seconds", "", value(0));
-        add_option("storagedir", "", value(""));
+
         add_option("use_compressed", "", value(0));
-        add_option("seed", "", value(42));
-        add_option("ALWAYS_MEASURE", "comma separated list of measurements", value(""));
-        add_option("measure_each", "", value(1));
-        add_option("chkp_each", "", value(1));
-        add_option("update_each", "", value(-1));
+        
         add_option("entanglement_spectra", "", value(0));
-        add_option("conv_thresh", "energy convergence threshold to stop the simulation", value(-1));
 
-        // vDMRG-related parameters
-        add_option("watson_max_coupling", "Maximum many-body coupling order in the potential operator - canonical quantization", value(6));
+        add_option("ngrainings", "", value(0));
+        add_option("finegrain_optim", "", value(false));
 
+        // Measurement related settings
+        add_option("MEASURE[Energy]", "", value(true));
+        add_option("MEASURE[EnergyVariance]", "", value(0));
+        add_option("MEASURE[Entropy]", "", value(false));
+        add_option("MEASURE[ChemEntropy]", "Evaluate all expectation valus required for a mututal information calculation. Only available for 2u1(pg)", value(false));
+        add_option("MEASURE[Renyi2]", "", value(false));
+        add_option("ALWAYS_MEASURE", "comma separated list of measurements", value(""));
+
+        // Electronic-structure calculations parameters
+        add_option("irrep", "Index of the irreducible representation associated with the wave function", value(0));
+        add_option("u1_total_charge1", "Number of up electrons in 2u1(pg) calculation");
+        add_option("u1_total_charge2", "Number of down electrons in 2u1(pg) calculation");
+        add_option("spin", "Total spin of target state in su2u1(pg) calculation as int 2*S, so use 0 for singlet, 1 for doublet, and 2 for triplet");
+        add_option("nelec", "Total number of electrons in su2u1(pg) calculation");
+
+        // canonical vDMRG-related parameters for the Watson Hamiltonian
+        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
+        add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
+        add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
+        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
+     
         // n-mode vDMRG related parameters
+        add_option("nmode_dumpIntegral", "If == yes, store the integrals in the result file", value("no"));
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
         add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
         add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
 
-        // Vibronic-related parameters
+        // Pre-BO settings
+        add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
+        add_option("PreBO_ParticleTypeVector", "Number of particles per type");
+        add_option("PreBO_FermionOrBosonVector", "1 if Fermion, 0 if Boson");
+        add_option("PreBO_OrbitalVector", "Number of orbitals for each type");
+        add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
+
+        // Vibronic settings
+        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
+        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
+        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
         add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
-        add_option("vibronic_nmodes", "Number of vibrational modes entering the vibronic Hamiltonian");
-        add_option("vibronic_sorting", "Mapping for the vibronic lattice", value("firstele"));
+        add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
+        add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
+        add_option("n_excitons", "Number of molecule composing the molecular aggregate");
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
@@ -114,83 +181,20 @@ private:
         add_option("TD_backpropagation", "Equal to yes if the back-propagation step should be done, no otherwise", value("yes"));
         add_option("TD_noise", "If set to yes, activates the noise. By default this option is deactivated.", value("no"));
 
-        add_option("ngrainings", "", value(0));
-        add_option("finegrain_optim", "", value(false));
-
-        add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*, etc.", value("default"));
-        add_option("init_coeff", "coefficients for coherent init", value(""));
-        add_option("init_basis_state", "local indexes (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
-        add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
-        add_option("ci_level", "number of electrons excited from HF determinant", "1,2,3,4,5,6");
-
-        // Settings for lattice
-        add_option("LATTICE", "", value("orbitals"));
-        add_option("L", "Lattice size");
-        add_option("lattice_library", "", value("coded"));
-        add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
-        
-        // Settings for model etc. for quantum chemistry calculations
-        add_option("MODEL","", value("quantum_chemistry"));
-        add_option("symmetry", "mps symmetry, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
-        add_option("model_library", "", value("coded"));
-        add_option("model_file", "path to model parameters", value(""));
-
-
-        // Settings for integral read-in
-        add_option("integral_file", "path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
-        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(0));
-        add_option("beta_mode", "", value(0));
-
-        // Excited states calculation with ORTHO
-        add_option("n_ortho_states", "", value(0));
-        add_option("ortho_states", "comma separated list of filenames");
-
-        add_option("MEASURE[Energy]", "", value(true));
-        add_option("MEASURE[EnergyVariance]", "", value(0));
-        add_option("MEASURE[Entropy]", "", value(false));
-        add_option("MEASURE[Renyi2]", "", value(false));
-
-        // Electronic-structure calculations
-        add_option("irrep", "Index of the irreducible representation associated with the wave function", value(0));
-
-        // Watson Hamiltonian-based simulations
-        add_option("watson_max_coupling", "Maximum many-body coupling to be included in the definition of the PES in canonical quantization", value(ORDER_NONE));
-        add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
-        add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
-        add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
-
-        // n-mode vDMRG related parameters
-        add_option("nmode_dumpIntegral", "If == yes, store the integrals in the result file", value("no"));
-        add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
-        add_option("nmode_max_coupling", "Maximum many-body coupling order in the potential operator", value(3));
-        add_option("nmode_num_basis", "Comma separated list with the number of basis functions per mode");
-
-        // Pre-BO
-        add_option("PreBO_MaxBondDimVector", "Give a maximum bond dimension for each particle type.");
-        add_option("PreBO_ParticleTypeVector", "Number of particles per type");
-        add_option("PreBO_FermionOrBosonVector", "1 if Fermion, 0 if Boson");
-        add_option("PreBO_OrbitalVector", "Number of orbitals for each type");
-        add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
-
-        // Vibronic
-        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
-        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
-        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all excitons are coupled)", value("nn"));
-        add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
-        add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
-        add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
-        add_option("n_excitons", "Number of molecule composing the molecular aggregate");
-
         // Tools
         add_option("determinant_file", "File where the determinants are stored. Used in the tools.");
         add_option("determinant_threshold", "Threshold for the determinant-related tool", 0.);
 
-        // Vibrational SRCAS settings
+        // SRCAS settings
         add_option("srcas_targetCompleteness", "Desired completness for SRCAS to terminate sampling", value(0.99));
         add_option("srcas_maxNumIterations", "Maximum number of macroiterations until SRCAS sampling is terminated", value(10));
         add_option("srcas_numSamples", "Number of samples in each SRCAS macroiteration", value(10000));
         add_option("srcas_overlapThreshold", "Threshold for overlap coefficient for being added to the determinant list", value(0.001));
-        add_option("srcas_samplingSeed", "Controls the speed of sampling across the Hilbert space, as this parameter determines the number of simultaneously accepted changes.", value(0.333));
+        add_option("srcas_samplingSpeed", "Controls the speed of sampling across the Hilbert space, as this parameter determines the number of simultaneously accepted changes.", value(0.333));
+
+        // Excited states calculation with ORTHO
+        add_option("n_ortho_states", "Number of lower-lying MPS to orthogonalize the current calculation to", value(0));
+        add_option("ortho_states", "Comma-separated list of checkpoint names to which to orthogonalize to");
 
         // Solution of linear systems
         add_option("linsystem_precond", "If yes, applies a preconditioner to the linear system solver", value("no"));
@@ -299,7 +303,6 @@ private:
         add_option("Gamma2" , "", value(0.));
         add_option("nbar"   , "", value(0.));
 
-        add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");
         add_option("u1_total_charge2", "");
 
