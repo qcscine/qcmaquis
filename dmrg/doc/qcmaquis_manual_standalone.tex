@@ -29,7 +29,7 @@
 \setcounter{secnumdepth}{4}
 
 % -- New commands --
-\newcommand{\relv}{release version 3.0}
+\newcommand{\relv}{release version 3.1.3}
 \newcommand{\qcm}{\textsc{QCMaquis}}
 \newcommand{\scine}{SCINE}
 \newcommand{\hostp}{\mol}
@@ -619,7 +619,7 @@ Such a threshold must be specified in input, as shown in Listing~\ref{lst:canoni
 
 The integral file \texttt{FCIDUMP\_Vibrational} contain the force constants that define the PES through Eq.~\ref{eq:TaylorExpansion}.
 \qcm\ supports up to sixth-order force constants by default, which must be provided as input in the \texttt{FCIDUMP\_Vibrational} file as illustrated in Listing~\ref{lst:CanonicalFCIDUMP}.
-If higher-order force constants are to be included, the \texttt{DMRG_ORDERNONE} CMake flag should be set to the corresponding integer $n$ denoting the highest force constant order and the integral files need to provide $n$ integer indices per entry accordingly.
+If higher-order force constants are to be included, the \texttt{DMRG\_ORDERNONE} CMake flag should be set to the corresponding integer $n$ denoting the highest force constant order and the integral files need to provide $n$ integer indices per entry accordingly.
 \vspace{.5cm}
 \begin{lstlisting}[language=qcmaquis,caption={Example of an vDMRG integral file for the potential
 											  expressed in the canonical quantization format.},
