@@ -50,7 +50,7 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Electronic, BenzeneFixture) {
   parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
   parametersBenzene.set("nsweeps", 10);
   parametersBenzene.set("truncation_initial", 1.0E-30);
-  parametersBenzene.set("truncation_final", 1.0E-30);
+  parametersBenzene.set("truncation_main", 1.0E-30);
   parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);

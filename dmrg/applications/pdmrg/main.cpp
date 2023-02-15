@@ -314,7 +314,7 @@ int main(int argc, char ** argv)
         }
         wait_all(req, req+4);
         
-        double      cutoff = parms["truncation_final"];
+        double      cutoff = parms["truncation_main"];
         std::size_t Mmax   = parms["max_bond_dimension"];
         int nsweeps = parms["nsweeps"];
         

@@ -1,5 +1,5 @@
 truncation_initial = 1e-10
-truncation_final = 1e-12
+truncation_main = 1e-12
 
 alpha_initial = 1e-2
 alpha_main = 1e-6

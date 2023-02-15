@@ -64,7 +64,10 @@ SRCAS<ScalarType>::SRCAS(DmrgParameters& parameters, std::shared_ptr<InterfaceTy
             detSpace_ = std::move(tmpVec);
         }
     } else if (parms_["MODEL"] == "quantum_chemistry") {
-        numParticles_ = parms_["nelec"];
+        if (parms_["symmetry"]=="su2u1" || parms_["symmetry"]=="su2u1pg")
+            numParticles_ = parms_["nelec"];
+        else
+            numParticles_ = int(parms_["u1_total_charge1"])+ int(parms_["u1_total_charge2"]);
         maxDetStr_ = "4";
         for (int i=1; i<parms_["L"]; i++) {
             maxDetStr_ += ",4";

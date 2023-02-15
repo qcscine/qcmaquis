@@ -251,9 +251,9 @@ protected:
 
   /** @brief Method to get the truncation threshold for a given sweep */
   double get_cutoff(int sweep) const {
-    return (sweep >= parms_.template get<int>("ngrowsweeps")) ? parms_.template get<double>("truncation_final")
+    return (sweep >= parms_.template get<int>("ngrowsweeps")) ? parms_.template get<double>("truncation_main")
         : log_interpolate(parms_.template get<double>("truncation_initial"),
-                          parms_.template get<double>("truncation_final"),
+                          parms_.template get<double>("truncation_main"),
                           parms_.template get<int>("ngrowsweeps"), sweep);
   }
 
