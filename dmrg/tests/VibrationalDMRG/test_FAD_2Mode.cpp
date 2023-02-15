@@ -55,7 +55,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_FAD_2ModeHamiltonian, NModeFixture)
     parametersFADTwoBody.set("max_bond_dimension", 100);
     parametersFADTwoBody.set("MODEL", "nmode");
     parametersFADTwoBody.set("truncation_initial", 1.0E-20);
-    parametersFADTwoBody.set("truncation_final", 1.0E-16);
+    parametersFADTwoBody.set("truncation_main", 1.0E-16);
     // SingleSite
     parametersFADTwoBody.set("optimization", "singlesite");
     parametersFADTwoBody.set("alpha_initial", 1.0E-8);

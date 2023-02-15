@@ -44,7 +44,7 @@ DmrgParameters cpp_parms;
                                     const std::string& init_type_, const std::string& optimization_,
                                     int ietl_jcd_maxiter_,
                                     double ietl_jcd_tol_, double truncation_initial_,
-                                    double truncation_final_, double integral_cutoff_,
+                                    double truncation_main_, double integral_cutoff_,
                                     const std::string& twosite_truncation_, const std::string& orb_order_)
 
     {
@@ -56,7 +56,7 @@ DmrgParameters cpp_parms;
         cpp_parms.set("optimization", optimization_);
         cpp_parms.set("integral_cutoff", integral_cutoff_);
         cpp_parms.set("truncation_initial", truncation_initial_);
-        cpp_parms.set("truncation_final", truncation_final_);
+        cpp_parms.set("truncation_main", truncation_main_);
         cpp_parms.set("ietl_jcd_tol", ietl_jcd_tol_);
         cpp_parms.set("ietl_jcd_maxiter", ietl_jcd_maxiter_);
         cpp_parms.set("conv_thresh", conv_thresh_);

@@ -327,7 +327,7 @@ struct BenzeneFixture
         parametersBenzeneRealTime.set("imaginary_time", "no");
         parametersBenzeneRealTime.set("TD_backpropagation", "yes");
         parametersBenzeneRealTime.set("truncation_initial", 1.0E-30);
-        parametersBenzeneRealTime.set("truncation_final", 1.0E-30);
+        parametersBenzeneRealTime.set("truncation_main", 1.0E-30);
         parametersBenzeneRealTime.set("alpha_initial", 0.);
         parametersBenzeneRealTime.set("alpha_main", 0.);
         parametersBenzeneRealTime.set("alpha_final", 0.);
@@ -369,7 +369,7 @@ struct BenzeneFixture
         parametersBenzene.set("u1_total_charge1", 3);
         parametersBenzene.set("u1_total_charge2", 3);
         parametersBenzene.set("truncation_initial", 1.0E-30);
-        parametersBenzene.set("truncation_final", 1.0E-30);
+        parametersBenzene.set("truncation_main", 1.0E-30);
         parametersBenzene.set("init_type", "hf");
         parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
         parametersBenzene.set("ietl_jcd_tol", 1.0E-15);
