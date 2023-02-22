@@ -88,7 +88,7 @@ public:
         op_t create_ele_op, destroy_ele_op, count_ele_op;
         op_t position_vib_op, momentum_vib_op;
         // Definition of the physical dimensions.
-        // First we manage the dimensions for the vibrations, the the ones of the nuclei.
+        // First we manage the dimensions for the vibrations, then the ones of the nuclei.
         phys_indexes.resize(2) ;
         phys_indexes[0].insert(std::make_pair(0, nMax));
         phys_indexes[1].insert(std::make_pair(0, 1));

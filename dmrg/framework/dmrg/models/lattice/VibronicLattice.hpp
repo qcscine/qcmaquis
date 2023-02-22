@@ -71,7 +71,7 @@ public:
     // Note that here we assume that, for the excitonic case, all molecules are 
     // described by the same Hamiltonian. This means, in practice, that, for each "particle",
     // we have the same number of modes and electronic states. The number of particles is
-    // 1 for the excitonic case.
+    // 1 for the vibronic case.
     if ((nModes+nElecStates)*nParticles != L)
       throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
     vector_types.resize(L);
