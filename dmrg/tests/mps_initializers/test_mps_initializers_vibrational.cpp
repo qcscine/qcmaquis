@@ -31,6 +31,7 @@
 #include <iostream>
 #include <boost/test/included/unit_test.hpp>
 #include "Fixtures/NModeFixture.h"
+#include "Fixtures/WatsonFixture.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps_initializers_helper.h"
@@ -154,5 +155,39 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_TwoMode_NU1_ArbitrarySortin
 }
 
 #endif // HAVE_NU1
+
+#ifdef HAVE_TrivialGroup
+
+/** @brief Tests the coherent initialization of an MPS */
+BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Coherent, WatsonFixture)
+{
+  using Symmetry = TrivialGroup;
+  auto lattice = Lattice(parametersEthyleneWatson);
+  int latticeSize = lattice.size();
+  auto watsonModel = Model<matrix, Symmetry>(lattice, parametersEthyleneWatson);
+  auto mpo = make_mpo(lattice, watsonModel);
+  // Construction of the ground state
+  parametersEthyleneWatson.set("init_type", "basis_state_generic");
+  parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
+  auto mpsGS = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+  // Construction of the excited state
+  parametersEthyleneWatson.set("init_type", "basis_state_generic");
+  parametersEthyleneWatson.set("init_basis_state", "1,0,0,0,0,0,0,0,0,0,0,0");
+  auto mpsES = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+  // Construction of the coherent superposition
+  parametersEthyleneWatson.set("init_type", "coherent");
+  parametersEthyleneWatson.set("init_coeff", "0.5,0.5");
+  parametersEthyleneWatson.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0|1,0,0,0,0,0,0,0,0,0,0,0");
+  auto mpsCoherent = MPS<matrix, Symmetry>(latticeSize, *(watsonModel.initializer(lattice, parametersEthyleneWatson)));
+  // The energy is taken from the integral provides as input in the fixture class.
+  auto energyGS = expval(mpsGS, mpo)/norm(mpsGS);
+  auto energyES = expval(mpsES, mpo)/norm(mpsES);
+  auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
+  //
+  BOOST_CHECK_CLOSE(energyGS+energyES, 2*energyCoherent, 1.0E-10);
+}
+
+
+#endif // HAVE_NONE
 
 #endif // DMRG_VIBRATIONAL

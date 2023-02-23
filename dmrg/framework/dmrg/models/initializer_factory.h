@@ -88,7 +88,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     else if (parms["init_type"] == "basis_state_generic_default")
         return initializer_ptr(new basis_mps_init_generic_default<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_type"] == "coherent")
-        return initializer_ptr(new coherent_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
+        return initializer_ptr(new coherent_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_type"] == "hf")
         return detail::call_hf_init<Matrix, SymmGroup>::call(parms, site_bases, initc, site_types);
     else {
