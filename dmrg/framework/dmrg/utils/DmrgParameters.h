@@ -84,7 +84,7 @@ private:
 
         // MPS initialization settings 
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
-        add_option("init_coeff", "Coefficients for coherent init", value(""));
+        add_option("init_coeff", "Comma-separated list of coefficients for coherent init", value(""));
         add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
         add_option("init_space", "Occupation up to which the initial guess MPS should be populated (used if [init_type] is [basis_state_generic_*])", value(""));
         add_option("ci_level", "Number of electrons excited from HF determinant", "1,2,3,4,5,6");
