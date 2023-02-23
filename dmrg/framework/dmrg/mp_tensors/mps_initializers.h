@@ -121,45 +121,59 @@ template<class Matrix, class SymmGroup>
 class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
-  coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
-                    std::vector<int> const& site_type_)
-    : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
-      site_type(site_type_) { }
+  // Declaration of types
+  using StateType = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
 
-  void operator()(MPS<Matrix, SymmGroup> & mps)
+  /** @brief Class constructor */
+  coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
+                    typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
+    : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
+      site_type(site_type_), right_end(right_end_)
   {
-    // Types definition
-    typedef typename SymmGroup::charge charge;
-    using std::exp;
-    using std::sqrt;
-    using std::pow;
-    using boost::math::factorial;
-    // Checks
-    assert(coeff.size() == mps.length());
-    if (phys_dims[0].size() != 1)
-      throw std::runtime_error("coherent_mps_init only for TrivialGroup.");
-    // Variable extraction
-    auto L = coeff.size();
-    Index<SymmGroup> trivial_i;
-    trivial_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
-    // MPS Initialization
-    for (int p=0; p<L; ++p) {
-      int s=0;
-      Matrix m(phys_dims[site_type[p]][s].second, 1, 0.);
-      for (int ss=0; ss<phys_dims[site_type[p]][s].second; ++ss)
-        m(ss, 0) = pow(coeff[p], ss) * sqrt(factorial<double>(ss)) / factorial<double>(ss);
-      block_matrix<Matrix, SymmGroup> block;
-      block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
-      MPSTensor<Matrix, SymmGroup> t(phys_dims[site_type[p]], trivial_i, trivial_i);
-      t.data() = block;
-      swap(mps[p], t);
+    std::vector<std::string> list_sa;
+    std::string input_str = params["init_basis_state"].str();
+    boost::split(list_sa, input_str, boost::is_any_of("|"));
+    for (int i = 0; i < list_sa.size(); i++) {
+      std::stringstream ss(list_sa[i]);
+      int ichar;
+      std::vector<int> tmp_vec;
+      while (ss >> ichar) {
+        tmp_vec.push_back(ichar);
+        ss.ignore(1);
+      }
+      basis_index.push_back(tmp_vec);
+    }
+    // Final check
+    assert (basis_index.size() == coeff.size());
+  }
+
+  /** @brief Method to construct the MPS */
+  void operator()(MPS<Matrix, SymmGroup>& mps)
+  {
+    MPS<Matrix, SymmGroup> MPSBuffer;
+    for (int i=0; i<basis_index.size(); i++ ) {
+      state.resize(mps.length());
+      for (int j=0; j<mps.length(); j++)
+        state[j] = phys_dims[site_type[j]].element(basis_index[i][j]);
+      auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end);
+      if (i == 0) {
+        mps = mps_tmp;
+        mps[0] *= coeff[0];
+      }
+      else {
+        MPSBuffer = join(mps, mps_tmp, 1., coeff[i]);
+        mps = MPSBuffer;
+      }
     }
   }
 
 private:
+  typename SymmGroup::charge right_end;
   std::vector<double> coeff;
   std::vector<Index<SymmGroup> > phys_dims;
   std::vector<int> site_type;
+  std::vector< std::vector<int> > basis_index;
+  StateType state;
 };
 
 template<class Matrix, class SymmGroup>
@@ -169,7 +183,7 @@ public:
   basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
                  std::vector<int> const& site_type_)
     : phys_dims(phys_dims_), site_type(site_type_)
-  { 
+  {
     std::string states = params["init_basis_state"].as<std::string>();
     std::vector<std::string> specifiedStates;
     boost::split(specifiedStates, states, boost::is_any_of("|"));
@@ -226,7 +240,7 @@ public:
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
         : phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
-    { 
+    {
       std::string states = params["init_basis_state"].as<std::string>();
       std::vector<std::string> specifiedStates;
       boost::split(specifiedStates, states, boost::is_any_of("|"));
@@ -278,7 +292,7 @@ public:
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
-    basis_index = params["init_space"].as<std::vector<int> >(); 
+    basis_index = params["init_space"].as<std::vector<int> >();
   }
 
   // Operator called when initialization occurs
