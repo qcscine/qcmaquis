@@ -74,8 +74,8 @@ public:
         // itself since it cannot generate electronic excitations
         phys.resize(2);
         phys[0].insert(std::make_pair(0, nMax));
-        phys[1].insert(std::make_pair(0, 1));
-        phys[1].insert(std::make_pair(1, 1));
+        phys[1].insert(std::make_pair(0, 1)); // empty
+        phys[1].insert(std::make_pair(1, 1)); // occupied
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
