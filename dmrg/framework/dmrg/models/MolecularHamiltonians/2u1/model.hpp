@@ -321,7 +321,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         auto fermType = (tag_handler->is_fermionic(iTag)) ? tag_detail::fermionic : tag_detail::bosonic;
         auto resPairCC = tag_handler->checked_register(adjoint(tag_handler->get_op(iTag)), fermType);
         if (resPairCC.first >= originalSize)
-            std::cout << "Registered new Hermitian Conjugate operator" << std::endl;
+            std::cout << "Registered new Hermitian Conjugate operator" << std::endl; 202
         if (iTag < resPairCC.first) {
             if (std::abs(resPairCC.second-1.) < 1.0E-16) {
                 tag_handler->hermitian_pair(iTag, resPairCC.first);

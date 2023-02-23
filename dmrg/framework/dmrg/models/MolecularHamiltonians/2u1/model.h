@@ -64,7 +64,6 @@ class qc_model : public model_impl<Matrix, SymmGroup>
     using measurements_type = typename base::measurements_type;
     using pos_t = typename Lattice::pos_t;
     using value_type = typename Matrix::value_type;
-    using one_matrix = typename alps::numeric::associated_one_matrix<Matrix>::type;
     using MapOfOperatorsType = std::unordered_map< std::vector< std::pair< int, unsigned int> >, value_type,
                                                    boost::hash< std::vector< std::pair< int, unsigned int> > > >;
 public:

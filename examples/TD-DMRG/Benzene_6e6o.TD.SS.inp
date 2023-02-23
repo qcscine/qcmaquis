@@ -32,7 +32,6 @@ resultfile               = 'Benzene_6e6o.TD.SS.results_state.0.h5'
 // -- Jacobi-Davidson parameters --
 ietl_jcd_maxiter         = 10
 ietl_jcd_tol             = 1e-8
-conv_thresh              = -1
 integral_cutoff          = 1e-300
 
 // -- Time-dependent simulation --

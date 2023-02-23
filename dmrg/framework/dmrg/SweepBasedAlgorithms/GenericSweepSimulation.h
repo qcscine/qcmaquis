@@ -114,7 +114,7 @@ public:
       // }
       this->updateSites();
       printMicroiterInfo(sweepType);
-      // Gets the boundary that are needed. Note that, in a forward sweep, the left boundary is assumed
+      // Gets the boundary that are needed. Note that, in a forward sweep, the right boundary is assumed
       // to have been generated during the previous boundary update and, therefore, is not fetched.
       if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0)
         Storage::fetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
