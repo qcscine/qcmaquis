@@ -38,7 +38,7 @@
  * @brief Class representing the Holstein-Hubbard Hamiltonian.
  * 
  * This Hamiltonian describes an excitonic system composed
- * by N excitons, each one with the ground electronic state
+ * by N monomers, each one with the ground electronic state
  * and one electronically excited state, and a Coulomb term
  * that couples them via nearest-neighbour couplings.
  * 
@@ -66,7 +66,7 @@ public:
     /** 
      * @brief Model representing an Holstein-Hubbard Hamiltonian
      * In the Holstein-Hubbard Hamiltonian, we have multiple monomers, each one described by
-     * Harmonic PESs, where the excited states are modelled with the LVC model.
+     * harmonic PESs, where the excited states are modelled with the LVC model.
      * Moreover, off-diagonal coordinate-independent electronic coupling terms are present.
      */
     HolsteinHubbardExcitonicHamiltonian (const Lattice& lat_, BaseParameters & model_) 
@@ -84,6 +84,8 @@ public:
             only_nn_ = true;
         // Variable definition
         std::size_t nMax = model["Nmax"];
+        //  Note that, since we have two different types of sites, we also have different sets of
+        //  operators for electrons and for the vibrations
         op_t ident_vib_op, ident_ele_op;
         op_t create_ele_op, destroy_ele_op, count_ele_op;
         op_t position_vib_op, momentum_vib_op;
@@ -99,7 +101,7 @@ public:
         create_ele_op.insert_block(Matrix(1, 1, 1), 0, 1);
         destroy_ele_op.insert_block(Matrix(1, 1, 1), 1, 0);
         count_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
-        //
+        // Creation of operator tag table for the electronic operators
         ident_ele = tag_handler->register_op(ident_ele_op, tag_detail::bosonic);
         create_ele = tag_handler->register_op(create_ele_op, tag_detail::bosonic);
         destroy_ele = tag_handler->register_op(destroy_ele_op, tag_detail::bosonic);
@@ -117,6 +119,7 @@ public:
         position_vib_op.insert_block(mpos, 0, 0);
         momentum_vib_op.insert_block(mmom, 0, 0);
         ident_vib_op.insert_block(mident, 0, 0);
+        // Creation of operator tag table for the vibronic operators
         ident_vib = tag_handler->register_op(ident_vib_op, tag_detail::bosonic);
         // -- Creates the powers of the position/momentum operator --
         auto powersOfPositions_op = VibrationalHelpers<Matrix, U1>::generatePowersOfPositionOperator(maxCoupling, nMax, ident_vib_op, position_vib_op);
@@ -142,10 +145,13 @@ public:
             std::vector<int> vec_jnk(maxCoupling);
             vec_jnk[0] = i_body;
             // Loop over the Hamiltonian terms
+            // Add the vibrational contributions
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++) {
+                // Prepares the vectors to be employed when building the Hamiltonian
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
                 for (int op_vib = 0; op_vib < maxCoupling; op_vib++) {
+                    // Chooses between position and momentum operators
                     if (hamiltonianTerms.first[idx][op_vib] < 0) {
                         operators.push_back(momentumPowers[1]);
                         vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
@@ -157,10 +163,14 @@ public:
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                     }
                 }
+                // Add electronic contribution
                 // Add the count operator for the specific excited states.
-                vec_jnk[1] = 0;
-                positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
-                operators.push_back(count_ele);
+                // TODO Note that this is hardcoded for the moment
+                if (operators.size() == 1) {
+                    vec_jnk[1] = 0;
+                    positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
+                    operators.push_back(count_ele);
+                }
                 // Builds the term of the Hamiltonian
                 modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
             }
