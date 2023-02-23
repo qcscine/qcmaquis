@@ -42,14 +42,16 @@ set (ALPS_SOURCE_DIR "alps")
 set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include in the build objects. \
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
 TwoU1PG and SU2U1PG are built in any case.")
-set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
-set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
-add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
-add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
+
 option(ENABLE_OMP "Enable OpenMP" ON)
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
 
+# Flags for vibrational calculations
+set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
+set(DMRG_ORDERNONE 6 CACHE STRING "Maximum order of integral terms for NONE symmetry.")
+add_definitions(-DORDER_NONE=${DMRG_ORDERNONE})
+add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
 # The upper bound for NU1 symmetry is DMRG_NUMSYMM+1 (BOOST does not include in the macro the upper bound)
 math(EXPR DMRG_UPPER_BOUND "${DMRG_NUMSYMM}+1")
 
@@ -297,9 +299,16 @@ add_subdirectory(${ALPS_SOURCE_DIR})
 list(APPEND DMRG_LIBRARIES alps)
 
 # Eigen
-# find_package(Eigen3 3.3 REQUIRED NO_MODULE)
-# message("Eigen directory " ${EIGEN3_INCLUDE_DIR})
-# list(APPEND DMRG_LIBRARIES Eigen3::Eigen)
+find_package(Eigen3 3.2 NO_MODULE)
+if (NOT TARGET Eigen3::Eigen)
+    find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+endif(NOT TARGET Eigen3::Eigen)
+if (TARGET Eigen3::Eigen)
+    include_directories(${EIGEN3_INCLUDE_DIR})
+    MESSAGE(STATUS "EIGEN include path: " ${EIGEN3_INCLUDE_DIR})
+else(TARGET Eigen3::Eigen)
+    message(FATAL_ERROR "Eigen3 not found! Required for compilation of QCMaquis.")
+endif (TARGET Eigen3::Eigen)
 
 # OpenMolcas interface
 if (BUILD_OPENMOLCAS_INTERFACE)
@@ -456,6 +465,7 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
   add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
+  add_test(NAME Test_MPS_Tensor COMMAND test_mps_tensor)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
   add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
   add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)

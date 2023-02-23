@@ -35,9 +35,7 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix()
-{
-}
+block_matrix<Matrix, SymmGroup>::block_matrix() { }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,

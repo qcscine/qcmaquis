@@ -284,8 +284,8 @@ public:
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
-    assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
+    assert(state.size() == mps.length());
     // Actual MPS initialization
     mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, init_bond_dimension);
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
@@ -326,8 +326,8 @@ public:
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
-    assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
+    assert(state.size() == mps.length());
     mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, init_bond_dimension);
     // Actual MPS initialization
     if (mps[mps.length()-1].col_dim()[0].first != right_end)

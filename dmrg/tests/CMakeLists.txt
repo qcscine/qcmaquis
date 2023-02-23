@@ -138,6 +138,8 @@ target_link_libraries(test_generalized_eigenvalue_problem ${DMRG_APP_LIBRARIES})
 # -- Unit tests --
 add_executable(test_block_matrix block_matrix/block_matrix.cpp)
 target_link_libraries(test_block_matrix ${DMRG_APP_LIBRARIES})
+add_executable(test_mps_tensor mpstensor/mpstensor.cpp)
+target_link_libraries(test_mps_tensor ${DMRG_APP_LIBRARIES})
 add_executable(test_1D_mpo_electronic mpo/test_1D_mpo_electronic.cpp)
 target_link_libraries(test_1D_mpo_electronic ${DMRG_APP_LIBRARIES})
 add_executable(test_overlap_propagator_electronic SweepOptimizationTools/OverlapPropagatorElectronic.cpp)

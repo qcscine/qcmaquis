@@ -98,7 +98,7 @@ public:
     // does not include that contribution)
     if (parms_.is_set("ipi_shift"))
       shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpoContainer_.getMPO().getCoreEnergy();
-    if (parms_["linsystem_precond"] == "yes")
+    if (parms_["linsystem_precond"] == "diagonal")
       isPrecond_ = true;
     calculateExactError_ = (parms_["linsystem_exact_error"] == "yes");
   }

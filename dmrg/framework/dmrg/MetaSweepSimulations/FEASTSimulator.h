@@ -305,14 +305,19 @@ private:
     std::vector<std::string> specifiedStates;
     int numSpecifiedStates = 0;
     if (needToWriteONV) {
-      std::string states = parms["init_basis_state"].as<std::string>();
+      std::string states;
+      if (parms["MODEL"] == "quantum_chemistry") {
+        states = parms["hf_occ"].as<std::string>();
+      } else {
+        states = parms["init_basis_state"].as<std::string>();
+      }
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
         throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to basis_state_generic/hf");
       }
       if (numSpecifiedStates != numStates) {
-        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
+        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with (generic_)default" << std::endl;
       }
     }
     // Generates the guess MPS
@@ -328,7 +333,7 @@ private:
             parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
         } else { // the rest of the states are not specified
           if (parametersTmp["MODEL"] == "quantum_chemistry")
-            parametersTmp.set("init_type", "const "); // initialize the remaining electronic states with const
+            parametersTmp.set("init_type", "default"); // initialize the remaining electronic states with default
           else
             parametersTmp.set("init_type", "basis_state_generic_default"); // initialize the remaining vibrational states with generic_default
         }

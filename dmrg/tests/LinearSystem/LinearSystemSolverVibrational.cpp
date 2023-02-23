@@ -4,22 +4,22 @@
  *
  * Copyright (C) 2022 Institute for Theoretical Physics, ETH Zurich
  *               2022 by Alberto Baiardi <abaiardi@ethz.ch>
- * 
+ *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
  * the terms of the license, either version 1 or (at your option) any later
  * version.
- * 
+ *
  * You should have received a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
@@ -46,13 +46,13 @@
 
 /**
  * @brief Tests the linear solver for a trivial case.
- * 
+ *
  * The trivial case is generated as follows:
- * 
+ *
  *  - we construct the MPO representation of the harmonic vibrational
  *    Hamiltonian of ethylene.
  *  - we construct the ONV corresponding to the ground state.
- * 
+ *
  * This MPS is trivially an eigenvector of the harmonic MPO and, therefore,
  * it should solve the linear system Hx = MPS. The iterative linear system
  * should, therefore, converge in a single iteration.
@@ -101,11 +101,17 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial, WatsonFixture) {
   auto rhs = contraction::site_ortho_boundaries(mpsHF[0], mpsHF[0], orthoLeft[0], orthoRight[1]);
   auto precond = std::make_shared<BlockMatrix>(contraction::Engine<matrix, matrix, TrivialGroup>::diagonal_hamiltonian(leftBoundary[0], rightBoundary[1], mpo[0], mpsHF[0]));
   double zShift = 0.;
+  parametersEthyleneWatsonHarmonic.set("linsystem_solver", "GMRES");
   auto linearSolver = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond, true);
   auto result = linearSolver.res();
   // First check: since H*psi = E*psi, and we set rhs=psi, the solution to the linear system should be the inverse of the energy.
   auto norm = 1./ietl::two_norm(std::get<2>(result));
   BOOST_CHECK_CLOSE(norm, referenceHarmonicEnergy, 1.0E-8);
+  // Does the same for Eigen
+  parametersEthyleneWatsonHarmonic.set("linsystem_solver", "GMRES_EIGEN");
+  auto linearSolverEigen = LinSolver(siteProblem, mpsHF[0], rhs, zShift, parametersEthyleneWatsonHarmonic, precond, true);
+  auto resultEigen = linearSolverEigen.res();
+  BOOST_CHECK_CLOSE(1./ietl::two_norm(std::get<2>(resultEigen)), referenceHarmonicEnergy, 1.0E-8);
 #endif // HAVE_TrivialGroup
 }
 
@@ -161,20 +167,33 @@ BOOST_FIXTURE_TEST_CASE(Test_LinearSolver_Trivial_Complex, WatsonFixture) {
   auto siteProblem = std::make_shared<SiteProblem>(leftBoundary[0], rightBoundary[1], mpo[0]);
   auto rhs = contraction::site_ortho_boundaries(firstMPS[0], secondMPS[0], orthoLeft[0], orthoRight[1]);
   // Constructs the linear system solver
-  parametersBilinearly.set("linsystem_precond", "no");
   parametersBilinearly.set("linsystem_init", "last");
   parametersBilinearly.set("linsystem_max_it", 1);
   parametersBilinearly.set("linsystem_tol", 1.0E-15);
   parametersBilinearly.set("linsystem_krylov_dim", 100);
-  parametersBilinearly.set("linsystem_solver", "GMRES");
-  std::shared_ptr<BlockMatrix> precond;
-  auto zShift = std::complex<double>(392., -521.);
-  auto linearSolver = LinSolver(siteProblem, firstMPS[0], rhs, zShift, parametersBilinearly, precond, true);
-  auto result = linearSolver.res();
-  firstMPS[0] = std::get<2>(result);
-  std::complex<double> lhsTerm = expval(firstMPS, mpo)-zShift*overlap(firstMPS, firstMPS);
-  std::complex<double> rhsTerm = overlap(firstMPS, secondMPS);
-  BOOST_CHECK_CLOSE(std::abs(lhsTerm), std::abs(rhsTerm), 1.0E-10);
+  // Here we test all possible methods.
+  auto vectorOfMethods = std::vector<std::string>{"GMRES", "GMRES_EIGEN", "BiCGSTAB_EIGEN"};
+  auto vectorOfPrecond = std::vector<std::string>{"no", "diagonal"};
+  for (const auto& iString: vectorOfMethods) {
+    for (const auto& iPrecond: vectorOfPrecond) {
+      // Note that, since we are not running anything via the interface, we have to explicitly construct the
+      // preconditioner if the parameter is set, and not do that if the parameter is not set.
+      std::shared_ptr<BlockMatrix> precond;
+      if (iPrecond == "diagonal")
+        precond = std::make_shared<BlockMatrix>(contraction::Engine<cmatrix, cmatrix, TrivialGroup>::diagonal_hamiltonian(leftBoundary[0], rightBoundary[1], mpo[0], firstMPS[0]));
+      parametersBilinearly.set("linsystem_solver", iString);
+      parametersBilinearly.set("linsystem_precond", iPrecond);
+      auto zShift = std::complex<double>(392., -521.);
+      auto linearSolver = LinSolver(siteProblem, firstMPS[0], rhs, zShift, parametersBilinearly, precond, true);
+      auto result = linearSolver.res();
+      auto mpsCopy = firstMPS[0];
+      firstMPS[0] = std::get<2>(result);
+      std::complex<double> lhsTerm = expval(firstMPS, mpo)-zShift*overlap(firstMPS, firstMPS);
+      std::complex<double> rhsTerm = overlap(firstMPS, secondMPS);
+      BOOST_CHECK_CLOSE(std::abs(lhsTerm), std::abs(rhsTerm), 1.0E-10);
+      firstMPS[0] = mpsCopy;
+    }
+  }
 }
 
 #endif // HAVE_TrivialGroup

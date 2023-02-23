@@ -30,13 +30,14 @@
 
 #include <complex>
 #include <tuple>
-// #include <Eigen/Core>
-// #include <Eigen/Dense>
-// #include <Eigen/IterativeLinearSolvers>
-// #include <unsupported/Eigen/IterativeSolvers>
-// #include <Eigen/Eigenvalues>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/IterativeLinearSolvers>
+#include <unsupported/Eigen/IterativeSolvers>
+#include <Eigen/Eigenvalues>
 #include <boost/numeric/bindings/lapack.hpp>
 #include "linsolver_helper.h"
+#include "LinSolverWrapper.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/siteproblem.h"
 
@@ -71,6 +72,28 @@ public:
     : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose)
     //, isFolded_(false)
   {
+    // Which linsolver
+    if (parms_["linsystem_solver"] == "GMRES") {
+      maquis::cout << " - Solving the linear system with ALPS-based GMRES" << std::endl;
+    } else if (parms_["linsystem_solver"] == "MINRES") {
+      maquis::cout << " - Solving the linear system with ALPS-based MINRES" << std::endl;
+    } else if ((parms_["linsystem_solver"] == "GMRES_EIGEN") || (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN")) {
+      if (parms_["linsystem_solver"] == "GMRES_EIGEN") {
+        maquis::cout << " - Solving the linear system with Eigen-based GMRES" << std::endl;
+      } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN") {
+        maquis::cout << " - Solving the linear system with Eigen-based BiCGSTAB" << std::endl;
+      }
+      if (parms_["linsystem_precond"] == "no") {
+        maquis::cout << " - Deactivating preconditioning" << std::endl;
+      } else if (parms_["linsystem_precond"] == "diagonal") {
+        maquis::cout << " - Activating diagonal preconditioning" << std::endl;
+      } else {
+        throw std::runtime_error("[linsystem_precond] parameter not recognized");
+      }
+    } else {
+      throw std::runtime_error("[linsystem_solver] parameter not recognized");
+    }
+
     if (parms_["linsystem_init"] == "zero")
       currentSolution_ = 0.*initialMPS;
     else
@@ -95,12 +118,26 @@ public:
       maquis::cout << std::endl;
     }
     for (int iCycle = 0; iCycle < numberOfMacroIterations_; iCycle++) {
-      if (parms_["linsystem_solver"] == "GMRES")
+      if (parms_["linsystem_solver"] == "GMRES") {
         gmres();
-      else if (parms_["linsystem_solver"] == "MINRES")
+      } else if (parms_["linsystem_solver"] == "MINRES") {
         minres();
-      else
+      }
+      else if (parms_["linsystem_solver"] == "GMRES_EIGEN" ) {
+        if (parms_["linsystem_precond"] == "no") {
+          eigenLinearSolver<EigenSolverType::GMRES, PreconditionerType::IdentityPreconditioner>();
+        } else if (parms_["linsystem_precond"] == "diagonal") {
+          eigenLinearSolver<EigenSolverType::GMRES, PreconditionerType::DiagonalPreconditioner>();
+        }
+      } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN" ) {
+        if (parms_["linsystem_precond"] == "no") {
+          eigenLinearSolver<EigenSolverType::BiCGSTAB, PreconditionerType::IdentityPreconditioner>();
+        } else if (parms_["linsystem_precond"] == "diagonal") {
+          eigenLinearSolver<EigenSolverType::BiCGSTAB, PreconditionerType::DiagonalPreconditioner>();
+        }
+      } else {
         throw std::runtime_error("[linsystem_solver] parameter not recognized");
+      }
     }
     auto tmp3 = applyOperator(currentSolution_);
     auto finalError = ietl::two_norm(tmp3-rhsMPS_);
@@ -124,6 +161,26 @@ public:
   ~LinSolver() = default;
 
 protected:
+
+  /** @brief Solves the linear system with eigen */
+  template<EigenSolverType EigenSolver, PreconditionerType Preconditioner>
+  void eigenLinearSolver() {
+    using MatrixWrapperType = LinearSolverWrapper<Matrix, SymmGroup>;
+    using SolverType = typename EigenSolverTraitClass<MatrixWrapperType, EigenSolver, Preconditioner>::SolverType;
+    auto matrixFreeWrapper_ = MatrixWrapperType(sp_, rhsMPS_, precond_, shift_);
+    SolverType solver;
+    solver.setTolerance(gmresTol_);
+    solver.setMaxIterations(krylovDim_);
+    solver.compute(matrixFreeWrapper_);
+    // suppose unitary variance matrix to generate initial guess
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> initialEigenMatrix = currentSolution_.getEigenRepresentation();
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> rhsMatrix = rhsMPS_.getEigenRepresentation();
+    Eigen::Matrix<ScalarType, Eigen::Dynamic, 1> newEigenVector = solver.solveWithGuess(rhsMatrix, initialEigenMatrix);
+    maquis::cout << std::endl;
+    maquis::cout << " - Linear solver converged after " << solver.iterations() << " iterations." << std::endl;
+    maquis::cout << " - Final error: " << solver.error() << std::endl;
+    currentSolution_.fillWithEigenVector(newEigenVector);
+  }
 
   /**
    * @brief Solve the local linear system with the GMRES algorithm.

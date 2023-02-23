@@ -35,13 +35,13 @@ struct coded_model_factory<Matrix, TwoU1> {
     (Lattice const & lattice, BaseParameters & parms)
     {
         using impl_ptr = std::shared_ptr<model_impl<Matrix, TwoU1> >;
-        if (parms["MODEL"] == std::string("quantum_chemistry"))
+        if (parms["MODEL"] == std::string("quantum_chemistry")) {
             return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
 #if defined(HAVE_NU1) && defined(DMRG_PREBO)
-        else if (parms["MODEL"] == std::string("PreBO"))
+        } else if (parms["MODEL"] == std::string("PreBO")) {
             return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
 #endif
-        else {
+        } else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();
         }
