@@ -171,6 +171,11 @@ public:
                     positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
                     operators.push_back(count_ele);
                 }
+                else {
+                    vec_jnk[1] = 0;
+                    positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
+                    operators.push_back(ident_ele);
+                }
                 // Builds the term of the Hamiltonian
                 modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
             }
