@@ -250,8 +250,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
     else if (parms.is_set("integrals_binary")) {
         // parse serialized integrals
         chem::integral_map<InputType, chem::Hamiltonian::VibrationalCanonical> ints;
-        std::stringstream ss;
-        ss << parms["integrals_binary"].as<std::string>();
+        std::stringstream ss(parms["integrals_binary"].as<std::string>());
         boost::archive::text_iarchive ia{ss};
         ia >> ints;
         for (auto&& t: ints) {
