@@ -826,19 +826,21 @@ Currently, \qcm\ supports two different strategies for mapping these sites onto 
   lattice_library                 = coded
   optimization                    = singlesite
   integral_file                   = FCIDUMP_Excitonic
-  init_type                      = `default'
+  init_type                       = `default'
   // The symmetry group is u1 for all vibronic DMRG calculations
   symmetry                        = u1
   // This is lattice is used for both vibronic and excitonic calculations.
   LATTICE                         = `vibronic lattice'
-  // Vibronic model
-  MODEL                           = vibronic
+  // Excitonic model
+  MODEL                           = excitonic
   J_coupling                      = -500
   // This could have been also 'firstele'
   vibronic_sorting                = `intertwined'
   // Number of modes and of molecules
   vibronic_nmodes                 = 10
   n_excitons                      = 6
+  vibronic_nstates                = 1
+  L                               = 66
 \end{lstlisting}
 
 We report in Listing~\ref{lst:excitonicInput} an examples of an input file for running a DMRG calculation on an excitonic Hamiltonian composed by 6 molecules, each one with 10 vibrational modes, coupled by a Coulomb coupling of -500 (note that the units in which the $J$ parameter is reported must be the same used in the \texttt{integral\_file}).
