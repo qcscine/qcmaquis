@@ -70,17 +70,17 @@ public:
      * Moreover, off-diagonal coordinate-independent electronic coupling terms are present.
      */
     HolsteinHubbardExcitonicHamiltonian (const Lattice& lat_, BaseParameters & model_) 
-        : lat(lat_), model(model_), tag_handler(new table_type()), L_(model["L"]), n_ele_states_(model["vibronic_nstates"]),
-          n_vib_states_(model["vibronic_nmodes"]), n_particles_(model["n_excitons"]), phys_indexes(0), J_(0.),
+        : lat(lat_), model(model_), tag_handler(new table_type()), L_(model["L"]), n_ele_states_(model["vibronic_num_elestates"]),
+          n_vib_states_(model["vibronic_num_vibmodes"]), n_particles_(model["vibronic_num_molecules"]), phys_indexes(0), J_(0.),
           epsilon_(1.), only_nn_(false)
     {
         // Maximum order of the coupling terms that are supported.
         // For the excitonic Hamiltonian, this will be 
         maxCoupling = chem::getIndexDim(chem::Hamiltonian::Excitonic);
         // Vibronic interaction definition
-        J_ = model["J_coupling"].as<value_type>();
-        epsilon_ = model["J_excitation"].as<value_type>();
-        if (model["J_interaction"] == "nn")
+        J_ = model["vibronic_J_coupling"].as<value_type>();
+        epsilon_ = model["vibronic_J_excitation"].as<value_type>();
+        if (model["vibronic_J_interaction_type"] == "nn")
             only_nn_ = true;
         // Variable definition
         std::size_t nMax = model["Nmax"];
