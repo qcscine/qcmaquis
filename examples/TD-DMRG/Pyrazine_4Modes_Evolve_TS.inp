@@ -25,8 +25,8 @@ model_library                   = coded
 lattice_library                 = coded
 LATTICE                         = "vibronic lattice"
 MODEL                           = vibronic
-vibronic_nstates                = 2
-vibronic_nmodes                 = 4
+vibronic_num_elestates          = 2
+vibronic_num_vibmodes           = 4
 Nmax                            = 10
 integral_file                   = Pyrazine_VibHam_RedDim.txt
 
