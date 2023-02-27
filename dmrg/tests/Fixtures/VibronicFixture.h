@@ -41,11 +41,11 @@ struct VibronicFixture
         parametersExcitonicAggregate.set("LATTICE", "vibronic lattice");
         parametersExcitonicAggregate.set("MODEL", "excitonic");
         parametersExcitonicAggregate.set("Nmax", 8);
-        parametersExcitonicAggregate.set("vibronic_nstates", 1);
-        parametersExcitonicAggregate.set("vibronic_nmodes", 10);
-        parametersExcitonicAggregate.set("n_excitons", 6);
-        parametersExcitonicAggregate.set("J_coupling", -500);
-        parametersExcitonicAggregate.set("J_interaction", "nn");
+        parametersExcitonicAggregate.set("vibronic_num_elestates", 1);
+        parametersExcitonicAggregate.set("vibronic_num_vibmodes", 10);
+        parametersExcitonicAggregate.set("vibronic_num_molecules", 6);
+        parametersExcitonicAggregate.set("vibronic_J_coupling", -500);
+        parametersExcitonicAggregate.set("vibronic_J_interaction_type", "nn");
         parametersExcitonicAggregate.set("integral_file", "integral_file_Excitonic");
         //
         parametersExcitonicAggregateTwoSites.set("L", 22);
@@ -53,11 +53,11 @@ struct VibronicFixture
         parametersExcitonicAggregateTwoSites.set("LATTICE", "vibronic lattice");
         parametersExcitonicAggregateTwoSites.set("MODEL", "excitonic");
         parametersExcitonicAggregateTwoSites.set("Nmax", 8);
-        parametersExcitonicAggregateTwoSites.set("vibronic_nstates", 1);
-        parametersExcitonicAggregateTwoSites.set("vibronic_nmodes", 10);
-        parametersExcitonicAggregateTwoSites.set("n_excitons", 2);
-        parametersExcitonicAggregateTwoSites.set("J_coupling", -500);
-        parametersExcitonicAggregateTwoSites.set("J_interaction", "nn");
+        parametersExcitonicAggregateTwoSites.set("vibronic_num_elestates", 1);
+        parametersExcitonicAggregateTwoSites.set("vibronic_num_vibmodes", 10);
+        parametersExcitonicAggregateTwoSites.set("vibronic_num_molecules", 2);
+        parametersExcitonicAggregateTwoSites.set("vibronic_J_coupling", -500);
+        parametersExcitonicAggregateTwoSites.set("vibronic_J_interaction_type", "nn");
         parametersExcitonicAggregateTwoSites.set("integral_file", "integral_file_Excitonic");
         // Vibronic models for S1/S2 states of pyrazine --> L=26
         parametersVibronic.set("L", 26);
@@ -65,16 +65,16 @@ struct VibronicFixture
         parametersVibronic.set("LATTICE", "vibronic lattice");
         parametersVibronic.set("MODEL", "vibronic");
         parametersVibronic.set("Nmax", 6);
-        parametersVibronic.set("vibronic_nstates", 2);
-        parametersVibronic.set("vibronic_nmodes", 24);
+        parametersVibronic.set("vibronic_num_elestates", 2);
+        parametersVibronic.set("vibronic_num_vibmodes", 24);
         // "Fake" vibronic Hamiltonian with only a single state, with an Harmonic PES.
         parametersFakeVibronic.set("L", 4);
         parametersFakeVibronic.set("symmetry", "u1");
         parametersFakeVibronic.set("LATTICE", "vibronic lattice");
         parametersFakeVibronic.set("MODEL", "vibronic");
         parametersFakeVibronic.set("Nmax", 6);
-        parametersFakeVibronic.set("vibronic_nstates", 1);
-        parametersFakeVibronic.set("vibronic_nmodes", 3);
+        parametersFakeVibronic.set("vibronic_num_elestates", 1);
+        parametersFakeVibronic.set("vibronic_num_vibmodes", 3);
         parametersFakeVibronic.set("integral_file", "integral_file_VibronicFile");
         // Vibronic Hamiltonian for pyrazine, for the 4-mode Harmonic Hamiltonian.
         parametersVibronicPyrazineRedDim.set("L", 6);
@@ -82,8 +82,8 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDim.set("LATTICE", "vibronic lattice");
         parametersVibronicPyrazineRedDim.set("MODEL", "vibronic");
         parametersVibronicPyrazineRedDim.set("Nmax", 6);
-        parametersVibronicPyrazineRedDim.set("vibronic_nstates", 2);
-        parametersVibronicPyrazineRedDim.set("vibronic_nmodes", 4);
+        parametersVibronicPyrazineRedDim.set("vibronic_num_elestates", 2);
+        parametersVibronicPyrazineRedDim.set("vibronic_num_vibmodes", 4);
         parametersVibronicPyrazineRedDim.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim");
         // Vibronic Hamiltonian for pyrazine, for the 4-mode full vibronic Hamiltonian.
         parametersVibronicPyrazineRedDimFull.set("L", 6);
@@ -91,8 +91,8 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDimFull.set("LATTICE", "vibronic lattice");
         parametersVibronicPyrazineRedDimFull.set("MODEL", "vibronic");
         parametersVibronicPyrazineRedDimFull.set("Nmax", 6);
-        parametersVibronicPyrazineRedDimFull.set("vibronic_nstates", 2);
-        parametersVibronicPyrazineRedDimFull.set("vibronic_nmodes", 4);
+        parametersVibronicPyrazineRedDimFull.set("vibronic_num_elestates", 2);
+        parametersVibronicPyrazineRedDimFull.set("vibronic_num_vibmodes", 4);
         parametersVibronicPyrazineRedDimFull.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim_Full");
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");

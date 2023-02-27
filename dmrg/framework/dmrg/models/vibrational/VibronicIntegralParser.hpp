@@ -95,7 +95,7 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
     std::vector<T> matrix_elements;
     std::vector<chem::index_type<chem::Hamiltonian::Vibronic>> indices;
     // Variable initialization
-    int n_states = parms["vibronic_nstates"];
+    int n_states = parms["vibronic_num_elestates"];
     int L_lattice = lat.size();
     // == Parses orbital data ==
     std::string integral_file = parms["integral_file"];

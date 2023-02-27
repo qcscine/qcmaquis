@@ -62,7 +62,7 @@ public:
     /** @brief Class constructor */
     VibronicModel(const Lattice& lattice_, BaseParameters& parameters_)
       : lat(lattice_), parameters(parameters_), tag_handler(new table_type()), L_(parameters_["L"]),
-        n_ele_states_(parameters_["vibronic_nstates"]), n_vib_states_(parameters_["vibronic_nmodes"])
+        n_ele_states_(parameters_["vibronic_num_elestates"]), n_vib_states_(parameters_["vibronic_num_vibmodes"])
     {
         // Variable definition
         int nMax = parameters_["Nmax"];

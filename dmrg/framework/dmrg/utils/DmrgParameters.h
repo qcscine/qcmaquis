@@ -164,13 +164,13 @@ private:
         add_option("PreBO_InitialStateVector", "Number of particles in alpha/beta state for each particle.");
 
         // Vibronic settings
-        add_option("J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
-        add_option("J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
-        add_option("J_interaction", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all molecules are coupled)", value("nn"));
-        add_option("vibronic_nstates", "Number of the electronic states entering the vibronic Hamiltonian");
-        add_option("vibronic_nmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
+        add_option("vibronic_J_coupling", "Coulomb coupling defining the excitonic Hamiltonian", value(0.));
+        add_option("vibronic_J_excitation", "Scaling factor for the single-state component of the Hamiltonian", value(0.));
+        add_option("vibronic_J_interaction_type", "Type of Coulomb coupling. Allowed values: nn (nearest-neighbour) or all (all molecules are coupled)", value("nn"));
+        add_option("vibronic_num_elestates", "Number of the electronic states entering the vibronic Hamiltonian");
+        add_option("vibronic_num_vibmodes", "Number of modes per molecule included in the vibronic Hamiltonian");
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
-        add_option("n_excitons", "Number of molecules composing the molecular aggregate");
+        add_option("vibronic_num_molecules", "Number of molecules composing the molecular aggregate");
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
