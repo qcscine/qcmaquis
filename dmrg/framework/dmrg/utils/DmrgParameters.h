@@ -82,7 +82,7 @@ private:
         add_option("alpha_main", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during nmainweeps", value(1e-4));
         add_option("alpha_final", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during the remainder of nsweeps", value(1e-8));
 
-        // MPS initialization settings 
+        // MPS initialization settings
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
         add_option("init_coeff", "Coefficients for coherent init", value(""));
         add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
@@ -96,13 +96,13 @@ private:
         add_option("lattice_library", "", value("coded"));
         add_option("CONSERVED_QUANTUMNUMBERS", "", value("Nup,Ndown"));
         add_option("orbital_order", "Comma separated list of orbital numbers");
-        
+
         // Settings for model
         add_option("MODEL","Type of Hamiltonian", value("quantum_chemistry"));
         add_option("symmetry", "Total symmetry group of the MPS, e.g. 2u1,2u1pg,su2u1,su2u1pg", value("su2u1pg"));
         add_option("model_library", "", value("coded"));
         add_option("model_file", "path to model parameters", value(""));
-        
+
         // Settings for integral read-in
         add_option("integral_file", "Path to model parameters, e.g. FCIDUMP-style integral file", value("FCIDUMP"));
         add_option("integral_cutoff", "Ignore integrals below a certain magnitude", value(0));
@@ -123,7 +123,7 @@ private:
         add_option("donotsave", "", value(0));
 
         add_option("use_compressed", "", value(0));
-        
+
         add_option("entanglement_spectra", "", value(0));
 
         add_option("ngrainings", "", value(0));
@@ -149,7 +149,7 @@ private:
         add_option("watson_max_coupling_input", "Maximum many-body coupling allowed to appear in the input file", value(ORDER_NONE));
         add_option("watson_coordinate_type", "Type of coordinate used for the Hamiltonian definition", value("cartesian"));
         add_option("Nmax", "Maximum excitation degree for each mode in the canonical quantization-based vDMRG, either single integer or comma separated list with the number of basis functions per mode", value(6));
-     
+
         // n-mode vDMRG related parameters
         add_option("nmode_dumpIntegral", "If == yes, store the integrals in the result file", value("no"));
         add_option("nmode_num_modes", "Number of modes of the Hamiltonian expressed in the n-mode representation");
@@ -175,7 +175,7 @@ private:
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
-        add_option("hamiltonian_units", "Units in which the SQ Hamiltonian is expressed", value("Hartree"));
+        add_option("hamiltonian_units", "Units in which the SQ Hamiltonian is expressed", value("au"));
         add_option("time_units", "Units in which the time-step is expressed");
         add_option("imaginary_time", "Equal to yes for iTD-DMRG, no for TD-DMRG", value("no"));
         add_option("TD_backpropagation", "Equal to yes if the back-propagation step should be done, no otherwise", value("yes"));
