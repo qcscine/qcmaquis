@@ -1,0 +1,43 @@
+// ==========================================
+//  EXAMPLE: TD-DMRG propagation on pyrazine
+// ==========================================
+
+// -- Generic DMRG parameters --
+nsweeps                         = 20
+ngrowsweeps                     = 100
+nmainsweeps                     = 10
+max_bond_dimension              = 100
+optimization                    = twosite 
+truncation_initial              = 1.0E-40
+truncation_final                = 1.0E-40
+resultfile                      = 'result_Pyrazine_4Modes_Evolve_TS.h5'
+chkpfile                        = 'chkp_Pyrazine_4Modes_Evolve_TS.h5'
+L                               = 6
+symmetry                        = 'u1'
+
+// -- Definition of the initial state for the propagation --
+init_state                      = 'coherent'
+init_coeff                      = "0.8,0.2"
+init_basis_state                = '1,0,0,0,0,0|0,1,0,0,0,0'
+
+// -- Vibronic Hamiltonian defininition --
+model_library                   = coded
+lattice_library                 = coded
+LATTICE                         = "vibronic lattice"
+MODEL                           = vibronic
+vibronic_nstates                = 2
+vibronic_nmodes                 = 4
+Nmax                            = 10
+integral_file                   = Pyrazine_VibHam_RedDim.txt
+
+// -- Parameters for the propagation --
+propagator_maxiter              = 100
+propagator_accuracy             = 1.0E-10
+time_step                       = 0.01
+time_units                      = "fs"
+hamiltonian_units               = "cm-1"
+
+// -- Measurements --
+MEASURE[Population]             = 1
+MEASURE[Autocorrelation]        = 1
+ALWAYS_MEASURE                  = "PopulationState0,PopulationState1,Autocorrelation"
