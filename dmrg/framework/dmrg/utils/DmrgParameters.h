@@ -175,7 +175,7 @@ private:
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
         add_option("time_step", "Time-step for the TD-DMRG propagation");
-        add_option("hamiltonian_units", "Units in which the SQ Hamiltonian is expressed", value("au"));
+        add_option("hamiltonian_units", "Units in which the SQ Hamiltonian is expressed", value("Hartree"));
         add_option("time_units", "Units in which the time-step is expressed");
         add_option("imaginary_time", "Equal to yes for iTD-DMRG, no for TD-DMRG", value("no"));
         add_option("TD_backpropagation", "Equal to yes if the back-propagation step should be done, no otherwise", value("yes"));
