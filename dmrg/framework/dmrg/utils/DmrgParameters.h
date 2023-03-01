@@ -171,6 +171,7 @@ private:
         add_option("vibronic_num_vibmodes", "Number of vibrational modes per molecule included in the vibronic Hamiltonian");
         add_option("vibronic_sorting", "Method to map the sites onto the DMRG lattice. Can be either equal to 'firstele', or to 'intertwined'", "firstele");
         add_option("vibronic_num_molecules", "Number of molecules composing the molecular aggregate");
+        add_option("vibronic_num_excitons", "Number of excitons", value(1));
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));

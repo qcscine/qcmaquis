@@ -192,7 +192,7 @@ public:
     }
 
     // Total quantum number which must be obtained at the end of the MPS. Should be 1 in all cases.
-    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return 1; }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return parms["vibronic_num_excitons"]; }
 
     /** @brief Getter for the operator associated with a given string */
     tag_type get_operator_tag(std::string const & name, size_t type) const
