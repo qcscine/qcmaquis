@@ -246,11 +246,7 @@ public:
     }
 
     /** @brief Identity matrix getter */
-    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
-    {
-        // ALB Note that here we allow at most 1 particle to be excited.
-        return 1;
-    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const { return parms["vibronic_num_excitons"]; }
 
     /** @brief Getter for the operator associated with a given string */
     tag_type get_operator_tag(std::string const & name, size_t type) const
