@@ -202,10 +202,16 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     MapOfOperatorsType mapOfOperators;
     chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> term_assistant(parms, lat, ident, fill, tag_handler);
     auto& matrix_elements = term_assistant.getMatrixElements();
+    // HF Determinant for Normal ordering
+    std::unordered_set<std::size_t> hole_indices;
+    if(isTranscorrelated_) {
+
+    }
     // Tmp objects.
     std::vector< OperatorType > oneBodyVec1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
     std::vector< OperatorType > oneBodyVec2 = {OperatorType::CreateBeta, OperatorType::DestroyBeta};
     std::vector< std::vector< OperatorType > > oneBodyElementaryOperators = { oneBodyVec1, oneBodyVec2 };
+
     // == MAIN LOOP ==
     for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++)
     {
@@ -226,6 +232,10 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
             term.coeff = matrixElement;
             term.push_back( std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
             this->terms_.push_back(term);
+
+            if(isTranscorrelated_) {
+
+            }
         }
         // One-body contribution
         else if (k == -1 && l == -1 && m==-1 && n==-1) {

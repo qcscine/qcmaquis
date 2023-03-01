@@ -35,6 +35,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
+#include <unordered_set>
 
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
@@ -1039,7 +1040,6 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     static constexpr bool isTranscorrelated_ = (HamiltonianTranscorrelated == HamiltonianTransformation::Transcorrelated);
-
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,

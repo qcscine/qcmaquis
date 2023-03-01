@@ -1,0 +1,28 @@
+// +-----------------------------------------------------------------+
+//  EXAMPLE: TC-DMRG for Helium, 2e5o
+// +----------------------------------------------------------------+
+
+// -- General parameters --
+L                        = 5
+max_bond_dimension       = 100
+transcorrelated_nsweep_TI   = 0
+transcorrelated_nsweep_TC   = 10
+nelec                    = 2
+symmetry                 = '2u1pg'
+LATTICE                  = "orbitals"
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+MODEL                    = "quantum_chemistry"
+integral_file            = "FCIDUMP_he_dz_trans"
+optimization             = "singlesite"
+conv_thresh              = 0.100000E-40
+
+// -- TD-specific quantities --
+propagator_maxiter          = 10
+propagator_accuracy         = 1.0E-10
+TD_backpropagation          = "no"
+time_units                  = as
+time_step                   = 0.1
+
+// -- Transcorrelated parameters --
+J_Transcorrelated           = 0.5
+hamiltonian_units           = Hartree

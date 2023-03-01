@@ -24,6 +24,17 @@ target_link_libraries(test_FH_MomentumSpace ${DMRG_APP_LIBRARIES})
 if(BUILD_TRANSCORRELATED_DMRG)
     add_executable(test_transcorrelated_molecular Transcorrelated/TranscorrelatedMolecularTest.cpp)
     target_link_libraries(test_transcorrelated_molecular ${DMRG_APP_LIBRARIES})
+
+    # Add path to transcorrelated Helium FCIDUMP file
+    set(TRANSCORRELATED_HE_FCIDUMP_PATH "${CMAKE_CURRENT_LIST_DIR}/fcidumps/FCIDUMP_he_dz_trans")
+    add_compile_definitions("TRANSCORRELATED_HE_FCIDUMP_PATH=\"${TRANSCORRELATED_HE_FCIDUMP_PATH}\"")
+    # Add path to conventiional Helium FCIDUMP file
+    set(CONVENTIONAL_HE_FCIDUMP_PATH "${CMAKE_CURRENT_LIST_DIR}/fcidumps/FCIDUMP_he_dz_trans_conventional")
+    add_compile_definitions("CONVENTIONAL_HE_FCIDUMP_PATH=\"${CONVENTIONAL_HE_FCIDUMP_PATH}\"")
+
+    add_executable(test_transcorrelated_normal_order Transcorrelated/TranscorrelatedHeliumTest.cpp)
+    target_link_libraries(test_transcorrelated_normal_order ${DMRG_APP_LIBRARIES})
+
 endif(BUILD_TRANSCORRELATED_DMRG)
 
 if(BUILD_DMRG_EVOLVE)
