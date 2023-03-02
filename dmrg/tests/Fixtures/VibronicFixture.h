@@ -99,6 +99,31 @@ struct VibronicFixture
         parametersVibronicPyrazineRedDimFull.set("vibronic_num_vibmodes", 4);
         parametersVibronicPyrazineRedDimFull.set("integral_file", "integral_file_vibronic_Pyrazine_RedDim_Full");
         parametersVibronicPyrazineRedDimFull.set("hamiltonian_units", "cm-1");
+        // Vibronic Hamiltonian for the thiphene dimer with a single harmonic mode
+        parametersVibronicThiopheneDimer.set("L", 4);
+        parametersVibronicThiopheneDimer.set("symmetry", "u1");
+        parametersVibronicThiopheneDimer.set("LATTICE", "vibronic lattice");
+        parametersVibronicThiopheneDimer.set("MODEL", "excitonic");
+        parametersVibronicThiopheneDimer.set("Nmax", 6); 
+        parametersVibronicThiopheneDimer.set("vibronic_num_elestates", 1);
+        parametersVibronicThiopheneDimer.set("vibronic_num_vibmodes", 1);
+        parametersVibronicThiopheneDimer.set("vibronic_num_molecules", 2);
+        parametersVibronicThiopheneDimer.set("vibronic_num_excitons", 1);
+        parametersVibronicThiopheneDimer.set("vibronic_J_coupling", -0.000238);
+        parametersVibronicThiopheneDimer.set("vibronic_sorting", "intertwined");
+        parametersVibronicThiopheneDimer.set("integral_file", "integralFileThiopheneDimer");
+        parametersVibronicThiopheneDimer.set("nsweeps", 6);
+        parametersVibronicThiopheneDimer.set("max_bond_dimension",  20);
+        parametersVibronicThiopheneDimer.set("init_type", "basis_state_generic");
+        parametersVibronicThiopheneDimer.set("init_basis_state", "1,0,0,0");
+        parametersVibronicThiopheneDimer.set("simulation_type", "TD");
+        parametersVibronicThiopheneDimer.set("propagator_accuracy", 1.0E-10);
+        parametersVibronicThiopheneDimer.set("propagator_maxiter", 10);
+        parametersVibronicThiopheneDimer.set("time_step", 1);
+        parametersVibronicThiopheneDimer.set("hamiltonian_units", "Hartree");
+        parametersVibronicThiopheneDimer.set("time_units", "as");
+        //Checkpoint and resultsfile?
+
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
@@ -256,6 +281,12 @@ struct VibronicFixture
         integralFilePyrazineRedDimFull << "  -44.44114904          2      4" << std::endl;
         integralFilePyrazineRedDimFull << "   10.24324125          3      4" << std::endl;
         integralFilePyrazineRedDimFull.close();
+        //
+        integralFileThiopheneDimer.open("integralFileThiopheneDimer");
+        integralFileThiopheneDimer << "-0.002633     -1      -1" << std::endl;
+        integralFileThiopheneDimer << "0.002633       1       1" << std::endl;
+        integralFileThiopheneDimer << "0              1       0" << std::endl;
+        integralFileThiopheneDimer.close();
     }
 
     /** @brief Class destructor */
@@ -269,9 +300,9 @@ struct VibronicFixture
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
-        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull;
+        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer;
 };
 
 #endif
