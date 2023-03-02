@@ -60,9 +60,11 @@ BOOST_FIXTURE_TEST_CASE(Test_Thiophene_Dimer_Excitonic, VibronicFixture)
     // Creates the interface for a single excitation
     maquis::DMRGInterface<std::complex<double>> interface_single(parametersVibronicThiopheneDimer); 
     // Checks energy before and after time evolution. Value should be twice the ZPE of the system (given by the second line in the integral file)
+    #ifdef DMRG_TD
     double interface_single_initialEnergy = interface_single.energy().real();
     interface_single.evolve();
     double interface_single_finalEnergy = interface_single.energy().real();
+    #endif //DMRG_TD
     BOOST_CHECK_CLOSE(interface_single_initialEnergy, 0.0052660000, 1.0E-10);
     BOOST_CHECK_CLOSE(interface_single_finalEnergy, 0.0052660000, 1.0E-10);
     //check for consistency when more than one exciton is created
@@ -71,9 +73,11 @@ BOOST_FIXTURE_TEST_CASE(Test_Thiophene_Dimer_Excitonic, VibronicFixture)
     // Creates the interface for a double excitation
     maquis::DMRGInterface<std::complex<double>> interface_double(parametersVibronicThiopheneDimer); 
     // Checks energy before and after time evolution. Value should be twice the ZPE of the system, since the ground and excited state PES is identical.
+    #ifdef DMRG_TD
     double interface_double_initialEnergy = interface_double.energy().real();
     interface_double.evolve();
     double interface_double_finalEnergy = interface_double.energy().real();
+    #endif //DMRG_TD
     BOOST_CHECK_CLOSE(interface_double_initialEnergy, 0.0052660000, 1.0E-10);
     BOOST_CHECK_CLOSE(interface_double_finalEnergy, 0.0052660000, 1.0E-10);
     #endif //HAVE_U1
