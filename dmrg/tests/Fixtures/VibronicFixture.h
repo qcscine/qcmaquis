@@ -109,7 +109,7 @@ struct VibronicFixture
         parametersVibronicThiopheneDimer.set("vibronic_num_vibmodes", 1);
         parametersVibronicThiopheneDimer.set("vibronic_num_molecules", 2);
         parametersVibronicThiopheneDimer.set("vibronic_num_excitons", 1);
-        parametersVibronicThiopheneDimer.set("vibronic_J_coupling", -0.000238);
+        parametersVibronicThiopheneDimer.set("vibronic_J_coupling", 0);
         parametersVibronicThiopheneDimer.set("vibronic_sorting", "intertwined");
         parametersVibronicThiopheneDimer.set("integral_file", "integralFileThiopheneDimer");
         parametersVibronicThiopheneDimer.set("nsweeps", 6);
