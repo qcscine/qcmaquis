@@ -181,4 +181,14 @@ overlap_measurements(BaseParameters const & parms, boost::optional<size_t> sweep
     return meas;
 }
 
+template <class Matrix, class SymmGroup>
+boost::ptr_vector<measurement<Matrix, SymmGroup> >
+autocorrelation_measurements(BaseParameters& parms, const MPS< Matrix, SymmGroup>& mpsReference)
+{
+    boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
+    if (parms["MEASURE[Autocorrelation]"])
+        meas.push_back(new measurements::overlap<Matrix, SymmGroup>("Autocorrelation", mpsReference));
+    return meas;
+}
+
 #endif

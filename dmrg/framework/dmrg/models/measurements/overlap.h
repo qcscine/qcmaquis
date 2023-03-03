@@ -32,38 +32,42 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 namespace measurements {
+
+/** @brief Measurement associated with the overlap with a fixed MPS */
+template <class Matrix, class SymmGroup>
+class overlap : public measurement<Matrix, SymmGroup> {
+  using base =  measurement<Matrix, SymmGroup>;
+  using MPSType = MPS<Matrix, SymmGroup>;
+public:
+
+  /** @brief Class constructor from a checkpoint file */
+  overlap(const std::string& name, const std::string& checkPointFile) : base(name)
+  { 
+    this->cast_to_real = false;
+    load(checkPointFile, mpsRef);
+  }
+        
+  // Constructor
+  overlap(const std::string& name, const MPSType& mpsInput) : base(name), mpsRef(mpsInput) 
+  { 
+    this->cast_to_real = false;
+  }
+  
+  /** @brief Method to calculate the overlap */
+  void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
+  {
+    this->result = ::overlap(mpsRef, mps);
+  }
     
-    template <class Matrix, class SymmGroup>
-    class overlap : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
-    public:
-        overlap(std::string const& name_,
-                std::string const& ckp_)
-        : base(name_)
-        , bra_ckp(ckp_)
-        { this->cast_to_real = false; }
-        
-        void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
-        {
-            maquis::cout << "   overlap with " << bra_ckp << "." << std::endl;
-            MPS<Matrix, SymmGroup> bra_mps;
-            load(bra_ckp, bra_mps);
-            
-            if (bra_mps[bra_mps.length()-1].col_dim().sum_of_sizes() == 1)
-                this->result = ::overlap(bra_mps, mps);
-            else
-                this->vector_results = multi_overlap(bra_mps, mps);
-        }
-        
-    protected:
-        measurement<Matrix, SymmGroup>* do_clone() const
-        {
-            return new overlap(*this);
-        }
-        
-    private:
-        std::string bra_ckp;
-    };
+protected:
+  measurement<Matrix, SymmGroup>* do_clone() const
+  {
+    return new overlap(*this);
+  }
+    
+private:
+  MPSType mpsRef;
+};
     
 }
 
