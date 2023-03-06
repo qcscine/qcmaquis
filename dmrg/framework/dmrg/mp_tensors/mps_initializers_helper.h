@@ -108,6 +108,26 @@ public:
   }
 };
 
+/** @brief Overload for the TwoU1 class (to be used for electronic Hamiltonians) */
+template<>
+class HelperClassBasisVectorConverter<TwoU1PG> {
+public:
+  // Types definition
+  using indexType = Index<TwoU1PG>;
+  using state_type = std::vector<boost::tuple<typename TwoU1PG::charge, int> >;
+  // General implementation
+  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+                                            const std::vector<int>& siteType, int size) {
+    if (inputVec.size() != size)
+      throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
+    auto state = state_type(size);
+    for (int j = 0 ; j < size; ++j) {
+      state[j] = physDim[siteType[j]].element(4-inputVec[j]);
+    }
+    return state;
+  }
+};
+
 /**
  * @brief Overload of the previous class for the NU1 symmetry group.
  *
