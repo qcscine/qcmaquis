@@ -105,7 +105,7 @@ BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
   // Check first that the HF state and the doubly excited state of H2 do not interact
   // with the single excitation (for the HF determinant, they should because of the Brillouin
   // theorem. For the doubly-excited state, they should because of symmetry).
-  parametersH2.set("init_state", "hf");
+  parametersH2.set("init_type", "hf");
   parametersH2.set("hf_occ", "4,1");
   auto mpsHF = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
   // Single excitations
