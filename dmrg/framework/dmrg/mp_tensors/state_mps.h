@@ -57,19 +57,23 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::ch
     {
         // Computes the symmetry block of the next dimension and HARDCODED its value to 1
         charge newc = SymmGroup::fuse(curr_i[0].first, boost::get<0>(state[i]));
-        Index<SymmGroup> new_i;
-        new_i.insert(std::make_pair(newc, mdim));
+        #ifndef NDEBUG
+        maquis::cout << "In state_mps for site=" << i << " which has newc=" << newc << " while allowed[i+1] has c=" << allowed[i+1] << std::endl;
+        #endif
+        assert (allowed[i+1].has(newc));
+        // Initialize the allowed sectors of the MPS with 0
+        mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], false, 0);
         // Get the product basis between the physical basis and the symmetry block of the left renormalized basis
         ProductBasis<SymmGroup> left(phys_dims[site_type[i]], allowed[i]);
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], false, 0);
         // Finds out where to put the 1.0 in the MPS. Retrieve, from the ProductBasis object, how the row index was
         // decomposed in terms of left auxiliary basis and physical basis.
         size_t b_in = left(boost::get<0>(state[i]), curr_i[0].first) + boost::get<1>(state[i]) * curr_i[0].second;
-        assert (allowed[i+1].has(newc));
         size_t b_out = 0;
         mps[i].make_left_paired();
         // Populates the MPS
         block_matrix<Matrix, SymmGroup> & block = mps[i].data();
+        Index<SymmGroup> new_i;
+        new_i.insert(std::make_pair(newc, mdim));
         Matrix &m = block(newc, new_i[0].first);
         m(b_in, b_out) = 1.;
         curr_i = new_i;
