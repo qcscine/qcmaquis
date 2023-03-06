@@ -243,7 +243,12 @@ public:
     value_type & operator[](std::size_t p) { return data_[p]; }
     value_type const & operator[](std::size_t p) const { return data_[p]; }
 
-    /** @brief Function to return the p-th overall element of a given index */
+    /*** @brief Function to return the p-th overall element of a given index.
+     *          It maps the absolute index to the relative position within a given symmetry sector.
+     *          That's why the method takes the absolute index, and subtracts the number of
+     *          elements associated to each symmetry group, up to the point when the index is smaller than
+     *          the number of elements associated with the symmetry group that is currently visited.
+     ***/
     boost::tuple<charge, std::size_t> element(std::size_t p) const 
     {
         std::size_t i=0;
