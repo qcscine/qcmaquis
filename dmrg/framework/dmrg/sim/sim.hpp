@@ -163,7 +163,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    all_measurements << autocorrelation_measurements<Matrix, SymmGroup>(parms, mps);
 
     // Final check on the checkpoint MPS after model has been initialised
     // Otherwise, does a fresh MPS initialization
@@ -174,6 +173,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
     }
 
+    all_measurements << autocorrelation_measurements<Matrix, SymmGroup>(parms, mps);
     assert(mps.length() == lat.size());
 
     /// Update parameters - after checks have passed

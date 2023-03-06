@@ -187,7 +187,7 @@ autocorrelation_measurements(BaseParameters& parms, const MPS< Matrix, SymmGroup
 {
     boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
     if (parms.is_set("MEASURE[Autocorrelation]")) {
-        if (parms["MEASURE[Autocorrelation"] == 1)
+        if (parms["MEASURE[Autocorrelation]"] == 1)
             meas.push_back(new measurements::overlap<Matrix, SymmGroup>("Autocorrelation", mpsReference));
     }
     return meas;
