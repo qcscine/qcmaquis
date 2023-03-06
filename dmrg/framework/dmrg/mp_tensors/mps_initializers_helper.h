@@ -120,9 +120,18 @@ public:
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
+    std::vector<int> orbitalOrder(size);
+    // Retrieves the orbital order
+    if (!parms.is_set("orbital_order"))
+      for (int p = 0; p < size; ++p)
+        orbitalOrder[p] = p+1;
+    else
+        orbitalOrder = parms["orbital_order"].template as<std::vector<int> >();
+    std::transform(orbitalOrder.begin(), orbitalOrder.end(), orbitalOrder.begin(), boost::lambda::_1-1);
     auto state = state_type(size);
     for (int j = 0 ; j < size; ++j) {
-      state[j] = physDim[siteType[j]].element(4-inputVec[j]);
+      int hfIdx = inputVec[orbitalOrder[j]];
+      state[j] = physDim[siteType[j]].element(4-hfIdx);
     }
     return state;
   }
