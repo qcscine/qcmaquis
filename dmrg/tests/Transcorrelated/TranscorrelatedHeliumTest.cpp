@@ -71,7 +71,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_HE_NormalOrdered, TranscorrelatedFixture
 
     auto energyDMRG = maquis::real(interface.energy());
 
-    parametersHeTranscorrelated.set("transcorrelated_3body_max_coupling", 4);
+    parametersHeTranscorrelated.set("transcorrelated_3body_normal_ordered", "yes");
     maquis::DMRGInterface<double> NO_interface(parametersHeTranscorrelated);
     NO_interface.runTranscorrelated();
 
