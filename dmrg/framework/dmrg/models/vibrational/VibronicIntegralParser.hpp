@@ -141,9 +141,8 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
  * 
  * The integral file is expected to be given in the following format:
  * 
- *  i   i  coeff --> harmonic potential term
- * ...
- * -i  -i  coeff --> harmonic kinetic term
+ *  i   i  coeff --> harmonic potential termmatrix_elements.push_back(t.second);
+            indices.push_back(t.first);
  * ...
  *  i   0  coeff --> LVC coupling term
  * 
@@ -184,6 +183,50 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, st
     }
     return std::make_pair(indices, matrix_elements);
 }
+
+//VAL(i): extended Excitonic Hamiltonian parser
+template<class T>
+inline std::pair< std::vector<std::vector<int>>, std::vector<T> > 
+    parseIntegralExcitonicExtended(BaseParameters& parms, const Lattice& lat) 
+{
+    // Types and variables definition
+    using pos_t = Lattice::pos_t;
+    std::vector<T> matrix_elements;
+    std::string integral_file = parms["integral_file"];
+    if (!boost::filesystem::exists(integral_file))
+        throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+    std::ifstream orb_file;
+    orb_file.open(integral_file.c_str());
+    // -- MAIN LOOP --
+    std::string tmp;
+    std::vector< std::string > line_splitted;
+    std::vector<int> indices_tmp;
+    std::vector<std::vector<int>> indices;  
+    while (std::getline(orb_file, tmp)) {
+        boost::trim_left(tmp);
+        boost::trim_right(tmp);
+        boost::split(line_splitted, tmp, boost::is_any_of(" "), boost::token_compress_on);        
+        double coefficient = atof(line_splitted[0].c_str());
+        for (std::size_t idx = 1; idx < line_splitted.size(); idx++){
+            indices_tmp.push_back(std::stoi(line_splitted[idx]));
+        }
+        indices.push_back(indices_tmp);
+        matrix_elements.push_back(coefficient);
+        indices_tmp.clear();
+    }
+    //debug section
+    for(int i = 0; i < indices.size(); i++){
+        maquis::cout << i << "th Element" << std::endl;
+        maquis::cout << "coefficient: " << matrix_elements[i] << std::endl;
+        for(int j = 0; j < indices[i].size(); j++){
+            maquis::cout << j << "th index: " << indices[i][j] << std::endl;
+        }
+    }
+    //
+    return std::make_pair(indices, matrix_elements);
+}
+
+//VAL(f)
 
 } // detail
 } // Vibrational

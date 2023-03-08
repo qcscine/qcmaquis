@@ -122,8 +122,18 @@ struct VibronicFixture
         parametersVibronicThiopheneDimer.set("time_step", 1);
         parametersVibronicThiopheneDimer.set("hamiltonian_units", "Hartree");
         parametersVibronicThiopheneDimer.set("time_units", "as");
-        //Checkpoint and resultsfile?
-
+        //
+        parametersExcitonicExtendedAggregate.set("L", 2);
+        parametersExcitonicExtendedAggregate.set("symmetry", "u1");
+        parametersExcitonicExtendedAggregate.set("LATTICE", "vibronic lattice");
+        parametersExcitonicExtendedAggregate.set("MODEL", "excitonic"); //is this the right choice?
+        parametersExcitonicExtendedAggregate.set("Nmax", 8); 
+        parametersExcitonicExtendedAggregate.set("vibronic_num_elestates", 1);
+        parametersExcitonicExtendedAggregate.set("vibronic_num_vibmodes", 1);
+        parametersExcitonicExtendedAggregate.set("vibronic_num_molecules", 1);
+        parametersExcitonicExtendedAggregate.set("vibronic_J_coupling", -2);
+        parametersExcitonicExtendedAggregate.set("integral_file", "integral_file_ExcitonicExtended");
+        parametersExcitonicExtendedAggregate.set("hamiltonian_units", "Hartree");
         //
         integralFileFakeVibronic.open("integral_file_VibronicFile");
         integralFileFakeVibronic << "EL_ST 0 0 " << std::endl;
@@ -287,6 +297,15 @@ struct VibronicFixture
         integralFileThiopheneDimer << "0.002633       1       1" << std::endl;
         integralFileThiopheneDimer << "0              1       0" << std::endl;
         integralFileThiopheneDimer.close();
+        //
+        integralFileExcitonicExtended.open("integral_file_ExcitonicExtended");
+        integralFileExcitonicExtended << "0.1       0       0       -1      -1  " << std::endl;
+        integralFileExcitonicExtended << "0.2       0       0        1       1" << std::endl;
+        integralFileExcitonicExtended << "0.3       1       0       -1      -1" << std::endl;
+        integralFileExcitonicExtended << "0.4       1       0        0       0" << std::endl;
+        integralFileExcitonicExtended << "0.5       1       0        1       0" << std::endl;
+        integralFileExcitonicExtended << "0.6       1       0        1       1" << std::endl;
+        integralFileExcitonic.close();
     }
 
     /** @brief Class destructor */
@@ -300,9 +319,9 @@ struct VibronicFixture
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
-        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer;
+        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer, parametersExcitonicExtendedAggregate;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended;
 };
 
 #endif

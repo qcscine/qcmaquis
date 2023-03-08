@@ -91,3 +91,16 @@ BOOST_FIXTURE_TEST_CASE(Test_Thiophene_Dimer_Excitonic, VibronicFixture)
     #endif //HAVE_U1
 }
 
+
+/** Test for the integral parser of the extended excitonic hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_ExtendedExcitonic, VibronicFixture)
+{
+#ifdef HAVE_U1
+    auto lattice = Lattice(parametersExcitonicExtendedAggregate); //add this to vibronic fixture
+    auto integrals = Vibrational::detail::parseIntegralExcitonicExtended<double>(parametersExcitonicExtendedAggregate, lattice);
+    //Checks sizes
+    BOOST_CHECK_EQUAL(integrals.first.size(), 6); //checks number of rows
+    BOOST_CHECK_EQUAL(integrals.second.size(), 6); //checks number of rows
+    BOOST_CHECK_EQUAL(integrals.first[0].size(), 4); //check if two operators tags, an electronic state and site specific tag have been read in
+#endif //HAVE_U1
+}
