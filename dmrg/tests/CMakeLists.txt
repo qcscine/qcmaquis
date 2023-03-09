@@ -28,11 +28,15 @@ if(BUILD_TRANSCORRELATED_DMRG)
     # Add path to transcorrelated Helium FCIDUMP file
     set(TRANSCORRELATED_HE_FCIDUMP_PATH "${CMAKE_CURRENT_LIST_DIR}/fcidumps/FCIDUMP_he_dz_trans")
     add_compile_definitions("TRANSCORRELATED_HE_FCIDUMP_PATH=\"${TRANSCORRELATED_HE_FCIDUMP_PATH}\"")
-    # Add path to conventiional Helium FCIDUMP file
+    # Add path to conventional Helium FCIDUMP file
     set(CONVENTIONAL_HE_FCIDUMP_PATH "${CMAKE_CURRENT_LIST_DIR}/fcidumps/FCIDUMP_he_dz_trans_conventional")
     add_compile_definitions("CONVENTIONAL_HE_FCIDUMP_PATH=\"${CONVENTIONAL_HE_FCIDUMP_PATH}\"")
 
-    add_executable(test_transcorrelated_normal_order Transcorrelated/TranscorrelatedHeliumTest.cpp)
+    # Add path to transcorrelated Be FCIDUMP file
+    set(TRANSCORRELATED_BE_FCIDUMP_PATH "${CMAKE_CURRENT_LIST_DIR}/fcidumps/FCIDUMP_3body_be_dz")
+    add_compile_definitions("TRANSCORRELATED_BE_FCIDUMP_PATH=\"${TRANSCORRELATED_BE_FCIDUMP_PATH}\"")
+
+    add_executable(test_transcorrelated_normal_order Transcorrelated/TranscorrelatedNormalOrderTest.cpp)
     target_link_libraries(test_transcorrelated_normal_order ${DMRG_APP_LIBRARIES})
 
 endif(BUILD_TRANSCORRELATED_DMRG)
