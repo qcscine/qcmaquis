@@ -60,18 +60,18 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
                                                                                          siteTypes, latticeSize);
   for (int iSite = 0; iSite < outputVector.size(); iSite++) {
     if (iSite == 1) {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 1);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 1);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
     }
     else if (iSite == 13) {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 1);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 1);
     }
     else {
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[0], 0);
-      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite])[1], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
+      BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
     }
-    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite]), 0);
+    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite][0]), 0);
   }
 #endif
 }
