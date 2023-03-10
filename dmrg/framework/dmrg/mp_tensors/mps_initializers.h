@@ -162,6 +162,7 @@ private:
   std::vector<int> site_type;
 };
 
+/*
 template<class Matrix, class SymmGroup>
 class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
@@ -192,7 +193,7 @@ public:
 
     std::vector<boost::tuple<charge, int> > state(mps.length());
     for (int i=0; i<mps.length(); ++i)
-        state[i] = boost::make_tuple(C, occupation[i]);
+        state[i][0] = boost::make_tuple(C, occupation[i]);
     mps = state_mps<Matrix>(state, phys_dims, site_type);
   }
 
@@ -201,6 +202,7 @@ private:
   std::vector<Index<SymmGroup> > phys_dims;
   std::vector<int> site_type;
 };
+*/
 
 /**
  * @brief ONV MPS initializer
@@ -244,11 +246,11 @@ public:
     {
         // assert(basis_index.size() == mps.length());
         auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-        mps = state_mps<Matrix>(state, phys_dims, site_type, right_end);
+        mps = state_mps<Matrix>(state, phys_dims, site_type, right_end, 1);
 #ifndef NDEBUG
         for (int i = 0 ; i < basis_index.size() ; i++ ) {
           maquis::cout << "state: ";
-          maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
+          maquis::cout << boost::get<0>(state[i][0]) << ":" << boost::get<1>(state[i][0])<< " ";
           maquis::cout << "\n";
         }
 #endif

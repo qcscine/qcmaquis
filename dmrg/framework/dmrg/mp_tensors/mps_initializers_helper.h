@@ -41,21 +41,21 @@
  *
  * For now, we include only a method, [GenerateIndexFromString], that converts
  * an input of integer (provided with the `init_basis_state` input parameter)
- * into a vector of tuples (charge, int). The charge is the symmetry block
+ * into a vector of vectors of tuples (charge, int). The charge is the symmetry block
  * which is populated upon construction, while the int is the position *within*
  * the symmetry block that is populated.
  *
  * By default, the [GenerateIndexFromString] method is deactivated.
  *
- * @tparam SymmGroup Symmetry group (for now we implement None and NU1 symmetry group)
+ * @tparam SymmGroup Symmetry group
  */
 template<class SymmGroup>
 class HelperClassBasisVectorConverter {
 public:
   using ChargeType = typename SymmGroup::charge;
   using indexType = Index<SymmGroup>;
-  using state_type = std::vector<boost::tuple<ChargeType, int> >;
-  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  using stateType = std::vector<std::vector<boost::tuple<ChargeType, int> > >;
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size)
   {
     throw std::runtime_error("GenerateIndexFromString method not available for this symmetry group");
@@ -68,15 +68,16 @@ class HelperClassBasisVectorConverter<TrivialGroup> {
 public:
   // Types definition
   using indexType = Index<TrivialGroup>;
-  using state_type = std::vector<boost::tuple<typename TrivialGroup::charge, int> >;
+  using stateEntryType = std::vector<boost::tuple<typename TrivialGroup::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
   // General implementation
-  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
-    auto state = state_type(size);
+    auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j)
-      state[j] = physDim[siteType[j]].element(inputVec[j]);
+      state[j][0] = physDim[siteType[j]].element(inputVec[j]);
     return state;
   }
 };
@@ -87,21 +88,22 @@ class HelperClassBasisVectorConverter<U1> {
 public:
   // Types definition
   using indexType = Index<U1>;
-  using state_type = std::vector<boost::tuple<typename U1::charge, int> >;
+  using stateEntryType = std::vector<boost::tuple<typename U1::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
   // General implementation
-  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
-    auto state = state_type(size);
+    auto state = stateType(size, stateEntryType(1));
     // Note that here we have two possibilities: either a site is electronic site, or it is a vibrational one.
     for (int j = 0 ; j < size; ++j) {
       if (siteType[j] == 1) {
         auto posOfCharge = physDim[siteType[j]].position(inputVec[j]);
-        state[j] = physDim[siteType[j]].element(posOfCharge);
+        state[j][0] = physDim[siteType[j]].element(posOfCharge);
       }
       else {
-        state[j] = physDim[siteType[j]].element(inputVec[j]);
+        state[j][0] = physDim[siteType[j]].element(inputVec[j]);
       }
     }
     return state;
@@ -114,24 +116,62 @@ class HelperClassBasisVectorConverter<TwoU1PG> {
 public:
   // Types definition
   using indexType = Index<TwoU1PG>;
-  using state_type = std::vector<boost::tuple<typename TwoU1PG::charge, int> >;
+  using stateEntryType = std::vector<boost::tuple<typename TwoU1PG::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
   // General implementation
-  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
     std::vector<int> orbitalOrder(size);
     // Retrieves the orbital order
-    if (!parms.is_set("orbital_order"))
+    if (!params.is_set("orbital_order"))
       for (int p = 0; p < size; ++p)
         orbitalOrder[p] = p+1;
     else
-        orbitalOrder = parms["orbital_order"].template as<std::vector<int> >();
+        orbitalOrder = params["orbital_order"].template as<std::vector<int> >();
     std::transform(orbitalOrder.begin(), orbitalOrder.end(), orbitalOrder.begin(), boost::lambda::_1-1);
-    auto state = state_type(size);
+    auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
-      state[j] = physDim[siteType[j]].element(4-hfIdx);
+      state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+    }
+    return state;
+  }
+};
+
+/** @brief Overload for the SU2U1 class (to be used for electronic Hamiltonians) */
+template<>
+class HelperClassBasisVectorConverter<SU2U1PG> {
+public:
+  // Types definition
+  using indexType = Index<SU2U1PG>;
+  using stateEntryType = std::vector<boost::tuple<typename SU2U1PG::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
+  // General implementation
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+                                            const std::vector<int>& siteType, int size) {
+    if (inputVec.size() != size)
+      throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
+    std::vector<int> orbitalOrder(size);
+    // Retrieves the orbital order
+    if (!params.is_set("orbital_order"))
+      for (int p = 0; p < size; ++p)
+        orbitalOrder[p] = p+1;
+    else
+        orbitalOrder = params["orbital_order"].template as<std::vector<int> >();
+    std::transform(orbitalOrder.begin(), orbitalOrder.end(), orbitalOrder.begin(), boost::lambda::_1-1);
+    auto state = stateType(size, stateEntryType(1));
+    for (int j = 0 ; j < size; ++j) {
+      int hfIdx = inputVec[orbitalOrder[j]];
+      if (hfIdx==2 || hfIdx==3) { //since in this case alpha and beta are equivalent
+        state[j].resize(2);
+        state[j][0] = physDim[siteType[j]].element(1);
+        state[j][1] = physDim[siteType[j]].element(2);
+      } else {
+        state[j].resize(1);
+        state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+      }
     }
     return state;
   }
@@ -154,7 +194,8 @@ public:
   using NU1 = NU1_template<N>;
   using indexType = Index<NU1>;
   using ChargeType = typename NU1::charge;
-  using state_type = std::vector<boost::tuple<ChargeType, int> >;
+  using stateEntryType = std::vector<boost::tuple<ChargeType, int> >;
+  using stateType = std::vector<stateEntryType>;
 
   /** @brief Parser for the NU1 symmetry group
   * This function has two-fold functionality:
@@ -162,11 +203,11 @@ public:
   * but if the init_type is basis_state_generic_const or basis_state_generic_default,
   * then it returns the charge and the integer to inidcate wether this site should be populated (1) or not (0)
   */
-  static state_type GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
                                             const std::vector<int>& siteType, int size) {
     if (inputVec.size() != physDim.size())
       throw std::runtime_error("Index list number of elements does not match the number of site types. Check the setting 'init_basis_state'.");
-    auto state = state_type(size);
+    auto state = stateType(size, stateEntryType(1));
     int numberOfTypes = inputVec.size();
     std::vector<int> counterOfTypes(numberOfTypes, 0);
     // If available, extracts the user-defined modals order
@@ -186,9 +227,9 @@ public:
       if (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default") {
         boost::tuple<ChargeType, bool> truePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 1);
         boost::tuple<ChargeType, bool> falsePair = boost::make_tuple(boost::get<0>(physDim[type].element(0)), 0);   
-        state[positionOfSiteInNewLattice] = (counterOfTypes[type] <= inputVec[type]) ? truePair : falsePair;
+        state[positionOfSiteInNewLattice][0] = (counterOfTypes[type] <= inputVec[type]) ? truePair : falsePair;
       } else {
-        state[positionOfSiteInNewLattice] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);
+        state[positionOfSiteInNewLattice][0] = (counterOfTypes[type] == inputVec[type]) ? physDim[type].element(0) : physDim[type].element(1);
       }
       counterOfTypes[type]++;
     }

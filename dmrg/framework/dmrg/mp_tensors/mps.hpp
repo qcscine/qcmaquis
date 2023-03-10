@@ -68,6 +68,13 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
     //     adhoc states will be broken (e.g. identity MPS)
     // for (int i = 0; i < L; ++i)
     //     (*this)[i].normalize_left(DefaultSolver());
+    #ifndef NDEBUG
+    maquis::cout << "MPS is now initialized but not yet left_normalized ...\n";
+    for (int p = 0; p < this->length(); ++p) {
+        maquis::cout << "MPS at site " << p << ":" << std::endl;
+        maquis::cout << (*this)[p];
+    }
+    #endif
     this->normalize_left();
 }
 
