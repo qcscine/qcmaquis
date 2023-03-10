@@ -134,7 +134,17 @@ public:
     auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
-      state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+      if (hfIdx>4) {
+        if (hfIdx==5 && (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default")) {
+          state[j].resize(4);
+          for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
+            state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
+        } else {
+          throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
+        }
+      } else {
+        state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+      }
     }
     return state;
   }
@@ -164,7 +174,17 @@ public:
     auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
-      state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+      if (hfIdx>4) {
+        if (hfIdx==5 && (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default")) {
+          state[j].resize(4);
+          for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
+            state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
+        } else {
+          throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
+        }
+      } else {
+        state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+      }
     }
     return state;
   }
@@ -194,7 +214,15 @@ public:
     auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
-      if (hfIdx==2 || hfIdx==3) { //since in this case alpha and beta are equivalent
+      if (hfIdx>4) {
+        if (hfIdx==5 && (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default")) {
+          state[j].resize(4);
+          for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
+            state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
+        } else {
+          throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
+        }
+      } else if (hfIdx==2 || hfIdx==3) { //since in this case alpha and beta are equivalent
         state[j].resize(2);
         state[j][0] = physDim[siteType[j]].element(1);
         state[j][1] = physDim[siteType[j]].element(2);
@@ -231,7 +259,15 @@ public:
     auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
-      if (hfIdx==2 || hfIdx==3) { //since in this case alpha and beta are equivalent
+      if (hfIdx>4) {
+        if (hfIdx==5 && (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default")) {
+          state[j].resize(4);
+          for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
+            state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
+        } else {
+          throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
+        }
+      } else if (hfIdx==2 || hfIdx==3) { //since in this case alpha and beta are equivalent
         state[j].resize(2);
         state[j][0] = physDim[siteType[j]].element(1);
         state[j][1] = physDim[siteType[j]].element(2);
