@@ -326,21 +326,19 @@ class NormalOrderingHelper {
         for (auto i: hole_states) {
             for (auto j: hole_states) {
                 for (auto k: hole_states) {
-                    std::vector<int> elements = {
-                            idxToMatrixElement[getIdentifier(i, i, j, k, k, j)],
-                            idxToMatrixElement[getIdentifier(i, k, j, i, k, j)],
-                            idxToMatrixElement[getIdentifier(i, i, j, j, k, k)]
-                    };
+                    std::vector<std::string> matrixElementStrings = {getIdentifier(i, i, j, k, k, j),
+                                                                     getIdentifier(i, k, j, i, k, j),
+                                                                     getIdentifier(i, i, j, j, k, k)};
 
-                    for (int n = 0; n < elements.size(); ++n) {
-                        if (elements[n] == 0)
+                    for (int n = 0; n < matrixElementStrings.size(); ++n) {
+                        if (!idxToMatrixElement.count(matrixElementStrings[n]))
                             continue;
-                        contribution += coeffs[n] * matrix_elements[elements[n] - 1];
+
+                        contribution += coeffs[n] * matrix_elements[idxToMatrixElement[matrixElementStrings[n]]];
                     }
                 }
             }
         }
-
         return contribution;
     };
 };
