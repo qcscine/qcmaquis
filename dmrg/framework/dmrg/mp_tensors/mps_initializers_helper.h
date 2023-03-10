@@ -140,6 +140,36 @@ public:
   }
 };
 
+/** @brief Overload for the TwoU1 class (to be used for electronic Hamiltonians) */
+template<>
+class HelperClassBasisVectorConverter<TwoU1> {
+public:
+  // Types definition
+  using indexType = Index<TwoU1>;
+  using stateEntryType = std::vector<boost::tuple<typename TwoU1::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
+  // General implementation
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+                                            const std::vector<int>& siteType, int size) {
+    if (inputVec.size() != size)
+      throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
+    std::vector<int> orbitalOrder(size);
+    // Retrieves the orbital order
+    if (!params.is_set("orbital_order"))
+      for (int p = 0; p < size; ++p)
+        orbitalOrder[p] = p+1;
+    else
+        orbitalOrder = params["orbital_order"].template as<std::vector<int> >();
+    std::transform(orbitalOrder.begin(), orbitalOrder.end(), orbitalOrder.begin(), boost::lambda::_1-1);
+    auto state = stateType(size, stateEntryType(1));
+    for (int j = 0 ; j < size; ++j) {
+      int hfIdx = inputVec[orbitalOrder[j]];
+      state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+    }
+    return state;
+  }
+};
+
 /** @brief Overload for the SU2U1 class (to be used for electronic Hamiltonians) */
 template<>
 class HelperClassBasisVectorConverter<SU2U1PG> {
@@ -147,6 +177,43 @@ public:
   // Types definition
   using indexType = Index<SU2U1PG>;
   using stateEntryType = std::vector<boost::tuple<typename SU2U1PG::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
+  // General implementation
+  static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
+                                            const std::vector<int>& siteType, int size) {
+    if (inputVec.size() != size)
+      throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
+    std::vector<int> orbitalOrder(size);
+    // Retrieves the orbital order
+    if (!params.is_set("orbital_order"))
+      for (int p = 0; p < size; ++p)
+        orbitalOrder[p] = p+1;
+    else
+        orbitalOrder = params["orbital_order"].template as<std::vector<int> >();
+    std::transform(orbitalOrder.begin(), orbitalOrder.end(), orbitalOrder.begin(), boost::lambda::_1-1);
+    auto state = stateType(size, stateEntryType(1));
+    for (int j = 0 ; j < size; ++j) {
+      int hfIdx = inputVec[orbitalOrder[j]];
+      if (hfIdx==2 || hfIdx==3) { //since in this case alpha and beta are equivalent
+        state[j].resize(2);
+        state[j][0] = physDim[siteType[j]].element(1);
+        state[j][1] = physDim[siteType[j]].element(2);
+      } else {
+        state[j].resize(1);
+        state[j][0] = physDim[siteType[j]].element(4-hfIdx);
+      }
+    }
+    return state;
+  }
+};
+
+/** @brief Overload for the SU2U1 class (to be used for electronic Hamiltonians) */
+template<>
+class HelperClassBasisVectorConverter<SU2U1> {
+public:
+  // Types definition
+  using indexType = Index<SU2U1>;
+  using stateEntryType = std::vector<boost::tuple<typename SU2U1::charge, int> >;
   using stateType = std::vector<stateEntryType>;
   // General implementation
   static stateType GenerateIndexFromString(BaseParameters& params, const std::vector<int>& inputVec, const std::vector<indexType>& physDim,
