@@ -83,10 +83,6 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<boost::tuple<typename S
         }
       }
     }
-    //for (int j = 0; j < curr_j.size(); ++j) {
-      //assert (curr_j[j]==curr_j[0]);
-    //}
-    mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
     curr_i = curr_j;
   }
   return mps;

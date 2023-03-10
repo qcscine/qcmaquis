@@ -247,15 +247,13 @@ public:
         // assert(basis_index.size() == mps.length());
         auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
         mps = state_mps<Matrix>(state, phys_dims, site_type, right_end, 1);
-#ifndef NDEBUG
-        for (int i = 0 ; i < basis_index.size() ; i++ ) {
-          maquis::cout << "state: ";
-          maquis::cout << boost::get<0>(state[i][0]) << ":" << boost::get<1>(state[i][0])<< " ";
-          maquis::cout << "\n";
-        }
-#endif
+
         if (mps[mps.length()-1].col_dim()[0].first != right_end)
             throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+        
+        for (int i = 0; i < mps.length(); i++) {
+            mps[i].divide_by_scalar(mps[i].scalar_norm());
+        }
     }
 
 private:
