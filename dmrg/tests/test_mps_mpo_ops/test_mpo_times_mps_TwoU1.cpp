@@ -78,7 +78,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
   using opt_base_t = optimizer_base<matrix, S, storage::disk>;
   int nSweeps = 50;
   // Conventional calculation
-  parametersBenzene.set("hf_occ", "4,4,2,1,1,1");
+  parametersBenzene.set("init_type", "basis_state_generic");
+  parametersBenzene.set("init_basis_state", "4,4,2,1,1,1");
   parametersBenzene.set("u1_total_charge1", 2);
   parametersBenzene.set("u1_total_charge2", 3);
   parametersBenzene.set("symmetry", "2u1pg");
@@ -87,7 +88,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
   interfaceCation.optimize();
   auto cationicEnergy = interfaceCation.energy();
   // "By-hand" ionize-then-optimize
-  parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1");
   parametersBenzene.set("u1_total_charge1", 3);
   parametersBenzene.set("u1_total_charge2", 3);
   // Add noise to "move" the optimization away from the local energy minimum

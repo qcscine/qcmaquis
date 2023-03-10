@@ -341,8 +341,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   using ModelType = Model<cmatrix, SU2U1PG>;
   // Generic parameters
   parametersLiH.set("max_bond_dimension", 50);
-  parametersLiH.set("init_type", "hf");
-  parametersLiH.set("hf_occ", "4,1,1,1");
+  parametersLiH.set("init_type", "basis_state_generic");
+  parametersLiH.set("init_basis_state", "4,1,1,1");
   parametersLiH.set("optimization", "twosite");
   parametersLiH.set("symmetry", "su2u1pg");
   parametersLiH.set("init_type", "const");
