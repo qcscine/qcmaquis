@@ -97,9 +97,8 @@ template <class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typename SymmGroup::charge, int> > > const & state,
                                        std::vector<Index<SymmGroup> > const& phys_dims, std::vector<int> const& site_type,
                                        typename SymmGroup::charge right_end = SymmGroup::IdentityCharge, bool fillRand=false,
-                                       int mMax=1)
+                                       int mdim=1)
 {
-  int mdim=1;
   // Types definition
   typedef typename SymmGroup::charge charge;
   MPS<Matrix, SymmGroup> mps(state.size());
