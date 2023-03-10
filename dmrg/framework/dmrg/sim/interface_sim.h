@@ -201,7 +201,7 @@ public:
     auto always_measurements = this->iteration_measurements(init_sweep);
     auto firstEnergy = this->get_energy();
     energies_.push_back(firstEnergy);
-    maquis::cout << "Initial energy is: " << firstEnergy << std::endl;
+    maquis::cout << "Initial energy is: " << std::setprecision(15) << firstEnergy << std::endl;
     // Run the sweep-based simulation.
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
