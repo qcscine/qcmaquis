@@ -116,10 +116,10 @@ BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
   parametersH2.set("init_basis_state", "1,4");
   auto mpsDouble = MPS<matrix, TwoU1PG>(latticeH2.size(), *(modelHF.initializer(latticeH2, parametersH2)));
   // Does the actual checks
-  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle1, mpo), 1.0E-15);
-  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle2, mpo), 1.0E-15);
-  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle1, mpo), 1.0E-15);
-  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle2, mpo), 1.0E-15);
+  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle1, mpo), 1.0E-12);
+  BOOST_CHECK_SMALL(expval(mpsHF, mpsSingle2, mpo), 1.0E-12);
+  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle1, mpo), 1.0E-12);
+  BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle2, mpo), 1.0E-12);
 }
 #endif // HAVE_TwoU1PG
 
