@@ -60,15 +60,15 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(TestOverlapPropagatorElectronic, S, symmetries,
 {
   using OverlapPropagatorType = OverlapPropagator<matrix, S, storage::disk>;
   using MPSType = MPS<matrix, S>;
-  parametersBenzene.set("init_type", "hf");
+  parametersBenzene.set("init_type", "basis_state_generic");
   auto latticeBenzene = Lattice(parametersBenzene);
   auto modelBenzene = Model<matrix, S>(latticeBenzene, parametersBenzene);
   auto mpoBenzene = make_mpo(latticeBenzene, modelBenzene);
-  parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1");
   auto mpsGS = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
-  parametersBenzene.set("hf_occ", "4,4,1,4,1,1");
+  parametersBenzene.set("init_basis_state", "4,4,1,4,1,1");
   auto mpsExc1 = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
-  parametersBenzene.set("hf_occ", "4,1,4,1,4,1");
+  parametersBenzene.set("init_basis_state", "4,1,4,1,4,1");
   auto mpsExc2 = MPS<matrix, S>(latticeBenzene.size(), *(modelBenzene.initializer(latticeBenzene, parametersBenzene)));
   mpsGS.normalize_right();
   mpsExc1.normalize_right();

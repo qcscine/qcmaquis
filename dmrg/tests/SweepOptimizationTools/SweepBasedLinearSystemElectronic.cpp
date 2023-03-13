@@ -50,8 +50,8 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   auto benzeneLattice = Lattice(parametersBenzene);
   auto benzeneModel = Model<matrix, TwoU1PG>(benzeneLattice, parametersBenzene);
   auto benzeneMPO = make_mpo(benzeneLattice, benzeneModel);
-  parametersBenzene.set("init_type", "hf");
-  parametersBenzene.set("hf_occ", "4,4,4,1,1,1");
+  parametersBenzene.set("init_type", "basis_state_generic");
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1");
   auto hfBenzeneMPS = MPS<matrix, TwoU1PG>(benzeneLattice.size(), *(benzeneModel.initializer(benzeneLattice, parametersBenzene)));
   hfBenzeneMPS.normalize_right();
   // Calculates the energy via the interface
