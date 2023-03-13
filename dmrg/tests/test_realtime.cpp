@@ -94,7 +94,6 @@ BOOST_FIXTURE_TEST_CASE(TestRealTime, BenzeneFixture)
  * and prepares the initial state to be the HF state, then the dynamics "populates"
  * the doubly-excited state, and the dynamics follows a Rabi oscillation pattern.
  */
-/*
 #ifdef HAVE_TwoU1PG
 BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
 {
@@ -123,7 +122,6 @@ BOOST_FIXTURE_TEST_CASE(TestRabiOscillation, H2Fixture)
   BOOST_CHECK_SMALL(expval(mpsDouble, mpsSingle2, mpo), 1.0E-15);
 }
 #endif // HAVE_TwoU1PG
-*/
 
 #ifdef HAVE_U1DG
 
