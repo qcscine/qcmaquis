@@ -189,12 +189,14 @@ template<class T>
 inline std::pair< std::vector<std::vector<int>>, std::vector<T> > 
     parseIntegralExcitonicExtended(BaseParameters& parms, const Lattice& lat) 
 {
+    maquis::cout << "entered method parseIntegralExcitonicExtended" << std::endl;
     // Types and variables definition
     using pos_t = Lattice::pos_t;
     std::vector<T> matrix_elements;
     std::string integral_file = parms["integral_file"];
     if (!boost::filesystem::exists(integral_file))
         throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+    maquis::cout << "check for integral file complete" << std::endl;
     std::ifstream orb_file;
     orb_file.open(integral_file.c_str());
     // -- MAIN LOOP --
@@ -202,13 +204,19 @@ inline std::pair< std::vector<std::vector<int>>, std::vector<T> >
     std::vector< std::string > line_splitted;
     std::vector<int> indices_tmp;
     std::vector<std::vector<int>> indices;  
+    maquis::cout << "starting loop" << std::endl;
     while (std::getline(orb_file, tmp)) {
         boost::trim_left(tmp);
+        maquis::cout << "trimmed left" << std::endl;
         boost::trim_right(tmp);
-        boost::split(line_splitted, tmp, boost::is_any_of(" "), boost::token_compress_on);        
+        maquis::cout << "trimmed right" << std::endl;
+        boost::split(line_splitted, tmp, boost::is_any_of(" "), boost::token_compress_on); //be careful with tabs. use spaces, otherwise FCIDUMP file is not read in properly
+        maquis::cout << "split line" << std::endl;        
         double coefficient = atof(line_splitted[0].c_str());
+        maquis::cout << "read in coefficient" << std::endl;
         for (std::size_t idx = 1; idx < line_splitted.size(); idx++){
             indices_tmp.push_back(std::stoi(line_splitted[idx]));
+            maquis::cout << "pushed back indices" << std::endl;
         }
         indices.push_back(indices_tmp);
         matrix_elements.push_back(coefficient);

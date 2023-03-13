@@ -64,6 +64,11 @@ public:
             throw std::runtime_error("Excitonic model currently supports only 1 electronic state");
         nParticles = parameters["vibronic_num_molecules"].as<int>();
     }
+    else if (parameters["MODEL"] == "excitonicextended") {
+        if (nElecStates != 1)
+            throw std::runtime_error("Extended excitonic model currently supports only 1 electronic state");
+        nParticles = parameters["vibronic_num_molecules"].as<int>();
+    }
     else {
         throw std::runtime_error("Lattice not coherent with the current MODEL");
     }

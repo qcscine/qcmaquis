@@ -126,7 +126,7 @@ struct VibronicFixture
         parametersExcitonicExtendedAggregate.set("L", 2);
         parametersExcitonicExtendedAggregate.set("symmetry", "u1");
         parametersExcitonicExtendedAggregate.set("LATTICE", "vibronic lattice");
-        parametersExcitonicExtendedAggregate.set("MODEL", "excitonic"); //is this the right choice?
+        parametersExcitonicExtendedAggregate.set("MODEL", "excitonic"); //still have to change this...
         parametersExcitonicExtendedAggregate.set("Nmax", 8); 
         parametersExcitonicExtendedAggregate.set("vibronic_num_elestates", 1);
         parametersExcitonicExtendedAggregate.set("vibronic_num_vibmodes", 1);
@@ -299,7 +299,7 @@ struct VibronicFixture
         integralFileThiopheneDimer.close();
         //
         integralFileExcitonicExtended.open("integral_file_ExcitonicExtended");
-        integralFileExcitonicExtended << "0.1       0       0       -1      -1  " << std::endl;
+        integralFileExcitonicExtended << "0.1       0       0       -1      -1" << std::endl;
         integralFileExcitonicExtended << "0.2       0       0        1       1" << std::endl;
         integralFileExcitonicExtended << "0.3       1       0       -1      -1" << std::endl;
         integralFileExcitonicExtended << "0.4       1       0        0       0" << std::endl;
