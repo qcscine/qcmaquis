@@ -62,26 +62,76 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<std::vector<boost::tuple<typename S
     ProductBasis<SymmGroup> left(phys_dims[site_type[i]], allowed[i]);
     // Populates the MPS
     block_matrix<Matrix, SymmGroup> & block = mps[i].data();
+    // Computes the symmetry block of the next dimension
+    charge newc = SymmGroup::fuse(curr_i[0].first, boost::get<0>(state[i][0]));
+    if (!allowed[i+1].has(newc))
+      throw std::runtime_error("The provided init_state does not result in an allowed symmetry block for site " + std::to_string(i) + ". Abort.");
+
+    Index<SymmGroup> new_i;
+    new_i.insert(std::make_pair(newc, mdim));
+    Matrix &m = block(newc, newc);
+    // Finds out where to put the 1.0 in the MPS. Retrieve, from the ProductBasis object, how the row index was
+    // decomposed in terms of left auxiliary basis and physical basis.
+    size_t b_in = left(boost::get<0>(state[i][0]), curr_i[0].first) + boost::get<1>(state[i][0]) * curr_i[0].second;
+    size_t b_out = 0;
+    m(b_in, b_out) = 1.;
+    curr_i = new_i;
+  }
+  return mps;
+}
+
+/** @brief Same as above, but populates several blocks which are provided in states and allowed, either randomly or const */
+template <class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> state_mps_cd(std::vector<std::vector<boost::tuple<typename SymmGroup::charge, int> > > const & state,
+                                    std::vector<Index<SymmGroup> > const& phys_dims,
+                                    std::vector<int> const& site_type,
+                                    typename SymmGroup::charge right_end = SymmGroup::IdentityCharge,
+                                    int mdim=1,
+                                    bool fillRand=false)
+{
+  // Types and variable definition
+  typedef typename SymmGroup::charge charge;
+  MPS<Matrix, SymmGroup> mps(state.size());
+  Index<SymmGroup> curr_i;
+  std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mdim);
+  // -- MAIN LOOP --
+  // The overall structure of the algorithm is the following:
+  // One first generates the index (IdentityCharge,mdim), where mdim is the number of renormalized
+  // block states (1 in the default case). This is the index with which we start from the left.
+  // For a given left index and a given physical basis state, the "acceptable" QN for the right
+  // renormalized basis are univocally determined by the product of the two set of QNs.
+  curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+  for (int i = 0; i < state.size(); ++i) { // loop over entire lattice
+    // Initialize the allowed sectors of the MPS with 0
+    mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], false, 0);
+    mps[i].make_left_paired();
+    // Get the product basis between the physical basis and the symmetry block of the left renormalized basis
+    ProductBasis<SymmGroup> left(phys_dims[site_type[i]], allowed[i]);
+    // Populates the MPS
+    block_matrix<Matrix, SymmGroup> & block = mps[i].data();
     Index<SymmGroup> curr_j;
-    for (int j = 0; j < state[i].size(); ++j) {
-      for (int numCurrCharges = 0; numCurrCharges < curr_i.size(); ++numCurrCharges) {
+    for (int j = 0; j < state[i].size(); ++j) { // loop over all possibly occupied basis states of that site
+      for (int numCurrCharges = 0; numCurrCharges < curr_i.size(); ++numCurrCharges) { // loop over all currently populated charges
         // Computes the symmetry block of the next dimension
-        charge newc = SymmGroup::fuse(curr_i[numCurrCharges].first, boost::get<0>(state[i][j]));
-        #ifndef NDEBUG
-        maquis::cout << "In state_mps for site=" << i << " which has newc=" << newc << " while allowed[i+1] has c=" << allowed[i+1] << std::endl;
-        #endif
-        if (allowed[i+1].has(newc)) {
-          Index<SymmGroup> new_i;
-          new_i.insert(std::make_pair(newc, mdim));
-          Matrix &m = block(newc, new_i[0].first);
-          // Finds out where to put the 1.0 in the MPS. Retrieve, from the ProductBasis object, how the row index was
+        charge newc = SymmGroup::fuse(curr_i[numCurrCharges].first, boost::get<0>(state[i][j])); // get combined charge
+        if (allowed[i+1].has(newc)) { // if this charge is allowed, populate it
+          Matrix &m = block(newc, newc);
+          // Finds out where to put the entries in the MPS. Retrieve, from the ProductBasis object, how the row index was
           // decomposed in terms of left auxiliary basis and physical basis.
-          size_t b_in = left(boost::get<0>(state[i][j]), curr_i[numCurrCharges].first) + boost::get<1>(state[i][j]) * curr_i[numCurrCharges].second;
-          size_t b_out = 0;
-          m(b_in, b_out) = 1.;
-          curr_j.insert(new_i[0]);
+          auto offset = left(boost::get<0>(state[i][j]), curr_i[numCurrCharges].first);
+          for (int rowInBlock = offset; rowInBlock < curr_i[numCurrCharges].second + offset; rowInBlock++){ // Loop over all rows
+            for (int columnInBlock = 0; columnInBlock < allowed[i+1].size_of_block(newc); columnInBlock++) { // Loop over all columns
+              m(rowInBlock, columnInBlock) = fillRand ? dmrg_random::uniform(0., 1.) : 1.; // populate the MPS either with 1 or randomly
+            }
+          }
+          if (!curr_j.has(newc)) { // if this charge has not already been added before
+            curr_j.insert(std::make_pair(newc, allowed[i+1].size_of_block(newc))); // add this to the vector of populated charges
+          }
         }
       }
+    }
+    if (curr_j.size() < 1) { // At least one symmetry blcok should be populated, otherwise the init_state makes no sense.
+      throw std::runtime_error("The provided init_state does not result in an allowed symmetry block for site " + std::to_string(i) + ". Abort.");
     }
     curr_i = curr_j;
   }
