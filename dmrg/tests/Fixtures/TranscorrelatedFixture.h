@@ -13422,15 +13422,6 @@ struct TranscorrelatedFixture
         parametersBeTranscorrelatedTwoBody.set("truncation_final", 1e-50);
         parametersBeTranscorrelatedTwoBody.set("init_state", "hf");
         parametersBeTranscorrelatedTwoBody.set("hf_occ", "4,4,1,1,1,1,1,1,1,1,1,1,1,1");
-
-        // Parameters for Helium calculation
-        parametersHeTranscorrelated.set("L", 5);
-        parametersH2Transcorrelated.set("symmetry", "2u1");
-        parametersHeTranscorrelated.set("nelec", 2);
-        parametersHeTranscorrelated.set("irrep", 0);
-        parametersHeTranscorrelated.set("u1_total_charge1", 1);
-        parametersHeTranscorrelated.set("u1_total_charge2", 1);
-        parametersHeTranscorrelated.set("MODEL", "quantum_chemistry");
     }
 
     /** @brief Removes the FCIDUMP file */
