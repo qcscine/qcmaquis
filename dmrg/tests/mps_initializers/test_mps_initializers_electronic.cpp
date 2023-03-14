@@ -118,6 +118,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_MPS_Initializers_Electronic_Benzene, S, sy
   auto energySHF_g = expval(mpsSHF_g, mpo)/norm(mpsSHF_g);
   if (symm_traits::SymmetryNameTrait<S>::symmName() == "2u1PG" || symm_traits::SymmetryNameTrait<S>::symmName() == "2u1") // as this is not true for SU2
     BOOST_CHECK_CLOSE(energySHF, energySHF_g, 1.0E-10);
+  parametersBenzene.set("init_bond_dimension", 100); // so that we don't truncate anything --> otherwise reshuffling the order has an effect on the energy!
   parametersBenzene.set("init_type", "const");
   auto mpsC = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
   auto energyC = expval(mpsC, mpo)/norm(mpsC);
@@ -126,19 +127,19 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_MPS_Initializers_Electronic_Benzene, S, sy
   auto mps_gc = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
   auto energy_gc = expval(mps_gc, mpo)/norm(mps_gc);
   BOOST_CHECK_CLOSE(energyC, energy_gc, 1.0E-10);
-  parametersBenzene.set("init_space", "3,3,5,2,2,2");
+  parametersBenzene.set("init_space", "3,3,3,2,2,5");
   auto mpsSHF_gc = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
   auto energySHF_gc = expval(mpsSHF_gc, mpo)/norm(mpsSHF_gc);
   if (symm_traits::SymmetryNameTrait<S>::symmName() == "2u1PG" || symm_traits::SymmetryNameTrait<S>::symmName() == "2u1") // as this is not true for SU2
-    BOOST_CHECK_CLOSE(energySHF_gc, energySHF_g, 1.0E-10);
-  parametersBenzene.set("orbital_order", "6,1,5,2,4,3"); // reshuffling the orbitals
+    BOOST_CHECK_CLOSE(energySHF_gc, energySHF_g, 1.0E-10);  
+  parametersBenzene.set("init_space", "3,3,3,2,2,2");
+  parametersBenzene.set("orbital_order", "6,5,4,3,2,1"); // reshuffling the orbitals
   auto lattice_r = Lattice(parametersBenzene);
   auto model_r = Model<matrix, S>(lattice_r, parametersBenzene);
   auto mpo_r = make_mpo(lattice_r, model_r);
   auto mpsSHFr_gc = MPS<matrix, S>(latticeSize, *(model_r.initializer(lattice_r, parametersBenzene)));
   auto energySHFr_gc = expval(mpsSHFr_gc, mpo_r)/norm(mpsSHFr_gc);
-  if (symm_traits::SymmetryNameTrait<S>::symmName() == "2u1PG" || symm_traits::SymmetryNameTrait<S>::symmName() == "2u1") // as this is not true for SU2
-    BOOST_CHECK_CLOSE(energySHFr_gc, energySHF_gc, 1.0E-10);
+  BOOST_CHECK_CLOSE(energySHFr_gc, energySHF_gc, 1.0E-10);
   parametersBenzene.set("init_space", "4,4,4,5,5,5");
   auto mpsTHFr_gc = MPS<matrix, S>(latticeSize, *(model_r.initializer(lattice_r, parametersBenzene)));
   auto energyTHFr_gc = expval(mpsTHFr_gc, mpo_r)/norm(mpsTHFr_gc);
