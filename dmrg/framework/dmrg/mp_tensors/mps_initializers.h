@@ -162,48 +162,6 @@ private:
   std::vector<int> site_type;
 };
 
-/*
-template<class Matrix, class SymmGroup>
-class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
-{
-public:
-  basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
-                 std::vector<int> const& site_type_)
-    : phys_dims(phys_dims_), site_type(site_type_)
-  { 
-    std::string states = params["init_basis_state"].as<std::string>();
-    std::vector<std::string> specifiedStates;
-    boost::split(specifiedStates, states, boost::is_any_of("|"));
-    std::stringstream ss(specifiedStates[0]);
-    int ichar;
-    while (ss >> ichar) {
-        occupation.push_back(ichar);
-        ss.ignore(1);
-    }
-  }
-
-
-  void operator()(MPS<Matrix, SymmGroup> & mps)
-  {
-    assert(occupation.size() == mps.length());
-    if (phys_dims[0].size() != 1)
-      throw std::runtime_error("basis_mps_init only for TrivialGroup.");
-    typedef typename SymmGroup::charge charge;
-    charge C = SymmGroup::IdentityCharge;
-
-    std::vector<boost::tuple<charge, int> > state(mps.length());
-    for (int i=0; i<mps.length(); ++i)
-        state[i][0] = boost::make_tuple(C, occupation[i]);
-    mps = state_mps<Matrix>(state, phys_dims, site_type);
-  }
-
-private:
-  std::vector<int> occupation;
-  std::vector<Index<SymmGroup> > phys_dims;
-  std::vector<int> site_type;
-};
-*/
-
 /**
  * @brief ONV MPS initializer
  *
