@@ -77,8 +77,19 @@ public:
     // described by the same Hamiltonian. This means, in practice, that, for each "particle",
     // we have the same number of modes and electronic states. The number of particles is
     // 1 for the vibronic case.
-    if ((nModes+nElecStates)*nParticles != L)
-      throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
+    if(parameters["MODEL"] == "vibronic" || parameters["MODEL"] == "excitonic"){
+      if ((nModes+nElecStates)*nParticles != L){
+        throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
+      }
+    }
+
+  if(parameters["MODEL"] == "excitonicextended"){
+    int n_connectingmodes = parameters["vibronic_num_connectingmodes"].as<int>();
+    if (((nModes+nElecStates)*nParticles-n_connectingmodes) != L){
+        throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
+      }
+  }
+
     vector_types.resize(L);
     // Sites sorting. If == "firstele", put first all the excited states.
     // Otherwise, intertwine electronic and vibrational DOF (for the excitonic case).
