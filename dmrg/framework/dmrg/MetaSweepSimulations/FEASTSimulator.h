@@ -310,10 +310,10 @@ private:
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
-        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to basis_state_generic/hf");
+        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to basis_state_generic");
       }
       if (numSpecifiedStates != numStates) {
-        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with (generic_)default" << std::endl;
+        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
       }
     }
     // Generates the guess MPS
