@@ -150,13 +150,14 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typ
   MPS<Matrix, SymmGroup> mps(state.size());
   Index<SymmGroup> curr_i;
   std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mdim);
-  curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, mdim));
+  // From the left, we start with the trivial symmetry group.
+  curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
   for (int i = 0; i < state.size(); ++i) {
     // Computes the symmetry block of the next dimension and HARDCODED its value to 1
     charge newc = SymmGroup::fuse(curr_i[0].first, boost::get<0>(state[i][0]));
     assert (allowed[i+1].has(newc));
     Index<SymmGroup> new_i;
-    new_i.insert(std::make_pair(newc, mdim));
+    new_i.insert(std::make_pair(newc, allowed[i].size_of_block(newc)));
     // Get the product basis between the physical basis and the symmetry block of the left renormalized basis
     ProductBasis<SymmGroup> left(phys_dims[site_type[i]], allowed[i]);
     mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], false, 0.);
@@ -185,9 +186,9 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector< std::vector<boost::tuple<typ
 // @brief Same as above, but does not populate only the i-th position in the ONV, but all positions up to i for each mode
 template <class Matrix, int N>
 MPS<Matrix, NU1_template<N>> state_mps_const(std::vector<std::vector<boost::tuple<typename NU1_template<N>::charge, int> > > const & state,
-                                       std::vector<Index<NU1_template<N>> > const& phys_dims, std::vector<int> const& site_type,
-                                       typename NU1_template<N>::charge right_end = NU1_template<N>::IdentityCharge, bool fillRand=false,
-                                       int mMax = 1)
+                                             std::vector<Index<NU1_template<N>> > const& phys_dims, std::vector<int> const& site_type,
+                                             typename NU1_template<N>::charge right_end = NU1_template<N>::IdentityCharge, bool fillRand=false,
+                                             int mMax = 1)
 {
   // Types definition
   using SymmGroup = NU1_template<N>;

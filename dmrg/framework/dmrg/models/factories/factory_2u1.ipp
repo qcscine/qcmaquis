@@ -41,6 +41,10 @@ struct coded_model_factory<Matrix, TwoU1> {
         } else if (parms["MODEL"] == std::string("PreBO")) {
             return impl_ptr( new PreBO<Matrix, 2>(lattice, parms) );
 #endif
+#if defined(HAVE_NU1) && defined(DMRG_VIBRATIONAL)
+        } else if (parms["MODEL"] == std::string("nmode")) {
+            return impl_ptr( new NMode<Matrix, 2>(lattice, parms, false) );
+#endif
         } else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();
