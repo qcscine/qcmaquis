@@ -74,19 +74,19 @@ public:
   {
     // Which linsolver
     if (parms_["linsystem_solver"] == "GMRES") {
-      maquis::cout << " - Solving the linear system with ALPS-based GMRES" << std::endl;
+      if (verbose_) maquis::cout << " - Solving the linear system with ALPS-based GMRES" << std::endl;
     } else if (parms_["linsystem_solver"] == "MINRES") {
-      maquis::cout << " - Solving the linear system with ALPS-based MINRES" << std::endl;
+      if (verbose_) maquis::cout << " - Solving the linear system with ALPS-based MINRES" << std::endl;
     } else if ((parms_["linsystem_solver"] == "GMRES_EIGEN") || (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN")) {
       if (parms_["linsystem_solver"] == "GMRES_EIGEN") {
-        maquis::cout << " - Solving the linear system with Eigen-based GMRES" << std::endl;
+        if (verbose_) maquis::cout << " - Solving the linear system with Eigen-based GMRES" << std::endl;
       } else if (parms_["linsystem_solver"] == "BiCGSTAB_EIGEN") {
-        maquis::cout << " - Solving the linear system with Eigen-based BiCGSTAB" << std::endl;
+        if (verbose_) maquis::cout << " - Solving the linear system with Eigen-based BiCGSTAB" << std::endl;
       }
       if (parms_["linsystem_precond"] == "no") {
-        maquis::cout << " - Deactivating preconditioning" << std::endl;
+        if (verbose_) maquis::cout << " - Deactivating preconditioning" << std::endl;
       } else if (parms_["linsystem_precond"] == "diagonal") {
-        maquis::cout << " - Activating diagonal preconditioning" << std::endl;
+        if (verbose_) maquis::cout << " - Activating diagonal preconditioning" << std::endl;
       } else {
         throw std::runtime_error("[linsystem_precond] parameter not recognized");
       }
