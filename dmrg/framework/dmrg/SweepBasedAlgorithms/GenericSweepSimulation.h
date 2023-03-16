@@ -146,7 +146,12 @@ public:
                                                                   this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd(),
                                                                   this->activatePerturbation());
       // == BOUNDARY PROPAGATION ==
-      // First, drops the memory of the right boundary (in the case of a l2r sweep).
+      // Updates the boundary
+      this->propagateBoundaries();
+      this->propagateOtherTensors();
+      this->performBackPropagation(boundaryGrowthModality);
+      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
+      // Now, can drop the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
       // Note also that, if we are at a point at which we reverse the direction of the boundary
       // propagation, we don't drop the right boundary because the next step will be a r2l sweep
@@ -155,11 +160,6 @@ public:
         Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
       else // if (sweepType == SweepDirectionType::Backward)
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
-      // Updates the boundary
-      this->propagateBoundaries();
-      this->propagateOtherTensors();
-      this->performBackPropagation(boundaryGrowthModality);
-      mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
       if (verbose_)
