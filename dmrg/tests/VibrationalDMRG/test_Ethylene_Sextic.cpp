@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
+ *               2021- by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -70,6 +70,7 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic_TwoRows, Watson
     parametersEthyleneWatsonHarmonicTwoRows.set("nsweeps", 20);
     parametersEthyleneWatsonHarmonicTwoRows.set("max_bond_dimension", 20);
     parametersEthyleneWatsonHarmonicTwoRows.set("MODEL", "watson");
+    parametersEthyleneWatsonHarmonicTwoRows.set("MEASURE[ModeExcitationDegree]", 1);
     // Creates the interface
     InterfaceType interface(parametersEthyleneWatsonHarmonicTwoRows);
     interface.optimize();
@@ -77,6 +78,8 @@ BOOST_FIXTURE_TEST_CASE(Test_vDMRG_Calculation_Ethylene_Harmonic_TwoRows, Watson
     // Checks that the overlap of the final wave function with the hf determinant is = 1.
     auto targetOverlap = interface.getCICoefficient("0,0,0,0,0,0,0,0,0,0,0,0");
     BOOST_CHECK_CLOSE(std::abs(targetOverlap), 1.0, 1.0E-12);
+    // Runs the measurement
+    auto&& measurements = interface.measurements();
 }
 
 /**

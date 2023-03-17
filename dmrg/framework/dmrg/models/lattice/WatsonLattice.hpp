@@ -55,7 +55,7 @@ public:
    * @brief Class constructor for the lattice
    * @param parameters parameter container
    */
-  WatsonLattice(BaseParameters& parameters) : L(parameters["L"]), numTypes(parameters["L"]) { }
+  explicit WatsonLattice(BaseParameters& parameters) : L(parameters["L"]), numTypes(parameters["L"]) { }
     
   /** @brief Returns the next position in the lattice */
   std::vector<pos_t> forward(pos_t i) const {
@@ -101,7 +101,7 @@ public:
       return 0;
     }
     else if (property == "NumTypes")
-      return 1;
+      return numTypes;
     else {
       std::ostringstream ss;
       ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
