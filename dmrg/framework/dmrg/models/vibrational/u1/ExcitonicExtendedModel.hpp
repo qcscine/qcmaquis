@@ -89,21 +89,19 @@ public:
     }
     
     void create_terms() override { 
-        maquis::cout << "entered method create_terms" << std::endl;
         // == Definition of the Hamiltonian ==
         auto hamiltonianTerms = Vibrational::detail::parseIntegralExcitonicExtended<value_type>(model, lat);
-        maquis::cout << "read in hamiltonianTerms" << std::endl;
+        // == Extracts whether we want to freeze any degrees of freedom
         // == Main loop over the monomers ==
         // We first loop over the number of molecules of the aggregate, and then over the
         // terms entering the vibronic Hamiltonian.
-        maquis::cout << "starting loop over monomers" << std::endl;
         for (int i_body = 0; i_body < n_particles_; i_body++) { //loop over all monomers
-            maquis::cout << "starting iteration over monomer " << i_body << std::endl;
             std::vector<int> vec_jnk(maxCoupling);
+            std::vector<int> vec_jnk_next(maxCoupling); //NEW
             vec_jnk[0] = i_body;
-            maquis::cout << "starting loop over rows in integral file" << std::endl;
+            vec_jnk_next[0] = i_body+1; //NEW
+            int flag = 0; //NEW
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++){ //loop over all rows of the integral file
-                maquis::cout << "processing line " << idx << std::endl;
                 // Prepares the vectors to be employed when building the Hamiltonian
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
@@ -121,28 +119,65 @@ public:
                         vec_jnk[1] = hamiltonianTerms.first[idx][op_vib]-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));  
                     }
-                    maquis::cout << "processed vibrational part of line" << idx << std::endl;   
                 }
                 // Add electronic contribution
                 // Add the count operator for the specific excited states.
-                if (ele_state == 1) { //if in excited electronic state
+                if (ele_state == 1) { //if electronic excited state potential
                     vec_jnk[1] = 0;
                     positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
                     operators.push_back(count_ele);
+                    //BEGIN NEW
+                    if( (i_body < n_particles_-1) && connecting == 1){
+                        //create |1><1||0><0| term
+                        vec_jnk_next[1] = 0;
+                        positions.push_back(lat.get_prop<int>("eleindex", vec_jnk_next));
+                        operators.push_back(count_ele_gs);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
+                        //create |1><1||1><1| term
+                        operators.pop_back();
+                        operators.push_back(count_ele);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
+                        //create |0><0||1><1| term
+                        operators.pop_back(); //remove count_ele of next site
+                        operators.pop_back(); //remove count_ele of current site
+                        operators.push_back(count_ele_gs);
+                        operators.push_back(count_ele);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
+                        maquis::cout << "DEBUG: created term for monomer " << i_body << " and integral file line " << idx << std::endl;
+                        maquis::cout << "DEBUG: entered if statement" << std::endl;
+                        maquis::cout << "DEBUG: positions: " << vec_jnk[0] << " " << vec_jnk_next[0] << " " << vec_jnk[1] << " " << vec_jnk_next[1] << std::endl;
+                        flag = 1;
+                    }
+                    //END NEW
+
                 }
-                else{ //if in electronic ground state
+                else{ //if electronic ground state potential
                     vec_jnk[1] = 0;
                     positions.push_back(lat.get_prop<int>("eleindex", vec_jnk));
                     operators.push_back(count_ele_gs);
+                    //BEGIN NEW
+                    
+                    if( (i_body < n_particles_-1) && connecting == 1){ 
+                        vec_jnk_next[1] = 0;
+                        positions.push_back(lat.get_prop<int>("eleindex", vec_jnk_next));
+                        operators.push_back(count_ele_gs);
+                        modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
+                        flag = 1;
+                        maquis::cout << "DEBUG: created term for monomer " << i_body << " and integral file line " << idx << std::endl;
+                        maquis::cout << "DEBUG: entered if statement" << std::endl; 
+                    }
+                    
+                    //END NEW
                 }
-                maquis::cout << "processed electronic part of line" << idx << std::endl;
                 // Builds the term of the Hamiltonian
-                if( !(i_body == n_particles_-1 && connecting == 1) ){ //is this check correct?
+                if( !(i_body == n_particles_-1 && connecting == 1) && flag == 0 ){ //is this check correct?
                     modelHelper<Matrix, U1>::add_term(positions, operators, hamiltonianTerms.second[idx], tag_handler, this->terms_, true);
+                    maquis::cout << "DEBUG: created term for monomer " << i_body << " and integral file line " << idx << std::endl;
                 }
+                flag = 0;
             }
-        maquis::cout << "finished creating hamitonian terms" << std::endl;
         }
+
            // Add the J term to the Hamiltonian
         std::vector<int> vec_jnk(2);
         for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
@@ -161,7 +196,6 @@ public:
                 }
             }
         }
-    maquis::cout << "finished creating J coupling terms" << std::endl;
     }    
 
     void update(BaseParameters const& p)
@@ -262,17 +296,17 @@ public:
         int n_connectingmodes = model["vibronic_num_connectingmodes"].as<int>();
         for (std::size_t idx = 0; idx < n_particles_; idx++){
             for(std::size_t idx1 = 0; idx1 < n_vib_states_; idx1++){
+            //for(std::size_t idx1 = 0; idx_1 < (n_ele_states_+n_vib_states)) //DEBUG
                 //if non existing lattice site: break. 
                 //IMPORTANT: assumes underlying lattice sorting -> may be problematic
                 //Assumed lattice sorting: intertwined with all connecting modes active. 
                 //After an electronic site first come the local modes followed by the connecting modes
                 if( (idx == n_particles_-1) && (idx1 >= (n_vib_states_-n_connectingmodes)) ) break; 
-                maquis::cout << "idx = " << idx << " , idx1 = " << idx1 << std::endl;
                 std::string name = "Displacement"+std::to_string(idx)+"Mode"+std::to_string(idx1);
-                maquis::cout << "string name: " << name << std::endl;
                 std::vector<pos_t> pos_internal(0);
                 std::vector<std::vector<pos_t> > pos_local(0);
                 pos_internal.push_back((idx1+1) + (idx*(n_vib_states_+n_ele_states_))); //pushes back positions of vibrational states
+                maquis::cout << "pos of pushed back positions: " << (idx1+1) + (idx*(n_vib_states_+n_ele_states_)) << std::endl;
                 pos_local.push_back(pos_internal);
                 // Generates vector for the fillings and identity operators
                 op_vec identities_local, fillings_local;
@@ -287,7 +321,39 @@ public:
                 ops.push_back(std::make_pair(local_op_vec, false));
                 meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local,
                                                                       fillings_local, ops));
-                maquis::cout << "pushed back instance of meas" << std::endl; 
+            }
+            
+        }
+    }
+
+    if(model.is_set("MEASURE[DisplacementSquared]")){
+        int n_connectingmodes = model["vibronic_num_connectingmodes"].as<int>();
+        for (std::size_t idx = 0; idx < n_particles_; idx++){
+            for(std::size_t idx1 = 0; idx1 < n_vib_states_; idx1++){ 
+                //if non existing lattice site: break. 
+                //IMPORTANT: assumes underlying lattice sorting -> may be problematic
+                //Assumed lattice sorting: intertwined with all connecting modes active. 
+                //After an electronic site first come the local modes followed by the connecting modes
+                if( (idx == n_particles_-1) && (idx1 >= (n_vib_states_-n_connectingmodes)) ) break; //VAL : break statement may be problematic... 
+                std::string name = "DisplacementSquared"+std::to_string(idx)+"Mode"+std::to_string(idx1); 
+                std::vector<pos_t> pos_internal(0);
+                std::vector<std::vector<pos_t> > pos_local(0);
+                pos_internal.push_back((idx1+1) + (idx*(n_vib_states_+n_ele_states_))); 
+                maquis::cout << "pos of pushed back positions: " << idx1 << std::endl;
+                pos_local.push_back(pos_internal);
+                // Generates vector for the fillings and identity operators
+                op_vec identities_local, fillings_local;
+                for (std::size_t idx2 = 0; idx2 < 2; idx2++) {
+                    identities_local.push_back(this->identity_matrix(idx2));
+                    fillings_local.push_back(this->filling_matrix(idx2));
+                }
+                bond_element ops;
+                op_vec local_op_vec;
+                local_op_vec.push_back(tag_handler->get_op(positionPowers[2]));
+                local_op_vec.push_back(tag_handler->get_op(ident_ele));
+                ops.push_back(std::make_pair(local_op_vec, false));
+                meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local,
+                                                                      fillings_local, ops));
             }
             
         }
