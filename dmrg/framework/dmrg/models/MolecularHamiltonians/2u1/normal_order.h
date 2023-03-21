@@ -52,10 +52,14 @@ namespace {
                                                     {k, l},
                                                     {m, n}};
 
-        // Reorder indices in unique way (sorted)
-        for (auto &v: indices)
-            if (v.first > v.second)
-                std::swap(v.first, v.second);
+        // 2B is not hermitian, check if 2B
+        if(!(i != -1 && j != -1 && k != -1 && l != -1 && m == -1 && n == -1)) {
+            // Reorder indices in unique way (sorted)
+            for (auto &v: indices)
+                if (v.first > v.second)
+                    std::swap(v.first, v.second);
+        }
+
         std::sort(indices.begin(), indices.end(), [](auto a, auto b) {
             return a.first < b.first || (a.first == b.first && a.second < b.second);
         });
@@ -66,6 +70,14 @@ namespace {
            << indices[2].first << " " << indices[2].second;
 
         return is.str();
+    }
+
+    std::string getIdentifier(int i, int j, int k, int l) {
+        return getIdentifier(i, j, k, l, -1, -1);
+    }
+
+    std::string getIdentifier(int i, int j) {
+        return getIdentifier(i, j, -1, -1, -1, -1);
     }
 }
 
@@ -165,69 +177,27 @@ double applyNormalOrdering(std::vector<pos_t> &posVector, std::vector<OperatorTy
 
 template<typename Matrix, typename SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
 class NormalOrderingHelper {
-    private:
-        std::unordered_map<std::string, int> idxToMatrixElement;
+private:
+    std::unordered_map<std::string, int> idxToMatrixElement;
+    std::unordered_map<std::string, int> idxToMatrixElement_2B;
 
-    public:
-        NormalOrderingHelper(chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> &term_assistant) {
-            if(Transcorrelated != HamiltonianTransformation::Transcorrelated)
-                return;
+public:
+    NormalOrderingHelper(
+            chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> &term_assistant) {
+        if (Transcorrelated != HamiltonianTransformation::Transcorrelated)
+            return;
 
-            for (int i_el = 0; i_el < term_assistant.getMatrixElements().size(); ++i_el) {
-                int i = term_assistant.idx(i_el, 0);
-                int j = term_assistant.idx(i_el, 1);
-                int k = term_assistant.idx(i_el, 2);
-                int l = term_assistant.idx(i_el, 3);
-                int m = term_assistant.idx(i_el, 4);
-                int n = term_assistant.idx(i_el, 5);
+        for (int i_el = 0; i_el < term_assistant.getMatrixElements().size(); ++i_el) {
+            int i = term_assistant.idx(i_el, 0);
+            int j = term_assistant.idx(i_el, 1);
+            int k = term_assistant.idx(i_el, 2);
+            int l = term_assistant.idx(i_el, 3);
+            int m = term_assistant.idx(i_el, 4);
+            int n = term_assistant.idx(i_el, 5);
 
-                if (i >= 0 && j >= 0 && k >= 0 && l >= 0 && m >= 0 && n >= 0)
-                    idxToMatrixElement[getIdentifier(i, j, k, l, m, n)] = i_el;
-            }
+            idxToMatrixElement[getIdentifier(i, j, k, l, m, n)] = i_el;
         }
-
-    /**
-    * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q of one creation and one annihilation
-    *        operator, where p and q are stored in the pair, and gives the coefficient of the NO 3B contribution to this
-    *        chain of operators.
-    */
-    std::unordered_map<std::pair<int, int>, double, intPairHash> getNoOneBodyCoefficients(
-            chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> &term_assistant,
-            std::size_t nelems, std::size_t L, const std::unordered_set<std::size_t> &hole_states) {
-        auto &matrix_elements = term_assistant.getMatrixElements();
-
-        std::unordered_map<std::pair<int, int>, double, intPairHash> idxToCoefficient;
-        std::vector<double> coeffs = {-1.0, 1.0, 2.0, -2.0};
-        for (auto i: hole_states) {
-            for (auto j: hole_states) {
-                for (int p = 0; p < L; ++p) {
-                    for (int q = 0; q < L; ++q) {
-                        std::vector<std::string> matrixElementStrings = {getIdentifier(i, j, j, p, q, i),
-                                                                         getIdentifier(i, j, j, i, p, q),
-                                                                         getIdentifier(i, i, p, j, j, q),
-                                                                         getIdentifier(i, i, j, j, p, q)};
-
-                        for (int n = 0; n < matrixElementStrings.size(); ++n) {
-                            if (!idxToMatrixElement.count(matrixElementStrings[n]))
-                                continue;
-
-                            idxToCoefficient[{p, q}] +=
-                                    coeffs[n] * matrix_elements[idxToMatrixElement[matrixElementStrings[n]]];
-                        }
-                    }
-                }
-            }
-        }
-
-        std::unordered_map<std::pair<int, int>, double, intPairHash> compressedMap;
-
-        for (auto el: idxToCoefficient) {
-            if (el.second != 0)
-                compressedMap[el.first] = el.second;
-        }
-
-        return compressedMap;
-    };
+    }
 
     /**
        * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q of one creation and one annihilation
@@ -239,10 +209,11 @@ class NormalOrderingHelper {
             std::size_t nelems, std::size_t L, const std::unordered_set<std::size_t> &hole_states) {
         auto &matrix_elements = term_assistant.getMatrixElements();
         std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> idxToCoefficient;
-        std::vector<double> coeffs = {-1.0, 1.0 / 3.0, 1.0 / 3.0};
+        std::vector<double> coeffs = {-1.0, 1.0 / 2.0, 1.0 / 2.0};
         for (auto i: hole_states) {
             for (int p = 0; p < L; ++p) {
                 for (int q = 0; q < L; ++q) {
+                    // 3B contribution
                     for (int r = 0; r < L; ++r) {
                         for (int s = 0; s < L; ++s) {
                             std::vector<std::string> matrixElementStrings = {getIdentifier(i, i, p, s, q, r),
@@ -273,38 +244,53 @@ class NormalOrderingHelper {
     }
 
     /**
-       * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q of one creation and one annihilation
-       *        operator, where p and q are stored in the pair, and gives the coefficient of the NO 3B contribution to this
-       *        chain of operators.
-     */
-    std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> getNoTwoBodyCoefficientsSwappedSpin(
+    * @brief Function that returns a map, corresponding to a chain a_p^\dag a_q of one creation and one annihilation
+    *        operator, where p and q are stored in the pair, and gives the coefficient of the NO 3B contribution to this
+    *        chain of operators.
+    */
+    std::unordered_map<std::pair<int, int>, double, intPairHash> getNoOneBodyCoefficients(
             chem::detail::ChemHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> &term_assistant,
             std::size_t nelems, std::size_t L, const std::unordered_set<std::size_t> &hole_states) {
         auto &matrix_elements = term_assistant.getMatrixElements();
-        std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> idxToCoefficient;
-        std::vector<double> coeffs = {-1.0 / 6.0, -1.0 / 6.0};
-        for (auto i: hole_states) {
-            for (int p = 0; p < L; ++p) {
-                for (int q = 0; q < L; ++q) {
-                    for (int r = 0; r < L; ++r) {
-                        for (int s = 0; s < L; ++s) {
-                            std::vector<std::string> matrixElementStrings = {getIdentifier(i, s, p, r, q, i),
-                                                                             getIdentifier(i, r, p, i, q, s)};
 
-                            for (int n = 0; n < matrixElementStrings.size(); ++n) {
-                                if (!idxToMatrixElement.count(matrixElementStrings[n]))
-                                    continue;
+        std::unordered_map<std::pair<int, int>, double, intPairHash> idxToCoefficient;
+        std::vector<double> coeffs_3B = {-1.0, 1.0, 2.0, -2.0};
+        std::vector<double> coeffs_2B = {2.0, -1.0};
 
-                                idxToCoefficient[{p, q, r, s}] +=
-                                        coeffs[n] * matrix_elements[idxToMatrixElement[matrixElementStrings[n]]];
-                            }
+        for (int p = 0; p < L; ++p) {
+            for (int q = 0; q < L; ++q) {
+                for (auto i: hole_states) {
+                    // 2B contribution
+                    std::vector<std::string> matrixElementStrings_2B = {getIdentifier(i, i, p, q),
+                                                                        getIdentifier(i, q, p, i)};
+                    for (int n = 0; n < matrixElementStrings_2B.size(); ++n) {
+                        if(!idxToMatrixElement.count(matrixElementStrings_2B[n]))
+                            continue;
+
+                        idxToCoefficient[{p,q}] += coeffs_2B[n] * matrix_elements[idxToMatrixElement[matrixElementStrings_2B[n]]];
+                    }
+
+                    // 3B contribution
+                    for (auto j: hole_states) {
+
+                        std::vector<std::string> matrixElementStrings_3B = {getIdentifier(i, j, j, p, q, i),
+                                                                            getIdentifier(i, j, j, i, p, q),
+                                                                            getIdentifier(i, i, p, j, j, q),
+                                                                            getIdentifier(i, i, j, j, p, q)};
+
+                        for (int n = 0; n < matrixElementStrings_3B.size(); ++n) {
+                            if (!idxToMatrixElement.count(matrixElementStrings_3B[n]))
+                                continue;
+
+                            idxToCoefficient[{p, q}] +=
+                                    coeffs_3B[n] * matrix_elements[idxToMatrixElement[matrixElementStrings_3B[n]]];
                         }
                     }
                 }
             }
         }
 
-        std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> compressedMap;
+        std::unordered_map<std::pair<int, int>, double, intPairHash> compressedMap;
 
         for (auto el: idxToCoefficient) {
             if (el.second != 0)
@@ -312,7 +298,7 @@ class NormalOrderingHelper {
         }
 
         return compressedMap;
-    }
+    };
 
     /**
        * @brief Function that returns the zero-body contribution of the normal-ordered 3B operator
@@ -322,19 +308,44 @@ class NormalOrderingHelper {
             std::size_t nelems, std::size_t L, const std::unordered_set<std::size_t> &hole_states) {
         auto &matrix_elements = term_assistant.getMatrixElements();
         double contribution = 0;
-        std::vector<double> coeffs = {2.0, -2.0 / 3.0, -4.0 / 3.0};
-        for (auto i: hole_states) {
-            for (auto j: hole_states) {
-                for (auto k: hole_states) {
-                    std::vector<std::string> matrixElementStrings = {getIdentifier(i, i, j, k, k, j),
-                                                                     getIdentifier(i, k, j, i, k, j),
-                                                                     getIdentifier(i, i, j, j, k, k)};
 
-                    for (int n = 0; n < matrixElementStrings.size(); ++n) {
-                        if (!idxToMatrixElement.count(matrixElementStrings[n]))
+        std::vector<double> coeffs_3B = {2.0, -2.0 / 3.0, -4.0 / 3.0};
+        std::vector<double> coeffs_2B = {2.0, -1.0};
+        std::vector<double> coeffs_1B = {2.0};
+
+        for (auto i: hole_states) {
+            // 1B contribution
+            std::vector<std::string> matrixElementStrings_1B = {getIdentifier(i, i)};
+            for (int n = 0; n < matrixElementStrings_1B.size(); ++n) {
+                if (!idxToMatrixElement.count(matrixElementStrings_1B[n]))
+                    continue;
+
+                contribution += coeffs_1B[n] * matrix_elements[idxToMatrixElement[matrixElementStrings_1B[n]]];
+            }
+
+            for (auto j: hole_states) {
+                // 2B contribution
+                std::vector<std::string> matrixElementStrings_2B = {getIdentifier(i, i, j, j),
+                                                                    getIdentifier(i, j, j, i)};
+
+                for (int n = 0; n < matrixElementStrings_2B.size(); ++n) {
+                    if (!idxToMatrixElement.count(matrixElementStrings_2B[n]))
+                        continue;
+
+                    contribution += coeffs_2B[n] * matrix_elements[idxToMatrixElement[matrixElementStrings_2B[n]]];
+                }
+
+                // 3B contribution
+                for (auto k: hole_states) {
+                    std::vector<std::string> matrixElementStrings_3B = {getIdentifier(i, i, j, k, k, j),
+                                                                        getIdentifier(i, k, j, i, k, j),
+                                                                        getIdentifier(i, i, j, j, k, k)};
+
+                    for (int n = 0; n < matrixElementStrings_3B.size(); ++n) {
+                        if (!idxToMatrixElement.count(matrixElementStrings_3B[n]))
                             continue;
 
-                        contribution += coeffs[n] * matrix_elements[idxToMatrixElement[matrixElementStrings[n]]];
+                        contribution += coeffs_3B[n] * matrix_elements[idxToMatrixElement[matrixElementStrings_3B[n]]];
                     }
                 }
             }
@@ -342,8 +353,6 @@ class NormalOrderingHelper {
         return contribution;
     };
 };
-
-
 
 
 #endif //QC_NORMAL_ORDER_H

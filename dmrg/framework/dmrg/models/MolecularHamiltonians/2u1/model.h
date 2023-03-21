@@ -1075,6 +1075,9 @@ private:
 
         return ret;
     }
+
+    void create_terms_not_normal_ordered();
+    void create_terms_normal_ordered();
 };
 
 

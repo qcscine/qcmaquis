@@ -15,3 +15,15 @@ dmrg/doc/qcmaquis_manual.log
 dmrg/doc/qcmaquis_manual.out
 dmrg/doc/qcmaquis_manual.pdf
 dmrg/doc/qcmaquis_manual.toc
+dmrg/doc/qcmaquis_manual_standalone.aux
+dmrg/doc/qcmaquis_manual_standalone.bbl
+dmrg/doc/qcmaquis_manual_standalone.blg
+dmrg/doc/qcmaquis_manual_standalone.log
+dmrg/doc/qcmaquis_manual_standalone.out
+dmrg/doc/qcmaquis_manual_standalone.pdf
+dmrg/doc/qcmaquis_manual_standalone.toc
+
+.idea
+/dmrg/.idea/
+/dmrg/cmake-build-debug/
+/dmrg/cmake-build-release/
