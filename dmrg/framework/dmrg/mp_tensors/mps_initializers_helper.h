@@ -96,7 +96,7 @@ public:
     auto state = state_type(size);
     // Note that here we have two possibilities: either a site is electronic site, or it is a vibrational one.
     for (int j = 0 ; j < size; ++j) {
-      if (siteType[j] == 1) { //electronic site
+      if (siteType[j] == 0) { //electronic site
         auto posOfCharge = physDim[siteType[j]].position(inputVec[j]);
         state[j] = physDim[siteType[j]].element(posOfCharge);
       }

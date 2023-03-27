@@ -123,6 +123,31 @@ struct VibronicFixture
         parametersVibronicThiopheneDimer.set("hamiltonian_units", "Hartree");
         parametersVibronicThiopheneDimer.set("time_units", "as");
         //
+        parametersTestNmax.set("nsweeps", 10);
+        parametersTestNmax.set("max_bond_dimension", 20);
+        parametersTestNmax.set("optimization", "twosite");
+        parametersTestNmax.set("integral_file", "integralFileTestNmax");
+        parametersTestNmax.set("init_type", "basis_state_generic");
+        parametersTestNmax.set("init_basis_state", "0,0,0,1,0,0,0,0");
+        parametersTestNmax.set("Nmax", "1,2,3,4,5");
+        parametersTestNmax.set("symmetry", "u1");
+        parametersTestNmax.set("LATTICE", "vibronic_lattice");
+        parametersTestNmax.set("MODEL", "excitonicextended");
+        parametersTestNmax.set("vibronic_J_coupling", 0);
+        parametersTestNmax.set("vibronic_sorting", "intertwined");
+        parametersTestNmax.set("vibronic_num_elestates", 1);
+        parametersTestNmax.set("vibronic_num_vibmodes", 2);
+        parametersTestNmax.set("vibronic_num_molecules", 3);
+        parametersTestNmax.set("vibronic_num_excitons", 1);
+        parametersTestNmax.set("vibronic_num_connectingmodes", 1);
+        parametersTestNmax.set("L", 8);
+        parametersTestNmax.set("simulation_type", "TD");
+        parametersTestNmax.set("propagator_accuracy", 1.0E-10);
+        parametersTestNmax.set("propagator_maxiter", 10);
+        parametersTestNmax.set("time_step", 1);
+        parametersTestNmax.set("hamiltonian_units", "Hartree");
+        parametersTestNmax.set("time_units", "as");
+        //
         parametersExcitonicExtendedAggregate.set("L", 2);
         parametersExcitonicExtendedAggregate.set("symmetry", "u1");
         parametersExcitonicExtendedAggregate.set("LATTICE", "vibronic lattice");
@@ -306,6 +331,17 @@ struct VibronicFixture
         integralFileExcitonicExtended << "0.5       1       0        1       0" << std::endl;
         integralFileExcitonicExtended << "0.6       1       0        1       1" << std::endl;
         integralFileExcitonic.close();
+        //
+        integralFileTestNmax.open("integralFileTestNmax");
+        integralFileTestNmax << "-1. 0 0 -1 -1" << std::endl;
+        integralFileTestNmax << "1. 0 0 1 1" << std::endl;
+        integralFileTestNmax << "-1. 1 0 -1 -1" << std::endl;
+        integralFileTestNmax << "1. 1 0 1 1" << std::endl;
+        integralFileTestNmax << "-1.5 0 1 -2 -2" << std::endl;
+        integralFileTestNmax << "1.5 0 1 2 2" << std::endl;
+        integralFileTestNmax << "-2. 1 1 -2 -2" << std::endl;
+        integralFileTestNmax << "2. 1 1 2 2" << std::endl;
+        integralFileTestNmax.close();
     }
 
     /** @brief Class destructor */
@@ -319,9 +355,10 @@ struct VibronicFixture
 
     // Class members
     DmrgParameters parametersVibronic, parametersFakeVibronic, parametersExcitonicAggregate,
-        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer, parametersExcitonicExtendedAggregate;
+        parametersExcitonicAggregateTwoSites, parametersVibronicPyrazineRedDim, parametersVibronicPyrazineRedDimFull, parametersVibronicThiopheneDimer,
+        parametersExcitonicExtendedAggregate, parametersTestNmax;
     std::ofstream integralFileFakeVibronic, integralFileExcitonic, integralFileExcitonicHarmonic,
-        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended;
+        integralFilePyrazineRedDim, integralFilePyrazineRedDimFull, integralFileThiopheneDimer, integralFileExcitonicExtended, integralFileTestNmax;
 };
 
 #endif

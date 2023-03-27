@@ -84,9 +84,9 @@ public:
     }
 
   if(parameters["MODEL"] == "excitonicextended"){
-    int n_connectingmodes = parameters["vibronic_num_connectingmodes"].as<int>();
-    if (((nModes+nElecStates)*nParticles-n_connectingmodes) != L){
-        throw std::runtime_error("Incoherence in lattice size for this vibronic lattice");
+    int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
+    if (((nModes+nElecStates)*nParticles-nConnecting) != L){
+        throw std::runtime_error("Incoherence in lattice size for this vibronic lattice"); 
       }
   }
 
@@ -97,16 +97,40 @@ public:
       eleFirst = true;
     // The site type is used to distinguish between electronic and vibrational degrees
     // of freedom. Note that we don't distinguish between different "electronic particles"
-    // since it 
-    if (eleFirst)
-      for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++)
-        vector_types[idx1] = 1;
-    else
-      for (auto idx1 = 0; idx1 < nParticles; idx1++)
-        for (auto idx2 = 0; idx2 < nElecStates; idx2++)
-          vector_types[(nModes+nElecStates)*idx1+idx2] = 1;
-    // Monodimensional chain, the maximum number of vertex is 1.
-    numTypes = 2;
+    // since it
+    if(parameters["MODEL"] == "excitonicextended"){
+      int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
+      if (eleFirst){
+        throw std::runtime_error("only intertwined sorting possible for this model");
+      }
+      else{
+        int vibtype = 1;
+        for (auto idx1 = 0; idx1 < nParticles; idx1++){
+          for (auto idx2 = 0; idx2 < nElecStates; idx2++){
+            vector_types[(nModes+nElecStates)*idx1+idx2] = 0; //electronic type
+            for(auto idx3 = 1; idx3 <= nModes; idx3++){
+              if(vector_types.size() <= L) vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
+              vibtype++;
+            }
+          }
+        }
+      }
+      numTypes = nModes*nParticles-nConnecting+1;
+      for(int i; i < vector_types.size(); i++){
+        maquis::cout << "DEBUG_LATTICE: vector_types_element " << i << " is: " << vector_types[i] << std::endl;
+      }
+    }
+    else{
+      if (eleFirst)
+        for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++)
+          vector_types[idx1] = 1;
+      else
+        for (auto idx1 = 0; idx1 < nParticles; idx1++)
+          for (auto idx2 = 0; idx2 < nElecStates; idx2++)
+            vector_types[(nModes+nElecStates)*idx1+idx2] = 1;
+      // Monodimensional chain, the maximum number of vertex is 1.
+      numTypes = 2;
+    }
   }
 
   /** @brief Returns the next position in the lattice */
@@ -150,7 +174,7 @@ public:
     else if (property == "ParticleType" && pos.size() == 1)
       return boost::any(vector_types[pos[0]]);
     else if (property == "NumTypes")
-      return boost::any(2);
+      return boost::any(numTypes);
     else if (property == "vibindex" && pos.size() == 2)
       // In this case the first index is the molecule, the second one is the specific
       // mode that molecule.

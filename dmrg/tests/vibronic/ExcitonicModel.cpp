@@ -91,6 +91,34 @@ BOOST_FIXTURE_TEST_CASE(Test_Thiophene_Dimer_Excitonic, VibronicFixture)
     #endif //HAVE_U1
 }
 
+BOOST_FIXTURE_TEST_CASE(Test_Energy_Various_Nmax, VibronicFixture)
+{
+#ifdef HAVE_U1  
+    auto lattice = Lattice(parametersTestNmax);
+    auto integrals = Vibrational::detail::parseIntegralExcitonicExtended<double>(parametersTestNmax, lattice);
+    //Checks sizes
+    BOOST_CHECK_EQUAL(integrals.first.size(), 8);
+    BOOST_CHECK_EQUAL(integrals.second.size(), 8);
+    BOOST_CHECK_EQUAL(integrals.first[0].size(), 4);
+    maquis::DMRGInterface<std::complex<double>> interface(parametersTestNmax); 
+    interface.optimize();
+    double interface_optimizedEnergy = interface.energy().real();
+    BOOST_CHECK_CLOSE(interface_optimizedEnergy, 7.0, 1.0E-10);
+    // Checks energy before and after time evolution. 
+    #ifdef DMRG_TD
+    maquis::DMRGInterface<std::complex<double>> interface_TD(parametersTestNmax);
+    double interface_TD_initialEnergy = interface_TD.energy().real();
+    interface_TD.evolve();
+    double interface_TD_finalEnergy = interface_TD.energy().real();
+    BOOST_CHECK_CLOSE(interface_TD_initialEnergy, 7.0, 1.0E-10);
+    BOOST_CHECK_CLOSE(interface_TD_finalEnergy, 7.0, 1.0E-10);
+    #endif //DMRG_TD
+    #endif //HAVE_U1
+
+}
+
+
+
 
 /** Test for the integral parser of the extended excitonic hamiltonian */
 BOOST_FIXTURE_TEST_CASE(Test_Integral_Parser_ExtendedExcitonic, VibronicFixture)

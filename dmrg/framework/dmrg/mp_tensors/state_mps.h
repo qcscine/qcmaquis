@@ -57,6 +57,8 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::ch
     {
         // Computes the symmetry block of the next dimension and HARDCODED its value to 1
         charge newc = SymmGroup::fuse(curr_i[0].first, boost::get<0>(state[i]));
+        std::cout << "Populated symmetry sector" << std::endl;
+        std::cout << boost::get<0>(state[i]) << std::endl;
         Index<SymmGroup> new_i;
         new_i.insert(std::make_pair(newc, mdim));
         // Get the product basis between the physical basis and the symmetry block of the left renormalized basis
@@ -65,6 +67,10 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::ch
         // Finds out where to put the 1.0 in the MPS. Retrieve, from the ProductBasis object, how the row index was
         // decomposed in terms of left auxiliary basis and physical basis.
         size_t b_in = left(boost::get<0>(state[i]), curr_i[0].first) + boost::get<1>(state[i]) * curr_i[0].second;
+        std::cout << "Allowed symmetry sectors for current site " << i << std::endl;
+        std::cout << allowed[i] << std::endl;
+        std::cout << "Allowed symmetry sectors for current site " << i+1 << std::endl;
+        std::cout << allowed[i+1] << std::endl;
         assert (allowed[i+1].has(newc));
         size_t b_out = 0;
         mps[i].make_left_paired();
