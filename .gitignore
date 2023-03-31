@@ -6,8 +6,8 @@ build*/
 my*
 .vscode
 **check*
-**resfile*
-**resfile*
+examples/**/*resfile*
+examples/**/*result*
 dmrg/doc/qcmaquis_manual.aux
 dmrg/doc/qcmaquis_manual.bbl
 dmrg/doc/qcmaquis_manual.blg
