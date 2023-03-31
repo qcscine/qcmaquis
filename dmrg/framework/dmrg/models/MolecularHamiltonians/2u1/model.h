@@ -1040,6 +1040,7 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
     std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     static constexpr bool isTranscorrelated_ = (HamiltonianTranscorrelated == HamiltonianTransformation::Transcorrelated);
+    bool isQuantumComputingFormat;
 
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,

@@ -131,6 +131,7 @@ private:
         add_option("transcorrelated_nsweeps_TI", "Number of preliminary TI-DMRG sweeps for a tcDMRG calculation", value(5));
         add_option("transcorrelated_nsweeps_TC", "Number of iTD-DMRG sweeps for a tcDMRG calculation", value(20));
         add_option("transcorrelated_integral_file", "Name of the file storing the transcorrelated integrals");
+        add_option("transcorrelated_quantum_computing_format", "If yes, assumes that the transcorrelated Hamiltonian is in the quantum computing format", value("no"));
 
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
