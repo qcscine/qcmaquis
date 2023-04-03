@@ -87,9 +87,7 @@ public:
     destroyDownOp_ = {destroy_down_op};
   }
 
-  /**
-   * @brief Method to generate the term_descriptor of a given SQ operator string.
-   */
+  /** @brief Method to generate the term_descriptor of a given SQ operator string. */
   term_descriptor getTerm(std::vector<pos_t> positions, std::vector<OperatorType> tags,
                           std::shared_ptr<TagHandler<Matrix, SymmGroup> > op_table,
                           bool sign, value_type scale) const {
@@ -167,6 +165,7 @@ public:
     
     term.is_fermionic = sign;
     term.coeff = scale*scalarSign;
+    bool isNull = false;
 
     for (int idx = 0; idx < localOperatorBuffer.size();) {
       tag_type localTag = (localOperatorBuffer[idx].opType_ == OperatorType::Filling) 
@@ -177,9 +176,17 @@ public:
         bool isNextSame = (localOperatorBuffer[idx+1].posType_ == refPos);
         while (isNextSame) {
           if (localOperatorBuffer[idx+1].opType_ == OperatorType::Filling) {
+            if (op_table->product_is_null(fillOp_[lat_.template get_prop<sc_t>("type", localOperatorBuffer[idx+1].posType_)], localTag)) {
+              isNull = true;
+              break;
+            }
             ptag = op_table->get_product_tag(fillOp_[lat_.template get_prop<sc_t>("type", localOperatorBuffer[idx+1].posType_)], localTag);
           }
           else {
+            if (op_table->product_is_null(localOperatorBuffer[idx+1].tagType_, localTag)) {
+              isNull = true;
+              break;
+            }
             ptag = op_table->get_product_tag(localOperatorBuffer[idx+1].tagType_, localTag);
           }
           localTag = ptag.first;
@@ -191,10 +198,15 @@ public:
             isNextSame = (localOperatorBuffer[idx+1].posType_ == refPos);
         }
       }
-      term.push_back(std::make_pair(refPos, localTag));
+      if (!isNull)
+        term.push_back(std::make_pair(refPos, localTag));
+      else
+        break;
       idx++;
     }
-    
+    // If a null operator has been found, just returns a zero-sized term
+    if (isNull)
+      term = term_descriptor();
     return term;
   }
 
