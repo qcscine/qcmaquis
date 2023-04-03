@@ -35,13 +35,15 @@ using HamiltonianTransformation = chem::HamiltonianTransformation;
 
 template <class Matrix, class SymmGroup, Hamiltonian HamiltonianType, HamiltonianTransformation Transcorrelated>
 qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice const & lat_, BaseParameters & parms_)
-    : lat(lat_), parms(parms_), tag_handler(new table_type())
+    : lat(lat_), parms(parms_), tag_handler(new table_type()), isQuantumComputingFormat(false)
 {
     // Types definition
     typedef typename SymmGroup::subcharge subcharge;
 
     // Parameter parsing
-    isQuantumComputingFormat = (parms["transcorrelated_quantum_computing_format"] == "yes");
+    if (parms.is_set("transcorrelated_quantum_computing_format"))
+        if (parms["transcorrelated_quantum_computing_format"] == "yes")
+            isQuantumComputingFormat = true;
 
     // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
