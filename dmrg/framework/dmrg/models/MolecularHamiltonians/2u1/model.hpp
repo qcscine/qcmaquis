@@ -236,7 +236,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                              OperatorType::DestroyBeta, OperatorType::DestroyBeta};
     std::vector<std::vector<OperatorType> > twoBodyElementaryOperators = {twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
 
-    bool normal_ordered_integral = (parms["normal_ordered_integral_file"] == "yes");
+    bool normal_ordered_integral = (parms["normal_ordered_integral_file"] == "yes") && isTranscorrelated_;
     std::unordered_set<std::size_t> hole_states;
     if(normal_ordered_integral) {
         std::vector<std::size_t> hole_state_vec = parms["normal_ordered_hole_states"];
