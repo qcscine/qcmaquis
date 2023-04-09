@@ -132,6 +132,8 @@ private:
         add_option("transcorrelated_nsweeps_TC", "Number of iTD-DMRG sweeps for a tcDMRG calculation", value(20));
         add_option("transcorrelated_integral_file", "Name of the file storing the transcorrelated integrals");
         add_option("transcorrelated_3body_normal_ordered", "Use normal-ordered version of the threebody operator", value("no"));
+        add_option("normal_ordered_integral_file", "Integral file given is normal ordered.", value("no"));
+        add_option("normal_ordered_hole_states", "Hole states of the normal ordering, if integral file given in normal ordering");
 
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
