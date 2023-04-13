@@ -142,7 +142,7 @@ public:
         // We first loop over the number of molecules of the aggregate, and then over the
         // terms entering the vibronic Hamiltonian.
         for (int i_body = 0; i_body < n_particles_; i_body++) {
-            std::vector<int> vec_jnk(maxCoupling);
+            std::vector<int> vec_jnk(2);
             vec_jnk[0] = i_body;
             // Loop over the Hamiltonian terms
             // Add the vibrational contributions

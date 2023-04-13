@@ -116,6 +116,11 @@ public:
       auto energy = ietl::get_energy(*(siteProblem_.get()), mpsToPropagate) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
       resultOfLocalSiteProblem_.first = energy;
       maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << resultOfLocalSiteProblem_.first << std::endl;
+      bool debug = true;
+      if (debug)
+        mpsToPropagate.divide_by_scalar(mpsToPropagate.scalar_norm());
+        maquis::cout << "Wave function norm " << mpsToPropagate.scalar_norm() << std::endl;
+
     }
     iterationResults_["Energy"] << resultOfLocalSiteProblem_.first;
     resultOfLocalSiteProblem_.second = mpsToPropagate;

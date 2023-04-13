@@ -109,7 +109,10 @@ public:
           for (auto idx2 = 0; idx2 < nElecStates; idx2++){
             vector_types[(nModes+nElecStates)*idx1+idx2] = 0; //electronic type
             for(auto idx3 = 1; idx3 <= nModes; idx3++){
-              if(vector_types.size() <= L) vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
+              if(vibtype <= L-nParticles){
+                std::cout << "entered if statement in lattice" << std::endl;
+                vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
+              }
               vibtype++;
             }
           }

@@ -174,6 +174,7 @@ private:
         add_option("vibronic_num_molecules", "Number of molecules composing the molecular aggregate");
         add_option("vibronic_num_excitons", "Number of excitons", value(1));
         add_option("vibronic_num_connectingmodes", "Number of vibrational modes connecting two monomers", value(0));
+        add_option("vibronic_max_coupling", "Maximum power of operators in the Hamiltonian", value(2));
 
         // TD-related parameters
         add_option("propagator_accuracy", "Accuracy of the iterative approximation of the time-evolution operator", value(1.0E-10));
