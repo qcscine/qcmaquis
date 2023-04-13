@@ -42,8 +42,10 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
 
     // Parameter parsing
     if (parms.is_set("transcorrelated_quantum_computing_format"))
-        if (parms["transcorrelated_quantum_computing_format"] == "yes" && isTranscorrelated_)
+        if (parms["transcorrelated_quantum_computing_format"] == "yes" && isTranscorrelated_) {
+            maquis::cout << " Activating quantum computing format" << std::endl;
             isQuantumComputingFormat = true;
+        }
 
     // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
@@ -250,8 +252,8 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         // Two-body contribution
         else if (m==-1 && n==-1) {
             std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4;
-            value_type scalingFactor = (isQuantumComputingFormat) ? 1. : 1./2.;
-            if (isQuantumComputingFormat) {
+            value_type scalingFactor = (isQuantumComputingFormat && isTranscorrelated_) ? 1. : 1./2.;
+            if (isQuantumComputingFormat && isTranscorrelated_) {
                 opVector1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                 opVector2 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                 opVector3 = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
@@ -264,14 +266,21 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                 opVector4 = {OperatorType::CreateBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyBeta};
             }
             std::vector< std::vector< OperatorType > > twoBodyElementaryOperators = { opVector1, opVector2, opVector3, opVector4 };
-            std::vector< std::array<int, 4> > tmp = isTranscorrelated_ ? TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j, k, l)
-                                                                       : TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(i, j, k, l);
+            std::vector< std::array<int, 4> > tmp;
+            if (isTranscorrelated_ && !isQuantumComputingFormat)
+                tmp = TermMaker<Matrix, SymmGroup>::generateTwofoldSymmetricIndex(i, j, k, l);
+            else if (isTranscorrelated_ && isQuantumComputingFormat)
+                tmp = std::vector<std::array<int, 4>>({std::array<int, 4>({i, j, k, l})});
+            else
+                tmp = TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(i, j, k, l);
+            std::cout << i << " " << j << " " << k << " " << l << std::endl;
+            //
             for (auto& iOp: twoBodyElementaryOperators) {
                 for (auto& iTerm: tmp) {
-                    auto posVector = (isQuantumComputingFormat) ? std::vector< pos_t >{ iTerm[0], iTerm[1], iTerm[2], iTerm[3] }
-                                                                : std::vector< pos_t >{ iTerm[0], iTerm[2], iTerm[3], iTerm[1] };
+                    auto posVector = (isQuantumComputingFormat && isTranscorrelated_) ? std::vector< pos_t >{ iTerm[0], iTerm[1], iTerm[2], iTerm[3] }
+                                                                                      : std::vector< pos_t >{ iTerm[0], iTerm[2], iTerm[3], iTerm[1] };
                     auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement*scalingFactor);
-                    // std::cout << term << std::endl;
+                    std::cout << term << std::endl;
                     addTerm(mapOfOperators, term);
                 }
             }
@@ -284,7 +293,11 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                     int couplingDegree = nonEqualIndices.size();
                     int maxDegree = parms["transcorrelated_3body_max_coupling"];
                     if (couplingDegree <= maxDegree) {
-                        std::vector< std::array<int, 6> > tmp = TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(i, j, k, l, m, n);
+                        std::vector< std::array<int, 6> > tmp;
+                        if (isQuantumComputingFormat)
+                            tmp = std::vector<std::array<int, 6>>({std::array<int, 6>({i, j, k, l, m, n})});
+                        else
+                            tmp = TermMaker<Matrix, SymmGroup>::generateThreeBodySymmetricIndex(i, j, k, l, m, n);
                         std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4, opVector5, opVector6, opVector7, opVector8;
                         value_type scalingFactor = (isQuantumComputingFormat) ? 1. : -1./6.;
                         if (isQuantumComputingFormat) {
