@@ -154,7 +154,7 @@ public:
                     // Chooses between position and momentum operators
                     if (hamiltonianTerms.first[idx][op_vib] < 0) {
                         operators.push_back(momentumPowers[1]);
-                        vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
+                        vec_jnk[1] = abs(hamiltonianTerms.first[idx][op_vib])-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                     }
                     else if (hamiltonianTerms.first[idx][op_vib] > 0) {

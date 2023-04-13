@@ -148,7 +148,7 @@ public:
             vec_jnk_next[0] = i_body+1; //NEW
             int flag = 0; //NEW
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++){ //loop over all rows of the integral file
-                if(i_body == n_particles_-1 && abs(hamiltonianTerms.first[idx][2]) > n_vib_states_-n_connectingmodes) break;
+                if(i_body == n_particles_-1 && abs(hamiltonianTerms.first[idx][2]) > n_vib_states_-n_connectingmodes) break; // NG: DANGEROUS! Better check if connecting
                 maquis::cout << "VAL" << abs(hamiltonianTerms.first[idx][2]) << std::endl;
                 // Prepares the vectors to be employed when building the Hamiltonian
                 std::vector<tag_type> operators;
@@ -174,7 +174,7 @@ public:
                         scalingFactor *= momentumPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].second;
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
                         //vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
-                        vec_jnk[1] = -index-1;
+                        vec_jnk[1] = abs(index)-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                         std::cout << "momentum registered with power" << " " << countOccurrences << std::endl;
                     }
@@ -252,7 +252,7 @@ public:
         std::vector<int> vec_jnk(2);
         for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
             for (int i2_body = 0; i2_body < n_particles_; i2_body++) {
-                if (only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1) || !only_nn_ && i1_body!=i2_body) {
+                if ((only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1)) || (!only_nn_ && i1_body!=i2_body)) {
                     std::cout << "i1_body : " << i1_body << std::endl;
                     std::cout << "i2_body : " << i2_body << std::endl;
                     std::vector<tag_type> operators;

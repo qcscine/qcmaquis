@@ -83,12 +83,12 @@ public:
       }
     }
 
-  if(parameters["MODEL"] == "excitonicextended"){
-    int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
-    if (((nModes+nElecStates)*nParticles-nConnecting) != L){
+    if(parameters["MODEL"] == "excitonicextended"){
+      int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
+      if (((nModes+nElecStates)*nParticles-nConnecting) != L){
         throw std::runtime_error("Incoherence in lattice size for this vibronic lattice"); 
       }
-  }
+    }
 
     vector_types.resize(L);
     // Sites sorting. If == "firstele", put first all the excited states.
