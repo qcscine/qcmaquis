@@ -251,15 +251,18 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         }
         // Two-body contribution
         else if (m==-1 && n==-1) {
+            std::cout << "ALB " << i << " " << j << " " << k << " " << l << std::endl;
             std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4;
             value_type scalingFactor = (isQuantumComputingFormat && isTranscorrelated_) ? 1. : 1./2.;
             if (isQuantumComputingFormat && isTranscorrelated_) {
+                std::cout << "CORRECT" << std::endl;
                 opVector1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                 opVector2 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                 opVector3 = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                 opVector4 = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateBeta, OperatorType::DestroyBeta};
             }
             else {
+                std::cout << "WRONG" << std::endl;
                 opVector1 = {OperatorType::CreateAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::DestroyAlpha};
                 opVector2 = {OperatorType::CreateBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyBeta};
                 opVector3 = {OperatorType::CreateAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::DestroyAlpha};
@@ -273,14 +276,15 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                 tmp = std::vector<std::array<int, 4>>({std::array<int, 4>({i, j, k, l})});
             else
                 tmp = TermMaker<Matrix, SymmGroup>::generateEightfoldSymmetricIndex(i, j, k, l);
-            std::cout << i << " " << j << " " << k << " " << l << std::endl;
             //
             for (auto& iOp: twoBodyElementaryOperators) {
                 for (auto& iTerm: tmp) {
                     auto posVector = (isQuantumComputingFormat && isTranscorrelated_) ? std::vector< pos_t >{ iTerm[0], iTerm[1], iTerm[2], iTerm[3] }
                                                                                       : std::vector< pos_t >{ iTerm[0], iTerm[2], iTerm[3], iTerm[1] };
+                    std::cout << "POS " << iTerm[0] << " " << iTerm[1] << " " << iTerm[2] << " " << iTerm[3] << std::endl;
                     auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement*scalingFactor);
-                    std::cout << term << std::endl;
+                    if (term.size() > 0)
+                        std::cout << term << std::endl;
                     addTerm(mapOfOperators, term);
                 }
             }
