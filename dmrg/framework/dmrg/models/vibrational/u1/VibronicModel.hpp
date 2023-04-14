@@ -73,9 +73,9 @@ public:
         // Note that the physical dimension for the vibrations coupled the 0 QC with
         // itself since it cannot generate electronic excitations
         phys.resize(2);
-        phys[0].insert(std::make_pair(0, nMax));
-        phys[1].insert(std::make_pair(0, 1)); // empty
-        phys[1].insert(std::make_pair(1, 1)); // occupied
+        phys[0].insert(std::make_pair(0, 1)); // empty
+        phys[0].insert(std::make_pair(1, 1)); // occupied
+        phys[1].insert(std::make_pair(0, nMax)); // vibrational
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -170,9 +170,9 @@ public:
     {
         tag_type ret;
         if (type == 0)
-            ret = ident_vib;
-        else if (type == 1)
             ret = ident_ele;
+        else if (type == 1)
+            ret = ident_vib;
         else
             throw std::runtime_error("Site type not recognized");
         return ret;
@@ -183,9 +183,9 @@ public:
     {
         tag_type ret;
         if (type == 0)
-            ret = ident_vib;
-        else if (type == 1)
             ret = ident_ele;
+        else if (type == 1)
+            ret = ident_vib;
         else
             throw std::runtime_error("Site type not recognized");
         return ret;

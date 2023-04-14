@@ -92,9 +92,9 @@ public:
         // Definition of the physical dimensions.
         // First we manage the dimensions for the vibrations, then the ones of the nuclei.
         phys_indexes.resize(2) ;
-        phys_indexes[0].insert(std::make_pair(0, nMax));
-        phys_indexes[1].insert(std::make_pair(0, 1));
-        phys_indexes[1].insert(std::make_pair(1, 1));
+        phys_indexes[0].insert(std::make_pair(0, 1));
+        phys_indexes[0].insert(std::make_pair(1, 1));
+        phys_indexes[1].insert(std::make_pair(0, nMax));
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -226,9 +226,9 @@ public:
     {
         tag_type ret ;
         if (type == 0)
-            ret = ident_vib;
-        else
             ret = ident_ele;
+        else
+            ret = ident_vib;
         return ret ;
     }
     
@@ -237,9 +237,9 @@ public:
     {
         tag_type ret ;
         if (type == 0)
-          ret = ident_vib;
-        else if (type == 1)
           ret = ident_ele;
+        else if (type == 1)
+          ret = ident_vib;
         else
           throw std::runtime_error("Site type not recognized") ;
         return ret ;

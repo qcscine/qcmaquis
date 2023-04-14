@@ -109,11 +109,11 @@ public:
           for (auto idx2 = 0; idx2 < nElecStates; idx2++){
             vector_types[(nModes+nElecStates)*idx1+idx2] = 0; //electronic type
             for(auto idx3 = 1; idx3 <= nModes; idx3++){
-              if(vibtype <= L-nParticles){
+              if(vibtype <= L-nParticles) {
                 std::cout << "entered if statement in lattice" << std::endl;
                 vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
+                vibtype++;
               }
-              vibtype++;
             }
           }
         }
@@ -122,15 +122,24 @@ public:
       for(int i; i < vector_types.size(); i++){
         maquis::cout << "DEBUG_LATTICE: vector_types_element " << i << " is: " << vector_types[i] << std::endl;
       }
-    }
-    else{
-      if (eleFirst)
-        for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++)
-          vector_types[idx1] = 1;
-      else
-        for (auto idx1 = 0; idx1 < nParticles; idx1++)
-          for (auto idx2 = 0; idx2 < nElecStates; idx2++)
-            vector_types[(nModes+nElecStates)*idx1+idx2] = 1;
+    } else { 
+      if (eleFirst) {
+        for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++) {
+          vector_types[idx1] = 0; // electronic site
+        }
+        for (auto idxVib = nParticles*nElecStates; idxVib < L; idxVib++) {
+          vector_types[idxVib] = 1; // vibrational site
+        }
+      } else {
+        for (auto idx1 = 0; idx1 < nParticles; idx1++) {
+          for (auto idx2 = 0; idx2 < nElecStates; idx2++) {
+            vector_types[(nModes+nElecStates)*idx1+idx2] = 0; // electronic site
+          }
+          for (auto idxVib = 0; idxVib < nModes; idxVib++) {
+            vector_types[(nModes+nElecStates)*idx1+nElecStates+idxVib] = 1; // vibrational site
+          }
+        }
+      }
       // Monodimensional chain, the maximum number of vertex is 1.
       numTypes = 2;
     }
