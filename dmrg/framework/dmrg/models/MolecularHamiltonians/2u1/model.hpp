@@ -236,6 +236,17 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                              OperatorType::DestroyBeta, OperatorType::DestroyBeta};
     std::vector<std::vector<OperatorType> > twoBodyElementaryOperators = {twoBodyVec1, twoBodyVec2, twoBodyVec3, twoBodyVec4};
 
+    bool normal_ordered_integral = (parms["normal_ordered_integral_file"] == "yes") && isTranscorrelated_;
+    std::unordered_set<std::size_t> hole_states;
+    if(normal_ordered_integral) {
+        std::vector<std::size_t> hole_state_vec = parms["normal_ordered_hole_states"];
+        hole_states.insert(hole_state_vec.begin(), hole_state_vec.end());
+        std::cout << "Reading integral in normally ordered form, with reference states ";
+        for(auto i : hole_states) {
+            std::cout << i << ",";
+        }
+        std::cout << std::endl;
+    }
 
     for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
         int i = term_assistant.idx(iElement, 0);
@@ -265,8 +276,15 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
             for (auto &iOp: oneBodyElementaryOperators) {
                 for (auto &iTerm: posVector) {
                     std::vector<pos_t> localPosVector = {iTerm[0], iTerm[1]};
-                    auto term = jw.getTerm(localPosVector, iOp, tag_handler, true, matrixElement);
-                    addTerm(mapOfOperators, term);
+                    if(!normal_ordered_integral) {
+                        auto term = jw.getTerm(localPosVector, iOp, tag_handler, true, matrixElement);
+                        addTerm(mapOfOperators, term);
+                    } else {
+                        auto noOp(iOp);
+                        double sign = applyNormalOrdering(localPosVector, noOp, hole_states);
+                        auto term = jw.getTerm(localPosVector, noOp, tag_handler, true, sign * matrixElement);
+                        addTerm(mapOfOperators, term);
+                    }
                 }
             }
         }
@@ -280,9 +298,15 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                     std::vector<pos_t> posVector = {iTerm[0], iTerm[2], iTerm[3], iTerm[1]};
                     if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                         !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
-                        auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement / 2.);
-                        addTerm(mapOfOperators, term);
-                        // std::cout << term << std::endl;
+                        if(!normal_ordered_integral) {
+                            auto term = jw.getTerm(posVector, iOp, tag_handler, true, matrixElement / 2.);
+                            addTerm(mapOfOperators, term);
+                        } else {
+                            auto noOp(iOp);
+                            double sign = applyNormalOrdering(posVector, noOp, hole_states);
+                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement);
+                            addTerm(mapOfOperators, term);
+                        }
                     }
                 }
             }
@@ -354,9 +378,15 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                     !(posVector[4] == posVector[5] && iOp[4] == iOp[5]) &&
                                     !(posVector[3] == posVector[5] && iOp[3] == iOp[5]) &&
                                     !(posVector[4] == posVector[3] && iOp[4] == iOp[3])) {
-                                    auto term = jw.getTerm(posVector, iOp, tag_handler, true, -matrixElement / 6.);
-                                    // std::cout << term << std::endl;
-                                    addTerm(mapOfOperators, term);
+                                    if(!normal_ordered_integral) {
+                                        auto term = jw.getTerm(posVector, iOp, tag_handler, true, - matrixElement / 6.);
+                                        addTerm(mapOfOperators, term);
+                                    } else {
+                                        auto noOp(iOp);
+                                        double sign = applyNormalOrdering(posVector, noOp, hole_states);
+                                        auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement);
+                                        addTerm(mapOfOperators, term);
+                                    }
                                 }
                             }
                         }
@@ -464,7 +494,6 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     // Normal ordering helper that generates indices for normal ordering
     NormalOrderingHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> no_helper(term_assistant);
 
-
     for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
         int i = term_assistant.idx(iElement, 0);
         int j = term_assistant.idx(iElement, 1);
@@ -546,10 +575,12 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     std::unordered_map<std::tuple<int, int, int, int>, double, intTupleHash> twoBodyIndices;
     twoBodyIndices = no_helper.getNoTwoBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"],
                                                         hole_states);
+
     for (auto &iOp: twoBodyElementaryOperators) {
         for (auto p: twoBodyIndices) {
             std::vector<int> posVector = {std::get<0>(p.first), std::get<1>(p.first), std::get<2>(p.first),
                                           std::get<3>(p.first)};
+
             if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                 !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
                 auto noOp(iOp);

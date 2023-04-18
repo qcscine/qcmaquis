@@ -8,7 +8,7 @@
  * the terms of the license, either version 1 or (at your option) any later
  * version.
  *
- * You should have received a copy of the ALPS Application License along with
+ * You should have receivedo a copy of the ALPS Application License along with
  * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
  * available from http://alps.comp-phys.org/.
  *
