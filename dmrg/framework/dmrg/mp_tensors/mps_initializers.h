@@ -122,7 +122,8 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
   // Declaration of types
-  using StateType = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
+  using stateEntryType = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
 
   /** @brief Class constructor */
   coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
@@ -154,7 +155,7 @@ public:
     for (int i=0; i<basis_index.size(); i++ ) {
       state.resize(mps.length());
       for (int j=0; j<mps.length(); j++)
-        state[j] = phys_dims[site_type[j]].element(basis_index[i][j]);
+        state[j][0] = phys_dims[site_type[j]].element(basis_index[i][j]);
       auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end);
       if (i == 0) {
         mps = mps_tmp;
@@ -173,47 +174,7 @@ private:
   std::vector<Index<SymmGroup> > phys_dims;
   std::vector<int> site_type;
   std::vector< std::vector<int> > basis_index;
-  StateType state;
-};
-
-template<class Matrix, class SymmGroup>
-class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
-{
-public:
-  basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
-                 std::vector<int> const& site_type_)
-    : phys_dims(phys_dims_), site_type(site_type_)
-  {
-    std::string states = params["init_basis_state"].as<std::string>();
-    std::vector<std::string> specifiedStates;
-    boost::split(specifiedStates, states, boost::is_any_of("|"));
-    std::stringstream ss(specifiedStates[0]);
-    int ichar;
-    while (ss >> ichar) {
-        occupation.push_back(ichar);
-        ss.ignore(1);
-    }
-  }
-
-
-  void operator()(MPS<Matrix, SymmGroup> & mps)
-  {
-    assert(occupation.size() == mps.length());
-    if (phys_dims[0].size() != 1)
-      throw std::runtime_error("basis_mps_init only for TrivialGroup.");
-    typedef typename SymmGroup::charge charge;
-    charge C = SymmGroup::IdentityCharge;
-
-    std::vector<boost::tuple<charge, int> > state(mps.length());
-    for (int i=0; i<mps.length(); ++i)
-        state[i] = boost::make_tuple(C, occupation[i]);
-    mps = state_mps<Matrix>(state, phys_dims, site_type);
-  }
-
-private:
-  std::vector<int> occupation;
-  std::vector<Index<SymmGroup> > phys_dims;
-  std::vector<int> site_type;
+  stateType state;
 };
 
 /**
@@ -238,9 +199,9 @@ public:
      */
     basis_mps_init_generic(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-        : phys_dims(phys_dims_),
+        : sym(params_["symmetry"].as<std::string>()), phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
-    {
+    { 
       std::string states = params["init_basis_state"].as<std::string>();
       std::vector<std::string> specifiedStates;
       boost::split(specifiedStates, states, boost::is_any_of("|"));
@@ -258,19 +219,21 @@ public:
     {
         // assert(basis_index.size() == mps.length());
         auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-        mps = state_mps<Matrix>(state, phys_dims, site_type, right_end);
-#ifndef NDEBUG
-        for (int i = 0 ; i < basis_index.size() ; i++ ) {
-          maquis::cout << "state: ";
-          maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
-          maquis::cout << "\n";
+        if (sym=="su2u1" || sym=="su2u1pg") { // SU2 electronic case --> special because of spin symmetries etc --> directly use state_mps_cd
+          mps = state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, 1, false);
+        } else {
+          mps = state_mps<Matrix>(state, phys_dims, site_type, right_end, 1);
         }
-#endif
         if (mps[mps.length()-1].col_dim()[0].first != right_end)
             throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+        
+        for (int i = 0; i < mps.length(); i++) {
+            mps[i].divide_by_scalar(mps[i].scalar_norm());
+        }
     }
 
 private:
+    std::string sym;
     std::vector<int> basis_index;
     std::vector<Index<SymmGroup> > phys_dims;
     typename SymmGroup::charge right_end;
@@ -287,21 +250,25 @@ public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
                                typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : init_bond_dimension(params_["init_bond_dimension"]),
+      : sym(params_["symmetry"].as<std::string>()), init_bond_dimension(params_["init_bond_dimension"]),
         phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
-    basis_index = params["init_space"].as<std::vector<int> >();
+    basis_index = params["init_space"].as<std::vector<int> >(); 
   }
 
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
-    assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
+    assert(state.size() == mps.length());
     // Actual MPS initialization
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, init_bond_dimension);
+    if (sym=="2u1" || sym=="2u1pg" || sym=="su2u1" || sym=="su2u1pg") { // electronic case --> special because of spin symmetries etc --> directly use state_mps
+      mps = state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, init_bond_dimension, false);
+    } else {
+      mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, false, init_bond_dimension);
+    }
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
     for (int i = 0; i < mps.length(); i++) {
@@ -310,6 +277,7 @@ public:
   }
 private:
   // -- ATTRIBUTES --
+  std::string sym;
   std::vector<int> basis_index;
   std::size_t init_bond_dimension;
   std::vector<Index<SymmGroup> > phys_dims;
@@ -328,7 +296,7 @@ public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                                  typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
-      : init_bond_dimension(params_["init_bond_dimension"]),
+      : sym(params_["symmetry"].as<std::string>()), init_bond_dimension(params_["init_bond_dimension"]),
         phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
   {
     if (params["init_space"].str().empty())
@@ -340,10 +308,14 @@ public:
   // Operator called when initialization occurs
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
-    assert(basis_index.size() == mps.length());
     auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index, phys_dims, site_type, mps.length());
-    mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, init_bond_dimension);
+    assert(state.size() == mps.length());
     // Actual MPS initialization
+    if (sym=="2u1" || sym=="2u1pg" || sym=="su2u1" || sym=="su2u1pg") { // electronic case --> special because of spin symmetries etc --> directly use state_mps
+      mps = state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, init_bond_dimension, true);
+    } else {
+      mps = state_mps_const<Matrix>(state, phys_dims, site_type, right_end, true, init_bond_dimension);
+    }
     if (mps[mps.length()-1].col_dim()[0].first != right_end)
       throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
     for (int i = 0; i < mps.length(); i++) {
@@ -353,6 +325,7 @@ public:
 
 private:
   // -- ATTRIBUTES --
+  std::string sym;
   std::vector<int> basis_index;
   std::size_t init_bond_dimension;
   std::vector<Index<SymmGroup> > phys_dims;
