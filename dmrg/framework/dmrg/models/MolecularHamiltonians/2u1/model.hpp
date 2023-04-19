@@ -480,16 +480,22 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     for (std::size_t iElement = 0; iElement < matrix_elements.size(); iElement++) {
         if (term_assistant.idx(iElement, 2) == -1 && term_assistant.idx(iElement, 3) == -1
             && term_assistant.idx(iElement, 4) == -1 && term_assistant.idx(iElement, 5) == -1
-            && term_assistant.idx(iElement, 0) == term_assistant.idx(iElement, 1)) { // Check if diagonal
+            && term_assistant.idx(iElement, 0) == term_assistant.idx(iElement, 1) && term_assistant.idx(iElement, 0) != -1) { // Check if diagonal
             diagonals.push_back({iElement, matrix_elements[iElement]});
         }
     }
-    std::partial_sort(diagonals.begin(), diagonals.begin() + n_hole_states, diagonals.end(),
+    std::sort(diagonals.begin(), diagonals.end(),
                       [](auto a, auto b) {
                           return a.second < b.second;
                       });
     for (auto it = diagonals.begin(); it < diagonals.begin() + n_hole_states; ++it)
         hole_states.insert(term_assistant.idx(it->first, 0));
+
+    std::cout << "Normal ordering according to hole states ";
+    for(auto h : hole_states) {
+        std::cout << h << ", ";
+    }
+    std::cout << std::endl;
 
     // Normal ordering helper that generates indices for normal ordering
     NormalOrderingHelper<Matrix, SymmGroup, HamiltonianType, Transcorrelated> no_helper(term_assistant);
