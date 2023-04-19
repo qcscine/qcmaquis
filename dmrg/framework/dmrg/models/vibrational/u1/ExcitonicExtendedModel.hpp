@@ -149,7 +149,7 @@ public:
             int flag = 0; //NEW
             for (int idx = 0; idx < hamiltonianTerms.first.size(); idx++){ //loop over all rows of the integral file
                 if(i_body == n_particles_-1 && abs(hamiltonianTerms.first[idx][2]) > n_vib_states_-n_connectingmodes) break; // NG: DANGEROUS! Better check if connecting
-                maquis::cout << "VAL" << abs(hamiltonianTerms.first[idx][2]) << std::endl;
+                maquis::cout << "VAL " << abs(hamiltonianTerms.first[idx][2]) << std::endl;
                 // Prepares the vectors to be employed when building the Hamiltonian
                 std::vector<tag_type> operators;
                 std::vector<pos_t> positions;
@@ -356,7 +356,7 @@ public:
                 maquis::cout << "pos of pushed back positions for meas. of population: " << (n_vib_states_+n_ele_states_)*idx << std::endl;
                 // Generates vector for the fillings and identity operators
                 op_vec identities_local, fillings_local;
-                for (std::size_t idx1 = 0; idx1 <= num_vibtypes; idx1++) {
+                for (std::size_t idx1 = 0; idx1 < num_vibtypes; idx1++) {
                     identities_local.push_back(this->identity_matrix(idx1));
                     fillings_local.push_back(this->filling_matrix(idx1));
                 }
