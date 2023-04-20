@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_CASE(Test_Vibrational_Initializer_Helper_NU1, NModeFixture)
       BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[0], 0);
       BOOST_CHECK_EQUAL(boost::get<0>(outputVector[iSite][0])[1], 0);
     }
-    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite])[0], 0);
+    BOOST_CHECK_EQUAL(boost::get<1>(outputVector[iSite][0]), 0);
   }
 #endif
 }

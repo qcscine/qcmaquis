@@ -124,10 +124,8 @@ public:
     if (inputVec.size() != size)
       throw std::runtime_error("Index list number of elements does not match the lattice size. Check the input settings.");
     auto state = stateType(size, stateEntryType(1));
-    std::cout << physDim[0] << std::endl;
     for (int j = 0 ; j < size; ++j) {
       state[j][0] = physDim[siteType[j]].element(inputVec[j]);
-      std::cout << boost::get<0>(state[j][0]) << " " << boost::get<1>(state[j][0]) << std::endl;
     }
     return state;
   }
@@ -152,8 +150,7 @@ public:
       if (siteType[j] == 0) { // electronic site
         auto posOfCharge = physDim[siteType[j]].position(inputVec[j]);
         state[j][0] = physDim[siteType[j]].element(posOfCharge);
-      }
-      else { // vibrational site
+      } else { // vibrational site
         state[j][0] = physDim[siteType[j]].element(inputVec[j]);
       }
     }
