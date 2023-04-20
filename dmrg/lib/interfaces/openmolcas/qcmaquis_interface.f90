@@ -718,7 +718,7 @@ module qcmaquis_interface
 
     ! Enable HF guess by setting the appropriate QCMaquis parameter
     if (hf_guess) then
-        call qcmaquis_interface_set_param("init_state","hf")
+        call qcmaquis_interface_set_param("init_type","hf")
     end if
 
     ! Enable entanglement calculation if requested

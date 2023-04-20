@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021 Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MAIN
 
@@ -76,6 +57,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
 {
     // Types declaration
     using opt_base_t = optimizer_base<matrix, S, storage::disk>;
+    int nSweeps = 50;
     // Conventional calculation
     parametersBenzene.set("hf_occ", "4,4,2,1,1,1");
     parametersBenzene.set("u1_total_charge1", 2);
@@ -91,7 +73,8 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     parametersBenzene.set("u1_total_charge2", 3);
     // Add noise to "move" the optimization away from the local energy minimum
     parametersBenzene.set("twosite_truncation", "heev_truncation");
-    parametersBenzene.set("ngrowsweeps", 20);
+    parametersBenzene.set("nsweeps", nSweeps);
+    parametersBenzene.set("ngrowsweeps", 10);
     parametersBenzene.set("nmainsweeps", 10);
     parametersBenzene.set("alpha_initial", 1.0E-6);
     parametersBenzene.set("alpha_main", 1.0E-10);
@@ -109,7 +92,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE( Test_MPO_Times_MPS_Ionization, S, symmetries, 
     auto stop_callback = time_stopper(static_cast<double>(parametersBenzene["run_seconds"]));
     std::shared_ptr<opt_base_t> optimizer;
     optimizer.reset( new ts_optimize<matrix, S, storage::disk>(ionizedMPS, mpo, parametersBenzene, stop_callback, lattice, 0) );
-    for (int sweep=0; sweep < 20; ++sweep)
+    for (int sweep=0; sweep < nSweeps; ++sweep)
       optimizer->sweep(sweep);
     auto energyByHand = expval(ionizedMPS, mpo)/norm(ionizedMPS);
     // This check could be made stricter, but with more sweeps

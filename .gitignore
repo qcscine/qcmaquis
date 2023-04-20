@@ -6,7 +6,7 @@ build*/
 my*
 .vscode
 **check*
-**resu*
+**resfile*
 dmrg/doc/qcmaquis_manual.aux
 dmrg/doc/qcmaquis_manual.bbl
 dmrg/doc/qcmaquis_manual.blg

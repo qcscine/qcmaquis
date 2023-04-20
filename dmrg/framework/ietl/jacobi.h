@@ -1,32 +1,9 @@
-/*****************************************************************************
- *
- * ALPS Project: Algorithms and Libraries for Physics Simulations
- *
- * ALPS Libraries
- *
- * Copyright (C) 2001-2011 by Rene Villiger <rvilliger@smile.ch>,
- *                            Prakash Dayal <prakash@comp-phys.org>,
- *                            Matthias Troyer <troyer@comp-phys.org>
- *                            Bela Bauer <bauerb@phys.ethz.ch>
- *
- * This software is part of the ALPS libraries, published under the ALPS
- * Library License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Library License along with
- * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 /* $Id: jacobi.h,v 1.6 2003/09/05 08:12:38 troyer Exp $ */
 
@@ -358,7 +335,8 @@ namespace ietl
     // C L A S S :   J A C O B I _ D A V I D S O N ////////////////////////////////////
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) : 
+    
+    jacobi_davidson<MATRIX, VS>::jacobi_davidson(const MATRIX& matrix, const VS& vec, DesiredEigenvalue desired) :
     matrix_(matrix),
     vecspace_(vec),
     M(1,1),
@@ -397,7 +375,7 @@ namespace ietl
         
         // Start with t=v_o, starting guess
         ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
-        ietl::project(V[0],vecspace_);
+        ietl::project(V[0], vecspace_);
         
         // Start iteration
         do {

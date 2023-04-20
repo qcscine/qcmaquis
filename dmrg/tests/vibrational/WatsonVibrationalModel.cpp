@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
- *               2021 by Alberto Baiardi <robin.feldmann@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MODULE MODEL_VIBRATIONAL_NONE
 
@@ -51,6 +32,18 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
 
 #ifdef HAVE_TrivialGroup
 
+/** Checks consistency for the physical dimensions for the ethylene Watson Hamiltonian with NMax vector initialization */
+BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene_NMaxVec, WatsonFixture)
+{
+    parametersEthyleneWatsonHarmonic.set("Nmax", "8");
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
+    auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
+    int siteType = 5;
+    const auto& physicalDimensions5 = nModeModel.phys_dim(siteType);
+    BOOST_CHECK_EQUAL(physicalDimensions5.sum_of_sizes(), 8);
+}
+
+
 /** Simple check on tags */
 BOOST_FIXTURE_TEST_CASE(Test_Model_Tag_SimpleCheck_Ethylene, WatsonFixture)
 {
@@ -74,7 +67,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Symbolic_Operator_Ethylene, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_IntegralContainer, WatsonFixture) 
 {
     auto lattice = lattice_factory(parametersEthyleneWatsonHarmonic);
-    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice);
+    auto integrals = Vibrational::detail::WatsonIntegralParser<double>(parametersEthyleneWatsonHarmonic, lattice, WatsonCoordinateType::CartesianNormalModes,
+                                                                       6, 6, 6);
     BOOST_CHECK_EQUAL(integrals.size(), 24);
     for (const auto iElements: integrals) {
         for (int iSite = 2; iSite < 6; iSite++)
@@ -97,7 +91,8 @@ BOOST_FIXTURE_TEST_CASE(Test_Model_Watson_Ethylene_PhysDim, WatsonFixture)
     auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
     auto watsonModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     const auto& physicalDimensions0 = watsonModel.phys_dim(0);
-    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), parametersEthyleneWatsonHarmonic["Nmax"]);
+    int nMax = parametersEthyleneWatsonHarmonic["Nmax"];
+    BOOST_CHECK_EQUAL(physicalDimensions0.sum_of_sizes(), nMax);
 }
 
 #endif // HAVE_TrivialGroup

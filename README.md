@@ -4,7 +4,9 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
 ## Current Features:
   - Optimization of spin-adapted SU(2) MPS wave functions with the DMRG algorithm
   - Non-relativistic and scalar-relativistic quantum-chemical Hamiltonians
-  - Calculation of excited states
+  - Pre-Born--Oppenheimer Hamiltonian with multicomponent MPS including one-particle RDM and mutual information
+  - Vibrational calculation based on the Watson Hamiltonian
+  - Calculation of excited states with orthogonally-contrained DMRG, inverse-power iteration DMRG, and DMRG[FEAST]
   - A tool set to analyze the MPS wave function and its quantum entanglement
   - One-, two, three- and four-particle reduced density matrices
   - One-, two- and three-particle reduced transition density matrices
@@ -15,7 +17,6 @@ QCMaquis is an efficient C++11 implementation of the density matrix renormalizat
     - MPS state interaction (MPS-SI) for the calculation of spin-orbit coupling matrix elements, electronic and magnetic properties
     - state-specific and quasi-degenerate (multi-state) DMRG-NEVPT2 calculations
   - The current release version can be used together with SCINE autoCAS
-  - Pre-Born--Oppenheimer Hamiltonian with multicomponent MPS including one-particle RDM and mutual information
 
 ## QCMaquis compilation and installation
 ### Prerequisites:
@@ -41,12 +42,13 @@ where `<CMAKE_COMPILE_OPTIONS>` can be (optionally) one of the following:
 ### CMake compile options:
 - `BUILD_MANUAL`: Compile and install the QCMaquis manual in PDF.
 - `BUILD_OPENMOLCAS_INTERFACE`: Build and install the OpenMOLCAS Fortran interface.
-- `TESTS`: Compile tests.
+- `QCMAQUIS_TESTS`: Compile tests.
 - `LAPACK_64_BIT`: Enable if you use a linear algebra library configured with 64-bit integers (ILP64).
 - `BLAS_LAPACK_SELECTOR`: Set the vendor of the linear algebra library: `openblas`,`mkl_sequential`, `mkl_parallel`, `veclib` for Accelerate on Mac OS X, `auto` for autodetection and `manual` for setting the linking directories manually are supported. Default is autodetection, which usually does a good job.
 - `BUILD_PREBO`: Build the pre-BO related model. It is mandatory to activate the `NU1` symmetry.
-- `BUILD_VIBRATIONAL`: Build the vibrational DMRG module. It is mandatory to activate either the `NONE` (for canonical quantization) or the `NU1` (for n-mode second quantization) symmetry.
+- `BUILD_VIBRATIONAL`: Build the vibrational DMRG module. It is mandatory to activate the symmetry `NONE` for canonical quantization.
 - `BUILD_VIBRONIC`: Buld the vibronic and excitonic DMRG modules. It is mandatory to activate the `U1` symmetry.
+- `DMRG_ORDERNONE` Maximum order of integral terms for NONE symmetry for vibrational calculations. Integral files need to have #DMRG_ORDERNONE mode indices. Default is 6. If this flag is set to another number, certain tests will fail by construction.
 - `BUILD_*`: Build (legacy) utility binaries to perform various operations with matrix product state (MPS) checkpoint files.
 
 A more detailed installation guide can be found in Section 3.1 of our manual.
@@ -60,6 +62,7 @@ To install QCMaquis with the OpenMOLCAS interface, download OpenMOLCAS from the 
 ## Documentation
 
 A detailed installation guide and manual for QCMaquis (and its components) can be found in the `doc` subdirectory. Compile QCMaquis with the `BUILD_MANUAL` CMake option to obtain the documentation in the PDF format.
+Note that two manuals are generated: `qcmaquis_manual.pdf`, which presents the OpenMolcas/QCMaquis interface, and `qcmaquis_manual_standalone.pdf`, which describes the functionalities of QCMaquis as a standalone software.
 
 ## Support
 
@@ -75,6 +78,11 @@ For reproducibility reasons, please cite, depending on the actual calculations y
   - L. Freitag, S. Knecht, C. Angeli, M. Reiher, Multireference Perturbation Theory with Cholesky Decomposition for the Density Matrix Renormalization Group", J. Chem. Theory Comput., 2017, 13, 451. [DOI](https://doi.org/10.1021/acs.jctc.6b00778)
 ### MPS-SI:
   - S. Knecht, S. Keller, J. Autschbach, M. Reiher, "A Nonorthogonal State-Interaction Approach for Matrix Product State Wave Functions", J. Chem. Theory Comput., 2016, 12, 5881. [DOI](https://doi.org/10.1021/acs.jctc.6b00889)
+### Vibrational DMRG:
+  - A. Baiardi, C. J. Stein, M. Reiher, V. Barone, "Vibrational Density Matrix Renormalization Group", J. Chem. Theory Comput., 2017, 13, 3764. [DOI](https://doi.org/10.1021/acs.jctc.7b00329)
+  - N. Glaser, A. Baiardi, M. Reiher, "Tensor Network States for Vibrational Spectroscopy", in "Vibrational Dynamics of Molecules", 2022. [DOI](https://doi.org/10.1142/9789811237911_0003)
+### Vibrational excited states with DMRG:
+  - A. Baiardi, A. K. Kelemen, M. Reiher, "Excited-state DMRG made simple with FEAST", J. Chem. Theory Comput., 2022, 18, 415. [DOI](https://doi.org/10.1021/acs.jctc.1c00984) 
 
 ## QCMaquis and [ALPS](https://alps.comp-phys.org)
 QCMaquis builds upon the ALPS MPS project. The ALPS MPS codes implement the DMRG algorithm for variational ground and low-lying excited state search as well as time evolution of arbitrary one- and two-dimensional models in a matrix-product-state representation. They have been developed at ETH Zurich by Michele Dolfi and Bela Bauer in the group of Matthias Troyer with contributions from Sebastian Keller and Alexandr Kosenkov and at the University of Geneva by Timothée Ewart and Adrian Kantian in the group of Thierry Giamarchi. For further information on the ALPS project, please visit https://alps.comp-phys.org and note the original ALPS MPS paper:

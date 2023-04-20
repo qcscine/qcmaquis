@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef SS_OPTIMIZE_H
 #define SS_OPTIMIZE_H
@@ -77,13 +57,6 @@ public:
             site = to_site(L, _site);
         }
 
-//        if (parms["beta_mode"] && sweep == 0 && resume_at < L) {
-//            int site = (resume_at == -1) ? 0 : resume_at;
-//            mpo = zero_after(mpo_orig, site+2);
-//            mps.canonize(site);
-//            this->init_left_right(mpo, site);
-//        }
-
         Storage::prefetch(left_[site]);
         Storage::prefetch(right_[site+1]);
 
@@ -116,32 +89,26 @@ public:
             Storage::fetch(left_[site]);
             Storage::fetch(right_[site+1]);
 
-            if (lr == +1 && site+2 <= L) Storage::prefetch(right_[site+2]);
-            if (lr == -1 && site > 0)    Storage::prefetch(left_[site-1]);
+            if (lr == +1 && site+2 <= L)
+                Storage::prefetch(right_[site+2]);
+            if (lr == -1 && site > 0)
+                Storage::prefetch(left_[site-1]);
 
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
-
-
-//            maquis::cout << "My size: " << std::endl;
-//            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << std::endl;
-//            maquis::cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << std::endl;
 
             //SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
 
             std::chrono::high_resolution_clock::time_point now, then;
 
-            std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+            std::pair<typename MPSTensor<Matrix, SymmGroup>::value_type, MPSTensor<Matrix, SymmGroup> > res;
             SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
 
             /// Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
-            for (int n = 0; n < base::northo; ++n) {
+            for (int n = 0; n < base::northo; ++n)
                 ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site], base::ortho_mps[n][site],
                                                                     base::ortho_left_[n][site], base::ortho_right_[n][site+1]);
-            }
 
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
@@ -210,7 +177,7 @@ public:
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
                 if (site != L-1) {
                     Storage::drop(right_[site+1]);
-                    Storage::evict(left_[site]);
+                    Storage::StoreToFile(left_[site]);
                 }
             } else if (lr == -1) {
                 if (site > 0) {
@@ -227,7 +194,7 @@ public:
                 this->boundary_right_step(mpo, site); // creating right_[site]
                 if (site > 0) {
                     Storage::drop(left_[site]);
-                    Storage::evict(right_[site+1]);
+                    Storage::StoreToFile(right_[site+1]);
                 }
             }
 

@@ -1,8 +1,13 @@
 # Changelog
 
+## Release 3.1.3
+
+- Added support for DMRG[IP], the inverse power iteration method applied to MPS wave functions.
+- Added support for DMRG[FEAST] for large-scale excited-state DMRG calculations.
+
 ## Release 3.1.2
 
-- Added support for vibrational Hamiltonians, both within the canonical quantization and within the n-mode frameworks.
+- Added support for vibrational Hamiltonian within the canonical quantization framework.
 - Added support for excitonic and vibronic Hamiltonians.
 
 ## Release 3.1.1

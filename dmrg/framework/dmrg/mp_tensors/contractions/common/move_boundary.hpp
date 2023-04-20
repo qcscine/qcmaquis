@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *                    Laboratory for Physical Chemistry, ETH Zurich
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef ENGINE_COMMON_MOVE_BOUNDARY_H
 #define ENGINE_COMMON_MOVE_BOUNDARY_H
@@ -125,7 +105,6 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
 {
     typedef typename SymmGroup::charge charge;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
     if (in_low == NULL)
         in_low = &mps.col_dim();
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, right, mpo);
@@ -139,7 +118,7 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-        parallel::guard group(scheduler(b1), parallel::groups_granularity);
+        // parallel::guard group(scheduler(b1), parallel::groups_granularity);
         Kernel()(b1, ret[b1], right, t, mpo, mps.data().basis(), mps.data().basis(),
                  left_i, out_right_i, in_left_pb, out_right_pb, true);
     });
@@ -215,7 +194,6 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
 {
     typedef typename SymmGroup::charge charge;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                              right_i = bra_tensor.col_dim();
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
@@ -316,7 +294,6 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     // Types definition
     typedef typename SymmGroup::charge charge;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
     // Contracts with the right boundary
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo);

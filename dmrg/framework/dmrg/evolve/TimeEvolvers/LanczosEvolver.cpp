@@ -1,35 +1,14 @@
-/*****************************************************************************
- *
- * ALPS Project: Algorithms and Libraries for Physics Simulations
- *
- * ALPS Libraries
- *
- * Copyright (C) 2019 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS libraries, published under the ALPS
- * Library License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Library License along with
- * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class SiteProblem, class MatrixType>
 void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(const SiteProblem& site_problem, MatrixType& matrix,
-                                                                                bool is_forward, time_type time_current, time_type time_step) const
+                                                                                bool isForward, time_type time_current, time_type time_step) const
 {
   // Types definition
   //using matrix_type = Eigen::Matrix< typename MatrixType::scalar_type, Eigen::Dynamic, Eigen::Dynamic >;
@@ -38,14 +17,15 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
   using vector_type = std::vector< typename MatrixType::scalar_type >;
   // Initialization.
   MatrixType buffer_vector;
-  double error;
   typename MatrixType::real_type norm_local;
   typename MatrixType::scalar_type alpha, beta;
   typename std::vector<MatrixType> lanczos_space;
+  
   // -- Outer loop --
   // This is the loop over the exponential factors. 
   for (int iExp = 0; iExp < numberOfExponentials; iExp++) {
-    std::size_t local_dim = 1;
+    double error;
+    int local_dim = 1;
     matrix_type matrix_representation(max_iter_, max_iter_);
     vector_type result_vector(1);
     lanczos_space.resize(0);
@@ -53,11 +33,13 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
     // First step of the Lanczos iteration
     print_header();
     lanczos_space.push_back(matrix);
-    buffer_vector = applyOperator(lanczos_space[0], site_problem, iExp, time_current, is_forward);
+    buffer_vector = applyOperator(lanczos_space[0], site_problem, iExp, time_current);
     alpha = ietl::dot(matrix, buffer_vector);
-    if (is_forward)
+    /*
+    if (isForward)
       matrix_representation(0,0) = -alpha;
     else
+    */
       matrix_representation(0,0) =  alpha;
     buffer_vector -= alpha*lanczos_space[0];
     // +-----------+
@@ -65,7 +47,7 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
     // +-----------+
     for (std::size_t idx = 1; idx < max_iter_; idx++) {
       // -- ACTUAL CALCULATION OF THE EXPONENTIAL --
-      apply_exponential(matrix_representation, result_vector, local_dim);
+      apply_exponential(matrix_representation, result_vector, local_dim, isForward);
       matrix = result_vector[0]*lanczos_space[0];
       for (std::size_t i = 1; i < local_dim; i++)
         matrix += result_vector[i]*lanczos_space[i];
@@ -88,19 +70,21 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
         buffer_vector /= norm_local;
         lanczos_space.push_back(buffer_vector);
         // Generation of the new vector
-        buffer_vector = applyOperator(lanczos_space[idx], site_problem, iExp, time_current, is_forward);
+        buffer_vector = applyOperator(lanczos_space[idx], site_problem, iExp, time_current);
         alpha = ietl::dot(buffer_vector, lanczos_space[idx]);
         buffer_vector -= alpha*lanczos_space[idx] + norm_local*lanczos_space[idx-1];
         //matrix_representation.conservativeResize(idx+1, idx+1);
+        /*
         if (is_forward) {
           matrix_representation(idx, idx) = -alpha;
           matrix_representation(idx-1, idx) = -norm_local;
           matrix_representation(idx, idx-1) = -norm_local;
         } else {
+        */
           matrix_representation(idx, idx) = alpha;
           matrix_representation(idx-1, idx) = norm_local;
           matrix_representation(idx, idx-1) = norm_local;
-        }
+        //}
       }
       if (idx == max_iter_-1)
         print_line();
@@ -111,7 +95,7 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class SiteProblem, class MatrixType>
 MatrixType LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::applyOperator(const MatrixType& inputVec, const SiteProblem& site_problem,
-                                                                                      int idExp, time_type time_current, bool is_forward) const {
+                                                                                      int idExp, time_type time_current) const {
   MatrixType outputVec;
   if (has_td_part_) {
     for (int iExp = 0; iExp < numberOfFactorsPerExponential; iExp++) {
@@ -133,7 +117,8 @@ MatrixType LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::applyOpe
 
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class MatrixType, class VectorType>
-void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::apply_exponential(MatrixType& hamiltonian_matrix, VectorType& ret, std::size_t local_dim_) const
+void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::apply_exponential(MatrixType& hamiltonian_matrix, VectorType& ret, std::size_t local_dim_,
+                                                                                    bool isForward) const
 {
   // Types definition
   //using ArgType = typename MatrixType::Scalar;
@@ -156,7 +141,9 @@ void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::apply_exponent
     }
   }
   matrix_complex expM;
-  auto coeff = (is_imag_) ? -std::complex<double>(time_step_, 0.) : std::complex<double>(0., time_step_);
+  auto coeff = (is_imag_) ? -std::complex<double>(time_step_, 0.) : -std::complex<double>(0., time_step_);
+  if (!isForward)
+    coeff *= std::complex<double>(-1., 0.);
   expM = alps::numeric::exp_hermitian(H_hess, coeff, is_imag_);
   /*
   if (is_imag_) {

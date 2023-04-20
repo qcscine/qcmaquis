@@ -1,30 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2017 by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
- *               2021- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_MODEL_HELPER_HPP
 #define MAQUIS_DMRG_MODEL_HELPER_HPP
@@ -58,7 +37,8 @@ public:
      * @param positions vector with the position where each operator acts.
      * @param operators vector with the operators.
      * @param tag_handler map keeping track of the operator <--> tag association
-     * @return
+     * @return std::pair< term_descriptor, bool > First element is the tag, second element is true if the 
+     *                                            term to be added is zero.
      */
      static std::pair<term_descriptor, bool> arrange_operators(const positions_type& positions, const operators_type& operators,
                                                                value_type& scaling, std::shared_ptr<TagHandler<Matrix, SymmGroup>> tag_handler)
