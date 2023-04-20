@@ -1,39 +1,16 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
- *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *               2015-2015 by Stefano Battaglia <stefabat@ethz.ch>
- *               2018-2019 by Stefan Knecht     <stknecht@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef REL_QC_MODEL_HPP
 #define REL_QC_MODEL_HPP
 
-template <class Matrix, class SymmGroup>
-rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_)
-: lat(lat_)
-, parms(parms_)
-, tag_handler(new table_type())
+template <class SymmGroup>
+rel_qc_model<SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_)
+    : lat(lat_), parms(parms_), tag_handler(new table_type())
 {
     // Initialize double group table
     SymmGroup::initialize_dg_table(parms);
@@ -95,11 +72,11 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     /**********************************************************************/
 }
 
-template <class Matrix, class SymmGroup>
-void rel_qc_model<Matrix, SymmGroup>::create_terms()
+template<class SymmGroup>
+void rel_qc_model<SymmGroup>::create_terms()
 {
     chem::detail::RelChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
-    std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
+    auto& matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
 
@@ -108,15 +85,16 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         int j = term_assistant.idx(m, 1);
         int k = term_assistant.idx(m, 2);
         int l = term_assistant.idx(m, 3);
+        
+        auto matrixElement = static_cast<value_type>(matrix_elements[m]);
 
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
 
             term_descriptor term;
-            term.coeff = matrix_elements[m];
+            term.coeff = matrixElement;
             term.push_back( std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
-
             used_elements[m] += 1;
         }
 
@@ -126,7 +104,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         else if ( i==j && k == -1 && l == -1) {
             {
                 term_descriptor term;
-                term.coeff = matrix_elements[m];
+                term.coeff = matrixElement;
                 term.push_back( std::make_pair(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
                 this->terms_.push_back(term);
             }
@@ -139,7 +117,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // Hopping term t_ij
         else if ( i!=j && k == -1 && l == -1) {
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create, destroy, tag_handler, lat)
+                true, fill, matrixElement, i, j, create, destroy, tag_handler, lat)
             );
                 if (!parms["MAGNETIC"]) { // with an external magnetic field applied - Kramers symmetry is broken
                   this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
@@ -173,7 +151,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_iijj
         else if ( i==j && k==l && j!=k) {
             if (is_term_allowed(i,j,k,l)) {
-                term_assistant.add_term(this->terms_, matrix_elements[m],i,k,count,count);
+                term_assistant.add_term(this->terms_, matrixElement, i, k, count, count);
             	used_elements[m] += 1;
             }
         }
@@ -181,7 +159,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_ijji
         else if ( i==l && j==k && i!=j) {
             if (is_term_allowed(i,j,k,l)) {
-                term_assistant.add_term(this->terms_, -matrix_elements[m],i,j,count,count);
+                term_assistant.add_term(this->terms_, -matrixElement, i, j, count, count);
             	used_elements[m] += 1;
             }
         }
@@ -192,7 +170,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_iikl
         else if ( i==j && j!=k && j!=l ) {
             if (is_term_allowed(i,j,k,l)) {
-                term_assistant.add_term(this->terms_, matrix_elements[m],i, k, l, create, destroy, create, destroy);
+                term_assistant.add_term(this->terms_, matrixElement, i, k, l, create, destroy, create, destroy);
             	used_elements[m] += 1;
             }
         }
@@ -200,7 +178,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_ijkk
         else if (k==l && i!=k && j!=k ) {
             if (is_term_allowed(i,j,k,l)) {
-                term_assistant.add_term(this->terms_, matrix_elements[m],k, i, j, create, destroy, create, destroy);
+                term_assistant.add_term(this->terms_, matrixElement, k, i, j, create, destroy, create, destroy);
             	used_elements[m] += 1;
             }
         }
@@ -214,7 +192,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_ijki
         else if ( i!=j && j!=k && i==l ) {
             if (is_term_allowed(i,j,k,l)) {
-                term_assistant.add_term(this->terms_, -matrix_elements[m],i, k, j, create, destroy, create, destroy);
+                term_assistant.add_term(this->terms_, -matrixElement, i, k, j, create, destroy, create, destroy);
             	used_elements[m] += 1;
             }
         }
@@ -222,7 +200,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_ijjl
         else if ( i!=j && j==k && k!=l ) {
             if (is_term_allowed(i,j,k,l)) {
-                term_assistant.add_term(this->terms_, -matrix_elements[m],j, i, l, create, destroy, create, destroy);
+                term_assistant.add_term(this->terms_, -matrixElement, j, i, l, create, destroy, create, destroy);
             	used_elements[m] += 1;
             }
         }
@@ -233,7 +211,7 @@ void rel_qc_model<Matrix, SymmGroup>::create_terms()
         // V_ijkl
         else if (i!=j && j!=k && k!=l && i!=k && j!=l && i!=l) {
             if (is_term_allowed(i,j,k,l)) {
-				term_assistant.add_term(this->terms_, matrix_elements[m],i,k,l,j,create, create, destroy, destroy);
+				term_assistant.add_term(this->terms_, matrixElement, i, k, l, j, create, create, destroy, destroy);
             	used_elements[m] += 1;
             }
         }

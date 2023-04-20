@@ -1,37 +1,15 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *               2017 by Alberto Baiardi <alberto.baiardi@sns.it>
- *
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef TIMEEVOLUTIONSWEEP_H
 #define TIMEEVOLUTIONSWEEP_H
 
 #ifdef DMRG_TD
 
-#include <boost/random.hpp>
 #if not defined(WIN32) && not defined(WIN64)
 #include <sys/time.h>
 #define HAVE_GETTIMEOFDAY
@@ -43,7 +21,6 @@
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
-#include "dmrg/utils/parallel/placement.hpp"
 #include "dmrg/utils/checks.h"
 #include "dmrg/evolve/TimeEvolvers/timeevolver.h"
 #include "dmrg/evolve/siteshifter.h"
@@ -54,9 +31,9 @@
 
 #include <memory>
 
-/** 
+/**
  * @brief TimeEvolutionSweep class
- * 
+ *
  * Class representing an algorithm that performs the time-evolution of an MPS in a sweep=based fashion.
  * From this base virtual class, two classes are derived, namely the single-site and the two-sites
  * evolution.
@@ -76,7 +53,7 @@ class TimeEvolutionSweep
 public:
   //! Class constructor
   TimeEvolutionSweep(MPS<Matrix, SymmGroup>& mps , MPO<Matrix, SymmGroup> const & mpo,
-                     BaseParameters & parms, boost::function<bool ()> stop_callback_, int site=0) 
+                     BaseParameters & parms, boost::function<bool ()> stop_callback_, int site=0)
     : mps_(mps), mpo_(mpo), parms_(parms), stop_callback(stop_callback_),
       do_backpropagation_(true), time_step_(parms["time_step"]),
       isHermitian_(true), initial_site(site)
@@ -116,8 +93,8 @@ public:
   }
 
   /** Getter for the struct containing the results. */
-  results_collector const& iteration_results() const { 
-    return iteration_results_; 
+  results_collector const& iteration_results() const {
+    return iteration_results_;
   }
 
   /**
@@ -125,7 +102,7 @@ public:
    * @return magnitude_type energy of the MPS
    */
   magnitude_type get_energy() {
-    return energy; 
+    return energy;
   }
 
 protected:
@@ -137,29 +114,28 @@ protected:
    */
   void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
   {
-    parallel::construct_placements(mpo_);
     Storage::drop(left_[0]);
     left_[0] = mps_.left_boundary();
     for (size_t i = 0; i < site; ++i) {
         Storage::drop(left_[i+1]);
         boundary_left_step(mpo, i);
-        Storage::evict(left_[i]);
+        Storage::StoreToFile(left_[i]);
         Storage::sync();
     }
-    Storage::evict(left_[site]);
+    Storage::StoreToFile(left_[site]);
     maquis::cout << "Partial initialization of boundaries completed.\n";
     Storage::drop(right_[L_]);
     right_[L_] = mps_.right_boundary();
     for (int i = L_-1; i >= site; --i) {
       Storage::drop(right_[i]);
       boundary_right_step(mpo, i);
-      Storage::evict(right_[i+1]);
+      Storage::StoreToFile(right_[i+1]);
       Storage::sync();
     }
-    Storage::evict(right_[site]);
+    Storage::StoreToFile(right_[site]);
     maquis::cout << "Full initialization of boundaries completed.\n";
   }
-  
+
   /**
    * @brief Given the MPS and the left boundaries at site i, calculates the new boundaries at site i+1.
    * @param mpo: MPO representation of the operator associated to the boundaries.
@@ -169,7 +145,7 @@ protected:
   {
     left_[site+1] = contr::overlap_mpo_left_step(mps_[site], mps_[site], left_[site], mpo_[site]);
   }
-  
+
   /**
    * @brief Given the MPS and the tight boundaries at site i+1, calculates the new boundaries at site i.
    * @param mpo: MPO representation of the operator associated to the boundaries.
@@ -179,9 +155,9 @@ protected:
   {
     right_[site] = contr::overlap_mpo_right_step(mps_[site], mps_[site], right_[site+1], mpo_[site]);
   }
-  
+
   /**
-   * @brief Logarithmic interpolation routine 
+   * @brief Logarithmic interpolation routine
    * @param y0: initial value for the interpolation.
    * @param y1: final value for the interpolation.
    * @param N: overall number of points.
@@ -200,12 +176,12 @@ protected:
 
   /**
    * @brief Getter for the cutoff parameter.
-   * 
+   *
    * This method retrieves, for a given sweep, the value of the threshold to be used in the truncation of the MPS.
    * Note that, for the first ngrowsweeps, the threshold is calculated according to a logarithmic decay between
    * the parameters truncation_initial and truncation_final. After that, the threshold is set to truncation_final
    * and kept constant.
-   * 
+   *
    * @param sweep: index of the sweep.
    * @return threshold for the truncation of the MPS.
    */

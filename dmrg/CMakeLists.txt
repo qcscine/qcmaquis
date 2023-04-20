@@ -39,13 +39,17 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set (ALPS_SOURCE_DIR "alps")
 
-set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry
-to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available.")
-set(DMRG_NUMSYMM 6 CACHE STRING "Maximum number of U1 symmetries.")
+set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include in the build objects. \
+U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
+TwoU1PG and SU2U1PG are built in any case.")
+set(DMRG_NUMSYMM 6 CACHE STRING "Number of U1 symmetries for NU1 calculations.")
+add_definitions(-DDMRG_NUMSYMM=${DMRG_NUMSYMM})
 option(ENABLE_OMP "Enable OpenMP" ON)
-# Disabled
 # option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" OFF)
 option(LAPACK_64_BIT "Build for 64-bit LAPACK library" ON)
+
+# The upper bound for NU1 symmetry is DMRG_NUMSYMM+1 (BOOST does not include in the macro the upper bound)
+math(EXPR DMRG_UPPER_BOUND "${DMRG_NUMSYMM}+1")
 
 # DMRG-related flags
 option (BUILD_INIT "Build dmrg_init binary (deprecated)" OFF)
@@ -55,12 +59,26 @@ option (BUILD_MPS_COMPRESS "Build mps_compress binary for MPS compression (not w
 option (BUILD_MPS_OVERLAP "Build MPS Overlap calculator" OFF)
 option (BUILD_ONETDM_DIAG "Build 1-TDM diagonal elements calculator (deprecated by dmrg_meas and the binary interface)" OFF)
 option (BUILD_MPS2CI "Build CI coefficient reconstruction facilities" OFF)
+option (BUILD_SRCAS "Build SRCAS tool for vibrational and/or electronic symmetries" OFF)
 option (BUILD_DEAS "Build s1 and I printer tool" OFF)
 option (BUILD_MPS_TRANSFORM "Build MPS SU2->2U1 symmetry group transformation tool" OFF)
 option (BUILD_DMRG_EVOLVE "Build the time-evolution DMRG module" OFF)
+option (BUILD_DMRG_FEAST "Build the application for DMRG[FEAST] calculations" OFF)
 option (BUILD_PREBO "Build PreBO model" OFF)
 option (BUILD_VIBRATIONAL "Build the vDMRG code" OFF)
 option (BUILD_VIBRONIC "Activates the support for vibronic Hamiltonians" OFF)
+
+# Time-evolution TD-DMRG
+if(BUILD_DMRG_EVOLVE)
+  list(APPEND DMRG_DEFINITIONS -DDMRG_TD)
+  set(DMRG_TD TRUE)
+endif(BUILD_DMRG_EVOLVE)
+
+# DMRG[FEAST]
+if(BUILD_DMRG_FEAST)
+  list(APPEND DMRG_DEFINITIONS -DDMRG_FEAST)
+  set(DMRG_FEAST TRUE)
+endif(BUILD_DMRG_FEAST)
 
 # Time-evolution TD-DMRG
 if(BUILD_DMRG_EVOLVE)
@@ -94,8 +112,10 @@ if (BUILD_OPENMOLCAS_INTERFACE)
     endif()
 endif()
 
-set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
-set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
+# set(BLAS_LAPACK_SELECTOR "auto" CACHE STRING "Linear algebra library selector")
+# set_property(CACHE BLAS_LAPACK_SELECTOR PROPERTY STRINGS auto manual mkl_sequential mkl_parallel veclib openblas)
+
+include(BlasLapack)
 
 # QCMaquis manual
 if (BUILD_MANUAL)
@@ -183,7 +203,9 @@ macro(configure_symm_file INPUT OUTBASE VARNAME)
   endforeach(SYMM)
 endmacro(configure_symm_file)
 
-# Adding symmetries definitions
+# Adding symmetries definitions, TwoU1PG and SU2U1PG are needed in any case for smooth compilation/testing
+list(APPEND BUILD_SYMMETRIES "TwoU1PG" "SU2U1PG")
+list(REMOVE_DUPLICATES BUILD_SYMMETRIES)
 message(STATUS "Enabled symmetries: ${BUILD_SYMMETRIES}")
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
@@ -203,18 +225,23 @@ endif()
 
 # Vibrational-specific flag
 if((BUILD_VIBRATIONAL))
-  if((NOT DMRG_HAS_NU1) AND (NOT DMRG_HAS_TrivialGroup))
-    message(FATAL_ERROR "At least one between the NONE and NU1 symmetries should be activated for vibrational calculations")
+  if((NOT DMRG_HAS_TrivialGroup))
+    message(FATAL_ERROR "The NONE symmetry should be activated for vibrational calculations")
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRATIONAL)
     set(DMRG_VIBRATIONAL TRUE)
   endif()
 endif()
 
+# SRCAS-specific flag
+if((BUILD_SRCAS))
+  message(STATUS "Building SRCAS")
+endif()
+
 # Vibronic-specific flag
 if(BUILD_VIBRONIC)
   if (NOT DMRG_HAS_U1)
-    message(FATAL_ERROR "U1 symmetry should be activated for vibrational calculations")
+    message(FATAL_ERROR "U1 symmetry should be activated for vibronic calculations")
   else()
     list(APPEND DMRG_DEFINITIONS -DDMRG_VIBRONIC)
     set(DMRG_VIBRONIC TRUE)
@@ -256,6 +283,9 @@ if(Boost_FOUND)
     if(${Boost_MINOR_VERSION} VERSION_LESS 60)
         add_definitions(-DLEGACY_BOOST)
     endif()
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION GREATER 9)
+      add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
+    endif()
 else(Boost_FOUND)
     message(FATAL_ERROR "Boost libraries are required for QCMaquis")
 endif(Boost_FOUND)
@@ -278,10 +308,10 @@ endif()
 ######################################################################
 # Version information
 ######################################################################
-set(DMRG_YEAR 2021)
+set(DMRG_YEAR 2023)
 set(DMRG_VERSION_MAJOR 3)
 set(DMRG_VERSION_MINOR 1)
-set(DMRG_VERSION_PATCH 1)
+set(DMRG_VERSION_PATCH 3)
 set(DMRG_VERSION_BUILD "")
 
 if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
@@ -407,6 +437,10 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test1 COMMAND test1)
   add_test(NAME Test2 COMMAND test2)
   add_test(NAME Test_Relativistic COMMAND test_rel)
+  if(BUILD_DMRG_FEAST)
+    add_test(NAME Test_FEAST_Electronic COMMAND test_FEAST_electronic)
+  endif(BUILD_DMRG_FEAST)
+  add_test(NAME Test_DMRG_LiH COMMAND testLiH)
   add_test(NAME Test_Integral_Map COMMAND test_integral_map)
   add_test(NAME Test_HiRDM COMMAND test_hirdm)
   add_test(NAME Test_MPO_times_MPS_TwoU1 COMMAND test_mpo_times_mps_TwoU1)
@@ -414,10 +448,15 @@ if(QCMAQUIS_TESTS)
   add_test(NAME Test_MPS_MPO_Ops_Electronic COMMAND test_mps_mpo_ops_electronic)
   add_test(NAME Test_MPS_Overlap_Electronic COMMAND test_mps_overlap_electronic)
   add_test(NAME Test_SiteProblem COMMAND test_siteproblem)
+  add_test(NAME Test_SweepBasedLinearSystem_Electronic COMMAND test_sweep_based_linear_system_electronic)
+  add_test(NAME Test_OverlapPropagator_Electronic COMMAND test_overlap_propagator_electronic)
+  add_test(NAME Test_BoundaryPropagator_Electronic COMMAND test_boundary_propagator_electronic)
   add_test(NAME Test_MPS_Join COMMAND test_mpsjoin)
   add_test(NAME Test_Wigner COMMAND test_wigner)
   add_test(NAME Test_Block_Matrix COMMAND test_block_matrix)
   add_test(NAME Test_1DMPO_Electronic COMMAND test_1D_mpo_electronic)
+  add_test(NAME Test_GeneralizedEigenvalue COMMAND test_generalized_eigenvalue_problem)
+  add_test(NAME Test_SweepOptimization_Traits COMMAND test_sweep_optimization_traits)
   # Time-evolution tests
   if(BUILD_DMRG_EVOLVE)
     add_test(NAME Test_Time_Evolver COMMAND test_time_evolvers)
@@ -436,15 +475,23 @@ if(QCMAQUIS_TESTS)
   endif(BUILD_PREBO)
   # Vibrational tests
   if(BUILD_VIBRATIONAL)
+    # Unit tests
     add_test(NAME Vibrational_Lattice COMMAND test_vibrational_lattice)
-    add_test(NAME Vibrational_Model_NU1 COMMAND test_vibrational_nu1_model)
     add_test(NAME Vibrational_Model_Watson COMMAND test_vibrational_watson_model)
     add_test(NAME Test_MPS_MPO_Ops_Vibrational COMMAND test_mps_mpo_ops_vibrational)
     add_test(NAME Test_MPO_Times_MPS_Vibrational COMMAND test_mpo_times_mps_vibrational)
-    add_test(NAME Test_MPS_Initializers_Vibrational COMMAND test_mps_initializers_vibrational)
     add_test(NAME Test_MPS_Overlap_Vibrational COMMAND test_mps_overlap_vibrational)
-    add_test(NAME Test_FAD_2Mode COMMAND test_FAD_2Mode)
+    add_test(NAME Test_OverlapPropagator_Vibrational COMMAND test_overlap_propagator_vibrational)
+    add_test(NAME Test_BoundaryPropagator_Vibrational COMMAND test_boundary_propagator_vibrational)
+    add_test(NAME Test_Linear_System_Solver_Vibrational COMMAND test_linear_system_solver_vibrational)
+    add_test(NAME Test_SweepEnergyMinimization_Vibrational COMMAND test_sweep_based_energy_minimization_vibrational)
+    add_test(NAME Test_SweepBasedLinearSystem_Vibrational COMMAND test_sweep_based_linear_system_vibrational)
+    if(BUILD_DMRG_FEAST)
+      add_test(NAME Test_FEAST_vibrational COMMAND test_FEAST_vibrational)
+    endif(BUILD_DMRG_FEAST)
+    # Application tests
     add_test(NAME Test_Ethylene_Sextic COMMAND test_Ethylene_Sextic)
+    add_test(NAME Test_H2CO COMMAND test_H2CO)
     add_test(NAME Test_BilinearlyCoupled COMMAND test_BilinearlyCoupled)
   endif(BUILD_VIBRATIONAL)
   # Vibronic tests

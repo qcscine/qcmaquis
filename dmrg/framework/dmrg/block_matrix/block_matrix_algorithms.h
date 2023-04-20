@@ -1,31 +1,14 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef BLOCK_MATRIX_ALGORITHMS_H
 #define BLOCK_MATRIX_ALGORITHMS_H
+
+#include "BlockMatrixAlgorithmsHelper.h"
 
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/utils.hpp"
@@ -69,7 +52,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A, block_matrix<Matrix2, Symm
     // Types definition
     using charge = typename SymmGroup::charge;
     using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
-    // 
+    //
     C.clear();
     assert(B.basis().is_sorted());
     const_iterator B_begin = B.basis().begin();
@@ -111,7 +94,7 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
  * In addition to performing the matrix-matrix multiplication, this routine
  * also "trims" the row index by keeping only the blocks that are present
  * in [ref_left_basis].
- * 
+ *
  * @param A First input matrix
  * @param B Second input matrix
  * @param C Output matrix
@@ -146,7 +129,7 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
  * In addition to performing the matrix-matrix multiplication, this routine
  * also "trims" the column index by keeping only the blocks that are present
  * in [ref_right_basis].
- * 
+ *
  * @param A First input matrix
  * @param B Second input matrix
  * @param C Output matrix
@@ -207,73 +190,14 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
     parallel::scheduler_balanced scheduler(M);
-
     evecs = block_matrix<Matrix, SymmGroup>(M.basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-    std::size_t loop_max = M.n_blocks();
-
-    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+    omp_for(size_t k, parallel::range<size_t>(0,M.n_blocks()), {
         parallel::guard proc(scheduler(k));
         heev(M[k], evecs[k], evals[k]);
+        BlockMatrixAlgorithmsHelperClass<Matrix, SymmGroup>::adjustPhase(evecs[k]);
     });
 }
-
-#ifdef USE_AMBIENT
-
-template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
-                block_matrix<Matrix, SymmGroup> & U,
-                block_matrix<Matrix, SymmGroup> & V,
-                block_matrix<DiagMatrix, SymmGroup> & S)
-{
-    parallel::scheduler_inplace scheduler;
-
-    Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
-    for (std::size_t i = 0; i < M.n_blocks(); ++i)
-        m[i].second = std::min(r[i].second, c[i].second);
-
-    U = block_matrix<Matrix, SymmGroup>(r, m);
-    V = block_matrix<Matrix, SymmGroup>(m, c);
-    S = block_matrix<DiagMatrix, SymmGroup>(m, m);
-
-    ambient::for_each_redist(M.blocks().first, M.blocks().second,
-                             [](const Matrix& m){ merge(m); },
-                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
-                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    parallel::sync();
-
-    std::size_t loop_max = M.n_blocks();
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(M[k]));
-        svd_merged(M[k], U[k], V[k], S[k]);
-    }
-    parallel::sync_mkl_parallel();
-}
-
-template<class Matrix, class DiagMatrix, class SymmGroup>
-void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
-                 block_matrix<Matrix, SymmGroup> & evecs,
-                 block_matrix<DiagMatrix, SymmGroup> & evals)
-{
-    parallel::scheduler_inplace scheduler;
-
-    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-
-    ambient::for_each_redist(M.blocks().first, M.blocks().second,
-                             [](const Matrix& m){ merge(m); },
-                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
-                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    parallel::sync();
-
-    std::size_t loop_max = M.n_blocks();
-    for(size_t k = 0; k < loop_max; ++k){
-        parallel::guard proc(scheduler(M[k]));
-        heev_merged(M[k], evecs[k], evals[k]);
-    }
-    parallel::sync_mkl_parallel();
-}
-#endif
 
 template <class T>
 typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
@@ -398,8 +322,9 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = S.basis().sum_of_left_sizes();
-    if(verbose){
-        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
+    if (verbose) {
+        maquis::cout << "Bond dimension before truncation: " << old_basis.sum_of_sizes() << std::endl;
+        maquis::cout << "Bond dimension after truncation: " << bond_dimension << std::endl;
     }
 
     // MD: for singuler values we care about summing the square of the discraded
@@ -467,11 +392,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  bool verbose = true)
 {
     assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef USE_AMBIENT
-    heev_merged(M, evecs, evals);
-    #else
     heev(M, evecs, evals);
-    #endif
     Index<SymmGroup> old_basis = evals.left_basis();
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
@@ -509,8 +430,9 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     delete[] keeps;
 
     std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
-    if(verbose){
-        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
+    if (verbose) {
+        maquis::cout << " Bond dimension before truncation: " << old_basis.sum_of_sizes() << std::endl;
+        maquis::cout << " Bond dimension after truncation: " << bond_dimension << std::endl;
     }
 
     // MD: for eigenvalues we care about summing the discraded

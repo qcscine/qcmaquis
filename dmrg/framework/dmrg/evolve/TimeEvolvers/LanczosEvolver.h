@@ -1,30 +1,9 @@
-/*****************************************************************************
- *
- * ALPS Project: Algorithms and Libraries for Physics Simulations
- *
- * ALPS Libraries
- *
- * Copyright (C) 2021 by Alberto Baiardi <abaiardi@ethz.ch>
- *
- * This software is part of the ALPS libraries, published under the ALPS
- * Library License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Library License along with
- * the ALPS Libraries; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_LANCZOSEVOLVER_H
 #define MAQUIS_DMRG_LANCZOSEVOLVER_H
@@ -103,12 +82,12 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Time evolution method */
   void evolve(SiteProblem<Matrix, SymmGroup> const& site_problem, MPSTensor<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const {
+              bool is_forward, time_type time_current, time_type time_step) const override final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
   void evolve(ZeroSiteProblem<Matrix, SymmGroup> const& site_problem, block_matrix<Matrix, SymmGroup>& matrix,
-              bool is_forward, time_type time_current, time_type time_step) const {
+              bool is_forward, time_type time_current, time_type time_step) const override final {
     evolve_kernel(site_problem, matrix, is_forward, time_current, time_step);
   }
 
@@ -121,9 +100,9 @@ class LanczosEvolver : public TimeEvolutionAlgorithm<Matrix, SymmGroup> {
 
   /* Private method interfacing to Eigen matrix exponential calculator */
   template<class MatrixType, class VectorType>
-  void apply_exponential(MatrixType& hamiltonian_matrix, VectorType& ret, size_t local_dim_) const;
+  void apply_exponential(MatrixType& hamiltonian_matrix, VectorType& ret, size_t local_dim_, bool isForward) const;
   template<class SiteProblem, class MatrixType>
-  MatrixType applyOperator(const MatrixType& inputVec, const SiteProblem& site_problem, int idExp, time_type time_current, bool is_forward) const;
+  MatrixType applyOperator(const MatrixType& inputVec, const SiteProblem& site_problem, int idExp, time_type time_current) const;
 
   /* Real --> Complex conversion routines */
   template< class ArgType, typename std::enable_if< std::is_same<double, ArgType >::value>::type * = nullptr >

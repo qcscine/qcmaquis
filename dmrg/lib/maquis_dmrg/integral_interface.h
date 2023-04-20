@@ -1,33 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
-*               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
-*               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
-*               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2019         Leon Freitag <lefreita@ethz.ch>
-*               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
-*               2021- by Alberto Baiardi <abaiardi@phys.chem.ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef INTEGRAL_INTERFACE_H
 #define INTEGRAL_INTERFACE_H
@@ -48,12 +24,12 @@ namespace chem {
 /** @brief Enum class distinguishing the possible types of Hamiltonians */
 enum class Hamiltonian {Electronic, VibrationalCanonical, VibrationalNMode, PreBO, Vibronic, Excitonic};
 
-/** 
+/**
  * @brief Constexpr function returning the index of the Hamiltonian map
- * 
+ *
  * This function is required because different models identify a
  * Hamiltonian term with different formats.
- * 
+ *
  * - for the electronic Hamiltonian, each term is identified by 4 indices,
  *   because we have a two-body potential, and one index is sufficient
  *   to identify each SQ operator.
@@ -65,8 +41,8 @@ enum class Hamiltonian {Electronic, VibrationalCanonical, VibrationalNMode, PreB
  *   we have up to 12 indices (note that in the n-mode Hamiltonian each SQ
  *   operator is identified by 2 indices, as for the PreBO one)
  * - the canonical quantization-based vibration Hamiltonian has a number of indices
- *   equal to the max. order of the Taylor expansion of the PES. Here we include
- *   up to sixth-order force constants.
+ *   equal to the max. order of the Taylor expansion of the PES.
+ *   The maximum order of the force constants can be set at compilation.
  */
 constexpr int getIndexDim(const Hamiltonian& type) {
     int indexDim=0;
@@ -82,8 +58,7 @@ constexpr int getIndexDim(const Hamiltonian& type) {
             indexDim = 12;
             break;
         // We support up to 2-mode coupling for the vibronic case.
-        // The index is, however, 4 because we also include the electronic
-        // state index (same fore the excitonic case)
+        // The index is, however, 4 because we also include the electronic state index
         case Hamiltonian::Vibronic:
             indexDim = 4;
             break;
@@ -131,16 +106,16 @@ struct integral_hash
 
 /**
  * @brief Class representing the Hamiltonian as a map index_tuple --> factor
- * 
+ *
  * Note that permutations are handled internally.
  * Indexing is as in the FCIDUMP file, i.e:
- * 
+ *
  * 1. Orbital indices start from 1 and 2e integrals use all four indices
  * 2. 1e integrals use the first two indices and 0,0 as the 3rd and the 4th index
- * 3. Nuclear repulsion energy uses an index 0,0,0,0 
- * 
+ * 3. Nuclear repulsion energy uses an index 0,0,0,0
+ *
  * @tparam V Type associated with the scalar factors of the Hamiltonian
- * @tparam HamiltonianType Enum class representing the 
+ * @tparam HamiltonianType Enum class representing the
  */
 template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
 class integral_map
@@ -158,10 +133,10 @@ public:
     integral_map() = default;
 
     /**
-     * @brief Copy constructor 
-     * 
+     * @brief Copy constructor
+     *
      * Explicit copy using this->operator[]() to avoid potential doubling due to symmetry permutation
-     * 
+     *
      * @param map object that is copied from
      * @param cutoff Threshold for accepting integrals
      */
@@ -175,7 +150,7 @@ public:
     explicit integral_map(map_t && map, value_type cutoff=0.0) : map_(map), cutoff_(cutoff) {};
 
     /** @brief Initializer list construction */
-    integral_map(std::initializer_list<typename map_t::value_type> l, value_type cutoff=0.0) 
+    integral_map(std::initializer_list<typename map_t::value_type> l, value_type cutoff=0.0)
         : integral_map(map_t(l), cutoff) {};
 
     // Iterator classes

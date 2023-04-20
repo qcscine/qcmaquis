@@ -1,0 +1,43 @@
+ngrowsweeps                      = 1
+nmainsweeps                      = 1
+max_bond_dimension               = 50
+
+truncation_initial               = 0
+truncation_final                 = 0
+
+optimization                     = singlesite 
+symmetry                         = none
+
+alpha_initial                    = 1.0E-8
+alpha_main                       = 1.0E-15
+alpha_final                      = 0
+
+linsystem_precond                = "no"
+linsystem_init                   = "zero"
+linsystem_max_it                 = 1
+linsystem_tol                    = 1.0E-10
+linsystem_krylov_dim             = 50
+linsystem_solver                 = "GMRES"
+
+ipi_sweep_overlap_threshold      = 1.0E-10
+ipi_sweep_energy_threshold       = 1.0E-5
+ipi_sweeps_per_system            = 5
+ipi_shift                        = 11000
+ipi_iterations                   = 10
+
+model_library                    = coded
+lattice_library                  = coded
+LATTICE                          = "watson lattice"
+L                                = 12
+
+MODEL                            = "watson" 
+Nmax                             = 6
+
+integral_file                    = "PES_Ethylene" 
+integral_cutoff                  = 1.0E-10
+
+init_type                       = "basis_state_generic"
+init_basis_state                 = "0,0,0,0,0,0,0,0,0,0,0,0"
+chkpfile                         = "C2H4.DMRG-IPI.m50.SS.checkpoint.h5" 
+resultfile                       = "C2H4.DMRG-IPI.m50.SS.result.h5"
+

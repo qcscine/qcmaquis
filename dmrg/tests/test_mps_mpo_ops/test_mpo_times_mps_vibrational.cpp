@@ -1,28 +1,9 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2021 Institute for Theoretical Physics, ETH Zurich
-*               2021 Alberto Baiardi <abaiardi@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #define BOOST_TEST_MAIN
 
@@ -35,7 +16,6 @@
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/sim/matrix_types.h"
 #include "Fixtures/WatsonFixture.h"
-#include "Fixtures/NModeFixture.h"
 
 #ifdef DMRG_VIBRATIONAL
 
@@ -47,7 +27,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 {
 #ifdef HAVE_TrivialGroup
   // Generates the HF MPS
-  parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
+  parametersEthyleneWatsonHarmonic.set("init_type", "basis_state_generic");
   parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
   parametersEthyleneWatsonHarmonic.set("Nmax", 6);
@@ -72,7 +52,7 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_None, WatsonFixture)
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
 {
   // Generates the HF MPS
-  parametersEthyleneWatsonHarmonic.set("init_state", "const");
+  parametersEthyleneWatsonHarmonic.set("init_type", "const");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 200);
   parametersEthyleneWatsonHarmonic.set("Nmax", 4);
   auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
@@ -89,13 +69,31 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Const_None, WatsonFixture)
   BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
 };
 
+/** @brief Check Hermiticity of None operator with Coriolis */
+BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Hermiticity_None, WatsonFixture)
+{
+  // Generates the HF MPS
+  parametersH2COWatson.set("init_type", "const");
+  parametersH2COWatson.set("max_bond_dimension", 200);
+  auto lattice = Lattice(parametersH2COWatson);
+  auto watsonModel = Model<matrix, TrivialGroup>(lattice, parametersH2COWatson);
+  auto watsonHarmonicMPO = make_mpo(lattice, watsonModel);
+  auto mps1 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
+  // Calculates the default guess
+  parametersH2COWatson.set("init_type", "default");
+  auto mps2 = MPS<matrix, TrivialGroup>(lattice.size(), *(watsonModel.initializer(lattice, parametersH2COWatson)));
+  auto energy1 = expval(mps1, mps2, watsonHarmonicMPO);
+  auto energy2 = expval(mps2, mps1, watsonHarmonicMPO);
+  BOOST_CHECK_CLOSE(energy1, energy2, 1.0E-11);
+};
+
 /**
  * @brief Checks that the H^2 expectation value, caluclated via [mpo_times_mps] and expva, gives coherent results.
  */
 BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Variance_None, WatsonFixture)
 {
   // Generates the HF MPS
-  parametersEthyleneWatsonHarmonic.set("init_state", "basis_state_generic");
+  parametersEthyleneWatsonHarmonic.set("init_type", "basis_state_generic");
   parametersEthyleneWatsonHarmonic.set("init_basis_state", "0,0,0,0,0,0,0,0,0,0,0,0");
   parametersEthyleneWatsonHarmonic.set("max_bond_dimension", 10000);
   parametersEthyleneWatsonHarmonic.set("Nmax", 2);
@@ -114,29 +112,5 @@ BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_Variance_None, WatsonFixture)
 };
 
 #endif
-
-/**
- * @brief Checks that [mpo_times_mps] gives results that are coherent with expval.
- * Note that here we use the NU1 symmetry group and the default guess.
- */
-BOOST_FIXTURE_TEST_CASE(Test_MPO_Times_MPS_NU1, NModeFixture)
-{
-#ifdef HAVE_NU1
-  parametersFADTwoBody.set("init_state", "default");
-  parametersFADTwoBody.set("max_bond_dimension", 10);
-  auto lattice = Lattice(parametersFADTwoBody);
-  auto nModeModel = Model<matrix, NU1_template<2>>(lattice, parametersFADTwoBody);
-  auto nModeMPO = make_mpo(lattice, nModeModel);
-  auto mps = MPS<matrix, NU1_template<2>>(lattice.size(), *(nModeModel.initializer(lattice, parametersFADTwoBody)));
-  // Calculates the MPS-MPO contraction
-  auto traitClass = MPOTimesMPSTraitClass<matrix, NU1_template<2>>(mps, nModeModel, lattice, nModeModel.total_quantum_numbers(parametersFADTwoBody),
-                                                                   parametersFADTwoBody["max_bond_dimension"]);
-  auto outputMPS = traitClass.applyMPO(nModeMPO);
-  // Calculates the energy in two ways and check that the results are coherent
-  auto energyFromMPSTimesMPO = overlap(mps, outputMPS)/norm(mps) + nModeMPO.getCoreEnergy();
-  auto energyFromExpVal = expval(mps, nModeMPO)/norm(mps);
-  BOOST_CHECK_CLOSE(energyFromMPSTimesMPO, energyFromExpVal, 1.E-10);
-#endif
-};
 
 #endif // DMRG_VIBRATIONAL

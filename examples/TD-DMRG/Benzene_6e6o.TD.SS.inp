@@ -25,7 +25,7 @@ truncation_initial       = 1e-50
 truncation_final         = 1e-50
 
 // -- Initialization and storage information --
-init_state               = 'default'
+init_type                = 'default'
 chkpfile                 = 'Benzene_6e6o.TD.SS.checkpoint_state.0.h5'
 resultfile               = 'Benzene_6e6o.TD.SS.results_state.0.h5'
 
@@ -39,6 +39,6 @@ integral_cutoff          = 1e-300
 simulation_type          = TD
 propagator_accuracy      = 1.0E-10
 propagator_maxiter       = 10
-time_step                = 1 
+time_step                = 1
 hamiltonian_units        = "Hartree"
 time_units               = "as"

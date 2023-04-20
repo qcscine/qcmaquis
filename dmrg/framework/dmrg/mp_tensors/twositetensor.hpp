@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *                            Michele Dolfi <dolfim@phys.ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpstensor.h"
@@ -31,7 +11,6 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-#include "dmrg/utils/random.hpp"
 #include <alps/numeric/real.hpp>
 
 #include <vector>
@@ -43,18 +22,12 @@
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                                                 MPSTensor<Matrix, SymmGroup> const & mps2)
-: phys_i( mps1.site_dim()*mps2.site_dim() )
-, phys_i_left( mps1.site_dim() )
-, phys_i_right( mps2.site_dim() )
-, left_i( mps1.row_dim() )
-, right_i( mps2.col_dim() )
-, cur_storage(TSBothPaired)
-, cur_normalization(Unorm)
+    : phys_i( mps1.site_dim()*mps2.site_dim() ), phys_i_left( mps1.site_dim() ), phys_i_right( mps2.site_dim() ),
+      left_i( mps1.row_dim() ), right_i( mps2.col_dim() ), cur_storage(TSBothPaired), cur_normalization(Unorm)
 {
     mps1.make_left_paired();
     mps2.make_right_paired();
     gemm(mps1.data(), mps2.data(), data_, parallel::scheduler_balanced(mps1.data()));
- 
 }
 
 
@@ -175,7 +148,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
-    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, false);
     
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), u, LeftPaired);
     assert( mps_tensor1.reasonable() );
@@ -196,7 +169,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
-    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, false);
     
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, v.left_basis(), right_i, v, RightPaired);
     
@@ -208,30 +181,26 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, const Boundary<Matrix, SymmGroup>& left,
+                                                    const MPOTensor<Matrix, SymmGroup>& mpo, bool activatePerturbation)
 {
     make_both_paired();
-    
     /// build reduced density matrix (with left index open)
     block_matrix<Matrix, SymmGroup> dm;
     gemm(data_, transpose(conjugate(data_)), dm, parallel::scheduler_balanced(data_));
-    
     /// state prediction
-    if (alpha != 0.) {
-        maquis::cout << "Growing, alpha = " << alpha << std::endl;
+    if (activatePerturbation) {
+        maquis::cout << "Perturbing two-site tensor, noise parameter alpha = " << alpha << std::endl;
         Index<SymmGroup> right_phys_i = adjoin(phys_i_right) * right_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_left, left_i, right_phys_i, data_, LeftPaired);
-        
         Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::left_boundary_tensor_mpo(tmp, left, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
-        
         omp_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             tdm *= alpha;
             swap(tdm, half_dm[b]);
         });
-        
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
             block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -241,7 +210,6 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
             }
         }
         dm.allocate_blocks();
-        
         omp_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
                 std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
@@ -251,55 +219,43 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         });
     }
     assert( weak_equal(dm.left_basis(), data_.left_basis()) );
-    
     /// truncation
     block_matrix<Matrix, SymmGroup> U;
     block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
     truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
     dm = block_matrix<Matrix, SymmGroup>();
-
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, U.right_basis(), U, LeftPaired);
     assert( mps_tensor1.reasonable() );
-    
-//    block_matrix<Matrix, SymmGroup> t;
-//    gemm(U, S, t);
-//    maquis::cout << "t = " << t << std::endl;
-
     block_matrix<Matrix, SymmGroup> V;
     gemm(transpose(conjugate(U)), data_, V);
     MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, V.left_basis(), right_i, V, RightPaired);
     assert( mps_tensor2.reasonable() );
-    
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 
 template<class Matrix, class SymmGroup>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, const Boundary<Matrix, SymmGroup>& right,
+                                                    const MPOTensor<Matrix, SymmGroup>& mpo, bool activatePerturbation)
 {
     make_both_paired();
-    
     /// build reduced density matrix (with right index open)
     block_matrix<Matrix, SymmGroup> dm;
     gemm(transpose(conjugate(data_)), data_, dm, parallel::scheduler_balanced(data_));
-    
     /// state prediction
-    if (alpha != 0.) {
+    if (activatePerturbation) {
         maquis::cout << "Growing, alpha = " << alpha << std::endl;
         Index<SymmGroup> left_phys_i = phys_i_left * left_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_right, left_phys_i, right_i, data_, RightPaired);
-        
         Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::right_boundary_tensor_mpo(tmp, right, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
-        
         omp_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
             tdm *= alpha;
             swap(tdm, half_dm[b]);
         });
-
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
             block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -309,7 +265,6 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
             }
         }
         dm.allocate_blocks();
-        
         omp_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
                 std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));

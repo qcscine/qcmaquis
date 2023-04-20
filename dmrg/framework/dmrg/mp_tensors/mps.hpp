@@ -1,32 +1,12 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #include "dmrg/mp_tensors/mps.h"
 #include "contractions.h"
-
 #include "dmrg/utils/archive.h"
 
 #include <limits>
@@ -48,27 +28,20 @@ std::string MPS<Matrix, SymmGroup>::description() const
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS()
-: canonized_i(std::numeric_limits<size_t>::max())
-{ }
+    : canonized_i(std::numeric_limits<size_t>::max()) { }
 
 template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup>::MPS(size_t L)
-: data_(L)
-, canonized_i(std::numeric_limits<size_t>::max())
-{ }
+MPS<Matrix, SymmGroup>::MPS(size_t L): data_(L), canonized_i(std::numeric_limits<size_t>::max()) { }
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(std::initializer_list<MPSTensor<Matrix, SymmGroup> > l)
-: data_{l}, canonized_i(std::numeric_limits<size_t>::max())
-{ }
+    : data_{l}, canonized_i(std::numeric_limits<size_t>::max()) { }
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
-: data_(L)
-, canonized_i(std::numeric_limits<size_t>::max())
+    : data_(L), canonized_i(std::numeric_limits<size_t>::max())
 {
     init(*this);
-
     // MD: this is actually important
     //     it turned out, this is also quite dangerous: if a block is 1x2,
     //     normalize_left will resize it to 1x1
@@ -76,13 +49,14 @@ MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
     //     adhoc states will be broken (e.g. identity MPS)
     // for (int i = 0; i < L; ++i)
     //     (*this)[i].normalize_left(DefaultSolver());
-
     this->normalize_left();
 }
 
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::value_type const & MPS<Matrix, SymmGroup>::operator[](size_t i) const
-{ return data_[i]; }
+{
+    return data_[i];
+}
 
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::value_type& MPS<Matrix, SymmGroup>::operator[](size_t i)
@@ -132,7 +106,9 @@ void MPS<Matrix, SymmGroup>::normalize_left()
     canonize(length()-1);
     // now state is: A A A A A A M
     parallel::guard proc(scheduler(length()-1));
-    block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
+    auto normalizationFactor = (*this)[length()-1].leftNormalizeAndReturn(DefaultSolver());
+    if (maquis::real(normalizationFactor.trace()) < 0.)
+        this->operator[](0) *= -1.;
     // now state is: A A A A A A A
     canonized_i = length()-1;
 }
@@ -144,7 +120,9 @@ void MPS<Matrix, SymmGroup>::normalize_right()
     canonize(0);
     // now state is: M B B B B B B
     parallel::guard proc(scheduler(0));
-    block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
+    auto normalizationFactor = (*this)[0].rightNormalizeAndReturn(DefaultSolver());
+    if (maquis::real(normalizationFactor.trace()) < 0)
+        this->operator[](0) *= -1.;
     // now state is: B B B B B B B
     canonized_i = 0;
 }
@@ -185,12 +163,12 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
         block_matrix<Matrix, SymmGroup> t;
         {
             parallel::guard proc(scheduler(i));
-            t = (*this)[i].normalize_left(method);
+            t = (*this)[i].leftNormalizeAndReturn(method);
         }
         if (i < length()-1) {
             parallel::guard proc(scheduler(i+1));
             (*this)[i+1].multiply_from_left(t);
-            (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
+            //(*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
     }
     if (tmp_i == p1)
@@ -215,12 +193,12 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
         block_matrix<Matrix, SymmGroup> t;
         {
             parallel::guard proc(scheduler(i));
-            t = (*this)[i].normalize_right(method);
+            t = (*this)[i].rightNormalizeAndReturn(method);
         }
         if (i > 0) {
             parallel::guard proc(scheduler(i-1));
             (*this)[i-1].multiply_from_right(t);
-            (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
+            //(*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }
     }
     if (tmp_i == p1)
@@ -232,20 +210,15 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 truncation_results
-MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                       Boundary<OtherMatrix, SymmGroup> const & left,
-                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo, Boundary<OtherMatrix, SymmGroup> const & left,
+                                       Boundary<OtherMatrix, SymmGroup> const & right, std::size_t l, double alpha,
+                                       double cutoff, std::size_t Mmax, bool perturbDM, bool verbose)
 { // canonized_i invalided through (*this)[]
+    using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-
-    boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, true);
-
-    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
-                                                    (*this)[l], new_mps);
+    boost::tie(new_mps, trunc) = Contractor::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
+    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
@@ -253,20 +226,15 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 truncation_results
-MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                       Boundary<OtherMatrix, SymmGroup> const & left,
-                                       Boundary<OtherMatrix, SymmGroup> const & right,
-                                       std::size_t l, double alpha,
-                                       double cutoff, std::size_t Mmax)
+MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo, Boundary<OtherMatrix, SymmGroup> const & left,
+                                       Boundary<OtherMatrix, SymmGroup> const & right, std::size_t l, double alpha,
+                                       double cutoff, std::size_t Mmax, bool perturbDM, bool verbose)
 { // canonized_i invalided through (*this)[]
+    using Contractor = typename contraction::Engine<Matrix, OtherMatrix, SymmGroup>;
     MPSTensor<Matrix, SymmGroup> new_mps;
     truncation_results trunc;
-
-    boost::tie(new_mps, trunc) =
-    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, true);
-
-    (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
-                                                          (*this)[l], new_mps);
+    boost::tie(new_mps, trunc) = Contractor::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, perturbDM, verbose);
+    (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1], (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
@@ -448,4 +416,15 @@ void clean_mps(MPS<Matrix, SymmGroup> & mps)
             mps[p+1].replace_right_paired(bm2);
         }
     } while (again);
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::setComplexPartToZero() {
+    for (auto& mpsTensor: data_)
+        mpsTensor.setComplexPartToZero();
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::scaleByScalar(scalar_type scalingFactor) {
+    this->operator[](this->length()-1) *= scalingFactor;
 }

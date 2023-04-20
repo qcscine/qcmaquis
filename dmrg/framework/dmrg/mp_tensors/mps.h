@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MPS_H
 #define MPS_H
@@ -76,6 +57,9 @@ public:
     size_t canonization(bool=false) const;
     void canonize(size_t center, DecompMethod method = DefaultSolver());
 
+    void setComplexPartToZero();
+    void scaleByScalar(scalar_type scalingFactor);
+
     void normalize_left();
     void normalize_right();
 
@@ -89,13 +73,15 @@ public:
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      double cutoff, std::size_t Mmax,
+                                      bool perturbDM, bool verbose);
     template<class OtherMatrix>
     truncation_results grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
                                       std::size_t l, double alpha,
-                                      double cutoff, std::size_t Mmax);
+                                      double cutoff, std::size_t Mmax,
+                                      bool perturbDM, bool verbose);
 
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
@@ -150,6 +136,50 @@ MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
     return ret;
 }
 
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> join_general(MPS<Matrix, SymmGroup> const & a,
+                                    MPS<Matrix, SymmGroup> const & b,
+                                    typename MPSTensor<Matrix, SymmGroup>::scalar_type alpha=1.,
+                                    typename MPSTensor<Matrix, SymmGroup>::scalar_type beta=1.)
+
+{
+    assert( a.length() == b.length() );
+
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    aright.multiply_by_scalar(alpha);
+    bright.multiply_by_scalar(beta);
+
+    MPS<Matrix, SymmGroup> ret(a.length());
+    ret[0] = join(a[0],b[0],l_boundary_f);
+    ret[a.length()-1] = join(aright,bright,r_boundary_f);
+    for (std::size_t p = 1; p < a.length()-1; ++p)
+        ret[p] = join(a[p], b[p]);
+    return ret;
+}
+
+#include "dmrg/mp_tensors/compression.h"
+
+template<class Matrix, class SymmGroup>
+MPS<Matrix, SymmGroup> joinAndTruncate(MPS<Matrix, SymmGroup> & a,
+                                       MPS<Matrix, SymmGroup> & b,
+                                       int mMax)
+
+{
+    assert( a.length() == b.length() );
+    int nOfSites = a.length();
+    MPS<Matrix, SymmGroup> ret(nOfSites);
+#pragma omp parallel for
+    for (int p = 0; p < nOfSites; ++p) {
+        if (p == 0)
+            ret[0] = join(a[0], b[0], l_boundary_f);
+        else if (p == nOfSites-1)
+            ret[nOfSites-1] = join(a[nOfSites-1], b[nOfSites-1], r_boundary_f);
+        else
+            ret[p] = join(a[p], b[p]);
+    }
+    ret = compression::l2r_compress(ret, mMax, 0.);
+    return ret;
+}
 
 template<class Matrix, class SymmGroup>
 Boundary<Matrix, SymmGroup>
