@@ -356,7 +356,7 @@ public:
                 maquis::cout << "pos of pushed back positions for meas. of population: " << (n_vib_states_+n_ele_states_)*idx << std::endl;
                 // Generates vector for the fillings and identity operators
                 op_vec identities_local, fillings_local;
-                for (std::size_t idx1 = 0; idx1 < num_vibtypes; idx1++) {
+                for (std::size_t idx1 = 0; idx1 < num_vibtypes + n_ele_states_; idx1++) {
                     identities_local.push_back(this->identity_matrix(idx1));
                     fillings_local.push_back(this->filling_matrix(idx1));
                 }
