@@ -92,9 +92,9 @@ public:
         // Definition of the physical dimensions.
         // First we manage the dimensions for the vibrations, then the ones of the nuclei.
         phys_indexes.resize(2) ;
-        phys_indexes[0].insert(std::make_pair(0, nMax));
-        phys_indexes[1].insert(std::make_pair(0, 1));
-        phys_indexes[1].insert(std::make_pair(1, 1));
+        phys_indexes[0].insert(std::make_pair(0, 1));
+        phys_indexes[0].insert(std::make_pair(1, 1));
+        phys_indexes[1].insert(std::make_pair(0, nMax));
         // Registering the electronic operators
         ident_ele_op.insert_block(Matrix(1, 1, 1), 0, 0);
         ident_ele_op.insert_block(Matrix(1, 1, 1), 1, 1);
@@ -154,7 +154,7 @@ public:
                     // Chooses between position and momentum operators
                     if (hamiltonianTerms.first[idx][op_vib] < 0) {
                         operators.push_back(momentumPowers[1]);
-                        vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
+                        vec_jnk[1] = abs(hamiltonianTerms.first[idx][op_vib])-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                     }
                     else if (hamiltonianTerms.first[idx][op_vib] > 0) {
@@ -226,9 +226,9 @@ public:
     {
         tag_type ret ;
         if (type == 0)
-            ret = ident_vib;
-        else
             ret = ident_ele;
+        else
+            ret = ident_vib;
         return ret ;
     }
     
@@ -237,9 +237,9 @@ public:
     {
         tag_type ret ;
         if (type == 0)
-          ret = ident_vib;
-        else if (type == 1)
           ret = ident_ele;
+        else if (type == 1)
+          ret = ident_vib;
         else
           throw std::runtime_error("Site type not recognized") ;
         return ret ;
@@ -297,8 +297,8 @@ public:
                 // Bonds element (the actual operator involved in the measurement)
                 bond_element ops;
                 op_vec local_op_vec;
-                local_op_vec.push_back(tag_handler->get_op(ident_vib));
                 local_op_vec.push_back(tag_handler->get_op(count_ele));
+                local_op_vec.push_back(tag_handler->get_op(ident_vib));
                 ops.push_back(std::make_pair(local_op_vec, false));
                 meas.push_back(new measurements::local_at<Matrix, U1>(name, lat, pos_local, identities_local,
                                                                       fillings_local, ops));

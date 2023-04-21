@@ -83,12 +83,12 @@ public:
       }
     }
 
-  if(parameters["MODEL"] == "excitonicextended"){
-    int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
-    if (((nModes+nElecStates)*nParticles-nConnecting) != L){
+    if(parameters["MODEL"] == "excitonicextended"){
+      int nConnecting = parameters["vibronic_num_connectingmodes"].as<int>();
+      if (((nModes+nElecStates)*nParticles-nConnecting) != L){
         throw std::runtime_error("Incoherence in lattice size for this vibronic lattice"); 
       }
-  }
+    }
 
     vector_types.resize(L);
     // Sites sorting. If == "firstele", put first all the excited states.
@@ -109,28 +109,37 @@ public:
           for (auto idx2 = 0; idx2 < nElecStates; idx2++){
             vector_types[(nModes+nElecStates)*idx1+idx2] = 0; //electronic type
             for(auto idx3 = 1; idx3 <= nModes; idx3++){
-              if(vibtype <= L-nParticles){
-                std::cout << "entered if statement in lattice" << std::endl;
+              if((nModes+nElecStates)*idx1+idx2+idx3 < L) { //checks whether still within allowed range
+                std::cout << "entered if statement in lattice for site " << (nModes+nElecStates)*idx1+idx2+idx3 << " which gets vibtype " << vibtype << std::endl;
                 vector_types[(nModes+nElecStates)*idx1+idx2+idx3] = vibtype; //vibrational type
+                vibtype++;
               }
-              vibtype++;
             }
           }
         }
       }
       numTypes = nModes*nParticles-nConnecting+1;
-      for(int i; i < vector_types.size(); i++){
+      for(int i=0; i < vector_types.size(); i++){
         maquis::cout << "DEBUG_LATTICE: vector_types_element " << i << " is: " << vector_types[i] << std::endl;
       }
-    }
-    else{
-      if (eleFirst)
-        for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++)
-          vector_types[idx1] = 1;
-      else
-        for (auto idx1 = 0; idx1 < nParticles; idx1++)
-          for (auto idx2 = 0; idx2 < nElecStates; idx2++)
-            vector_types[(nModes+nElecStates)*idx1+idx2] = 1;
+    } else { 
+      if (eleFirst) {
+        for (auto idx1 = 0; idx1 < nParticles*nElecStates; idx1++) {
+          vector_types[idx1] = 0; // electronic site
+        }
+        for (auto idxVib = nParticles*nElecStates; idxVib < L; idxVib++) {
+          vector_types[idxVib] = 1; // vibrational site
+        }
+      } else {
+        for (auto idx1 = 0; idx1 < nParticles; idx1++) {
+          for (auto idx2 = 0; idx2 < nElecStates; idx2++) {
+            vector_types[(nModes+nElecStates)*idx1+idx2] = 0; // electronic site
+          }
+          for (auto idxVib = 0; idxVib < nModes; idxVib++) {
+            vector_types[(nModes+nElecStates)*idx1+nElecStates+idxVib] = 1; // vibrational site
+          }
+        }
+      }
       // Monodimensional chain, the maximum number of vertex is 1.
       numTypes = 2;
     }
@@ -209,7 +218,7 @@ private:
   pos_t nElecStates;
   /** Number of vibrational modes */
   pos_t nModes;
-  /** Number of excitons */
+  /** Number of monomer systems */
   pos_t nParticles;
   /** Maximum number of vertexes */
   int numTypes;

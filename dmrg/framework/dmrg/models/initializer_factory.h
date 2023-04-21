@@ -71,14 +71,9 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         max_site_type = std::max(site_types[p], max_site_type);
     }
 
-    // maquis::cout << "site_types: ";
-    // std::copy(site_types.begin(), site_types.end(), maquis::ostream_iterator<int>(maquis::cout, " "));
-    // maquis::cout << std::endl;
-
     std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
     for (int type = 0; type < site_bases.size(); ++type) {
         site_bases[type] = this->phys_dim(type);
-        // maquis::cout << "phys["<< type <<"]: " << site_bases[type] << std::endl;
     }
 
     // Generation of the initializer
@@ -86,8 +81,6 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_type"] == "const")
         return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
-    else if (parms["init_type"] == "basis_state")
-        return initializer_ptr(new basis_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
     else if (parms["init_type"] == "basis_state_generic")
         return initializer_ptr(new basis_mps_init_generic<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     else if (parms["init_type"] == "basis_state_generic_const")

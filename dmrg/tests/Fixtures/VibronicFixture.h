@@ -131,7 +131,7 @@ struct VibronicFixture
         parametersTestNmax.set("init_basis_state", "0,0,0,1,0,0,0,0");
         parametersTestNmax.set("Nmax", "1,2,3,4,5");
         parametersTestNmax.set("symmetry", "u1");
-        parametersTestNmax.set("LATTICE", "vibronic_lattice");
+        parametersTestNmax.set("LATTICE", "vibronic lattice");
         parametersTestNmax.set("MODEL", "excitonicextended");
         parametersTestNmax.set("vibronic_J_coupling", 0);
         parametersTestNmax.set("vibronic_sorting", "intertwined");
