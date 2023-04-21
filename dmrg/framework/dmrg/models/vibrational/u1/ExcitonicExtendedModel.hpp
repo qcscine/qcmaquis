@@ -33,7 +33,7 @@ public:
         //constructor -- to be written
         tag_handler = std::make_shared<TagHandler<Matrix, U1>>();
         maxCoupling = model["vibronic_max_coupling"].as<int>(); 
-        only_nn_ = true; // hardcoded for the moment. not sure what to do with that (TODO)
+    only_nn_ = true; // hardcoded for the moment. not sure what to do with that (TODO)
         J_ = model["vibronic_J_coupling"].as<value_type>();
         epsilon_ = model["vibronic_J_excitation"].as<value_type>();
         nMaxVec = model["Nmax"].as<std::vector<int> >();
@@ -169,19 +169,19 @@ public:
                     //if (hamiltonianTerms.first[idx][op_vib] < 0){ //if momentum operator
                     int countOccurrences = std::count(tmpVec.begin(), tmpVec.end(), index);
                     if (index < 0){ //if momentum operator
-                        operators.push_back(momentumPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].first);
+                        operators.push_back(momentumPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].first);
                         std::cout << "Scaling factor before " << scalingFactor << std::endl;
-                        scalingFactor *= momentumPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].second;
+                        scalingFactor *= momentumPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].second;
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
                         //vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
-                        vec_jnk[1] = -index-1;
+                        vec_jnk[1] = abs(index)-1;
                         positions.push_back(lat.get_prop<int>("vibindex", vec_jnk));
                         std::cout << "momentum registered with power" << " " << countOccurrences << std::endl;
                     }
                     else if (index > 0){ //if position operator
-                        operators.push_back(positionPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].first);
+                        operators.push_back(positionPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].first);
                         std::cout << "Scaling factor before " << scalingFactor << std::endl;
-                        scalingFactor *= positionPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].second;
+                        scalingFactor *= positionPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].second;
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
                         //vec_jnk[1] = hamiltonianTerms.first[idx][op_vib]-1;
                         vec_jnk[1] = index-1;
@@ -252,7 +252,7 @@ public:
         std::vector<int> vec_jnk(2);
         for (int i1_body = 0; i1_body < n_particles_; i1_body++) {
             for (int i2_body = 0; i2_body < n_particles_; i2_body++) {
-                if (only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1) || !only_nn_ && i1_body!=i2_body) {
+                if ((only_nn_ && (i1_body-i2_body == 1 || i2_body-i1_body == 1)) || (!only_nn_ && i1_body!=i2_body)) {
                     std::cout << "i1_body : " << i1_body << std::endl;
                     std::cout << "i2_body : " << i2_body << std::endl;
                     std::vector<tag_type> operators;
