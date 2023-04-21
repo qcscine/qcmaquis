@@ -153,7 +153,7 @@ public:
   {
     MPS<Matrix, SymmGroup> MPSBuffer;
     for (int i=0; i<basis_index.size(); i++ ) {
-      state.resize(mps.length());
+      state = stateType(mps.length(), stateEntryType(1));
       for (int j=0; j<mps.length(); j++)
         state[j][0] = phys_dims[site_type[j]].element(basis_index[i][j]);
       auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end);
