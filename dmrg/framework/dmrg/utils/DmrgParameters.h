@@ -62,7 +62,7 @@ private:
 
         // Settings for further truncating than the maximum bond dimension
         add_option("truncation_initial", "Initial value for the truncation error during ngrowsweeps", value(1e-16));
-        add_option("truncation_main", "Final value for the truncation error during nmainsweeps", value(1e-16));
+        add_option("truncation_main", "Value for the truncation error after ngrowsweeps (not only nmainsweeps, but the entire remainder of the nsweeps)", value(1e-16));
 
         // Settings related to the MPS optimization algorithm
         add_option("optimization", "singlesite or twosite", value("twosite"));
@@ -70,8 +70,8 @@ private:
 
         // Number of sweeps for different calculation phases
         add_option("nsweeps", "Overall number of sweeps of the calculation", 10);
-        add_option("ngrowsweeps", "Number of the grow sweeps (used for the truncation and noise parameters)", 2);
-        add_option("nmainsweeps", "Number of main sweeps (used for the truncation and noise parameters)", 5);
+        add_option("ngrowsweeps", "Number of the grow sweeps (used for the initial truncation and noise parameters)", 2);
+        add_option("nmainsweeps", "Number of main sweeps (used for the main truncation and noise parameters)", 5);
 
         // Setting to terminate DMRG before nsweeps are completed
         add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(-1));
