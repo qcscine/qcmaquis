@@ -169,9 +169,9 @@ public:
                     //if (hamiltonianTerms.first[idx][op_vib] < 0){ //if momentum operator
                     int countOccurrences = std::count(tmpVec.begin(), tmpVec.end(), index);
                     if (index < 0){ //if momentum operator
-                        operators.push_back(momentumPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].first);
+                        operators.push_back(momentumPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].first);
                         std::cout << "Scaling factor before " << scalingFactor << std::endl;
-                        scalingFactor *= momentumPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].second;
+                        scalingFactor *= momentumPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].second;
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
                         //vec_jnk[1] = -hamiltonianTerms.first[idx][op_vib]-1;
                         vec_jnk[1] = abs(index)-1;
@@ -179,9 +179,9 @@ public:
                         std::cout << "momentum registered with power" << " " << countOccurrences << std::endl;
                     }
                     else if (index > 0){ //if position operator
-                        operators.push_back(positionPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].first);
+                        operators.push_back(positionPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].first);
                         std::cout << "Scaling factor before " << scalingFactor << std::endl;
-                        scalingFactor *= positionPowers[nMaxVec[i_body*n_vib_states_+mode]][countOccurrences].second;
+                        scalingFactor *= positionPowers[nMaxVec[i_body*n_vib_states_+abs(index)-1]][countOccurrences].second;
                         std::cout << "Scaling factor after " << scalingFactor << std::endl;
                         //vec_jnk[1] = hamiltonianTerms.first[idx][op_vib]-1;
                         vec_jnk[1] = index-1;
