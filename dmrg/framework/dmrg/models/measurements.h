@@ -59,17 +59,29 @@ public:
 
     void operator()(measurement<Matrix, SymmGroup> & meas) const
     {
-        maquis::cout << "Measuring " << meas.name() << std::endl;
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
+        {
+            maquis::cout << "Measuring " << meas.name() << std::endl;
+        }
+
         meas.eigenstate_index() = eigenstate;
         meas.evaluate(mps, rmps);
-        if (!rfile.empty() && !archive_path.empty())
+        
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
         {
-            storage::archive ar(rfile, "w");
-            ar[archive_path] << meas;
-        }
-        else
-        {
-            throw std::runtime_error("Result filename or archive path not specified. Cannot save to file.");
+            if (!rfile.empty() && !archive_path.empty())
+            {
+                storage::archive ar(rfile, "w");
+                ar[archive_path] << meas;
+            }
+            else
+            {
+                throw std::runtime_error("Result filename or archive path not specified. Cannot save to file.");
+            }
         }
     }
 
