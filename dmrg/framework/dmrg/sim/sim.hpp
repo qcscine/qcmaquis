@@ -255,8 +255,9 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     #ifdef MAQUIS_OPENMP
     #pragma omp parallel for schedule(dynamic) firstprivate(mps)
     #endif
-    for (const auto& measurement: meas) {
-        measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps);
+    for (typename measurements_type::iterator it = meas.begin(); it < meas.end(); it++) {
+        measure_and_save<Matrix, SymmGroup> ms(rfile(), archive_path, mps);
+        ms(*it);
     }
     
     // TODO: move into special measurement
