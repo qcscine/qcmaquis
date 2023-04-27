@@ -252,12 +252,11 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
-    
-
     #ifdef MAQUIS_OPENMP
-    #pragma omp parallel for schedule(dynamic) firstprivate(mps)
+    #pragma omp parallel
+     for schedule(dynamic) firstprivate(mps)
     #endif
-    for (const auto& measurement: meas) {
+    for (const auto& measurement : meas) {
         measure_and_save<Matrix, SymmGroup>(rfile(), archive_path, mps);
     }
  
