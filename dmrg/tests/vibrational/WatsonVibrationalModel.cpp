@@ -4,6 +4,25 @@
  *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
  *            See LICENSE.txt for details.
  */
+
+#define BOOST_TEST_MODULE MODEL_VIBRATIONAL_NONE
+
+#include <boost/test/included/unit_test.hpp>
+#include <boost/mpl/assert.hpp>
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/vibrational/none/model.hpp"
+#include "Fixtures/WatsonFixture.h"
+#include "maquis_dmrg.h"
+#include "dmrg/sim/matrix_types.h"
+
+// Note that here below at least one test is defined also if TrivialGroup is not available
+// (otherwise boost will complain)
+
+/** Checks consistency for the physical dimensions for the ethylene Watson Hamiltonian */
+BOOST_FIXTURE_TEST_CASE(Test_Model_PhysDim_Ethylene, WatsonFixture)
+{
+#ifdef HAVE_TrivialGroup
+    auto lattice = Lattice(parametersEthyleneWatsonHarmonic);
     auto nModeModel = WatsonHamiltonian<matrix>(lattice, parametersEthyleneWatsonHarmonic, false);
     int siteType = 0;
     const auto& physicalDimensions0 = nModeModel.phys_dim(siteType);
