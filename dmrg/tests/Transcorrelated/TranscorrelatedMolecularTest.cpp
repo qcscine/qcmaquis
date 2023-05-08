@@ -34,6 +34,7 @@
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "Fixtures/H2Fixture.h"
 #include "Fixtures/TranscorrelatedFixture.h"
 
 /**
@@ -205,6 +206,30 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
   auto energyDMRG = maquis::real(interface3.energy());
   auto refEnergy = -14.6505807967243;
   BOOST_CHECK_SMALL(std::abs(energyDMRG-refEnergy), 1.0E-10);
+}
+
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
+{
+  // Types definition
+  using ModelType = Model<matrix, TwoU1>;
+  using MPSType = MPS<matrix, TwoU1>;
+  // Generates the conventional MPO
+  auto lattice = Lattice(parametersH2QuantumFormat);
+  auto conventionalModel = ModelType(lattice, parametersH2QuantumFormat);
+  auto conventionalMpo = make_mpo(lattice, conventionalModel);
+  parametersH2QuantumFormat.set("init_type", "default");
+  // Generates the MPS
+  auto mps = MPSType(lattice.size(), *(conventionalModel.initializer(lattice, parametersH2QuantumFormat)));
+  // Generates the transcorrelatedMPO
+  auto transcorrelatedParametersContainer = parametersH2QuantumFormat;
+  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
+  transcorrelatedParametersContainer.set("imaginary_time", "yes");
+  auto transcorrelatedModel = ModelType(lattice, transcorrelatedParametersContainer);
+  auto transcorrelatedMpo = make_mpo(lattice, transcorrelatedModel);
+  // Compares the energy calculated based on the two Hamiltonians
+  auto energyConventional = expval(mps, conventionalMpo);
+  auto energyQuantum = expval(mps, transcorrelatedMpo);
+  BOOST_CHECK_CLOSE(energyConventional, energyQuantum, 1.0E-14);
 }
 
 #endif // HAVE_TwoU1 and DMRG_TD

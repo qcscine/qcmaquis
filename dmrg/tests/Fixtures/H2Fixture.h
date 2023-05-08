@@ -37,10 +37,10 @@ struct H2Fixture
 {
     // Types definition
     using RealIntegralMapType = typename maquis::integral_map<double>;
-    
+
     /** @brief Constructor for the fixture class */
     H2Fixture() {
-        // Real-valued integrals
+        // H2 integrals in the conventional format
         integralH2 = RealIntegralMapType {
                                             { { 1, 1, 1, 1 },   0.354237848011       },
                                             { { 1, 1, 2, 1 },  -0.821703816101E-13   },
@@ -53,6 +53,40 @@ struct H2Fixture
                                             { { 2, 2, 0, 0 }, -0.653221638776        },
                                             { { 0, 0, 0, 0 },  0.176392403557        }
                                           };
+
+        //  H2 integral file in conventional format
+        integralFileH2ConventionalFormat.open("IntegralFile_H2_ConventionalFormat");
+        integralFileH2ConventionalFormat << " &FCI NORB=2,NELEC=2,MS2=0, " << std::endl;
+        integralFileH2ConventionalFormat << " ORBSYM=1,1," << std::endl;
+        integralFileH2ConventionalFormat << " ISYM=1, " << std::endl;
+        integralFileH2ConventionalFormat << " &END " << std::endl;
+        integralFileH2ConventionalFormat << " 0.354237848011E+00   1  1  1  1" << std::endl;
+        integralFileH2ConventionalFormat << " 0.185125251547E+00   2  1  2  1" << std::endl;
+        integralFileH2ConventionalFormat << " 0.361001163519E+00   1  1  2  2" << std::endl;
+        integralFileH2ConventionalFormat << " 0.371320200119E+00   2  2  2  2" << std::endl;
+        integralFileH2ConventionalFormat << "-0.678487901790E+00   1  1  0  0" << std::endl;
+        integralFileH2ConventionalFormat << "-0.653221638776E+00   2  2  0  0" << std::endl;
+        integralFileH2ConventionalFormat << " 0.176392403557E+00   0  0  0  0" << std::endl;
+        integralFileH2ConventionalFormat.close();
+
+        // H2 integral file in quantum format.
+        integralFileH2QuantumFormat.open("IntegralFile_H2_QuantumFormat");
+        integralFileH2QuantumFormat << " &FCI NORB=2,NELEC=2,MS2=0, " << std::endl;
+        integralFileH2QuantumFormat << " ORBSYM=1,1," << std::endl;
+        integralFileH2QuantumFormat << " ISYM=1, " << std::endl;
+        integralFileH2QuantumFormat << " &END " << std::endl;
+        integralFileH2QuantumFormat << "-9.481694515690000e-01    1   1    0    0    0    0" << std::endl;
+        integralFileH2QuantumFormat << "-9.314443646090000e-01    2   2    0    0    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+3.542378480110000e-01    1   1    1    1    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+1.851252515470000e-01    1   2    1    2    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+1.851252515470000e-01    2   1    1    2    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+1.851252515470000e-01    2   1    2    1    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+3.610011635190000e-01    2   2    1    1    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+3.713202001190000e-01    2   2    2    2    0    0" << std::endl;
+        integralFileH2QuantumFormat << "+0.176392403557000E+00    0   0    0    0    0    0" << std::endl;
+        integralFileH2QuantumFormat.close();
+
+        // == Conventional calculation ==
         // Generic parameters
         parametersH2.set("integrals_binary", maquis::serialize(integralH2));
         parametersH2.set("site_types", "0,0");
@@ -66,10 +100,43 @@ struct H2Fixture
         // for 2U1
         parametersH2.set("u1_total_charge1", 1);
         parametersH2.set("u1_total_charge2", 1);
+
+        // == Quantum format ==
+        // -- General parameters --
+        parametersH2QuantumFormat.set("L", 2);
+        parametersH2QuantumFormat.set("max_bond_dimension", 10);
+        parametersH2QuantumFormat.set("nsweeps", 10);
+        parametersH2QuantumFormat.set("symmetry", "2u1pg");
+        parametersH2QuantumFormat.set("u1_total_charge1", 1);
+        parametersH2QuantumFormat.set("u1_total_charge2", 1);
+        parametersH2QuantumFormat.set("LATTICE", "orbitals");
+        parametersH2QuantumFormat.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown");
+        parametersH2QuantumFormat.set("MODEL", "quantum_chemistry");
+        parametersH2QuantumFormat.set("integral_file", "IntegralFile_H2_ConventionalFormat");
+        parametersH2QuantumFormat.set("optimization", "twosite");
+        parametersH2QuantumFormat.set("init_type", "default");
+        parametersH2QuantumFormat.set("seed", "16071991");
+        // -- Transcorrelated options --
+        parametersH2QuantumFormat.set("transcorrelated_nsweeps_TI", 0);
+        parametersH2QuantumFormat.set("transcorrelated_nsweeps_TC", 100);
+        parametersH2QuantumFormat.set("transcorrelated_integral_file", "IntegralFile_H2_QuantumFormat");
+        parametersH2QuantumFormat.set("transcorrelated_quantum_computing_format", "yes");
+        // -- Time-dependent simulation --
+        parametersH2QuantumFormat.set("propagator_accuracy", 1.0E-5);
+        parametersH2QuantumFormat.set("propagator_maxiter", 10);
+        parametersH2QuantumFormat.set("time_step", 1);
+        parametersH2QuantumFormat.set("TD_backpropagation", "no");
+    }
+
+    /** @brief Class destructor */
+    ~H2Fixture() {
+        std::remove("IntegralFile_H2_ConventionalFormat");
+        std::remove("IntegralFile_H2_QuantumFormat");
     }
     // Class members
     RealIntegralMapType integralH2;
-    DmrgParameters parametersH2;
+    DmrgParameters parametersH2, parametersH2QuantumFormat;
+    std::ofstream integralFileH2ConventionalFormat, integralFileH2QuantumFormat;
 };
 
 #endif

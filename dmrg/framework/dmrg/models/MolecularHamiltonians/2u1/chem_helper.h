@@ -48,10 +48,11 @@ public:
 
     /** @brief Class constructor */
     ChemHelper(BaseParameters & parms, Lattice const & lat_, std::vector<tag_type> const & ident_,
-               std::vector<tag_type> const & fill_, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
+               std::vector<tag_type> const & fill_, std::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
+               bool doRealign=true)
         : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
     {
-        boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup, HamiltonianType, Transcorrelated>(parms, lat);
+        boost::tie(idx_, matrix_elements) = parse_integrals<value_type, SymmGroup, HamiltonianType, Transcorrelated>(parms, lat, doRealign);
         for (int m = 0; m < matrix_elements.size(); ++m) {
             IndexTuple<SymmGroup, numberOfIntegers> pos;
             std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
