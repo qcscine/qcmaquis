@@ -1,28 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef TENSOR_INDEXING_H
 #define TENSOR_INDEXING_H
@@ -97,23 +78,23 @@ namespace index_detail
 template<class SymmGroup>
 class basis_iterator_;
 
-template<class SymmGroup> class Index
+template<class SymmGroup>
+class Index
 {
+    // Private types
     typedef std::pair<typename SymmGroup::charge, std::size_t> data_entry_type;
     typedef std::vector<data_entry_type> data_type;
-
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef typename data_type::value_type value_type;
+    // Public types
+    using charge = typename SymmGroup::charge;
+    using value_type = typename data_type::value_type;
+    using iterator = typename data_type::iterator;
+    using const_iterator = typename data_type::const_iterator;
+    using reverse_iterator = typename data_type::reverse_iterator;
+    using const_reverse_iterator = typename data_type::const_reverse_iterator;
+    using basis_iterator = basis_iterator_<SymmGroup>;
 
-    typedef typename data_type::iterator iterator;
-    typedef typename data_type::const_iterator const_iterator;
-
-    typedef typename data_type::reverse_iterator reverse_iterator;
-    typedef typename data_type::const_reverse_iterator const_reverse_iterator;
-
-    typedef basis_iterator_<SymmGroup> basis_iterator;
-
+    // Class constructors
     Index() : sorted_(true) {}
     Index(std::size_t s_) : sorted_(true), data_(s_) {}
     Index(std::initializer_list<data_entry_type> data) : sorted_(true), data_{data} {}
@@ -235,7 +216,6 @@ public:
     iterator end() { return data_.end(); }
     const_iterator begin() const { return data_.begin(); }
     const_iterator end() const { return data_.end(); }
-
     reverse_iterator rbegin() { return data_.rbegin(); }
     reverse_iterator rend() { return data_.rend(); }
     const_reverse_iterator rbegin() const { return data_.rbegin(); }
@@ -244,7 +224,8 @@ public:
     value_type & operator[](std::size_t p) { return data_[p]; }
     value_type const & operator[](std::size_t p) const { return data_[p]; }
 
-    boost::tuple<charge, std::size_t> element(std::size_t p) const
+    /** @brief Function to return the p-th overall element of a given index */
+    boost::tuple<charge, std::size_t> element(std::size_t p) const 
     {
         std::size_t i=0;
         while (p >= (*this)[i].second) {
@@ -257,6 +238,7 @@ public:
     std::size_t size() const { return data_.size(); }
 
     iterator erase(iterator p) { iterator r = data_.erase(p); return r; }
+
     iterator erase(iterator a, iterator b) { iterator r = data_.erase(a,b); return r; }
 
     friend void swap(Index & a, Index & b)
@@ -351,6 +333,8 @@ private:
             for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
             {
                 charge pc = f(it1->first, it2->first);
+                if (size_.find(pc) == size_.end())
+                    size_[pc] = 0.;
                 keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc];
           //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc]));
                 size_[pc] += it1->second * it2->second;
@@ -530,6 +514,20 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
         }
     ret.sort();
     return ret;
+}
+
+template<class SymmGroup>
+void extract_common_subset(Index<SymmGroup> & a, Index<SymmGroup> & b)
+{
+    a.erase(std::remove_if(a.begin(), a.end(),
+                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
+                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            a.end());
+
+    b.erase(std::remove_if(b.begin(), b.end(),
+                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
+                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            b.end());
 }
 
 template<class SymmGroup>

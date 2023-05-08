@@ -1,40 +1,17 @@
-/*****************************************************************************
-*
-* ALPS MPS DMRG Project
-*
-* Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
-*               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
-*               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
-*               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
-*               2014         Christopher Stein and Yingjin Ma ??
-*               2020         Leon Freitag <lefreita@ethz.ch>
-*
-* This software is part of the ALPS Applications, published under the ALPS
-* Application License; you can use, redistribute it and/or modify it under
-* the terms of the license, either version 1 or (at your option) any later
-* version.
-*
-* You should have received a copy of the ALPS Application License along with
-* the ALPS Applications; see the file LICENSE.txt. If not, the license is also
-* available from http://alps.comp-phys.org/.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-* DEALINGS IN THE SOFTWARE.
-*
-*****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 #ifndef MPS_INIT_DEAS_HPP
 #define MPS_INIT_DEAS_HPP
 
-#include "dmrg/models/lattice.h"
+#include "dmrg/models/lattice/lattice.h"
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
 #include "dmrg/utils/DmrgParameters.h"
-
+#include "dmrg/mp_tensors/charge_detail.h"
 #include "dmrg/models/chem/cideas/ci_generator.hpp"
 
 template<class Matrix, class SymmGroup, class=void>
@@ -170,7 +147,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
                 {
                     charge site_charge = determinants[d][s];
                     accumulated_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-                    if(charge_detail::physical<SymmGroup>(accumulated_charge))
+                    if(ChargeDetailClass<SymmGroup>::physical(accumulated_charge))
                     {
                         std::string str = det_string(s, det_list_new[det_nr]);
                         std::map<std::string, int> & str_map = str_to_col_map[s-1][accumulated_charge];
@@ -222,7 +199,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
             {
                 charge site_charge = total_dets[d][s];
                 charge search_charge = SymmGroup::fuse(accumulated_charge, -site_charge);
-                if (charge_detail::physical<SymmGroup>(search_charge) && mps[s].row_dim().has(search_charge))
+                if (ChargeDetailClass<SymmGroup>::physical(search_charge) && mps[s].row_dim().has(search_charge))
                 {
                     int nrows_fill = mps[s].row_dim().size_of_block(search_charge);
                     //get current matrix
@@ -259,7 +236,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
        //first site needs to be filled as well
        for(int d = 0; d < total_dets.size(); d++){
           charge first_charge = total_dets[d][0];
-          if (charge_detail::physical<SymmGroup>(first_charge))
+          if (ChargeDetailClass<SymmGroup>::physical(first_charge))
           {
              size_t first_pos = mps[0].data().left_basis().position(first_charge);
              Matrix & m_first = mps[0].data()[first_pos];
@@ -416,7 +393,7 @@ private:
                 for (int l = 1; l < L; ++l)
                 {
                     accumulated_charge = SymmGroup::fuse(accumulated_charge, single_det[m][l]);
-                    if (!charge_detail::physical<SymmGroup>(accumulated_charge))
+                    if (!ChargeDetailClass<SymmGroup>::physical(accumulated_charge))
                         valid = false;
                 }
                 //letzte Bedingung kann später geloescht werden

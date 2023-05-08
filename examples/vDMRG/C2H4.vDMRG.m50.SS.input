@@ -1,0 +1,31 @@
+nsweeps                          = 20
+ngrowsweeps                      = 5
+nmainsweeps                      = 5
+max_bond_dimension               = 50
+
+truncation_initial               = 0
+truncation_final                 = 0
+
+optimization                     = singlesite 
+symmetry                         = none
+
+alpha_initial                    = 1.0E-8
+alpha_main                       = 1.0E-15
+alpha_final                      = 0
+
+model_library                    = coded
+lattice_library                  = coded
+LATTICE                          = "watson lattice"
+L                                = 12
+
+MODEL                            = "watson" 
+Nmax                             = 6
+
+integral_file                    = "PES_Ethylene" 
+integral_cutoff                  = 1.0E-10
+
+init_state                       = "basis_state_generic"
+init_basis_state                 = "0,0,0,0,0,0,0,0,0,0,0,0"
+chkpfile                         = "C2H4.vDMRG.m50.SS.checkpoint.h5" 
+resultfile                       = "C2H4.vDMRG.m50.SS.resfile.h5"
+

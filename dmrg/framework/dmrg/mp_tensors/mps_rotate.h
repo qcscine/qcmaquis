@@ -6,7 +6,7 @@
  *               2016 by Stefan Knecht <stknecht@ethz.ch>
  *               2016 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *               2019 by Leon Freitag <lefreita@ethz.ch>
- *
+ *               2021 by Alberto Baiardi <abaiardi@ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -122,10 +122,10 @@ namespace mps_rotate
             typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
             typedef typename SymmGroup::subcharge sc_t;
             std::vector<tag_type> ident, fill;
-            for (std::size_t i = 0; i <= lat.maximum_vertex_type(); ++i)
+            for (int iSite = 0; iSite < lat.getMaxType(); iSite++)
             {
-                ident.push_back(model.identity_matrix_tag(i));
-                fill.push_back(model.filling_matrix_tag(i));
+                ident.push_back(model.identity_matrix_tag(iSite));
+                fill.push_back(model.filling_matrix_tag(iSite));
             }
 
             std::vector<MPO<Matrix, SymmGroup> > ret;
@@ -203,9 +203,7 @@ namespace mps_rotate
 
         //mpo_times_mps_contractor_ss<Matrix, SymmGroup, storage::nop> sigma_vector_product(mps, mpo, parms);
         //sigma_vector_product.sweep();
-
         assert(sensible(mps));
-
         MPS<Matrix, SymmGroup> ret;
         for (size_t i = 0; i < mpo_vec.size(); ++i)
         {
@@ -213,7 +211,7 @@ namespace mps_rotate
             typename SymmGroup::charge delta = SymmGroup::IdentityCharge;
             MPS<Matrix, SymmGroup> product(mps.size());
             for (int p = 0; p < mps.size(); ++p)
-                product[p] =  mpo_times_mps(mpo_vec[i][p], mps[p], delta);
+                product[p] =  MPOTimesMPSTraitClass<Matrix, SymmGroup>::mpo_times_mps_singleop(mpo_vec[i][p], mps[p], delta);
 
             clean_mps(product);
             assert(sensible(product));

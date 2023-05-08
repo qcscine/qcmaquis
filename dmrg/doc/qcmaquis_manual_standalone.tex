@@ -1,0 +1,1304 @@
+\documentclass[bibliography=totoc,12pt,a4paper]{scrartcl}
+
+% -- Loads packages --
+\usepackage[nott]{kpfonts}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{braket}
+\usepackage[bf,singlelinecheck=off]{caption}
+\usepackage{colortbl}
+\usepackage[T1]{fontenc}
+\usepackage{framed}
+\usepackage{graphicx}
+\usepackage[colorlinks=true]{hyperref} % web links
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{placeins}
+\usepackage{varwidth}
+\usepackage{xcolor}
+
+% Definition of colours for hyperref
+\definecolor{linkcolour}{rgb}{0,0.2,0.6}
+\definecolor{citecolour}{rgb}{0,0.8,0.2}
+\hypersetup{colorlinks,breaklinks,urlcolor=linkcolour,linkcolor=linkcolour,citecolor=citecolour}
+\setcounter{secnumdepth}{4}
+
+% -- New commands --
+\newcommand{\relv}{release version 3.1.3}
+\newcommand{\qcm}{\textsc{QCMaquis}}
+\newcommand{\scine}{SCINE}
+\newcommand{\hostp}{\mol}
+\newcommand{\molbuild}{\texttt{my-Molcas-build}}
+\newcommand{\molsrc}{\texttt{my-Molcas-src}}
+\newcommand{\qcmsrc}{\texttt{my-QCMaquis-src}}
+\newcommand{\qcmbuild}{\texttt{my-QCMaquis-build}}
+\newcommand{\kwd}[1]{\texttt{#1}}
+
+\newcommand{\tableoptionskip}{0.3em}
+\newcommand{\myemph}[1]{\textbf{#1}}
+
+\lstdefinelanguage{qcmaquis}
+{
+%
+    keywords=[1]{L,nelec,spin,nsweeps,max_bond_dimension,integral_file,
+				 init_type,LATTICE,lattice_library,MODEL,model_library,irrep,symmetry},
+	morekeywords=[2]{conv_thresh,integral_cutoff,truncation_initial,truncation_final,
+					 MEASURE,chkpfile,resultfile,storagedir},
+	keywordstyle=[1]\color{green!20!red},
+	keywordstyle=[2]\color{green!20!blue},
+	commentstyle=\color{gray},
+	sensitive=false,
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+}
+
+\lstset{
+	numbers=left,
+	numberstyle=\tiny,
+	numberblanklines=true,
+	basicstyle=\ttfamily\small,
+	frame=single,
+	showlines=true,
+	flexiblecolumns=true,
+	breaklines=true,
+	postbreak={\llap{\textcolor{red}{$\lhook\joinrel\longrightarrow$\kern2.1em}}},
+	escapechar=|
+}
+
+\title{User guide to the standalone version of the \scine-\qcm\ software}
+\author{Alberto Baiardi, Robin Feldmann, Leon Freitag, Sebastian Keller, \\ Stefan Knecht, Yingjin Ma, Christopher Stein and Markus Reiher}
+\publishers{ETH Z\"urich, Laboratorium f\"ur Physikalische Chemie, Vladimir-Prelog-Weg 2,\\ CH-8093 Z\"urich}
+\date{\today}
+
+\begin{document}
+
+\bibliographystyle{achemso}
+
+\pagenumbering{roman}
+\maketitle
+\thispagestyle{empty}
+\begin{center}
+\end{center}
+\vspace{-1.85cm}
+\centerline{\large{\relv}}
+
+\vspace{2cm}
+
+\noindent We kindly request that, for reproducibility reasons, any use of the \qcm\ software suite for density matrix renormalization group (DMRG) calculations that results in published material should cite the following paper:
+
+\begin{framed}
+\noindent Keller,~S.; Dolfi,~M.; Troyer,~M.; Reiher,~M. \emph{J. Chem. Phys.}
+  \textbf{2015}, \emph{143}, 244118, \href{https://doi.org/10.1063/1.4939000}{doi:10.1063/1.4939000}.
+\end{framed}
+
+The reference works for the vibrational DMRG method are the following:
+
+\begin{framed}
+  \noindent Baiardi,~A.; Stein,~C.J.; Barone,~V.; Reiher,~M. \emph{J. Chem. Theory Comput.}
+  \textbf{2017}, \emph{13}, 3764, \href{https://doi.org/10.1021/acs.jctc.7b00329}{doi:10.1021/acs.jctc.7b00329}. \\
+  \noindent Baiardi,~A.; Stein,~C.J.; Barone,~V.; Reiher,~M. \emph{J. Chem. Phys.}
+  \textbf{2019}, \emph{150}, 094113, \href{https://doi.org/10.1063/1.5068747jctc.7b00329}{doi:10.1063/1.5068747jctc.7b00329}. \\
+  \noindent Glaser,~N.; Baiardi~A.; Reiher,~M. ``Tensor Network States for Vibrational Spectroscopy'', chapter 3 in: Joel M. Bowman (ed.), Vibrational Dynamics of Molecules, pp. 80-144 (\textbf{2022}), World Scientific, \href{https://arxiv.org/abs/2109.08961}{arXiv.org}. \\
+\end{framed}
+
+The reference papers for the Nuclear-Electron All-Particle DMRG method (see Section~\ref{sec:preBO}) are the following:
+
+\begin{framed}
+  \noindent Muolo,~A.; Baiardi,~A.; Feldmann,~R.; Reiher,~M. \emph{J. Chem. Phys.} \textbf{2020}, \emph{152}, 204103, \href{https://doi.org/10.1063/5.0007166}{doi:10.1063/5.0007166}. \\
+  \noindent Feldmann,~R.; Muolo,~A.; Baiardi,~A.; Reiher,~M. \emph{J. Chem. Theory Comput.} \textbf{2022}, \emph{18}, 234, \href{https://doi.org/10.1021/acs.jctc.1c00913}{doi:10.1021/acs.jctc.1c00913}. 
+\end{framed}
+
+The reference paper for DMRG[FEAST] is the following:
+
+\begin{framed}
+  \noindent Baiardi,~A.; Kelemen,~A.~K.; Reiher,~M. \emph{J. Chem. Theory Comput.} \textbf{2022}, \emph{18}, 415, \href{https://doi.org/10.1021/acs.jctc.1c00984}{doi:10.1021/acs.jctc.1c00984}.
+\end{framed}
+
+\qcm\ builds upon the \href{http://alps.comp-phys.org/static/mps\_doc/index.html}{ALPS MPS code}, which has been developed at ETH Zurich by Michele Dolfi and Bela Bauer in the group of Matthias Troyer with contributions from Sebastian Keller and Alexandr Kosenkov and at the University of Geneva by Timoth{\'e}e Ewart and Adrian Kantian in the group of Thierry Giamarchi.
+ALPS is a general open-source framework for the description of strongly correlated many-particle systems.
+For further information on the ALPS project, please visit \href{alps.comp-phys.org}{alps.comp-phys.org} and refer to the following reference papers:
+
+\begin{framed}
+  \noindent M. Dolfi, B. Bauer, S. Keller, A. Kosenkov, T. Ewart, A. Kantian, T. Giamarchi, M. Troyer, \textit{Comp. Phys. Commun.} \textbf{2014}, 12, 3430. \href{https://doi.org/10.1016/j.cpc.2014.08.019}{doi:10.1016/j.cpc.2014.08.019} \\
+  B. Bauer, \textit{et al.} (ALPS Collaboration), The ALPS project release 2.0: open source software for strongly correlated systems, \textit{J. Stat. Mech.} \textbf{2011} P05001. \href{http://dx.doi.org/10.1088/1742-5468/2011/05/P05001}{http://dx.doi.org/10.1088/1742-5468/2011/05/P05001}.
+\end{framed}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\pagenumbering{arabic}
+
+\section{Introduction to the \qcm\ Software Suite}
+
+\qcm\ can be used as a standalone code.
+The standalone version of \qcm\ is used especially in two cases: 
+
+\begin{enumerate}
+  \item for electronic-structure calculations relying on integrals that are calculated with programs other than \texttt{OpenMolcas}
+  \item for DMRG calculations beyond time-independent electronic-structure simulations.
+\end{enumerate}
+
+Section~\ref{sec:install-qcm-stand}\ describes in details the installation process for a standalone version of \qcm.
+We will then focus on the former application field, while the latter will be discussed in the remaining Section of this user guide.
+Note that, for a description of the \qcm{} software as integrated within \textsc{OpenMolcas}, refer to the \texttt{qcmaquis\_manual.pdf} user guide (referred to in the following simply as ``\textsc{OpenMolcas}-\qcm{} guide'')
+
+\section{Installation}
+\label{sec:install-qcm-stand}
+
+\noindent We describe in the following how to build and install the standalone version of the \qcm\ software.
+The installation of \qcm\ has been tested for different operating systems and compiler/math libraries environments.
+Their list can be found in the other user guide.
+While other combinations might work equally well they are \emph{not} officially supported.
+
+\subsection{Prerequisite}
+\label{subsec:requirements}
+
+The following libraries are required and need to be installed manually by the user, although they are usually provided by the system package manager.
+
+\begin{itemize}
+ \item GSL
+ \item HDF5
+ \item SZIP
+ \item Boost
+\end{itemize}
+
+Additionally, \qcm{} distribution includes a customised version of the ALPS 2.3.0 library, which is compiled automatically.
+
+\subsection{Download \qcm}
+\label{subsec:download-stand}
+
+The \qcm{} standalone version may be found in the \texttt{\url{https://github.com/qcscine/qcmaquis}} repository.
+
+\subsection{Setting up a build folder}
+
+Clone the GitHub repository into a new directory \texttt{\qcmsrc}.
+Create a build folder \texttt{\qcmbuild} -- note that this folder \emph{does not} necessarily have to be a subfolder of \qcmsrc\ -- and change to this new folder:
+
+\begin{verbatim}
+  mkdir /path/to/my-QCMaquis-build && cd /path/to/my-QCMaquis-build
+\end{verbatim}
+
+\subsection{Configuration}
+\label{subsec:configure-stand}
+
+For simplicity, we will describe the configuration steps for the most popular compiler suites GNU.
+How to setup and use a shared-memory OMP installation of \qcm\ is described in Section~\ref{subsubsec:parallel-stand}.
+
+\subsubsection{Configuration with the GNU compiler suite}
+\label{subsubsec:gnu-conf-stand}
+
+\noindent To configure \qcm\ with the GNU compiler suite type
+
+\begin{verbatim}
+  CC=gcc CXX=g++ cmake /path/to/my-QCMaquis-src
+\end{verbatim}
+%
+where we assumed that the Intel Math Kernel Library (MKL) is available (recommended option).
+If the MKL libraries are not available, \qcm\ will search for other suitable math libraries installed on the operating system. If none are found the configuration step will stop with an appropriate message.
+
+\begin{framed}
+  \noindent Note: Intel compiler is currently not supported. Running a binary compiled with Intel compilers may result in segmentation faults. We are currently investigating the issue.
+\end{framed}
+
+\subsubsection{Shared-memory OMP parallel configuration}
+\label{subsubsec:parallel-stand}
+
+By default \qcm\ is built as shared-memory OMP parallelized version which should work with either compiler suite, GNU or Intel.
+
+\vspace{2ex}
+
+In order to exploit the shared-memory OMP parallelization of \qcm\ the user is strongly encouraged to set at runtime the environment variable
+
+\begin{verbatim}
+  export OMP_NUM_THREADS=XX
+\end{verbatim}
+%
+where \texttt{XX}\ specifies the number of shared-memory cores to be used.
+The default (\emph{depending on the operating system!}) is to use all available cores.
+
+\subsubsection{Building and installation}
+\label{subsubsec:build-stand}
+
+After a successful configuration, type
+\begin{verbatim}
+  make
+\end{verbatim}
+%
+or
+
+\begin{verbatim}
+  make -j8
+\end{verbatim}
+%
+to compile \qcm\ (in parallel on 8 cores) and install all its components in the build folder \texttt{\qcmbuild}.
+
+\section{Keywords and Options}
+\label{sec:qcmaquis-kw}
+
+In the following we describe:
+
+\begin{enumerate} 
+  \item compulsory keywords (Section \ref{subsec:compul-qcm})
+  \item optional keywords (Section \ref{subsec:optional-qcm}) for \qcm\ DMRG calculations 
+  \item keywords for property calculations (Section \ref{subsec:prop-qcm})
+\end{enumerate}
+
+Most of the \qcm\ keywords have default settings that guarantee convergence in the general case.
+A reasonable choice of default values for optional keywords is given in our example \qcm\ input file in Section~\ref{sec:input-qcm}.
+
+\subsection{Compulsory keywords}
+\label{subsec:compul-qcm}
+
+The keywords in Table~\ref{tab:standard_kw_auto} have to be set for every DMRG calculation because they may crucially affect the accuracy of the final result.
+Their choice depends, e.g., on the molecule under consideration, the specific Hamiltonian to which DMRG is applied to (electronic, vibrational, vibronic $\ldots$), and on the active space size.
+
+\begin{framed}
+  \noindent\textbf{Note:}\ We strongly encourage any new user of \qcm\ to carefully read first Ref.\ \citenum{Keller_CHIMIA_Determining_2014}\ which gives a detailed introduction to
+  DMRG calculations in quantum chemistry.
+  Further quantum chemical DMRG sample calculations starting from different computational setups are discussed, for example, in Refs.~\cite{interface,ru-dmrg,fde-dmrg,srdft-dmrg}.
+\end{framed}
+
+\begin{table}
+  \caption{Compulsory \qcm{} keywords to be set by the user.}
+  \label{tab:standard_kw_auto}
+  \begin{tabular}{cV{11.5cm}}
+    \toprule
+        Keyword     &             Description    \\
+    \midrule
+	\rowcolor{gray!20}
+	\texttt{nsweeps} & Overall number of optimization sweeps \\
+    \texttt{nelec}   & Total number of electrons 
+					   (used only for electronic-structure calculations). \\
+	\rowcolor{gray!20}
+    \texttt{irrep}   & Irreducible representation of the point group symmetry of the target state. 
+					   Counting starts with 0 which has to be the totally symmetric
+				       representation. (\textbf{Note:} this keyword is compulsory only for
+					   electronic-structure calculations) \\
+    \texttt{spin}   & Total spin ($2\times S$) of the target state, for example:
+					  \texttt{spin=0} (singlet), \texttt{spin=1} (doublet),
+					  \texttt{spin=2} (triplet) 
+					  (used only for electronic-structure calculations) \\
+    \rowcolor{gray!20}
+    \texttt{L}      & Length of the DMRG lattice. For electronic-structure calculations, this 
+                      corresponds to the number of orbitals in the active space. \\
+    \texttt{integral\_file} 
+                    & Path and filename of the file 
+					  (for example \texttt{integral\_file = /path/to/file/FCIDUMP}) where the
+					  definition of the Hamiltonian is stored. See below for specific examples for 
+					  different classes of Hamiltonians. \\
+    \rowcolor{gray!20}
+    \texttt{symmetry} & Defines the total symmetry group.
+					    For electronic-structure calculations, the default is the combined spin- (SU2) and point symmetry group (PG) \texttt{su2u1pg}, where the \texttt{pg}-suffix should be omitted for better performance if the molecule is C1-symmetric.
+					    For test purposes, it is possible to switch off spin-adaptation, again with or without point group symmetry: \texttt{2u1(pg)} .
+						In the latter case the keywords \texttt{spin} and \texttt{nelec} have no meaning.
+						Instead \texttt{u1\_total\_charge1} and \texttt{u1\_total\_charge2} corresponding to the number of up and down electrons have to be specified.
+ 						Other symmetry groups must be used for other Hamiltonians, see below. \\
+    \texttt{init\_state} 
+					 & Algorithm to construct the initial guess for the MPS.
+					   Possible options are \texttt{default} (corresponding to an MPS with entries
+					   initialized randomly), \texttt{const} (corresponding to an MPS where all
+					   the entries are initialized to the same values) and \texttt{hf}.
+				 	   Usage of \texttt{hf} generates an MPS consisting of only the determinant
+					   defined on the \texttt{hf\_occ} keyword. \\
+	\rowcolor{gray!20}
+	\texttt{LATTICE} & Definition of the mapping from the single-particle basis onto the DMRG 
+					   lattice (must be set to \texttt{orbitals} for electronic-structure calculations, see below for the definition of this keyword for other 
+					   Hamiltonians). \\
+	\texttt{MODEL}   & Type of the Hamiltonian to which DMRG is applied. \\
+	\rowcolor{gray!20}
+    \texttt{lattice\_library} 
+					 & Must be set to \texttt{"coded"}. \\
+	\texttt{model\_library}
+					 & Must be set to \texttt{"coded"}. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Optional keywords}
+\label{subsec:optional-qcm}
+
+\begin{table}[htbp!]
+  \caption{Optional keywords for \qcm\ calculations.}
+  \label{tab:advanced_kw}
+  \begin{tabular}{cV{11.5cm}}
+	\toprule
+    Keyword & Description \\
+	\midrule
+	\rowcolor{gray!20}
+    \texttt{orbital\_order}
+			& Sorting of the orbitals along the one dimensional lattice.
+			  The order has to be entered as a string of comma separated orbital numbers.
+		      By default, the orbitals are sorted in increasing value of the index used 
+		      in the \texttt{integral\_file}. \\
+    \texttt{max\_bond\_dimensions}
+			& Maximum value of the bond dimension $m$ of the MPS. \\
+	\rowcolor{gray!20}
+    \texttt{conv\_thresh}
+			& Energy convergence threshold (in the same units used in \texttt{integral\_file}).
+			  If the lowest energy from the previous sweep differs from the lowest energy of the current sweep by less than \texttt{conv\_thresh}, the DMRG calculation stops.
+			  For example, \texttt{conv\_thresh = 1e-6}. \\
+    \texttt{ietl\_jcd\_tol} 
+		    & Convergence threshold for the Jacobi-Davidson diagonalization that is carried out
+			  for each site. Example: \texttt{ietl\_jcd\_tol = 1e-6}. \\
+	\rowcolor{gray!20}
+    \texttt{ietl\_jcd\_maxiter}
+			& Maximum number of iterations in the Jacobi-Davidson diagonalization.\\
+    \texttt{truncation\_initial}
+			& If during the \texttt{ngrowsweeps}, the sum of the squared value of the discarded 
+			  singular values for $m$ retained states is lower than the value defined here, more block states will be discarded until the sum increases 
+		      to \texttt{truncation\_initial}. \\
+	\rowcolor{gray!20}
+    \texttt{truncation\_final}
+			& If during the \texttt{nmainsweeps}, the sum of the discarded singular values for $m$ retained states is lower than the value defined here, more block states will be discarded until the discarded sum increases to \texttt{truncation\_final}. \\
+	\texttt{measure\_each} 
+			& Tells the program to compute the expectation values every $2\ \times$ \texttt{measure\_each} sweeps. \\
+	\rowcolor{gray!20}
+	\texttt{chkp\_each}
+			& Tells the program to update the checkpoint file every $2\ \times$ \texttt{chkp\_each} sweeps. \\
+    \texttt{hf\_occ}
+			& Occupation of the starting orbitals when \texttt{init\_state} = \texttt{hf}.
+			  Comma-separated string of occupation aliases, defined as: 4~=~full, 3~=~up,
+			  2~=~down, 1~=~empty. \\
+	\rowcolor{gray!20}
+	\texttt{nmainsweeps} 
+			& Number of sweeps in which \texttt{truncation\_final} is used in the singular value decomposition. \\
+	\texttt{ngrowsweeps}
+			& Number of sweeps in which \texttt{truncation\_initial} is used in the singular value decomposition. \\
+	\rowcolor{gray!20}
+	\texttt{storagedir} 
+			& Scratch directory for temporary files (this tames the memory usage of the code). \\
+	\texttt{chkpfile} 
+			& Path and name of the folder in which the MPS is stored.\\
+	\rowcolor{gray!20}
+	\texttt{resultfile} 
+			& Path and filename of the file storing the results (energy, expectation values...). \\
+	\bottomrule
+  \end{tabular}
+\end{table}
+
+The keywords summarized in Table~\ref{tab:advanced_kw} may be exploited by the more experienced user but can be safely ignored in conventional DMRG calculation.
+They may affect the convergence and accuracy of the final result, though.
+
+\subsection{Keywords for excited-state calculations}
+\label{subsec:ExcitedState}
+
+By default, \qcm{} calculates excited states with the methods described in Ref.~\citenum{Keller_JChemPhys_efficient_2015}.
+Specifically, the first excited state is obtained with a DMRG optimization that is constrained onto the space orthogonal to the ground state.
+The second excited state is obtained with an optimization orthogonal to the ground and first excited state, and so on.
+Excited states are, therefore, calculated sequentially.
+Table~\ref{tab:es_kw} describes the keywords to be activated to run excited-state DMRG calculations.
+
+\begin{table}[htbp!]
+  \centering
+  \caption{Keywords for excited-state \qcm\ calculations.}
+  \label{tab:eskw}
+  \begin{tabular}{cV{11.5cm}}
+	\toprule
+    Keyword & Description \\
+	\midrule
+	\rowcolor{gray!20}
+	\texttt{n\_ortho\_states}
+		    & Number of states the current wave function is to be orthogonalized against to 
+			  must be specified here. \\
+	\texttt{ortho\_states}
+			& Path(s) and filename(s) of the MPS checkpoint file(s) that store the lower 
+			  lying states to which the current MPS shall be orthogonal to. \\
+	\bottomrule
+  \end{tabular}
+\end{table}
+
+\noindent \textbf{Note}: two other methods for calculating excited states, DMRG[IPI] and DMRG[FEAST], will be presented below.
+\qcm\ currently supports them only for vibrational-structure calculations.
+
+\subsection{Keywords for expectation value calculations}
+\label{subsec:prop-qcm}
+
+\qcm\ can (in principle) compute expectation values for any one- or two-particle operator that can be formulated in second quantization.
+Table~\ref{tab:expval} comprises a list of the available property keywords available in \qcm.
+
+The one-particle reduced density matrix as well as the one-particle spin-density matrix are implicitly computed from the expectation values of some of the operators contained in \texttt{MEASURE[ChemEntropy]}.
+
+If a property is available only in 2U1 symmetry, the SU2U1 checkpoint may be transformed into 2U1 group with the \texttt{mps\_transform(\_pg)} tool (see Section~\ref{sec:tools-qcm})
+
+\begin{table}
+ \footnotesize
+ \label{tab:expval}
+ \caption{Expectation value calculations available in the release version of \qcm.}
+  \begin{tabular}{cV{8.5cm}}
+    \toprule
+    Keyword & Description \\
+    \midrule
+    \texttt{MEASURE[ChemEntropy]} 
+			& All expectation values over the operators required to calculate the mutual
+			  information (as specified in Ref.~\cite{entanglement}) will be computed.
+			  Available only for 2U1(PG) symmetry. \\
+	\texttt{MEASURE[1rdm]} 
+			& Computes the one-particle reduced density matrix, without the additional
+			  correlators contained in the \texttt{ChemEntropy} measurement. \\
+	\texttt{MEASURE[2rdm]}
+			& Computes the two-particle reduced density matrix \\
+	\texttt{MEASURE[3rdm]}
+			& Computes the three-particle reduced density matrix. 
+			  A two-index subblock may be calculated with \texttt{MEASURE[3rdm]="p1:p2@\textit{j,i}"}.
+			  Available only in 2U1(pg) symmetry. \\
+	\texttt{MEASURE[4rdm]}
+			& Computes the four-particle reduced density matrix, respectively.
+			  \texttt{MEASURE[4rdm]="p4:p3:p1:p2@\textit{l,k,i,j}"} allows to compute only a 4-index sub-block of the 4-RDM with the indices \texttt{\textit{i,j,k,l}}.
+              Available only in 2U1(pg) symmetry. \\
+	\texttt{MEASURE[trans2rdm]="\textit{chk}"}
+			& Computes the transition two--particle reduced density matrix between the current 
+			  state and the state specified in the \texttt{\textit{chk}} checkpoint file.
+			  Available only for 2U1(pg) symmetry. \\
+	\texttt{MEASURE[trans3rdm]="\textit{chk}"}
+			& Computes the transition three-particle reduced density matrix between the 
+			  current state and the state specified in the \texttt{\textit{chk}} checkpoint file. Two-index subblocks can be calculated with \texttt{MEASURE[trans3rdm]="\textit{chk};p1:p2@\textit{j,i}"}. 
+			  Available only for 2U1(pg) symmetry. \\
+	\texttt{MEASURE\_LOCAL[\textit{name}]="\textit{op}"}
+			& Computes $\langle \psi | op_i | \psi \rangle, \, i = 1 \ldots L$. \texttt{Nup}, \texttt{Ndown} and \texttt{Nup*Ndown} are meaningful choices for \textit{op}. Available for \texttt{2U1(OG) only.}  (\emph{Note}: \texttt{\textit{name}}\ defines the name under which the expectation values are stored on the \texttt{resultfile}.) \\
+	\texttt{MEASURE\_HALF}\texttt{\_CORRELATIONS[\textit{name}]="\textit{op$_1$:op$_2$}"}
+			& Computes $\langle \psi | op_{1i} op_{2j}| \psi \rangle, \, i = 1 \ldots L, j=i+1 \ldots L$. \texttt{Nup}, \texttt{Ndown}, \texttt{Nup*Ndown}, \texttt{cdag\_up}, \texttt{cdag\_down}, \texttt{c\_up}, \texttt{c\_down}, \texttt{cdag\_up*Ndown}, \texttt{c\_up*Ndown}, \texttt{cdag\_down*Nup}, \texttt{c\_down*Nup}, \texttt{cdag\_up*cdag\_down}, \texttt{c\_up*c\_down}, \texttt{cdag\_up*c\_down}, and \texttt{cdag\_down*c\_up}, as \textit{op$_1$} and \textit{op$_2$} are recognized by the program. Available for \texttt{2U1(PG)} only. (\emph{Note}: \texttt{\textit{name}}\ defines the name under which the expectation values are stored on the \texttt{resultfile}.) \\
+	\bottomrule
+  \end{tabular}
+\end{table}
+
+\clearpage
+
+\subsection{QCMaquis input example}
+\label{sec:input-qcm}
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for a DMRG-CASCI(8,8) standalone \qcm{} calculation},
+				   label=lst:qcm]
+  // Lattice size (= number of orbitals) and number of electrons
+  L                    = 8
+  nelec                = 8
+  // Target symmetry (spin and spatial) of the wave function.
+  spin                 = 0
+  // Number of optimization sweeps
+  nsweeps              = 8
+  // Maximum allowed value for the bond dimension
+  max_bond_dimension   = 256
+  // MPS initialization
+  init_type            = 'default'
+  // Wave function symmetry (su2u1pg: spin-adapted DMRG + point group)
+  symmetry             = 'su2u1pg'
+  // File with the one- and two-body integrals
+  integral_file        = "FCIDUMP"
+  // Definition of the lattice
+  LATTICE              = "orbitals"
+  // Definition of the Hamiltonian
+  MODEL                = "quantum_chemistry"
+  // Internal QCMaquis parameters (not to be changed!)
+  lattice_library      = "coded"
+  model_library        = "coded"
+  // Wavefunction irreducible representation (0 == totally symmetric)
+  irrep                = 0
+  // HDF5 file where the MPS and the results will be stored
+  chkpfile             = 'chkp.h5'
+  resultfile           = 'result.h5'
+  // Convergence threshold for the sweep optimization
+  conv_thresh          = 1.0e-6
+  // Threshold for the SVD truncation for the initial and sweeps
+  truncation_initial   = 1.0e-16
+  truncation_final     = 1.0e-7
+  // Threshold below which integrals inside the integral_file are neglected
+  integral_cutoff      = 1.0e-10
+  // Path to the scratch folder (reduces RAM usage)
+  storagedir           = '/scratch/$USER/boundaries'
+  // List of measurements to be performed at the end of the optimization
+  MEASURE[ChemEntropy] = 1
+\end{lstlisting}
+
+Listing~\ref{lst:qcm} provides an input example for a ground-state electronic-structure DMRG-CASCI calculation based on an active space comprising 8 electrons and 8 orbitals.
+We assume that an integral file \texttt{FCIDUMP} has been generated with an external software (e.g., \textsl{OpenMolcas}) and placed in the same directory with the input file.
+We indicate the mandatory keywords in red, and the optional ones in blue.
+
+\section{\qcm{} vibrational DMRG module}
+\label{sec:vDMRG}
+
+\qcm{} implements the vibrational DMRG (vDMRG) method introduced in Ref.~\citenum{Baiardi2017_vDMRG}.
+vDMRG applies the DMRG algorithm to solve the Schr\"odinger equation associated with the Born--Oppenheimer vibrational Hamiltonian.
+For a system with $L$ vibrational degrees of freedom, the latter reads:
+
+\begin{equation}
+  \underbrace{\left[ \mathcal{T}(Q_1, \ldots, Q_L) + \mathcal{V}(Q_1, \ldots, Q_L) \right]}_{\mathcal{H}_\text{vib}(Q_1, \ldots, Q_L)} \Psi_n(Q_1, \ldots, Q_L) = E_n \Psi_n(Q_1, \ldots, Q_L)
+  \label{eq:VibHam}
+\end{equation}
+%
+where $Q_i$ are the dimensionless Cartesian-based normal coordinates.
+The time-independent Schr\"odinger equation associated with Eq.~(\ref{eq:VibHam}) can be solved with methods based on the configuration interaction approach, similarly to their electronic-structure counterpart.
+This leads to the vibrational configuration interaction method that, however, becomes impractical for $L$ values larger than 10/20.
+The Hamiltonian defined in Eq.~(\ref{eq:VibHam}) must be encoded in a second-quantized form in order to make it possible to apply DMRG on it.
+Such a form can be obtained based on the harmonic oscillator-based canonical quantization formalism\cite{Hirata2014_NormalOrdered} described in the next section.
+
+\subsection{Canonical quantization vDMRG}
+\label{sec:canonical}
+
+The canonical quantization relies on the harmonic oscillator theory.\cite{Hirata2014_NormalOrdered}
+The vibrational wave function is expanded, in practice, as follows:
+
+\begin{equation}
+  \Psi(Q_1, \ldots, Q_L) = \sum_{n_1}^{N_\text{max}} \cdots \sum_{n_L=1}^{N_\text{max}}
+	C_{n_1 \cdots n_L} | n_1 \cdots n_L \rangle \, ,
+  \label{eq:CanonicalQuantizationCI}
+\end{equation}
+%
+where $| n_1 \cdots n_L \rangle$ are occupation number vectors that are constructed based on the well-known harmonic oscillator second quantization.
+This means that the $| n_1 \cdots n_L \rangle$ state corresponds, in real-space representation, to:
+
+\begin{equation}
+  | n_1 \cdots n_L \rangle \equiv \prod_{i=1}^L \chi_{n_i}(Q_i)
+  \label{eq:HarmonicOscillatorBasis}
+\end{equation}
+%
+$\chi_{n_i}(Q_i)$ being the $n_i$-th eigenfunction of the monodimensional harmonic oscillator Hamiltonian associated with the $i$-th mode.
+To express the Hamiltonian in terms of such ONVs, we approximate the potential as a power series in terms of the vibrational coordinates $Q_i$ around a given reference geometry $\bm{Q}_\text{eq}$.
+For a fourth-order power series, the expansion reads:
+
+\begin{equation}
+  \mathcal{V}(Q_1, \ldots, Q_L) 
+	= \sum_{i,j=1}^L k_{ij} Q_i Q_j + \sum_{i,j,k=1}^L k_{ijk} Q_i Q_j Q_k
+    + \sum_{i,j,k,l=1}^L k_{ijkl} Q_i Q_j Q_k Q_l
+  \label{eq:TaylorExpansion}
+\end{equation}
+%
+where we neglected the first-order force constants since we assume that the expansion is performed around a stationary point of the PES.
+The $k_{ij}$, $k_{ijk}$, $k_{ijkl}$ parameters are usually known as force-constants.
+The position operators $Q_i$ are, then, expressed in terms of the harmonic oscillator ladder operators as follows:
+
+\begin{equation}
+  Q_i = \frac{1}{2} \left( b_i^\dagger + b_i \right) \, .
+  \label{eq:CanonicalQuantizationPosition}
+\end{equation}
+
+Eq.~\ref{eq:CanonicalQuantizationPosition} can be used to express the potential (cfr. Eq.~(\ref{eq:TaylorExpansion})) in terms of solely the $b_i^\dagger$ and $b_i$ operators.
+Th kinetic energy operator can be expressed in a similar format based on the counterpart of Eq.~(\ref{eq:CanonicalQuantizationPosition}) for the conjugate momentum operator $P_i$, which is defined as:
+
+\begin{equation}
+  P_i = \frac{\mathrm{i}}{2} \left( b_i^\dagger - b_i \right) \, .
+  \label{eq:CanonicalQuantizationMomentum}
+\end{equation}
+
+The resulting form of the vibrational Hamiltonian is then converted in the MPO format by \qcm\ based on the algorithm described in Ref.~\citenum{Baiardi2017_vDMRG}. \\
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for a canonical quantization-based vDMRG-FCI calculation},
+				   label=lst:canonicalVibInput]
+  // == Generic input section ==
+  nsweeps                         = 6
+  max_bond_dimension              = 100
+  model_library                   = coded
+  lattice_library                 = coded
+  optimization                    = twosite 
+  integral_file                   = FCIDUMP_Vibrational
+  integral_cutoff                 = 1.0E-10
+  init_type                       = 'default'
+  L                               = 12
+  // == vDMRG-specific input ==
+  symmetry                        = none
+  LATTICE                         = 'watson lattice'
+  MODEL                           = 'watson'
+  Nmax                            = 10
+\end{lstlisting}
+
+We report in Listing~\ref{lst:canonicalVibInput} an example input for a vDMRG calculation relying on the canonical-quantization based formalism.
+The first part of the input has the same structure as that of an electronic-structure DMRG calculation.
+Note that the lattice dimension $L$ is, in this case, equal to the overall number of modes.
+Unlike for the electronic-structure case, the DMRG symmetry must be set to \texttt{none}, since the canonical quantization-based vibrational Hamiltonan does not possess any symmetry.
+Moreover, the \texttt{MODEL} keyword should be set to \texttt{watson} in order to indicate that the DMRG calculation relies on the Watson-based vibrational Hamiltonian.
+As the expansion reported in Eq.~\ref{eq:CanonicalQuantizationCI} is virtually unbounded, it must be truncated, in practice, by setting a threshold $N_\text{max}$ for the maximum excitation degree of a mode.
+Such a threshold must be specified in input, as shown in Listing~\ref{lst:canonicalVibInput}.
+
+The integral file \texttt{FCIDUMP\_Vibrational} contain the force constants that define the PES through Eq.~\ref{eq:TaylorExpansion}.
+\qcm\ supports up to sixth-order force constants by default, which must be provided as input in the \texttt{FCIDUMP\_Vibrational} file as illustrated in Listing~\ref{lst:CanonicalFCIDUMP}.
+If higher-order force constants are to be included, the \texttt{DMRG\_ORDERNONE} CMake flag should be set to the corresponding integer $n$ denoting the highest force constant order and the integral files need to provide $n$ integer indices per entry accordingly.
+\vspace{.5cm}
+\begin{lstlisting}[language=qcmaquis,caption={Example of an vDMRG integral file for the potential
+											  expressed in the canonical quantization format.},
+				   label=lst:CanonicalFCIDUMP, mathescape=true, rulecolor=\color{black}]
+  $\smash{k_{ij}}$     i    j   0   0   0   0
+  $\smash{\vdots}$
+  $\smash{h_{ij}}$    -i   -j   0   0   0   0
+  $\smash{\vdots}$
+  $\smash{k_{ijk}}$     i    j   k   0   0   0
+  $\smash{\vdots}$
+  $\smash{k_{ijkh}}$     i    j   k   h   0   0
+  $\smash{\vdots}$
+  $\smash{k_{ijkhm}}$     i    j   k   h   m   0
+  $\smash{\vdots}$
+  $\smash{k_{ijkhmn}}$     i    j   k   h   m   n
+\end{lstlisting}
+\vspace{.5cm}
+The $h$ and $k$ constants define the PES as follows:
+
+\begin{equation}
+  \begin{aligned}
+    V(\tilde{Q}_1, \ldots, \tilde{Q}_L) 
+      &= \sum_{i=1}^L k_{ii} \tilde{Q}_i^2 + \sum_{i=1}^L h_{ii} \tilde{P}_i^2 
+      + \sum_{ijk=1}^L k_{ijk} \tilde{Q}_i \tilde{Q}_j \tilde{Q}_k
+      + \sum_{ijkl=1}^L k_{ijkl} \tilde{Q}_i \tilde{Q}_j \tilde{Q}_k \tilde{Q}_l \\
+      &+ \sum_{ijklm=1}^L k_{ijkl} \tilde{Q}_i \tilde{Q}_j \tilde{Q}_k \tilde{Q}_l \tilde{Q}_m
+      + \sum_{ijklmn=1}^L k_{ijkl} \tilde{Q}_i \tilde{Q}_j \tilde{Q}_k \tilde{Q}_l \tilde{Q}_m \tilde{Q}_n \, ,
+  \end{aligned}
+  \label{eq:PES_Representation}
+\end{equation}
+%
+where we introduced the scaled dimensionless normal coordinates $\tilde{Q}_i$ that are defined as:
+
+\begin{equation}
+  \tilde{Q}_i = \sqrt{2} Q_i = \left( b_i^\dagger + b_i \right)
+  \label{eq:ScaledNM}
+\end{equation}
+%
+$Q_i$ being the $i$-th dimensionless normal coordinate operator.
+The corresponding scaled dimensionless momentum operator $\tilde{P}_i$ is defined as:
+
+\begin{equation}
+  \tilde{P}_i = \frac{\sqrt{2}}{\mathrm{i}} P_i = \left( b_i^\dagger - b_i \right)
+  \label{eq:ScaledNM_Momentum}
+\end{equation}
+
+\subsection{DMRG for excitonic Hamiltonians}
+\label{sec:excitonic}
+
+\qcm\ can be applied also to simulate vibronic processes, \textit{i.e.} phenomena that are tuned simultaneously by electronic and vibrational effects.
+Specifically, \qcm\ implements two classes of Hamiltonians: the Holstein-Hubbard Hamiltonian and \textit{ab initio} vibronic Hamiltonians based on the linear vibronic coupling (LVC) model.
+The Holstein-Hubbard Hamiltonian describes excitation energy processes in molecular aggregates of multiple chromophores, and is defined by the following parameters:
+
+\begin{itemize}
+  \item The number $N_\text{mol}$ of monomers forming the aggregate (defined by the input parameter \texttt{n\_excitons}).
+  \item The number of vibrational degrees of freedom $N_\text{vib}$ included per monomer (defined by the keyword \texttt{vibronic\_nmodes}).
+  \item The harmonic frequencies $\omega_i$ associated with the $N_\text{vib}$ vibrations (defined in the \texttt{integral\_file} file, as described below).
+  \item The $N_\text{vib}$ shift parameters $g_j$ of the LVC Hamiltonian (defined in the \texttt{integral\_file} file, as described below).
+  \item The Coulomb coupling $J$ between chromophores (defined by the keyword \texttt{J\_coupling}).
+\end{itemize}
+
+The Holstein-Hubbard Hamiltonian $\mathcal{H}_\text{Hol}$ reads, in practice:
+
+\begin{equation}
+ \begin{aligned}
+  \mathcal{H}_\text{Hol} =& | 0_1 0_2 \cdots 0_{N_\text{mol}} \rangle \langle 0_1 0_2 \cdots 0_{N_\text{mol}} |
+	\left[ \sum_{i=1}^{N_\text{mol}} \sum_{j=1}^{N_\text{vib}} 
+		   \left( \mathcal{T}(q_{j}^{(i)}) + \frac{1}{2} \omega_j \left( q_j^{(i)} \right)^2 \right)
+	\right] \\
+	+& \sum_{i=1}^{N_\text{mol}} | 0_1 \cdots 1_i \cdots 0_{N_\text{mol}} \rangle 
+								 \langle 0_1 \cdots 1_i \cdots 0_{N_\text{mol}} | 
+	   \sum_{j=1}^{N_\text{vib}} \left[ 
+	   \left( \mathcal{T}(q_{j}^{(i)}) 
+			+ \frac{1}{2} \omega_j \left( q_j^{(i)} \right)^2 + g_j q_{j}^{(i)} \right) 
+	   \right] \\
+    +& J \sum_{i=1}^{N_\text{mol}-1} | 0_1 \cdots 1_i \cdots 0_{N_\text{mol}} \rangle
+	   								 \langle 0_1 \cdots 1_{i+1} \cdots 0_{N_\text{mol}} |
+ \end{aligned}
+ \label{eq:HolsteinHubbard}
+\end{equation}
+
+In Eq.~(\ref{eq:HolsteinHubbard}), $| 0_1 0_2 \cdots 0_{N_\text{mol}} \rangle$ represents the electronic configuration in which all the chromphores of the aggregate are in their ground-state electronic state.
+The vibrational Hamiltonian associated with this ground-state wave function (\textit{i.e.}) the term between square brackets in the first line of Eq.~(\ref{eq:HolsteinHubbard})) is a $N_\text{vib}$-dimensional harmonic oscillator with normal coordinates $q_{j}^{(i)}$ and frequencies $\omega_j$.
+Conversely, $| 0_1 \cdots 1_i \cdots 0_{N_\text{mol}} \rangle$ represents the configuration in which the $i$-th molecule of the aggregate has been excited to the first electronic excited state.
+The corresponding vibrational Hamiltonian (\textit{i.e.} the term between square brackets in the second line of Eq.~(\ref{eq:HolsteinHubbard})) is a $N_\text{vib}$-dimensional harmonic oscillator with the same modes and frequencies as for the electronic ground state, but with a linear term ($g_j q_{j}^{(i)}$) associated with a shift in the equilibrium geometry of the chromophore.
+The last term of Eq.~(\ref{eq:HolsteinHubbard}) describes the coupling between excited states that are localized on neighboring chromophores.
+In practice, this term allows excitation to be transferred from a chromophore to the neighboring one.
+
+In order to apply DMRG to the Holstein-Hubbard Hamiltonian, the degrees of freedom must be mapped onto an appropriate one-dimensional lattice.
+Following Ref.~\citenum{Baiardi2019_TDDMMRG}, we construct the DMRG lattice by including $N_\text{mol}$ electronic sites, each one describing a different chromophore of the aggregate.
+The physical basis associated with these sites contains two basis functions, one corresponding to the electronic ground-state and one associated with the excited-state.
+Moreover, we include $N_\text{vib}$ vibrational sites for each chromophore.
+The overall number of vibrational sites is, therefore, $N_\text{mol} N_\text{vib}$, while the overall lattice size (including also the electronic degrees of freedom) is $N_\text{mol} \times (N_\text{vib}+1)$.
+Currently, \qcm\ supports two different strategies for mapping these sites onto the DMRG lattice, that can be specified \textit{via} the \texttt{vibronic\_sorting} keyword:
+
+\begin{itemize}
+  \item The first sorting is obtained as follows: the first site is the electronic site associated with the first molecule of the aggregate. The following $N_\text{vib}$ sites are associated with the vibrations of the first molecule. The next site is then mapped to the electronic site associated with the second molecule, and the following $N_\text{vib}$ sites are used to represent the corresponding vibrational degrees of freedom. This procedure is repeated until all the molecules of the aggregate have been included. This mapping is obtained by setting the keyword \texttt{vibronic\_sorting} to \texttt{intertwined}, and is maximally efficient when the inter-chromophore coupling is low.
+  \item Alternatively, it is possible to map the electronic degrees of freedom onto the first $N_\text{mol}$ sites of the lattice, and use the remaining ones for the vibrational parts.
+  Such a mapping is obtained by setting the \texttt{vibronic\_sorting} keyword to \texttt{firstele}.
+\end{itemize}
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for an excitonic DMRG calculation},
+				   label=lst:excitonicInput]
+  // == Generic input section ==
+  nsweeps                         = 6
+  max_bond_dimension              = 20
+  model_library                   = coded
+  lattice_library                 = coded
+  optimization                    = singlesite
+  integral_file                   = FCIDUMP_Excitonic
+  init_type                      = `default'
+  // The symmetry group is u1 for all vibronic DMRG calculations
+  symmetry                        = u1
+  // This is lattice is used for both vibronic and excitonic calculations.
+  LATTICE                         = `vibronic lattice'
+  // Vibronic model
+  MODEL                           = vibronic
+  J_coupling                      = -500
+  // This could have been also 'firstele'
+  vibronic_sorting                = `intertwined'
+  // Number of modes and of molecules
+  vibronic_nmodes                 = 10
+  n_excitons                      = 6
+\end{lstlisting}
+
+We report in Listing~\ref{lst:excitonicInput} an examples of an input file for running a DMRG calculation on an excitonic Hamiltonian composed by 6 molecules, each one with 10 vibrational modes, coupled by a Coulomb coupling of -500 (note that the units in which the $J$ parameter is reported must be the same used in the \texttt{integral\_file}).
+Note that the \texttt{symmetry} keyword is now set to \texttt{u1}.
+In fact, as we discuss in Ref.~\citenum{Baiardi2019_TDDMMRG}, the Holstein-Hubbard Hamiltonian conserves the overall excitation degree or, equivalently, the overall number of excitons.
+This means, in practice, that if only one chromophore is excited, the non-equilibrium dynamics governed by the Holstein--Hubbard Hamiltonian will not populate electronic configurations where two (or more) chromophores are simultaneously excited.
+
+\begin{lstlisting}[language=qcmaquis,caption={Excitonic integral file format.},
+				   label=lst:excitonicDump]
+	 103.00      1     1
+	-103.00     -1    -1
+	 105.50      2     2
+	-105.50     -2    -2
+	 270.00      3     3
+	-270.00     -3    -3
+	 276.00      4     4
+	-276.00     -4    -4
+	 375.50      5     5
+	-375.50     -5    -5
+	 662.50      6     6
+	-662.50     -6    -6
+	 685.50      7     7
+	-685.50     -7    -7
+	 734.50      8     8
+	-734.50     -8    -8
+	 785.50      9     9
+	-785.50     -9    -9
+	 814.50     10    10
+	-814.50    -10   -10
+	 129.30      1     0
+	 138.36      2     0
+	 105.26      3     0
+	 150.16      4     0
+	 192.93      5     0
+	 187.38      6     0
+	 884.27      7     0
+	 425.76      8     0
+	 639.67      9     0
+	 454.68     10     0
+\end{lstlisting}
+
+The parameters defining the excitonic Hamiltonian must be included in the \texttt{integral\_file}.
+We report in Listing~\ref{lst:excitonicDump} one example of such a file.
+The first 20 lines of the file define the Harmonic component of (see Eq.~(\ref{eq:HolsteinHubbard})).
+The last 10 lines of the file define the $g_j$ parameter of Eq.~(\ref{eq:HolsteinHubbard}).
+For both classes of terms, we follow the same encoding as for the canonical quantization vDMRG.
+This means that the coefficients should be reported in terms of the reduced coordinates $\tilde{Q}_i$ and the corresponding conjugate momenta $\tilde{P}_i$.
+
+\subsection{DMRG for vibronic Hamiltonians}
+\label{sec:vibronic}
+
+\qcm\ supports also \textit{ab-initio} vibronic Hamiltonians for studying the excited-state dynamics of isolated molecular systems.
+A generic vibronic Hamiltonian reads:
+
+\begin{equation}
+  \mathcal{H} =
+    \begin{bmatrix}
+	   \mathcal{H}_1(Q_1,\ldots,Q_{N_\text{vib}})
+	     & \mathcal{V}_{12}(Q_1,\ldots,Q_{N_\text{vib}}) 
+         & \cdots 
+		 & \mathcal{V}_{1 N_\text{ele}}(Q_1,\ldots,Q_{N_\text{vib}}) \\
+	   \mathcal{V}_{21}(Q_1,\ldots,Q_{N_\text{vib}})
+	     & \mathcal{H}_2(Q_1,\ldots,Q_{N_\text{vib}})
+         &  
+		 & \\
+	  \vdots
+	     & 
+         & \ddots 
+		 & \\
+	  \mathcal{V}_{N_\text{ele} 1}(Q_1,\ldots,Q_{N_\text{vib}})
+	     &
+         &  
+		 & \mathcal{H}_{N_\text{ele}}(Q_1,\ldots,Q_{N_\text{vib}}) \\
+   \end{bmatrix}
+  \label{eq:VibronicHamiltonian}
+\end{equation}
+%
+for a molecule with $N_\text{ele}$ electronic states and $N_\text{vib}$ vibrational degrees of freedom.
+$\mathcal{H}_{i}(Q_1,\ldots,Q_{N_\text{vib}})$ represents the vibrational Hamiltonian associated with the $i$-th electronic state, and is expressed as:
+
+\begin{equation}
+  \mathcal{H}_{i}(Q_1,\ldots,Q_{N_\text{vib}}) = E_i^{(eq)}
+	+ \frac{1}{2} \sum_{j=1}^{N_\text{vib}} \omega_j^{(i),2} \left( Q_j^2  + P_j^2 \right) 
+	+ \sum_{j=1}^{N_\text{vib}} g_{j}^{(i)} Q_j \, ,
+  \label{eq:DiagonalVibronic}
+\end{equation}
+%
+where $E_i^{(eq)}$ is the electronic energy of the equilibrium position, and $Q_j$ and $P_j$ are the $j$-th dimensionless  normal coordinate and the corresponding conjugate momentum, respectively, with harmonic frequency $\omega_j$ and linear shift coefficient $g_{j}^{(i)}$.
+$\mathcal{V}_{ij}(Q_1,\ldots,Q_{N_\text{vib}})$ is instead the non-adiabatic coupling between the $i$-th and the $j$-th electronic state.
+Similarly to the PES, it can be expressed as a Taylor series in terms of $Q_j$ and $P_j$ as follows:
+
+\begin{equation}
+  \mathcal{V}_{ij}(Q_1,\ldots,Q_{N_\text{vib}}) =
+   \sum_{k=1}^{N_\text{vib}} g_k^{(i,j)} Q_k
+	+ \sum_{k,l=1}^{N_\text{vib}} h_{k,l}^{(i,j)} Q_k Q_l \, ,
+  \label{eq:OffDiagonalVibronic}
+\end{equation}
+%
+where $g_k^{(i,j)}$ and $h_{k,l}^{(i,j)}$ are the first- and second-order coupling non-adiabatic coupling terms, respectively.
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for a vibronic DMRG calculation},
+				   label=lst:vibronicInput]
+  nsweeps                         = 6
+  max_bond_dimension              = 20
+  model_library                   = coded
+  lattice_library                 = coded
+  optimization                    = singlesite
+  integral_file                   = FCIDUMP_Vibronic
+  init_type                      = 'default'
+  symmetry                        = u1
+  LATTICE                         = "vibronic lattice"
+  MODEL                           = vibronic
+  // Note that here the [n_excitons] parameter is replaced 
+  // by the [vibronic_nstates] one
+  vibronic_nmodes                 = 4
+  vibronic_nstates                = 2
+\end{lstlisting}
+
+A sample input file for a DMRG calculation on a vibronic Hamiltonian is given in Listing~\ref{lst:vibronicInput}.
+The key difference between this input and the one reported in Listing~\ref{lst:excitonicInput} for excitonic Hamiltonians is that the keyword \texttt{n\_excitons} is replaced by \texttt{vibronic\_nstates}, which corresponds to the $N_\text{ele}$ parameter in Eq.~(\ref{eq:VibronicHamiltonian}).
+The integral file \texttt{FCIDUMP\_Vibronic} should contain the definition of the parameters entering the vibronic Hamiltonian, \textit{i.e.}, $\omega_j^{(i)}$, $g_k^{(i)}$, $g_k^{(i,j)}$, and $h_{k,l}^{(i,j)}$.
+We show in Listing~\ref{lst:vibronicDump} the format of the integral file for the case of the 4-mode vibronic Hamiltonian of pyrazine that describes the S$_1$ and S$_2$ electronic states, taken from Ref.~\citenum{Raab1999_Pyrazine}.
+
+\begin{lstlisting}[language=qcmaquis,caption={Vibronic integral file format.},
+				   label=lst:vibronicDump]
+EL_ST 0 0
+-4114.23                0      0
+  325.84799             1      1     
+ -325.84799            -1     -1
+  559.34550             2      2     
+ -559.34550            -2     -2
+  674.68277             3      3     
+ -674.68277            -3     -3     
+  518.21124             4      4     
+ -518.21124            -4     -4     
+EL_ST 1 1
+ 4114.23                0      0
+  325.84799             1      1     
+ -325.84799            -1     -1
+  559.34550             2      2     
+ -559.34550            -2     -2
+  674.68277             3      3     
+ -674.68277            -3     -3     
+  518.21124             4      4     
+ -518.21124            -4     -4     
+EL_ST 0 0
+ -791.22989             1      0
+ -405.69687             2      0
+ 1171.11703             3      0
+EL_ST 1 1
+ 1092.881251            1      0
+-1379.877165            2      0
+  302.457910            3      0
+EL_ST 0 0
+   0.16131088           1      1
+   8.71078783           1      2
+ -16.45371035           1      3
+   8.71078783           2      1
+ -65.33090875           2      2
+  38.23067993           2      3
+ -16.45371035           3      1
+  38.23067993           3      2
+  -9.35603137           3      3
+ -93.47965832           4      4
+EL_ST 1 1 
+ -73.96104114           1      1
+ -24.03532198           1      2
+ -15.24387871           1      3
+ -24.03532198           2      1
+  39.35985614           2      2
+   9.27537593           2      3
+ -15.24387871           3      1
+   9.27537593           3      2
+   1.77441974           3      3
+ -93.47965832           4      4
+EL_ST 0 1
+ 1677.63321200          4      0
+  -80.65544294          4      1
+  -44.44114904          4      2
+   10.24324125          4      3
+   50.65161814          1      4
+  -44.44114904          2      4
+   10.24324125          3      4
+EL_ST 1 0
+ 1677.63321200          4      0
+  -80.65544294          4      1
+  -44.44114904          4      2
+   10.24324125          4      3
+   50.65161814          1      4
+  -44.44114904          2      4
+   10.24324125          3      4
+\end{lstlisting}
+
+The file is divided in different sections by the header \texttt{EL\_ST X Y}, where \texttt{X} and \texttt{Y} are integer smaller than $N_\text{ele}$.
+When, while parsing the integral file, a ``\texttt{EL\_ST X Y}'' header is found, then all parameters until the next header are used to define the vibrational Hamitonian for the state \texttt{X} (if \texttt{X}=\texttt{Y}), or for the non-adiabatic coupling between the electronic states \texttt{X} and \texttt{Y} otherwise.
+For instance, the header \texttt{EL\_ST 0 0} in Listing~\ref{lst:vibronicDump} indicates that the constants reported in lines 2-10 are associated with the 0-0 block of Eq.~\ref{eq:VibronicHamiltonian}.
+They represent, therefore, the vibrational Hamiltonian for the S$_0$ state.
+Note that the definition of the vibrational Hamiltonian for a given pair of \texttt{X} and \texttt{Y} values do not have to appear in the same blocks, but can instead be split in different blocks.
+For instance, the PES of the \texttt{0} state is defined by the coefficients on lines 2-10, but also on lines 21-24 and on lines 30-39.
+Note also that the coefficients associated with the \texttt{0   0} pair of indices (line 3) is the constant energy shift $E_i^{(eq)}$ of Eq.~(\ref{eq:DiagonalVibronic}) (also referred to as $\Delta$ in Ref.~(\citenum{Raab1999_Pyrazine})).
+Each block of Listing~\ref{lst:vibronicDump} corresponds to a class of terms entering Eq.~(1) of Ref.~(\citenum{Raab1999_Pyrazine}).
+Specifically:
+
+\begin{enumerate}
+  \item Lines 3-10 are the $\omega_i$ coefficients for the S$_1$ state.
+  \item Lines 13-20 are the $\omega_i$ coefficients for the S$_2$ state.
+  \item Lines 22-24 are the $a_i$ coefficients.
+  \item Lines 26-28 are the $b_i$ coefficients.
+  \item Lines 30-39 are the $a_{ij}$ coefficients.
+  \item Lines 41-50 are the $b_{ij}$ coefficients.
+  \item Lines 52-58 and 60-66 collect the $c_i$ and $c_{ij}$ coefficients.
+\end{enumerate}
+
+Note that the vibronic Hamiltonian is Hermitian and, therefore, the $\mathcal{V}_{ij}$ and $\mathcal{V}_{ji}$ operators form a hermitian conjugate pair.
+However, this hermiticity is not exploited in the integral file, where both the $\mathcal{V}_{01}$ and $\mathcal{V}_{10}$ operators are explicitly given.
+Finally, as for the excitonic case, also for vibronic Hamiltonians the \texttt{integral\_file} should contain the coefficients expressed in terms of the reduced normal coordinate $\tilde{Q}_i$ and the corresponding conjugate momenta $\tilde{P}_i$.
+
+\subsection{Pratical considerations on vibrational and vibronic DMRG}
+\label{sec:Practical-vDMRG}
+
+% Informations on how to compile the vibrational module of QCMaquis
+By default, \qcm\ does not compile the module for running vibrational and vibronic DMRG calculations.
+In order to enable running vDMRG simulations, the \texttt{BUILD\_VIBRATIONAL} CMake flag should be set to \texttt{ON}.
+Moreover, the symmetry group describing the vibrational Hamiltonian in canonical quantization must be included, at compile time, in the \texttt{BUILD\_SYMMETRIES} CMake keyword.
+By default, \texttt{BUILD\_SYMMETRIES} includes only \texttt{TwoU1PG} and \texttt{SU2U1PG}.
+The \texttt{NONE} point group must be added in order to compile the canonical quantization version of vDMRG.
+In fact, the canonical quantization-based vibrational Hamiltonian does not display any symmetry.
+
+Similarly, in order to enable the support for vibronic and excitonic Hamiltonians, two parameters must be changed when the \texttt{Makefile} is generated.
+First, the \texttt{BUILD\_VIBRONIC} CMake flag should be set to \texttt{ON}.
+Second, the \texttt{U1} group should be added to the list of compiled symmetries, under the \texttt{BUILD\_SYMMETRIES} keyword.
+
+In conclusion, we note that, although in principle one can run time-independent DMRG calculations for optimizing the ground-state of excitonic and vibronic Hamiltonians, these Hamiltonians are mostly applied to study non-equilibrium processes.
+They are, therefore, particularly appealing when combined with the DMRG module for quantum-dynamics simulations.
+
+\section{QCMaquis pre-Born--Oppenheimer module}
+\label{sec:preBO}
+
+The \qcm\ pre-Born--Oppenheimer (pre-BO) module provides a tool to perform DMRG-CASCI calculations for \textit{multicomponent} Hamiltonians consisting of multiple spin-$\frac12$ particle types.
+
+QCMaquis follows the formatting of the integral file shown in Listing~\ref{lst:prebodump}.
+The first line, with only a single float, contains a constant shift in energy, e.g., point-charge repulsion of classical nuclei.
+The following lines contain the terms in the Hamiltonian where pairs of numbers $m-n$ describe a single second-quantization operator.
+The first number denotes the particle type (starting with 0) and the second number the orbital index associated with the given particle type (also starting with 0 for all types).
+We assume physics notation and normal-ordering, i.e., the following would be a valid term
+
+\begin{equation}
+  \left(\int \phi_{1-1}(1)\phi_{0-1}(2)g(1,2)\phi_{1-0}(1)\phi_{0-1}(2)\right)
+  a^\dagger_{1-1} a^\dagger_{0-1} a_{0-1} a_{1-0}\,.
+\end{equation}
+
+The second and third lines contain single-paricle type \textit{hopping} terms.
+The fourth line stands for a single-particle type interaction, and the fifth
+line for an interaction between different particle types. 
+Note here that the aforementioned convention implies that operators belonging to
+the same particle types in a given string of operators must be either at
+positions 1 and 4 or 2 and 3. 
+
+\begin{lstlisting}[language=qcmaquis,caption={Pre-BO integral file
+format.},label=lst:prebodump]
+1.145901278714102                       
+   0-0         0-0                                      -2.451508889071943
+   1-0         1-0                                      2.30233235666604
+   0-2         0-0         0-1         0-1              -0.08690785254423253
+   1-1         0-1         0-1         1-0              4.887021698358933e-05
+\end{lstlisting}
+
+Listing~\ref{lst:qcm} shows an input example for a pre-BO DMRG-FCI calculation. 
+It assumes that a pre-BO integral file with has been generated. Additionally,
+the 1-particle RDM and the mutual information can be measured and printed to a
+file.
+
+\begin{lstlisting}[language=qcmaquis,
+				   caption={Input example for a pre-BO DMRG-FCI calculation},
+				   label=lst:preboinput]
+  nsweeps                         = 6
+  max_bond_dimension              = 1000
+
+  // Pre-BO specific input
+  // String with the number of parciles for each type
+  PreBO_ParticleTypeVector        = "4 1"
+  // Spin-1/2 fermion (1) or spin-0 boson (0)
+  // Attention: the boson-related functionality has not been fully tested, yet.
+  PreBO_FermionOrBosonVector      = "1 1"
+  // Number of orbitals for each type.
+  PreBO_OrbitalVector             = "3 3"
+  // Number of alpha-beta particles for each type
+  // Note: for spin-0 bosons it would be a single number.
+  PreBO_InitialStateVector        = "2 2 1 0"
+
+optimization                    = twosite 
+symmetry                        = nu1
+
+model_library                   = coded
+lattice_library                 = coded
+LATTICE                         = "preBO lattice" 
+
+// Your model
+MODEL                           = PreBO
+init_type                      = 'default'
+
+// Hamiltonian file
+integral_file                   = FCIDUMP.E_4_H1_1
+integral_cutoff                 = 1.0E-10
+
+MEASURE[1rdm]          = 1
+MEASURE[mutinf]        = 1
+\end{lstlisting}
+
+\section{Excited state targeting with DMRG}
+
+Being based on the variational principle, the DMRG is inherently tailored to ground-state wave functions.
+However, it can be extended to target excited states as well.
+To date, \qcm\ supports two excited-state DMRG methods:
+
+\begin{enumerate}
+  \item \texttt{DMRG[ortho]}~\cite{Keller_JChemPhys_efficient_2015}, which relies on a constrained optimization search.
+  \item \texttt{DMRG[IPI]}~\cite{Baiardi2022_DMRG-FEAST}, which extends the inverse power iteration to MPS wave functions.
+  \item \texttt{DMRG[FEAST]}~\cite{Baiardi2022_DMRG-FEAST}, which applied the FEAST algorithm originally introduced by Polizzi\cite{Polizzi2009_FEAST} to MPS wave functions.
+\end{enumerate}
+
+\noindent In the following, we will review these three algorithms and describe how to run them with \qcm.
+
+\subsection{\texttt{DMRG[ortho]}}
+
+\noindent Suppose one wants to target the lowest-energy excited state of a given Hamiltonian.
+If the exact wave function $\ket{\Psi_\text{GS}}$ is available, then this state is the lowest-eigenvalue of the following projected Hamiltonian $\mathcal{H}_p^{(1)}$:
+
+\begin{equation}
+  \mathcal{H}_p^{(1)} = \left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right)
+  				  		\mathcal{H}
+				  		\left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right) \, .
+  \label{eq:ProjectedHamiltonian}
+\end{equation}
+
+\noindent The MPS representation of the first excited state $\ket{\Psi_\text{ES}^{(1)}}$ can, therefore, be optimized by applying DMRG to the operator defined in Eq.~(\ref{eq:ProjectedHamiltonian}).
+The second excited state can then be optimized by applying DMRG to the following Hamiltonian, where both the ground state and the first excited-state are projected out:
+
+\begin{equation}
+  \mathcal{H}_p^{(1)} = \left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right)
+						\left( \mathcal{I} - \ket{\Psi_\text{ES}^{(1)}} \bra{\Psi_\text{ES}^{(1)}} \right)
+  				  		\mathcal{H}
+						\left( \mathcal{I} - \ket{\Psi_\text{ES}^{(1)}} \bra{\Psi_\text{ES}^{(1)}} \right)
+				  		\left( \mathcal{I} - \ket{\Psi_\text{GS}} \bra{\Psi_\text{GS}} \right) \, .
+  \label{eq:ProjectedHamiltonian2}
+\end{equation}
+
+\noindent This procedure can be repeated to target excited states with an increasingly hight energy.
+A \texttt{DMRG[ortho]} calculation is activated in \qcm\ by two keywords:
+
+\begin{itemize}
+  \item \texttt{n\_ortho\_states}: indicates the number of states for which the projector is constructed, as in Eq.~(\ref{eq:ProjectedHamiltonian2}).
+  \item \texttt{ortho\_states}: comma separated list of checkpoint files containing the MPS for constructing the projection operators, as in Eq.~(\ref{eq:ProjectedHamiltonian2}).
+\end{itemize}
+%
+Therefore, for targeting, for example, the two lowest-energy excited states of a given Hamiltonian, three calculations are needed:
+
+\begin{enumerate}
+  \item conventional ground-state DMRG optimization, where the \texttt{chkpfile} keyword is set to the name of the checkpoint file that will store the ground-state MPS (let us suppose that this name is \texttt{GS.checkpoint.h5}).
+  \item constrained DMRG calculation where \texttt{n\_ortho\_states} is set to 1 and where \texttt{ortho\_states} is set to \texttt{GS.checkpoint.h5}.
+  Since we will optimize also the second excited state, we specify again the \texttt{chkpfile} keyword to store the MPS associated with the first excited state (let us suppose that this second file is called \texttt{``ES.checkpoint.h5''}).
+  \item second constrained DMRG calculation where \texttt{n\_ortho\_states} is set to 2 and where \texttt{ortho\_states} is set to \texttt{``GS.checkpoint.h5,ES.checkpoint.h5''}
+\end{enumerate}
+
+\noindent \texttt{DMRG[ortho]} is very efficient for low-lying excited states, but becomes extremely unpractical for optimizing highly-excited states for two main reasons.
+First, targeting a given excited state with \texttt{DMRG[ortho]} requires optimizing all the lower-lying states with DMRG -- a computational task that becomes unfeasible for high-energy states.
+Second, due to so-called root-flipping effect, the \texttt{DMRG[ortho]} optimization may be trapped into local minima in high-density regions of the Hamiltonian spectrum.
+These two limitations are lifted by \texttt{DMRG[IP]} and \texttt{DMRG[FEAST]}.
+
+\subsection{\texttt{DMRG[IPI]}}
+\label{subsec:DMRG-IPI}
+
+The inverse power iteration (IPI) method is an iterative scheme for calculating the lowest-energy eigenstate of the Hamiltonian operator.
+IPI relies on the idea that, starting from a random normalized guess wave function $\ket{\Psi_0}$, the series of wave functions $\ket{\Psi_n}$ obtained recursively as:
+
+\begin{equation}
+  \ket{\tilde{\Psi}_n} = \mathcal{H}^{-1} \ket{\Psi_{n-1}} \qquad \qquad
+  \ket{\Psi_n} = \frac{\ket{\tilde{\Psi}_n}}{\left\| \ket{\tilde{\Psi}_n} \right\|} \, ,
+  \label{eq:IPI_Series}
+\end{equation}
+%
+converges to the ground state wave function for $n \rightarrow +\infty$.
+Similarly, if we introduce a shift parameter $\omega$, the series obtained as:
+
+\begin{equation}
+  \ket{\tilde{\Psi}_n} = \left( \mathcal{H} - \omega \mathcal{I} \right)^{-1} \ket{\Psi_{n-1}} \qquad \qquad
+  \ket{\Psi_n} = \frac{\ket{\tilde{\Psi}_n}}{\left\| \ket{\tilde{\Psi}_n} \right\|} \, ,
+  \label{eq:IPI_Series_Shifted}
+\end{equation}
+%
+converges to the eigenfunction with the closest energy to $\omega$.
+DMRG[IPI] applies IPI to wave functions $\ket{\Psi_n}$ encoded as MPSs.
+The key challenge associated to generalizing IPI to DMRG[IPI] is that calculating the $n$-th wave function $\ket{\Psi_n}$ from the $(n-1)$-th one $\ket{\Psi_{n-1}}$ requires solving the following linear system:
+
+\begin{equation}
+  \left( \mathcal{H} - \omega \mathcal{I} \right) \ket{\Psi_n} = \ket{\Psi_{n-1}}
+  \label{eq:LinearSystem}
+\end{equation}
+
+Eq.~(\ref{eq:LinearSystem}) can be solved for MPS wave functions by recasting it as a minimum problem, and by solving it with a sweep-based algorithm.\cite{Rakhuba2016_vDMRG,Baiardi2022_DMRG-FEAST}
+For each microiteration of the sweep-based algorithm, a site-centered linear system must be solved, similarly to the sweep-based energy minimization, where a site-centered eigenvalue problem is solved.
+The $n \rightarrow +\infty$ is realized, in practice, by monitoring the convergence of the wave function $\ket{\Psi_n}$ and of the corresponding energy $E[\ket{\Psi_n}]$. \\
+
+A DMRG[IPI] calculation is run in \qcm\ with the \texttt{dmrgIPI} executable, located (starting from the build directory) in the \texttt{applications/dmrg} folder.
+The relevant parameter (and the corresponding keywords) for the simulation are divided in two classes.
+The first ones, associated with keywords with a name that starts with \texttt{linsystem}, are the parameters of the solution of the local site-centered linear systems:
+
+\begin{itemize}
+  \item \texttt{linsystem\_precond}: if \texttt{yes}, use a diagonal preconditioner within the solution of the local linear system. If \texttt{no}, does not apply the preconditionditioner.
+  \item \texttt{linsystem\_init}: initial guess for the iterative solution of the local linear system.
+  Can be either \texttt{mps}, if the initial guess should be constructed from the corresponding MPS tensor at the current iteration, or \texttt{zero}, if an MPS with zero entries should be used as initial guess.
+  The default value, which should be used in conventional calculations, is \texttt{mps}.
+  \item \texttt{linsystem\_krylov\_dim}: maximum dimension of the Krylov space for the iterative solution of the linear system.
+  \item \texttt{linsystem\_max\_it}: maximum number of macroiterations for the iterative solution of the linear system. For each macroiteration, a new Krylov vector space, of maximum size equal to \texttt{linsystem\_krylov\_dim}.
+  \item \texttt{linsystem\_solver}: iterative algorithm for solving the linear system (can be either \texttt{GMRES} of \texttt{MINRES}).
+  \item \texttt{linsystem\_tol}: convergence threshold on the wave function for the iterative solver of the linear system.
+\end{itemize}
+
+The second set of parameters and keywords are instead associated with the IPI algorithm itself, and are:
+
+\begin{itemize}
+  \item \texttt{ipi\_sweep\_overlap\_threshold}: the series of Eq.~(\ref{eq:IPI_Series_Shifted}) is stopped as soon as the norm of the overlap between the MPSs $\langle \Psi_n | \Psi_{n-1} \rangle$ falls below this threshold.
+  \item \texttt{ipi\_sweep\_energy\_threshold}: the series of Eq.~(\ref{eq:IPI_Series_Shifted}) is stopped as soon as the difference between the energy calculated at two subsequent iterations falls below this threshold.
+  \item \texttt{ipi\_sweeps\_per\_system}: maximum number of sweeps to be used to solve a given linear system.
+  \item \texttt{ipi\_shift}: $\omega$ parameter, expressed in the same units used for the Hamiltonian.
+  \item \texttt{ipi\_iterations}: maximum number of times the linear system of Eq.~(\ref{eq:IPI_Series_Shifted}) is solved (i.e., upper value for the $n$ parameter).
+\end{itemize}
+
+\subsection{\texttt{DMRG[FEAST]}}
+\label{subsec:FEAST}
+
+DMRG[FEAST] is the third strategy supported by \qcm\ for calculating excited states with DMRG.
+DMRG[FEAST]\cite{Baiardi2022_DMRG-FEAST} generalizes the FEAST algorithm\cite{Polizzi2009_FEAST} to wave functions encoded as MPSs.
+Instead of targeting a single eigenpair, as in DMRG[IP], FEAST targets all the eigenfunctions $\left\{ \ket{\Psi_1}, \ldots, \ket{\Psi_n} \right\}$ with energy lying in a predetermined interval $\left[ E_\text{min}, E_\text{max} \right]$.
+It does so by approximating the spectral projector onto the space spanned by these eigenfunctions, \textit{i.e.}
+
+\begin{equation}
+  \mathcal{P} = \sum_{i=1}^n \ket{\Psi_i} \bra{\Psi_i} \, ,
+  \label{eq:SpectralProjector}
+\end{equation}
+%
+by applying the Cauchy residual theorem
+
+\begin{equation}
+  \mathcal{P}  = \frac{1}{2\pi\mathrm{i}} \oint_{\mathcal{C}} 
+	\left( z \mathcal{I} - \mathcal{H} \right)^{-1} \mathrm{d}z \, ,
+  \label{eq:ComplexIntegral}
+\end{equation}
+%
+where $\mathcal{C}$ is a circle in the complex plane that encloses the $\left[ E_\text{min}, E_\text{max} \right]$ interval on the real axis. 
+Eq.~(\ref{eq:ComplexIntegral}) is then approximated with a the Gauss-Hermite quadrature.
+This yields the following form for $\mathcal{P}$:
+
+\begin{equation}
+  \mathcal{P} \approx \frac{1}{2\pi\mathrm{i}} \sum_{n_q=1}^{N_\text{quad}}
+	w_k \left( z_k \mathcal{I} - \mathcal{H} \right)^{-1} \mathrm{d}z \, ,
+  \label{eq:ComplexIntegralApproximate}
+\end{equation}
+%
+where $w_k$ and $z_k$ are the quadrature weights and nodes, respectively.
+Applying $\mathcal{P}$ from Eq.~(\ref{eq:ComplexIntegralApproximate}) onto $n$ randomly generated wave functions will, therefore, yield a basis for the subspace spanned by the $n$ eigenfunctions $\left\{ \ket{\Psi_1}, \ldots, \ket{\Psi_n} \right\}$.
+It is, therefore, sufficient to diagonalize $\mathcal{H}$ in this subspace to retrieve the eigenfunctions $\left\{ \ket{\Psi_1}, \ldots, \ket{\Psi_n} \right\}$.
+Applying the approximate projector of Eq.~(\ref{eq:ComplexIntegralApproximate}) onto a wave function requires solving $N_\text{quad} \times n$ linear system.
+In FEAST, these systems are solved with conventional Krylov-based iterative methods, such as the GMRES one.
+Instead, DMRG[FEAST] applies the sweep-based algorithm already introduced for DMRG[IPI] to iteratively solve the linear systems in order to ensure that the solution can be represented as an MPS with a given bond dimension $m$. \\
+
+\qcm\ implements the DMRG[FEAST] algorithm as described in Ref.~\citenum{Baiardi2022_DMRG-FEAST}.
+A simulation can be run with the \texttt{dmrgFEAST} executable, which is stored -- relatively to the build directory -- in the \texttt{applications/FEAST} directory.
+In order to compile this executable, the CMake variable \texttt{BUILD\_DMRG\_FEAST} should be set to \texttt{ON} (by default, its value is set to \texttt{OFF}).
+The keywords that can be used to tune a DMRG[FEAST] calculation are the following:
+
+\begin{itemize}
+  \item \texttt{feast\_num\_states}: number of initial guesses.
+  It must be $\geq$ than the number of states with energy inside the $\left[ E_\text{min}, E_\text{max} \right]$ interval in order to ensure convergence of the FEAST algorithm.
+  \item \texttt{feast\_max\_iter}: maximum number of outer FEAST iterations.
+  \item \texttt{feast\_emin}: lower bound of the FEAST energy interval.
+  \item \texttt{feast\_emax}: upper bound of the FEAST energy interval.
+  \item \texttt{feast\_num\_points}: number of quadrature points for approximating the numerical integration (the default value, which is also recommended in Ref.~\citenum{Polizzi2009_FEAST}, is 8).
+  %\item \texttt{feast\_integral\_type}: it is possible to show~\cite{Polizzi2009_FEAST} that the complex contour integral can be applied only to half of the circle \texttt{C} by exploiting the Hermiticity of the operator.
+  %The \texttt{feast\_integral\_type} parameter should be set to \texttt{half} for applying this simplification, and to \texttt{full} for performing a conventional complex integration.
+  \item \texttt{feast\_truncation\_type}: if more than a single FEAST macroiteration is performed, the eigenfunctions of the FEAST Hamiltonian at the $(N-1)$-th iteration are used as a starting guess for the $N$-th iteration.
+  However, these eigenfunctions are expressed as a linear combination of $n$ MPSs, each one expressed as a sum of $N_q$ solutions of the linear systems introduced above.
+  Since the sum of two MPSs with bond dimension $m$ is an MPSs with bond dimension $2m$, this series of sums would increase drastically the bond dimension of the guesses.
+  To avoid that, the guess MPSs are compressed back to a bond dimension $m$ before starting a new FEAST iteration.
+  If the \texttt{feast\_truncation\_type} keyword is set to \texttt{end}, this truncation is applied only once, after the $N_q \times n$ sum are performed.
+  If, instead, this keyword is set to \texttt{each}, the truncation is performed after each sum.
+  This second option is faster, but yields a less accurate initial guess.
+  The default value for \texttt{feast\_truncation\_type} is \texttt{end}.
+  %\item \texttt{feast\_init\_type}: analog of \texttt{init\_type} for FEAST-based simulation -- this keyword sets the initial guess for DMRG[FEAST].
+  %\item \texttt{feast\_init\_onv}: comma-separated list of integers indicating the ONV used as the initial guess (this keyword is valid only if \texttt{feast\_init\_type} is set to \texttt{basis\_state\_generic}).
+  \item \texttt{feast\_overlap\_convergence\_threshold}: first threshold used to assess the convergence of DMRG[FEAST].
+  The FEAST macroiterations are stopped if the sum of changes in the FEAST eigenfunctions exceeds the value set by this keyword.
+  Note that the sum includes only the eigenstates whose energy lies in the interval defined by the keywords \texttt{feast\_emin} and \texttt{feast\_emax}.
+  \item \texttt{feast\_energy\_convergence\_threshold}: second threshold used to assess the convergence of DMRG[FEAST].
+  The FEAST macroiterations are stopped if the sum of variation of the FEAST energies exceeds the value set by this keyword.
+  Note that the sum includes only the eigenstates whose energy lies in the interval defined by the keywords \texttt{feast\_emin} and \texttt{feast\_emax}.
+  \item \texttt{feast\_verbose}: by default set to \texttt{no}, can be set to \texttt{yes} to increase the output verbosity for at DMRG[FEAST] calculation.
+  \item \texttt{feast\_calculate\_standard\_deviation}: it may happen that the number of guesses exceeds the number of eigenpairs with energy included in the [\texttt{feast\_emin}, \texttt{feast\_emax}] interval.
+  In this case, only some of the FEAST eigenfunctions correspond to ``true'' eigenfunctions of the full Hamiltonian.
+  These ``true'' states can be identified based on two criteria. 
+  Of corse, if the energy of the eigenstate does not lie in the [\texttt{feast\_emin}, \texttt{feast\_emax}] interval, the corresponding state does not correspond to an eigenpair of the Hamiltonian.
+  However, if eigenpair has energy in the target interval, it may still not correspond to a ``true'' eigenstate.
+  To exclude this situation, the energy standard deviation can be calculated for each FEAST eigenstate by setting the \texttt{feast\_calculate\_standard\_deviation} keyword to \texttt{yes}.
+  ``True'' eigenfunction of the full Hamiltonian must correspond, for a sufficiently high bond dimension, to a vanishing variance.
+  In practice, the acceptable states are identified based on the \texttt{feast\_standard\_deviation\_threshold} keyword described above. 
+  \item \texttt{feast\_standard\_deviation\_threshold}: states with variance lower than the threshold set by this keyword are not considered as ``true'' states.
+  Moreover, if \texttt{feast\_max\_iter} > 1, the corresponding eigenfunction is not taken as a guess for the following FEAST iteration.
+  %, and a random MPSs is used instead as guess.
+\end{itemize}
+
+Note that the keywords starting with ``\texttt{linsystem\_}'' introduced in the previous section can be used also in DMRG[FEAST] to tune the iterative solution of the FEAST linear systems.
+
+\section{\qcm\ examples library}
+\label{sec:examples}
+
+We provide in the folder \texttt{example} a set of example input files to run the different kinds of DMRG-based calculations supported by \qcm.
+For all input files, we provide the corresponding output file that can be used as a reference to ensure that the \qcm\ executables have been compiled correctly (in addition to the test suite).
+The examples are organized in different folder, one per feature provided by \qcm, as listed below:
+
+\begin{itemize}
+ \item \texttt{iTD-DMRG}: sample input for an imaginary-time DMRG calculation on H$_2$.
+ The corresponding input file name is \texttt{H2\_2e4o.iTD.SS.inp}.
+ The integral file is generated for the H$_2$ molecule and based on the 6-31G basis set.
+ The calculation should be run with the executable \texttt{applications/evolve/dmrg\_evolve}, which is generated by setting the \texttt{BUILD\_DMRG\_EVOLVE} CMake flag to \texttt{ON}.
+ We also provide in the same folder also \texttt{H2\_2e4o.TI.SS.inp}, \textit{i.e.} the input for running a conventional \texttt{DMRG} calculation, which must be run with the \texttt{applications/dmrg/dmrg} executable and returns the same energy as the iTD-DMRG simulation.
+ \item \texttt{TD-DMRG}: example calculation of a real-time DMRG calculation.
+ The integral file is associated with the $\pi$ orbital space (CAS(6,6)) of benzene calculated with the 6-31G* basis set.
+ The calculations should be run with the \texttt{applications/evolve/dmrg\_evolve} executable.
+ Note that the initial state for the propagation is a random MPS because the \texttt{init\_state} keyword is set to \texttt{default}.
+ Therefore, the calculation does not correspond to any physically meaningful non-equilibrium process. 
+ However, this calculation can be used to assess that the \texttt{dmrg\_evolve} executable has been compiled correctly by verifying that the energy is conserved along the propagation.
+ For this example calculation we provide the input files for both the single-site (\texttt{Benzene\_6e6o.TD.SS.inp}) and the two-site (\texttt{Benzene\_6e6o.TD.TS.inp}) propagators.
+ \item \texttt{vDMRG}: 
+ %example of a $n$-mode vDMRG calculation.
+ %The corresponding input name is \texttt{FAD\_2Mode\_TS.inp}.
+ %The integral file is generated for a two-mode potential describing the formic acid dimer based on a discrete %variable representation primitive basis set.
+ %For each mode, 10 modal basis functions are included. \\
+ %The same folder also contains an
+ Example calculation for the canonical quantization-based vDMRG, based on the single-site and on the two-site (the corresponding input files are named \texttt{C2H4.vDMRG.m50.SS.input} and \texttt{C2H4.vDMRG.m50.TS.input}, respectively) optimization algorithm.
+ The PES is taken from Ref.~\citenum{Berkelback2021_vHBCI} and represents the potential energy surface of ethylene as a sixth-order force field.
+ The calculation is initiated from the ONV associated with the ground-state wave function.
+ The calculations should be run with the \texttt{applications/dmrg/dmrg} executable, which is automatically generated by each \qcm\ compilation configuration.
+ \item \texttt{vDMRG\_IPI}: example of a vDMRG[IPI] calculation.
+ %based on the canonical quantization vDMRG variant.
+ The test system is ethylene, with the same PES described for the folder \texttt{vDMRG}.
+ The calculation uses the single-site linear solver, and runs 5 iterations of the inverse power iteration algorithm.
+ The simulation should be run with the \texttt{applications/dmrg/dmrgIPI} executable, which is generated automatically with the standard compilation parameters of \qcm.
+ \item \texttt{vDMRG-FEAST}: example of a vDMRG[FEAST] calculation to optimize the vibrational ground state of ethylene.
+ The PES is the same as for the folder \texttt{vDMRG}.
+ The calculation uses a single-site linear solver, and repeat multiple FEAST iterations, although the energy is converged already with the first one.
+ The simulation can be run with the \texttt{applications/FEAST/dmrgFEAST} executable, which is generated by setting the \texttt{BUILD\_DMRG\_FEAST} CMake varialbe to \texttt{ON}.                
+\end{itemize}
+
+\clearpage
+\newpage
+
+\bibliography{qcmaquis_manual}
+
+\end{document}

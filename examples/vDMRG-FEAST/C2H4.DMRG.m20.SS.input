@@ -1,0 +1,26 @@
+nsweeps                          = 20
+ngrowsweeps                      = 2
+nmainsweeps                      = 2
+max_bond_dimension               = 20
+
+truncation_initial               = 0
+truncation_final                 = 0
+
+optimization                     = twosite 
+symmetry                         = none
+
+model_library                    = coded
+lattice_library                  = coded
+LATTICE                          = "watson lattice"
+L                                = 12
+
+MODEL                            = "watson" 
+Nmax                             = 3
+
+watson_max_coupling              = 2
+
+integral_file                    = "PES_Ethylene" 
+integral_cutoff                  = 1.0E-10
+
+chkpfile                         = "C2H4.DMRG.m20.SS.checkpoint.h5" 
+resultfile                       = "C2H4.DMRG.m20.SS.resfile.h5"

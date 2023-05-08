@@ -9,8 +9,6 @@
 #*               2012-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
 #*               2014-2020 by Leon Freitag <lefreita@ethz.ch> (Python3 version)
 #*
-#*
-#*
 #* This software is part of the ALPS Applications, published under the ALPS
 #* Application License; you can use, redistribute it and/or modify it under
 #* the terms of the license, either version 1 or (at your option) any later

@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *                    Laboratory for Physical Chemistry, ETH Zurich
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
- * 
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- * 
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef ENGINE_COMMON_PREDICTION_H
 #define ENGINE_COMMON_PREDICTION_H
@@ -40,7 +20,7 @@ template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Ker
 static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
 predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<Matrix, SymmGroup> const & mpo,
                             Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
-                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM=true)
+                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM, bool verbose=false)
 {
     mps.make_left_paired();
     block_matrix<Matrix, SymmGroup> U, V, dm;
@@ -63,39 +43,47 @@ predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<
                                            tdm.basis().right_charge(k));
             }
         }
-        trunc = heev_truncate(dm, U, S, cutoff, Mmax);
+        trunc = heev_truncate(dm, U, S, cutoff, Mmax, verbose);
     }
     else {
         block_matrix<Matrix, SymmGroup> tmp = mps.data();
-        trunc = svd_truncate(tmp, U, V, S, cutoff, Mmax);
+        trunc = svd_truncate(tmp, U, V, S, cutoff, Mmax, verbose);
         //typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
         //trunc = heev_truncate(dm, U, S, cutoff, Mmax);
     }
     ret.replace_left_paired(U);
     return std::make_pair(ret, trunc);
 }
-        
+
+template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+static block_matrix<Matrix, SymmGroup>
+getZeroSiteTensorL2R(MPSTensor<Matrix, SymmGroup> mpsNextSite, const MPSTensor<Matrix, SymmGroup>& mpsCurrentSite,
+                     const MPSTensor<Matrix, SymmGroup>& U)
+{
+    mpsCurrentSite.make_left_paired();
+    U.make_left_paired();
+    block_matrix<Matrix, SymmGroup> tmp;
+    // The factor to be included in the following site is SU^T = U^TM
+    typename Gemm::gemm()(transpose(conjugate(U.data())), mpsCurrentSite.data(), tmp);
+    return tmp;
+}
+
 template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
 static MPSTensor<Matrix, SymmGroup>
-predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
-                          MPSTensor<Matrix, SymmGroup> const & psi,
-                          MPSTensor<Matrix, SymmGroup> const & A)
+predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> mpsNextSite,
+                          const MPSTensor<Matrix, SymmGroup>& mpsCurrentSite,
+                          const MPSTensor<Matrix, SymmGroup>& U)
 {
-    psi.make_left_paired();
-    A.make_left_paired();
-    
-    block_matrix<Matrix, SymmGroup> tmp;
-    typename Gemm::gemm()(transpose(conjugate(A.data())), psi.data(), tmp);
-    B.multiply_from_left(tmp);
-    
-    return B;
+    auto tmp = getZeroSiteTensorL2R(mpsNextSite, mpsCurrentSite, U);
+    mpsNextSite.multiply_from_left(tmp);
+    return mpsNextSite;
 }
-        
+
 template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
 static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
 predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<Matrix, SymmGroup> const & mpo,
                             Boundary<OtherMatrix, SymmGroup> const & left, Boundary<OtherMatrix, SymmGroup> const & right,
-                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM)
+                            double alpha, double cutoff, std::size_t Mmax, bool doPerturbDM, bool verbose=false)
 {
     // Initialization
     mps.make_right_paired();
@@ -124,31 +112,38 @@ predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps, MPOTensor<
         }
         mps.make_right_paired();
         assert( weak_equal(dm.right_basis(), mps.data().right_basis()) );
-        trunc = heev_truncate(dm, U, S, cutoff, Mmax);
+        trunc = heev_truncate(dm, U, S, cutoff, Mmax, verbose);
     }
     else {
         block_matrix<Matrix, SymmGroup> tmp = transpose(conjugate(mps.data()));
-        trunc = svd_truncate(tmp, U, V, S, cutoff, Mmax);
+        trunc = svd_truncate(tmp, U, V, S, cutoff, Mmax, verbose);
     }
     ret.replace_right_paired(adjoint(U));
     return std::make_pair(ret, trunc);
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-static MPSTensor<Matrix, SymmGroup>
-predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
-                          MPSTensor<Matrix, SymmGroup> const & psi,
-                          MPSTensor<Matrix, SymmGroup> const & A)
+static block_matrix<Matrix, SymmGroup>
+getZeroSiteTensorR2L(MPSTensor<Matrix, SymmGroup> mpsPreviousSite,
+                     MPSTensor<Matrix, SymmGroup> const & mpsCurrentSite,
+                     MPSTensor<Matrix, SymmGroup> const & U)
 {
-    psi.make_right_paired();
-    A.make_right_paired();
-    
+    mpsCurrentSite.make_right_paired();
+    U.make_right_paired();
     block_matrix<Matrix, SymmGroup> tmp;
-    typename Gemm::gemm()(psi.data(), transpose(conjugate(A.data())), tmp);
-    
-    B.multiply_from_right(tmp);
-    
-    return B;
+    typename Gemm::gemm()(mpsCurrentSite.data(), transpose(conjugate(U.data())), tmp);
+    return tmp;
+}
+
+template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+static MPSTensor<Matrix, SymmGroup>
+predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> mpsPreviousSite,
+                          const MPSTensor<Matrix, SymmGroup>& mpsCurrentSite,
+                          MPSTensor<Matrix, SymmGroup> const & U)
+{
+    auto tmp = getZeroSiteTensorR2L(mpsPreviousSite, mpsCurrentSite, U);
+    mpsPreviousSite.multiply_from_right(tmp);
+    return mpsPreviousSite;
 }
 
 } // namespace common

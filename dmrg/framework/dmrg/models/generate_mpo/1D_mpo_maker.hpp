@@ -1,31 +1,20 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2015 Laboratory of Physical Chemistry, ETH Zurich
- *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef ONED_MPO_MAKER_H
 #define ONED_MPO_MAKER_H
+
+#include <utility>
+#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/term_descriptor.h"
+#include "dmrg/models/generate_mpo/utils.hpp"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 namespace generate_mpo
 {
@@ -224,6 +213,32 @@ namespace generate_mpo
         term_descriptor<typename Matrix::value_type> term = arrange_operators(positions, operators, tag_handler);
         term.coeff *= scale;
         return sign_and_fill(term, ident, fill, tag_handler, lat);
+    }
+
+    /** @brief Enum class used in the following class */
+    enum class IonizedOrbital { Up, Down };
+
+    /**
+     * @brief Routine that builds the MPO representation of the destruction operator.
+     * TODO: Check if it works also for the TwoU1 and SU2U1 symmetry.
+     */
+    template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup>
+    make_destroy_mpo(const Lattice& lat, const Model<Matrix, SymmGroup>& model, int iOrb, IonizedOrbital alphaOrBeta=IonizedOrbital::Up)
+    {
+      using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+      std::vector<int> pos(1, iOrb);
+      auto name = alphaOrBeta == IonizedOrbital::Up ? "destroy_up" : "destroy_down";
+      tag_type opDestroy = model.get_operator_tag(name, lat.template get_prop<typename SymmGroup::subcharge>("type", pos[0]));
+      tag_type ops_[1] = {opDestroy};
+      std::vector<tag_type> ops(ops_, ops_+1);
+      term_descriptor<typename Matrix::value_type> term = generate_mpo::arrange_operators(pos, ops, model.operators_table());
+      std::vector<tag_type> identities, fillings;
+      for (int iType = 0; iType < lat.getMaxType(); iType++) {
+        identities.push_back(model.identity_matrix_tag(iType));
+        fillings.push_back(model.filling_matrix_tag(iType));
+      }
+      return generate_mpo::make_1D_mpo(pos, ops, identities, fillings, model.operators_table(), lat);
     }
 
 }

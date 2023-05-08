@@ -1,29 +1,9 @@
-﻿/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2020 Institute for Theoretical Physics, ETH Zurich
- *               2020- by Alberto Baiardi <alberto.baiardi@phys.chem.ethz.ch>
- *               2020- by Robin Feldmann <robinfe@phys.chem.ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MODELS_CODED_NU1_H
 #define MODELS_CODED_NU1_H
@@ -33,7 +13,7 @@
 #include "dmrg/models/prebo/prebo_TermGenerator.hpp"
 #include "nu1_nBodyTerm.hpp"
 #include "dmrg/models/prebo/prebo_parse_integrals.h"
-#include "dmrg/models/prebo/model_helper.hpp"
+#include "dmrg/models//model_helper.hpp"
 #include "dmrg/models/measurements/prebo_particle_rdm.h"
 #include "dmrg/models/measurements/prebo_mutual_information.h"
 
@@ -44,7 +24,7 @@
 #include <unordered_map>
 #include <chrono>
 
-#ifdef HAVE_NU1
+#ifdef DMRG_PREBO
 
 /**
  * @brief Pre-Born Oppenheimer model class
@@ -200,10 +180,10 @@ public:
         std::vector<tag_type> identities;
         std::vector<tag_type> fillings;
 
-        for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
+        for (int iType = 0; iType < lat.getMaxType(); iType++)
         {
-            identities.push_back(this->identity_matrix_tag(p));
-            fillings.push_back(this->filling_matrix_tag(p));
+            identities.push_back(this->identity_matrix_tag(iType));
+            fillings.push_back(this->filling_matrix_tag(iType));
         }
 
         std::regex expression_1ParticleRDM("^MEASURE\\[1rdm\\]");
@@ -224,6 +204,6 @@ public:
     }
 };
 
-#endif // HAVE_NU1
+#endif // DMRG_PREBO
 
 #endif

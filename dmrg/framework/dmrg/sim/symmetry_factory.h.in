@@ -1,29 +1,9 @@
-/*****************************************************************************
- *
- * ALPS MPS DMRG Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
- *               2019 by Leon Freitag <lefreita@ethz.ch>
- *
- * This software is part of the ALPS Applications, published under the ALPS
- * Application License; you can use, redistribute it and/or modify it under
- * the terms of the license, either version 1 or (at your option) any later
- * version.
- *
- * You should have received a copy of the ALPS Application License along with
- * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
- * available from http://alps.comp-phys.org/.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
- * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
- * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- *
- *****************************************************************************/
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef SYMMETRY_FACTORY_H
 #define SYMMETRY_FACTORY_H
@@ -138,25 +118,42 @@ namespace dmrg {
         {}
 #ifdef HAVE_NU1
         else if (symm_name == "nu1") {
-            std::vector<bool> isFermion;
-            std::vector<int> vec_ini_state;
-            std::string isFermion_str = parms["PreBO_FermionOrBosonVector"].as<std::string>();
-            std::istringstream is( isFermion_str );
-            isFermion.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
-            std::string vec_ini_state_str = parms["PreBO_InitialStateVector"].as<std::string>();
-            is.clear();
-            is.str(vec_ini_state_str);
-            vec_ini_state.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
             int numberOfSymmetries = 0;
-            for (const auto iElement: isFermion)
-                numberOfSymmetries += (iElement) ? 2 : 1;
-            if (vec_ini_state.size() != numberOfSymmetries) {
-                throw std::runtime_error("PreBO_InitialStateVector input Error.");
+            if (parms["MODEL"] == std::string("PreBO")) {
+                std::vector<bool> isFermion;
+                std::vector<int> vec_ini_state;
+                std::string isFermion_str = parms["PreBO_FermionOrBosonVector"].as<std::string>();
+                std::istringstream is( isFermion_str );
+                isFermion.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
+                std::string vec_ini_state_str = parms["PreBO_InitialStateVector"].as<std::string>();
+                is.clear();
+                is.str(vec_ini_state_str);
+                vec_ini_state.assign(std::istream_iterator<int>( is ), std::istream_iterator<int>() );
+                for (const auto iElement: isFermion)
+                    numberOfSymmetries += (iElement) ? 2 : 1;
+                if (vec_ini_state.size() != numberOfSymmetries) {
+                    throw std::runtime_error("PreBO_InitialStateVector input Error.");
+                }
             }
-            switch (numberOfSymmetries) { 
-                BOOST_PP_REPEAT_FROM_TO(1, @DMRG_NUMSYMM@, DECLCASE, ~)
+            else if (parms["MODEL"] == std::string("nmode")) {
+                numberOfSymmetries = parms["nmode_num_modes"];
+            }
+            else {
+                throw std::runtime_error("NU1 model not recognized");
+            }
+            // Sets the number of N that is required for the NU1 symmetry group
+            switch (numberOfSymmetries) {
+                // All numsymm from 1 including to 6 are always compiled as they are needed for the test suite
+                BOOST_PP_REPEAT_FROM_TO(1, 7, DECLCASE, ~)
+#if @DMRG_NUMSYMM@ > 6
+                // For large molecules, also compile that specific NUMSYMM
+                case @DMRG_NUMSYMM@:
+                    std::cout << "Setting NU1 with N = " << @DMRG_NUMSYMM@ << std::endl;
+                    ret.reset(new typename TR::template F<NU1_template<@DMRG_NUMSYMM@>>::type(args...));
+                    break;
+#endif
                 default:
-                    throw std::runtime_error("Please recompile QCMaquis with a higher DMRG_NUMSYMM value");
+                    throw std::runtime_error("Please recompile QCMaquis with the correct DMRG_NUMSYMM value");
                     break;
             }
         }

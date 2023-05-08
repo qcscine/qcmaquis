@@ -1,6 +1,9 @@
-//
-// Created by robin on 11.05.21.
-//
+/**
+ * @file
+ * @copyright This code is licensed under the 3-clause BSD license.
+ *            Copyright ETH Zurich, Laboratory of Physical Chemistry, Reiher Group.
+ *            See LICENSE.txt for details.
+ */
 
 #ifndef MAQUIS_DMRG_PREBO_PARSE_INTEGRALS_H
 #define MAQUIS_DMRG_PREBO_PARSE_INTEGRALS_H
@@ -12,8 +15,7 @@ namespace detail {
 
 // now the integral parser can both real and complex integrals without specialization
 template <class T>
-inline
-std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<T> >
+inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::PreBO>>, std::vector<T> >
 parse_integrals(BaseParameters & parms, Lattice const & lat)
 {
     typedef Lattice::pos_t pos_t;
