@@ -10,13 +10,15 @@ stages:
   - buildFinal
   - testFinal
 
+# Conventional electronic-structure tests
+
 build-electronic:
   stage: buildBasic
   tags:
     - default_docker
   script:
     - mkdir buildElectronic && cd buildElectronic
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -31,7 +33,9 @@ testElectronic:
     - default_docker
   script:
     - cd buildElectronic
-    - make test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
+
+# Relativistic electronic-structure tests
 
 build-relativistic:
   stage: buildAdvanced
@@ -40,7 +44,7 @@ build-relativistic:
     - default_docker
   script:
     - mkdir buildRelativistic && cd buildRelativistic
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG" -DCMAKE_BUILD_TYPE=Release ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -55,16 +59,18 @@ testRelativistic:
     - default_docker
   script:
     - cd buildRelativistic
-    - make test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
-build-with-nu1:
+# Non-electronic-structure tests
+
+buildPreBO:
   stage: buildFinal
   needs: ["testRelativistic"]
   tags:
     - default_docker
   script:
     - mkdir buildNU1 && cd buildNU1
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5  ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DCMAKE_BUILD_TYPE=Release -DBUILD_PREBO=ON -DDMRG_NUMSYMM=5  ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -72,16 +78,68 @@ build-with-nu1:
     expire_in: 6h
     when: always
 
-testNU1:
+testPreBO:
   stage: testFinal
-  needs: ["build-with-nu1"]
+  needs: ["buildPreBO"]
   tags:
     - default_docker
   script:
     - cd buildNU1
-    - make test -j4
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
 
-# Pipeline for the TD-DMRG case
+buildVibrationalHamiltonians:
+  stage: buildFinal
+  needs: ["testRelativistic"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildVibrational && cd buildVibrational
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="NONE" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRATIONAL=ON -DBUILD_DMRG_FEAST=ON -DBUILD_SRCAS=ON -DBUILD_MPS2CI=ON -DDMRG_ORDERNONE=12 ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildVibrational/
+    expire_in: 6h
+    when: always
+
+testVibrationalHamiltonians:
+  stage: testFinal
+  needs: ["buildVibrationalHamiltonians"]
+  tags:
+    - default_docker
+  script:
+    - cd buildVibrational
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
+
+buildVibronicHamiltonians:
+  stage: buildFinal
+  needs: ["testRelativistic"]
+  tags:
+    - default_docker
+  script:
+    - mkdir buildVibronic && cd buildVibronic
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1PG;SU2U1PG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_VIBRONIC=ON ../dmrg
+    - make -j2
+  artifacts:
+    paths:
+      - buildVibronic/
+    expire_in: 6h
+    when: always
+
+testVibronicHamiltonians:
+  stage: testFinal
+  needs: ["buildVibronicHamiltonians"]
+  tags:
+    - default_docker
+  script:
+    - cd buildVibronic
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
+
+# +-----------------------------+
+#  Pipeline for the TD-DMRG case
+# +-----------------------------+
+
+# Tests TD-DMRG with Electronic Hamiltonians
 
 build-TD-conventional:
   stage: buildBasic
@@ -89,7 +147,7 @@ build-TD-conventional:
     - default_docker
   script:
     - mkdir buildTDConventional && cd buildTDConventional
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DBUILD_DMRG_EVOLVE=ON ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -104,7 +162,9 @@ testTDConventional:
     - default_docker
   script:
     - cd buildTDConventional
-    - make test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
+
+# Tests TD-DMRG with all Hamiltonians
 
 build-TD-with-all-symmetries:
   stage: buildAdvanced
@@ -113,7 +173,7 @@ build-TD-with-all-symmetries:
     - default_docker
   script:
     - mkdir buildTDAllSymmetries && cd buildTDAllSymmetries
-    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1" -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON ../dmrg
+    - cmake -DQCMAQUIS_TESTS=ON -DBUILD_SYMMETRIES="TwoU1;TwoU1PG;SU2U1;SU2U1PG;U1DG;NU1;U1" -DCMAKE_BUILD_TYPE=Release -DBUILD_DMRG_EVOLVE=ON -DBUILD_PREBO=ON -DBUILD_VIBRONIC=ON ../dmrg
     - make -j2
   artifacts:
     paths:
@@ -128,4 +188,4 @@ testTDAllSymmetries:
     - default_docker
   script:
     - cd buildTDAllSymmetries
-    - make test -j2
+    - make CTEST_OUTPUT_ON_FAILURE=1 test
