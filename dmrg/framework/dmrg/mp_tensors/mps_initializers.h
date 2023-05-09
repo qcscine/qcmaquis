@@ -121,14 +121,11 @@ template<class Matrix, class SymmGroup>
 class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
-  // Declaration of types
-  using StateType = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
-
   /** @brief Class constructor */
-  coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
+  coherent_mps_init(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
                     typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
     : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
-      site_type(site_type_), right_end(right_end_)
+      site_type(site_type_), right_end(right_end_), params(params_)
   {
     std::vector<std::string> list_sa;
     std::string input_str = params["init_basis_state"].str();
@@ -152,9 +149,7 @@ public:
   {
     MPS<Matrix, SymmGroup> MPSBuffer;
     for (int i=0; i<basis_index.size(); i++ ) {
-      state.resize(mps.length());
-      for (int j=0; j<mps.length(); j++)
-        state[j] = phys_dims[site_type[j]].element(basis_index[i][j]);
+      auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index[i], phys_dims, site_type, mps.length());
       auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end);
       if (i == 0) {
         mps = mps_tmp;
@@ -165,6 +160,11 @@ public:
         mps = MPSBuffer;
       }
     }
+    if (mps[mps.length()-1].col_dim()[0].first != right_end)
+      throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+    for (int i = 0; i < mps.length(); i++) {
+      mps[i].divide_by_scalar(mps[i].scalar_norm());
+    }
   }
 
 private:
@@ -173,7 +173,7 @@ private:
   std::vector<Index<SymmGroup> > phys_dims;
   std::vector<int> site_type;
   std::vector< std::vector<int> > basis_index;
-  StateType state;
+  BaseParameters& params;
 };
 
 /**
@@ -186,9 +186,6 @@ template<class Matrix, class SymmGroup>
 class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
 {
 public:
-    // Types definition
-    typedef std::vector<boost::tuple<typename SymmGroup::charge, size_t> > state_type;
-
     /**
      * @brief Class constructor from a parameter object
      * @param params Parameter container.
@@ -243,8 +240,6 @@ private:
 template<class Matrix, class SymmGroup>
 class basis_mps_init_generic_const : public mps_initializer<Matrix, SymmGroup>
 {
-  using state_type = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
-
 public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
@@ -288,9 +283,6 @@ private:
 template<class Matrix, class SymmGroup>
 class basis_mps_init_generic_default : public mps_initializer<Matrix, SymmGroup>
 {
-  // Types definition
-  using state_type = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
-
 public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
