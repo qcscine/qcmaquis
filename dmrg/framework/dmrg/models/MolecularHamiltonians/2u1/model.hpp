@@ -41,11 +41,19 @@ qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::qc_model(Lattice 
     typedef typename SymmGroup::subcharge subcharge;
 
     // Parameter parsing
-    if (parms.is_set("transcorrelated_quantum_computing_format"))
-        if (parms["transcorrelated_quantum_computing_format"] == "yes" && isTranscorrelated_) {
-            maquis::cout << " Activating quantum computing format" << std::endl;
+    if (isTranscorrelated_ && parms.is_set("transcorrelated_quantum_computing_format")) {
+        if (parms["transcorrelated_quantum_computing_format"] == "yes") {
+            maquis::cout << " Activating transcorrelated quantum computing format" << std::endl;
             isQuantumComputingFormat = true;
         }
+    }
+
+    if (!isTranscorrelated_ && parms.is_set("quantum_computing_format")) {
+        if (parms["quantum_computing_format"] == "yes") {
+            maquis::cout << " Activating conventional quantum computing format" << std::endl;
+            isQuantumComputingFormat = true;
+        }
+    }
 
     // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
@@ -252,7 +260,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         // Two-body contribution
         else if (m==-1 && n==-1) {
             std::vector< OperatorType > opVector1, opVector2, opVector3, opVector4;
-            if (isTcAndQuantum) {
+            if (isQuantumComputingFormat) {
                 opVector1 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};
                 opVector2 = {OperatorType::CreateAlpha, OperatorType::DestroyAlpha, OperatorType::CreateBeta, OperatorType::DestroyBeta};
                 opVector3 = {OperatorType::CreateBeta, OperatorType::DestroyBeta, OperatorType::CreateAlpha, OperatorType::DestroyAlpha};

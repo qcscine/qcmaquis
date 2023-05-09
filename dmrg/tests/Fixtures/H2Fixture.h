@@ -69,22 +69,37 @@ struct H2Fixture
         integralFileH2ConventionalFormat << " 0.176392403557E+00   0  0  0  0" << std::endl;
         integralFileH2ConventionalFormat.close();
 
-        // H2 integral file in quantum format.
-        integralFileH2QuantumFormat.open("IntegralFile_H2_QuantumFormat");
-        integralFileH2QuantumFormat << " &FCI NORB=2,NELEC=2,MS2=0, " << std::endl;
-        integralFileH2QuantumFormat << " ORBSYM=1,1," << std::endl;
-        integralFileH2QuantumFormat << " ISYM=1, " << std::endl;
-        integralFileH2QuantumFormat << " &END " << std::endl;
-        integralFileH2QuantumFormat << "-9.481694515690000e-01    1   1    0    0    0    0" << std::endl;
-        integralFileH2QuantumFormat << "-9.314443646090000e-01    2   2    0    0    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+3.542378480110000e-01    1   1    1    1    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+1.851252515470000e-01    1   2    1    2    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+1.851252515470000e-01    2   1    1    2    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+1.851252515470000e-01    2   1    2    1    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+3.610011635190000e-01    2   2    1    1    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+3.713202001190000e-01    2   2    2    2    0    0" << std::endl;
-        integralFileH2QuantumFormat << "+0.176392403557000E+00    0   0    0    0    0    0" << std::endl;
-        integralFileH2QuantumFormat.close();
+        // H2 integral file in quantum format (so, eightfold symmetry)
+        integralFileH2QuantumFormatConventional.open("IntegralFile_H2_QuantumFormat");
+        integralFileH2QuantumFormatConventional << " &FCI NORB=2,NELEC=2,MS2=0, " << std::endl;
+        integralFileH2QuantumFormatConventional << " ORBSYM=1,1," << std::endl;
+        integralFileH2QuantumFormatConventional << " ISYM=1, " << std::endl;
+        integralFileH2QuantumFormatConventional << " &END " << std::endl;
+        integralFileH2QuantumFormatConventional << "-9.481694515690000e-01    1   1    0    0" << std::endl;
+        integralFileH2QuantumFormatConventional << "-9.314443646090000e-01    2   2    0    0" << std::endl;
+        integralFileH2QuantumFormatConventional << "+3.542378480110000e-01    1   1    1    1" << std::endl;
+        integralFileH2QuantumFormatConventional << "+1.851252515470000e-01    2   1    2    1" << std::endl;
+        integralFileH2QuantumFormatConventional << "+3.610011635190000e-01    2   2    1    1" << std::endl;
+        integralFileH2QuantumFormatConventional << "+3.713202001190000e-01    2   2    2    2" << std::endl;
+        integralFileH2QuantumFormatConventional << "+0.176392403557000E+00    0   0    0    0" << std::endl;
+        integralFileH2QuantumFormatConventional.close();
+
+        // H2 integral file in quantum format + transcorrelation (so, twofold symmetry).
+        integralFileH2QuantumFormatTranscorrelated.open("IntegralFile_H2_QuantumFormat_Transcorrelated");
+        integralFileH2QuantumFormatTranscorrelated << " &FCI NORB=2,NELEC=2,MS2=0, " << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << " ORBSYM=1,1," << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << " ISYM=1, " << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << " &END " << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "-9.481694515690000e-01    1   1    0    0    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "-9.314443646090000e-01    2   2    0    0    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+3.542378480110000e-01    1   1    1    1    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+1.851252515470000e-01    1   2    1    2    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+1.851252515470000e-01    2   1    1    2    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+1.851252515470000e-01    2   1    2    1    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+3.610011635190000e-01    2   2    1    1    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+3.713202001190000e-01    2   2    2    2    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated << "+0.176392403557000E+00    0   0    0    0    0    0" << std::endl;
+        integralFileH2QuantumFormatTranscorrelated.close();
 
         // == Conventional calculation ==
         // Generic parameters
@@ -102,7 +117,6 @@ struct H2Fixture
         parametersH2.set("u1_total_charge2", 1);
 
         // == Quantum format ==
-        // -- General parameters --
         parametersH2QuantumFormat.set("L", 2);
         parametersH2QuantumFormat.set("max_bond_dimension", 10);
         parametersH2QuantumFormat.set("nsweeps", 10);
@@ -112,31 +126,43 @@ struct H2Fixture
         parametersH2QuantumFormat.set("LATTICE", "orbitals");
         parametersH2QuantumFormat.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown");
         parametersH2QuantumFormat.set("MODEL", "quantum_chemistry");
-        parametersH2QuantumFormat.set("integral_file", "IntegralFile_H2_ConventionalFormat");
+        parametersH2QuantumFormat.set("integral_file", "IntegralFile_H2_QuantumFormat");
         parametersH2QuantumFormat.set("optimization", "twosite");
         parametersH2QuantumFormat.set("init_type", "default");
         parametersH2QuantumFormat.set("seed", "16071991");
-        // -- Transcorrelated options --
-        parametersH2QuantumFormat.set("transcorrelated_nsweeps_TI", 0);
-        parametersH2QuantumFormat.set("transcorrelated_nsweeps_TC", 100);
-        parametersH2QuantumFormat.set("transcorrelated_integral_file", "IntegralFile_H2_QuantumFormat");
-        parametersH2QuantumFormat.set("transcorrelated_quantum_computing_format", "yes");
-        // -- Time-dependent simulation --
-        parametersH2QuantumFormat.set("propagator_accuracy", 1.0E-5);
-        parametersH2QuantumFormat.set("propagator_maxiter", 10);
-        parametersH2QuantumFormat.set("time_step", 1);
-        parametersH2QuantumFormat.set("TD_backpropagation", "no");
+        parametersH2QuantumFormat.set("quantum_computing_format", "yes");
+
+        // == Quantum format + transcorrelation ==
+        parametersH2QuantumFormatTranscorrelated.set("L", 2);
+        parametersH2QuantumFormatTranscorrelated.set("max_bond_dimension", 10);
+        parametersH2QuantumFormatTranscorrelated.set("nsweeps", 10);
+        parametersH2QuantumFormatTranscorrelated.set("symmetry", "2u1pg");
+        parametersH2QuantumFormatTranscorrelated.set("u1_total_charge1", 1);
+        parametersH2QuantumFormatTranscorrelated.set("u1_total_charge2", 1);
+        parametersH2QuantumFormatTranscorrelated.set("LATTICE", "orbitals");
+        parametersH2QuantumFormatTranscorrelated.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown");
+        parametersH2QuantumFormatTranscorrelated.set("MODEL", "quantum_chemistry");
+        parametersH2QuantumFormatTranscorrelated.set("integral_file", "IntegralFile_H2_ConventionalFormat");
+        parametersH2QuantumFormatTranscorrelated.set("optimization", "twosite");
+        parametersH2QuantumFormatTranscorrelated.set("init_type", "default");
+        parametersH2QuantumFormatTranscorrelated.set("seed", "16071991");
+        parametersH2QuantumFormatTranscorrelated.set("quantum_computing_format", "no");
+        parametersH2QuantumFormatTranscorrelated.set("transcorrelated_nsweeps_TI", 0);
+        parametersH2QuantumFormatTranscorrelated.set("transcorrelated_nsweeps_TC", 100);
+        parametersH2QuantumFormatTranscorrelated.set("transcorrelated_integral_file", "IntegralFile_H2_QuantumFormat_Transcorrelated");
+        parametersH2QuantumFormatTranscorrelated.set("transcorrelated_quantum_computing_format", "yes");
     }
 
     /** @brief Class destructor */
     ~H2Fixture() {
         std::remove("IntegralFile_H2_ConventionalFormat");
         std::remove("IntegralFile_H2_QuantumFormat");
+        std::remove("IntegralFile_H2_QuantumFormat_Transcorrelated");
     }
     // Class members
     RealIntegralMapType integralH2;
-    DmrgParameters parametersH2, parametersH2QuantumFormat;
-    std::ofstream integralFileH2ConventionalFormat, integralFileH2QuantumFormat;
+    DmrgParameters parametersH2, parametersH2QuantumFormatTranscorrelated, parametersH2QuantumFormat;
+    std::ofstream integralFileH2ConventionalFormat, integralFileH2QuantumFormatTranscorrelated, integralFileH2QuantumFormatConventional;
 };
 
 #endif

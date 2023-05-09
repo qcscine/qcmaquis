@@ -214,14 +214,14 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
   using ModelType = Model<matrix, TwoU1>;
   using MPSType = MPS<matrix, TwoU1>;
   // Generates the conventional MPO
-  auto lattice = Lattice(parametersH2QuantumFormat);
-  auto conventionalModel = ModelType(lattice, parametersH2QuantumFormat);
+  auto lattice = Lattice(parametersH2QuantumFormatTranscorrelated);
+  auto conventionalModel = ModelType(lattice, parametersH2QuantumFormatTranscorrelated);
   auto conventionalMpo = make_mpo(lattice, conventionalModel);
-  parametersH2QuantumFormat.set("init_type", "default");
+  parametersH2QuantumFormatTranscorrelated.set("init_type", "default");
   // Generates the MPS
-  auto mps = MPSType(lattice.size(), *(conventionalModel.initializer(lattice, parametersH2QuantumFormat)));
+  auto mps = MPSType(lattice.size(), *(conventionalModel.initializer(lattice, parametersH2QuantumFormatTranscorrelated)));
   // Generates the transcorrelatedMPO
-  auto transcorrelatedParametersContainer = parametersH2QuantumFormat;
+  auto transcorrelatedParametersContainer = parametersH2QuantumFormatTranscorrelated;
   transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
   transcorrelatedParametersContainer.set("imaginary_time", "yes");
   auto transcorrelatedModel = ModelType(lattice, transcorrelatedParametersContainer);
@@ -230,6 +230,11 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
   auto energyConventional = expval(mps, conventionalMpo);
   auto energyQuantum = expval(mps, transcorrelatedMpo);
   BOOST_CHECK_CLOSE(energyConventional, energyQuantum, 1.0E-14);
+  // Now also tries conventional Hamiltonian in quantum format
+  auto conventionalModelQuantumFormat = ModelType(lattice, parametersH2QuantumFormat);
+  auto conventionalMPOQuantumFormat = make_mpo(lattice, conventionalModelQuantumFormat);
+  auto energyConventionalQuantumFormat = expval(mps, conventionalMPOQuantumFormat);
+  BOOST_CHECK_CLOSE(energyConventionalQuantumFormat, energyQuantum, 1.0E-14);
 }
 
 #endif // HAVE_TwoU1 and DMRG_TD

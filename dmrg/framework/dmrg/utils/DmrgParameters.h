@@ -32,17 +32,12 @@
 class DmrgParameters : public BaseParameters
 {
 public:
+
     DmrgParameters() : BaseParameters() { init_options(); }
-    DmrgParameters(std::ifstream& param_file)
-    : BaseParameters(param_file)
-    {
-        init_options();
-    }
-    DmrgParameters(BaseParameters const& p)
-    : BaseParameters(p)
-    {
-        init_options();
-    }
+
+    explicit DmrgParameters(std::ifstream& param_file) : BaseParameters(param_file) { init_options(); }
+
+    explicit DmrgParameters(BaseParameters const& p) : BaseParameters(p) { init_options(); }
 
 private:
 
@@ -131,6 +126,9 @@ private:
         add_option("transcorrelated_nsweeps_TI", "Number of preliminary TI-DMRG sweeps for a tcDMRG calculation", value(5));
         add_option("transcorrelated_nsweeps_TC", "Number of iTD-DMRG sweeps for a tcDMRG calculation", value(20));
         add_option("transcorrelated_integral_file", "Name of the file storing the transcorrelated integrals");
+
+        // Choice for the format of the Hamiltonian
+        add_option("quantum_computing_format", "If yes, assumes that the Hamiltonian is in the quantum computing format", value("no"));
         add_option("transcorrelated_quantum_computing_format", "If yes, assumes that the transcorrelated Hamiltonian is in the quantum computing format", value("no"));
 
         add_option("ngrainings", "", value(0));
