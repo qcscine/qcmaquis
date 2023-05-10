@@ -149,3 +149,34 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_MPS_Initializers_Electronic_Benzene, S, sy
   auto energyTHFr_gc2 = expval(mpsTHFr_gc2, mpo_r)/norm(mpsTHFr_gc2);
   BOOST_CHECK_CLOSE(energyTHFr_gc2, energyTHF, 1.0E-10);
 }
+
+/** @brief Tests the coherent initialization of an MPS */
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_MPS_Coherent_Initializer_Electronic_Benzene, S, symmetries, BenzeneFixture)
+{
+  parametersBenzene.set("symmetry", symm_traits::SymmetryNameTrait<S>::symmName());
+  auto lattice = Lattice(parametersBenzene);
+  int latticeSize = lattice.size();
+  auto model = Model<matrix, S>(lattice, parametersBenzene);
+  auto mpo = make_mpo(lattice, model);
+  parametersBenzene.set("init_type", "basis_state_generic");
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1");
+  auto mpsTHF_g = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
+  auto energyTHF_g = expval(mpsTHF_g, mpo)/norm(mpsTHF_g);
+  parametersBenzene.set("init_basis_state", "3,3,3,2,2,2");
+  auto mpsSHF_g = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
+  auto energySHF_g = expval(mpsSHF_g, mpo)/norm(mpsSHF_g);
+  parametersBenzene.set("init_basis_state", "1,4,1,4,1,4");
+  auto mpsMHF_g = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
+  auto energyMHF_g = expval(mpsMHF_g, mpo)/norm(mpsMHF_g);    
+  parametersBenzene.set("init_type", "coherent");
+  parametersBenzene.set("init_coeff", "0.5,0.5");
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|3,3,3,2,2,2");
+  auto mpsCoherent = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
+  auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
+  if (symm_traits::SymmetryNameTrait<S>::symmName() == "2u1PG" || symm_traits::SymmetryNameTrait<S>::symmName() == "2u1") // as this is not true for SU2
+    BOOST_CHECK_CLOSE(energyTHF_g+energySHF_g, 2*energyCoherent, 1.0E-10);
+  parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|1,4,1,4,1,4");
+  auto mpsCoherentM = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
+  auto energyCoherentM = expval(mpsCoherentM, mpo)/norm(mpsCoherentM);
+  BOOST_CHECK_CLOSE(energyTHF_g+energyMHF_g, 2*energyCoherentM, 1.0E-10);
+}

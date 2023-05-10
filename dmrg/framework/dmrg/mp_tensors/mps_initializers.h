@@ -101,7 +101,14 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
   std::vector<int> site_type;
 };
 
-/** @brief Const MPS initializer (MPS with all entries = 1.) */
+/**
+ * @brief Const MPS initializer (MPS with all entries = 1.) 
+ * 
+ * Note that the determinants are utilized as is, also for SU2, as no CSF are constructed.
+ * This guarantees that each new MPS should only have a bond dimension of 1.
+ * Furthermore, this enables a more straightforward interfacing to other programs providing the CI coeffs and determinants.
+ * 
+*/
 template<class Matrix, class SymmGroup>
 struct const_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
@@ -121,11 +128,15 @@ template<class Matrix, class SymmGroup>
 class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
+  // Declaration of types
+  using stateEntryType = std::vector<boost::tuple<typename SymmGroup::charge, int> >;
+  using stateType = std::vector<stateEntryType>;
+
   /** @brief Class constructor */
-  coherent_mps_init(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
+  coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
                     typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
     : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
-      site_type(site_type_), right_end(right_end_), params(params_)
+      site_type(site_type_), right_end(right_end_)
   {
     std::vector<std::string> list_sa;
     std::string input_str = params["init_basis_state"].str();
@@ -149,7 +160,9 @@ public:
   {
     MPS<Matrix, SymmGroup> MPSBuffer;
     for (int i=0; i<basis_index.size(); i++ ) {
-      auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index[i], phys_dims, site_type, mps.length());
+      state = stateType(mps.length(), stateEntryType(1));
+      for (int j=0; j<mps.length(); j++)
+        state[j][0] = phys_dims[site_type[j]].element(basis_index[i][j]); // No CSF are constructed
       auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end);
       if (i == 0) {
         mps = mps_tmp;
@@ -173,7 +186,7 @@ private:
   std::vector<Index<SymmGroup> > phys_dims;
   std::vector<int> site_type;
   std::vector< std::vector<int> > basis_index;
-  BaseParameters& params;
+  stateType state;
 };
 
 /**
