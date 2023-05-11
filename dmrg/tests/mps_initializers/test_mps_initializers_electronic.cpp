@@ -167,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_MPS_Coherent_Initializer_Electronic_Benzen
   auto energySHF_g = expval(mpsSHF_g, mpo)/norm(mpsSHF_g);
   parametersBenzene.set("init_basis_state", "1,4,1,4,1,4");
   auto mpsMHF_g = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
-  auto energyMHF_g = expval(mpsMHF_g, mpo)/norm(mpsMHF_g);    
+  auto energyMHF_g = expval(mpsMHF_g, mpo)/norm(mpsMHF_g);
   parametersBenzene.set("init_type", "coherent");
   parametersBenzene.set("init_coeff", "0.5,0.5");
   parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|3,3,3,2,2,2");
