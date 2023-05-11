@@ -165,7 +165,7 @@ public:
         mps[0] *= coeff[0];
       }
       else {
-        MPSBuffer = join(mps, mps_tmp, 1., coeff[i]);
+        MPSBuffer = joinAndTruncate(mps, mps_tmp, initialBondDim, 1., coeff[i]);
         mps = MPSBuffer;
       }
     }
