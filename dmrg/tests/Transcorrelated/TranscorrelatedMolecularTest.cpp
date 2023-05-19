@@ -59,7 +59,6 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusConventional, TranscorrelatedFi
   parametersH2Conventional_TranscorrelatedFormat.set("max_bond_dimension", 100);
   parametersH2Conventional_TranscorrelatedFormat.set("time_step", 10.);
   parametersH2Conventional_TranscorrelatedFormat.set("propagator_maxiter", 10);
-  parametersH2Conventional_TranscorrelatedFormat.set("imaginary_time", "yes");
   parametersH2Conventional_TranscorrelatedFormat.set("TD_backpropagation", "no");
   maquis::DMRGInterface<double> interfaceTranscorrelated(parametersH2Conventional_TranscorrelatedFormat);
   interfaceTranscorrelated.runTranscorrelated();
@@ -87,7 +86,6 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
   parametersH2Conventional_TranscorrelatedFormat.set("max_bond_dimension", 100);
   parametersH2Conventional_TranscorrelatedFormat.set("time_step", 10.);
   parametersH2Conventional_TranscorrelatedFormat.set("propagator_maxiter", 10);
-  parametersH2Conventional_TranscorrelatedFormat.set("imaginary_time", "yes");
   parametersH2Conventional_TranscorrelatedFormat.set("TD_backpropagation", "no");
   // Does conventional TI and transcorrelated.
   for (auto& iParameter: std::vector<DmrgParameters>{parametersH2Conventional_ConventionalFormat, parametersH2Conventional_TranscorrelatedFormat}) {
@@ -101,6 +99,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_VersusFullCI, TranscorrelatedFixture)
     auto energyDMRG = interface.energy();
     // Hand-made Full-CI
     if (iCont == 1) {
+      // Setting this keyword to "yes" enables constructing the MPO with the transcorrelated code
       parametersH2Conventional_TranscorrelatedFormat.set("transcorrelated_hamiltonian", "yes");
       std::string integralFileName = parametersH2Conventional_TranscorrelatedFormat["transcorrelated_integral_file"];
       parametersH2Conventional_TranscorrelatedFormat.set("integral_file", integralFileName);
@@ -208,6 +207,7 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_Be_VersusCC, TranscorrelatedFixture)
   BOOST_CHECK_SMALL(std::abs(energyDMRG-refEnergy), 1.0E-10);
 }
 
+/** @brief Checks quantum format for Hermitian Hamiltonians */
 BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
 {
   // Types definition
@@ -235,6 +235,36 @@ BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat, H2Fixture)
   auto conventionalMPOQuantumFormat = make_mpo(lattice, conventionalModelQuantumFormat);
   auto energyConventionalQuantumFormat = expval(mps, conventionalMPOQuantumFormat);
   BOOST_CHECK_CLOSE(energyConventionalQuantumFormat, energyQuantum, 1.0E-14);
+}
+
+/** @brief Checks quantum format for non-Hermitian Hamiltonians */
+BOOST_FIXTURE_TEST_CASE(TestTCMolecular_H2_QuantumFormat_NonHermitian, TranscorrelatedFixture)
+{
+  // Types definition
+  using ModelType = Model<matrix, TwoU1>;
+  using MPSType = MPS<matrix, TwoU1>;
+  // Generates the MPS
+  parametersH2Transcorrelated.set("init_type", "hf");
+  parametersH2Transcorrelated.set("hf_occ", "4,1,1,1,1,1,1,1,1,1");
+  auto lattice = Lattice(parametersH2Transcorrelated);
+  auto modelForMPS = ModelType(lattice, parametersH2Transcorrelated);
+  auto randomMps = MPSType(lattice.size(), *(modelForMPS.initializer(lattice, parametersH2Transcorrelated)));
+  // Generates the transcorrelatedMPO with the conventional format
+  auto transcorrelatedParametersContainer = parametersH2Transcorrelated;
+  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
+  transcorrelatedParametersContainer.set("imaginary_time", "yes");
+  auto transcorrelatedModel = ModelType(lattice, transcorrelatedParametersContainer);
+  auto transcorrelatedMpo = make_mpo(lattice, transcorrelatedModel);
+  // Generates the transcorrelatedMPO in the quantum format
+  transcorrelatedParametersContainer = parametersH2TranscorrelatedQuantumFormat;
+  transcorrelatedParametersContainer.set("transcorrelated_hamiltonian", "yes");
+  transcorrelatedParametersContainer.set("imaginary_time", "yes");
+  auto transcorrelatedModelQF = ModelType(lattice, transcorrelatedParametersContainer);
+  auto transcorrelatedMpoQF = make_mpo(lattice, transcorrelatedModelQF);
+  // Checks coherence in the energy
+  auto energyConventionalFormat = expval(randomMps, transcorrelatedMpo);
+  auto energyQuantumFormat = expval(randomMps, transcorrelatedMpoQF);
+  BOOST_CHECK_CLOSE(energyConventionalFormat, energyQuantumFormat, 1.0E-14);
 }
 
 #endif // HAVE_TwoU1 and DMRG_TD

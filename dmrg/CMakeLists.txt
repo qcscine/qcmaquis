@@ -430,16 +430,33 @@ endif(ENABLE_COLLECTOR)
 # *** Libraries / Utilities
 add_subdirectory(framework/dmrg)
 
-# *** Shared Library
+# ================
+#  SHARED LIBRARY
+# ================
+
 add_subdirectory(lib/maquis_dmrg)
 
-# *** Applications
+# ==============
+#  APPLICATIONS
+# ==============
+
 add_subdirectory(applications)
 
-# *** Tests
+# =======
+#  TESTS
+# =======
+
 if(QCMAQUIS_TESTS)
+
+  # Generic printing
   message(STATUS "Enabling tests")
   enable_testing()
+
+  # Generate the files required by the tests
+  configure_file(data/IntegralFile_H2_Transcorrelated IntegralFile_H2_Transcorrelated COPYONLY)
+  configure_file(data/IntegralFile_H2_Transcorrelated_QuantumFormat IntegralFile_H2_Transcorrelated_QuantumFormat COPYONLY)
+
+  # Adds the tests
   add_subdirectory(tests)
   add_test(NAME Test1 COMMAND test1)
   add_test(NAME Test2 COMMAND test2)
