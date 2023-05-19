@@ -455,6 +455,8 @@ if(QCMAQUIS_TESTS)
   # Generate the files required by the tests
   configure_file(data/IntegralFile_H2_Transcorrelated IntegralFile_H2_Transcorrelated COPYONLY)
   configure_file(data/IntegralFile_H2_Transcorrelated_QuantumFormat IntegralFile_H2_Transcorrelated_QuantumFormat COPYONLY)
+  configure_file(data/IntegralFile_Be_Conventional IntegralFile_Be_Conventional COPYONLY)
+  configure_file(data/IntegralFile_Be_Transcorrelated_TwoBody IntegralFile_Be_Transcorrelated_TwoBody COPYONLY)
 
   # Adds the tests
   add_subdirectory(tests)
