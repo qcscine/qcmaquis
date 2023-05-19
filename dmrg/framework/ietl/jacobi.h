@@ -13,9 +13,15 @@
 #include <ietl/traits.h>
 #include <ietl/fmatrix.h>
 #include <ietl/ietl2lapack.h> 
+#include <ietl/interface/ublas.h>
+#include <ietl/vectorspace.h>
+
+#include <dmrg/utils/parallel.hpp>
+#include <dmrg/utils/storage.h>
  
 #include <ietl/cg.h>
 #include <ietl/gmres.h>
+
 
 #include <complex>
 #include <vector>
