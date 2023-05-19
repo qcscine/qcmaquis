@@ -1830,7 +1830,7 @@ MPO Bond 13: 1/0
  == STARTING THE IMAGINARY-TIME TD-DMRG PROPAGATION  == 
 
 Transcorrelated Hamiltonian modality activated
-Retrieving integrals from the file FCIDUMP_he_tz_trans_TwoBody
+Retrieving integrals from the file FCIDUMP_he_tz_trans
 The hamiltonian will contain 21794 terms
 MPO Bond 0: 170/0
 MPO Bond 1: 182/0
@@ -7438,4 +7438,4 @@ Arnoldi approximation of the propagator
 +------------+------------+
  Energy = -2.90232744515119
 
-Task took 10.687689 seconds.
+Task took 26.316469 seconds.

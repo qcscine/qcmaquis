@@ -1,6 +1,8 @@
 // +===========================================================+
-//  EXAMPLE: TC-DMRG CALCULATION ON HE WITH A DOUBLE-ZETA BASIS
+//  EXAMPLE: TC-DMRG CALCULATION ON HE WITH A TRIPLE-ZETA BASIS
 // +===========================================================+
+// Note that, unlike the He_TCDMRG_DZ_m100_TS.inp example, here the 
+// Hamiltonian in the quantum format is employed.
 
 // -- General parameters --
 L                             = 14
@@ -23,23 +25,26 @@ optimization                  = twosite
 conv_thresh                   = -1. 
 
 // -- Transcorrelated options --
-transcorrelated_nsweeps_TI    = 10
+transcorrelated_nsweeps_TI    = 0
 transcorrelated_nsweeps_TC    = 20
-transcorrelated_integral_file = "FCIDUMP_he_tz_trans_TwoBody"
+transcorrelated_integral_file = "FCIDUMP_3body_he_tz_TwoBody_QuantumFormat"
+
+transcorrelated_quantum_computing_format = "yes"
 
 // -- SVD truncation --
 truncation_initial            = 1e-20
 truncation_final              = 1e-20
 
 // -- Initialization and storage information --
-init_type                     = "const"
-chkpfile                      = 'He_TCDMRG_DZ_m100_TS_TwoBody.checkpoint_state.0.h5'
-resultfile                    = 'He_TCDMRG_DZ_m100_TS_TwoBody.results_state.0.h5'
+init_type                     = "hf"
+hf_occ                        = "4,1,1,1,1,1,1,1,1,1,1,1,1,1"
+chkpfile                      = 'He_TCDMRG_DZ_m100_TS_TwoBody_QuantumFormat.checkpoint_state.0.h5'
+resultfile                    = 'He_TCDMRG_DZ_m100_TS_TwoBody_QuantumFormat.results_state.0.h5'
 
 // -- Time-dependent simulation --
 propagator_accuracy           = 1.0E-10
 propagator_maxiter            = 10
-time_step                     = 100
+time_step                     = 0.1
 hamiltonian_units             = "Hartree"
-time_units                    = "as"
+time_units                    = "fs"
 TD_backpropagation            = "no"
