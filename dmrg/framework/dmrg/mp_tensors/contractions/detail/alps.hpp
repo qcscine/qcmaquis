@@ -8,6 +8,8 @@
 #ifndef CONTRACTIONS_IMPL_ALPS_HPP
 #define CONTRACTIONS_IMPL_ALPS_HPP
 
+#include "dmrg/mp_tensors/mpo.h"
+
 namespace contraction {
 
     template<class Matrix, class SymmGroup>

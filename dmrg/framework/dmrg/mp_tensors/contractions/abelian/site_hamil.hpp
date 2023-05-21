@@ -8,6 +8,9 @@
 #ifndef ABELIAN_SITE_HAMIL
 #define ABELIAN_SITE_HAMIL
 
+#include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
+
+
 namespace contraction {
 
 template<class Matrix, class OtherMatrix, class SymmGroup, class SymmType>
