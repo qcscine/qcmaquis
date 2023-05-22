@@ -9,6 +9,7 @@
 #define ONED_MPO_MAKER_H
 
 #include <utility>
+#include <tuple>
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/term_descriptor.h"
@@ -116,7 +117,7 @@ namespace generate_mpo
             // while the next operator is still on the same site
             while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
                 value_type scale = 1.;
-                boost::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
+                std::tie(product, scale) = tag_handler->get_product_tag(pos_ops[range_end].second, product);
                 term.coeff *= scale;
                 range_end++;
             }

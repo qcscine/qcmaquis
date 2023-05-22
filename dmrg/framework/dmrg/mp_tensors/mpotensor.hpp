@@ -210,7 +210,7 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(value_type v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            std::for_each((*it1).begin(), (*it1).end(), boost::lambda::bind(&std::pair<tag_type, value_type>::second, boost::lambda::_1) *= v);
+            std::for_each((*it1).begin(), (*it1).end(), [&v](std::pair<tag_type, value_type> &element){ element.second *= v; });
 }
 
 template<class Matrix, class SymmGroup>
@@ -218,7 +218,7 @@ void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(value_type v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            std::for_each((*it1).begin(), (*it1).end(), boost::lambda::bind(&std::pair<tag_type, value_type>::second, boost::lambda::_1) /= v);
+            std::for_each((*it1).begin(), (*it1).end(), [&v](std::pair<tag_type, value_type> &element){ element.second /= v; });
 }
 
 template<class Matrix, class SymmGroup>

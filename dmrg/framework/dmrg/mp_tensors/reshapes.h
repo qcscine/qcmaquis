@@ -10,6 +10,7 @@
 
 #include <map>
 #include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/block_matrix.h"
 
 template<class Matrix, class SymmGroup>
 void reshape_left_to_right(Index<SymmGroup> physical_i,
