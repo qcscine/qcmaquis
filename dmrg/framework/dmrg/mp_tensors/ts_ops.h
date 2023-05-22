@@ -91,7 +91,6 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     using prempo_t = std::vector<boost::tuple<index_type, index_type, tag_type, value_type> >;
     //
     using MPOTensor_detail::term_descriptor;
-    using boost::tuples::get;
     // Variable declaration
     assert(mpo1.col_dim() == mpo2.row_dim());
     KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());

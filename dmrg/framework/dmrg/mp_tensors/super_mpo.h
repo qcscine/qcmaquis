@@ -8,6 +8,9 @@
 #ifndef SUPER_MPO_H
 #define SUPER_MPO_H
 
+#include <tuple>
+#include <unordered_map>
+
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/block_matrix/grouped_symmetry.h"
@@ -53,7 +56,7 @@ typename std::enable_if<!symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, Symm
 mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
 {
     typedef typename SymmGroup::charge charge;
-    typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
+    typedef std::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
     typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
     typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
 
@@ -88,7 +91,7 @@ mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
 
                     /// note: this has to be here, because we don't know if b1 exists
                     charge l_charge; size_t ll;
-                    boost::tie(l_charge, ll) = left_map[b1];
+                    std::tie(l_charge, ll) = left_map[b1];
                     size_t l_size = left_i[left_i.position(l_charge)].second;
 
                     typename Matrix::value_type scale = mpo[i].at(b1, b2).scale();
@@ -96,9 +99,9 @@ mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
-                        boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
+                        std::tie(s1_charge, size1) = std::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
                         charge s2_charge; size_t size2;
-                        boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
+                        std::tie(s2_charge, size2) = std::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
 
                         charge s_charge = phys_fuse(s1_charge, s2_charge);
                         charge out_l_charge = SymmGroup::fuse(s_charge, l_charge);
@@ -197,7 +200,7 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
     typedef typename grouped_symmetry<InSymm>::type OutSymm;
     typedef typename InSymm::charge in_charge;
     typedef typename OutSymm::charge out_charge;
-    typedef boost::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
+    typedef std::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
     typedef typename MPOTensor<Matrix, InSymm>::row_proxy row_proxy;
 
     MPS<Matrix, OutSymm> mps(mpo.size());
@@ -238,9 +241,9 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;
-                            boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
+                            std::tie(s1_charge, size1) = std::make_tuple(in_block.basis().left_charge(n), in_block.basis().left_size(n));
                             in_charge s2_charge; size_t size2;
-                            boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
+                            std::tie(s2_charge, size2) = std::make_tuple(in_block.basis().right_charge(n), in_block.basis().right_size(n));
 
                             out_charge s_charge = phys_group(s1_charge, s2_charge);
                             out_charge out_l_charge = OutSymm::fuse(s_charge, l_charge);

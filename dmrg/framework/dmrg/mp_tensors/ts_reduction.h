@@ -56,9 +56,10 @@ namespace ts_reduction {
 
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
-        ProductBasis<SymmGroup> in_right(phys2_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+        ProductBasis<SymmGroup> in_right(phys2_i, right_i, 
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                         /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                         /*                     -boost::lambda::_1, boost::lambda::_2)); */
 
         //std::transform(phys_out.begin(), phys_out.end(), phys_out.begin(),
         //               boost::lambda::bind(&std::make_pair<charge, size_t>,
