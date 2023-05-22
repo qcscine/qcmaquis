@@ -27,8 +27,9 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
     
     ProductBasis<SymmGroup> in_left(physical_i, left_i);
     ProductBasis<SymmGroup> out_right(physical_i, right_i,
-                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                          -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); }); 
+                                      /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                      /*                     -boost::lambda::_1, boost::lambda::_2)); */
     
     for (int run = 0; run < 2; ++run) {
         if (run == 1)
@@ -121,8 +122,9 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     typedef typename SymmGroup::charge charge;
     
     ProductBasis<SymmGroup> in_right(physical_i, right_i,
-                                     boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                         -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge &a, const charge &b){ return SymmGroup::fuse(-a, b); });
+                                     /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                     /*                     -boost::lambda::_1, boost::lambda::_2)); */
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
    
     for (int run = 0; run < 2; ++run) {
@@ -189,8 +191,9 @@ void reshape_left_to_right_new(Index<SymmGroup> const & physical_i,
     
     ProductBasis<SymmGroup> in_left(physical_i, left_i);
     ProductBasis<SymmGroup> out_right(physical_i, right_i,
-                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                          -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                      /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                      /*                     -boost::lambda::_1, boost::lambda::_2)); */
     
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
@@ -300,8 +303,9 @@ void reshape_right_to_left_new(Index<SymmGroup> const & physical_i,
     typedef typename SymmGroup::charge charge;
     
     ProductBasis<SymmGroup> in_right(physical_i, right_i,
-                                     boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                         -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                     /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                     /*                     -boost::lambda::_1, boost::lambda::_2)); */
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
    
     for (size_t block = 0; block < m1.n_blocks(); ++block)
@@ -351,8 +355,9 @@ void reshape_left_to_physleft(Index<SymmGroup> const& physical_i,
     
     ProductBasis<SymmGroup> in_left(physical_i, left_i);
     ProductBasis<SymmGroup> out_right(left_i, right_i,
-                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                          -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                      /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                      /*                     -boost::lambda::_1, boost::lambda::_2)); */
     
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
@@ -408,8 +413,9 @@ void reshape_physleft_to_left(Index<SymmGroup> const& physical_i,
     
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
     ProductBasis<SymmGroup> in_right(left_i, right_i,
-                                      boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                          -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
+                                      /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                      /*                     -boost::lambda::_1, boost::lambda::_2)); */
     
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
@@ -469,8 +475,9 @@ void reshape_physright_to_left(Index<SymmGroup> const& physical_i,
     typedef typename SymmGroup::charge charge;
     
     ProductBasis<SymmGroup> in_left(left_i, right_i,
-                                    boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                        boost::lambda::_1, -boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(a, -b); });
+                                    /* boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
+                                    /*                     boost::lambda::_1, -boost::lambda::_2)); */
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
     
     
