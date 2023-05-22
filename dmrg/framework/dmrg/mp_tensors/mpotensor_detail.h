@@ -8,8 +8,12 @@
 #ifndef MPOTENSOR_DETAIL_H
 #define MPOTENSOR_DETAIL_H
 
+#include <vector>
+
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
+
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 template<class Matrix, class SymmGroup>
 class MPOTensor;

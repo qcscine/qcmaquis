@@ -173,8 +173,7 @@ public:
         block_matrix<Matrix, SymmGroup> const & data = mps[site].data();
         Index<SymmGroup> const & right_i = mps[site].col_dim();
         ProductBasis<SymmGroup> right_pb(mps[site].site_dim(), mps[site].col_dim(),
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                        -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
         assert(in_delta.size() == mpo[site].row_dim());
         std::vector<charge> out_delta(mpo[site].col_dim());
         std::map<int, Index<SymmGroup> > new_right_i_map;
@@ -289,8 +288,7 @@ public:
 
         // Load the data inside the finalMPS MPSTensor
         ProductBasis<SymmGroup> out_right_pb(finalPhys, finalRight,
-                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                            -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge&a, const charge& b){ return SymmGroup::fuse(-a, b); });
         // Loop over the columns of the MPO
         for (int iCol = 0; iCol < mpo[site].col_dim(); iCol++)
         {
@@ -404,8 +402,7 @@ public:
         //maquis::cout << "      mps.site_dim: " << mps.site_dim() << std::endl;
         //maquis::cout << "      mps.col_dim : " << mps.col_dim() << std::endl;
         ProductBasis<SymmGroup> right_pb(mps.site_dim(), mps.col_dim(),
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                            -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     
         term_descriptor<Matrix, SymmGroup, true> access = mpo.at(0,0);
         typename operator_selector<Matrix, SymmGroup>::type const & W = access.op();
@@ -451,8 +448,7 @@ public:
         //maquis::cout << "      new_phys_i: " << new_phys_i << std::endl;
     
         ProductBasis<SymmGroup> out_right_pb(new_phys_i, new_right_i,
-                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                                     -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
         block_matrix<Matrix, SymmGroup> prod;
     
         for (size_t b = 0; b < data.n_blocks(); ++b)

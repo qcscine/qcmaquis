@@ -8,6 +8,9 @@
 #ifndef MPS_MPO_DETAIL_H
 #define MPS_MPO_DETAIL_H
 
+#include "dmrg/utils/storage.h"
+#include "dmrg/mp_tensors/mps.h"
+
 namespace mps_mpo_detail {
 
 template<class Matrix, class SymmGroup>
