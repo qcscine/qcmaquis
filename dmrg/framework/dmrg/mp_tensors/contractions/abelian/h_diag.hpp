@@ -49,11 +49,11 @@ namespace contraction {
         //
         // Initialization
         // --------------
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using index_type = typename MPOTensor<OtherMatrix, SymmGroup>::index_type;
+        using col_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy;
+        using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
         block_matrix<Matrix, SymmGroup> ret;
         // The second index of the MPO is fixed. We loop over the first index
         col_proxy col_b2 = mpo.column(b2);
@@ -92,7 +92,7 @@ namespace contraction {
                         charge phys_in = W.basis().left_charge(w_block);
                         charge phys_out = W.basis().right_charge(w_block);
                         if (phys_charge != phys_in || phys_in != phys_out) continue;
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                        using block_iterator = typename SparseOperator<Matrix, SymmGroup>::const_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
                         for (block_iterator it = blocks.first; it != blocks.second; ++it) {
                             std::size_t ss1 = it->row;
@@ -139,7 +139,7 @@ namespace contraction {
         //  Initialization
         // +--------------+
         // Note that the phys index and the row are grouped together
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         Index<SymmGroup> const &physical_i = x.site_dim();
         Index<SymmGroup> right_i = x.col_dim();
         Index<SymmGroup> out_left_i = physical_i * x.row_dim();

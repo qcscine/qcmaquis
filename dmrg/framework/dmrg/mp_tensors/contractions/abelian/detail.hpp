@@ -9,6 +9,9 @@
 #define CONTRACTIONS_ABELIAN_DETAIL_HPP
 
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/contractions/abelian/functors.hpp"
+#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
+#include "dmrg/mp_tensors/mpotensor.h"
 
 namespace contraction {
 namespace abelian {
@@ -32,7 +35,7 @@ DualIndex<SymmGroup> gemm_trim_left_basis(block_matrix<Matrix1, SymmGroup> const
                                           DualIndex<SymmGroup> const & B_basis,
                                           DualIndex<SymmGroup> const & refBasis)
 {
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     DualIndex<SymmGroup> ret;
     const_iterator B_begin = B_basis.begin();
     const_iterator B_end = B_basis.end();
@@ -64,7 +67,7 @@ DualIndex<SymmGroup> gemm_trim_right_basis(DualIndex<SymmGroup> const & A_basis,
                                            block_matrix<Matrix2, SymmGroup> const & B,
                                            DualIndex<SymmGroup> const & refBasis)
 {
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     DualIndex<SymmGroup> ret;
     const_iterator B_begin = B.basis().begin();
     const_iterator B_end = B.basis().end();

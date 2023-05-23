@@ -73,8 +73,8 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                          MPOTensor<Matrix, SymmGroup> const & mpo,
                          Index<SymmGroup> const * in_low = NULL)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     if (in_low == NULL)
         in_low = &mps.row_dim();
     //std::vector<block_matrix<Matrix, SymmGroup> > t
@@ -104,8 +104,8 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                           MPOTensor<Matrix, SymmGroup> const & mpo,
                           Index<SymmGroup> const * in_low = NULL)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     if (in_low == NULL)
         in_low = &mps.col_dim();
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, right, mpo);
@@ -132,8 +132,8 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor
                       Boundary<OtherMatrix, SymmGroup> const & left, MPOTensor<Matrix, SymmGroup> const & mpo,
                       bool isHermitian=true)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     bra_tensor.make_right_paired();
     Index<SymmGroup> braBasis = bra_tensor.data().left_basis();
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
@@ -193,8 +193,8 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
                        Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo,
                        bool isHermitian=true)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                              right_i = bra_tensor.col_dim();
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
@@ -240,8 +240,8 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
                         MPOTensor<Matrix, SymmGroup> const & mpo)          // MPOTensor object)
 {
     // Types definition
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
     // Contracts the boundary with the MPS. Returns a vector of block_matrix objects.
     contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, left, mpo);
@@ -293,8 +293,8 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
                          Boundary<OtherMatrix, SymmGroup> const & right, MPOTensor<Matrix, SymmGroup> const & mpo)
 {
     // Types definition
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     // Contracts with the right boundary
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo);

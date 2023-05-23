@@ -51,9 +51,9 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix3, SymmGroup> & C,
           int spin)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-    typedef typename Matrix3::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+    using value_type = typename Matrix3::value_type;
     C.clear();
     assert(B.basis().is_sorted());
     const_iterator B_begin = B.basis().begin();
@@ -120,8 +120,8 @@ DualIndex<SymmGroup> gemm_trim_right_pretend(DualIndex<SymmGroup> const& A,
                                              block_matrix<Matrix2, SymmGroup> const & B,
                                              Index<SymmGroup> const & refIndex)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     assert(B.basis().is_sorted());
     DualIndex<SymmGroup> ret;
     const_iterator B_end = B.basis().end();
@@ -149,9 +149,9 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
                      Index<SymmGroup> const & refIndex,
                      std::vector<typename Matrix1::value_type> conj_scales = std::vector<typename Matrix1::value_type>())
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-    typedef typename Matrix3::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+    using value_type = typename Matrix3::value_type;
 
     if (conj_scales.size() != B.n_blocks())
         conj_scales = std::vector<value_type>(B.n_blocks(), 1.);
@@ -183,9 +183,9 @@ void gemm_trim(block_matrix<Matrix1, SymmGroup> const & A,
                std::vector<typename Matrix1::value_type> conj_scales,
                bool conjugate_a)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-    typedef typename Matrix3::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+    using value_type = typename Matrix3::value_type;
     assert(B.basis().is_sorted());
     assert( (conjugate_a && A.n_blocks() == conj_scales.size()) || (!conjugate_a && B.n_blocks() == conj_scales.size()));
     C.clear();

@@ -8,6 +8,10 @@
 #ifndef CONTRACTIONS_SU2_SITE_HAMIL_HPP
 #define CONTRACTIONS_SU2_SITE_HAMIL_HPP
 
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/boundary.h"
+
 namespace contraction {
 
 // forward declarations

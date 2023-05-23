@@ -8,6 +8,9 @@
 #ifndef ABELIAN_SITE_HAMIL_RBTM
 #define ABELIAN_SITE_HAMIL_RBTM
 
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+
 namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup, class SymmType>
@@ -18,8 +21,8 @@ namespace contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        typedef typename SymmGroup::charge charge;
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        using charge = typename SymmGroup::charge;
+        using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
 
         std::vector<block_matrix<Matrix, SymmGroup> > t
             = common::mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemms>(ket_tensor, right, mpo);
@@ -32,8 +35,7 @@ namespace contraction {
         common_subset(out_right_i, left_i);
         ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
         ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                 -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
         block_matrix<Matrix, SymmGroup> collector;
         MPSTensor<Matrix, SymmGroup> ret;
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();

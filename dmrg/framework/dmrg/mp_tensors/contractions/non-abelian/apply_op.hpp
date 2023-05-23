@@ -32,11 +32,11 @@ namespace SU2 {
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename SymmGroup::charge charge;
+        using index_type = typename MPOTensor<OtherMatrix, SymmGroup>::index_type;
+        using row_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy;
+        using col_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy;
+        using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+        using charge = typename SymmGroup::charge;
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
@@ -103,10 +103,10 @@ namespace SU2 {
     template <class Matrix, class SymmGroup>
     struct task_capsule
     {
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
-        typedef detail::micro_task<value_type> micro_task;
-        typedef std::map<std::pair<charge, charge>, std::vector<micro_task>, compare_pair<std::pair<charge, charge> > > map_t;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
+        using micro_task = detail::micro_task<value_type>;
+        using map_t = std::map<std::pair<charge, charge>, std::vector<micro_task>, compare_pair<std::pair<charge, charge>>>;
 
         map_t tasks;
     };
@@ -122,14 +122,14 @@ namespace SU2 {
                     ProductBasis<SymmGroup> const & out_right_pb,
                     task_capsule<Matrix, SymmGroup> & tasks_cap)
     {
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using index_type = typename MPOTensor<OtherMatrix, SymmGroup>::index_type;
+        using row_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy;
+        using col_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy;
+        using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
-        typedef typename task_capsule<Matrix, SymmGroup>::micro_task micro_task;
+        using micro_task = typename task_capsule<Matrix, SymmGroup>::micro_task;
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -213,9 +213,9 @@ namespace SU2 {
                    Index<SymmGroup> const & out_right_i,
                    MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & t)
     {
-        typedef typename Matrix::value_type value_type;
-        typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
-        typedef typename task_capsule<Matrix, SymmGroup>::micro_task micro_task;
+        using value_type = typename Matrix::value_type;
+        using map_t = typename task_capsule<Matrix, SymmGroup>::map_t;
+        using micro_task = typename task_capsule<Matrix, SymmGroup>::micro_task;
 
         map_t & tasks = tasks_cap.tasks;
         for (typename map_t::iterator it = tasks.begin(); it != tasks.end(); ++it)
@@ -272,10 +272,10 @@ namespace SU2 {
                         block_matrix<TVMatrix, SymmGroup> const & left_b1,
                         MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> const & t)
     {
-        typedef typename Matrix::value_type value_type;
-        typedef typename task_capsule<Matrix, SymmGroup>::map_t map_t;
-        typedef typename task_capsule<Matrix, SymmGroup>::micro_task micro_task;
-        typedef typename SymmGroup::charge charge;
+        using value_type = typename Matrix::value_type;
+        using map_t = typename task_capsule<Matrix, SymmGroup>::map_t;
+        using micro_task = typename task_capsule<Matrix, SymmGroup>::micro_task;
+        using charge = typename SymmGroup::charge;
 
         std::vector<value_type> phases = (mpo.herm_info.left_skip(b1)) ? ::contraction::common::conjugate_phases(left_b1, mpo, b1, true, false) :
                                                                          std::vector<value_type>(left_b1.n_blocks(),1.);

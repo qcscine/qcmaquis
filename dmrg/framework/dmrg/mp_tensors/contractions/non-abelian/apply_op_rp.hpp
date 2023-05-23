@@ -10,6 +10,7 @@
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/micro_kernels.hpp"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
@@ -29,11 +30,11 @@ namespace SU2 {
                         ProductBasis<SymmGroup> const & in_right_pb,
                         ProductBasis<SymmGroup> const & out_left_pb)
     {
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename SymmGroup::charge charge;
+        using index_type = typename MPOTensor<OtherMatrix, SymmGroup>::index_type;
+        using row_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy;
+        using col_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy;
+        using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+        using charge = typename SymmGroup::charge;
 
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {

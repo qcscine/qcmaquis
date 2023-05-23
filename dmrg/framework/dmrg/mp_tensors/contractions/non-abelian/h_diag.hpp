@@ -27,11 +27,11 @@ namespace SU2 {
                      Index<SymmGroup> const & phys_i,
                      ProductBasis<SymmGroup> const & left_pb)
     {
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using index_type = typename MPOTensor<OtherMatrix, SymmGroup>::index_type;
+        using col_proxy = typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy;
+        using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
         block_matrix<Matrix, SymmGroup> ret;
 
@@ -86,7 +86,7 @@ namespace SU2 {
                         couplings[0] = prefactor * (value_type)::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         couplings[1] = prefactor * (value_type)::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
 
-                        typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
+                        using block_iterator = typename SiteOperator<Matrix, SymmGroup>::const_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
                         for (block_iterator it = blocks.first; it != blocks.second; ++it)
@@ -122,7 +122,7 @@ namespace SU2 {
                          MPOTensor<Matrix, SymmGroup> const & mpo,                         
                          MPSTensor<Matrix, SymmGroup> const & x)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> const & physical_i = x.site_dim();
         Index<SymmGroup> right_i = x.col_dim(),

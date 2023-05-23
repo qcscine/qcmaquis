@@ -49,7 +49,7 @@ namespace contraction {
                           Index<SymmGroup> const & right_i,
                           Index<SymmGroup> const & phys_i)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         
         Index<SymmGroup> l_index = phys_i * left_i, r_index = adjoin(phys_i) * right_i;
         common_subset(l_index, r_index);
@@ -57,8 +57,7 @@ namespace contraction {
         
         ProductBasis<SymmGroup> left_pb(phys_i, left_i);
         ProductBasis<SymmGroup> right_pb(phys_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
         ProductBasis<SymmGroup> phys_pb(phys_i, phys_i);
         
         for (size_t ls = 0; ls < left_i.size(); ++ls)
@@ -113,7 +112,7 @@ namespace contraction {
     MPSTensor<Matrix, SymmGroup>
     multiply_with_op(MPSTensor<Matrix, SymmGroup> const & mps, typename operator_selector<Matrix, SymmGroup>::type const & op)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> const & vec = mps.data();
@@ -201,8 +200,8 @@ namespace contraction {
     local_op(MPSTensor<Matrix, SymmGroup> const & mps,
              typename operator_selector<Matrix, SymmGroup>::type const & op)
     {
-        typedef typename SymmGroup::charge charge;
-        typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+        using charge = typename SymmGroup::charge;
+        using op_t = typename operator_selector<Matrix, SymmGroup>::type;
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> const & vec = mps.data();
@@ -279,7 +278,7 @@ namespace contraction {
     density_matrix(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    MPSTensor<Matrix, SymmGroup> const & ket_tensor)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         
         assert( bra_tensor.row_dim() == ket_tensor.row_dim() );
         assert( bra_tensor.col_dim() == ket_tensor.col_dim() );
@@ -344,7 +343,7 @@ namespace contraction {
     density_matrix_2(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                      MPSTensor<Matrix, SymmGroup> const & ket_tensor)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         
         assert( bra_tensor.row_dim() == ket_tensor.row_dim() );
         assert( bra_tensor.col_dim() == ket_tensor.col_dim() );

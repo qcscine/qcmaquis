@@ -72,9 +72,9 @@ namespace SU2 {
 
     struct SU2Gemms
     {
-        typedef su2gemm gemm;
-        typedef su2gemm_trim_left  gemm_trim_left;
-        typedef su2gemm_trim_right gemm_trim_right;
+        using gemm = su2gemm;
+        using gemm_trim_left = su2gemm_trim_left;
+        using gemm_trim_right = su2gemm_trim_right;
     };
 
 } // namespace SU2

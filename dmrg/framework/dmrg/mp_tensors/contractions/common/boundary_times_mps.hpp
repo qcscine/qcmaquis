@@ -22,7 +22,7 @@ namespace contraction {
                      MPOTensor<OtherMatrix, SymmGroup> const & mpo,
                      size_t k, bool left, bool forward)
     {
-        typedef typename Matrix::value_type value_type;
+        using value_type = typename Matrix::value_type;
         typename SymmGroup::subcharge S = (left) ? mpo.left_spin(k).get() : mpo.right_spin(k).get();
 
         std::vector<value_type> ret(bm.n_blocks());
@@ -56,7 +56,7 @@ namespace contraction {
                                                                                        MPOTensor<Matrix, SymmGroup> const & mpo,
                                                                                        size_t k, bool left, bool forward)
     {
-        typedef typename Matrix::value_type value_type;
+        using value_type = typename Matrix::value_type;
         std::vector<value_type> scales = conjugate_phases(bm, mpo, k, left, forward);
 
         for (size_t b = 0; b < bm.n_blocks(); ++b)
@@ -228,9 +228,9 @@ namespace contraction {
     {
     public:
         // Types definition
-        typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-        typedef typename Matrix::value_type value_type;
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        using scalar_type = typename maquis::traits::scalar_type<Matrix>::type;
+        using value_type = typename Matrix::value_type;
+        using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
 
         /** @brief Constructor from a MPS tensor */
         MPSBoundaryProduct(MPSTensor<Matrix, SymmGroup> const & mps_, Boundary<OtherMatrix, SymmGroup> const & right_,

@@ -128,7 +128,7 @@ namespace detail {
     template <typename T>
     struct micro_task
     {
-        typedef unsigned short IS;
+        using IS = unsigned short;
 
         //T const* source;
         T scale;
