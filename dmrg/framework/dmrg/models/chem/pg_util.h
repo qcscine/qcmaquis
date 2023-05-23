@@ -35,8 +35,8 @@ template <class SymmGroup>
 class  PGDecorator<SymmGroup, typename std::enable_if<symm_traits::HasPG<SymmGroup>::value >::type>
 {
 public:
-    typedef typename SymmGroup::subcharge subcharge;
-    typedef typename SymmGroup::charge charge;
+    using subcharge = typename SymmGroup::subcharge;
+    using charge = typename SymmGroup::charge;
 
     DualIndex<SymmGroup> operator()(DualIndex<SymmGroup> rhs, subcharge irr)
     {
@@ -71,7 +71,7 @@ template <class SymmGroup>
 class  PGCharge<SymmGroup, typename std::enable_if<symm_traits::HasPG<SymmGroup>::value >::type>
 {
 public:
-    typedef typename SymmGroup::subcharge subcharge;
+    using subcharge = typename SymmGroup::subcharge;
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, subcharge irr)
     {
         SymmGroup::irrep(rhs) = irr;
@@ -93,7 +93,7 @@ template <class SymmGroup>
 class  getPG<SymmGroup, typename std::enable_if<symm_traits::HasPG<SymmGroup>::value >::type>
 {
 public:
-    typedef typename SymmGroup::subcharge subcharge;
+    using subcharge = typename SymmGroup::subcharge;
     typename SymmGroup::subcharge operator()(typename SymmGroup::charge rhs)
     {
         return SymmGroup::irrep(rhs);

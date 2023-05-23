@@ -31,20 +31,20 @@
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
 {
-    typedef model_impl<Matrix, SymmGroup> base;
+    using base = model_impl<Matrix, SymmGroup>;
 
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
-    typedef typename base::tag_type tag_type;
+    using table_type = typename base::table_type;
+    using table_ptr = typename base::table_ptr;
+    using tag_type = typename base::tag_type;
 
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename base::terms_type terms_type;
-    typedef typename base::op_t op_t;
-    typedef typename base::measurements_type measurements_type;
+    using term_descriptor = typename base::term_descriptor;
+    using terms_type = typename base::terms_type;
+    using op_t = typename base::op_t;
+    using measurements_type = typename base::measurements_type;
 
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename Matrix::value_type value_type;
-    typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename Matrix::value_type;
+    using one_matrix = typename alps::numeric::associated_one_matrix<Matrix>::type;
 
 public:
 
@@ -114,7 +114,7 @@ public:
 
     measurements_type measurements () const
     {
-        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+        using tokenizer = boost::tokenizer<boost::char_separator<char>>;
 
         std::vector<tag_type> swap_d2u              = (tag_handler->get_product_tags(destroy_down, create_up)).first;
         std::vector<tag_type> swap_u2d              = (tag_handler->get_product_tags(destroy_up, create_down)).first;
@@ -166,9 +166,9 @@ public:
             }
         }
 
-        typedef std::vector<tag_type> tag_vec;
-        typedef std::vector<tag_vec> bond_tag_element;
-        typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
+        using tag_vec = std::vector<tag_type>;
+        using bond_tag_element = std::vector<tag_vec>;
+        using scaled_bond_element = std::pair<std::vector<tag_vec>, value_type>;
         {
             std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             std::smatch what;

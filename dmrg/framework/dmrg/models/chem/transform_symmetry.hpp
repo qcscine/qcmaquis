@@ -20,7 +20,7 @@ namespace transform_detail
     template<class SymmIn, class SymmOut>
     std::vector<typename SymmOut::charge> transform_charge(typename SymmIn::charge cin)
     {
-        typedef typename SymmIn::subcharge subcharge;
+        using subcharge = typename SymmIn::subcharge;
 
         subcharge sz_min = -SymmIn::spin(cin);
         subcharge sz_max =  SymmIn::spin(cin);
@@ -46,9 +46,9 @@ template<class Matrix, class SymmIn, class SymmOut>
 void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                     MPSTensor<Matrix, SymmOut> & mps_out)
 {
-    typedef std::size_t size_t;
-    typedef typename SymmIn::charge charge;
-    typedef typename SymmOut::charge out_charge;
+    using size_t = std::size_t;
+    using charge = typename SymmIn::charge;
+    using out_charge = typename SymmOut::charge;
 
     Index<SymmIn> const & physical_i = mps_in.site_dim();
     Index<SymmIn> const & left_i = mps_in.row_dim();
@@ -66,7 +66,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
     // data for the layout of the output MPS/block_matrix
     // each 2u1 sector (out_charge) contains a SU2 Index to describe the SU2 blocks within
     // the larger 2u1 block
-    typedef std::map<out_charge, Index<SymmIn> > subsector_map_t;
+    using subsector_map_t = std::map<out_charge, Index<SymmIn>>;
     subsector_map_t left_subblocks, right_subblocks;
     Index<SymmOut> new_left_i, new_right_i;
 
@@ -175,7 +175,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
 template <class Matrix, class SymmGroup, class = void>
 struct transform_mps
 {
-    typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+    using SymmOut = typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type;
 
     void operator()(MPS<Matrix, SymmGroup> const & mps_in, MPS<Matrix, SymmOut> & mps_out)
     {}
@@ -184,7 +184,7 @@ struct transform_mps
 template <class Matrix, class SymmGroup>
 struct transform_mps<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
 {
-    typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+    using SymmOut = typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type;
 
     MPS<Matrix, SymmOut> operator()(MPS<Matrix, SymmGroup> mps_in, int Nup, int Ndown)
     {

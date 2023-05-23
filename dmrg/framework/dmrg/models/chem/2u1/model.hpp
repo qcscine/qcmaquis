@@ -8,13 +8,15 @@
 #ifndef QC_MODEL_HPP
 #define QC_MODEL_HPP
 
+#include "dmrg/models/chem/2u1/model.h"
+
 template <class Matrix, class SymmGroup>
 qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
 : lat(lat_)
 , parms(parms_)
 , tag_handler(new table_type())
 {
-    typedef typename SymmGroup::subcharge subcharge;
+    using subcharge = typename SymmGroup::subcharge;
     // find the highest irreducible representation number
     // used to generate ops for all irreps 0..max_irrep
     max_irrep = 0;

@@ -8,7 +8,13 @@
 #ifndef QC_CHEM_PARSE_INTEGRALS_H
 #define QC_CHEM_PARSE_INTEGRALS_H
 
+#include <memory>
+
+#include "alps/numeric/matrix/matrix.hpp"
 #include "integral_interface.h"
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/utils/storage.h"
+#include "dmrg/models/chem/util.h"
 
 namespace chem {
 namespace detail {
@@ -42,7 +48,7 @@ namespace detail {
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
     parse_integrals(BaseParameters & parms, Lattice const & lat, bool do_align = true)
     {
-        typedef Lattice::pos_t pos_t;
+        using pos_t = Lattice::pos_t;
 
         std::vector<pos_t> inv_order;
         std::vector<T> matrix_elements;
@@ -90,7 +96,7 @@ namespace detail {
         {
             // if we provide parameters inline, we expect it to be in FCIDUMP format without the header
             std::string integrals = parms["integrals"];
-            orb_string = std::unique_ptr<std::istringstream>(new std::istringstream(integrals));
+            orb_string = std::make_unique<std::istringstream>(integrals);
         }
         else if (parms.is_set("integral_file")) // FCIDUMP file
         {
@@ -98,7 +104,7 @@ namespace detail {
             if (!boost::filesystem::exists(integral_file))
                 throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
 
-            orb_string = std::unique_ptr<std::ifstream>(new std::ifstream(integral_file.c_str()));
+            orb_string = std::make_unique<std::ifstream>(integral_file.c_str());
 
             // ignore the FCIDUMP file header -- 1st four lines
             for (int i = 0; i < 4; ++i)

@@ -18,11 +18,11 @@ namespace detail {
     class ChemHelper
     {
     public:
-        typedef typename M::value_type value_type;
+        using value_type = typename M::value_type;
         using InputType = double;
-        typedef ::term_descriptor<value_type> term_descriptor;
-        typedef typename TagHandler<M, S>::tag_type tag_type;
-        typedef Lattice::pos_t pos_t;
+        using term_descriptor = ::term_descriptor<value_type>;
+        using tag_type = typename TagHandler<M, S>::tag_type;
+        using pos_t = Lattice::pos_t;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat_
                    , std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_

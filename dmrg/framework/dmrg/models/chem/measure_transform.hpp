@@ -17,13 +17,13 @@
 template <class Matrix, class SymmGroup, class = void>
 struct measure_transform
 {
-    typedef typename Model<Matrix, SymmGroup>::results_map_type results_map_type;
-    typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+    using results_map_type = typename Model<Matrix, SymmGroup>::results_map_type;
+    using SymmOut = typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type;
 
-    void operator()(std::string rfile, std::string result_path, Lattice lat, MPS<Matrix, SymmGroup> const & mps,
+    void operator()(const std::string& rfile, const std::string& result_path, const Lattice& lat, MPS<Matrix, SymmGroup> const & mps,
         BaseParameters const & measurement_parms = BaseParameters()) {}
 
-    results_map_type meas_out(Lattice lat, MPS<Matrix, SymmGroup> const & mps,
+    results_map_type meas_out(const Lattice& lat, MPS<Matrix, SymmGroup> const & mps,
         BaseParameters const & measurement_parms = BaseParameters(), const std::string & rfile="",
         const std::string & result_path="") { return results_map_type(); };
 };
@@ -31,8 +31,8 @@ struct measure_transform
 template <class Matrix, class SymmGroup>
 struct measure_transform<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup>>
 {
-    typedef typename Model<Matrix, SymmGroup>::results_map_type results_map_type;
-    typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+    using results_map_type = typename Model<Matrix, SymmGroup>::results_map_type;
+    using SymmOut = typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type;
 
     // Measure and output into file rfile
     void operator()(std::string rfile, std::string result_path, Lattice lat, MPS<Matrix, SymmGroup> const & mps,
@@ -84,7 +84,7 @@ struct measure_transform<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGro
         prepare_measurements(Lattice lat, MPS<Matrix, SymmGroup> const & mps,
          const BaseParameters& measurement_parms = BaseParameters())
         {
-            typedef typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type SymmOut;
+            using SymmOut = typename boost::mpl::if_<symm_traits::HasPG<SymmGroup>, TwoU1PG, TwoU1>::type;
 
             int N = SymmGroup::particleNumber(mps[mps.size()-1].col_dim()[0].first);
             int TwoS = SymmGroup::spin(mps[mps.size()-1].col_dim()[0].first);

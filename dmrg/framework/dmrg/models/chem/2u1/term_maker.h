@@ -8,16 +8,20 @@
 #ifndef QC_TERMMAKER_H
 #define QC_TERMMAKER_H
 
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/models/term_descriptor.h"
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
+
 template <class M, class S>
 struct TermMaker {
 
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename M::value_type value_type;
-    typedef ::term_descriptor<value_type> term_descriptor;
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename M::value_type;
+    using term_descriptor = ::term_descriptor<value_type>;
 
-    typedef typename TagHandler<M, S>::tag_type tag_type;
-    typedef typename term_descriptor::value_type pos_op_t;
-    typedef typename S::subcharge sc_t;
+    using tag_type = typename TagHandler<M, S>::tag_type;
+    using pos_op_t = typename term_descriptor::value_type;
+    using sc_t = typename S::subcharge;
 
     static bool compare_tag(const pos_op_t& p1, const pos_op_t& p2)
     {
@@ -32,8 +36,8 @@ struct TermMaker {
         term_descriptor term;
         term.is_fermionic = sign;
         term.coeff = scale;
-        term.push_back(std::make_pair(i, op1[lat.get_prop<sc_t>("type", i)]));
-        term.push_back(std::make_pair(j, op2[lat.get_prop<sc_t>("type", j)]));
+        term.emplace_back(i, op1[lat.get_prop<sc_t>("type", i)]);
+        term.emplace_back(j, op2[lat.get_prop<sc_t>("type", j)]);
         return term;
     }
 
@@ -49,14 +53,14 @@ struct TermMaker {
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
             ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", i)], op1[lat.get_prop<sc_t>("type", i)]);
-            term.push_back(std::make_pair(i, ptag.first));
-            term.push_back(std::make_pair(j, op2[lat.get_prop<sc_t>("type", j)]));
+            term.emplace_back(i, ptag.first);
+            term.emplace_back(j, op2[lat.get_prop<sc_t>("type", j)]);
             term.coeff *= ptag.second;
         }
         else {
             ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", j)], op2[lat.get_prop<sc_t>("type", j)]);
-            term.push_back(std::make_pair(i, op1[lat.get_prop<sc_t>("type", i)]));
-            term.push_back(std::make_pair(j, ptag.first));
+            term.emplace_back(i, op1[lat.get_prop<sc_t>("type", i)]);
+            term.emplace_back(j, ptag.first);
             term.coeff *= -ptag.second;
         }
         return term;
@@ -78,14 +82,14 @@ struct TermMaker {
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
             ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", i)], pre_ptag.first);
-            term.push_back(std::make_pair(i, ptag.first));
-            term.push_back(std::make_pair(j, op3[lat.get_prop<sc_t>("type", j)]));
+            term.emplace_back(i, ptag.first);
+            term.emplace_back(j, op3[lat.get_prop<sc_t>("type", j)]);
             term.coeff *= ptag.second * pre_ptag.second;
         }
         else {
             ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", j)], op3[lat.get_prop<sc_t>("type", j)]);
-            term.push_back(std::make_pair(i, pre_ptag.first));
-            term.push_back(std::make_pair(j, ptag.first));
+            term.emplace_back(i, pre_ptag.first);
+            term.emplace_back(j, ptag.first);
             term.coeff *= -ptag.second * pre_ptag.second;
         }
         return term;
@@ -134,9 +138,9 @@ struct TermMaker {
         }
 
         std::vector<pos_op_t> sterm;
-        sterm.push_back( std::make_pair(pb, boson_op) );
-        sterm.push_back( std::make_pair(p1, op1) );
-        sterm.push_back( std::make_pair(p2, op2) );
+        sterm.emplace_back(pb, boson_op);
+        sterm.emplace_back(p1, op1);
+        sterm.emplace_back(p2, op2);
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         term.push_back(sterm[0]);
@@ -165,10 +169,10 @@ struct TermMaker {
                 if(idx[c1] > idx[c2]) inv_count++;
 
         std::vector<pos_op_t> sterm;
-        sterm.push_back(std::make_pair(i, op_i[lat.get_prop<sc_t>("type", i)]));
-        sterm.push_back(std::make_pair(j, op_j[lat.get_prop<sc_t>("type", j)]));
-        sterm.push_back(std::make_pair(k, op_k[lat.get_prop<sc_t>("type", k)]));
-        sterm.push_back(std::make_pair(l, op_l[lat.get_prop<sc_t>("type", l)]));
+        sterm.emplace_back(i, op_i[lat.get_prop<sc_t>("type", i)]);
+        sterm.emplace_back(j, op_j[lat.get_prop<sc_t>("type", j)]);
+        sterm.emplace_back(k, op_k[lat.get_prop<sc_t>("type", k)]);
+        sterm.emplace_back(l, op_l[lat.get_prop<sc_t>("type", l)]);
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         std::pair<tag_type, value_type> ptag;

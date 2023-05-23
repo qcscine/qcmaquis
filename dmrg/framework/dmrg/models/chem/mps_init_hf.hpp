@@ -9,11 +9,13 @@
 #define MPS_INIT_HF_HPP
 
 #include "dmrg/mp_tensors/compression.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
+
 
 template<class Matrix, class SymmGroup, class = void>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    hf_mps_init(BaseParameters parms_,
+    hf_mps_init(const BaseParameters& parms_,
                 std::vector<Index<SymmGroup> > const& phys_dims_,
                 typename SymmGroup::charge right_end,
                 std::vector<int> const& site_type)
@@ -24,8 +26,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     , di(parms, phys_dims_, right_end, site_type)
     {}
 
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
+    using pos_t = int;
+    using size_t = std::size_t;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -107,12 +109,12 @@ template<class Matrix, class SymmGroup>
 struct hf_mps_init<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
         : public mps_initializer<Matrix, SymmGroup>
 {
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
-    typedef std::set<charge> container_type;
+    using pos_t = int;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
+    using container_type = std::set<charge>;
 
-    hf_mps_init(BaseParameters parms_,
+    hf_mps_init(const BaseParameters& parms_,
                 std::vector<Index<SymmGroup> > const& phys_dims_,
                 charge right_end, std::vector<int> const& site_type)
     : parms(parms_)

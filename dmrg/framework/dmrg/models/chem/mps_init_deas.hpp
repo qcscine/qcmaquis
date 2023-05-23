@@ -7,6 +7,8 @@
 #ifndef MPS_INIT_DEAS_HPP
 #define MPS_INIT_DEAS_HPP
 
+#include <utility>
+
 #include "dmrg/models/lattice/lattice.h"
 #include "alps/numeric/matrix.hpp"
 #include "dmrg/models/chem/util.h"
@@ -18,20 +20,20 @@ template<class Matrix, class SymmGroup, class=void>
 struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 {
 
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
-    typedef std::vector<Index<SymmGroup> > index_vec;
-    typedef std::vector<typename SymmGroup::subcharge> site_vec;
-    typedef typename Matrix::value_type value_type;
-    typedef typename maquis::traits::real_type<value_type>::type real_type;
+    using pos_t = Lattice::pos_t;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
+    using index_vec = std::vector<Index<SymmGroup>>;
+    using site_vec = std::vector<typename SymmGroup::subcharge>;
+    using value_type = typename Matrix::value_type;
+    using real_type = typename maquis::traits::real_type<value_type>::type;
 
     deas_mps_init(DmrgParameters parms_,
                   const Matrix& s1_,
                   std::vector<Index<SymmGroup> > const& phys_dims_,
                   typename SymmGroup::charge right_end_,
                   std::vector<int> const& site_type)
-    : parms(parms_)
+    : parms(std::move(parms_))
     , s1(s1_)
     , phys_dims(phys_dims_)
     , site_types(site_type)
@@ -41,7 +43,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     {
         using entanglement_detail::comp;
         //using entanglement_detail::mpair;
-        typedef std::pair<real_type, int> mpair;
+        using mpair = std::pair<real_type, int>;
 
         int L = parms["L"];
         cas_vector.resize(L);
@@ -63,8 +65,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         std::copy(order.begin(), order.end(), std::ostream_iterator<int>(std::cout, " "));
         maquis::cout << std::endl;
 
-        for (int i = 0; i < order.size(); ++i)
-            hf_occ.push_back(hf_unordered[order[i]]);
+        for (int i : order){ hf_occ.push_back(hf_unordered[i]); }
 
         std::cout << "hf_occ: ";
         std::copy(hf_occ.begin(), hf_occ.end(), std::ostream_iterator<int>(std::cout, " "));
@@ -141,7 +142,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
             for(int d = 0; d < determinants.size(); ++d)
             {
-                rows_to_fill.push_back(std::vector<int>(L));
+                rows_to_fill.emplace_back(L);
                 charge accumulated_charge = right_end;
                 for(int s = L - 1; s > 0; --s)
                 {
@@ -353,7 +354,7 @@ private:
         // convert determinant strings into charge vectors
         // and generate all SU2 possibilites at singly occupied sites
 
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         std::vector<std::vector<charge> > determinants;
         std::vector< std::vector<std::vector< charge > > > dummy_dets;
         // convert det_list to vec<vec<charge>>
