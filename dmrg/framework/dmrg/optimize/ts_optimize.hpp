@@ -13,6 +13,8 @@
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 
+#include "dmrg/models/lattice/lattice.h"
+
 #include <boost/tuple/tuple.hpp>
 
 

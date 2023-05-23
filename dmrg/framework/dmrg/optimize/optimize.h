@@ -27,6 +27,7 @@
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/checks.h"
 #include "dmrg/mp_tensors/siteproblem.h"
+#include "dmrg/mp_tensors/mpo.h"
 
 #define BEGIN_TIMING(name) \
 now = std::chrono::high_resolution_clock::now();

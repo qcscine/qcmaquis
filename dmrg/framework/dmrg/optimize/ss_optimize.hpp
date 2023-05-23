@@ -10,6 +10,7 @@
 
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/optimize/optimize.h"
+#include "dmrg/models/lattice/lattice.h"
 
 
 template<class Matrix, class SymmGroup, class Storage>

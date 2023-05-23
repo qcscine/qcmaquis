@@ -7,9 +7,12 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
+#include "dmrg/utils/archive.h"
 #include "dmrg/version.h"
 #include "dmrg/utils/random.hpp"
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
+#include "dmrg/utils/BaseParameters.h"
 
 namespace sim_detail {
     // Checks if the parameters in the list parm already exists in parms, if not, loads it from ar

@@ -11,6 +11,7 @@
 #include <vector>
 #include "integral_interface.h"
 #include "dmrg/utils/results_collector.h"
+#include "utils/traits.hpp"
 
 class abstract_sim {
 public:
