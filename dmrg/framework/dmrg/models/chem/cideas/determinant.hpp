@@ -6,16 +6,19 @@
  */
 
 #include <alps/numeric/matrix.hpp>
+#include "dmrg/models/lattice/lattice.h"
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/symmetry.h"
 
 namespace deas_detail
 {
     template <class SymmGroup, class = void>
     class charge_from_int
     {
-        typedef Lattice::pos_t pos_t;
-        typedef typename SymmGroup::charge charge;
-        typedef std::vector<Index<SymmGroup> > index_vec;
-        typedef std::vector<typename SymmGroup::subcharge> site_vec;
+        using pos_t = Lattice::pos_t;
+        using charge = typename SymmGroup::charge;
+        using index_vec = std::vector<Index<SymmGroup>>;
+        using site_vec = std::vector<typename SymmGroup::subcharge>;
     public:
         std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
         {
@@ -42,10 +45,10 @@ namespace deas_detail
     template <class SymmGroup>
     class charge_from_int<SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
     {
-        typedef Lattice::pos_t pos_t;
-        typedef typename SymmGroup::charge charge;
-        typedef std::vector<Index<SymmGroup> > index_vec;
-        typedef std::vector<typename SymmGroup::subcharge> site_vec;
+        using pos_t = Lattice::pos_t;
+        using charge = typename SymmGroup::charge;
+        using index_vec = std::vector<Index<SymmGroup>>;
+        using site_vec = std::vector<typename SymmGroup::subcharge>;
     public:
         std::vector<charge> operator()(int sc_input, pos_t p, index_vec const & phys_dims, site_vec const & site_types)
         {
@@ -77,17 +80,17 @@ namespace deas_detail
 template <class SymmGroup>
 class Determinant : public std::vector<int>
 {
-    typedef std::vector<int> base;
-    typedef typename SymmGroup::charge charge;
-    typedef std::vector<Index<SymmGroup> > index_vec;
-    typedef std::vector<typename SymmGroup::subcharge> site_vec;
+    using base = std::vector<int>;
+    using charge = typename SymmGroup::charge;
+    using index_vec = std::vector<Index<SymmGroup>>;
+    using site_vec = std::vector<typename SymmGroup::subcharge>;
 public:
    //constructor
     Determinant(base input_det) : base(input_det)  {}
 
     Determinant(int L) : base(L) {}
    //default constructor
-    Determinant() {}
+    Determinant() = default;
    //copy constructor
     Determinant(const Determinant& Copy) {*this = Copy;}
 
@@ -129,26 +132,26 @@ public:
       bool wrong_level = false;
       int diff = 0;
      //first check number of changes
-      for(int i = 0; i <hf_occ_orb.size(); i++){
-         if((*this)[hf_occ_orb[i].first] != hf_occ_orb[i].second){
-            if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 3){
+      for(const auto& i : hf_occ_orb){
+         if((*this)[i.first] != i.second){
+            if(i.second == 4 && (*this)[i.first] == 3){
                diff++;
-            }else if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 2){
+            }else if(i.second == 4 && (*this)[i.first] == 2){
                diff++;
-            }else if(hf_occ_orb[i].second == 4 && (*this)[hf_occ_orb[i].first] == 1){
+            }else if(i.second == 4 && (*this)[i.first] == 1){
                diff = diff + 2;
-            }else if(hf_occ_orb[i].second == 3 && (*this)[hf_occ_orb[i].first] == 1){
+            }else if(i.second == 3 && (*this)[i.first] == 1){
                diff++;
-            }else if(hf_occ_orb[i].second == 2 && (*this)[hf_occ_orb[i].first] == 1){
+            }else if(i.second == 2 && (*this)[i.first] == 1){
                diff++;
             }
          }
       }
       //check if number of changes agrees with ci_level
-      for(int i = 0; i<ci_level.size(); i++){
-         if(ci_level[i] != diff){
+      for(int i : ci_level){
+         if(i != diff){
             wrong_level = true;
-         }else{
+         } else{
             wrong_level = false;
             break;
          }

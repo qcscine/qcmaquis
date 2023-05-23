@@ -31,17 +31,17 @@ template<class SymmGroup>
 class rel_qc_model : public model_impl<cmatrix, SymmGroup>
 {
     using Matrix = cmatrix;
-    typedef model_impl<Matrix, SymmGroup> base;
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
-    typedef typename base::tag_type tag_type;
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename base::terms_type terms_type;
-    typedef typename base::op_t op_t;
-    typedef typename base::measurements_type measurements_type;
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename Matrix::value_type value_type;
-    typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
+    using base = model_impl<Matrix, SymmGroup>;
+    using table_type = typename base::table_type;
+    using table_ptr = typename base::table_ptr;
+    using tag_type = typename base::tag_type;
+    using term_descriptor = typename base::term_descriptor;
+    using terms_type = typename base::terms_type;
+    using op_t = typename base::op_t;
+    using measurements_type = typename base::measurements_type;
+    using pos_t = typename Lattice::pos_t;
+    using value_type = typename Matrix::value_type;
+    using one_matrix = typename alps::numeric::associated_one_matrix<Matrix>::type;
 
 public:
 
@@ -118,7 +118,7 @@ public:
 
     measurements_type measurements () const
     {
-        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+        using tokenizer = boost::tokenizer<boost::char_separator<char>>;
 
         op_t create_op, destroy_op, count_op,
              ident_op, fill_op;
@@ -149,8 +149,8 @@ public:
             parms.set("MEASURE_HALF_CORRELATIONS[doccdocc]","N:N");
         }
 
-        typedef std::vector<op_t> op_vec;
-        typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        using op_vec = std::vector<op_t>;
+        using bond_element = std::vector<std::pair<op_vec, bool>>;
         {
             std::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             std::smatch what;
@@ -213,9 +213,9 @@ public:
             if (std::regex_match(lhs, what, expression_oneptdm) ||
                     std::regex_match(lhs, what, expression_transition_oneptdm)) {
 
-                typedef std::vector<tag_type> tag_vec;
-                typedef std::vector<tag_vec> bond_tag_element;
-                typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
+                using tag_vec = std::vector<tag_type>;
+                using bond_tag_element = std::vector<tag_vec>;
+                using scaled_bond_element = std::pair<std::vector<tag_vec>, value_type>;
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans1rdm]"){
@@ -242,9 +242,9 @@ public:
             else if (std::regex_match(lhs, what, expression_twoptdm) ||
                     std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
-                typedef std::vector<tag_type> tag_vec;
-                typedef std::vector<tag_vec> bond_tag_element;
-                typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
+                using tag_vec = std::vector<tag_type>;
+                using bond_tag_element = std::vector<tag_vec>;
+                using scaled_bond_element = std::pair<std::vector<tag_vec>, value_type>;
 
                 std::string bra_ckp("");
                 if(lhs == "MEASURE[trans2rdm]"){
@@ -271,9 +271,9 @@ public:
             }
 
             else if (!name.empty()) {
-                typedef std::vector<tag_type> tag_vec;
-                typedef std::vector<tag_vec> bond_tag_element;
-                typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
+                using tag_vec = std::vector<tag_type>;
+                using bond_tag_element = std::vector<tag_vec>;
+                using scaled_bond_element = std::pair<std::vector<tag_vec>, value_type>;
 
                 int f_ops = 0;
                 bond_tag_element meas_operators;

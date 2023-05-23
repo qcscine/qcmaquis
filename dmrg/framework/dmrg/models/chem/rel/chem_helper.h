@@ -9,6 +9,7 @@
 #define REL_QC_CHEM_DETAIL_H
 
 #include "dmrg/models/chem/parse_integrals.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
 
 namespace chem {
 namespace detail {
@@ -17,10 +18,10 @@ namespace detail {
     class RelChemHelper
     {
     public:
-        typedef typename M::value_type value_type;
-        typedef ::term_descriptor<value_type> term_descriptor;
-        typedef typename TagHandler<M, S>::tag_type tag_type;
-        typedef Lattice::pos_t pos_t;
+        using value_type = typename M::value_type;
+        using term_descriptor = ::term_descriptor<value_type>;
+        using tag_type = typename TagHandler<M, S>::tag_type;
+        using pos_t = Lattice::pos_t;
         using InputType = std::complex<double>;
 
         RelChemHelper(BaseParameters & parms, Lattice const & lat_,

@@ -7,8 +7,9 @@
 #ifndef CI_GENERATOR_HPP
 #define CI_GENERATOR_HPP
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
+#include <numeric>
 #include <alps/numeric/matrix.hpp>
 
 #include "dmrg/models/lattice/lattice.h"
@@ -47,8 +48,8 @@ std::vector<Determinant<SymmGroup> > copy_det(std::vector<Determinant<SymmGroup>
 template <class SymmGroup>
 std::vector<Determinant<SymmGroup> > deas(const int &pos, const int &act_orb, std::vector<Determinant<SymmGroup> > dets)
 {
-   std::vector<int> orb_list;
-   for(int i=0;i<4;i++){orb_list.push_back(i+1);}
+   std::vector<int> orb_list(4);
+   std::iota(orb_list.begin(), orb_list.end(), 1);
    orb_list.erase(orb_list.begin()+dets[0][act_orb]-1);
    for(int i=0; i<3; i++){ 					//loop over possibilities
       for(int j=0; j<pow(4,pos); j++){				//loop over blocks
@@ -77,10 +78,10 @@ std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_le
    int size  = 0;
    for(int i = 0; i<8; i++){
       size = 0;
-      for(int j = 0; j<symvec_left.size(); j++){
-         if(symvec_left[j]==i){size++;}
+      for(int j : symvec_left){
+         if(j==i){ size++; }
       }
-      if(size>0){symvec_red.push_back(std::make_pair(i,size));}
+      if(size>0){ symvec_red.emplace_back(i,size); }
    }
    return symvec_red;
 }
@@ -90,8 +91,7 @@ std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_le
 std::vector<std::pair<int, int> > get_orb(std::vector<int> hf_occ){
     std::vector<std::pair<int, int> > occ_orb;
     for(int i = 0; i < hf_occ.size(); i++)
-        if(hf_occ[i] != 1)
-            occ_orb.push_back(std::make_pair(i, hf_occ[i]));
+        if(hf_occ[i] != 1) { occ_orb.emplace_back(i, hf_occ[i]); }
 
    return occ_orb;
 }
@@ -120,8 +120,7 @@ std::vector<Determinant<SymmGroup> > generate_deas(Determinant<SymmGroup> const 
     for (int i=0; i < hf_occ.size(); ++i)
         maquis::cout << hf_occ[i] << " ";
     maquis::cout << std::endl;
-    for (int i=0; i < casv.size(); ++i)
-        maquis::cout << casv[i] << " ";
+    for (int i : casv){ maquis::cout << i << " "; }
     maquis::cout << std::endl;
 
     int act_orb = casv[0];
