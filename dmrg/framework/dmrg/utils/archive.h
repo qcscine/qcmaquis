@@ -53,7 +53,7 @@ namespace storage {
         void operator >> (T& obj){
             (*impl) >> obj;
         }
-        alps::hdf5::detail::archive_proxy<alps::hdf5::archive> operator[](std::string path){
+        alps::hdf5::detail::archive_proxy<alps::hdf5::archive> operator[](const std::string& path){
             return (*impl)[path];
         }
 

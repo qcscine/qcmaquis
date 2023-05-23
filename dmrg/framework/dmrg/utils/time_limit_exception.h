@@ -25,10 +25,10 @@ namespace dmrg {
         , site_(st)
         { }
         
-        int sweep() const throw()
+        int sweep() const noexcept
         { return sweep_; }
 
-        int site() const throw()
+        int site() const noexcept
         { return site_; }
         
     private:

@@ -287,7 +287,7 @@ private:
 };
 
 
-inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string model_fname="")
+inline DmrgParameters load_parms_and_model(const std::string& parms_fname, std::string model_fname="")
 {
     /// Load parameters
     std::ifstream param_file(parms_fname.c_str());

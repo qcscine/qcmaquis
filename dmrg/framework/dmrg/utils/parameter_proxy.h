@@ -8,6 +8,7 @@
 #ifndef DMRG_UTILS_PARAMETER_PROXY_H
 #define DMRG_UTILS_PARAMETER_PROXY_H
 
+#include "utils/io.hpp"
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -51,7 +52,7 @@ namespace parameters {
                 boost::trim_if(raw, boost::is_any_of("\"'"));
                 std::vector<T> ret;
 
-                typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+                using tokenizer = boost::tokenizer<boost::char_separator<char>>;
                 boost::char_separator<char> sep(",");
                 tokenizer tokens(raw, sep);
                 for (auto&& t : tokens)

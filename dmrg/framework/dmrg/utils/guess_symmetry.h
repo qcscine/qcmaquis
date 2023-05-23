@@ -24,7 +24,7 @@ inline std::string guess_alps_symmetry(BaseParameters & parms)
     symm_names[2] = "2u1";
 
     int n=0;
-    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    using tokenizer = boost::tokenizer<boost::char_separator<char>>;
     if (parms.defined("CONSERVED_QUANTUMNUMBERS")) {
         boost::char_separator<char> sep(" ,");
         std::string qn_string = parms["CONSERVED_QUANTUMNUMBERS"].str();

@@ -14,6 +14,7 @@
 #endif
 
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 #include "utils/sizeof.h"
 
@@ -37,10 +38,12 @@ maquis::cout << "Time elapsed in " << name << ": " << std::chrono::duration<doub
 
 inline double log_interpolate(double y0, double y1, int N, int i)
 {
-    if (N < 2)
+    if (N < 2) {
         return y1;
-    if (y0 == 0)
+    }
+    if (y0 == 0) {
         return 0;
+    }
     double x = log(y1/y0)/(N-1);
     return y0*exp(x*i);
 }
@@ -50,7 +53,7 @@ enum OptimizeDirection { Both, LeftOnly, RightOnly };
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
-    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
+    using contr = contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
@@ -60,7 +63,7 @@ public:
     : mps(mps_)
     , mpo(mpo_)
     , parms(parms_)
-    , stop_callback(stop_callback_)
+    , stop_callback(std::move(stop_callback_))
     {
         std::size_t L = mps.length();
 
@@ -95,7 +98,7 @@ public:
         maquis::cout << "Done init_left_right" << std::endl;
     }
 
-    virtual ~optimizer_base() {}
+    virtual ~optimizer_base() = default;
 
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
 

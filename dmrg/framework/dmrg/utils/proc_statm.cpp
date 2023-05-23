@@ -8,7 +8,7 @@
 
 #include "dmrg/utils/proc_statm.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 

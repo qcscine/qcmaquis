@@ -36,11 +36,11 @@ template <class Matrix, class SymmGroup>
 class sim : public abstract_sim {
 public:
     explicit sim(DmrgParameters &);
-    virtual ~sim();
+     ~sim() override;
 
 protected:
-    typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
-    typedef std::map<std::string, int> status_type;
+    using measurements_type = typename Model<Matrix, SymmGroup>::measurements_type;
+    using status_type = std::map<std::string, int>;
 
     virtual std::string results_archive_path(status_type const&) const;
 

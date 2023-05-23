@@ -49,8 +49,8 @@ class BaseParameters
 {
     public:
 
-        typedef std::map<std::string, std::string> map_t;
-        typedef typename map_t::value_type value_type;
+        using map_t = std::map<std::string, std::string>;
+        using value_type = typename map_t::value_type;
 
         BaseParameters();
         BaseParameters(const BaseParameters & p);
@@ -106,7 +106,7 @@ class BaseParameters
         }
 
         BaseParameters& operator=(const BaseParameters& rhs);
-        BaseParameters& operator=(BaseParameters&& rhs);
+        BaseParameters& operator=(BaseParameters&& rhs) noexcept ;
 
         // for Boost::serialization
         BOOST_SERIALIZATION_SPLIT_MEMBER()

@@ -14,7 +14,7 @@
 class results_collector::collector_impl_base
 {
 public:
-    virtual ~collector_impl_base() {}
+    virtual ~collector_impl_base() = default;
     virtual void collect(boost::any const &) = 0;
     virtual void save(alps::hdf5::archive & ar) const = 0;
     virtual void load(alps::hdf5::archive & ar) = 0;
@@ -26,12 +26,12 @@ template<class T>
 class results_collector::collector_impl : public results_collector::collector_impl_base
 {
 public:
-    void collect(boost::any const & val)
+    void collect(boost::any const & val) override
     {
         vals.push_back(val);
     }
 
-    void save(alps::hdf5::archive & ar) const
+    void save(alps::hdf5::archive & ar) const override
     {
         std::vector<T> allvalues;
         if (ar.is_data("mean/value"))
@@ -42,7 +42,7 @@ public:
         ar["mean/value"] << allvalues;
     }
 
-    void load(alps::hdf5::archive & ar)
+    void load(alps::hdf5::archive & ar) override
     {
         // overwrite the current vector
         vals.clear();
@@ -56,7 +56,7 @@ public:
     }
 
     // TODO: Copying is inefficient!
-    const std::vector<boost::any>& get() const { return vals; };
+    const std::vector<boost::any>& get() const override { return vals; };
 
 private:
     std::vector<boost::any> vals;
@@ -96,9 +96,9 @@ void results_collector::clear()
     collection.clear();
 }
 
-results_collector::collector_proxy results_collector::operator[] (std::string name)
+results_collector::collector_proxy results_collector::operator[](const std::string& name)
 {
-    return results_collector::collector_proxy(collection[name]);
+    return {collection[name]};
 }
 
 template <class Archive>

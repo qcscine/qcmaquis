@@ -12,7 +12,7 @@
 namespace maquis{
     namespace detail {
 
-        typedef std::array<int, 4> index_type;
+        using index_type = std::array<int, 4>;
 
         // Permutes integral indices to yield the canonical form with i>=j, k>=l
         template<bool P=false>

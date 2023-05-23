@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <utility>
 
 #include "utils.hpp"
 #include "utils/timings.h"
@@ -57,12 +58,12 @@ namespace storage {
 
 template<class T>
 struct constrained {
-    typedef T type;
+    using type = T;
 };
 
 template<typename T>
 struct constrained<alps::numeric::matrix<T, std::vector<T> > > {
-    typedef alps::numeric::matrix<T, std::vector<T> > type;
+    using type = alps::numeric::matrix<T, std::vector<T>>;
 };
 
 } // namespace storage
@@ -114,7 +115,7 @@ template<class Matrix, class SymmGroup>
 class StoreToFile_request< Boundary<Matrix, SymmGroup> > {
 public:
   /** @brief Class constructor */
-  StoreToFile_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+  StoreToFile_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(std::move(fp)), ptr(ptr) { }
 
   /** @brief Round brackets operator */
   void operator()() {
@@ -142,7 +143,7 @@ template<class Matrix, class SymmGroup>
 class fetch_request< Boundary<Matrix, SymmGroup> > {
 public:
   /** @brief Class constructor */
-  fetch_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+  fetch_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(std::move(fp)), ptr(ptr) { }
 
   /** @brief Round braket operator */
   void operator()() {
@@ -170,7 +171,7 @@ template<class Matrix, class SymmGroup>
 class drop_request< Boundary<Matrix, SymmGroup> > {
 public:
   /** @brief Class constructor */
-  drop_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
+  drop_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(std::move(fp)), ptr(ptr) { }
 
   /** @brief Round braket operator */
   void operator()() {
@@ -200,7 +201,7 @@ public:
   class descriptor {
   public:
     /** @brief Class constructor */
-    descriptor() : state(core), dumped(false), sid(disk::index()), worker(NULL) {}
+    descriptor() : state(core), dumped(false), sid(disk::index()), worker(nullptr) {}
 
     /**
      * @brief Class destructor.
@@ -228,7 +229,7 @@ public:
       if(this->worker){
         this->worker->join();
         delete this->worker;
-        this->worker = NULL;
+        this->worker = nullptr;
         disk::untrack(this);
       }
     }
@@ -291,9 +292,7 @@ public:
     void prefetch() {
       // If already available on disk, does nothing. Otherwise, if it's being
       // stored, finalized the storing such that afterwards one can call "fetch".
-      if(this->state == core)
-        return;
-      else if(this->state == prefetching)
+      if(this->state == core || this->state == prefetching)
         return;
       else if(this->state == storing)
         this->join();
@@ -372,14 +371,14 @@ public:
 
   /** @brief Removes a descriptor from the list of objects to be tracked */
   static void untrack(descriptor* d){
-      instance().queue[d->record] = NULL;
+      instance().queue[d->record] = nullptr;
   }
 
   /** @brief Syncs all the processes that are queued */
   static void sync(){
-    for(int i = 0; i < instance().queue.size(); ++i)
-      if(instance().queue[i])
-        instance().queue[i]->join();
+    for(auto & i : instance().queue) {
+      if(i) { i->join(); }
+    }
     instance().queue.clear();
   }
 

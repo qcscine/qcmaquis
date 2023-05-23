@@ -11,11 +11,11 @@
 #include <boost/random.hpp>
 
 struct dmrg_random {
-    typedef double value_type;
-    typedef boost::mt19937 engine_t;
-    typedef boost::uniform_real<value_type> uniform_dist_t;
-    typedef boost::normal_distribution<value_type> normal_dist_t;
-    typedef boost::poisson_distribution<value_type> poisson_dist_t;
+    using value_type = double;
+    using engine_t = boost::mt19937;
+    using uniform_dist_t = boost::uniform_real<>;
+    using normal_dist_t = boost::normal_distribution<>;
+    using poisson_dist_t = boost::poisson_distribution<value_type>;
     
     static engine_t engine;
 

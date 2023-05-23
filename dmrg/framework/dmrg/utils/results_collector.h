@@ -41,7 +41,7 @@ public:
      * So this proxy class does not assume anything about its implementation.
      */
     class collector_proxy {
-    typedef std::shared_ptr<results_collector::collector_impl_base> coll_type;
+    using coll_type = std::shared_ptr<results_collector::collector_impl_base>;
     public:
 
         /** @brief Class constructor, just stores the reerence to the pointer */
@@ -67,7 +67,7 @@ public:
     };
 
     /** @brief Getter of a given result */
-    collector_proxy operator[] (std::string name);
+    collector_proxy operator[] (const std::string& name);
 
     /** @brief Reset method */
     void clear();
@@ -84,7 +84,7 @@ public:
     bool empty() const;
 
     /** @brief Checks the presence of a given element in the collector */
-    bool has(const std::string key) const { return collection.find(key) != collection.end(); }
+    bool has(const std::string& key) const { return collection.find(key) != collection.end(); }
 
 private:
     std::map<std::string, std::shared_ptr<collector_impl_base> > collection;

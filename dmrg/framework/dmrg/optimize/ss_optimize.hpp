@@ -18,7 +18,7 @@ class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
 
-    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+    using base = optimizer_base<Matrix, SymmGroup, Storage>;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -159,7 +159,7 @@ public:
             if (!parms.is_set("PreBO_MaxBondDimVector"))
                 Mmax = this->get_Mmax(sweep);
             else {
-                Mmax = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site}) });
+                Mmax = lat_.template get_prop<size_t>("Mmax", lat_.template get_prop<int>("type", site) );
                 std::cout << "Mmax is set to " << Mmax << std::endl;
             }
             truncation_results trunc;

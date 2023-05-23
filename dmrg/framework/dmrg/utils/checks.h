@@ -57,7 +57,7 @@ namespace checks {
 
 
     template <class Matrix, class SymmGroup>
-    void right_end_check(std::string filename, MPS<Matrix, SymmGroup> const & mps, typename SymmGroup::charge right_end)
+    void right_end_check(const std::string& filename, MPS<Matrix, SymmGroup> const & mps, typename SymmGroup::charge right_end)
     {
         if (right_end != mps[mps.size()-1].col_dim()[0].first) {
             std::stringstream parm_sector; parm_sector << right_end;
@@ -81,7 +81,7 @@ namespace checks {
 
 
 
-    inline void orbital_order_check(BaseParameters & parms, std::string chkpfile)
+    inline void orbital_order_check(BaseParameters & parms, const std::string& chkpfile)
     {
         storage::archive ar_in(chkpfile+"/props.h5");
         BaseParameters chkp_parms;

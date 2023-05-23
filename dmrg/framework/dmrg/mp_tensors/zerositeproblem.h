@@ -17,6 +17,7 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/optimize/ietl_lanczos_solver.h"
 
 
 /**

@@ -19,8 +19,8 @@ template <class V>
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include <complex>
-typedef alps::numeric::matrix<double> matrix;
-typedef alps::numeric::matrix<std::complex<double> > cmatrix;
+using matrix = alps::numeric::matrix<double>;
+using cmatrix = alps::numeric::matrix<std::complex<double>>;
 template <class V>
     using tmatrix = alps::numeric::matrix<V>;
 #endif

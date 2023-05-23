@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include "dmrg/block_matrix/symmetry/symmetry_traits.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/utils/archive.h"
 #include "dmrg/version.h"
 #include "dmrg/utils/random.hpp"

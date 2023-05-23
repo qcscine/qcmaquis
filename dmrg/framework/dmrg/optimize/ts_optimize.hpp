@@ -22,9 +22,9 @@ template<class Matrix, class SymmGroup, class Storage>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
-    typedef typename Matrix::value_type value_type;
+    using value_type = typename Matrix::value_type;
 
-    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
+    using base = optimizer_base<Matrix, SymmGroup, Storage>;
     using base::mpo;
     using base::mps;
     using base::left_;
@@ -185,8 +185,8 @@ public:
             if (!parms.is_set("PreBO_MaxBondDimVector"))
                 Mmax = this->get_Mmax(sweep);
             else {
-                auto m1 = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site1}) });
-                auto m2 = lat_.template get_prop<size_t>("Mmax", {lat_.template get_prop<int>("type", {site2}) });
+                auto m1 = lat_.template get_prop<size_t>("Mmax", lat_.template get_prop<int>("type", site1) );
+                auto m2 = lat_.template get_prop<size_t>("Mmax", lat_.template get_prop<int>("type", site2) );
                 Mmax = (m1>m2) ? m1 : m2;
                 std::cout << "Mmax is set to " << Mmax << std::endl;
             }

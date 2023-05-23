@@ -15,7 +15,7 @@
 
 class abstract_sim {
 public:
-    virtual ~abstract_sim() {}
+    virtual ~abstract_sim() = default;
     virtual void run(const std::string& runType) = 0;
 };
 
@@ -37,7 +37,7 @@ public:
     using results_map_type = std::map<std::string, meas_with_results_type>;
     using RealType = typename maquis::traits::real_type<Matrix>::type;
 
-    virtual ~abstract_interface_sim() {}
+    virtual ~abstract_interface_sim() = default;
     virtual void run(const std::string& runType) = 0;
     virtual void run_measure() = 0;
     virtual RealType get_energy() = 0;
