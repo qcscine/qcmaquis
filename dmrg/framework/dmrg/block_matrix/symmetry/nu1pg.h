@@ -275,9 +275,9 @@ template<int N, class S = int>
 class NU1PG
 {
 public:
-    typedef S subcharge;
-    typedef NU1ChargePG<N, S> charge;
-    typedef std::vector<charge> charge_v;
+    using subcharge = S;
+    using charge = NU1ChargePG<N, S>;
+    using charge_v = std::vector<charge>;
 
     static const charge IdentityCharge;
     static const bool finite = false;

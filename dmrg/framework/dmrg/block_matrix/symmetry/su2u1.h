@@ -19,9 +19,9 @@ template<class S = int>
 class SU2U1_template
 {
 public:
-    typedef S subcharge;
-    typedef NU1Charge<2, S> charge;
-    typedef std::vector<charge> charge_v;
+    using subcharge = S;
+    using charge = NU1Charge<2, S>;
+    using charge_v = std::vector<charge>;
 
     static const charge IdentityCharge;
     static const bool finite = false;
@@ -47,7 +47,7 @@ public:
 
 template<class S> const typename SU2U1_template<S>::charge SU2U1_template<S>::IdentityCharge = typename SU2U1_template<S>::charge();
 
-typedef SU2U1_template<> SU2U1;
+using SU2U1 = SU2U1_template<>;
 
 
 // SU2 x U1 x PG Symmetry
@@ -58,9 +58,9 @@ template<class S = int>
 class SU2U1PG_template
 {
 public:
-    typedef S subcharge;
-    typedef NU1ChargePG<2, S> charge;
-    typedef std::vector<charge> charge_v;
+    using subcharge = S;
+    using charge = NU1ChargePG<2, S>;
+    using charge_v = std::vector<charge>;
 
     static const charge IdentityCharge;
     static const bool finite = false;
@@ -95,6 +95,6 @@ public:
 
 template<class S> const typename SU2U1PG_template<S>::charge SU2U1PG_template<S>::IdentityCharge = typename SU2U1PG_template<S>::charge();
 
-typedef SU2U1PG_template<> SU2U1PG;
+using SU2U1PG = SU2U1PG_template<>;
 
 #endif

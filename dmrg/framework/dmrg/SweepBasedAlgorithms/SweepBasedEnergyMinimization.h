@@ -67,12 +67,12 @@ public:
   }
 
   /** @brief Method called at the beginning of each sweep */
-  void prepareSweep() override final {
+  void prepareSweep() final {
     iterationResults_.clear();
   }
 
   /** @brief Method called before each microiteration */
-  void prepareMicroiteration() override final {
+  void prepareMicroiteration() final {
     siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
                                                      mpoContainer_.getMPOTensor(siteLeft_));
     // std::cout << "Initial energy " << siteProblem_->get_energy(mpsContainer_.getMPSTensor(siteLeft_)) + mpoContainer_.getMPO().getCoreEnergy() << std::endl;
@@ -82,7 +82,7 @@ public:
   }
 
   /** @brief Solution of the site-centered problem */
-  MPSTensorType solveLocalProblem() override final {
+  MPSTensorType solveLocalProblem() final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
     if (parms_["eigensolver"] == std::string("IETL"))
       resultOfLocalSiteProblem_ = solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
@@ -100,7 +100,7 @@ public:
   }
 
   /** @brief Propagates the boundaries */
-  void propagateOtherTensors() override final {
+  void propagateOtherTensors() final {
     auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
     if (overlapPropagator_) {
@@ -115,17 +115,17 @@ public:
   }
 
   /** @brief Operations to be executed at the end of a microiteration */
-  void finalizeMicroIteration(const truncation_results& trunc) override final {
+  void finalizeMicroIteration(const truncation_results& trunc) final {
     iterationResults_["BondDimension"]   << trunc.bond_dimension;
     iterationResults_["TruncatedWeight"] << trunc.truncated_weight;
     iterationResults_["SmallestEV"]      << trunc.smallest_ev;
   }
 
   /** @brief Operations to be executed at the end of the sweep */
-  void finalizeSweep() override final { }
+  void finalizeSweep() final { }
 
   /** @brief Whether to normalize the MPS at the end of a half-sweep */
-  bool normalizeAtEnd() override final {
+  bool normalizeAtEnd() final {
     return true;
   }
 

@@ -36,7 +36,7 @@ struct truncation_results {
     double      smallest_ev;        // smallest eigenvalue kept
 
     /** @brief Empty constructor */
-    truncation_results() { }
+    truncation_results() = default;
 
     /** @brief Constructor taking input data */
     truncation_results(std::size_t m, double tw, double tf, double se)
@@ -144,7 +144,7 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
     parallel::scheduler_size_indexed scheduler(B);
     C.clear();
 
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     Index<SymmGroup> A_right_basis = A.right_basis();
     for (int k = 0; k < B.n_blocks(); ++k) {
         auto matched_block = A_right_basis.position(B.basis().left_charge(k));
@@ -212,15 +212,15 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
                          size_t Mmax, double cutoff, size_t* keeps,
                          double & truncated_fraction, double & truncated_weight, double & smallest_ev)
 { // to be parallelized later (30.04.2012)
-    typedef typename DiagMatrix::value_type value_type;
-    typedef typename maquis::traits::real_type<value_type>::type real_type;
+    using value_type = typename DiagMatrix::value_type;
+    using real_type = typename maquis::traits::real_type<value_type>::type;
 
     size_t length = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         length += num_rows(evals[k]);
     }
 
-    typedef std::vector<real_type> real_vector_t;
+    using real_vector_t = std::vector<real_type>;
     real_vector_t allevals(length);
     {
         parallel::guard::serial guard;
@@ -329,7 +329,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     // MD: for singuler values we care about summing the square of the discraded
     // MD: sum of the discarded values is stored elsewhere
-    return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
+    return {bond_dimension, truncated_weight, truncated_fraction, smallest_ev};
 }
 
 // TODO: not yet working properly.

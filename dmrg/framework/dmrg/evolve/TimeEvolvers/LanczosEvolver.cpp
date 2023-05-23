@@ -5,6 +5,8 @@
  *            See LICENSE.txt for details.
  */
 
+#include "dmrg/evolve/TimeEvolvers/LanczosEvolver.h"
+
 template<class Matrix, class SymmGroup, TimeStepDistributor TimeStepDistributorClass>
 template<class SiteProblem, class MatrixType>
 void LanczosEvolver<Matrix, SymmGroup, TimeStepDistributorClass>::evolve_kernel(const SiteProblem& site_problem, MatrixType& matrix,

@@ -21,8 +21,8 @@ class U1
 {
 public:
 
-  typedef int charge;
-  typedef int subcharge;
+  using charge = int;
+  using subcharge = int;
 
   static const charge IdentityCharge = 0;
   static const bool finite = false;

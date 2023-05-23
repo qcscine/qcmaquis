@@ -19,11 +19,11 @@
 
 class Ztwo {
 	public:
-		typedef enum { Plus = 0, Minus = 1 } charge;
-        typedef int subcharge; // used if charge is site-dependent
+		using charge = enum { Plus = 0, Minus = 1 };
+    using subcharge = int; // used if charge is site-dependent
 		
 		static const charge IdentityCharge = Plus;
-        static const bool finite = true;
+    static const bool finite = true;
 		
 		static inline charge fuse(charge a, charge b)
 		{
@@ -48,9 +48,9 @@ class Ztwo {
 inline void save(alps::hdf5::archive & ar,
                  std::string const & p,
                  Ztwo::charge const & v,
-                 std::vector<std::size_t> size = std::vector<std::size_t>(),
-                 std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-                 std::vector<std::size_t> offset = std::vector<std::size_t>())
+                 const std::vector<std::size_t>& size = std::vector<std::size_t>(),
+                 const std::vector<std::size_t>& chunk = std::vector<std::size_t>(),
+                 const std::vector<std::size_t>& offset = std::vector<std::size_t>())
 {
     ar[p] << static_cast<int>(v);
 }
@@ -58,9 +58,9 @@ inline void save(alps::hdf5::archive & ar,
 inline void load(alps::hdf5::archive & ar,
                  std::string const & p,
                  Ztwo::charge & v,
-                 std::vector<std::size_t> size = std::vector<std::size_t>(),
-                 std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-                 std::vector<std::size_t> offset = std::vector<std::size_t>())
+                 const std::vector<std::size_t>& size = std::vector<std::size_t>(),
+                 const std::vector<std::size_t>& chunk = std::vector<std::size_t>(),
+                 const std::vector<std::size_t>& offset = std::vector<std::size_t>())
 {
     int t;
     ar[p] >> t;

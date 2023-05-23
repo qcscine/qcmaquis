@@ -28,15 +28,15 @@ class index_product_iterator
 >
 {
 public:
-    typedef std::size_t index_id;
-    typedef Index<SymmGroup> index_t;
-    typedef typename index_t::charge charge;    // element of Index
-    typedef std::size_t elem_id;                // element of charge
+    using index_id = std::size_t;
+    using index_t = Index<SymmGroup>;
+    using charge = typename index_t::charge;    // element of Index
+    using elem_id = std::size_t;                // element of charge
     
-    typedef std::pair<charge, elem_id> coord_t; // index inside block_matrix
-    typedef std::vector<coord_t> value_type;
+    using coord_t = std::pair<charge, elem_id>; // index inside block_matrix
+    using value_type = std::vector<coord_t>;
     
-    typedef std::vector<typename index_t::const_iterator> vec_iterator;
+    using vec_iterator = std::vector<typename index_t::const_iterator>;
     
     index_product_iterator() : valid(false) { }
 
@@ -120,20 +120,20 @@ private:
 template <class SymmGroup>
 class MultiIndex {
 public:
-    typedef std::size_t size_t;
-    typedef std::size_t index_id;
-    typedef Index<SymmGroup> index_t;
-    typedef typename index_t::charge charge;    // element of Index
-    typedef std::size_t elem_id;                // element of charge
+    using size_t = std::size_t;
+    using index_id = std::size_t;
+    using index_t = Index<SymmGroup>;
+    using charge = typename index_t::charge;    // element of Index
+    using elem_id = std::size_t;                // element of charge
     
-    typedef std::pair<charge, elem_id> coord_t; // index inside block_matrix
+    using coord_t = std::pair<charge, elem_id>; // index inside block_matrix
     
-    typedef std::size_t set_id;
-    typedef std::vector<coord_t> key_t;
+    using set_id = std::size_t;
+    using key_t = std::vector<coord_t>;
     
-    typedef index_product_iterator<SymmGroup> const_iterator;
+    using const_iterator = index_product_iterator<SymmGroup>;
     
-    MultiIndex () { }
+    MultiIndex () = default;
     
     index_id insert_index(index_t const & idx)
     {
@@ -204,10 +204,10 @@ public:
     std::pair<coord_t, coord_t> get_coords(set_id s, key_t const& key) const
     {
         key_t left_k, right_k;
-        for (int i=0; i<set_left[s].size(); ++i)
-            left_k.push_back(key[ set_left[s][i].first ]);
-        for (int i=0; i<set_right[s].size(); ++i)
-            right_k.push_back(key[ set_right[s][i].first ]);
+        for (const auto & i : set_left[s])
+            left_k.push_back(key[ i.first ]);
+        for (const auto & i : set_right[s])
+            right_k.push_back(key[ i.first ]);
                 
         return std::make_pair( get_left_coord(s, left_k), get_right_coord(s, right_k) );
     }
@@ -297,8 +297,8 @@ MultiIndex<SymmGroup>::create_set(std::vector<std::pair<index_id, bool> > const 
 {
     {
         std::vector<index_t> b;
-        for(int i=0; i<vec_left.size(); ++i)
-            b.push_back( idx_[vec_left[i].first] );
+        for(const auto & i : vec_left)
+            b.push_back( idx_[i.first] );
         
         std::map<charge, size_t> block_begins;
         std::vector<key_t> keys_;
@@ -323,8 +323,8 @@ MultiIndex<SymmGroup>::create_set(std::vector<std::pair<index_id, bool> > const 
     
     {
         std::vector<index_t> b;
-        for(int i=0; i<vec_right.size(); ++i)
-            b.push_back( idx_[vec_right[i].first] );
+        for(const auto & i : vec_right)
+            b.push_back( idx_[i.first] );
         
         std::map<charge, size_t> block_begins;
         std::vector<key_t> keys_;

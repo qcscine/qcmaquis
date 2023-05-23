@@ -8,6 +8,7 @@
 #ifndef CONTRACTIONS_APPLY_OP_H
 #define CONTRACTIONS_APPLY_OP_H
 
+#include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/abelian/functors.hpp"
@@ -30,10 +31,10 @@ void lbtm_kernel_allocate(size_t b2, ContractionGrid<Matrix, SymmGroup>& contr_g
                           Index<SymmGroup> const & right_i, Index<SymmGroup> const & out_left_i,
                           bool isHermitian=true)
 {
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    using col_proxy = typename MPOTensor<Matrix, SymmGroup>::col_proxy;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
     col_proxy col_b2 = mpo.column(b2);
     for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
         index_type b1 = col_it.index();
@@ -82,10 +83,10 @@ void lbtm_kernel_execute(size_t b2, ContractionGrid<Matrix, SymmGroup>& contr_gr
                          Index<SymmGroup> const & right_i, Index<SymmGroup> const & out_left_i,
                          ProductBasis<SymmGroup> const & in_right_pb, ProductBasis<SymmGroup> const & out_left_pb)
 {
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    using col_proxy = typename MPOTensor<Matrix, SymmGroup>::col_proxy;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
     col_proxy col_b2 = mpo.column(b2);
     for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
         index_type b1 = col_it.index();
@@ -148,10 +149,10 @@ void rbtm_kernel_allocate(size_t b1, block_matrix<Matrix, SymmGroup> & ret,
                           Index<SymmGroup> const & left_i, Index<SymmGroup> const & out_right_i,
                           bool isHermitian)
 {
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
     row_proxy row_b1 = mpo.row(b1);
     for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
         index_type b2 = row_it.index();
@@ -198,10 +199,10 @@ void rbtm_kernel_execute(size_t b1, block_matrix<Matrix, SymmGroup> & ret,
                          ProductBasis<SymmGroup> const & in_left_pb, ProductBasis<SymmGroup> const & out_right_pb)
 {
     parallel::scheduler_size_indexed scheduler(ret);
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
+    using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
     row_proxy row_b1 = mpo.row(b1);
     for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
         index_type b2 = row_it.index();

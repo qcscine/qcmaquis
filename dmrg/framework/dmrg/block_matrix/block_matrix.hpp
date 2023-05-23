@@ -16,9 +16,7 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix()
-{
-}
+block_matrix<Matrix, SymmGroup>::block_matrix() = default;
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
@@ -486,7 +484,7 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
         #ifdef USE_AMBIENT
         printf("ERROR: LOAD COMPLEX DATA NOT TESTED!\n\n");
         #endif
-        typedef typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type> LoadMatrix;
+        using LoadMatrix = typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type>;
         std::vector<LoadMatrix> tmp;
         ar["data_"] >> tmp;
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)

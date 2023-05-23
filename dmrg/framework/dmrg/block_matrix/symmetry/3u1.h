@@ -10,7 +10,7 @@
 
 #include "dmrg/block_matrix/symmetry/nu1_tpl.h"
 
-typedef NU1_template<3> ThreeU1;
+using ThreeU1 = NU1_template<3>;
 
 
 #endif

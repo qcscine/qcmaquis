@@ -32,7 +32,7 @@ class NU1DG;
 template<int N, class S>
 class NU1ChargeDG : public NU1ChargePG<N, S>
 {
-    typedef NU1ChargePG<N, S> base;
+    using base = NU1ChargePG<N, S>;
 
 public:
     NU1ChargeDG(S init = 0) : base(init) {}
@@ -141,9 +141,9 @@ class NU1DG
 {
     template<class G, int A, int B> friend struct tpl_arith_;
 public:
-    typedef S subcharge;
-    typedef NU1ChargeDG<N, S> charge;
-    typedef std::vector<charge> charge_v;
+    using subcharge = S;
+    using charge = NU1ChargeDG<N, S>;
+    using charge_v = std::vector<charge>;
 private:
     static alps::numeric::matrix<S> mult_table;
     static std::vector<S> adjoin_table;

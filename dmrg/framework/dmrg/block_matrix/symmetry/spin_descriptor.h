@@ -14,7 +14,7 @@ template <class SymmType>
 class SpinDescriptor
 {
 public:
-    typedef int spin_t;
+    using spin_t = int;
 
     void clear() { }
     int get() const { return 0; }
@@ -44,7 +44,7 @@ template <>
 class SpinDescriptor<symm_traits::SU2Tag>
 {
 public:
-    typedef int spin_t;
+    using spin_t = int;
 
     SpinDescriptor() : twoS(0), diff_(0) {}
     SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) : twoS(twoS_), diff_(out-in) {}

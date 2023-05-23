@@ -30,8 +30,8 @@ void gemm(SiteOperator<Matrix1, SymmGroup> const & A,
     C.clear();
     assert(B.basis().is_sorted());
 
-    typedef typename SymmGroup::charge charge;
-    typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+    using charge = typename SymmGroup::charge;
+    using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     const_iterator B_begin = B.basis().begin();
     const_iterator B_end = B.basis().end();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
@@ -223,9 +223,9 @@ void op_kron(Index<SymmGroup> const & phys_A,
              SpinDescriptor<symm_traits::SU2Tag> target_spin
               = SpinDescriptor<symm_traits::SU2Tag>(-1,0,0))
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename SymmGroup::subcharge subcharge;
-    typedef typename Matrix2::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using subcharge = typename SymmGroup::subcharge;
+    using value_type = typename Matrix2::value_type;
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
@@ -270,7 +270,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
     //*************************************
     // Tensor + Kronecker product
 
-    typedef std::pair<charge, charge> charge_pair;
+    using charge_pair = std::pair<charge, charge>;
     std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge> >, compare_pair<charge_pair> > basis_spins;
 
     block_matrix<Matrix2, SymmGroup> blocks;

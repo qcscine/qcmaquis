@@ -37,7 +37,7 @@ public:
           exit = true;
         }
         else if (iRow == num_rows(eigenVectors)-1) {
-          vectorOfPhases.push_back(std::complex<double>(1., 0.));
+          vectorOfPhases.emplace_back(1., 0.);
           exit = true;
         }
         else {

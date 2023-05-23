@@ -5,6 +5,8 @@
  *            See LICENSE.txt for details.
  */
 
+#include "dmrg/evolve/TimeEvolvers/RKEvolver.h"
+
 template<class Matrix, class SymmGroup>
 template<class SiteProblem, class MatrixType>
 void RKEvolver<Matrix, SymmGroup>::evolve_kernel(SiteProblem const& site_problem, MatrixType& matrix, bool is_forward,

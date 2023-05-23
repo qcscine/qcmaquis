@@ -28,7 +28,7 @@ template<class Matrix, class SymmGroup> class SiteOperator;
 template<class Matrix, class SymmGroup>
 struct operator_selector
 {
-    typedef SiteOperator<Matrix, SymmGroup> type;
+    using type = SiteOperator<Matrix, SymmGroup>;
 };
 
 template<class Matrix, class SymmGroup>
@@ -36,15 +36,15 @@ class block_matrix
 {
     friend class block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>;
 private:
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 public:
-    typedef Matrix matrix_type;
-    typedef typename Matrix::size_type size_type;
-    typedef typename Matrix::value_type value_type;
-    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename maquis::traits::real_type<Matrix>::type real_type;
-    typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
-    typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
+    using matrix_type = Matrix;
+    using size_type = typename Matrix::size_type;
+    using value_type = typename Matrix::value_type;
+    using scalar_type = typename maquis::traits::scalar_type<Matrix>::type;
+    using real_type = typename maquis::traits::real_type<Matrix>::type;
+    using block_iterator = typename boost::ptr_vector<Matrix>::iterator;
+    using const_block_iterator = typename boost::ptr_vector<Matrix>::const_iterator;
 
     block_matrix();
 

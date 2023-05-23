@@ -156,7 +156,7 @@ public:
 
   /** @brief Gets a specific value of the iteration result */
   template<class CastType>
-  CastType getSpecificResult(std::string resultName) {
+  CastType getSpecificResult(const std::string& resultName) {
     if (!iterationResults_.has(resultName))
       throw std::runtime_error("Trying to access non-existing simulation result");
     return boost::any_cast<CastType>(iterationResults_[resultName].get()[0]);

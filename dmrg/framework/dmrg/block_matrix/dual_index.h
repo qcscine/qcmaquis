@@ -8,6 +8,9 @@
 #ifndef TENSOR_DUAL_INDEX_H
 #define TENSOR_DUAL_INDEX_H
 
+#include "dmrg/block_matrix/indexing_stable.hpp"
+#include <vector>
+
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/serialization/nvp.hpp>
@@ -18,7 +21,7 @@ namespace dual_index_detail
     template <class SymmGroup>
     class QnBlock
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
     public:
         QnBlock() {}
@@ -121,19 +124,19 @@ namespace boost { namespace serialization {
 
 template<class SymmGroup> class DualIndex
 {
-    typedef std::vector<dual_index_detail::QnBlock<SymmGroup> > data_type;
+    using data_type = std::vector<dual_index_detail::QnBlock<SymmGroup>>;
     
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef typename data_type::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using value_type = typename data_type::value_type;
     
-    typedef typename data_type::iterator iterator;
-    typedef typename data_type::const_iterator const_iterator;
+    using iterator = typename data_type::iterator;
+    using const_iterator = typename data_type::const_iterator;
     
-    typedef typename data_type::reverse_iterator reverse_iterator;
-    typedef typename data_type::const_reverse_iterator const_reverse_iterator;
+    using reverse_iterator = typename data_type::reverse_iterator;
+    using const_reverse_iterator = typename data_type::const_reverse_iterator;
     
-    typedef basis_iterator_<SymmGroup> basis_iterator;
+    using basis_iterator = basis_iterator_<SymmGroup>;
     
     DualIndex() : sorted_(true) {}
     
@@ -296,7 +299,7 @@ private:
     
     std::size_t destination(value_type const & x) const
     {
-        return std::find_if(data_.begin(), data_.end(),
+        return std::find_if(data_.begin(), data_.end(), 
                             boost::lambda::bind(dual_index_detail::lt<SymmGroup>,
                                                 boost::lambda::_1,
                                                 x)) - data_.begin();

@@ -7,13 +7,12 @@
 
 #include "utils/function_objects.h"
 #include "utils/bindings.hpp"
+#include "dmrg/block_matrix/site_operator.h"
 
 #include <boost/serialization/serialization.hpp>
 
 template<class Matrix, class SymmGroup>
-SiteOperator<Matrix, SymmGroup>::SiteOperator()
-{
-}
+SiteOperator<Matrix, SymmGroup>::SiteOperator() = default;
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup>::SiteOperator(Index<SymmGroup> const & rows,

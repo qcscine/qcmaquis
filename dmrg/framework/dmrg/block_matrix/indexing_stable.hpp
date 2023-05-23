@@ -82,8 +82,8 @@ template<class SymmGroup>
 class Index
 {
     // Private types
-    typedef std::pair<typename SymmGroup::charge, std::size_t> data_entry_type;
-    typedef std::vector<data_entry_type> data_type;
+    using data_entry_type = std::pair<typename SymmGroup::charge, std::size_t>;
+    using data_type = std::vector<data_entry_type>;
 public:
     // Public types
     using charge = typename SymmGroup::charge;

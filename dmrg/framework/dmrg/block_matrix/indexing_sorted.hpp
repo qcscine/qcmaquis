@@ -11,6 +11,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <numeric>
 
 #include <boost/unordered_map.hpp>
 #include <boost/container/flat_set.hpp>
@@ -80,20 +81,20 @@ class basis_iterator_;
 template<class SymmGroup> class Index
 : protected std::vector<std::pair<typename SymmGroup::charge, std::size_t> >
 {
-    typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > base_t;
-    typedef boost::container::flat_map<typename SymmGroup::charge, std::size_t> pos_t;
+    using base_t = std::vector<std::pair<typename SymmGroup::charge, std::size_t>>;
+    using pos_t = boost::container::flat_map<typename SymmGroup::charge, std::size_t>;
 
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef typename base_t::value_type value_type;
+    using charge = typename SymmGroup::charge;
+    using value_type = typename base_t::value_type;
 
-    typedef typename base_t::iterator iterator;
-    typedef typename base_t::const_iterator const_iterator;
+    using iterator = typename base_t::iterator;
+    using const_iterator = typename base_t::const_iterator;
 
-    typedef typename base_t::reverse_iterator reverse_iterator;
-    typedef typename base_t::const_reverse_iterator const_reverse_iterator;
+    using reverse_iterator = typename base_t::reverse_iterator;
+    using const_reverse_iterator = typename base_t::const_reverse_iterator;
 
-    typedef basis_iterator_<SymmGroup> basis_iterator;
+    using basis_iterator = basis_iterator_<SymmGroup>;
 
     static const bool sorted = true;
 
@@ -268,7 +269,7 @@ public:
     template<class Archive>
     void load(Archive & ar)
     {
-        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
+        using my_type = std::vector<std::pair<typename SymmGroup::charge, std::size_t>>;
         ar["Index"] >> static_cast<my_type&>(*this);
         calc_positions();
     }
@@ -276,7 +277,7 @@ public:
     template<class Archive>
     void save(Archive & ar) const
     {
-        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
+        using my_type = std::vector<std::pair<typename SymmGroup::charge, std::size_t>>;
         ar["Index"] << static_cast<my_type const &>(*this);
     }
 
@@ -301,8 +302,8 @@ template<class SymmGroup>
 class ProductBasis
 {
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
 
     ProductBasis(Index<SymmGroup> const & a,
                  Index<SymmGroup> const & b)
@@ -338,7 +339,7 @@ private:
 public:
     size_t operator()(charge a, charge b) const
     {
-        typedef typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator match_type;
+        using match_type = typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator;
         match_type match = keys_vals_.find(std::make_pair(a,b));
         assert( match != keys_vals_.end() );
         return match->second;
@@ -372,7 +373,7 @@ template<class SymmGroup>
 class basis_iterator_
 {
 public:
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     basis_iterator_(Index<SymmGroup> const & idx, bool at_end = false)
     : idx_(idx)
@@ -452,7 +453,7 @@ bool weak_equal(Index<SymmGroup> const & a, Index<SymmGroup> const & b)
 template<class SymmGroup>
 Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     std::vector<charge> oc = inp.charges(), nc = inp.charges();
     std::transform(nc.begin(), nc.end(), nc.begin(), std::negate<charge>());
@@ -492,7 +493,7 @@ template<class SymmGroup>
 Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                            Index<SymmGroup> const & i2)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     Index<SymmGroup> ret;
     for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)

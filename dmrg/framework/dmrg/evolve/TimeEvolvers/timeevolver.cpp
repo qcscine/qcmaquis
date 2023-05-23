@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "dmrg/evolve/TimeEvolvers/timeevolver.h"
+
 // -- Empty constructor --
 /*
 template<class Matrix, class SymmGroup, class ParameterType>

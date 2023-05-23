@@ -10,6 +10,8 @@
 
 #include <boost/type_traits.hpp>
 
+#include <dmrg/block_matrix/symmetry.h>
+
 namespace symm_traits {
 
 // abelian vs. non-abelian
