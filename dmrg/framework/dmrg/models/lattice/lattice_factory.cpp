@@ -20,7 +20,7 @@
 std::shared_ptr<lattice_impl>
 lattice_factory(BaseParameters & parms)
 {
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
+    using impl_ptr = std::shared_ptr<lattice_impl>;
 
     if (parms["lattice_library"] == "coded") {
         return coded_lattice_factory(parms);

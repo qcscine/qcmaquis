@@ -20,20 +20,20 @@
 template <class Matrix, class SymmGroup>
 class custom_model_impl : public model_impl<Matrix, SymmGroup>
 {
-    typedef model_impl<Matrix, SymmGroup> base;
+    using base = model_impl<Matrix, SymmGroup>;
 
-    typedef typename base::table_type table_type;
-    typedef typename base::table_ptr table_ptr;
-    typedef typename base::tag_type tag_type;
+    using table_type = typename base::table_type;
+    using table_ptr = typename base::table_ptr;
+    using tag_type = typename base::tag_type;
 
-    typedef typename base::term_descriptor term_descriptor;
-    typedef typename base::terms_type terms_type;
-    typedef typename base::measurements_type measurements_type;
+    using term_descriptor = typename base::term_descriptor;
+    using terms_type = typename base::terms_type;
+    using measurements_type = typename base::measurements_type;
 
 public:
-    typedef typename base::size_t size_t;
-    typedef typename Matrix::value_type value_type;
-    typedef typename base::op_t op_t;
+    using size_t = typename base::size_t;
+    using value_type = typename Matrix::value_type;
+    using op_t = typename base::op_t;
 
     custom_model_impl (Index<SymmGroup> const& phys_)
     : tag_handler(new table_type())
@@ -126,12 +126,12 @@ private:
 /// pimpl for CustomModel
 template <class Matrix, class SymmGroup>
 class CustomModel {
-    typedef custom_model_impl<Matrix, SymmGroup> impl_type;
-    typedef std::shared_ptr<impl_type> impl_ptr;
+    using impl_type = custom_model_impl<Matrix, SymmGroup>;
+    using impl_ptr = std::shared_ptr<impl_type>;
 public:
-    typedef typename impl_type::size_t size_t;
-    typedef typename impl_type::value_type value_type;
-    typedef typename impl_type::op_t op_t;
+    using size_t = typename impl_type::size_t;
+    using value_type = typename impl_type::value_type;
+    using op_t = typename impl_type::op_t;
 
     CustomModel(Index<SymmGroup> const& phys)
     : impl_(new impl_type(phys))

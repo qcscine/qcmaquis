@@ -8,6 +8,8 @@
 #ifndef MEASUREMENTS_H
 #define MEASUREMENTS_H
 
+#include <utility>
+
 #include "dmrg/models/measurements/average.h"
 #include "dmrg/models/measurements/local.h"
 #include "dmrg/models/measurements/local_at.h"
@@ -24,12 +26,12 @@ class measure_and_save {
 
 public:
 
-    typedef typename Model<Matrix, SymmGroup>::meas_with_results_type meas_with_results_type;
+    using meas_with_results_type = typename Model<Matrix, SymmGroup>::meas_with_results_type;
 
-    measure_and_save(std::string const& rfile_, std::string const& archive_path_,
+    measure_and_save(std::string rfile_, std::string archive_path_,
                      MPS<Matrix, SymmGroup> const& mps_, int eigenstate_=0)
-    : rfile(rfile_)
-    , archive_path(archive_path_)
+    : rfile(std::move(rfile_))
+    , archive_path(std::move(archive_path_))
     , eigenstate(eigenstate_)
     , mps(mps_)
     , rmps(mps)

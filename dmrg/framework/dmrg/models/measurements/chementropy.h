@@ -20,6 +20,7 @@
 #include<boost/tokenizer.hpp>
 #include<boost/lexical_cast.hpp>
 #include <algorithm>
+#include <utility>
 
 using std::cerr;
 using std::cout;
@@ -36,8 +37,8 @@ namespace entanglement_detail {
     {
        std::vector<std::pair<int, int> > labels;
        std::pair<int, int> lab;
-          for(int j = 0; j < quant_label.size(); j++){
-             boost::tokenizer<> tok(quant_label[j]);
+          for(const auto & j : quant_label){
+             boost::tokenizer<> tok(j);
              boost::tokenizer<>::iterator beg= tok.begin();
              lab.first = boost::lexical_cast<int>(*beg);
              ++beg;
@@ -50,8 +51,8 @@ namespace entanglement_detail {
     std::vector<int> get_labels_vec(const std::vector<std::string> & quant_label)
     {
        std::vector<int> labels;
-          for(int j = 0; j < quant_label.size(); j++){
-             boost::tokenizer<> tok(quant_label[j]);
+          for(const auto & j : quant_label){
+             boost::tokenizer<> tok(j);
              boost::tokenizer<>::iterator beg = tok.begin();
              labels.push_back(boost::lexical_cast<int>(*tok.begin()));
           }
@@ -65,7 +66,7 @@ namespace entanglement_detail {
     }
 
     template <class Matrix>
-    Matrix load_vector(storage::archive & ar, std::string path)
+    Matrix load_vector(storage::archive & ar, const std::string& path)
     {
         std::vector<std::string> x;
         Matrix y;
@@ -131,7 +132,7 @@ namespace entanglement_detail {
     }
 
     template <class Matrix>
-    Matrix load_matrix(storage::archive & ar, std::string path, int L)
+    Matrix load_matrix(storage::archive & ar, const std::string& path, int L)
     {
         std::vector<std::string> x;
         Matrix y;
@@ -169,7 +170,7 @@ namespace entanglement_detail {
     }
 
     template <class Matrix>
-    Matrix load_matrix_pair(storage::archive & ar, std::string path1, std::string path2, int L)
+    Matrix load_matrix_pair(storage::archive & ar, const std::string& path1, const std::string& path2, int L)
     {
         std::vector<std::string> x1, x2;
         Matrix y1, y2;
@@ -272,7 +273,7 @@ LOAD_PAIR(doccndown, ndowndocc) \
     template<class Matrix>
     EntropyData<Matrix> loadData(storage::archive & ar)
     {
-        typedef typename Matrix::value_type value_type;
+        using value_type = typename Matrix::value_type;
         DmrgParameters parms;
         ar["/parameters"] >> parms;
 
@@ -389,14 +390,14 @@ LOAD_PAIR(doccndown, ndowndocc) \
 template <class Matrix>
 class EntanglementData
 {
-    typedef typename Matrix::value_type value_type;
-    typedef typename maquis::traits::real_type<value_type>::type real_type;
+    using value_type = typename Matrix::value_type;
+    using real_type = typename maquis::traits::real_type<value_type>::type;
 
 public:
     EntanglementData(std::string rfile)
     {
         // Load results from rfile:
-        storage::archive ar(rfile, "r");
+        storage::archive ar(std::move(rfile), "r");
         entanglement_detail::EntropyData<Matrix> data = entanglement_detail::loadData<Matrix>(ar);
 
         calculateData(data);
@@ -430,8 +431,8 @@ private:
     void calculateData(entanglement_detail::EntropyData<Matrix>& data)
     {
 
-        typedef typename Matrix::value_type value_type;
-        typedef typename maquis::traits::real_type<value_type>::type real_type;
+        using real_type = typename maquis::traits::real_type<value_type>::type;
+        using real_type = typename maquis::traits::real_type<value_type>::type;
 
         int L = data.L;
         real_type threshold = 1.0e-10;

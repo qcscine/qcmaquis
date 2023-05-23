@@ -27,7 +27,7 @@ class PreBOLattice : public lattice_impl
 {
 public:
     // Types definition
-    typedef lattice_impl::pos_t  pos_t;
+    using pos_t = lattice_impl::pos_t;
     // -- Constructor --
     // In addition to a standard lattice constructor, it also loads the number
     // of basis function per mode
@@ -129,7 +129,7 @@ public:
      * @param rel_pos
      * @return
      */
-    pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const {
+    pos_t get_abs_position(part_type const & pt, pos_t const & rel_pos) const override {
         //throw std::runtime_error("get_abs_position must be debugged first.");
         //unsigned int abs_pos=0;
         //for (unsigned int i=0; i<pt; i++) {
@@ -145,14 +145,14 @@ public:
     // The following methods are the same as for the Orbital and the Open Chain Lattice.
     // The only difference is the way in which the lattice site type is extracted, which
     // is taken from the orbital lattice
-    std::vector<pos_t> forward(pos_t i) const {
+    std::vector<pos_t> forward(pos_t i) const override {
         std::vector<pos_t> ret;
         if (i < L-1)
             ret.push_back(i+1);
         return ret;
     }
     //
-    std::vector<pos_t> all(pos_t i) const {
+    std::vector<pos_t> all(pos_t i) const override {
         std::vector<pos_t> ret;
         if (i < L-1)
             ret.push_back(i+1);
@@ -168,7 +168,7 @@ public:
      * @param pos
      * @return boost::any
      */
-    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const override
     {
         if (property == "type" && pos.size() == 1)
             return boost::any(vec_lattice_type[pos[0]]);
@@ -203,8 +203,8 @@ public:
         }
     }
 
-    pos_t size() const { return L; }
-    int getMaxType() const { return maximum_vertex; }
+    pos_t size() const override { return L; }
+    int getMaxType() const override { return maximum_vertex; }
 
 private:
     // +----------+

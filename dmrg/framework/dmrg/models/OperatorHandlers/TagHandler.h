@@ -19,6 +19,7 @@
 #include "dmrg/block_matrix/site_operator.h"
 #include "dmrg/block_matrix/site_operator_algorithms.h"
 #include "dmrg/models/tag_detail.h"
+#include "dmrg/models/OperatorHandlers/OpTable.h"
 
 template <class Matrix, class SymmGroup>
 class TagHandler

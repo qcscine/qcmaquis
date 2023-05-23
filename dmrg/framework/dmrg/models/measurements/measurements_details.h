@@ -27,38 +27,44 @@ namespace measurements_details {
     class checkpg<symm, symm_traits::enable_if_pg_t<symm> >
     {
     public:
-        typedef typename symm::charge charge;
-        typedef typename symm::subcharge subcharge;
+        using charge = typename symm::charge;
+        using subcharge = typename symm::subcharge;
 
         template <class matrix>
         bool operator()(term_descriptor<typename matrix::value_type> const & term,
 				std::shared_ptr<TagHandler<matrix, symm> > tag_handler,
 				Lattice const & lat)
         {
-            typedef typename TagHandler<matrix, symm>::op_t op_t;
+          using op_t = typename TagHandler<matrix, symm>::op_t;
 
-		charge acc = symm::IdentityCharge;
-            for (std::size_t p = 0; p < term.size(); ++p) {
-		    charge local = symm::IdentityCharge;
-		    if (tag_handler->is_fermionic(term.operator_tag(p)))
-                    // stknecht: this check does not work properly for U1DG. FIXME!
-                    if(symm_traits::HasU1DG<symm>::value)
-                        if( p % 2 == 0)
-		                symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
-                        else
-		                symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
-                    else
-    		            symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+          charge acc = symm::IdentityCharge;
+          for (std::size_t p = 0; p < term.size(); ++p) {
+            charge local = symm::IdentityCharge;
+            if (tag_handler->is_fermionic(term.operator_tag(p))) {
 
-                    //maquis::cout << " index " << p << " --> accumulated charge (before) " << acc << " local charge " << local << std::endl;
-		    acc = symm::fuse(acc, local);
-            //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;
+              // stknecht: this check does not work properly for U1DG. FIXME!
+              if(symm_traits::HasU1DG<symm>::value) {
+                if( p % 2 == 0) {
+                  symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+                }
+                else {
+                  symm::irrep(local) = symm::adjoin(lat.get_prop<subcharge>("type", term.position(p)));
+                }
+              }
+              else {
+                symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+              }
             }
 
-		if (acc == symm::IdentityCharge)
-            	return true;
+            //maquis::cout << " index " << p << " --> accumulated charge (before) " << acc << " local charge " << local << std::endl;
+            acc = symm::fuse(acc, local);
+            //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;
+          }
 
-		return false;
+          if (acc == symm::IdentityCharge)
+            return true;
+
+          return false;
         }
     };
 
@@ -107,7 +113,7 @@ namespace measurements_details {
     template <class F, int N>
     struct iterate_rdm_indices
     {
-        typedef Lattice::pos_t pos_t;
+        using pos_t = Lattice::pos_t;
         typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             throw std::runtime_error("iterate_rdm_indices not implemented for this number of indices");
@@ -118,7 +124,7 @@ namespace measurements_details {
     template <class F>
     struct iterate_rdm_indices<F, 4>
     {
-        typedef Lattice::pos_t pos_t;
+        using pos_t = Lattice::pos_t;
         typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             pos_t p4_start = 0;
@@ -246,7 +252,7 @@ namespace measurements_details {
     template <class F>
     struct iterate_rdm_indices<F, 3>
     {
-        typedef Lattice::pos_t pos_t;
+        using pos_t = Lattice::pos_t;
         typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             pos_t p1_start = 0;
@@ -309,7 +315,7 @@ namespace measurements_details {
     template <class F>
     struct iterate_rdm_indices<F, 2>
     {
-        typedef Lattice::pos_t pos_t;
+        using pos_t = Lattice::pos_t;
         typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
             for (pos_t p1 = 0; p1 < L; ++p1)
@@ -331,7 +337,7 @@ namespace measurements_details {
     class nrdm_counter
     {
         public:
-            typedef I return_type;
+            using return_type = I;
             nrdm_counter() : counter_(0) {}
             return_type get() { return counter_; }
             void operator()(const Dummy & d) { counter_++; }
@@ -344,8 +350,8 @@ namespace measurements_details {
     class nrdm_iterator
     {
         public:
-            typedef std::vector<I> vec_type;
-            typedef std::vector<std::vector<I> > return_type;
+            using vec_type = std::vector<I>;
+            using return_type = std::vector<std::vector<I>>;
             nrdm_iterator() : indexes_() {};
             return_type get() { return indexes_; }
             void operator()(const vec_type & vec) { indexes_.push_back(vec); }

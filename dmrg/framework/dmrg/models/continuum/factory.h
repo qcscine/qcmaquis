@@ -17,7 +17,7 @@ struct cont_model_factory {
     static std::shared_ptr<model_impl<Matrix, SymmGroup> >
     parse(Lattice const &, BaseParameters &)
     {
-        typedef std::shared_ptr<model_impl<Matrix, SymmGroup> > impl_ptr;
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, SymmGroup>>;
         throw std::runtime_error("Don't know any continuum model with this symmetry group!");
         return impl_ptr();
 

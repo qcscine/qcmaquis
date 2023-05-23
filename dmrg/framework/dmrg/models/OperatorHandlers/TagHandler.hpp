@@ -8,6 +8,8 @@
 #ifndef TAG_HANDLER_HPP
 #define TAG_HANDLER_HPP
 
+#include "dmrg/models/OperatorHandlers/TagHandler.h"
+
 template <class Matrix, class SymmGroup>
 TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
     : operator_table(new OPTable<Matrix, SymmGroup>(*rhs.operator_table))
@@ -194,21 +196,21 @@ template <class Map>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::
 duplicates_(Map const & sample)
 {
-    typedef typename Map::const_iterator it_t;
+    using it_t = typename Map::const_iterator;
 
     std::vector<tag_type> unique_ops;
-    for (it_t it_s = sample.begin(); it_s != sample.end(); ++it_s)
-    {
+    for (const auto& it_s : sample) {
         bool unique = true;
-        for (typename std::vector<tag_type>::iterator it_unique = unique_ops.begin(); it_unique != unique_ops.end(); ++it_unique)
-            if (equal((*operator_table)[(*it_s).second.first], (*operator_table)[*it_unique]).first)
+        for (const auto& it_unique : unique_ops) {
+            if (equal((*operator_table)[it_s.second.first], (*operator_table)[it_unique]).first)
             {
                 unique = false;
                 break;
             }
-
-        if (unique)
-            unique_ops.push_back((*it_s).second.first);
+        }
+        if (unique) {
+            unique_ops.push_back(it_s.second.first);
+        }
     }
 
     return sample.size() - unique_ops.size();
@@ -217,8 +219,9 @@ duplicates_(Map const & sample)
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::get_num_products() const {
     std::set<tag_type> utags;
-    for (pair_map_it_t it = product_tags.begin(); it != product_tags.end(); ++it)
-        utags.insert(it->second.first);
+    for (const auto& it : product_tags) {
+        utags.insert(it.second.first);
+    }
 
     return utags.size();
 }

@@ -8,6 +8,8 @@
 #ifndef OPTABLE_HPP
 #define OPTABLE_HPP
 
+#include "dmrg/models/OperatorHandlers/OpTable.h"
+
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type
 OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)

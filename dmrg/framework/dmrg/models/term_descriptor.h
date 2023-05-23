@@ -8,6 +8,8 @@
 #ifndef MODELS_TERM_DESCRIPTOR_H
 #define MODELS_TERM_DESCRIPTOR_H
 
+#include <algorithm>
+#include <iostream>
 #include <utility>
 #include <vector>
 

@@ -8,6 +8,8 @@
 #ifndef MEASUREMENTS_LOCAL_AT_H
 #define MEASUREMENTS_LOCAL_AT_H
 
+#include <utility>
+
 #include "dmrg/models/measurement.h"
 #include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/super_mpo.h"
@@ -24,9 +26,9 @@ public:
     using op_vec = std::vector<op_t>;
     using positions_type = std::vector<std::vector<pos_t> >;
 
-    local_at(std::string const& name_, const Lattice & lat, positions_type const& positions_,
+    local_at(std::string const& name_, Lattice  lat, positions_type  positions_,
              op_vec const & identities_, op_vec const & fillings_, std::vector<std::pair<op_vec, bool> > const& ops_)
-    : base(name_), lattice(lat), positions(positions_), identities(identities_), fillings(fillings_), ops(ops_)
+    : base(name_), lattice(std::move(lat)), positions(std::move(positions_)), identities(identities_), fillings(fillings_), ops(ops_)
     {
         this->labels = label_strings(lattice, positions);
         this->labels_num = positions;
@@ -37,18 +39,18 @@ public:
     {
         this->vector_results.clear();
         this->vector_results.reserve(positions.size());
-        for (pos_t p = 0; p < positions.size(); ++p)
+        for (auto & position : positions)
         {
             assert( positions[p].size() == ops.size() );
             for (pos_t i=1; i<ops.size(); ++i)
-                if (positions[p][i-1] >= positions[p][i])
+                if (position[i-1] >= position[i])
                     throw std::runtime_error("measure_local_at requires i1<i2<...<in.");
             generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lattice, identities, fillings);
             generate_mpo::OperatorTerm<Matrix, SymmGroup> hterm;
             bool with_sign = false;
             for (std::size_t i=0; i<ops.size(); ++i) 
             {
-                pos_t pos = positions[p][i];
+                pos_t pos = position[i];
                 op_t const& fill  = fillings[lattice.get_prop<int>("type", pos)];
                 op_t const& op    = ops[i].first[lattice.get_prop<int>("type", pos)];
                 op_t tmp;
@@ -58,7 +60,7 @@ public:
                 pos++;
                 with_sign = (ops[i].second) ? !with_sign : with_sign;
                 if (i != ops.size()-1)
-                    for (; pos<positions[p][i+1]; ++pos) {
+                    for (; pos<position[i+1]; ++pos) {
                         op_t const& fill  = fillings[lattice.get_prop<int>("type", pos)];
                         op_t const& ident = identities[lattice.get_prop<int>("type", pos)];
                         hterm.operators.push_back( std::make_pair(pos, (with_sign) ? fill : ident) );
@@ -74,7 +76,7 @@ public:
                 typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, this->phys_psi);
                 MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, this->phys_psi);
                 // static_cast needed for icpc 12.x
-                typedef typename MPS<Matrix, SymmGroup>::scalar_type (*overlap_func)(MPS<Matrix, SymmGroup> const &, MPS<Matrix, SymmGroup> const &);
+                using overlap_func = typename MPS<Matrix, SymmGroup>::scalar_type (*)(const MPS<Matrix, SymmGroup> &, const MPS<Matrix, SymmGroup> &);
                 typename MPS<Matrix, SymmGroup>::scalar_type val = ::overlap(super_mpo, mps);
                 this->vector_results.push_back(val/nn);
             }

@@ -47,7 +47,7 @@ public:
         assert(positions.size() == operators.size());
         bool FoundZero = false;
         // Types definition
-        typedef std::pair<pos_t, tag_type> pos_op_t;
+        using pos_op_t = std::pair<pos_t, tag_type>;
         // Variables definition
         term_descriptor term;
         std::vector<pos_op_t> pos_ops;

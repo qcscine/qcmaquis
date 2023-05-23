@@ -8,6 +8,8 @@
 #ifndef KRON_HANDLER_HPP
 #define KRON_HANDLER_HPP
 
+#include "dmrg/models/OperatorHandlers/KronHandler.h"
+
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::
 get_kron_tag(Index<SymmGroup> const & phys_i1,

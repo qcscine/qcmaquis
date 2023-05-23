@@ -15,7 +15,7 @@ namespace measurements {
 
     template <class Matrix, class SymmGroup>
     class entropies : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        using base = measurement<Matrix, SymmGroup>;
     public:
         entropies()
         : base("Entropy")
@@ -37,7 +37,7 @@ namespace measurements {
     
     template <class Matrix, class SymmGroup>
     class renyi_entropies : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        using base = measurement<Matrix, SymmGroup>;
     public:
         renyi_entropies()
         : base("Renyi2")

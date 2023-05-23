@@ -21,7 +21,7 @@ public:
    * @param doShift if true, shift by -1 the order (this is needed if the order starts from 0)
    * @return std::vector<std::size_t> Order specificed in the input
    */
-  static auto getOrbitalOrder(BaseParameters& parms, std::string nameOfOrder, bool doShift)
+  static auto getOrbitalOrder(BaseParameters& parms, const std::string& nameOfOrder, bool doShift)
   {
     // Definition of key parameters
     using PositionType = int;

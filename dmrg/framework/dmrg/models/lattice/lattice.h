@@ -10,6 +10,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 
+#include <utility>
 #include <vector>
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -19,28 +20,28 @@
 /// lattice common base
 class lattice_impl {
 public:
-    typedef int pos_t;
-    typedef int part_type;
+    using pos_t = int;
+    using part_type = int;
 
-    virtual ~lattice_impl() {}
+    virtual ~lattice_impl() = default;
 
     virtual std::vector<pos_t> forward(pos_t) const = 0;
     virtual std::vector<pos_t> all(pos_t) const = 0;
 
     // non-virtual!
-    template<class T> T get_prop(std::string property) const
+    template<class T> T get_prop(const std::string& property) const
                                  
     {
         return boost::any_cast<T>(get_prop_(property, std::vector<pos_t>()));
     }
 
-    template<class T> T get_prop(std::string property,
+    template<class T> T get_prop(const std::string& property,
                                  pos_t site) const
     {
         return boost::any_cast<T>(get_prop_(property, std::vector<pos_t>(1, site)));
     }
 
-    template<class T> T get_prop(std::string property,
+    template<class T> T get_prop(const std::string& property,
                                  pos_t bond1, pos_t bond2) const
     {
         std::vector<pos_t> v(2);
@@ -48,7 +49,7 @@ public:
         return boost::any_cast<T>(get_prop_(property, v));
     }
 
-    template<class T> T get_prop(std::string property,
+    template<class T> T get_prop(const std::string& property,
                                  std::vector<pos_t> const & positions) const
     {
         return boost::any_cast<T>(get_prop_(property, positions));
@@ -74,19 +75,19 @@ lattice_factory(BaseParameters & parms);
 
 /// pimpl resolved Lattice
 class Lattice {
-    typedef lattice_impl impl_type;
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
+    using impl_type = lattice_impl;
+    using impl_ptr = std::shared_ptr<lattice_impl>;
 public:
-    typedef impl_type::pos_t pos_t;
-    typedef int part_type;
+    using pos_t = impl_type::pos_t;
+    using part_type = int;
 
-    Lattice() { }
+    Lattice() = default;
 
     Lattice(BaseParameters & parms)
     : impl_(lattice_factory(parms))
     { }
 
-    Lattice(impl_ptr impl) : impl_(impl) { }
+    Lattice(impl_ptr impl) : impl_(std::move(impl)) { }
 
     impl_ptr impl() const { return impl_; }
 

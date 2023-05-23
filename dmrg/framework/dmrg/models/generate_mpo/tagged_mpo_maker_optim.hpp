@@ -32,7 +32,7 @@ namespace detail {
  */
 template <typename pos_t, typename tag_type, typename index_type>
 struct prempo_key {
-    typedef std::pair<pos_t, tag_type> pos_op_type;
+    using pos_op_type = std::pair<pos_t, tag_type>;
     enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
     // Class members
     kind_type kind;
@@ -192,11 +192,11 @@ public:
             finalize();
         MPO<Matrix, SymmGroup> mpo;
         mpo.reserve(length);
-        typedef std::map<prempo_key_type, index_type> index_map;
-        typedef typename index_map::iterator index_iterator;
+        using index_map = std::map<prempo_key_type, index_type>;
+        using index_iterator = typename index_map::iterator;
         index_map left;
         left[trivial_left] = 0;
-        typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
+        using spin_desc_t = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>;
         std::vector<spin_desc_t> left_spins(1);
         std::vector<index_type> LeftHerm(1);
         std::vector<int> LeftPhase(1,1);

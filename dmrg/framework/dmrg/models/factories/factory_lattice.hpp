@@ -24,7 +24,7 @@
  */
 inline std::shared_ptr<lattice_impl> coded_lattice_factory(BaseParameters & parms)
 {
-    typedef std::shared_ptr<lattice_impl> impl_ptr;
+    using impl_ptr = std::shared_ptr<lattice_impl>;
     if (parms["LATTICE"] == std::string("periodic chain lattice"))
         return impl_ptr(new ChainLattice(parms, true));
     else if (parms["LATTICE"] == std::string("chain lattice"))

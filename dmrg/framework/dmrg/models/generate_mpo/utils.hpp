@@ -24,9 +24,9 @@ namespace generate_mpo
 	template<class Matrix, class SymmGroup>
 	struct OperatorTagTerm
 	{
-		typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Lattice::pos_t pos_t;
-		typedef std::pair<pos_t, tag_type> op_pair_t;
+		using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+    using pos_t = typename Lattice::pos_t;
+		using op_pair_t = std::pair<pos_t, tag_type>;
         
 		std::vector<op_pair_t> operators;
 		tag_type fill_operator;
@@ -82,18 +82,19 @@ namespace generate_mpo
         os << "sign: " << op.with_sign << std::endl;
         os << "scale: " << op.scale << std::endl;
         os << "operators:";
-        for (int i=0; i<op.operators.size(); ++i)
-            os << " {"  << op.operators[i].first << "," << op.operators[i].second << "}";
-            os << std::endl;
+        for (const auto& e : op.operators) {
+          os << " {"  << e.first << "," << e.second << "}";
+          os << std::endl;
+        }
         return os;
     }
     
 	template<class Matrix, class SymmGroup>
 	struct OperatorTerm
 	{
-		typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef Lattice::pos_t pos_t;
-		typedef std::pair<pos_t, op_t> op_pair_t;
+		using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+    using pos_t = Lattice::pos_t;
+		using op_pair_t = std::pair<pos_t, op_t>;
         
 		std::vector<op_pair_t> operators;
 		op_t fill_operator;
@@ -167,34 +168,39 @@ namespace generate_mpo
     void compress_on_bond(Vector & pm1, Vector & pm2)
     {
         std::set<size_t> bond_used_dims;
-        for (typename Vector::iterator it = pm1.begin(); it != pm1.end(); ++it)
-            if (get<1>(*it) > 1)
-                bond_used_dims.insert(get<1>(*it));
-        for (typename Vector::iterator it = pm2.begin(); it != pm2.end(); ++it)
-            if (get<0>(*it) > 1)
-                bond_used_dims.insert(get<0>(*it));
-        
+        for (const auto& it : pm1) {
+            if (get<1>(it) > 1) { bond_used_dims.insert(get<1>(it)); }
+        }
+        for (const auto& it : pm2) {
+            if (get<0>(it) > 1) { bond_used_dims.insert(get<0>(it)); }
+        }
+
         std::map<size_t, size_t> compression_map;
         size_t c = 2;
-        for (set<size_t>::iterator it = bond_used_dims.begin();
-             it != bond_used_dims.end(); ++it)
-            compression_map[*it] = c++;
+        for (unsigned long bond_used_dim : bond_used_dims) {
+            compression_map[bond_used_dim] = c++;
+        }
         
-        for (typename Vector::iterator it = pm1.begin(); it != pm1.end(); ++it)
-            if (compression_map.count(get<1>(*it)) > 0)
-                get<1>(*it) = compression_map[get<1>(*it)];
-        for (typename Vector::iterator it = pm2.begin(); it != pm2.end(); ++it)
-            if (compression_map.count(get<0>(*it)) > 0)
-                get<0>(*it) = compression_map[get<0>(*it)];
+        for (auto& it : pm1) {
+          if (compression_map.count(get<1>(it)) > 0) {
+            get<1>(it) = compression_map[get<1>(it)];
+
+          }
+        }
+        for (auto& it : pm2) {
+            if (compression_map.count(get<0>(it)) > 0) {
+                get<0>(it) = compression_map[get<0>(it)];
+            }
+        }
     }
 
     template<class Vector>
     std::pair<size_t, size_t> rcdim(Vector const & pm)
     {
         std::list<size_t> l, r;
-        for (typename Vector::const_iterator it = pm.begin(); it != pm.end(); ++it) {
-            l.push_back( get<0>(*it) );
-            r.push_back( get<1>(*it) );
+        for (const auto& it : pm) {
+          l.push_back( get<0>(it) );
+          r.push_back( get<1>(it) );
         }
         
         size_t ldim=0, rdim=0;
@@ -210,7 +216,7 @@ namespace generate_mpo
     }
 
     struct pos_tag_lt {
-        typedef std::pair<int, unsigned int> value_type;
+        using value_type = std::pair<int, unsigned int>;
         inline bool operator() (value_type const& lhs, value_type const& rhs)
         {
             return (lhs.first < rhs.first);

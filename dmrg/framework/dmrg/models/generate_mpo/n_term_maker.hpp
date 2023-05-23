@@ -11,6 +11,7 @@
 
 #include <alps/numeric/matrix.hpp>
 #include "dmrg/block_matrix/detail/alps.hpp"
+#include "dmrg/models/lattice/lattice.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
@@ -18,9 +19,9 @@
 template<class Matrix, class SymmGroup>
 class NTermsMPO
 {
-	typedef Lattice::pos_t pos_t;
-	typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
-	typedef std::pair<pos_t, op_t> pos_op_t;
+	using pos_t = int;
+	using op_t = typename operator_selector<Matrix, SymmGroup>::type;
+	using pos_op_t = std::pair<pos_t, op_t>;
 
 public:
 	NTermsMPO(Lattice const& lat_,

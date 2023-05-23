@@ -14,7 +14,7 @@
 
 namespace tag_detail {
 
-    typedef unsigned tag_type;
+    using tag_type = unsigned int;
 
     enum operator_kind { bosonic, fermionic };
 
@@ -58,8 +58,8 @@ namespace tag_detail {
     equal(BlockMatrix const& reference,
           BlockMatrix const& sample)
     {
-        typedef typename BlockMatrix::matrix_type Matrix;
-        typedef typename Matrix::value_type value_type;
+        using Matrix = typename BlockMatrix::matrix_type;
+        using value_type = typename Matrix::value_type;
  
         {
             parallel::guard::serial guard;

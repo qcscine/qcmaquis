@@ -16,7 +16,7 @@ struct coded_model_factory<Matrix, U1> {
     /** @brief Factory function for the model class */
     static PointerType parse(Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, U1>>;
         if (parms["MODEL"] == std::string("vibronic")) {
 #ifdef DMRG_VIBRONIC
             return impl_ptr( new VibronicModel<Matrix>(lattice, parms));

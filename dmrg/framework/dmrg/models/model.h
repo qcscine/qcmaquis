@@ -26,22 +26,22 @@ template<class Matrix, class SymmGroup> class Measurements;
 template <class Matrix, class SymmGroup>
 class model_impl {
 public:
-    typedef std::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer_ptr;
+    using initializer_ptr = std::shared_ptr<mps_initializer<Matrix, SymmGroup>>;
 
-    typedef TagHandler<Matrix, SymmGroup> table_type;
-    typedef std::shared_ptr<table_type> table_ptr;
-    typedef typename table_type::tag_type tag_type;
+    using table_type = TagHandler<Matrix, SymmGroup>;
+    using table_ptr = std::shared_ptr<table_type>;
+    using tag_type = typename table_type::tag_type;
 
-    typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
-    typedef typename std::vector<term_descriptor> terms_type;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
-    typedef boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements_type;
-    typedef std::pair<std::vector<std::vector<int> >, std::vector<typename Matrix::value_type> > meas_with_results_type;
-    typedef std::map<std::string, meas_with_results_type> results_map_type;
+    using term_descriptor = ::term_descriptor<typename Matrix::value_type>;
+    using terms_type = typename std::vector<term_descriptor>;
+    using op_t = typename operator_selector<Matrix, SymmGroup>::type;
+    using measurements_type = boost::ptr_vector<measurement<Matrix, SymmGroup>>;
+    using meas_with_results_type = std::pair<std::vector<std::vector<int>>, std::vector<typename Matrix::value_type>>;
+    using results_map_type = std::map<std::string, meas_with_results_type>;
 
-    typedef std::size_t size_t;
+    using size_t = std::size_t;
 
-    virtual ~model_impl() {}
+    virtual ~model_impl() = default;
 
     virtual void update(BaseParameters const& p) =0;
 
@@ -79,25 +79,25 @@ model_factory(Lattice const& lattice, BaseParameters & parms);
 /// pimpl for Model
 template <class Matrix, class SymmGroup>
 class Model {
-    typedef model_impl<Matrix, SymmGroup> impl_type;
-    typedef std::shared_ptr<impl_type> impl_ptr;
+    using impl_type = model_impl<Matrix, SymmGroup>;
+    using impl_ptr = std::shared_ptr<impl_type>;
 public:
-    typedef typename impl_type::initializer_ptr initializer_ptr;
+    using initializer_ptr = typename impl_type::initializer_ptr;
 
-    typedef typename impl_type::table_type table_type;
-    typedef typename impl_type::table_ptr table_ptr;
-    typedef typename impl_type::tag_type tag_type;
+    using table_type = typename impl_type::table_type;
+    using table_ptr = typename impl_type::table_ptr;
+    using tag_type = typename impl_type::tag_type;
 
-    typedef typename impl_type::term_descriptor term_descriptor;
-    typedef typename impl_type::terms_type terms_type;
-    typedef typename impl_type::op_t op_t;
-    typedef typename impl_type::measurements_type measurements_type;
-    typedef typename impl_type::meas_with_results_type meas_with_results_type;
-    typedef typename impl_type::results_map_type results_map_type;
+    using term_descriptor = typename impl_type::term_descriptor;
+    using terms_type = typename impl_type::terms_type;
+    using op_t = typename impl_type::op_t;
+    using measurements_type = typename impl_type::measurements_type;
+    using meas_with_results_type = typename impl_type::meas_with_results_type;
+    using results_map_type = typename impl_type::results_map_type;
 
-    typedef typename impl_type::size_t size_t;
+    using size_t = typename impl_type::size_t;
 
-    Model() { }
+    Model() = default;
 
     Model(Lattice const& lattice, BaseParameters & parms)
     : impl_(model_factory<Matrix, SymmGroup>(lattice, parms))

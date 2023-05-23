@@ -12,7 +12,7 @@ template<class Matrix, int N>
 struct coded_model_factory<Matrix, NU1_template<N>> {
     static std::shared_ptr<model_impl<Matrix, NU1_template<N>> > parse(Lattice const& lattice, BaseParameters & parms)
     {
-        typedef std::shared_ptr<model_impl<Matrix, NU1_template<N>> > impl_ptr;
+        using impl_ptr = std::shared_ptr<model_impl<Matrix, NU1_template<N>>>;
         if (parms["MODEL"] == std::string("PreBO")) {
 #ifdef DMRG_PREBO
             return impl_ptr( new PreBO<Matrix, N>(lattice, parms) );

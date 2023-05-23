@@ -22,9 +22,9 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class MPOMaker
     {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
-        typedef vector< pair<op_t, op_t> > op_pairs;
+        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+        using block = boost::tuple<size_t, size_t, op_t>;
+        using op_pairs = vector<pair<op_t, op_t>>;
         
     public:
         MPOMaker(Lattice const& lat_,
