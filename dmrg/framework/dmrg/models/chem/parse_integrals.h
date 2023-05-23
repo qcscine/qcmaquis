@@ -78,7 +78,8 @@ namespace detail {
         if (order.size() != lat.size())
             throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
 
-        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::transform(order.begin(), order.end(), order.begin(),
+            [](const auto& e){ return e - 1; });
         inv_order.resize(order.size());
         for (int p = 0; p < order.size(); ++p)
             inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));

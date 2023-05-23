@@ -21,7 +21,6 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
 
-#include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
@@ -244,18 +243,26 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     smallest_ev = evalscut / allevals[0];
 
     truncated_fraction = 0.0; truncated_weight = 0.0;
-    for (typename real_vector_t::const_iterator it = std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut);
+    for (auto it = std::find_if(allevals.begin(), allevals.end(), [&](const auto& e) { return e < evalscut; });
          it != allevals.end(); ++it) {
         truncated_fraction += *it;
         truncated_weight += (*it)*(*it);
     }
     truncated_fraction /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
-    truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0,  boost::lambda::_1 + boost::lambda::_2 *boost::lambda::_2);
+    truncated_weight /= std::accumulate(
+        allevals.begin(), allevals.end(), 0.0,
+        [](const auto& a, const auto& b){ return a + b * b; });
 
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         real_vector_t evals_k(num_rows(evals[k]));
         std::transform(evals[k].diagonal().first, evals[k].diagonal().second, evals_k.begin(), gather_real_pred<value_type>);
-        keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
+        keeps[k] = std::distance(
+            evals_k.begin(),
+            std::find_if(
+              evals_k.begin(),
+              evals_k.end(),
+              [&](const auto& e){ return e < evalscut; }
+            ));
     }
 }
 

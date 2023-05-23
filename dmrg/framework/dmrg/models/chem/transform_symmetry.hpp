@@ -164,7 +164,7 @@ void transform_site(MPSTensor<Matrix, SymmIn> const & mps_in,
                     for (std::size_t ci = 0; ci < num_cols(source_block); ++ci)
                         std::transform(source_block.col(ci).first, source_block.col(ci).second,
                                        current_block.col(ci + out_right_offset_su2).first + out_left_offset_2u1 + out_left_offset_su2,
-                                       boost::lambda::_1*clebsch_gordan);
+                                       [&](const auto& e){ return e * clebsch_gordan; });
                 }
             }
         } // SU2 input physical_i

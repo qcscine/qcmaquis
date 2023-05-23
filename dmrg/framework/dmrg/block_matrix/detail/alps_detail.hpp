@@ -8,6 +8,8 @@
 #ifndef MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
 #define MAQUIS_BLOCK_MATRIX_DEATAIL_ALPS_MATRIX_DETAIL_HPP
 
+#include "dmrg/block_matrix/detail/alps.hpp"
+
 template<class T, class SymmGroup>
 class block_matrix;
 
@@ -22,7 +24,8 @@ namespace maquis { namespace dmrg { namespace detail {
     void iterator_axpy(InputIterator in1, InputIterator in2,
                        OutputIterator out1, T val)
     {
-        std::transform(in1, in2, out1, out1, boost::lambda::_1*val+boost::lambda::_2);
+        std::transform(in1, in2, out1, out1,
+            [val](const auto& x, const auto& y){ return val * x + y; });
     }
     
     inline void iterator_axpy(double const * in1, double const * in2,
@@ -46,7 +49,7 @@ namespace maquis { namespace dmrg { namespace detail {
     std::size_t zeroout(alps::numeric::matrix<T,A>& m, T const& tol)
     {
         std::size_t nzeros = 0;
-        typedef typename alps::numeric::matrix<T,A>::size_type size_type;
+        using size_type = typename alps::numeric::matrix<T, A>::size_type;
         for (size_type j=0; j<num_cols(m); ++j) {
             for (size_type i=0; i<num_rows(m); ++i) {
                 if (std::abs(m(i,j)) < tol) {

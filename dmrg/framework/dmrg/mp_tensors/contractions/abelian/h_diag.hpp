@@ -98,10 +98,14 @@ namespace contraction {
                             std::size_t ss1 = it->row;
                             if (ss1 != it->col) continue;
                             for (size_t col_i = 0; col_i < right_i[block].second; ++col_i) {
-                                std::transform(left_diagonal.begin(), left_diagonal.end(),
-                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
-                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
-                                               boost::lambda::_2 += boost::lambda::_1 * it->coefficient) ;
+                                std::transform(
+                                    left_diagonal.begin(), left_diagonal.end(),
+                                    &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                    &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                    [&](const auto& a, auto& b){
+                                        return b + a * it->coefficient;
+                                    }
+                                );
                             }
                         }
                     }
@@ -157,8 +161,14 @@ namespace contraction {
                 if (rblock != right[b2].n_blocks()) {
                     // Final contraction
                     for (size_t c = 0; c < num_cols(lb2[block]); ++c)
-                        std::transform(lb2[block].col(c).first, lb2[block].col(c).second, lb2[block].col(c).first,
-                                       boost::lambda::_1 * right[b2][rblock](c, c));
+                        std::transform(
+                            lb2[block].col(c).first,
+                            lb2[block].col(c).second,
+                            lb2[block].col(c).first,
+                            [&](const auto& e){
+                              return e * right[b2][rblock](c, c);
+                            }
+                        );
                     ret.match_and_add_block(lb2[block], in_r_charge, in_r_charge);
                 }
             }

@@ -8,14 +8,14 @@
 #ifndef UTILS_DMRG_RANDOM_HPP
 #define UTILS_DMRG_RANDOM_HPP
 
-#include <boost/random.hpp>
+#include <random>
 
 struct dmrg_random {
     using value_type = double;
-    using engine_t = boost::mt19937;
-    using uniform_dist_t = boost::uniform_real<>;
-    using normal_dist_t = boost::normal_distribution<>;
-    using poisson_dist_t = boost::poisson_distribution<value_type>;
+    using engine_t = std::mt19937;
+    using uniform_dist_t = std::uniform_real_distribution<>;
+    using normal_dist_t = std::normal_distribution<>;
+    using poisson_dist_t = std::poisson_distribution<value_type>;
     
     static engine_t engine;
 

@@ -205,8 +205,9 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
 
     MPS<Matrix, OutSymm> mps(mpo.size());
 
-    boost::function<out_charge (in_charge, in_charge)> phys_group = boost::lambda::bind(static_cast<out_charge(*)(in_charge, in_charge)>(group),
-                                                                                        boost::lambda::_1, -boost::lambda::_2);
+    auto phys_group = [](const in_charge& a, const in_charge& b){
+      return group(a, b);
+    };
 
     Index<OutSymm> phys2_i = group(phys_i, adjoin(phys_i));
     Index<OutSymm> left_i, right_i;

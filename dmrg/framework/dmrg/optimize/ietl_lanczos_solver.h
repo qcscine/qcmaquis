@@ -117,10 +117,10 @@ namespace ietl
     template<class Matrix, class SymmGroup>
     struct vectorspace_traits<SingleSiteVS<Matrix, SymmGroup> >
     {
-        typedef MPSTensor<Matrix, SymmGroup> vector_type;
-        typedef typename MPSTensor<Matrix, SymmGroup>::value_type scalar_type;
-        typedef typename MPSTensor<Matrix, SymmGroup>::magnitude_type magnitude_type;
-        typedef std::size_t size_type;
+        using vector_type = MPSTensor<Matrix, SymmGroup>;
+        using scalar_type = typename MPSTensor<Matrix, SymmGroup>::value_type;
+        using magnitude_type = typename MPSTensor<Matrix, SymmGroup>::magnitude_type;
+        using size_type = std::size_t;
     };
 }
 
@@ -132,12 +132,11 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
                    MPSTensor<Matrix, SymmGroup> const & initial,
                    BaseParameters & params)
 {
-    typedef MPSTensor<Matrix, SymmGroup> Vector;
+    using Vector = MPSTensor<Matrix, SymmGroup>;
 
     SingleSiteVS<Matrix, SymmGroup> vs(initial, std::vector<MPSTensor<Matrix, SymmGroup> >());
 
-    typedef ietl::vectorspace<Vector> Vecspace;
-    typedef boost::lagged_fibonacci607 Gen;
+    using Vecspace = ietl::vectorspace<Vector>;
 
     ietl::lanczos<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> > lanczos(sp, vs);
 

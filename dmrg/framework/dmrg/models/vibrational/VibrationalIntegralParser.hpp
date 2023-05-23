@@ -63,7 +63,8 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
         throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
     // Removes 1 (to fullfill the C++ convetion) and calculates the inverse map
     // (which is the one that is actually used in )
-    std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+    std::transform(order.begin(), order.end(), order.begin(),
+        [](const int e){ return e - 1; });
     inv_order.resize(order.size());
     for (int p = 0; p < order.size(); ++p)
         inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));

@@ -77,8 +77,7 @@ site_hamil_lbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
     common_subset(out_left_i, right_i_bra);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     bra_tensor.make_right_paired();
     Index<SymmGroup> indexForTrim = bra_tensor.data().left_basis(); 
     contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms> t(ket_tensor, left, mpo, indexForTrim, isHermitian);
@@ -171,8 +170,7 @@ site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
     common_subset(out_right_i, left_i_ket);
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                            -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     block_matrix<Matrix, SymmGroup> collector;
     MPSTensor<Matrix, SymmGroup> ret;
     ret.phys_i = bra_tensor.site_dim();

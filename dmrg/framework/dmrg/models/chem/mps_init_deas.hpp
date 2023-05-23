@@ -57,7 +57,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         else
             order = parms["orbital_order"].template as<std::vector<int> >();
 
-        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::transform(order.begin(), order.end(), order.begin(),
+            [](const int e){ return e - 1; });
         std::vector<int> inv_order(L);
         for (int p = 0; p < order.size(); ++p)
             inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));

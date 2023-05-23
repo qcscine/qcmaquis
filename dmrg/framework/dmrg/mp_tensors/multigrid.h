@@ -105,8 +105,10 @@ struct multigrid {
         
         ProductBasis<SymmGroup> in_left(phys_large, left_i);
         ProductBasis<SymmGroup> in_right(phys_large, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                                 -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){
+              return SymmGroup::fuse(-a, b);
+            }
+        );
         ProductBasis<SymmGroup> out_left(phys_small, left_i);
         ProductBasis<SymmGroup> phys_pb(phys_large, phys_large);
         
@@ -290,8 +292,9 @@ struct multigrid {
             
             ProductBasis<SymmGroup> in1_left(s1_basis, alpha_basis);
             ProductBasis<SymmGroup> in2_right(s2_basis, beta_basis,
-                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                  -boost::lambda::_1, boost::lambda::_2));
+                [&](const charge& a, const charge& b){
+                  return SymmGroup::fuse(-a, b);
+                });
             
             ProductBasis<SymmGroup> out_left(s_basis, alpha_basis);
             
@@ -401,8 +404,10 @@ struct multigrid {
         
         ProductBasis<SymmGroup> out_left(s1_basis, alpha_basis);
         ProductBasis<SymmGroup> out_right(s2_basis, beta_basis,
-                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                              -boost::lambda::_1, boost::lambda::_2));
+            [&](const charge& a, const charge& b){
+              return SymmGroup::fuse(-a, b);
+            }
+        );
         
         for (bi_t alpha = alpha_basis.basis_begin(); !alpha.end(); ++alpha)
             for (bi_t beta = beta_basis.basis_begin(); !beta.end(); ++beta)
@@ -424,13 +429,15 @@ struct multigrid {
                         charge out_left_c = SymmGroup::fuse(s1->first, alpha->first);
                         charge out_right_c = SymmGroup::fuse(-s2->first, beta->first);
                         
-                        if (!M.has_block(out_left_c, out_right_c))
-                            M.insert_block(new Matrix(out_left.size(s1->first, alpha->first),
-                                                      out_right.size(s2->first, beta->first,
-                                                                    boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                                         -boost::lambda::_1, boost::lambda::_2)),
-                                                      0),
-                                           out_left_c, out_right_c);
+                        if (!M.has_block(out_left_c, out_right_c)) {
+                          M.insert_block(new Matrix(out_left.size(s1->first, alpha->first),
+                                out_right.size(s2->first, beta->first,
+                                  [&](const charge& a, const charge& b){
+                                    return SymmGroup::fuse(-a, b);
+                                  }),
+                                0),
+                              out_left_c, out_right_c);
+                        }
                         
                         std::size_t in_left_offset = in_left(s.first, alpha->first);
                         std::size_t in_right_offset = 0;

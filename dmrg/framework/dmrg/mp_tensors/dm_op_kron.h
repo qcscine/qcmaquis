@@ -24,8 +24,9 @@ void dm_kron(Index<SymmGroup> const & phys,
     Index<SymmGroup> const & right_basis = phys;
     
     using charge = typename SymmGroup::charge;
-    boost::function<charge (charge, charge)> phys_fuse = boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                             boost::lambda::_1, -boost::lambda::_2);
+    auto phys_fuse = [](const charge& a, const charge& b){
+      return SymmGroup::fuse(a, -b);
+    };
     ProductBasis<SymmGroup> pb_left(left_basis, left_basis, phys_fuse);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
     

@@ -42,7 +42,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         else
             order = parms["orbital_order"].template as<std::vector<pos_t> >();
 
-        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::transform(order.begin(), order.end(), order.begin(),
+            [](const auto& e){ return e - 1; });
 
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
@@ -136,7 +137,8 @@ struct hf_mps_init<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
         else
             order = parms["orbital_order"].template as<std::vector<pos_t> >();
 
-        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+        std::transform(order.begin(), order.end(), order.begin(),
+            [](const auto& e){ return e - 1; });
 
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");

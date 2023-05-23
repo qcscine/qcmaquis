@@ -51,8 +51,10 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 
     data() = block_matrix<Matrix, SymmGroup>(lb, rb);
 
-    if (fillrand)
+    if (fillrand) {
         data().generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
+
+    }
     else
         data().generate(utils::constant<typename Matrix::value_type>(val));
 }

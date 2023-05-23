@@ -45,8 +45,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmGroup
     common_subset(out_left_i, right_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     // Prepares output tensor
     MPSTensor<Matrix, SymmGroup> ret;
     ret.phys_i = bra_tensor.site_dim();

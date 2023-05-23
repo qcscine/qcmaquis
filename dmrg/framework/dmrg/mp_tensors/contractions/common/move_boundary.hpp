@@ -83,8 +83,7 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, left, mpo, left_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     index_type loop_max = mpo.col_dim();
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.col_dim());
@@ -113,8 +112,7 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                      out_right_i = adjoin(physical_i) * right_i;
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
@@ -145,8 +143,7 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTensor
     common_subset(out_left_i, bra_right_i);
     ProductBasis<SymmGroup> out_left_pb(bra_tensor.site_dim(), left_i);
     ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     index_type loop_max = mpo.col_dim();
     DualIndex<SymmGroup> bra_basis = bra_tensor.data().basis();
     bra_tensor.make_left_paired();
@@ -207,8 +204,7 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
     common_subset(out_right_i, bra_left_i);
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
     //ket_tensor.make_right_paired();
@@ -258,8 +254,7 @@ generate_left_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor,   // Br
     // (and the fusion has to be done with the minus sign).
     ProductBasis<SymmGroup> out_left_pb(ket_tensor.site_dim(), left_i);
     ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
-                                        boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                            -boost::lambda::_1, boost::lambda::_2));
+        [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
     index_type loop_max = mpo.col_dim();
     DualIndex<SymmGroup> ket_basis_transpose = ket_cpy.data().basis();
     for (std::size_t i = 0; i < ket_basis_transpose.size(); ++i) {
@@ -307,7 +302,8 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     /* ProductBasis<SymmGroup> out_right_pb(physical_i, right_i, boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
     /*                                                          -boost::lambda::_1, boost::lambda::_2)); */
-    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i, [](const charge a, const charge b) { return SymmGroup::fuse(-a, b); });
+    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
+        [&](const charge a, const charge b) { return SymmGroup::fuse(-a, b); });
     // Prepares output
     Boundary<Matrix, SymmGroup> ret;
     ret.resize(mpo.row_dim());
