@@ -64,8 +64,8 @@ namespace mps_rotate
     void scale_MPSTensor(MPSTensor<Matrix, SymmGroup> & mps,
                         typename Matrix::value_type tjj)
     {
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
 
         mps.make_left_paired();
         maquis::cout << "scaling factor " << tjj << std::endl;
@@ -118,9 +118,9 @@ namespace mps_rotate
     {
         std::vector<MPO<Matrix, SymmGroup> > operator()(const Matrix & t, int j, const Lattice& lat, const Model<Matrix, SymmGroup> & model)
         {
-            typedef Lattice::pos_t pos_t;
-            typedef typename MPOTensor<Matrix, SymmGroup>::tag_type tag_type;
-            typedef typename SymmGroup::subcharge sc_t;
+            using pos_t = Lattice::pos_t;
+            using tag_type = typename MPOTensor<Matrix, SymmGroup>::tag_type;
+            using sc_t = typename SymmGroup::subcharge;
             std::vector<tag_type> ident, fill;
             for (int iSite = 0; iSite < lat.getMaxType(); iSite++)
             {
@@ -227,7 +227,7 @@ namespace mps_rotate
 
     // MPS compression to keep the dimensions reasonable
     template <class Matrix, class SymmGroup>
-    void compress_mps(MPS<Matrix, SymmGroup> & mps, std::string text="")
+    void compress_mps(MPS<Matrix, SymmGroup> & mps, const std::string& text="")
     {
         maquis::cout << "- MPS compression - input MPS: "<< text << std::endl;
 
@@ -246,8 +246,8 @@ namespace mps_rotate
     template <class Matrix, class SymmGroup>
     void rotate_mps(MPS<Matrix, SymmGroup> & mps, const Matrix& t, typename Matrix::value_type inactive_scaling)
     {
-        typedef Lattice::pos_t pos_t;
-        typedef typename Matrix::value_type value_type;
+        using pos_t = Lattice::pos_t;
+        using value_type = typename Matrix::value_type;
 
         typename SymmGroup::subcharge Ndown, Nup;
 

@@ -23,8 +23,8 @@ MPO<Matrix, SymmGroup> block_to_mpo(Index<SymmGroup> const & phys_i,
 {
     MPO<Matrix, SymmGroup> mpo(length);
     
-    typedef typename MultiIndex<SymmGroup>::index_id index_id;
-    typedef typename MultiIndex<SymmGroup>::set_id set_id;
+    using index_id = typename MultiIndex<SymmGroup>::index_id;
+    using set_id = typename MultiIndex<SymmGroup>::set_id;
     
     
     Index<SymmGroup> alpha_i, beta_i;

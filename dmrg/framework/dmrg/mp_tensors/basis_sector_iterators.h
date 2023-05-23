@@ -26,12 +26,12 @@ class basis_sector_iterator_
                                        >
 
 {
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
-    typedef boost::tuple<charge, size_t> local_state;
-    typedef typename std::vector<local_state>::const_iterator states_iterator;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
+    using local_state = boost::tuple<charge, size_t>;
+    using states_iterator = typename std::vector<local_state>::const_iterator;
 
-    typedef const charge& (*get0_fn_t)(const boost::tuples::cons<charge, boost::tuples::cons<size_t, boost::tuples::null_type> >&);
+    using get0_fn_t = const charge &(*)(const boost::tuples::cons<charge, boost::tuples::cons<size_t, boost::tuples::null_type>> &);
 
 public:
     basis_sector_iterator_()

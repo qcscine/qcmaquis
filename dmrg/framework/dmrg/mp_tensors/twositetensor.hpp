@@ -144,7 +144,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
 {
     make_both_paired();
     
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    using dmt = typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type;
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
@@ -165,7 +165,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
 {
     make_both_paired();
     
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    using dmt = typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type;
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     

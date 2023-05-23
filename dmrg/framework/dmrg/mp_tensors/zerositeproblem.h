@@ -8,13 +8,16 @@
 #ifndef MAQUIS_DMRG_ZEROSITEPROBLEM_H
 #define MAQUIS_DMRG_ZEROSITEPROBLEM_H
 
+#include <sys/time.h>
+
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/mp_tensors/boundary.h"
 #include "dmrg/utils/parallel.hpp"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include <sys/time.h>
+#include "dmrg/mp_tensors/contractions.h"
+
 
 /**
  * @brief ZeroSiteProblem class

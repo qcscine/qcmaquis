@@ -25,9 +25,9 @@ template<class Matrix, class SymmGroup>
 class TwoSiteTensor
 {
 public:
-    typedef std::size_t size_type;
-    typedef typename MultiIndex<SymmGroup>::index_id index_id;
-    typedef typename MultiIndex<SymmGroup>::set_id set_id;
+    using size_type = std::size_t;
+    using index_id = typename MultiIndex<SymmGroup>::index_id;
+    using set_id = typename MultiIndex<SymmGroup>::set_id;
     
     TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                   MPSTensor<Matrix, SymmGroup> const & mps2);

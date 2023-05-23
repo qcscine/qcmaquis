@@ -13,6 +13,7 @@
 #include <algorithm>
 
 #include <boost/tokenizer.hpp>
+#include <utility>
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/utils/random.hpp"
@@ -38,9 +39,9 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
    * @brief Class constructor
    */
   default_mps_init(BaseParameters & parms, std::vector<Index<SymmGroup> > const& phys_dims_,
-                   typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
+                   typename SymmGroup::charge right_end_, std::vector<int>  site_type_)
     : init_bond_dimension(parms["init_bond_dimension"]), phys_dims(phys_dims_), right_end(right_end_),
-      site_type(site_type_)
+      site_type(std::move(site_type_))
   {
     if (parms.is_set("seed"))
       dmrg_random::engine.seed(parms["seed"]);
@@ -101,14 +102,14 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
   coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
-                    std::vector<int> const& site_type_)
+                    std::vector<int>  site_type_)
     : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
-      site_type(site_type_) { }
+      site_type(std::move(site_type_)) { }
 
   void operator()(MPS<Matrix, SymmGroup> & mps)
   {
     // Types definition
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     using std::exp;
     using std::sqrt;
     using std::pow;
@@ -146,8 +147,8 @@ class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:
   basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
-                 std::vector<int> const& site_type_)
-    : phys_dims(phys_dims_), site_type(site_type_)
+                 std::vector<int>  site_type_)
+    : phys_dims(phys_dims_), site_type(std::move(site_type_))
   { 
     std::string states = params["init_basis_state"].as<std::string>();
     std::vector<std::string> specifiedStates;
@@ -166,7 +167,7 @@ public:
     assert(occupation.size() == mps.length());
     if (phys_dims[0].size() != 1)
       throw std::runtime_error("basis_mps_init only for TrivialGroup.");
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     charge C = SymmGroup::IdentityCharge;
 
     std::vector<boost::tuple<charge, int> > state(mps.length());
@@ -192,7 +193,7 @@ class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
 {
 public:
     // Types definition
-    typedef std::vector<boost::tuple<typename SymmGroup::charge, size_t> > state_type;
+    using state_type = std::vector<boost::tuple<typename SymmGroup::charge, size_t>>;
 
     /**
      * @brief Class constructor from a parameter object
@@ -202,9 +203,9 @@ public:
      * @param site_type_ Vector with size == the lattice size, with the type of each site.
      */
     basis_mps_init_generic(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
-                           typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
+                           typename SymmGroup::charge right_end_, std::vector<int>  site_type_)
         : phys_dims(phys_dims_),
-          right_end(right_end_), site_type(site_type_), params(params_)
+          right_end(right_end_), site_type(std::move(site_type_)), params(params_)
     { 
       std::string states = params["init_basis_state"].as<std::string>();
       std::vector<std::string> specifiedStates;
@@ -251,9 +252,9 @@ class basis_mps_init_generic_const : public mps_initializer<Matrix, SymmGroup>
 public:
   // -- Constructors --
   basis_mps_init_generic_const(BaseParameters & params_, const std::vector<Index<SymmGroup> >& phys_dims_,
-                               typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
+                               typename SymmGroup::charge right_end_, std::vector<int>  site_type_)
       : init_bond_dimension(params_["init_bond_dimension"]),
-        phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+        phys_dims(phys_dims_), right_end(right_end_), site_type(std::move(site_type_)), params(params_)
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
@@ -298,9 +299,9 @@ class basis_mps_init_generic_default : public mps_initializer<Matrix, SymmGroup>
 public:
   // -- Constructors --
   basis_mps_init_generic_default(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
-                                 typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
+                                 typename SymmGroup::charge right_end_, std::vector<int>  site_type_)
       : init_bond_dimension(params_["init_bond_dimension"]),
-        phys_dims(phys_dims_), right_end(right_end_), site_type(site_type_), params(params_)
+        phys_dims(phys_dims_), right_end(right_end_), site_type(std::move(site_type_)), params(params_)
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_default. Abort.");

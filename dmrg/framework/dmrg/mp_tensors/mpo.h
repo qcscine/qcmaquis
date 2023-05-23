@@ -17,9 +17,9 @@ template<class Matrix, class SymmGroup, typename = void>
 class MPO : public std::vector<MPOTensor<Matrix, SymmGroup> >
 {
 public:
-    typedef MPOTensor<Matrix, SymmGroup> elem_type;
+    using elem_type = MPOTensor<Matrix, SymmGroup>;
 
-    MPO() { }
+    MPO() = default;
 
     MPO(std::size_t L, elem_type elem = elem_type())
     : std::vector<elem_type>(L, elem)
@@ -118,7 +118,7 @@ private:
 
     block_matrix<Matrix, SymmGroup> make_left_matrix(std::size_t p)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> phys_i;
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
@@ -193,7 +193,7 @@ private:
 
     block_matrix<Matrix, SymmGroup> make_right_matrix(std::size_t p)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> phys_i;
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
@@ -271,7 +271,7 @@ private:
                       block_matrix<Matrix, SymmGroup> & right,
                       std::size_t p)
     {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
 
         Index<SymmGroup> phys_i;
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
@@ -385,9 +385,9 @@ class MPO<Matrix, SymmGroup, symm_traits::enable_if_su2_t<SymmGroup> >
     : public std::vector<MPOTensor<Matrix, SymmGroup> >
 {
 public:
-    typedef MPOTensor<Matrix, SymmGroup> elem_type;
+    using elem_type = MPOTensor<Matrix, SymmGroup>;
 
-    MPO() { }
+    MPO() = default;
 
     MPO(std::size_t L, elem_type elem = elem_type())
     : std::vector<elem_type>(L, elem)

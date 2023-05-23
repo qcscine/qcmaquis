@@ -20,7 +20,7 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::ch
                                  int mdim=1)
 {
     // Types and variable definition
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     MPS<Matrix, SymmGroup> mps(state.size());
     Index<SymmGroup> curr_i;
     std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mdim);
@@ -66,7 +66,7 @@ MPS<Matrix, SymmGroup> state_mps_const(std::vector<boost::tuple<typename SymmGro
 {
   int mdim=1;
   // Types definition
-  typedef typename SymmGroup::charge charge;
+  using charge = typename SymmGroup::charge;
   MPS<Matrix, SymmGroup> mps(state.size());
   Index<SymmGroup> curr_i;
   std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mdim);
@@ -111,7 +111,7 @@ MPS<Matrix, NU1_template<N>> state_mps_const(std::vector<boost::tuple<typename N
 {
   // Types definition
   using SymmGroup = NU1_template<N>;
-  typedef typename SymmGroup::charge charge;
+  using charge = typename SymmGroup::charge;
   MPS<Matrix, SymmGroup> mps(state.size());
   std::vector< Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, mMax);
   // loop over all sites

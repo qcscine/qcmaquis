@@ -18,7 +18,7 @@
 #include "dmrg/mp_tensors/mps_sectors.h"
 
 struct MPOTimesMPSException : public std::exception {
-    const char* what() const throw() {
+    const char* what() const noexcept override {
         return "MPS times MPO not implemented for this symmetry group"; 
     }
 };

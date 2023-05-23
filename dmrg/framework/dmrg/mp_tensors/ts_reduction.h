@@ -49,10 +49,10 @@ namespace ts_reduction {
     {
         m2 = block_matrix<Matrix, SymmGroup>();
 
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::subcharge spin_t;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using size_t = std::size_t;
+        using spin_t = typename SymmGroup::subcharge;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
@@ -159,10 +159,10 @@ namespace ts_reduction {
     {
         m2 = block_matrix<Matrix, SymmGroup>();
 
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::subcharge spin_t;
-        typedef typename SymmGroup::charge charge;
-        typedef typename Matrix::value_type value_type;
+        using size_t = std::size_t;
+        using spin_t = typename SymmGroup::subcharge;
+        using charge = typename SymmGroup::charge;
+        using value_type = typename Matrix::value_type;
 
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);

@@ -21,7 +21,7 @@ namespace detail {
     /// fails with Boost 1.57.0 and Clang compilers.
     template <class SymmGroup>
     struct phys_fuse_functor {
-        typedef typename SymmGroup::charge charge;
+        using charge = typename SymmGroup::charge;
         charge operator()(charge a, charge b) {
             return SymmGroup::fuse(a, -b);
         }
@@ -55,10 +55,10 @@ template <class Matrix, class SymmGroup>
 typename std::enable_if<!symm_traits::HasSU2<SymmGroup>::value, MPS<Matrix, SymmGroup> >::type
 mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<SymmGroup> const& phys_i)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef std::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+    using charge = typename SymmGroup::charge;
+    using bond_charge_map = std::unordered_map<size_t, std::pair<charge, size_t>>;
+    using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+    using op_t = typename operator_selector<Matrix, SymmGroup>::type;
 
     MPS<Matrix, SymmGroup> mps(mpo.size());
 
@@ -196,12 +196,12 @@ template <class Matrix, class InSymm>
 MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
                                                                        std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
 {
-    typedef typename operator_selector<Matrix, InSymm>::type op_t;
-    typedef typename grouped_symmetry<InSymm>::type OutSymm;
-    typedef typename InSymm::charge in_charge;
-    typedef typename OutSymm::charge out_charge;
-    typedef std::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
-    typedef typename MPOTensor<Matrix, InSymm>::row_proxy row_proxy;
+    using op_t = typename operator_selector<Matrix, InSymm>::type;
+    using OutSymm = typename grouped_symmetry<InSymm>::type;
+    using in_charge = typename InSymm::charge;
+    using out_charge = typename OutSymm::charge;
+    using bond_charge_map = std::unordered_map<size_t, std::pair<out_charge, size_t>>;
+    using row_proxy = typename MPOTensor<Matrix, InSymm>::row_proxy;
 
     MPS<Matrix, OutSymm> mps(mpo.size());
 

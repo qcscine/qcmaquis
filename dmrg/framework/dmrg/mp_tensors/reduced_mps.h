@@ -15,8 +15,8 @@
 template <class Matrix, class SymmGroup>
 class reduced_mps
 {
-    typedef typename SymmGroup::subcharge subcharge;
-    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+    using subcharge = typename SymmGroup::subcharge;
+    using op_t = typename operator_selector<Matrix, SymmGroup>::type;
 public:
     reduced_mps(const MPS<Matrix, SymmGroup> & mps_)
     : mps(mps_)

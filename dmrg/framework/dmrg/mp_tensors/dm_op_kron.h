@@ -23,7 +23,7 @@ void dm_kron(Index<SymmGroup> const & phys,
     Index<SymmGroup> const & left_basis = phys;
     Index<SymmGroup> const & right_basis = phys;
     
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     boost::function<charge (charge, charge)> phys_fuse = boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                              boost::lambda::_1, -boost::lambda::_2);
     ProductBasis<SymmGroup> pb_left(left_basis, left_basis, phys_fuse);
@@ -53,13 +53,13 @@ void dm_group_kron(Index<SymmGroup> const & phys_psi,
                    block_matrix<Matrix, SymmGroup> const & B,
                    block_matrix<Matrix, typename grouped_symmetry<SymmGroup>::type> & C)
 {
-    typedef typename grouped_symmetry<SymmGroup>::type OutSymm;
+    using OutSymm = typename grouped_symmetry<SymmGroup>::type;
     C = block_matrix<Matrix, OutSymm>();
     
     Index<SymmGroup> const & left_basis = phys_psi;
     Index<SymmGroup> const & right_basis = phys_psi;
     
-    typedef typename OutSymm::charge charge;
+    using charge = typename OutSymm::charge;
     Index<OutSymm> phys_rho = group(phys_psi, adjoin(phys_psi));
     
     for (int i=0; i<A.n_blocks(); ++i) {

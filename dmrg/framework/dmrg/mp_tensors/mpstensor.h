@@ -30,11 +30,11 @@ template<class Matrix, class SymmGroup>
 class MPSTensor
 {
 public:
-    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename maquis::traits::real_type<Matrix>::type real_type;
-    typedef typename Matrix::value_type value_type;
-    typedef double magnitude_type; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
-    typedef std::size_t size_type;
+    using scalar_type = typename maquis::traits::scalar_type<Matrix>::type;
+    using real_type = typename maquis::traits::real_type<Matrix>::type;
+    using value_type = typename Matrix::value_type;
+    using magnitude_type = double; // should become future (todo: Matthias, 30.04.12 / scalar-value types)
+    using size_type = std::size_t;
     using BlockMatrixType = block_matrix<Matrix, SymmGroup>;
     using BlockMatrixDiagonalType = block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup>;
 

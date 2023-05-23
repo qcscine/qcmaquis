@@ -24,7 +24,7 @@ block_matrix<Matrix, SymmGroup> make_mpo_identity_block(Index<SymmGroup> phys_i)
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)
 {
-    typedef typename Index<SymmGroup>::basis_iterator bit;
+    using bit = typename Index<SymmGroup>::basis_iterator;
     
     MPOTensor<Matrix, SymmGroup> mpo(1, 1);
     mpo(0,0) = make_mpo_identity_block<Matrix>(phys_i);
@@ -38,7 +38,7 @@ MPOTensor<Matrix, SymmGroup> identity_mpo(Index<SymmGroup> phys_i)
 template<class Matrix>
 MPOTensor<Matrix, TrivialGroup> s12_sz_mpo(Index<TrivialGroup> phys_i)
 {
-    typedef Index<TrivialGroup>::basis_iterator bit;
+    using bit = Index<TrivialGroup>::basis_iterator;
     
     MPOTensor<Matrix, TrivialGroup> mpo(1, 1);
     mpo(0,0) = make_mpo_identity_block<Matrix>(phys_i);

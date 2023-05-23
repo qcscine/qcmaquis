@@ -22,8 +22,8 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
     
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_left(physical_i, left_i);
     ProductBasis<SymmGroup> out_right(physical_i, right_i,
@@ -118,8 +118,8 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
     
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_right(physical_i, right_i,
         [&](const charge &a, const charge &b){ return SymmGroup::fuse(-a, b); });
@@ -186,8 +186,8 @@ void reshape_left_to_right_new(Index<SymmGroup> const & physical_i,
 {
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_left(physical_i, left_i);
     ProductBasis<SymmGroup> out_right(physical_i, right_i,
@@ -240,8 +240,8 @@ void reshape_and_pad_left(Index<SymmGroup> physical_i,
 {
     m2 *= 0;
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_left(physical_i, in_left_i);
     ProductBasis<SymmGroup> out_left(physical_i, out_left_i);
@@ -299,8 +299,8 @@ void reshape_right_to_left_new(Index<SymmGroup> const & physical_i,
 {
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_right(physical_i, right_i,
         [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
@@ -350,8 +350,8 @@ void reshape_left_to_physleft(Index<SymmGroup> const& physical_i,
 {
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_left(physical_i, left_i);
     ProductBasis<SymmGroup> out_right(left_i, right_i,
@@ -408,8 +408,8 @@ void reshape_physleft_to_left(Index<SymmGroup> const& physical_i,
 {
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> out_left(physical_i, left_i);
     ProductBasis<SymmGroup> in_right(left_i, right_i,
@@ -471,8 +471,8 @@ void reshape_physright_to_left(Index<SymmGroup> const& physical_i,
 {
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
     
     ProductBasis<SymmGroup> in_left(left_i, right_i,
         [&](const charge& a, const charge& b){ return SymmGroup::fuse(a, -b); });
@@ -523,7 +523,7 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys1
                                                   block_matrix<Matrix, SymmGroup> const & A)
 { // only for the dense matrices in MPO (30.04.2012 / scalar / value types discussion)
   // TODO: (scatter alps::numeric::matrix during building of MPO)
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     block_matrix<Matrix, SymmGroup> ret;
     
     ProductBasis<SymmGroup> pb(phys1, phys2);
@@ -535,7 +535,7 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys1
     /// s3 \in phys1, output of op on site1
     /// s4 \in phys2, output of op on site2
     
-    typedef typename Index<SymmGroup>::basis_iterator bi_t;
+    using bi_t = typename Index<SymmGroup>::basis_iterator;
     for (bi_t s1 = phys1.basis_begin(); !s1.end(); ++s1)
         for (bi_t s2 = phys2.basis_begin(); !s2.end(); ++s2)
             for (bi_t s3 = phys1.basis_begin(); !s3.end(); ++s3)
@@ -603,14 +603,14 @@ template<class Op, class Op2, class SymmGroup>
 //std::vector<Op> reshape_right_to_list (Index<SymmGroup> const & phys, block_matrix<typename Op::matrix_type, SymmGroup> const & A)
 std::vector<Op> reshape_right_to_list (Index<SymmGroup> const & phys, Op2 const & A)
 {
-    typedef typename Op::matrix_type Matrix;
-    typedef typename SymmGroup::charge charge;
+    using Matrix = typename Op::matrix_type;
+    using charge = typename SymmGroup::charge;
     std::vector<Op> ret;
     
     Index<SymmGroup> aux_i = A.right_basis();
     ProductBasis<SymmGroup> pb(phys, adjoin(phys));
 
-    typedef typename Index<SymmGroup>::basis_iterator bi_t;
+    using bi_t = typename Index<SymmGroup>::basis_iterator;
     for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
     {
     	Op Ai;
@@ -668,14 +668,14 @@ template<class Op, class Op2, class SymmGroup>
 //std::vector<Op> reshape_left_to_list (Index<SymmGroup> const & phys, block_matrix<typename Op::matrix_type, SymmGroup> const & A)
 std::vector<Op> reshape_left_to_list (Index<SymmGroup> const & phys, Op2 const & A)
 {
-    typedef typename Op::matrix_type Matrix;
-	typedef typename SymmGroup::charge charge;
+  using Matrix = typename Op::matrix_type;
+	using charge = typename SymmGroup::charge;
 	std::vector<Op> ret;
 
 	Index<SymmGroup> aux_i = A.left_basis();
 	ProductBasis<SymmGroup> pb(phys, adjoin(phys));
 
-	typedef typename Index<SymmGroup>::basis_iterator bi_t;
+	using bi_t = typename Index<SymmGroup>::basis_iterator;
 	for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
 	{
 		Op Ai;

@@ -270,7 +270,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     using std::size_t;
 
     /// Compute (and check) charge difference

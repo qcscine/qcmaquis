@@ -20,16 +20,16 @@ struct mps_initializer;
 template<class Matrix, class SymmGroup>
 class MPS
 {
-    typedef std::vector<MPSTensor<Matrix, SymmGroup> > data_t;
+    using data_t = std::vector<MPSTensor<Matrix, SymmGroup>>;
 public:
-    typedef std::size_t size_t;
+    using size_t = std::size_t;
 
     // reproducing interface of std::vector
-    typedef typename data_t::size_type size_type;
-    typedef typename data_t::value_type value_type;
-    typedef typename data_t::iterator iterator;
-    typedef typename data_t::const_iterator const_iterator;
-    typedef typename MPSTensor<Matrix, SymmGroup>::scalar_type scalar_type;
+    using size_type = typename data_t::size_type;
+    using value_type = typename data_t::value_type;
+    using iterator = typename data_t::iterator;
+    using const_iterator = typename data_t::const_iterator;
+    using scalar_type = typename MPSTensor<Matrix, SymmGroup>::scalar_type;
 
     MPS();
     MPS(size_t L);
@@ -113,7 +113,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps);
 template<class Matrix, class SymmGroup>
 struct mps_initializer
 {
-    virtual ~mps_initializer() {}
+    virtual ~mps_initializer() = default;
     virtual void operator()(MPS<Matrix, SymmGroup> & mps) = 0;
 };
 

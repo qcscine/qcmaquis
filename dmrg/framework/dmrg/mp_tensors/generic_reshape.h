@@ -22,9 +22,9 @@ void reshape(MultiIndex<SymmGroup> const & midx,
     
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
-    typedef typename MultiIndex<SymmGroup>::coord_t coord_t;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
+    using coord_t = typename MultiIndex<SymmGroup>::coord_t;
     
     for (int run = 0; run < 2; ++run) {
         bool pretend = (run == 0);
@@ -86,9 +86,9 @@ void reshape2(MultiIndex<SymmGroup> const & midx,
 {   
     m2 = block_matrix<Matrix, SymmGroup>();
     
-    typedef std::size_t size_t;
-    typedef typename SymmGroup::charge charge;
-    typedef typename MultiIndex<SymmGroup>::coord_t coord_t;
+    using size_t = std::size_t;
+    using charge = typename SymmGroup::charge;
+    using coord_t = typename MultiIndex<SymmGroup>::coord_t;
     
     
     for (int run = 0; run < 2; ++run) {

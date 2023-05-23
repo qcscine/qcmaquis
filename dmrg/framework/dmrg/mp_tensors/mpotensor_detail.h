@@ -8,9 +8,12 @@
 #ifndef MPOTENSOR_DETAIL_H
 #define MPOTENSOR_DETAIL_H
 
+#include <numeric>
+#include <utility>
 #include <vector>
 
 #include <boost/utility.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/type_traits.hpp>
 
 #include "dmrg/models/OperatorHandlers/OpTable.h"
@@ -21,22 +24,22 @@ class MPOTensor;
 namespace MPOTensor_detail
 {
     template <class T, bool C>
-    struct const_type { typedef T type; };
+    struct const_type { using type = T; };
 
     template <class T>
-    struct const_type<T, true> { typedef const T type; };
+    struct const_type<T, true> { using type = const T; };
 
     template <class Matrix, class SymmGroup, bool Const>
     class term_descriptor
     {
-        typedef typename Matrix::value_type value_type;
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename MPOTensor<Matrix, SymmGroup>::internal_value_type internal_value_type;
-        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
+        using value_type = typename Matrix::value_type;
+        using op_t = typename OPTable<Matrix, SymmGroup>::op_t;
+        using tag_type = typename OPTable<Matrix, SymmGroup>::tag_type;
+        using internal_value_type = typename MPOTensor<Matrix, SymmGroup>::internal_value_type;
+        using op_table_ptr = typename MPOTensor<Matrix, SymmGroup>::op_table_ptr;
 
     public:
-        term_descriptor() {}
+        term_descriptor() = default;
         term_descriptor(typename const_type<internal_value_type, Const>::type & term_descs,
                         op_table_ptr op_tbl_)
             : operator_table(op_tbl_), term_descriptors(term_descs) {}
@@ -53,11 +56,11 @@ namespace MPOTensor_detail
     template <class ConstIterator>
     class IteratorWrapper : public std::iterator<std::forward_iterator_tag, typename std::iterator_traits<ConstIterator>::value_type>
     {
-        typedef ConstIterator internal_iterator;
+        using internal_iterator = ConstIterator;
 
     public:
-        typedef IteratorWrapper<ConstIterator> self_type;
-        typedef typename std::iterator_traits<internal_iterator>::value_type value_type;
+        using self_type = IteratorWrapper<ConstIterator>;
+        using value_type = typename std::iterator_traits<internal_iterator>::value_type;
 
         IteratorWrapper(internal_iterator i) : it_(i) { }
 
@@ -78,11 +81,11 @@ namespace MPOTensor_detail
     template <class ConstIterator>
     class row_proxy : public std::pair<ConstIterator, ConstIterator>
     {
-        typedef ConstIterator internal_iterator;
-        typedef std::pair<internal_iterator, internal_iterator> base;
+        using internal_iterator = ConstIterator;
+        using base = std::pair<internal_iterator, internal_iterator>;
 
     public:
-        typedef IteratorWrapper<ConstIterator> const_iterator;
+        using const_iterator = IteratorWrapper<ConstIterator>;
         row_proxy(internal_iterator b, internal_iterator e) : base(b, e) { }
 
         const_iterator begin() const { return const_iterator(base::first); }
@@ -121,7 +124,7 @@ namespace MPOTensor_detail
 
     class Hermitian
     {
-        typedef std::size_t index_type;
+        using index_type = std::size_t;
 
         friend Hermitian operator * (Hermitian const &, Hermitian const &);
 
@@ -133,17 +136,19 @@ namespace MPOTensor_detail
             LeftPhase = std::vector<int>(ld, 1);
             RightPhase = std::vector<int>(rd, 1);
 
-            index_type z=0;
-            std::generate(LeftHerm.begin(), LeftHerm.end(), boost::lambda::var(z)++);
-            z=0;
-            std::generate(RightHerm.begin(), RightHerm.end(), boost::lambda::var(z)++);
+            std::iota(LeftHerm.begin(), LeftHerm.end(), static_cast<index_type>(0));
+            std::iota(RightHerm.begin(), RightHerm.end(), static_cast<index_type>(0));
         }
 
-        Hermitian(std::vector<index_type> const & lh,
-                  std::vector<index_type> const & rh,
-                  std::vector<int> const & lp,
-                  std::vector<int> const & rp)
-        : LeftHerm(lh), RightHerm(rh), LeftPhase(lp), RightPhase(rp)
+        Hermitian(std::vector<index_type>  lh,
+                  std::vector<index_type>  rh,
+                  std::vector<int>  lp,
+                  std::vector<int>  rp)
+        :
+          LeftHerm(std::move(lh)),
+          RightHerm(std::move(rh)),
+          LeftPhase(std::move(lp)),
+          RightPhase(std::move(rp))
         {}
 
         bool left_skip(index_type b1) const { return LeftHerm[b1] < b1; }

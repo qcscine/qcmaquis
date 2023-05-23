@@ -5,13 +5,14 @@
  *            See LICENSE.txt for details.
  */
 
+
+#ifndef SITEPROBLEM
+#define SITEPROBLEM
+
 #include "dmrg/mp_tensors/boundary.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/optimize/ietl_lanczos_solver.h"
-
-#ifndef SITEPROBLEM
-#define SITEPROBLEM
 
 /**
  * @brief Class representing a site-centered eigenvalue problem.

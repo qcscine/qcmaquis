@@ -32,8 +32,8 @@ template <class Matrix, class SymmGroup>
 MPS<Matrix,SymmGroup> coherent_init_join(std::vector<double> const& coeff, Index<SymmGroup> const& phys,
                                          typename SymmGroup::charge initc=SymmGroup::IdentityCharge)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t> local_state;
+    using charge = typename SymmGroup::charge;
+    using local_state = boost::tuple<charge, size_t>;
     
     size_t L = coeff.size();
     
@@ -67,7 +67,7 @@ MPS<Matrix,SymmGroup> coherent_init(std::vector<double> const& coeff, Index<Symm
     assert(phys.size() == 1); // only for TrivialGroup
     // TODO: require mapping phys --> dens
     
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     
     using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
@@ -99,8 +99,8 @@ MPS<Matrix,SymmGroup> coherent_init(std::vector<double> const& coeff, Index<Symm
 template <class Matrix, class SymmGroup>
 MPS<Matrix,SymmGroup> coherent_init_dm_join(std::vector<double> const& coeff, Index<SymmGroup> const& phys_psi, Index<SymmGroup> const& phys_rho)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef boost::tuple<charge, size_t> local_state;
+    using charge = typename SymmGroup::charge;
+    using local_state = boost::tuple<charge, size_t>;
     
     size_t L = coeff.size();
     
@@ -143,7 +143,7 @@ MPS<Matrix,SymmGroup> coherent_init_dm(std::vector<double> const& coeff, Index<S
     assert(phys_psi.size() == 1); // only for TrivialGroup
     // TODO: require mapping phys --> dens
     
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
     
     using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;

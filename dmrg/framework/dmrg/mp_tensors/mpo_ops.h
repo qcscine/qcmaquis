@@ -33,7 +33,7 @@ std::string identify_op(typename operator_selector<Matrix, SymmGroup>::type cons
 
 template<class Matrix, class SymmGroup>
 void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
-                std::string s = std::string(),
+                const std::string& s = std::string(),
                 int p = 0, int start = 0)
 {
     for (size_t k = 0; k < mpo[p].col_dim(); ++k)
@@ -53,7 +53,7 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
 }
 
 template<class Matrix, class SymmGroup>
-void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, int b2, std::string s="", typename MPOTensor<Matrix,SymmGroup>::value_type scale=1.)
+void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, int b2, const std::string& s="", typename MPOTensor<Matrix,SymmGroup>::value_type scale=1.)
 {
     std::stringstream ss;
     ss << s;
@@ -71,8 +71,8 @@ void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, in
         return;
     }
     
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
+    using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+    using col_proxy = typename MPOTensor<Matrix, SymmGroup>::col_proxy;
     row_proxy myrow = mpo[p+1].row(b2);
     for (typename row_proxy::const_iterator row_it = myrow.begin(); row_it != myrow.end(); ++row_it)
         follow_and_print_terms(mpo, p+1, b2, row_it.index(), ss.str(), scale);
@@ -127,9 +127,9 @@ template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup>
 square_mpo(MPO<Matrix, SymmGroup> const & mpo)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+    using charge = typename SymmGroup::charge;
+    using row_proxy = typename MPOTensor<Matrix, SymmGroup>::row_proxy;
+    using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
     
     size_t L = mpo.length();
     
@@ -182,8 +182,8 @@ template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup>
 zero_after(MPO<Matrix, SymmGroup> mpo, int p0)
 {
-    typedef typename MPOTensor<Matrix, SymmGroup>::CSRMatrix CSRMatrix;
-    typedef typename MPOTensor<Matrix, SymmGroup>::CSCMatrix CSCMatrix;
+    using CSRMatrix = typename MPOTensor<Matrix, SymmGroup>::CSRMatrix;
+    using CSCMatrix = typename MPOTensor<Matrix, SymmGroup>::CSCMatrix;
 
     maquis::cout << "Zeroing out MPO after site " << p0 << std::endl;
 

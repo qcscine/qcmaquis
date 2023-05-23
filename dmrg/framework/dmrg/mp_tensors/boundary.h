@@ -21,9 +21,9 @@ template<class Matrix, class SymmGroup>
 class Boundary : public storage::disk::serializable<Boundary<Matrix, SymmGroup> >
 {
 public:
-    typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef typename Matrix::value_type value_type;
-    typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
+    using scalar_type = typename maquis::traits::scalar_type<Matrix>::type;
+    using value_type = typename Matrix::value_type;
+    using access_type = std::pair<typename SymmGroup::charge, std::size_t>;
 
     template<class Archive>
     void serialize(Archive &ar, const unsigned int version){
@@ -148,7 +148,7 @@ private:
 template<class Matrix, class SymmGroup>
 Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
 {
-    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    using dmt = typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type;
     
     for (std::size_t k = 0; k < b.aux_dim(); ++k)
     {

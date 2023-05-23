@@ -26,8 +26,8 @@ namespace ts_reshape {
     {   
         m2 = block_matrix<Matrix, SymmGroup>();
         
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
         
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
@@ -96,8 +96,8 @@ namespace ts_reshape {
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
         
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
@@ -154,8 +154,8 @@ namespace ts_reshape {
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
         
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
@@ -238,8 +238,8 @@ namespace ts_reshape {
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
         
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
@@ -299,8 +299,8 @@ namespace ts_reshape {
         
         m2 = block_matrix<Matrix, SymmGroup>();
         
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
         
         ProductBasis<SymmGroup> in_left(physical_i_left, left_i);
         ProductBasis<SymmGroup> in_right(physical_i_right, right_i,

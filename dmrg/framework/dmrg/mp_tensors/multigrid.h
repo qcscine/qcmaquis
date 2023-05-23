@@ -57,8 +57,8 @@ struct multigrid {
     {
         ProductBasis<SymmGroup> pb(phys_large, phys_large);
         
-        typedef std::size_t size_t;
-        typedef typename SymmGroup::charge charge;
+        using size_t = std::size_t;
+        using charge = typename SymmGroup::charge;
         block_matrix<Matrix, SymmGroup> T;
         for (size_t s1=0; s1<phys_large.size(); ++s1)
             for (size_t s2=0; s2<phys_large.size(); ++s2)
@@ -97,8 +97,8 @@ struct multigrid {
         gemm(M1.data(), M2.data(), MM);
         
         // init index objects
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
+        using charge = typename SymmGroup::charge;
+        using size_t = std::size_t;
         
         Index<SymmGroup> left_i = M1.row_dim(), right_i = M2.col_dim();
         Index<SymmGroup> phys_large = M1.site_dim(), phys_small = T.left_basis();
@@ -261,8 +261,8 @@ struct multigrid {
         std::size_t LL = mps_large.length();
         assert(LL == 2*L);
         
-        typedef typename SymmGroup::charge charge;
-        typedef typename Index<SymmGroup>::basis_iterator bi_t;
+        using charge = typename SymmGroup::charge;
+        using bi_t = typename Index<SymmGroup>::basis_iterator;
         
         
         for (std::size_t p = 0; p < L; ++p)
@@ -383,8 +383,8 @@ struct multigrid {
                            MPSTensor<Matrix, SymmGroup> & M1,
                            MPSTensor<Matrix, SymmGroup> & M2)
     {        
-        typedef typename SymmGroup::charge charge;
-        typedef typename Index<SymmGroup>::basis_iterator bi_t;
+        using charge = typename SymmGroup::charge;
+        using bi_t = typename Index<SymmGroup>::basis_iterator;
         
         block_matrix<Matrix, SymmGroup> M;
         
@@ -558,8 +558,8 @@ struct multigrid {
         
         MPSTensor<Matrix, SymmGroup> Msmall = mps_small[0];
         
-        typedef typename SymmGroup::charge charge;
-        typedef typename Index<SymmGroup>::basis_iterator bi_t;
+        using charge = typename SymmGroup::charge;
+        using bi_t = typename Index<SymmGroup>::basis_iterator;
         
         for (std::size_t p = 0; p < L; ++p)
         {
