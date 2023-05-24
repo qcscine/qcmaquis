@@ -11,8 +11,6 @@
 #include <map>
 #include <string>
 #include <boost/any.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/any.hpp>
 #include <utility>
 
 template<class Archive>

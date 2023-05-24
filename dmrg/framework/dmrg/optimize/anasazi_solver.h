@@ -13,7 +13,6 @@
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_SerialDenseMatrix.hpp"
 
-#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
 namespace Anasazi {

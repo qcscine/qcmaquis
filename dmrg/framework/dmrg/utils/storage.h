@@ -8,7 +8,6 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 

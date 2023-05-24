@@ -7,7 +7,6 @@
 
 #include "maquis/dmrg.hpp"
 #include <alps/numeric/matrix.hpp>
-#include <boost/shared_ptr.hpp>
 #include <iostream>
 
 #include "dmrg/sim/matrix_types.h"

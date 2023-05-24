@@ -12,7 +12,6 @@
 #include <sstream>
 #include <fstream>
 #include <iterator>
-#include <boost/shared_ptr.hpp>
 #include <boost/tokenizer.hpp>
 #include <regex>
 

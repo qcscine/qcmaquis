@@ -9,7 +9,6 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <boost/shared_ptr.hpp>
 #include <alps/hdf5.hpp>
 
 #include "dmrg/block_matrix/detail/alps.hpp"

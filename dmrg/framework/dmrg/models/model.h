@@ -17,8 +17,6 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/site_operator.h"
 
-#include <boost/shared_ptr.hpp>
-
 /// forward declaration
 template<class Matrix, class SymmGroup> class Measurements;
 

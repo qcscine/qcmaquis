@@ -13,8 +13,6 @@
 #include <iostream>
 #include <sys/stat.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include "dmrg/sim/sim.h"
 #include "dmrg/models/continuum/factory.h"
 
@@ -41,9 +39,9 @@ inline BaseParameters compute_initial_parms(BaseParameters parms)
 template <class Matrix, class SymmGroup>
 class mg_meas_sim : public sim<Matrix, SymmGroup> {
     
-    typedef sim<Matrix, SymmGroup> base;
-    typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
-    typedef typename base::status_type status_type;
+    using base = sim<Matrix, SymmGroup>;
+    using opt_base_t = optimizer_base<Matrix, SymmGroup, storage::disk>;
+    using status_type = typename base::status_type;
 
     enum measure_t {sweep_measure, mg_measure};
     

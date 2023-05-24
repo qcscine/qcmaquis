@@ -8,8 +8,6 @@
 #include <iostream>
 #include <sstream>
 
-#include <boost/shared_ptr.hpp>
-
 #include "dmrg/block_matrix/detail/alps.hpp"
 
 #include "dmrg/models/factory.h"
@@ -18,6 +16,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/optimize/ss_optimize.hpp"
+#include "dmrg/utils/DmrgParameters.h"
 
 
 namespace maquis { namespace dmrg {

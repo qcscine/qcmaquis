@@ -13,7 +13,6 @@
 #include <utility>
 #include <stdexcept>
 
-#include <boost/shared_ptr.hpp>
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/site_operator.h"

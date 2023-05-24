@@ -13,8 +13,6 @@
 #include <iostream>
 #include <sys/stat.h>
 
-#include <boost/shared_ptr.hpp>
-
 #include "dmrg/sim/sim.h"
 #include "dmrg/models/continuum/factory_lattice.hpp"
 

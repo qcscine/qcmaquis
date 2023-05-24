@@ -8,8 +8,6 @@
 #ifndef ABELIAN_ENGINE_H
 #define ABELIAN_ENGINE_H
 
-#include <boost/shared_ptr.hpp>
-
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 

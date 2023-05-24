@@ -9,8 +9,6 @@
 #include <sstream>
 #include <fstream>
 
-#include <boost/shared_ptr.hpp>
-
 #include "dmrg/block_matrix/detail/alps.hpp"
 
 #include "dmrg/models/factory.h"
