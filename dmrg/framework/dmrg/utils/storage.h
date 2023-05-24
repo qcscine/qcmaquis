@@ -8,12 +8,12 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
-#include <boost/thread.hpp>
 #include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <fstream>
 #include <utility>
+#include <thread>
 
 #include "utils.hpp"
 #include "utils/timings.h"
@@ -190,7 +190,7 @@ private:
  *
  *  - descriptor, which represents an abstract object which is associated to
  *    a given status (describing whether it's currently being fetched, stored etc)
- *    and a given boost::thread that manages it.
+ *    and a given std::thread that manages it.
  *
  */
 class disk : public nop {
@@ -204,8 +204,8 @@ public:
 
     /**
      * @brief Class destructor.
-     * Note that the descructor calls the join method on the boost::thread -- i.e.,
-     * completes the operation associated with the boost::thread.
+     * Note that the descructor calls the join method on the std::thread -- i.e.,
+     * completes the operation associated with the std::thread.
      */
     ~descriptor() { this->join(); }
 
@@ -214,7 +214,7 @@ public:
      * Note that this method calls the disk::track method, which ensures that the corresponding
      * thread is being "followed" by the memory manager.
      */
-    void thread(boost::thread* t){
+    void thread(std::thread* t){
       this->worker = t;
       disk::track(this);
     }
@@ -239,7 +239,7 @@ public:
     /** Class members */
     bool dumped;					    // Bool keeping track of whether the object has been written to disk.
     size_t sid;						    // Identifier of the memory
-    boost::thread* worker;	  // Boost thread managing the obect
+    std::thread* worker;	    // Standard thread managing the obect
     size_t record;						// Size associated with the object.
   };
 
@@ -247,7 +247,7 @@ public:
    * @brief Class representing a serializable object.
    *
    * The class is inherited by [descriptor] such that the object is "equipped" with
-   * the boost::thread and with the flags describing its storing status.
+   * the std::thread and with the flags describing its storing status.
    *
    * @tparam T type associated with the serialized object.
    */
@@ -298,7 +298,7 @@ public:
       state = prefetching;
       // This thread will be joined by [fetch]. Note that here we call the
       // functor class defined above.
-      this->thread(new boost::thread(fetch_request<T>(disk::fp(sid), (T*)this)));
+      this->thread(new std::thread(fetch_request<T>(disk::fp(sid), (T*)this)));
     }
 
     /** @brief Storing to file method */
@@ -307,7 +307,7 @@ public:
         state = storing;
         dumped = true;
         parallel::sync();
-        this->thread(new boost::thread(StoreToFile_request<T>(disk::fp(sid), (T*)this)));
+        this->thread(new std::thread(StoreToFile_request<T>(disk::fp(sid), (T*)this)));
       }
       assert(this->state != prefetching);
     }

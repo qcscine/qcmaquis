@@ -37,7 +37,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-set (ALPS_SOURCE_DIR "alps")
+set(ALPS_SOURCE_DIR "alps")
 
 set(BUILD_SYMMETRIES "TwoU1PG;SU2U1PG" CACHE STRING "List of symmetry to include in the build objects. \
 U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG, U1DG and NONE are currently available. \
@@ -273,7 +273,7 @@ list(APPEND DMRG_LIBRARIES ${HDF5_LIBRARIES})
 
 # Boost
 set(Boost_requirements program_options filesystem system serialization thread)
-set (Boost_NO_BOOST_CMAKE ON)
+set(Boost_NO_BOOST_CMAKE ON)
 
 find_package(Boost 1.56 COMPONENTS ${Boost_requirements})
 if(Boost_FOUND)
