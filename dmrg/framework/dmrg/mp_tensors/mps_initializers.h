@@ -157,9 +157,13 @@ public:
   void operator()(MPS<Matrix, SymmGroup>& mps)
   {
     MPS<Matrix, SymmGroup> MPSBuffer;
+    auto sym = params["symmetry"].as<std::string>();
     for (int i=0; i<basis_index.size(); i++ ) {
-      auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index[i], phys_dims, site_type, mps.length()); 
-      auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end); // No CSF are constructed
+      auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index[i], phys_dims, site_type, mps.length());
+      // auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end); // No CSF are constructed
+      auto mps_tmp = (sym=="su2u1" || sym=="su2u1pg") ? state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, 10000, false)
+                                                      : state_mps<Matrix>(state, phys_dims, site_type, right_end);
+      mps_tmp.normalize_right();
       if (i == 0) {
         mps = mps_tmp;
         mps[0] *= coeff[0];
@@ -232,7 +236,6 @@ public:
         }
         if (mps[mps.length()-1].col_dim()[0].first != right_end)
             throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
-        
         for (int i = 0; i < mps.length(); i++) {
             mps[i].divide_by_scalar(mps[i].scalar_norm());
         }

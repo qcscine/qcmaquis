@@ -233,7 +233,7 @@ public:
         } else {
           throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
         }
-      } else if ((hfIdx==2 || hfIdx==3) && (params["init_type"] != "coherent")) { //since in this case alpha and beta are equivalent
+      } else if ((hfIdx==2 || hfIdx==3) /*&& (params["init_type"] != "coherent")*/) { //since in this case alpha and beta are equivalent
         state[j].resize(2);
         state[j][0] = physDim[siteType[j]].element(1);
         state[j][1] = physDim[siteType[j]].element(2);
@@ -278,7 +278,7 @@ public:
         } else {
           throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
         }
-      } else if ((hfIdx==2 || hfIdx==3) && (params["init_type"] != "coherent")) { //since in this case alpha and beta are equivalent
+      } else if ((hfIdx==2 || hfIdx==3) /*&& (params["init_type"] != "coherent")*/) { //since in this case alpha and beta are equivalent
         state[j].resize(2);
         state[j][0] = physDim[siteType[j]].element(1);
         state[j][1] = physDim[siteType[j]].element(2);
