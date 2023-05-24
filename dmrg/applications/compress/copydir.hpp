@@ -29,6 +29,9 @@
 #ifndef MPS_COMPRESS_COPYDIR_HPP
 #define MPS_COMPRESS_COPYDIR_HPP
 
+#include <iostream>
+#include <boost/filesystem.hpp>
+
 // An utility function to copy a directory entirely
 // Taken from https://codedump.io/share/zXSwU5VNvaR6/1/how-can-i-copy-a-directory-using-boost-filesystem
 bool copyDir(

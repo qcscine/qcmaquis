@@ -156,7 +156,7 @@ inline std::pair<std::vector<chem::index_type<chem::Hamiltonian::Excitonic>>, st
         chem::integral_tuple<T, chem::Hamiltonian::Excitonic> t;
         t.second = *it;
         it++;
-        std::transform(it, it+2, std::back_inserter(tmp), boost::lambda::_1) ;
+        std::copy(it, it+2, std::back_inserter(tmp)) ;
         t.first[0] = tmp[0];
         t.first[1] = tmp[1];
         it += 2;

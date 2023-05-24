@@ -24,7 +24,7 @@ namespace dual_index_detail
         using charge = typename SymmGroup::charge;
 
     public:
-        QnBlock() {}
+        QnBlock() = default;
         QnBlock(charge lc_, charge rc_, std::size_t ls_, std::size_t rs_)
             : lc(lc_), rc(rc_), ls(ls_), rs(rs_) {}
 
@@ -35,8 +35,8 @@ namespace dual_index_detail
 
         typename SymmGroup::charge lc;
         typename SymmGroup::charge rc;
-        std::size_t                ls;
-        std::size_t                rs;
+        std::size_t                ls{};
+        std::size_t                rs{};
     };
 
     template<class SymmGroup>
@@ -299,10 +299,13 @@ private:
     
     std::size_t destination(value_type const & x) const
     {
-        return std::find_if(data_.begin(), data_.end(), 
-                            boost::lambda::bind(dual_index_detail::lt<SymmGroup>,
-                                                boost::lambda::_1,
-                                                x)) - data_.begin();
+      return std::distance(
+          data_.begin(),
+            std::find_if(
+              data_.begin(), data_.end(), 
+              [x](const auto& e){
+                  return dual_index_detail::lt<SymmGroup>(e, x);
+              }));
     }
 
 public:

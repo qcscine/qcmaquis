@@ -52,37 +52,24 @@ int main(int argc, char** argv)
   std::copy(A.begin(),A.end(),std::ostream_iterator<double>(std::cout,"\t"));
   std::cout << "\n";
 
-  double conditional_sum = alps::numeric::accumulate_if
-                                            ( A.begin()
-                                            , A.end()
-                                            , double()
-                                            , boost::bind
-                                               ( std::less_equal<double>()
-                                               , boost::lambda::_1
-                                               , 2.
-                                               )
-                                            );
+  double conditional_sum = alps::numeric::accumulate_if(
+      A.begin(), A.end(), 0.0,
+      [](const auto& acc, const auto& e){
+          return acc + std::less_equal<>(e, 2.0) ? e : 0.0;
+      }
+  );
   std::cout << "\nSum of all elements in A if <= 2. :\t " << conditional_sum << "\n";
 
 
-  double conditional_sum_sq = alps::numeric::accumulate_if
-                                                ( A.begin()
-                                                , A.end()
-                                                , double()
-                                                , boost::bind
-                                                   ( std::plus<double>()
-                                                   , boost::lambda::_1
-                                                   , boost::bind
-                                                       ( static_cast<double (*)(double)>(&alps::numeric::sq)
-                                                       , boost::lambda::_2
-                                                       )
-                                                   )
-                                                , boost::bind
-                                                   ( std::greater<double>()
-                                                   , boost::lambda::_1
-                                                   , 1.
-                                                   )
-                                                );
+  double conditional_sum_sq = alps::numeric::accumulate_if(
+      A.begin(), A.end(), 0.0,
+      boost::bind(
+        std::plus<double>(),
+        boost::lambda::_1,
+        boost::bind(static_cast<double (*)(double)>(&alps::numeric::sq), boost::lambda::_2)
+      ),
+      boost::bind(std::greater<double>(), boost::lambda::_1 , 1.)
+  );
 
   std::cout << "\nSum of the square of all elements in A if > 1. :\t" << conditional_sum_sq << "\n";
 

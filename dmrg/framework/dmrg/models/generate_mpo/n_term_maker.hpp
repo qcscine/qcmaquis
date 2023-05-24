@@ -36,8 +36,12 @@ public:
 	{
 		// Assuming all operators are fermionic!!
 		bool trivial_fill=true;
-		std::sort(ops.begin(),ops.end(), boost::bind(&pos_op_t::first, _1) < 
-										 boost::bind(&pos_op_t::first, _2));
+		std::sort(
+        ops.begin(),ops.end(),
+        [](const pos_op_t& a, const pos_op_t& b){
+            return a.first < b.first;
+        }
+    );
 
 		for (pos_t p = 0; p < lat.size(); ++p){
 			for (typename std::vector<pos_op_t>::iterator it = ops.begin(); it != ops.end(); ++it) {

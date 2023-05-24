@@ -36,9 +36,9 @@ namespace ietl
     class jcd_left_preconditioner
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_left_preconditioner(const MATRIX& matrix, const VS& vec, const int& max_iter);
         void operator()(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t, const magnitude_type& rel_tol);
@@ -58,9 +58,9 @@ namespace ietl
     class jcd_simple_solver
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_simple_solver(const MATRIX& matrix, const VS& vec);
         void operator()(const vector_type& u, const magnitude_type& theta, const vector_type& r, vector_type& t, const magnitude_type& rel_tol);
@@ -75,9 +75,9 @@ namespace ietl
     class jcd_solver_operator
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_solver_operator(const vector_type& u,
             const magnitude_type& theta,
@@ -106,9 +106,9 @@ namespace ietl
     class jcd_gmres_solver
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         jcd_gmres_solver(Matrix const & matrix, VS const & vec,
             std::size_t max_iter = 5, bool verbose = false)
@@ -147,9 +147,9 @@ namespace ietl
     class jcd_solver
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         template<class Solver>
         jcd_solver(Matrix const & matrix,
@@ -192,9 +192,9 @@ namespace ietl
     class jacobi_davidson
     {
     public:
-        typedef typename vectorspace_traits<VS>::vector_type vector_type;
-        typedef typename vectorspace_traits<VS>::scalar_type scalar_type;
-        typedef typename ietl::number_traits<scalar_type>::magnitude_type magnitude_type;
+        using vector_type = typename vectorspace_traits<VS>::vector_type;
+        using scalar_type = typename vectorspace_traits<VS>::scalar_type;
+        using magnitude_type = typename ietl::number_traits<scalar_type>::magnitude_type;
         
         
         jacobi_davidson(const MATRIX& matrix, 
@@ -353,10 +353,7 @@ namespace ietl
     }
     
     template <class MATRIX, class VS>
-    jacobi_davidson<MATRIX, VS>::~jacobi_davidson()
-    {
-        
-    }
+    jacobi_davidson<MATRIX, VS>::~jacobi_davidson() = default;
     
 //    template<class Vector>
 //    Vector orthogonalize(Vector input, std::vector<Vector> const & against)

@@ -171,8 +171,10 @@ std::ostream& operator<<(std::ostream& os, measurement<Matrix, SymmGroup> const&
 template<class BlockMatrix>
 bool is_hermitian_meas(std::vector<BlockMatrix> const & ops)
 {
-    return all_true(ops.begin(), ops.end(),
-                    boost::bind(static_cast<bool (*)(BlockMatrix const&)>(&is_hermitian), _1));
+    return all_true(
+        ops.begin(), ops.end(),
+        [&](const BlockMatrix& matrix){ return is_hermitian(matrix); }
+    );
     return true;
 }
 

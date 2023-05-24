@@ -84,7 +84,9 @@ private:
     charge total_charge() const
     {
         return std::accumulate(state.begin(), state.end(), SymmGroup::IdentityCharge,
-                               boost::bind(static_cast<charge(*)(charge,charge)>(&SymmGroup::fuse), _1,  boost::bind(getter_fn, _2)) );
+            [&](const charge& acc, const local_state& x){
+                return SymmGroup::fuse(acc, getter_fn(x));
+            });
     }
     
     void advance()

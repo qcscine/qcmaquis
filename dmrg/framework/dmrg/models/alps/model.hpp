@@ -35,9 +35,13 @@ namespace detail {
 template <class I>
 bool safe_is_fermionic(alps::SiteBasisDescriptor<I> const& b, alps::SiteOperator const& op)
 {
-    using boost::bind;
     std::set<std::string> operator_names = op.operator_names();
-    return std::count_if(operator_names.begin(), operator_names.end(), boost::bind(&alps::SiteBasisDescriptor<I>::is_fermionic, b, _1)) % 2;
+    return std::count_if(
+        operator_names.begin(),
+        operator_names.end(),
+        [&](const string& name){
+            return alps::SiteBasisDescriptor<I>::is_fermionic(b, name)
+        }); % 2
 }
 
 

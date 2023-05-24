@@ -17,8 +17,6 @@
 #include <string>
 #include <sstream>
 
-#include <boost/bind.hpp>
-
 namespace generate_mpo
 {
 	template<class Matrix, class SymmGroup>
@@ -37,9 +35,11 @@ namespace generate_mpo
         
         void canonical_order() // TODO: check and fix for fermions
         {
-            std::sort(operators.begin(), operators.end(),
-                      boost::bind(&op_pair_t::first, _1) <
-                      boost::bind(&op_pair_t::first, _2));
+            std::sort(
+                operators.begin(), operators.end(),
+                [](const op_pair_t& a, const op_pair_t& b){
+                    return a.first < b.first;
+                });
         }
         
         bool operator< (OperatorTagTerm const & rhs) const
@@ -104,9 +104,11 @@ namespace generate_mpo
         
         void canonical_order() // TODO: check and fix for fermions
         {
-            std::sort(operators.begin(), operators.end(),
-                      boost::bind(&op_pair_t::first, _1) <
-                      boost::bind(&op_pair_t::first, _2));
+            std::sort(
+                operators.begin(), operators.end(),
+                [](const op_pair_t& a, const op_pair_t& b){
+                    return a.first < b.first;
+                });
         }
         
         bool operator< (OperatorTerm const & rhs) const
