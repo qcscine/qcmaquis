@@ -306,7 +306,7 @@ private:
     int numSpecifiedStates = 0;
     if (needToWriteStates) {
       std::string states;
-      states = (initType == "coherent") ? parms["init_files"].as<std::string>() : parms["init_basis_state"].as<std::string>();
+      states = (initType == "coherent") ? parms["init_file"].as<std::string>() : parms["init_basis_state"].as<std::string>();
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
