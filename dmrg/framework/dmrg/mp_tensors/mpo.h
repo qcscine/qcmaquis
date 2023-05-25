@@ -78,9 +78,10 @@ private:
                     if (!(*this)[p-1].has(r,c))
                         continue;
                     for (size_t b = 0; b < (*this)[p-1].at(r, c).op().n_blocks(); ++b) {
-                        charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
-                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op().basis().left_charge(b),
-                                                                            -(*this)[p-1].at(r,c).op().basis().right_charge(b))));
+                        charge_diffs.insert(
+                            SymmGroup::fuse(bond_index_charges[p-1][r],
+                            SymmGroup::fuse((*this)[p-1].at(r,c).op().basis().left_charge(b),
+                            -(*this)[p-1].at(r,c).op().basis().right_charge(b))));
 //                        maquis::cout << r << " " << c << std::endl;
 //                        maquis::cout << bond_index_charges[p-1][r] << std::endl;
 //                        maquis::cout << (*this)[p-1](r,c).basis().left_charge(b) << std::endl;
@@ -105,14 +106,15 @@ private:
         for (size_t p = 0; p <= L; ++p)
         {
             Index<SymmGroup> & index = bond_indices[p];
-            for (typename std::map<std::size_t, typename SymmGroup::charge>::iterator it
-                 = bond_index_charges[p].begin();
-                 it != bond_index_charges[p].end();
-                 ++it)
-                if (index.has(it->second))
-                    index[index.position(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
-                else
-                    index.insert(std::make_pair(it->second, 1));
+            for (const auto& it : bond_index_charges[p]) {
+                if (index.has(it.second)) {
+                  index[index.position(it.second)] = std::make_pair(
+                      it.second, index.size_of_block(it.second)+1);
+                }
+                else {
+                  index.insert(std::make_pair(it.second, 1));
+                }
+            }
         }
     }
 
