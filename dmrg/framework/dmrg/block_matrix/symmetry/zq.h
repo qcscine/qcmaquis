@@ -90,7 +90,7 @@ public:
 
     static subcharge particleNumber(charge a) { return 1; }
     
-    template<int R> static charge fuse(const boost::array<charge, R> &v)
+    template<int R> static charge fuse(const std::array<charge, R> &v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; i++)

@@ -36,7 +36,7 @@ public:
         return a+b;
     }
 
-    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; ++i)
@@ -84,7 +84,7 @@ public:
     }
 
 
-    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; ++i)

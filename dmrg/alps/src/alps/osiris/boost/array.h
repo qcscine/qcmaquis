@@ -34,21 +34,21 @@
 #include <alps/config.h>
 #include <alps/osiris/dump.h>
 
-#include <boost/array.hpp>
+#include <array>
 
 #ifndef BOOST_NO_OPERATORS_IN_NAMESPACE
 namespace alps {
 #endif
 
 template<class T, std::size_t N> 
-inline alps::IDump& operator>>(alps::IDump& dump, boost::array<T, N>& x)
+inline alps::IDump& operator>>(alps::IDump& dump, std::array<T, N>& x)
 {
   dump.read_array(N,&(x[0]));
   return dump;
 }
 
 template<class T, std::size_t N> 
-inline alps::ODump& operator<<(alps::ODump& dump, const boost::array<T,N>& x)
+inline alps::ODump& operator<<(alps::ODump& dump, const std::array<T,N>& x)
 {
   dump.write_array(N,&(x[0]));
   return dump;

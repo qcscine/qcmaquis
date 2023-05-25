@@ -113,8 +113,8 @@ template<typename T, typename A> void initialize(std::vector<T, A> & v) {
 template<typename A> void initialize(std::vector<bool, A> & v) {
     v = creator<std::vector<bool, A> >::random();
 }
-template<typename T, std::size_t N> void initialize(boost::array<T, N> & v) {
-    for (typename boost::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
+template<typename T, std::size_t N> void initialize(std::array<T, N> & v) {
+    for (typename std::array<T, N>::iterator it = v.begin(); it != v.end(); ++it)
         initialize(*it);
 }
 template<

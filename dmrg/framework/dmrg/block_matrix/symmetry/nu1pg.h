@@ -33,11 +33,6 @@ public:
         (*this)[N] = 0;
     }
 
-    NU1ChargePG(boost::array<S, N> const & rhs) : NU1ChargePG()
-    {
-        std::copy(rhs.begin(), rhs.end(), this->begin());
-    }
-
     NU1ChargePG(std::array<S, N> const & rhs) : NU1ChargePG()
     {
         std::copy(rhs.begin(), rhs.end(), this->begin());
@@ -298,7 +293,7 @@ public:
         return I;
     }
 
-    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; ++i)

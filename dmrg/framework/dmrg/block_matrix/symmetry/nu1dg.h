@@ -36,7 +36,7 @@ class NU1ChargeDG : public NU1ChargePG<N, S>
 
 public:
     NU1ChargeDG(S init = 0) : base(init) {}
-    NU1ChargeDG(boost::array<S, N> const & rhs) : base(rhs) {}
+    NU1ChargeDG(std::array<S, N> const & rhs) : base(rhs) {}
 
     S * begin() { return base::begin(); }
     S * end() { return base::end(); }
@@ -168,7 +168,7 @@ public:
         return a+b;
     }
 
-    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; ++i)
@@ -288,6 +288,6 @@ template<int N, class S> std::vector<S> NU1DG<N,S>::adjoin_table = default_dg_ad
 template<int N, class S> std::size_t NU1DG<N,S>::group_id = 0;
 template<int N, class S> typename NU1DG<N,S>::subcharge NU1DG<N,S>::max_irrep = 0;
 
-typedef NU1DG<1> U1DG;
+using U1DG = NU1DG<1>;
 
 #endif

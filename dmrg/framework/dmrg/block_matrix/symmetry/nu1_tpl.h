@@ -12,6 +12,7 @@
 #include <vector>
 #include <list>
 #include <numeric>
+#include <array>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>
@@ -49,11 +50,6 @@ public:
     NU1Charge(std::vector<unsigned int> const & temp) : NU1Charge(0)
     {
         std::vector<int> rhs(temp.begin(), temp.end());
-        std::copy(rhs.begin(), rhs.end(), this->begin());
-    }
-
-    NU1Charge(boost::array<S, N> const & rhs)
-    {
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
 
@@ -297,7 +293,7 @@ public:
         return a+b;
     }
 
-    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
         for (int i = 1; i < R; ++i)

@@ -15,7 +15,7 @@
 #include <boost/unordered_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
@@ -526,31 +526,31 @@ std::pair<charge, std::size_t> operator-(std::pair<charge, std::size_t> const & 
     return std::make_pair(-p.first, p.second);
 }
 
-template<class T> boost::array<T, 1> _(T const & a)
+template<class T> std::array<T, 1> _(T const & a)
 {
-    boost::array<T, 1> r;
+    std::array<T, 1> r;
     r[0] = a;
     return r;
 }
 
-template<class T> boost::array<T, 2> _(T const & a, T const & b)
+template<class T> std::array<T, 2> _(T const & a, T const & b)
 {
-    boost::array<T, 2> r;
+    std::array<T, 2> r;
     r[0] = a;
     r[1] = b;
     return r;
 }
 
 #define IMPL_COMMA(tpl, type) \
-tpl boost::array<type, 2> operator^(type const & a, type const & b) { \
-    boost::array<type, 2> ret; \
+tpl std::array<type, 2> operator^(type const & a, type const & b) { \
+    std::array<type, 2> ret; \
     ret[0] = a; \
     ret[1] = b; \
     return ret; \
 }
 #define IMPL_COMMA_2(tpl, type) \
-tpl boost::array<type, L+1> operator^(boost::array<type, L> const & a, type const & b) { \
-    boost::array<type, L+1> ret; \
+tpl std::array<type, L+1> operator^(std::array<type, L> const & a, type const & b) { \
+    std::array<type, L+1> ret; \
     std::copy(a.begin(), a.end(), ret.begin()); \
     ret[L] = b; \
     return ret; \
@@ -566,18 +566,18 @@ IMPL_COMMA(template<class charge>, std::pair<charge CO std::size_t>)
 #undef IMPL_COMMA_2
 
 template<class T, unsigned long L>
-boost::array<T, L+1> operator^(boost::array<T, L> const & a, T const & b)
+std::array<T, L+1> operator^(std::array<T, L> const & a, T const & b)
 {
-	boost::array<T, L+1> ret;
+	std::array<T, L+1> ret;
     std::copy(a.begin(), a.end(), ret.begin());
 	ret[L] = b;
 	return ret;
 }
 
 template<class T, unsigned long L>
-boost::array<T, L+1> operator^(T const & a, boost::array<T, L> const & b)
+std::array<T, L+1> operator^(T const & a, std::array<T, L> const & b)
 {
-	boost::array<T, L+1> ret;
+	std::array<T, L+1> ret;
 	ret[0] = a;
 	for (int i = 0; i < L; i++)
 		ret[i+1] = b[i];

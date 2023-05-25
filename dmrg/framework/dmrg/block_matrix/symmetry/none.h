@@ -15,7 +15,7 @@
 #include <alps/hdf5.hpp>
 
 #include <boost/serialization/serialization.hpp>
-#include <boost/array.hpp>
+#include <array>
 
 class TrivialGroup
 {
@@ -30,7 +30,7 @@ public:
     }
 
 	static inline charge fuse(charge a, charge b) { return Plus; }
-	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
+	template<int R> static charge fuse(std::array<charge, R>) { return Plus; }
 };
 
 namespace boost {

@@ -36,7 +36,7 @@ class Ztwo {
         static subcharge particleNumber(charge a) { return 1; }
 		
 		template<int R>
-		static charge fuse(boost::array<charge, R> v)
+		static charge fuse(std::array<charge, R> v)
 		{
 			// this operation actually could be rearranged into a tree
 			for (int i = 1; i < R; i++)

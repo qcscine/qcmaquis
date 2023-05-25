@@ -107,6 +107,6 @@ namespace alps {
 
         std::size_t signal::begin_ = 0;
         std::size_t signal::end_ = 0;
-        boost::array<int, 32> signal::signals_;
+        std::array<int, 32> signal::signals_;
     }
 }
