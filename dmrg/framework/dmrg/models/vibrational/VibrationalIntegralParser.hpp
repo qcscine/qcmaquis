@@ -111,6 +111,7 @@ NModeIntegralParser(BaseParameters & parms, Lattice const & lat)
                 indices.push_back(t.first);
             }
         }
+        orb_file.close();
     }
     // Serialized integral object
     else if (parms.is_set("integrals_binary")) {
@@ -246,6 +247,7 @@ inline std::vector< std::pair< std::array<int, chem::getIndexDim(chem::Hamiltoni
             }
             it += maxInputManyBodyCoupling;
         }
+        orb_file.close();
     }
     else if (parms.is_set("integrals_binary")) {
         // parse serialized integrals

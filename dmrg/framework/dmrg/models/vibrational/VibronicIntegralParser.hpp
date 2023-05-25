@@ -133,6 +133,7 @@ parseIntegralVibronic(BaseParameters& parms, const Lattice& lat)
             indices.push_back(t.first);
         }
     }
+    orb_file.close();
     return std::make_pair(indices, matrix_elements);
 }
 
