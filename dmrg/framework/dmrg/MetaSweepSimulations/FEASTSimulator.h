@@ -301,19 +301,19 @@ private:
 
   /** @brief Generates the guess for FEAST */
   void initializeGuess(BaseParameters& parms, const ModelType& model) {
-    bool needToWriteONV = (initType == "basis_state_generic" || initType == "hf");
+    bool needToWriteStates = (initType == "basis_state_generic" || initType == "hf" || initType == "coherent");
     std::vector<std::string> specifiedStates;
     int numSpecifiedStates = 0;
-    if (needToWriteONV) {
+    if (needToWriteStates) {
       std::string states;
-      states = parms["init_basis_state"].as<std::string>();
+      states = (initType == "coherent") ? parms["init_files"].as<std::string>() : parms["init_basis_state"].as<std::string>();
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       numSpecifiedStates = specifiedStates.size();
       if (numSpecifiedStates < 1 || numSpecifiedStates > numStates){
-        throw std::runtime_error("You should specify at least one and at most num_states init_onv's if init_type is set to basis_state_generic");
+        throw std::runtime_error("You should specify at least one and at most num_states init_states's if init_type is set to basis_state_generic or coherent");
       }
       if (numSpecifiedStates != numStates) {
-        maquis::cout << "WARNING! Not all feast states have been provided an ONV for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
+        maquis::cout << "WARNING! Not all feast states have been provided an specified state for initialization, so the remaining ones will be initialized with generic_default" << std::endl;
       }
     }
     // Generates the guess MPS
@@ -321,9 +321,13 @@ private:
       auto parametersTmp = parms;
       parametersTmp.set("seed", seedForInit[iState]);
       parametersTmp.set("init_type", initType);
-      if (needToWriteONV) {
+      if (needToWriteStates) {
         if (iState < numSpecifiedStates) {
-          parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
+          if (initType == "coherent") {
+            parametersTmp.set("init_file", specifiedStates[iState]); // initialize the specified states with the initfiles containing the ONVs
+          } else {
+            parametersTmp.set("init_basis_state", specifiedStates[iState]); // initialize the specified states with the provided ONVs
+          }
         } else { // the rest of the states are not specified
           parametersTmp.set("init_type", "basis_state_generic_default"); // initialize the remaining states with generic_default
         }
