@@ -211,20 +211,19 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Initializers_Electronic_LiH_CISD, LiHFixture)
   BOOST_CHECK_CLOSE(hfEnergy_SU2U1, referenceSto3gHFEnergy, 1.0E-10);
   BOOST_CHECK_CLOSE(hfEnergy_TwoU1, hfEnergy_SU2U1, 1.0E-10);
   // CISD initialization and check
-  /*
+  // 2U1
   parametersLiH_STO3G.set("init_type", "coherent");
-  if (symm_traits::SymmetryNameTrait<S>::symmName() == "2u1pg" || symm_traits::SymmetryNameTrait<S>::symmName() == "2u1") {
-    parametersLiH_STO3G.set("init_coeffs", cisdCoefficientsLiHSto3g);
-    parametersLiH_STO3G.set("init_basis_state", cisdWavefunctionLiHSto3g);
-  }
-  else {
-    parametersLiH_STO3G.set("init_coeffs", cisdCoefficientsLiHSto3gNR);
-    parametersLiH_STO3G.set("init_basis_state", cisdWavefunctionLiHSto3gNR);
-  }
-  auto modelLiH_CISD = Model<matrix, S>(latticeLiH, parametersLiH_STO3G);
-  auto mpsCISD = MPS<matrix, S>(latticeLiH.size(), *(modelLiH_CISD.initializer(latticeLiH, parametersLiH_STO3G)));
-  auto cisdEnergy = expval(mpsCISD, mpoLiH);
-  */
+  parametersLiH_STO3G.set("init_coeffs", cisdCoefficientsLiHSto3g);
+  parametersLiH_STO3G.set("init_basis_state", cisdWavefunctionLiHSto3g);
+  auto mpsCISD_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
+  // SU2U1
+  parametersLiH_STO3G.set("init_coeffs", cisdCoefficientsLiHSto3gNR);
+  parametersLiH_STO3G.set("init_basis_state", cisdWavefunctionLiHSto3gNR);
+  auto mpsCISD_SU2U1 = MPS<matrix, SU2U1PG>(latticeLiH.size(), *(modelLiH_SU2U1.initializer(latticeLiH, parametersLiH_STO3G)));
+  // Checks
+  auto cisdEnergy_TwoU1 = expval(mpsCISD_TwoU1, mpoLiH_TwoU1);
+  auto cisdEnergy_SU2U1 = expval(mpsCISD_SU2U1, mpoLiH_SU2U1);
+  BOOST_CHECK_CLOSE(cisdEnergy_TwoU1, cisdEnergy_SU2U1, 1.0E-10);
   //BOOST_CHECK_CLOSE(cisdEnergy, referenceSto3gEnergy, 1.0E-10);
 }
 
@@ -241,13 +240,13 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Initializers_SU2vs2U1, LiHFixture)
     "4,2,3,1,1,1", "4,2,1,3,1,1", "4,2,1,1,3,1", "4,2,1,1,1,3",
     "2,4,3,1,1,1", "2,4,1,3,1,1", "2,4,1,1,3,1", "2,4,1,1,1,3"
   };
+  auto latticeLiH = Lattice(parametersLiH_STO3G);
   // Generates the MPS for the SU2U1 symmetry
   double scaling = 1.;
   for (const auto& excType: {singleExcitationsAlphaBeta, singleExcitationsBetaAlpha}) {
     for (const auto& iExc: excType) {
       parametersLiH_STO3G.set("init_type", "basis_state_generic");
       parametersLiH_STO3G.set("init_basis_state", iExc);
-      auto latticeLiH = Lattice(parametersLiH_STO3G);
       auto modelLiH_SU2 = Model<matrix, SU2U1PG>(latticeLiH, parametersLiH_STO3G);
       auto mps_SU2 = MPS<matrix, SU2U1PG>(latticeLiH.size(), *(modelLiH_SU2.initializer(latticeLiH, parametersLiH_STO3G)));
       // Generates the MPS for the TwoU1 symmetry
@@ -260,31 +259,50 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Initializers_SU2vs2U1, LiHFixture)
     }
     scaling = -1.;
   }
-  /*
   // == DOUBLE EXCITATION ==
   // Generates the MPS for the SU2U1 symmetry
+  /*
   parametersLiH_STO3G.set("init_type", "basis_state_generic");
-  parametersLiH_STO3G.set("init_basis_state", "2,2,3,3,1,1");
-  modelLiH_SU2 = Model<matrix, SU2U1PG>(latticeLiH, parametersLiH_STO3G);
-  mps_SU2 = MPS<matrix, SU2U1PG>(latticeLiH.size(), *(modelLiH_SU2.initializer(latticeLiH, parametersLiH_STO3G)));
+  parametersLiH_STO3G.set("init_basis_state", "3,2,2,1,1,3");
+  auto modelLiH_SU2 = Model<matrix, SU2U1PG>(latticeLiH, parametersLiH_STO3G);
+  auto mps_SU2 = MPS<matrix, SU2U1PG>(latticeLiH.size(), *(modelLiH_SU2.initializer(latticeLiH, parametersLiH_STO3G)));
   // Generates the MPSs for the TwoU1 symmetry
-  modelLiH_TwoU1 = Model<matrix, TwoU1PG>(latticeLiH, parametersLiH_STO3G);
-  mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
-  // Transforms the SU2 MPS into the TwoU1 one
-  mps_transformed = transform_mps<matrix, SU2U1PG>()(mps_SU2, 2, 2);
-  overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  auto modelLiH_TwoU1 = Model<matrix, TwoU1PG>(latticeLiH, parametersLiH_STO3G);
+  auto mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G))); 
+  auto mps_transformed = transform_mps<matrix, SU2U1PG>()(mps_SU2, 2, 2);
+  auto overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  std::cout << std::setprecision(16);
+  std::cout << "ALB " << overlapMPS << std::endl;
+  //
   parametersLiH_STO3G.set("init_type", "basis_state_generic");
-  parametersLiH_STO3G.set("init_basis_state", "2,3,3,2,1,1");
+  parametersLiH_STO3G.set("init_basis_state", "2,3,2,1,1,3");
   mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
   overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  std::cout << "ALB " << overlapMPS << std::endl;
+  //
   parametersLiH_STO3G.set("init_type", "basis_state_generic");
-  parametersLiH_STO3G.set("init_basis_state", "2,3,2,3,1,1");
+  parametersLiH_STO3G.set("init_basis_state", "2,2,3,1,1,3");
   mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
   overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  std::cout << "ALB " << overlapMPS << std::endl;
+  //
   parametersLiH_STO3G.set("init_type", "basis_state_generic");
-  parametersLiH_STO3G.set("init_basis_state", "2,2,3,3,1,1");
+  parametersLiH_STO3G.set("init_basis_state", "3,3,2,1,1,2");
   mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
   overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  std::cout << "ALB " << overlapMPS << std::endl;
+  //
+  parametersLiH_STO3G.set("init_type", "basis_state_generic");
+  parametersLiH_STO3G.set("init_basis_state", "3,2,3,1,1,2");
+  mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
+  overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  std::cout << "ALB " << overlapMPS << std::endl;
+  //
+  parametersLiH_STO3G.set("init_type", "basis_state_generic");
+  parametersLiH_STO3G.set("init_basis_state", "2,3,3,1,1,2");
+  mps_TwoU1 = MPS<matrix, TwoU1PG>(latticeLiH.size(), *(modelLiH_TwoU1.initializer(latticeLiH, parametersLiH_STO3G)));
+  overlapMPS = overlap(mps_transformed, mps_TwoU1);
+  std::cout << "ALB " << overlapMPS << std::endl;
   */
 }
 
