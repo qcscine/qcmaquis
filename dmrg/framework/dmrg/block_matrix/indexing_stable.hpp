@@ -9,17 +9,14 @@
 #define TENSOR_INDEXING_H
 
 #include <array>
+#include <vector>
 #include <algorithm>
-#include <functional>
 #include <numeric>
 #include <utility>
-#include <vector>
 
 #include <boost/unordered_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
 
 #ifdef PYTHON_EXPORTS
 #include <mp_tensors/wrappers.h>
@@ -132,18 +129,22 @@ public:
         assert( has(x.first) );
         assert( x.second < size_of_block(x.first) );
         const_iterator to = data_.begin()+position(x.first);
-        return x.second + std::accumulate(data_.begin(), to, 0,
-                                          boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
-                                         );
+        return x.second + std::accumulate(
+            data_.begin(), to, 0,
+            [](const auto& acc, const auto& x){ return acc + x.second; });
     }
 
     bool has(charge c) const
     {
-        if (sorted_)
+        if (sorted_) {
             return std::binary_search(data_.begin(), data_.end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
-        else
-            return std::find_if(data_.begin(), data_.end(),
-                                index_detail::is_first_equal<SymmGroup>(c)) != data_.end();
+        }
+        else {
+            auto it = std::find_if(data_.begin(), data_.end(),
+                [&](const auto& e){ return e.first == c; });
+            return it != data_.end();
+
+        }
     }
 
     void sort()
@@ -208,8 +209,11 @@ public:
 
     std::size_t sum_of_sizes() const
     {
-		//std::function<std::size_t (std::size_t,std::size_t)> pred = boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2);
-        return std::accumulate(data_.begin(), data_.end(), 0, boost::lambda::ret<std::size_t>(boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)));
+        return std::accumulate(
+            data_.begin(), data_.end(), 0,
+            [&](const auto& acc, const auto& x){
+                return acc + x.second;
+            });
     }
 
     // This is mostly forwarding of the std::vector
@@ -259,10 +263,9 @@ private:
 
     std::size_t destination(charge c) const
     {
-        return std::find_if(data_.begin(), data_.end(),
-                            boost::lambda::bind(index_detail::lt<SymmGroup>,
-                                                boost::lambda::_1,
-                                                std::make_pair(c, 0))) - data_.begin();
+        return std::distance(data_.begin(),
+            std::find_if(data_.begin(), data_.end(),
+              [&](const auto& e){ return e.first < c; }));
     }
 
 public:
@@ -306,8 +309,8 @@ template<class SymmGroup>
 class ProductBasis
 {
 public:
-    typedef typename SymmGroup::charge charge;
-    typedef std::size_t size_t;
+    using charge = typename SymmGroup::charge;
+    using size_t = std::size_t;
 
     ProductBasis(Index<SymmGroup> const & a,
                  Index<SymmGroup> const & b)
@@ -345,7 +348,7 @@ private:
 public:
     size_t operator()(charge a, charge b) const
     {
-        typedef typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator match_type;
+        using match_type = typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator;
         match_type match = keys_vals_.find(std::make_pair(a,b));
         assert( match != keys_vals_.end() );
         return match->second;
@@ -379,7 +382,7 @@ template<class SymmGroup>
 class basis_iterator_
 {
 public:
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     basis_iterator_(Index<SymmGroup> const & idx, bool at_end = false)
     : idx_(idx)
@@ -459,7 +462,7 @@ bool weak_equal(Index<SymmGroup> const & a, Index<SymmGroup> const & b)
 template<class SymmGroup>
 Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     std::vector<charge> oc = inp.charges(), nc = inp.charges();
     std::transform(nc.begin(), nc.end(), nc.begin(), std::negate<charge>());
@@ -499,7 +502,7 @@ template<class SymmGroup>
 Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
                            Index<SymmGroup> const & i2)
 {
-    typedef typename SymmGroup::charge charge;
+    using charge = typename SymmGroup::charge;
 
     Index<SymmGroup> ret;
     for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
@@ -521,14 +524,12 @@ template<class SymmGroup>
 void extract_common_subset(Index<SymmGroup> & a, Index<SymmGroup> & b)
 {
     a.erase(std::remove_if(a.begin(), a.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            [&](const auto& e){ return !b.has(e.first); }),
             a.end());
 
     b.erase(std::remove_if(b.begin(), b.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
-            b.end());
+          [&](const auto& e){ return !a.has(e.first); }),
+          b.end());
 }
 
 template<class SymmGroup>
@@ -536,14 +537,12 @@ Index<SymmGroup> common_subset(Index<SymmGroup> & a,
                                Index<SymmGroup> & b)
 {
     a.erase(std::remove_if(a.begin(), a.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, b,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
+            [&](const auto& e){ return !b.has(e.first); }),
             a.end());
 
     b.erase(std::remove_if(b.begin(), b.end(),
-                           !boost::lambda::bind(&Index<SymmGroup>::has, a,
-                                                boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_1))),
-            b.end());
+          [&](const auto& e){ return !a.has(e.first); }),
+          b.end());
     return a;
 }
 

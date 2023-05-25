@@ -266,7 +266,7 @@ namespace maquis { namespace dmrg { namespace detail {
     template <typename T, class A>
     void left_right_boundary_init(alps::numeric::matrix<T,A> & M){
         //            memset((void*)&M(0,0),1,num_rows(M)*num_cols(M)*sizeof(T));
-        for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
+        std::fill(elements(M).first, elements(M).second, 1);
     }
     
 } } } // namespace maquis::dmrg::detail

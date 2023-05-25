@@ -300,8 +300,6 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
     common_subset(out_right_i, left_i);
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
-    /* ProductBasis<SymmGroup> out_right_pb(physical_i, right_i, boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse), */
-    /*                                                          -boost::lambda::_1, boost::lambda::_2)); */
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
         [&](const charge a, const charge b) { return SymmGroup::fuse(-a, b); });
     // Prepares output

@@ -8,9 +8,6 @@
 #ifndef SITE_OPERATOR_ALGORITHMS_H
 #define SITE_OPERATOR_ALGORITHMS_H
 
-//#include <boost/lambda/lambda.hpp>
-//#include <boost/function.hpp>
-
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"

@@ -101,11 +101,16 @@ namespace SU2 {
                             typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
 
                             // copy the diagonal multplied by alfa_t into the output result: ret(·, col_i) += alfa_t * diag(L)
-                            for (size_t col_i = 0; col_i < right_i[block].second; ++col_i)
-                                std::transform(left_diagonal.begin(), left_diagonal.end(),
-                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
-                                               &ret[o](left_offset + ss1 * left_i[l].second, col_i),
-                                               boost::lambda::_2 += boost::lambda::_1 * alfa_t);
+                            for (size_t col_i = 0; col_i < right_i[block].second; ++col_i) {
+                              std::transform(
+                                  left_diagonal.begin(),
+                                  left_diagonal.end(),
+                                  &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                  &ret[o](left_offset + ss1 * left_i[l].second, col_i),
+                                  [&](const auto& a, const auto& b){
+                                      return b + a * alfa_t;
+                                  });
+                            }
                         }
                     } // wblock
                 } // phys_i s
@@ -144,9 +149,13 @@ namespace SU2 {
                 size_t rblock = right[b2].find_block(in_r_charge, in_r_charge);
                 if (rblock != right[b2].n_blocks())
                 {
-                    for (size_t c = 0; c < num_cols(lb2[block]); ++c)
-                        std::transform(lb2[block].col(c).first, lb2[block].col(c).second, lb2[block].col(c).first,
-                                       boost::lambda::_1 * right[b2][rblock](c,c));
+                    for (size_t c = 0; c < num_cols(lb2[block]); ++c) {
+                      std::transform(
+                          lb2[block].col(c).first,
+                          lb2[block].col(c).second,
+                          lb2[block].col(c).first,
+                          [&](const auto& a){ a * right[b2][rblock](c, c); });
+                    }
                     ret.match_and_add_block(lb2[block], in_r_charge, in_r_charge);
                 }
             }

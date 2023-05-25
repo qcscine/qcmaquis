@@ -13,7 +13,6 @@
 #include <vector>
 #include <set>
 #include <boost/lexical_cast.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <numeric>
 #include "dmrg/utils/BaseParameters.h"
 #include "LatticeHelperClass.hpp"

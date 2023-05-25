@@ -34,8 +34,10 @@ namespace generate_mpo
 
         std::vector<pos_op_t> pos_ops;
         // arrange position / operators in pairs
-        std::transform(positions.begin(), positions.end()-1, operators.begin(), std::back_inserter(pos_ops),
-        std::make_pair<pos_t const&, site_ops_t const&>);
+        std::transform(
+            positions.begin(), positions.end()-1,
+            operators.begin(), std::back_inserter(pos_ops),
+            std::make_pair<pos_t const&, site_ops_t const&>);
                        // boost::bind(static_cast<pos_op_t(*)(pos_t const&, site_ops_t const&)>
                        // (std::make_pair<pos_t, site_ops_t>), boost::lambda::_1, boost::lambda::_2));
 

@@ -237,18 +237,17 @@ public:
     std::size_t sum_of_left_sizes() const
     {
         return std::accumulate(data_.begin(), data_.end(), 0,
-                               boost::lambda::_1
-                               + boost::lambda::bind(&value_type::ls, boost::lambda::_2)
-                              );
+            [&](const auto& acc, const auto& x){
+                return acc + x.ls;
+            });
     }
 
     std::size_t memory_size() const
     {
         return std::accumulate(data_.begin(), data_.end(), 0,
-                               boost::lambda::_1
-                               + boost::lambda::bind(&value_type::ls, boost::lambda::_2)
-                               * boost::lambda::bind(&value_type::rs, boost::lambda::_2)
-                              );
+            [](const auto& acc, const auto& x){
+                return acc + x.ls * x.rs;
+            });
     }
 
     // This is mostly forwarding of the std::vector
