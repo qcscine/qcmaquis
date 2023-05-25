@@ -170,7 +170,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(Test_MPS_Coherent_Initializer_Electronic_Benzen
   auto mpsMHF_g = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
   auto energyMHF_g = expval(mpsMHF_g, mpo)/norm(mpsMHF_g);
   parametersBenzene.set("init_type", "coherent");
-  parametersBenzene.set("init_coeff", "0.5,0.5");
+  parametersBenzene.set("init_coeffs", "0.5,0.5");
   parametersBenzene.set("init_basis_state", "4,4,4,1,1,1|3,3,3,2,2,2");
   auto mpsCoherent = MPS<matrix, S>(latticeSize, *(model.initializer(lattice, parametersBenzene)));
   auto energyCoherent = expval(mpsCoherent, mpo)/norm(mpsCoherent);
@@ -214,11 +214,11 @@ BOOST_FIXTURE_TEST_CASE(Test_MPS_Initializers_Electronic_LiH_CISD, LiHFixture)
   /*
   parametersLiH_STO3G.set("init_type", "coherent");
   if (symm_traits::SymmetryNameTrait<S>::symmName() == "2u1pg" || symm_traits::SymmetryNameTrait<S>::symmName() == "2u1") {
-    parametersLiH_STO3G.set("init_coeff", cisdCoefficientsLiHSto3g);
+    parametersLiH_STO3G.set("init_coeffs", cisdCoefficientsLiHSto3g);
     parametersLiH_STO3G.set("init_basis_state", cisdWavefunctionLiHSto3g);
   }
   else {
-    parametersLiH_STO3G.set("init_coeff", cisdCoefficientsLiHSto3gNR);
+    parametersLiH_STO3G.set("init_coeffs", cisdCoefficientsLiHSto3gNR);
     parametersLiH_STO3G.set("init_basis_state", cisdWavefunctionLiHSto3gNR);
   }
   auto modelLiH_CISD = Model<matrix, S>(latticeLiH, parametersLiH_STO3G);
