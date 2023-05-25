@@ -55,7 +55,7 @@ public:
    * @param initial_site_: site in which the optimization is started.
    */
   TwoSiteTimeEvolution(MPS<Matrix, SymmGroup>& mps, MPO<Matrix, SymmGroup> const & mpo, BaseParameters & parms_,
-                       boost::function<bool ()> stop_callback_, int initial_site_ = 0)
+                       std::function<bool ()> stop_callback_, int initial_site_ = 0)
     : base(mps, mpo, parms_, stop_callback_, to_site(mps.length(), initial_site_))
   {
     parallel::guard::serial guard;

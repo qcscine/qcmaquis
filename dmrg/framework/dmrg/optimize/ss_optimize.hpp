@@ -30,7 +30,7 @@ public:
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
-                boost::function<bool ()> stop_callback_,
+                std::function<bool ()> stop_callback_,
                 const Lattice& lat,
                 int initial_site_ = 0)
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), lat_(lat)

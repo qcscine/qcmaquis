@@ -8,15 +8,16 @@
 #ifndef TENSOR_INDEXING_H
 #define TENSOR_INDEXING_H
 
-#include <vector>
+#include <array>
 #include <algorithm>
+#include <functional>
 #include <numeric>
 #include <utility>
+#include <vector>
 
 #include <boost/unordered_map.hpp>
 #include <boost/container/flat_set.hpp>
 #include <boost/container/flat_map.hpp>
-#include <array>
 #include <boost/lambda/lambda.hpp>
 #include <boost/lambda/bind.hpp>
 
@@ -207,7 +208,7 @@ public:
 
     std::size_t sum_of_sizes() const
     {
-		//boost::function<std::size_t (std::size_t,std::size_t)> pred = boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2);
+		//std::function<std::size_t (std::size_t,std::size_t)> pred = boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2);
         return std::accumulate(data_.begin(), data_.end(), 0, boost::lambda::ret<std::size_t>(boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)));
     }
 

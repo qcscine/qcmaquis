@@ -183,7 +183,7 @@ namespace ietl
     private:
         Matrix const & matrix_;
         VS vecspace_;
-        boost::function<vector_type(jcd_solver_operator<Matrix, VS, vector_type> const &, vector_type const &, vector_type const &, double)> solv_;
+        std::function<vector_type(jcd_solver_operator<Matrix, VS, vector_type> const &, vector_type const &, vector_type const &, double)> solv_;
         std::size_t n_, max_iter_;
         bool verbose_;
     };

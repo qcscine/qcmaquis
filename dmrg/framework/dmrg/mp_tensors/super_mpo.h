@@ -17,7 +17,7 @@
 
 
 namespace detail {
-    /// This functor is needed because boost::function<> f = boost::lambda::bind()
+    /// This functor is needed because std::function<> f = boost::lambda::bind()
     /// fails with Boost 1.57.0 and Clang compilers.
     template <class SymmGroup>
     struct phys_fuse_functor {

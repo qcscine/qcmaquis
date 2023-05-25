@@ -55,7 +55,7 @@ public:
    * @param initial_site_: site in which the optimization is started.
    */
   SingleSiteTimeEvolution(MPS<Matrix, SymmGroup> & mps, MPO<Matrix, SymmGroup> const & mpo,
-                          BaseParameters & parms, boost::function<bool ()> stop_callback, int initial_site_ = 0)
+                          BaseParameters & parms, std::function<bool ()> stop_callback, int initial_site_ = 0)
         : base(mps, mpo, parms, stop_callback, to_site(mps.length(), initial_site_)) { };
 
   /**

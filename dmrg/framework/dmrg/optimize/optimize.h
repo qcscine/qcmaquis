@@ -58,7 +58,7 @@ public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
-                   boost::function<bool ()> stop_callback_,
+                   std::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
     , mpo(mpo_)
@@ -199,7 +199,7 @@ protected:
     MPO<Matrix, SymmGroup> const& mpo;
 
     BaseParameters & parms;
-    boost::function<bool ()> stop_callback;
+    std::function<bool ()> stop_callback;
 
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
 
