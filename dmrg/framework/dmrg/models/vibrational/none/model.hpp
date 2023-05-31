@@ -72,9 +72,9 @@ public:
         // Determines also the maximum many-body coupling degree. Per default read in all integrals that are given
         maxCoupling_ = chem::getIndexDim(chem::Hamiltonian::VibrationalCanonical);
         maxManyBodyCoupling_ = (parameters.is_set("watson_max_coupling")) ? parameters["watson_max_coupling"] : maxCoupling_;
-        maxInputManyBodyCoupling_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
+        maxInputCouplingOrder_ = (parameters.is_set("watson_max_coupling_input")) ? parameters["watson_max_coupling_input"] : maxCoupling_;
         maquis::cout << " - Maximum many-body coupling order supported: " << maxCoupling_ << std::endl;
-        maquis::cout << " - Many-body coupling order expected as input: " << maxInputManyBodyCoupling_ << std::endl;
+        maquis::cout << " - Maximum coupling order expected as input: " << maxInputCouplingOrder_ << std::endl;
         maquis::cout << " - Maximum many-body coupling order included in the Hamiltonian " << maxManyBodyCoupling_ << std::endl;
         maquis::cout << std::endl;
         int numModes =  parameters_["L"];
@@ -115,16 +115,16 @@ public:
             momentum_op.insert_block(mmom, C,C);
             ident_op.insert_block(mident, C,C);
             // -- Creates the powers of the position/momentum operator --
-            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputManyBodyCoupling_, nMax, ident_op, position_op);
-            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputManyBodyCoupling_, nMax, ident_op, momentum_op);
+            powersOfPositions_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfPositionOperator(maxInputCouplingOrder_, nMax, ident_op, position_op);
+            powersOfMomentum_op = VibrationalHelpers<Matrix, TrivialGroup>::generatePowersOfMomentumOperator(maxInputCouplingOrder_, nMax, ident_op, momentum_op);
             // -- Create operator tag table --
             ident_op.resize_block(0, nMax, nMax);
             ident_[nMax] = tag_handler_->register_op(ident_op, tag_detail::bosonic);
-            positionPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
-            momentumPowers_[nMax].resize(maxInputManyBodyCoupling_+1);
+            positionPowers_[nMax].resize(maxInputCouplingOrder_+1);
+            momentumPowers_[nMax].resize(maxInputCouplingOrder_+1);
             positionPowers_[nMax][0] = ident_[nMax];
             momentumPowers_[nMax][0] = ident_[nMax];
-            for (int iOrder = 1; iOrder <= maxInputManyBodyCoupling_; iOrder++) {
+            for (int iOrder = 1; iOrder <= maxInputCouplingOrder_; iOrder++) {
                 positionPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfPositions_op[iOrder], tag_detail::bosonic);
                 momentumPowers_[nMax][iOrder] = tag_handler_->register_op(powersOfMomentum_op[iOrder], tag_detail::bosonic);
             }
@@ -143,7 +143,7 @@ public:
      */
     void create_terms() override {
         auto hamiltonianTerms = Vibrational::detail::WatsonIntegralParser<value_type>(parameters_, lattice_, coordinateType_, maxCoupling_,
-                                                                                      maxManyBodyCoupling_, maxInputManyBodyCoupling_);
+                                                                                      maxManyBodyCoupling_, maxInputCouplingOrder_);
         for (const auto& iTerms: hamiltonianTerms) {
             positions_type positions;
             operators_type operators;
@@ -168,7 +168,7 @@ public:
                     operators.push_back(positionPowers_[nMaxVec[mode]][innerCounter]);
                 outerCounter += innerCounter;
             }
-            assert(operators.size() == positions.size() && positions.size() <= maxInputManyBodyCoupling_);
+            assert(operators.size() == positions.size() && positions.size() <= maxInputCouplingOrder_);
             // Final addition of the terms
             auto coefficient = static_cast<value_type>(iTerms.second);
             modelHelper<Matrix, TrivialGroup>::add_term(positions, operators, coefficient, tag_handler_, this->terms_, true);
@@ -224,7 +224,7 @@ public:
 private:
 
     /** Class member indicating the highest value of the Taylor operator */
-    int maxCoupling_, maxManyBodyCoupling_, maxInputManyBodyCoupling_;
+    int maxCoupling_, maxManyBodyCoupling_, maxInputCouplingOrder_;
     /** Ref to the lattice object */
     const Lattice& lattice_;
     /** Parameter container */
