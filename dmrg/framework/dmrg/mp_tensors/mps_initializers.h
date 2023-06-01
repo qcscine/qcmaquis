@@ -125,9 +125,7 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 public:
   /** @brief Class constructor 
    *
-   * Note that the determinants are utilized as is, also for SU2, as no CSF are constructed.
-   * This guarantees that each new MPS should only have a bond dimension of 1.
-   * Furthermore, this enables a more straightforward interfacing to other programs providing the CI coeffs and determinants.
+   * Note that generally determinants are utilized except for SU2, where CSF are constructed.
    * 
    */
   coherent_mps_init(BaseParameters & params_, std::vector<Index<SymmGroup> > const& phys_dims_,
@@ -146,6 +144,7 @@ public:
       std::string fileName = params["init_file"];
       if (!boost::filesystem::exists(fileName))
         throw std::runtime_error("Initializer file " + fileName + " does not exist\n");
+      maquis::cout << "Initializing MPS from file " << fileName << std::endl;
       std::ifstream stateFile;
       stateFile.open(fileName.c_str());
       std::string line;
@@ -184,8 +183,7 @@ public:
     auto sym = params["symmetry"].as<std::string>();
     for (int i=0; i<basis_index.size(); i++ ) {
       auto state = HelperClassBasisVectorConverter<SymmGroup>::GenerateIndexFromString(params, basis_index[i], phys_dims, site_type, mps.length());
-      // auto mps_tmp = state_mps<Matrix>(state, phys_dims, site_type, right_end); // No CSF are constructed
-      auto mps_tmp = (sym=="su2u1" || sym=="su2u1pg") ? state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, 10000, false)
+      auto mps_tmp = (sym=="su2u1" || sym=="su2u1pg") ? state_mps_cd<Matrix>(state, phys_dims, site_type, right_end, initialBondDim, false)
                                                       : state_mps<Matrix>(state, phys_dims, site_type, right_end);
       mps_tmp.normalize_right();
       if (i == 0) {
@@ -193,15 +191,18 @@ public:
         mps[0] *= coeffs[0];
       }
       else {
-        MPSBuffer = joinAndTruncate(mps, mps_tmp, initialBondDim, 1., coeffs[i]);
+        MPSBuffer = join(mps, mps_tmp, 1., coeffs[i]);
         mps = MPSBuffer;
       }
     }
-    if (mps[mps.length()-1].col_dim()[0].first != right_end)
-      throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
+    // Compression to initialBondDim
+    mps = compression::l2r_compress(mps, initialBondDim, 0);
+    // Normalization
     for (int i = 0; i < mps.length(); i++) {
       mps[i].divide_by_scalar(mps[i].scalar_norm());
     }
+    if (mps[mps.length()-1].col_dim()[0].first != right_end)
+      throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
   }
 
 private:
