@@ -142,6 +142,9 @@ public:
 
     if (fromFile) {
       std::string fileName = params["init_file"];
+      std::vector<std::string> specifiedFiles;
+      boost::split(specifiedFiles, fileName, boost::is_any_of("|"));
+      fileName=specifiedFiles[0]; // This is a safeguard for the interface sim initialization in case several filenames are provided
       if (!boost::filesystem::exists(fileName))
         throw std::runtime_error("Initializer file " + fileName + " does not exist\n");
       maquis::cout << "Initializing MPS from file " << fileName << std::endl;
