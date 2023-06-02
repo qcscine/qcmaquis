@@ -422,7 +422,6 @@ public:
   template<class T>
   static void StoreToFile(serializable<T>& t) {
     if (enabled()) {
-      std::cout << "I AM ACTUALLY STORING TO FILE" << std::endl;
       t.StoreToFile();
     }
   }
