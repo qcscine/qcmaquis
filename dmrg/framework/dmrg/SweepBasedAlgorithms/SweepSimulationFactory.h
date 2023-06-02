@@ -75,7 +75,7 @@ public:
     }
     // Solution of a linear system
     else if (simulationName == "linear_system") {
-      bool verbose = parms["linsystem_verbose"] == "yes";
+      bool verbose = (parms["linsystem_verbose"] == "yes");
       if (sweepType_ == SweepOptimizationType::SingleSite) {
         ssSimulator_ = std::make_unique<LinearSystemSSSimulationType>(mps, mpo, parms, model, lattice, verbose);
       }
