@@ -67,6 +67,7 @@ public:
   {
     // Retrieve simulation parameters
     verbose_ = (parameters["feast_verbose"] == "yes");
+    linSysVerbose_ = (parameters["linsystem_verbose"] == "yes");
     printTimings_ = (parameters["feast_print_timings"] == "yes");
     numStates = parameters["feast_num_states"].as<int>();
     maxFeastIter = parameters["feast_max_iter"].as<int>();
@@ -80,25 +81,24 @@ public:
     truncModality = parameters["feast_truncation_type"].as<std::string>();
     truncateEach = (truncModality == "each");
     initType = parameters["init_type"].as<std::string>();
-    if (parameters["linsystem_exact_error"] == "yes")
-      calculateExactError = true;
+    isSingleSite = !(parameters["optimization"] == "twosite");
+    calculateExactError = (parameters["linsystem_exact_error"] == "yes");
     calculateVariance = (parameters["feast_calculate_standard_deviation"] == "yes");
     // Checks consistency of the input
     if (intModality != "half" && intModality != "full")
       throw std::runtime_error("Parameter [feast_integral_type] not recognized");
     if (truncModality != "each" && truncModality != "end")
       throw std::runtime_error("Parameter [feast_truncation_type] not recognized");
+
+    printHeader();
     // Generates the initial guess for the MPSs
     generateSeed(parms);
     initializeGuess(parms, model_);
     quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
     this->generateComplexQuadrature();
-    if (parameters["optimization"] == "twosite")
-      isSingleSite = false;
     postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice,
                                                         parameters, eMin, eMax);
     resultContainer = std::make_shared<ResultContainerType>();
-    printHeader();
   }
 
   /** @brief FEAST simulation (which is composed by multiple FEAST iterations) */
@@ -195,14 +195,14 @@ private:
     // *and* of the number of target states.
     auto initialTime = std::chrono::high_resolution_clock::now();
     //
-#pragma omp parallel for collapse(2)
+#pragma omp parallel for collapse(2) // All independent states are collapsed into one parallelization layer
     for (int quadPoint = 0; quadPoint < numQuadraturePoint; quadPoint++) {
       for (int iGuess = 0; iGuess < numStates; iGuess++) {
         auto localParameters = parameters;
         auto mpsTmp = mpsGuess[iGuess];
         // Here there is a bit of code repetition because the pointer type is different for SS and TS.
         if (isSingleSite) {
-          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, verbose_);
+          auto ssSimulator = std::make_unique<LinearSystemSSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, linSysVerbose_);
           ssSimulator->setShift(complexNodes[quadPoint]);
           auto initialInnerTime = std::chrono::high_resolution_clock::now();
           ssSimulator->runSweepSimulation();
@@ -210,14 +210,14 @@ private:
           auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(finalInnerTime - initialInnerTime)).count();
 #pragma omp critical (PrintResults)
           {
-            if (!verbose_) {
+            if (verbose_) {
               printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess, duration);
               ssSimulator->printSummary();
             }
           }
         }
         else {
-          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, verbose_);
+          auto tsSimulator = std::make_unique<LinearSystemTSSimulationType>(mpsTmp, mpo_, localParameters, model_, lattice, linSysVerbose_);
           tsSimulator->setShift(complexNodes[quadPoint]);
           auto initialInnerTime = std::chrono::high_resolution_clock::now();
           tsSimulator->runSweepSimulation();
@@ -225,7 +225,7 @@ private:
           auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(finalInnerTime - initialInnerTime)).count();
 #pragma omp critical (PrintResults)
           {
-            if (!verbose_) {
+            if (verbose_) {
               printLinearSystemHeader(complexNodes[quadPoint], complexWeights[quadPoint], iGuess, duration);
               tsSimulator->printSummary();
             }
@@ -407,7 +407,7 @@ private:
   const MPOType& mpo_;                                                                 // Matrix product operator
   const LatticeType& lattice;                                                          // DMRG lattice object.
   const ModelType& model_;                                                             // Model object.
-  bool verbose_, printTimings_;                                                        // Verbosity flags.
+  bool verbose_, linSysVerbose_, printTimings_;                                        // Verbosity flags.
   // Constexpr for the imaginary unit
   static constexpr ComplexType imagUnity = ComplexType(0., 1.);
 };
