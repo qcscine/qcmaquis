@@ -203,7 +203,6 @@ public:
     // Run the sweep-based simulation.
     try {
       for (int sweep=init_sweep; sweep < nSweeps; ++sweep) {
-        // optimizer->sweep(sweep, Both);
         factory_->runSingleSweep(sweep);
         storage::disk::sync();
         bool converged = false;
@@ -321,7 +320,7 @@ public:
         }
     }
     // Measures the energy variance
-    if (parms["MEASURE[EnergyVariance]"] > 0)
+    if (parms["MEASURE[EnergyVariance]"])
     {
         if (!parms["MEASURE[Energy]"])
             energy = maquis::real(expval(mps, mpoc));
