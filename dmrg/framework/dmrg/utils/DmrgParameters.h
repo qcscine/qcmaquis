@@ -61,21 +61,21 @@ private:
         add_option("sweep_bond_dimensions", "Comma-seperated list of n bond dimensions to be used in the n first sweeps");
 
         // Settings for further truncating than the maximum bond dimension
-        add_option("truncation_initial", "Initial value for the truncation error during ngrowsweeps", value(1e-16));
-        add_option("truncation_main", "Final value for the truncation error during nmainsweeps", value(1e-16));
+        add_option("truncation_initial", "Initial value for the truncation error, interpolated during ngrowsweeps", value(1e-16));
+        add_option("truncation_main", "Final value for the truncation error during the rest of the nsweeps-ngrowsweeps", value(1e-16));
 
         // Settings related to the MPS optimization algorithm
-        add_option("optimization", "singlesite or twosite", value("twosite"));
+        add_option("optimization", "ALS sweeping modality: singlesite or twosite", value("twosite"));
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
 
         // Number of sweeps for different calculation phases
-        add_option("nsweeps", "Maximum number of sweeps per ALS procedures", 10);
+        add_option("nsweeps", "Maximum number of sweeps per ALS procedure", 10);
         add_option("ngrowsweeps", "Number of the grow sweeps (used for the truncation and noise parameters)", 2);
         add_option("nmainsweeps", "Number of main sweeps (used for the truncation and noise parameters)", 5);
 
         // Setting to terminate DMRG before nsweeps are completed
         add_option("conv_thresh", "Energy convergence threshold to stop the simulation (use same units as integral file is provided in)", value(-1));
-        add_option("run_seconds", "", value(0));
+        add_option("run_seconds", "Maximum time in seconds to run the calculation for, activate by setting a limit > 0", value(0));
 
         // Noise to be added to the MPS during the optimization/evolution
         add_option("alpha_initial", "Scaling factor of the noise added to perturb the MPS update during the optimization/evolution during ngrowsweeps", value(1e-2));
@@ -117,7 +117,6 @@ private:
         // Storing/updating settings
         add_option("resultfile", "Path and name of file in which to store the results");
         add_option("chkpfile", "Path and name of folder in which to store the MPS");
-        add_option("measure_each", "Compute the expectation values every 2*measure_each sweeps", value(1));
         add_option("chkp_each", "Update the checkpoint every 2*chkp_each sweeps", value(1));
         add_option("storagedir", "Scratch directory for temporary files", value(""));
 
@@ -131,8 +130,9 @@ private:
         add_option("finegrain_optim", "", value(false));
 
         // Measurement related settings
+        add_option("measure_each", "Compute the expectation values every 2*measure_each sweeps", value(1));
         add_option("MEASURE[Energy]", "", value(true));
-        add_option("MEASURE[EnergyVariance]", "", value(0));
+        add_option("MEASURE[EnergyVariance]", "", value(false));
         add_option("MEASURE[Entropy]", "", value(false));
         add_option("MEASURE[ChemEntropy]", "Evaluate all expectation valus required for a mututal information calculation. Only available for 2u1(pg)", value(false));
         add_option("MEASURE[Renyi2]", "", value(false));
@@ -198,10 +198,11 @@ private:
         add_option("ortho_states", "Comma-separated list of checkpoint names to which to orthogonalize to");
 
         // Solution of linear systems
-        add_option("linsystem_precond", "If yes, applies a preconditioner to the linear system solver", value("no"));
+        add_option("linsystem_precond", "If set to diagonal, applies a preconditioner to the linear system solver", value("no"));
         add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [mps] for the rhs", value("last"));
         add_option("linsystem_max_it", "Maximum number of times the iterative linear system solver is repeated (if >1, does basically restarted GMRES", value(1));
         add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-5));
+        add_option("linsystem_truncation_ratio", "If set, linsystem truncation ration will lead to adaptive bond dimensions")
         add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(50));
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
         add_option("linsystem_exact_error", "If yes, calculates the exact error associated with the solution to the linear system", value("no"));
