@@ -241,11 +241,15 @@ protected:
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)
   {
-    if (N < 2)
-      return y1;
-    if (y0 == 0)
+    if (y0 <= 0): // Safeguard if for example -1 is entered
       return 0;
-    double x = log(y1/y0)/(N-1);
+    if (i == 0):
+      return y0;
+    if (i >= N):
+      return y1;
+    if (y1 <= 0): // Safeguard if for example -1 is entered
+      y1 = 1e-16;
+    double x = log(y1/y0)/N;
     return y0*exp(x*i);
   }
 
@@ -301,10 +305,10 @@ protected:
       maquis::cout << "+----------------------------------+" << std::endl;
       maquis::cout << std::endl;
       maquis::cout << " Simulation settings:" << std::endl;
-      maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
-      maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
+      maquis::cout << " - Simulation type:            " << simulationName_ << std::endl;
+      maquis::cout << " - Sweep-based modality:       " << SweepTraitClass::getSimulationTypeName() << std::endl;
       if (nSweeps_ != 0)
-        maquis::cout << " - Maximum number of sweeps: " << nSweeps_ << std::endl;
+        maquis::cout << " - Maximum number of sweeps:   " << nSweeps_ << std::endl;
     }
   }
 
@@ -312,12 +316,12 @@ protected:
   void printSweepSpecificInfo(int iSweep) const {
     if (verbose_) {
       maquis::cout << std::endl;
-      maquis::cout << " -------------------" << std::endl;
-      maquis::cout << "   SWEEP NUMBER " << iSweep << std::endl;
-      maquis::cout << " -------------------" << std::endl;
-      maquis::cout << " - Noise parameter: " << this->getAlpha(iSweep) << std::endl;
+      maquis::cout << " --------------------------" << std::endl;
+      maquis::cout << "   SWEEP NUMBER            " << iSweep << std::endl;
+      maquis::cout << " --------------------------" << std::endl;
+      maquis::cout << " - Noise parameter:        " << this->getAlpha(iSweep) << std::endl;
       maquis::cout << " - Maximum bond dimension: " << this->get_Mmax(iSweep) << std::endl;
-      maquis::cout << " - Truncation parameter: " << this->get_cutoff(iSweep) << std::endl;
+      maquis::cout << " - Truncation parameter:   " << this->get_cutoff(iSweep) << std::endl;
       maquis::cout << std::endl;
     }
   }
