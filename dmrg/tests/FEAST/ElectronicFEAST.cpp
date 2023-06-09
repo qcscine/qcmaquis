@@ -349,7 +349,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH, LiHFixture)
   // IPI-specific parameters
   parametersLiH.set("ipi_sweep_overlap_threshold", 1.0E-5);
   parametersLiH.set("ipi_sweep_energy_threshold", 1.0E-5);
-  parametersLiH.set("ipi_sweeps_per_system", 5);
+  parametersLiH.set("nsweeps", 5);
   parametersLiH.set("ipi_iterations", 8);
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
   parametersLiH.set("linsystem_precond", "no");

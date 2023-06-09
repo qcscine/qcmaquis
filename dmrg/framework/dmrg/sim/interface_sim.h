@@ -124,17 +124,19 @@ public:
     // Exctracts all relevant parameters
     double energyConvergenceThreshold = parms["ipi_sweep_energy_threshold"];
     double overlapConvergenceThreshold = parms["ipi_sweep_overlap_threshold"];
-    int numberOfSweepPerSystem = parms["ipi_sweeps_per_system"];
+    int numberOfSweepsPerSystem = parms["nsweeps"];
     int numberOfOuterIterations = parms["ipi_iterations"];
     typename Matrix::value_type shift = parms["ipi_shift"];
+    double convThreshOfLinSystem = parms["conv_thresh"];
     maquis::cout << " ===================================================== " << std::endl;
-    maquis::cout << "   STARTING DMRG[INVERSE POWER ITERATION] SIMULATION = " << std::endl;
+    maquis::cout << "   STARTING DMRG[INVERSE POWER ITERATION] SIMULATION   " << std::endl;
     maquis::cout << " ===================================================== " << std::endl;
     maquis::cout << std::endl;
     maquis::cout << " IPI energy convergence threshold:   " << energyConvergenceThreshold << std::endl;
     maquis::cout << " IPI overlap convergence threshold:  " << overlapConvergenceThreshold << std::endl;
-    maquis::cout << " Number of sweeps per linear system: " << numberOfSweepPerSystem << std::endl;
-    maquis::cout << " Shift parameter: " << shift << std::endl;
+    maquis::cout << " Maximum number of IPI iterations:   " << numberOfOuterIterations << std::endl;   
+    maquis::cout << " Number of sweeps per linear system: " << numberOfSweepsPerSystem << std::endl;
+    maquis::cout << " Shift parameter:                    " << shift << std::endl;
     maquis::cout << std::endl;
     // Prepares data structure where to store results
     std::vector<RealType> energiesForIPIIteration;
@@ -146,16 +148,16 @@ public:
     // IPI macroiteration
     while (!convergedOuter) {
       double nextEnergy, energyDifference;
-      this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0.);
+      this->runAlternatingLeastSquares("linear_system", numberOfSweepsPerSystem, convThreshOfLinSystem);
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
       energyDifference = std::fabs(nextEnergy - previousEnergy);
       auto mpsOverlap = overlap(mpsBackup, this->mps)/std::sqrt(norm(mpsBackup)*norm(this->mps));
       auto precision = std::cout.precision();
-      maquis::cout << " == RESULTS FOR THE " << nIpiIterations << "-th iteration ==" << std::endl;
+      maquis::cout << " === RESULTS FOR THE " << nIpiIterations << "-th iteration ===" << std::endl;
       std::cout.precision(10);
-      maquis::cout << " - Energy difference for iteration = " << nIpiIterations << " = " << energyDifference << std::endl;
+      maquis::cout << " - Energy difference to previous iteration =         " << energyDifference << std::endl;
       maquis::cout << " - MPS overlap with solution at previous iteration = " << std::fabs(mpsOverlap) << std::endl;
       maquis::cout << std::endl;
       std::cout.precision(precision);
@@ -163,7 +165,8 @@ public:
       if (nIpiIterations == numberOfOuterIterations || energyDifference < energyConvergenceThreshold ||
           std::fabs(1.-std::fabs(mpsOverlap)) < overlapConvergenceThreshold)
       {
-        maquis::cout << " --> CONVERGENCE REACHED" << std::endl;
+        std::string message = (nIpiIterations == numberOfOuterIterations) ? " --> MAXIMUM NUMBER OF IPI ITERATIONS REACHED" : " --> CONVERGENCE REACHED";
+        maquis::cout << message << std::endl;
         convergedOuter = true;
       }
       else {
@@ -186,14 +189,9 @@ public:
     int meas_each = parms["measure_each"];
     int chkp_each = parms["chkp_each"];
     // -- Optimizer initialization --
-    //std::shared_ptr<opt_base_t> optimizer;
     if (parms["optimization"] == "singlesite")
-      // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-      //                 (mps, mpo, parms, stop_callback, lat, init_site) );
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, model, base::lat);
     else if(parms["optimization"] == "twosite")
-      // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-      //                 (mps, mpo, parms, stop_callback, lat, init_site) );
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, model, base::lat);
     else
         throw std::runtime_error("Don't know this optimizer");

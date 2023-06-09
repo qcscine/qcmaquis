@@ -110,7 +110,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benze
   double shiftGS = energyFromOptimizerGS-(energyFromOptimizerES-energyFromOptimizerGS)/10.;
   parametersBenzene.set("ipi_shift", shiftGS);
   parametersBenzene.set("ipi_sweep_threshold", 1.0E-5);
-  parametersBenzene.set("ipi_sweeps_per_system", 2);
+  parametersBenzene.set("nsweeps", 2);
   parametersBenzene.set("ipi_iterations", 10);
   parametersBenzene.set("linsystem_precond", "no");
   parametersBenzene.set("linsystem_init", "mps");

@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   // Set the shift of DMRG[IPI] as the energy shifted by -0.1 (note that this Hamiltonian is unitless)
   parametersBilinearly.set("ipi_shift", energyFromInterface-0.1);
   parametersBilinearly.set("ipi_sweep_threshold", 1.0E-5);
-  parametersBilinearly.set("ipi_sweeps_per_system", 2);
+  parametersBilinearly.set("nsweeps", 2);
   parametersBilinearly.set("ipi_iterations", 10);
   maquis::DMRGInterface<double> interfaceBilinearlyIpi(parametersBilinearly);
   interfaceBilinearlyIpi.runInversePowerIteration();

@@ -69,7 +69,7 @@ private:
         add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
 
         // Number of sweeps for different calculation phases
-        add_option("nsweeps", "Overall number of sweeps of the calculation", 10);
+        add_option("nsweeps", "Maximum number of sweeps per ALS procedures", 10);
         add_option("ngrowsweeps", "Number of the grow sweeps (used for the truncation and noise parameters)", 2);
         add_option("nmainsweeps", "Number of main sweeps (used for the truncation and noise parameters)", 5);
 
@@ -210,7 +210,6 @@ private:
         // Parameters related to DMRG[IPI]
         add_option("ipi_sweep_overlap_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
         add_option("ipi_sweep_energy_threshold", "Threshold on the energy difference below which the IPI iterations are defined as converged", value(1.0E-10));
-        add_option("ipi_sweeps_per_system", "Maximum number of sweeps used to solve one linear system for DMRG[IPI]");
         add_option("ipi_shift", "Shift parameter for the DMRG[IPI] algorithm");
         add_option("ipi_iterations", "Maximum number of macroiterations for the DMRG[IPI] calculation");
 
