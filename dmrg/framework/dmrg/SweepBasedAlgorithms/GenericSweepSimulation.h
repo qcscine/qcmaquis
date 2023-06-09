@@ -97,7 +97,6 @@ public:
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
     this->printSweepSpecificInfo(iSweep);
-    this->updateSites();
     // Prefetches the boundaries that will be needed for the first sweep
     Storage::prefetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
     Storage::prefetch(boundaryPropagator_->getRightBoundary(siteRight_));
@@ -329,11 +328,11 @@ protected:
   /** @brief Prints information regarding the current microiteration */
   void printMicroiterInfo(SweepDirectionType sweepType) const {
     if (verbose_) {
-      maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
+      maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_;
       if (sweepType == SweepDirectionType::Forward)
-        maquis::cout << " , forward sweep" << std::endl;
+        maquis::cout << ", forward sweep" << std::endl;
       else
-        maquis::cout << " , backward sweep" << std::endl;
+        maquis::cout << ", backward sweep" << std::endl;
       maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;
