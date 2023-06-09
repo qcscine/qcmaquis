@@ -240,13 +240,13 @@ protected:
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)
   {
-    if (y0 <= 0): // Safeguard if for example -1 is entered
+    if (y0 <= 0) // Safeguard if for example -1 is entered
       return 0;
-    if (i == 0):
+    if (i == 0)
       return y0;
-    if (i >= N):
+    if (i >= N)
       return y1;
-    if (y1 <= 0): // Safeguard if for example -1 is entered
+    if (y1 <= 0) // Safeguard if for example -1 is entered
       y1 = 1e-16;
     double x = log(y1/y0)/N;
     return y0*exp(x*i);
