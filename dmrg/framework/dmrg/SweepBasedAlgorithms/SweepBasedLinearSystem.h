@@ -74,7 +74,7 @@ public:
   SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                          const Lattice& lattice, bool verbose)
     : Base(mps, mpo, parms, model, lattice, verbose, std::string("Linear system solver")),
-      adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false), rhsMps_(mps), perturbMPS_(false)
+      shiftParameter_(0.), isPrecond_(false), rhsMps_(mps), perturbMPS_(false)
   {
     /* // Folded simulation --> To be reactivated when implementing the folded operator
     if (parms["pI_folded"] == "yes") {
@@ -91,11 +91,6 @@ public:
     } */
     if (parms_["linsystem_noise"] == "yes")
       perturbMPS_ = true;
-    // Adaptive m
-    if (parms.is_set("linsystem_truncation_ratio")) {
-      adaptiveBondDimension_ = true;
-      truncationRatio_ = parms["linsystem_truncation_ratio"].as<double>();
-    }
     // Note that we subtract the core energy to the shift parameter (the SiteProblem object
     // does not include that contribution)
     if (parms_.is_set("ipi_shift"))
@@ -217,11 +212,9 @@ private:
   // Class members
   MPSType rhsMps_;                                                // RHS for the solution of the linear system.
   std::shared_ptr<BlockMatrixType> preconditioner_;               // If needed, stores the preconditioner.
-  bool adaptiveBondDimension_;                                    // Whether to dynamically adapt the bond dimension.
   bool isPrecond_;                                                // If true, activates the preconditioning.
   bool calculateExactError_;                                      // If true, calculates the exact error associated to the solution of the linear system.
   bool perturbMPS_;                                               // If true, adds noise to the MPS during the solution of the linear system
-  double truncationRatio_;                                        // Parameter for a DBSS-like solution of the linear system.
   ValueType shiftParameter_;                                      // Shift parameter for the linear system
   MPSTensorType rhs_;                                             // RHS of the local linear system (updated at each microiteration).
   std::unique_ptr<OverlapPropagatorType> overlapPropagator_;      // Object needed to store the partial MPS/MPS contraction
