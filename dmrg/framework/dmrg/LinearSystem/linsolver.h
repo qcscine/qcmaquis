@@ -68,8 +68,8 @@ public:
    */
   LinSolver(std::shared_ptr<SiteProblem<Matrix, SymmGroup>> sp, const MPSTensorType& initialMPS,
             const MPSTensorType& rhsMPS, ScalarType shift, BaseParameters & parms,
-            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose)
-    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose)
+            std::shared_ptr<block_matrix<Matrix, SymmGroup>> precond, bool verbose, RealType coreEnergy = 0)
+    : sp_(sp), parms_(parms), rhsMPS_(rhsMPS), shift_(shift), precond_(precond), verbose_(verbose), coreEnergy_(coreEnergy)
     //, isFolded_(false)
   {
     // Which linsolver
@@ -146,11 +146,10 @@ public:
       maquis::cout << " Final ||Ax - b|| norm =  " << finalError << std::endl;
     }
     // == Finalization ==
-    // ietl::mult(sp, x, tmp2, 0, false);
     ietl::mult(*sp_, currentSolution_, tmp3);
     auto en = maquis::real(ietl::dot(currentSolution_, tmp3) / ietl::dot(currentSolution_, currentSolution_));
     if (verbose_) {
-      maquis::cout << " Final energy = " << en << std::endl;
+      maquis::cout << " Final energy = " << en + coreEnergy_ << std::endl;
       maquis::cout << std::endl;
     }
     maquis::cout.precision(prec);
@@ -187,11 +186,6 @@ protected:
    * The implementation is based on Saad's book on iterative methods.
    */
   void gmres() {
-    if (verbose_) {
-      maquis::cout << " ------------------------------------- " << std::endl;
-      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
-      maquis::cout << " ------------------------------------- " << std::endl;
-    }
     // Sets up the initial value of all parameters.
     int iter = 0;
     bool exit = false;
@@ -232,6 +226,11 @@ protected:
       }
     }
     y[0] = residual[0];
+    if (verbose_ && (residual[iter] > gmresTol_)) {
+      maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
+      maquis::cout << " ------------------------------------- " << std::endl;
+    }
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
       if (verbose_) {
@@ -487,6 +486,7 @@ private:
   RealType rhsNorm_;                                         // Norm of the rhs term.
   static constexpr double zeroThresh_ = 1.0E-16;             // Numerical zero
   bool verbose_;                                             // Verbosity flag
+  RealType coreEnergy_;                                      // Core energy to be added to local result (nonzero for electronic problems)
 };
 
 #endif
