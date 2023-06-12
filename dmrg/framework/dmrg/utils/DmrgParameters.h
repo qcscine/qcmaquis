@@ -206,7 +206,8 @@ private:
         add_option("linsystem_krylov_dim", "Maximum dimension of the Krylov subspace for the iterative solution of the linear system", value(50));
         add_option("linsystem_solver", "Algorithm to be used to solve the linear system (possible values [GMRES] and [MINRES])", value("GMRES"));
         add_option("linsystem_exact_error", "If yes, calculates the exact error associated with the solution to the linear system", value("no"));
-        add_option("linsystem_verbose", "If yes, prints detail of the sweep, otherwise, just prints a summary at the end", value("yes"));
+        add_option("linsystem_verbose", "If yes, prints detail of the sweep", value("yes"));
+        add_option("linsystem_noise", "If set to yes, activates the noise. By default this option is deactivated.", value("no"));
 
         // Parameters related to DMRG[IPI]
         add_option("ipi_sweep_overlap_threshold", "If the overlap between the MPSs calculated at two consecutive iterations is below this threshold, stops", value(1.0E-10));
