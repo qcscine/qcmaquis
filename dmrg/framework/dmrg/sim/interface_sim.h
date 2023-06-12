@@ -506,13 +506,10 @@ private:
 
   /**  @brief Checks energy convergence of the sweep-based optimization */
   bool checkEnergyConvergence(double convergenceThreshold) {
-    bool converged = false;
-    auto emin = *std::min_element(energies_.begin(), energies_.end()-1);
-    auto eminNew = *std::min_element(energies_.begin(), energies_.end());
-    auto eDiff = std::abs(emin - eminNew);
-    if (eDiff < convergenceThreshold)
-      converged = true;
-    return converged;
+    if (energies_.size() < 2) // Not yet sufficient number of iterations
+      return false;
+    auto eDiff = std::abs(*(energies_.end()-2) - *(energies_.end()-1));
+    return (eDiff < convergenceThreshold);
   }
 
   /** @brief Returns the path where the result of a given sweep are stored */
