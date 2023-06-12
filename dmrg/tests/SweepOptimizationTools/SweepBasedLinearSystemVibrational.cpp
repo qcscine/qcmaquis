@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Vibrational_Bilinearlty, W
   double energyFromInterface = interfaceBilinearly.energy();
   // Parameters that are specific for the solution of the linear system.
   parametersBilinearly.set("linsystem_precond", "yes");
-  parametersBilinearly.set("linsystem_init", "mps");
+  parametersBilinearly.set("linsystem_init", "last");
   parametersBilinearly.set("linsystem_max_it", 1);
   parametersBilinearly.set("linsystem_tol", 1.0E-10);
   parametersBilinearly.set("linsystem_krylov_dim", 20);

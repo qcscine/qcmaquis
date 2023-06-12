@@ -61,13 +61,13 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   interfaceBenzene.optimize();
   double energyFromInterface = interfaceBenzene.energy();
   // Parameters that are specific for the solution of the linear system.
-  parametersBenzene.set("linsystem_precond", "no");
-  parametersBenzene.set("linsystem_init", "mps");
+  parametersBenzene.set("linsystem_precond", "diagonal");
+  parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);
-  parametersBenzene.set("linsystem_krylov_dim", 100);
+  parametersBenzene.set("linsystem_krylov_dim", 20);
   parametersBenzene.set("linsystem_solver", "GMRES");
-  parametersBenzene.set("linsystem_exact_error", "yes");
+  parametersBenzene.set("linsystem_exact_error", "no");
   // Set the shift of DMRG[IPI] as the energy - 1 Hartree
   parametersBenzene.set("nsweeps", 3);
   parametersBenzene.set("ipi_shift", energyFromInterface-0.1);
@@ -113,7 +113,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benze
   parametersBenzene.set("nsweeps", 2);
   parametersBenzene.set("ipi_iterations", 10);
   parametersBenzene.set("linsystem_precond", "no");
-  parametersBenzene.set("linsystem_init", "mps");
+  parametersBenzene.set("linsystem_init", "last");
   parametersBenzene.set("linsystem_max_it", 1);
   parametersBenzene.set("linsystem_tol", 1.0E-10);
   parametersBenzene.set("linsystem_krylov_dim", 30);
