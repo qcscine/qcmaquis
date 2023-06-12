@@ -74,7 +74,7 @@ public:
   SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                          const Lattice& lattice, bool verbose)
     : Base(mps, mpo, parms, model, lattice, verbose, std::string("Linear system solver")),
-      adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false), rhsMps_(mps)
+      adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false), rhsMps_(mps), perturbMPS_(false)
   {
     /* // Folded simulation --> To be reactivated when implementing the folded operator
     if (parms["pI_folded"] == "yes") {
@@ -89,6 +89,8 @@ public:
       leftCross_.resize(mpo.length()+1);
       rightCross_.resize(mpo.length()+1);
     } */
+    if (parms_["linsystem_noise"] == "yes")
+      perturbMPS_ = true;
     // Adaptive m
     if (parms.is_set("linsystem_truncation_ratio")) {
       adaptiveBondDimension_ = true;
@@ -127,11 +129,13 @@ public:
 
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() override final {
+    auto coreEnergy = maquis::real(mpoContainer_.getMPO().getCoreEnergy());
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
-    LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_, verbose_);
+    LinearSolverType ls(siteProblem_, mpsToOptimize, rhs_, shiftParameter_, parms_, preconditioner_, verbose_, coreEnergy);
     auto resultOfLocalSiteProblem = ls.res();
-    iterationResults_["Energy"] << std::get<0>(resultOfLocalSiteProblem) + maquis::real(mpoContainer_.getMPO().getCoreEnergy());
-    energyPerMicroIter_.push_back(std::get<0>(resultOfLocalSiteProblem));
+    auto energyInclCore = std::get<0>(resultOfLocalSiteProblem) + coreEnergy;
+    iterationResults_["Energy"] << energyInclCore;
+    energyPerMicroIter_.push_back(energyInclCore);
     errorPerMicroIter_.push_back(std::get<1>(resultOfLocalSiteProblem));
     return std::get<2>(resultOfLocalSiteProblem);
   }
@@ -204,6 +208,11 @@ public:
     return rhsMps_;
   }
 
+  /** @brief Whether to appy the noise-based perturbation */
+  bool activatePerturbation() override final {
+    return perturbMPS_;
+  }
+
 private:
   // Class members
   MPSType rhsMps_;                                                // RHS for the solution of the linear system.
@@ -211,6 +220,7 @@ private:
   bool adaptiveBondDimension_;                                    // Whether to dynamically adapt the bond dimension.
   bool isPrecond_;                                                // If true, activates the preconditioning.
   bool calculateExactError_;                                      // If true, calculates the exact error associated to the solution of the linear system.
+  bool perturbMPS_;                                               // If true, adds noise to the MPS during the solution of the linear system
   double truncationRatio_;                                        // Parameter for a DBSS-like solution of the linear system.
   ValueType shiftParameter_;                                      // Shift parameter for the linear system
   MPSTensorType rhs_;                                             // RHS of the local linear system (updated at each microiteration).
