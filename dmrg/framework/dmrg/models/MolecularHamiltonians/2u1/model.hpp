@@ -304,7 +304,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                         } else {
                             auto noOp(iOp);
                             double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement);
+                            auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement / 2.);
                             addTerm(mapOfOperators, term);
                         }
                     }
@@ -384,7 +384,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
                                     } else {
                                         auto noOp(iOp);
                                         double sign = applyNormalOrdering(posVector, noOp, hole_states);
-                                        auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * matrixElement);
+                                        auto term = jw.getTerm(posVector, noOp, tag_handler, true, -sign * matrixElement/ 6.);
                                         addTerm(mapOfOperators, term);
                                     }
                                 }
