@@ -63,9 +63,9 @@ public:
   using MatrixOfMPSs = std::map<std::pair<int, int>, MPSType >;
 
   FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w, const ModelType& inputModel,
-                     const LatticeType& inputLattice, BaseParameters& parms_, double eMin_, double eMax_)
+                     const LatticeType& inputLattice, BaseParameters& parms_, double eMin_, double eMax_, bool verbose = false)
     : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateStandardDeviation(false),
-      eMin(eMin_), eMax(eMax_), parms(parms_), screenedEnergies()
+      eMin(eMin_), eMax(eMax_), verbose_(verbose), parms(parms_), screenedEnergies()
   {
     energies = std::vector<double>(nStates, 0);
     energiesPrev = std::vector<double>(nStates, 0);
@@ -90,8 +90,6 @@ public:
    */
   void solveEigenvalueProblem(const MPOType& mpo) {
     // -- Hamiltonian matrix construction --
-    // auto Hvec = std::vector<cmat_type>(omp_get_max_threads(), cmat_type::Zero(n_states, n_states));
-    // auto Bvec = std::vector<cmat_type>(omp_get_max_threads(), cmat_type::Zero(n_states, n_states));
     ComplexMatrixType H = ComplexMatrixType(nStates, nStates, 0.);
     ComplexMatrixType B = ComplexMatrixType(nStates, nStates, 0.);
     maquis::cout << std::endl;
@@ -114,10 +112,12 @@ public:
         }
       }
     }
-    // maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
-    // maquis::cout << H << std::endl;
-    // maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
-    // maquis::cout << B << std::endl;
+    // if (verbose_) {
+    //   maquis::cout << " Hamiltonian matrix in the FEAST subspace" << std::endl;
+    //   maquis::cout << H << std::endl;
+    //   maquis::cout << " Overlap matrix of the FEAST subspace" << std::endl;
+    //   maquis::cout << B << std::endl;
+    // }
     // for (int i = 0; i < nStates; i++)
     //   normVector[i] = std::sqrt(std::real(B(i, i)));
     // for (int i = 0; i < nStates; i++) {
@@ -168,8 +168,6 @@ public:
    */
   auto performBackTransformation(const MPOType& mpo, int mMax, bool truncEach) {
     // Generates the MPS files for the new FEAST iteration
-    // using MatrixOfMPSs = Eigen::Matrix< MPS<cMatrix, SymmGroup>, -1, -1>;
-    // MatrixOfMPSs mps_transf(n_states, n_states);
     MatrixOfMPSs mpsTransformed;
     // Variable definition
     auto refNorm = ietl::two_norm(mpsContainer->begin()->second[0]);
@@ -394,6 +392,7 @@ private:
   double eMin, eMax;                                             // FEAST integration boundaries.
   double standardDeviationScreening;                             // Screening parameter for the standard deviation
   std::shared_ptr<VectorOfMPSs> currentFEASTMPSs;                // Current approximation to the FEAST eigenvalues;
+  bool verbose_;                                                 // Verbosity flag for printings
 };
 
 } // namespace FeastHelper

@@ -97,7 +97,7 @@ public:
     quadPoints = FeastHelper::getQuadraturePoints(numQuadraturePoint);
     this->generateComplexQuadrature();
     postProcessor = std::make_unique<PostProcessorType>(numStates, numQuadraturePoint, complexWeights, model_, lattice,
-                                                        parameters, eMin, eMax);
+                                                        parameters, eMin, eMax, verbose_);
     resultContainer = std::make_shared<ResultContainerType>();
   }
 
@@ -356,7 +356,7 @@ private:
     maquis::cout << " - Maximum number of FEAST iterations: " << maxFeastIter << std::endl;
     maquis::cout << " - Number of targeted states: " << numStates << std::endl;
     maquis::cout << " - Lower bound for the complex contour integration: " << eMin << std::endl;
-    maquis::cout << " - Uppwer bound for the complex contour integration: " << eMax << std::endl;
+    maquis::cout << " - Upper bound for the complex contour integration: " << eMax << std::endl;
     maquis::cout << " - Number of quadrature points: " << numQuadraturePoint << std::endl;
     maquis::cout << " - Energy convergence threshold for FEAST: " << feastThresholdEnergy << std::endl;
     maquis::cout << " - Overlap convergence threshold for FEAST: " << feastThresholdOverlap << std::endl;
