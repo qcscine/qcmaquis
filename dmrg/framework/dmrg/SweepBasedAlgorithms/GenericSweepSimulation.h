@@ -97,6 +97,7 @@ public:
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
     this->printSweepSpecificInfo(iSweep);
+    this->updateSites(); // Needed for initialization
     // Prefetches the boundaries that will be needed for the first sweep
     Storage::prefetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
     Storage::prefetch(boundaryPropagator_->getRightBoundary(siteRight_));
