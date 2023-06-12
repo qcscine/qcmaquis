@@ -230,13 +230,11 @@ protected:
       maquis::cout << " ------------------------------------- " << std::endl;
       maquis::cout << " Iteration  | Rel. error estimate      " << std::endl;
       maquis::cout << " ------------------------------------- " << std::endl;
+      maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                   << residual[iter] << std::endl;
     }
     // == MAIN LOOP ==
     while (residual[iter] > gmresTol_ && iter < krylovDim_-1 && !exit) {
-      if (verbose_) {
-        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
-                     << residual[iter] << std::endl;
-      }
       // Begin of the Arnoldi part
       auto Av = applyOperator(vecSpace[iter]);
       if (iter > 0) {
@@ -284,6 +282,10 @@ protected:
       std::tie(y[iter], y[iter+1]) = givensRotations[iter].apply(y[iter], y[iter+1]);
       residual.push_back(std::abs(y[iter+1])/rhsNorm_);
       iter += 1;
+      if (verbose_) {
+        maquis::cout << std::setw(5) << iter << "          " << std::setw(15) << std::scientific
+                     << residual[iter] << std::endl;
+      }
     }
     // Final back-substitution
     if (iter != 0) {
