@@ -171,7 +171,7 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Electronic_LiH_TwoGuesses, LiHFixture)
   parametersLiH.set("truncation_main", 1.0E-30);
   parametersLiH.set("linsystem_exact_error", "yes");
   // Linear system parameters (note that the same set of parameters is used also for DMRG[FEAST])
-  // parametersLiH.set("linsystem_precond", "yes");
+  // parametersLiH.set("linsystem_precond", "diagonal");
   parametersLiH.set("linsystem_init", "last");
   parametersLiH.set("linsystem_max_it", 1);
   parametersLiH.set("linsystem_tol", 1.0E-10);

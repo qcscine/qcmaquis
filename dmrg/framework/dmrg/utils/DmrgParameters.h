@@ -198,7 +198,7 @@ private:
         add_option("ortho_states", "Comma-separated list of checkpoint names to which to orthogonalize to");
 
         // Solution of linear systems
-        add_option("linsystem_precond", "If set to diagonal, applies a preconditioner to the linear system solver", value("no"));
+        add_option("linsystem_precond", "If set to [diagonal], applies a diagonal preconditioner to the linear system solver", value("no"));
         add_option("linsystem_init", "Initial guess for the Krylov basis (either [zero] for a zero MPS or [last] for the rhs", value("last"));
         add_option("linsystem_max_it", "Maximum number of times the iterative linear system solver is repeated (if >1, does basically restarted GMRES", value(1));
         add_option("linsystem_tol", "Threshold for the error - if the error falls below [linsystem_tol], the iterative procedure is stopped", value(1.0E-5));
