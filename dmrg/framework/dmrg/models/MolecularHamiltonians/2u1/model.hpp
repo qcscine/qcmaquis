@@ -582,13 +582,16 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     twoBodyIndices = no_helper.getNoTwoBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"],
                                                         hole_states);
 
+    int cnt = 0;
     for (auto &iOp: twoBodyElementaryOperators) {
         for (auto p: twoBodyIndices) {
-            std::vector<int> posVector = {std::get<0>(p.first), std::get<1>(p.first), std::get<2>(p.first),
-                                          std::get<3>(p.first)};
-
+            std::vector<int> posVector = {std::get<0>(p.first), std::get<2>(p.first), std::get<3>(p.first),
+                                          std::get<1>(p.first)};
             if (!(posVector[0] == posVector[1] && iOp[0] == iOp[1]) &&
                 !(posVector[2] == posVector[3] && iOp[2] == iOp[3])) {
+                if(cnt < 20)
+                  std::cout << "Normal ordered " << posVector[0] << " " << posVector[1] <<" " << posVector[2] << " " << posVector[3] << ": " << std::setprecision(16) << p.second << std::endl;
+                ++cnt;
                 auto noOp(iOp);
                 double sign = applyNormalOrdering(posVector, noOp, hole_states);
                 auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
@@ -598,12 +601,16 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
     }
 
     // Normal ordered 1B contribution
+    cnt = 0;
     std::unordered_map<std::pair<int, int>, double, intPairHash> oneBodyIndices;
     oneBodyIndices = no_helper.getNoOneBodyCoefficients(term_assistant, matrix_elements.size(), parms["L"], hole_states);
     for (auto &iOp: oneBodyElementaryOperators) {
         for (auto p: oneBodyIndices) {
             std::vector<int> posVector = {p.first.first, p.first.second};
             auto noOp(iOp);
+            if(cnt < 20)
+                std::cout << "Normal ordered " << posVector[0] << " " << posVector[1] << ": " << std::setprecision(16) <<  p.second << std::endl;
+            ++cnt;
             double sign = applyNormalOrdering(posVector, noOp, hole_states);
             auto term = jw.getTerm(posVector, noOp, tag_handler, true, sign * p.second);
             //std::cout << term << '\t';
@@ -616,6 +623,7 @@ void qc_model<Matrix, SymmGroup, HamiltonianType, Transcorrelated>::create_terms
         term_descriptor term;
         term.push_back(std::make_pair(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
         term.coeff = no_helper.getNoZeroBodyContribution(term_assistant, matrix_elements.size(), parms["L"], hole_states);
+        std::cout << "Adding 0B " << std::setprecision(16) << term.coeff << std::endl;
         this->terms_.push_back(term);
     }
 
