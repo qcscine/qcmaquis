@@ -24,13 +24,16 @@ namespace ts_ops_detail
     std::vector<Integer> allowed_spins(Integer left, Integer right, Integer k1, Integer k2)
     {
         std::vector<Integer> operator_spins;
-        for (Integer s = std::abs(k1-k2); s <= std::abs(k1+k2); s+=2)
+        for (Integer s = std::abs(k1-k2); s <= std::abs(k1+k2); s+=2) {
             operator_spins.push_back(s);
+        }
 
         // triangle condition for the operator action on input/output spins
-        for (typename std::vector<Integer>::iterator it = operator_spins.begin(); it != operator_spins.end(); ++it)
-            if ( !(right >= std::abs(*it-left)) || !(right <= std::abs(*it+left)) )
+        for (typename std::vector<Integer>::iterator it = operator_spins.begin(); it != operator_spins.end(); ++it) {
+            if ( !(right >= std::abs(*it-left)) || !(right <= std::abs(*it+left)) ) {
                 operator_spins.erase(it--);
+            }
+        }
 
         return operator_spins;
     }
@@ -47,7 +50,8 @@ namespace ts_ops_detail
         for (typename std::set<Integer>::const_iterator it1 = summands.begin(); it1 != summands.end(); ++it1)
         {
             auto b2 = *it1;
-            term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+            term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2);
+            term_descriptor<Matrix, SymmGroup, true> p2 = mpo2.at(b2,b3);
             for (int ip1 = 0; ip1 < p1.size(); ++ip1) {
                 for (int ip2 = 0; ip2 < p2.size(); ++ip2) {
                     std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(),
@@ -95,7 +99,9 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     assert(mpo1.col_dim() == mpo2.row_dim());
     KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
     prempo_t prempo;
-    index_type b1, b2, b3;
+    index_type b1;
+    index_type b2;
+    index_type b3;
     // Main loop
     for (b1 = 0; b1 < mpo1.row_dim(); ++b1) {
         for (b3 = 0; b3 < mpo2.col_dim(); ++b3) {
@@ -104,9 +110,11 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
             op_t b3_op;
             std::set<index_type> summands;
             // Checks that the elements to which b1 is coupled are also coupled to b3
-            for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it)
-                if (mpo2.has(it.index(), b3))
+            for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it) {
+                if (mpo2.has(it.index(), b3)) {
                     summands.insert(it.index());
+                }
+            }
             // Evaluates the sum over b2 and returns the (b1, b3) element of the MPOTensor 
             auto coupled_ops = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
             for (auto it = coupled_ops.begin(); it != coupled_ops.end(); ++it) {
@@ -147,8 +155,9 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     });
     // Calculates the overall number of tags
     std::size_t ntags=0;
-    for (int p=0; p<mpo_out.length(); ++p)
+    for (int p=0; p<mpo_out.length(); ++p) {
         ntags += mpo_out[p].get_operator_table()->size();
+    }
     // maquis::cout << "Total number of tags: " << ntags << std::endl;
 }
 

@@ -44,12 +44,13 @@ namespace dual_index_detail
         bool operator()(QnBlock<SymmGroup> const & a,
                         QnBlock<SymmGroup> const & b)
         {
-            if (a.lc > b.lc)
+            if (a.lc > b.lc) {
                 return true;
-            else if (a.lc < b.lc)
+            } else if (a.lc < b.lc) {
                 return false;
-            else
+            } else {
                 return a.rc > b.rc;
+            }
         }
     };
 
@@ -66,12 +67,13 @@ namespace dual_index_detail
     bool lt(QnBlock<SymmGroup> const & a,
             QnBlock<SymmGroup> const & b)
     {
-        if (a.lc < b.lc)
+        if (a.lc < b.lc) {
             return true;
-        else if (a.lc > b.lc)
+        } else if (a.lc > b.lc) {
             return false;
-        else
+        } else {
             return a.rc < b.rc;
+        }
     }
 
     //// simpler, and potentially faster since inlining is easier for the compiler
@@ -152,23 +154,26 @@ public:
     std::size_t position(charge row, charge col) const
     {
         const_iterator match;
-        if (sorted_)
+        if (sorted_) {
             match = std::lower_bound(data_.begin(), data_.end(), value_type(row,col,0,0), dual_index_detail::gt<SymmGroup>());
-        else
+        } else {
             match = std::find_if(data_.begin(), data_.end(), dual_index_detail::is_first_equal<SymmGroup>(row,col));
+        }
         
-        if (match != data_.end() && ((*match).lc != row || (*match).rc != col))
+        if (match != data_.end() && ((*match).lc != row || (*match).rc != col)) {
             match = data_.end();
+        }
         return std::distance(data_.begin(), match);
     }
 
     bool has(charge row, charge col) const
     {
-        if (sorted_)
+        if (sorted_) {
             return std::binary_search(data_.begin(), data_.end(), value_type(row,col,0,0), dual_index_detail::gt<SymmGroup>());
-        else
+        } else {
             return std::find_if(data_.begin(), data_.end(),
                                 dual_index_detail::is_first_equal<SymmGroup>(row,col)) != data_.end();
+        }
     }
 
     const_iterator left_lower_bound(charge row) const
@@ -178,9 +183,10 @@ public:
                                                  dual_index_detail::gt_row<SymmGroup>());
             return it;
         }
-        else
+        else {
             return std::find_if(data_.begin(), data_.end(),
                                 dual_index_detail::is_first_equal_row<SymmGroup>(row));
+        }
     }
 
     bool left_has(charge row) const

@@ -73,8 +73,10 @@ public:
 
   /** @brief Method called before each microiteration */
   void prepareMicroiteration() final {
-    siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
-                                                     mpoContainer_.getMPOTensor(siteLeft_));
+    siteProblem_ = std::make_unique<SiteProblemType>(
+        boundaryPropagator_->getLeftBoundary(siteLeft_),
+        boundaryPropagator_->getRightBoundary(siteRight_),
+        mpoContainer_.getMPOTensor(siteLeft_));
     // std::cout << "Initial energy " << siteProblem_->get_energy(mpsContainer_.getMPSTensor(siteLeft_)) + mpoContainer_.getMPO().getCoreEnergy() << std::endl;
     if (overlapPropagator_)
       for (int iState = 0; iState < nOrtho_; iState++)

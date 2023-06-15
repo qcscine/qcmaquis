@@ -26,8 +26,7 @@ overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                   block_matrix<OtherMatrix, SymmGroup> const & left,
                   block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
 {
-    if (localop != NULL)
-        throw std::runtime_error("Not implemented!");
+    if (localop != NULL) { throw std::runtime_error("Not implemented!"); }
     assert(ket_tensor.phys_i == bra_tensor.phys_i);
     block_matrix<OtherMatrix, SymmGroup> t1;
     block_matrix<Matrix, SymmGroup> t3;
@@ -51,8 +50,7 @@ overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    block_matrix<OtherMatrix, SymmGroup> const & right,
                    block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
 {
-    if (localop != NULL)
-        throw std::runtime_error("Not implemented!");
+    if (localop != NULL) { throw std::runtime_error("Not implemented!"); }
     assert(ket_tensor.phys_i == bra_tensor.phys_i);
     ket_tensor.make_left_paired();
     block_matrix<OtherMatrix, SymmGroup> t1;
@@ -75,11 +73,12 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
 {
     using charge = typename SymmGroup::charge;
     using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
-    if (in_low == NULL)
-        in_low = &mps.row_dim();
+    if (in_low == NULL) { in_low = &mps.row_dim(); }
     //std::vector<block_matrix<Matrix, SymmGroup> > t
-    Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
-                                  out_left_i = physical_i * left_i;
+    Index<SymmGroup> physical_i = mps.site_dim();
+    Index<SymmGroup> left_i = *in_low;
+    Index<SymmGroup> right_i = mps.col_dim();
+    Index<SymmGroup> out_left_i = physical_i * left_i;
     BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, left, mpo, left_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
@@ -105,11 +104,12 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
 {
     using charge = typename SymmGroup::charge;
     using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
-    if (in_low == NULL)
-        in_low = &mps.col_dim();
+    if (in_low == __null) { in_low = &mps.col_dim(); }
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(mps, right, mpo);
-    Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
-                     out_right_i = adjoin(physical_i) * right_i;
+    Index<SymmGroup> physical_i = mps.site_dim();
+    Index<SymmGroup> left_i = mps.row_dim();
+    Index<SymmGroup> right_i = *in_low;
+    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
         [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });
@@ -192,12 +192,12 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
 {
     using charge = typename SymmGroup::charge;
     using index_type = typename MPOTensor<Matrix, SymmGroup>::index_type;
-    Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-                             right_i = bra_tensor.col_dim();
+    Index<SymmGroup> const & physical_i = ket_tensor.site_dim();
+    Index<SymmGroup> const right_i = bra_tensor.col_dim();
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-    Index<SymmGroup> left_i = ket_tensor.row_dim(),
-                     out_right_i = adjoin(physical_i) * right_i,
-                     bra_left_i = bra_tensor.row_dim();
+    Index<SymmGroup> left_i = ket_tensor.row_dim();
+    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
+    Index<SymmGroup> bra_left_i = bra_tensor.row_dim();
     bra_tensor.make_left_paired();
     Index<SymmGroup> indexForTrim = bra_tensor.data().right_basis();
     contraction::common::MPSBoundaryProduct<Matrix, OtherMatrix, SymmGroup, Gemm> t(ket_cpy, right, mpo, indexForTrim, isHermitian);

@@ -12,6 +12,8 @@
 #include <alps/numeric/isinf.hpp>
 #include <alps/numeric/is_nonzero.hpp>
 
+#include "dmrg/utils/storage.h"
+
 namespace tag_detail {
 
     using tag_type = unsigned int;
@@ -26,28 +28,28 @@ namespace tag_detail {
             storage::migrate(op);
         }
 
-        for (typename BlockMatrix::size_type b=0; b < op.n_blocks(); ++b)
-        {
-            bool only_zero = true;
-            for (int i = 0; i < num_rows(op[b]); i++)
-               for(int j = 0; j < num_cols(op[b]); j++)
-            {
-                if (alps::numeric::is_nonzero(op[b](i,j))) {
-                    only_zero = false;
-                    break;
-                }
+        for (typename BlockMatrix::size_type b=0; b < op.n_blocks(); ++b) {
+          bool only_zero = true;
+          for (int i = 0; i < num_rows(op[b]); i++) {
+            for(int j = 0; j < num_cols(op[b]); j++) {
+              if (alps::numeric::is_nonzero(op[b](i,j))) {
+                only_zero = false;
+                break;
+              }
             }
-            if (only_zero) {
-                op.remove_block(b);
-                --b;
-            }
+          }
+          if (only_zero) {
+            op.remove_block(b);
+            --b;
+          }
         }
     }
 
     template <class T>
     bool num_check(T x) {
-        if (alps::numeric::isnan(x) || alps::numeric::isinf(x))
+        if (alps::numeric::isnan(x) || alps::numeric::isinf(x)) {
             throw std::runtime_error("NaN / INF numeric Error occured while comparing operator scales\n");
+        }
         return true;
     }
 
@@ -55,8 +57,7 @@ namespace tag_detail {
 
     template <class BlockMatrix>
     std::pair<bool, typename BlockMatrix::matrix_type::value_type>
-    equal(BlockMatrix const& reference,
-          BlockMatrix const& sample)
+    equal(BlockMatrix const& reference, BlockMatrix const& sample)
     {
         using Matrix = typename BlockMatrix::matrix_type;
         using value_type = typename Matrix::value_type;
@@ -66,35 +67,41 @@ namespace tag_detail {
             storage::migrate(reference);
             storage::migrate(sample);
         }
-        if (!shape_equal(reference, sample))
+        if (!shape_equal(reference, sample)) {
             return std::make_pair(false, 0.);
+        }
 
-        if (sample.n_blocks() == 0)
+        if (sample.n_blocks() == 0) {
             return std::make_pair(true, 1.0);
+        }
 
-        value_type invscale1, invscale2;
+        value_type invscale1;
+        value_type invscale2;
      
         // determine scale of matrices
         const Matrix& m1 = reference[0];
-        for (int i = 0; i < num_rows(m1); i++)
-           for(int j = 0; j < num_cols(m1); j++)
-        {
+        for (int i = 0; i < num_rows(m1); i++) {
+          for(int j = 0; j < num_cols(m1); j++)
+          {
             if (std::abs(m1(i,j)) > 1.e-50) {
-                invscale1 = value_type(1.)/m1(i,j);
-                break;
+              invscale1 = value_type(1.)/m1(i,j);
+              break;
             }
             if(i == (num_rows(m1)-1) && j == (num_cols(m1)-1)){ return std::make_pair(false, 0.); }
+          }
         }
 
         const Matrix& m2 = sample[0];
-        for (int i = 0; i < num_rows(m2); i++)
-           for(int j = 0; j < num_cols(m2); j++)
-        {
+        for (int i = 0; i < num_rows(m2); i++) {
+          for(int j = 0; j < num_cols(m2); j++) {
             if (std::abs(m2(i,j)) > 1.e-50) {
-                invscale2 = value_type(1.)/m2(i,j);
-                break;
+              invscale2 = value_type(1.)/m2(i,j);
+              break;
             }
-            if(i == (num_rows(m2)-1) && j == (num_cols(m2)-1)){ return std::make_pair(false, 0.); }
+            if(i == (num_rows(m2)-1) && j == (num_cols(m2)-1)){
+              return std::make_pair(false, 0.);
+            }
+          }
         }
 
         // Check all blocks for equality modulo scale factor
@@ -102,12 +109,14 @@ namespace tag_detail {
         {
             const Matrix& mb1 = reference[b];
             const Matrix& mb2 = sample[b];
-            for (int i = 0; i < num_rows(mb1); i++)
-               for(int j = 0; j < num_cols(mb1); j++)
-            {
-                typename Matrix::value_type t1 = mb1(i,j) * invscale1, t2 = mb2(i,j) * invscale2;
-                if (std::abs(t1 - t2) > 1e-12)
-                    return std::make_pair(false, 0.);
+            for (int i = 0; i < num_rows(mb1); i++) {
+              for(int j = 0; j < num_cols(mb1); j++) {
+                typename Matrix::value_type t1 = mb1(i,j) * invscale1;
+                typename Matrix::value_type t2 = mb2(i,j) * invscale2;
+                if (std::abs(t1 - t2) > 1e-12) { 
+                  return std::make_pair(false, 0.);
+                }
+              }
             }
         }
 

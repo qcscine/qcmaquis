@@ -25,11 +25,13 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
     assert(rows.size() == cols.size());
 
     basis_.resize(rows.size());
-    for (size_type k = 0; k < rows.size(); ++k)
+    for (size_type k = 0; k < rows.size(); ++k) {
         basis_[k] = typename DualIndex<SymmGroup>::value_type(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
+    }
 
-    for (size_type k = 0; k < rows.size(); ++k)
+    for (size_type k = 0; k < rows.size(); ++k) {
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -41,20 +43,23 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
     assert(rows.size() == data.size());
 
     basis_.resize(rows.size());
-    for (size_type k = 0; k < rows.size(); ++k)
+    for (size_type k = 0; k < rows.size(); ++k) {
         basis_[k] = typename DualIndex<SymmGroup>::value_type(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
+    }
 
     data_.reserve(data.size());
-    for (auto&& it : data)
+    for (auto&& it : data) {
         data_.push_back(new Matrix(it));
+    }
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(DualIndex<SymmGroup> const & basis)
 : basis_(basis)
 {
-    for (size_type k = 0; k < basis_.size(); ++k)
+    for (size_type k = 0; k < basis_.size(); ++k) {
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -74,8 +79,9 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
 , iter_index(rhs.iter_index)
 {
     data_.reserve(rhs.n_blocks());
-    for (size_type k = 0; k < rhs.n_blocks(); ++k)
+    for (size_type k = 0; k < rhs.n_blocks(); ++k) {
         data_.push_back(new Matrix(rhs[k]));
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -107,10 +113,11 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(bl
     {
         charge rhs_rc = rhs.basis_[k].lc;
         charge rhs_cc = rhs.basis_[k].rc;
-        if (this->has_block(rhs_rc, rhs_cc))
+        if (this->has_block(rhs_rc, rhs_cc)) {
             (*this)(rhs_rc, rhs_cc) += rhs.data_[k];
-        else
+        } else {
             this->insert_block(rhs.data_[k], rhs_rc, rhs_cc);
+        }
     }
     return *this;
 }
@@ -122,10 +129,11 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
     {
         charge rhs_rc = rhs.basis_[k].lc;
         charge rhs_cc = rhs.basis_[k].rc;
-        if (this->has_block(rhs_rc, rhs_cc))
+        if (this->has_block(rhs_rc, rhs_cc)) {
             (*this)(rhs_rc, rhs_cc) -= rhs.data_[k];
-        else
+        } else {
             this->insert_block(-1*rhs.data_[k], rhs_rc, rhs_cc);
+        }
     }
     return *this;
 }
@@ -157,8 +165,9 @@ template<class Matrix, class SymmGroup>
 Index<SymmGroup> block_matrix<Matrix, SymmGroup>::left_basis() const
 {
     Index<SymmGroup> ret(basis_.size());
-    for (std::size_t s = 0; s < basis_.size(); ++s)
+    for (std::size_t s = 0; s < basis_.size(); ++s) {
         ret[s] = std::make_pair(basis_[s].lc, basis_[s].ls);
+    }
 
     return ret;
 }
@@ -167,8 +176,9 @@ template<class Matrix, class SymmGroup>
 Index<SymmGroup> block_matrix<Matrix, SymmGroup>::right_basis() const
 {
     Index<SymmGroup> ret(basis_.size());
-    for (std::size_t s = 0; s < basis_.size(); ++s)
+    for (std::size_t s = 0; s < basis_.size(); ++s) {
         ret[s] = std::make_pair(basis_[s].rc, basis_[s].rs);
+    }
 
     return ret;
 }
@@ -363,7 +373,9 @@ template<class Matrix, class SymmGroup>
 template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
-    for(std::size_t k = 0; k < n_blocks(); ++k) maquis::dmrg::detail::generate_impl(data_[k], g);
+    for(std::size_t k = 0; k < n_blocks(); ++k) {
+        maquis::dmrg::detail::generate_impl(data_[k], g);
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -372,8 +384,9 @@ void block_matrix<Matrix, SymmGroup>::cleanup_zeros(value_type const& tol)
     for (std::size_t i=n_blocks(); i >=1; --i) {
         const std::size_t k = i-1;
         const std::size_t nzeros = maquis::dmrg::detail::zeroout((*this)[k], tol);
-        if (nzeros == num_rows((*this)[k])*num_cols((*this)[k]))
+        if (nzeros == num_rows((*this)[k])*num_cols((*this)[k])) {
             remove_block(k);
+        }
     }
 }
 
@@ -388,9 +401,10 @@ template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
     os << "Basis: " << m.basis() << std::endl;
-    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+    for (std::size_t k = 0; k < m.n_blocks(); ++k) {
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
            << "):\n" << m[k] << std::endl;
+    }
     os << std::endl;
     return os;
 }
@@ -402,11 +416,10 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
     if (match < this->n_blocks())
     {
         if (num_rows(mtx) == num_rows((*this)[match]) &&
-            num_cols(mtx) == num_cols((*this)[match]))
+            num_cols(mtx) == num_cols((*this)[match])) {
             (*this)[match] += mtx;
-        else if (num_rows(mtx) > num_rows((*this)[match]) &&
-                 num_cols(mtx) > num_cols((*this)[match]))
-        {
+        } else if (num_rows(mtx) > num_rows((*this)[match]) &&
+                   num_cols(mtx) > num_cols((*this)[match])) {
             resize_block(match, num_rows(mtx), num_cols(mtx));
             (*this)[match] += mtx;
         } else {
@@ -422,8 +435,9 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
 
             (*this)[match] += cpy;
         }
-    } else
+    } else {
         insert_block(mtx, c1, c2);
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -439,8 +453,9 @@ void block_matrix<Matrix, SymmGroup>::resize_block(size_type pos,
                                                    size_type new_r, size_type new_c,
                                                    bool pretend)
 {
-    if (!pretend)
+    if (!pretend) {
         resize((*this)[pos], new_r, new_c);
+    }
 
     basis_[pos].ls = new_r;
     basis_[pos].rs = new_c;
@@ -470,13 +485,15 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
 {
-    Index<SymmGroup> r_, c_;
+    Index<SymmGroup> r_;
+    Index<SymmGroup> c_;
     ar["rows_"] >> r_;
     ar["cols_"] >> c_;
 
     basis_.resize(r_.size());
-    for (std::size_t s = 0; s < r_.size(); ++s)
+    for (std::size_t s = 0; s < r_.size(); ++s) {
         basis_[s] = typename DualIndex<SymmGroup>::value_type(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
+    }
 
     data_.clear();
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
@@ -487,14 +504,16 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
         using LoadMatrix = typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type>;
         std::vector<LoadMatrix> tmp;
         ar["data_"] >> tmp;
-        for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+        for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it) {
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
+        }
     } else {
         std::vector<Matrix> tmp;
         ar["data_"] >> tmp;
         // TODO: is swap here possible?
-        for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+        for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it) {
             data_.push_back(new Matrix(*it));
+        }
     }
 }
 
@@ -546,16 +565,19 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::allocate_blocks()
 {
     assert(basis_.size() == n_blocks());
-    for (std::size_t k = 0; k < n_blocks(); ++k)
+    for (std::size_t k = 0; k < n_blocks(); ++k) {
         resize(data_[k], basis_[k].ls, basis_[k].rs);
+    }
 }
 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::reasonable() const
 {
-    for (size_t k=0; k<n_blocks(); ++k)
-        if (num_rows((*this)[k]) != basis_[k].ls || num_cols((*this)[k]) != basis_[k].rs)
+    for (size_t k=0; k<n_blocks(); ++k) {
+        if (num_rows((*this)[k]) != basis_[k].ls || num_cols((*this)[k]) != basis_[k].rs) {
             return false;
+        }
+    }
     return true;
 }
 
@@ -563,8 +585,9 @@ template<class Matrix, class SymmGroup>
 std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
 {
     size_t ret = 0;
-    for (size_t k = 0; k < n_blocks(); ++k)
+    for (size_t k = 0; k < n_blocks(); ++k) {
         ret += num_rows(data_[k])*num_cols(data_[k]);
+    }
     return ret;
 }
 
@@ -606,9 +629,11 @@ void block_matrix<Matrix, SymmGroup>::add_block_to_row(block_matrix & rhs, charg
         size_t num_cols_common  = num_cols((*this)(r, c)) ;
         //
         this->resize_block(r, c, num_row_original+num_row_toadd, num_cols_common, false);
-        for (std::size_t idx1 = 0; idx1 < num_row_toadd; idx1++)
-            for (std::size_t idx2 = 0; idx2 < num_cols_common; idx2++)
+        for (std::size_t idx1 = 0; idx1 < num_row_toadd; idx1++) {
+            for (std::size_t idx2 = 0; idx2 < num_cols_common; idx2++) {
                 (*this)(r, c)(idx1 + num_row_original, idx2) = rhs(r, c)(idx1, idx2);
+            }
+        }
     } else {
         insert_block(rhs(r,c), r, c);
     }
@@ -633,9 +658,11 @@ void block_matrix<Matrix, SymmGroup>::add_block_to_column(block_matrix & rhs, ch
         size_t num_rows_common  = num_rows((*this)(r, c));
         //
         this->resize_block(r, c, num_rows((*this)(r, c)), num_col_toadd+num_col_original, false);
-        for (std::size_t idx1 = 0; idx1 < num_rows_common; idx1++)
-            for (std::size_t idx2 = 0; idx2 < num_col_toadd; idx2++)
+        for (std::size_t idx1 = 0; idx1 < num_rows_common; idx1++) {
+            for (std::size_t idx2 = 0; idx2 < num_col_toadd; idx2++) {
                 (*this)(r, c)(idx1, idx2 + num_col_original) = rhs(r, c)(idx1, idx2);
+            }
+        }
     } else {
         insert_block(rhs(r,c), r, c);
     }

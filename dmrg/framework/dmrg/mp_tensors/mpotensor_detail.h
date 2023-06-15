@@ -99,12 +99,11 @@ namespace MPOTensor_detail
     {
         bool operator() (Tuple const & i, Tuple const & j) const
         {
-            if (get<0>(i) < get<0>(j))
-                return true;
-            else if (get<0>(i) > get<0>(j))
-                return false;
-            else
+            if (get<0>(i) == get<0>(j)) {
                 return get<1>(i) < get<1>(j);
+            } else {
+                return get<0>(i) < get<0>(j);
+            }
         }
     };
 
@@ -113,12 +112,11 @@ namespace MPOTensor_detail
     {
         bool operator() (Tuple const & i, Tuple const & j) const
         {
-            if (get<1>(i) < get<1>(j))
-                return true;
-            else if (get<1>(i) > get<1>(j))
-                return false;
-            else
+            if (get<1>(i) == get<1>(j)) {
                 return get<0>(i) < get<0>(j);
+            } else {
+                return get<1>(i) < get<1>(j);
+            }
         }
     };
 
@@ -177,20 +175,23 @@ namespace MPOTensor_detail
     }
 
     template <class Matrix, class SymmGroup>
-    symm_traits::disable_if_su2_t<SymmGroup, int> get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                                                   typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    symm_traits::disable_if_su2_t<SymmGroup, int> get_spin(
+        MPOTensor<Matrix, SymmGroup> const & mpo,
+        typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
     {
         return 0;
     }
 
     template <class Matrix, class SymmGroup>
-    symm_traits::enable_if_su2_t<SymmGroup, int> get_spin(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                                                                  typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
+    symm_traits::enable_if_su2_t<SymmGroup, int> get_spin(
+        MPOTensor<Matrix, SymmGroup> const & mpo,
+        typename MPOTensor<Matrix, SymmGroup>::index_type k, bool left)
     {
-        if (left)
-        return mpo.left_spin(k).get();
-        else
-        return mpo.right_spin(k).get();
+        if (left) {
+          return mpo.left_spin(k).get();
+        } else {
+          return mpo.right_spin(k).get();
+        }
     }
 }
 

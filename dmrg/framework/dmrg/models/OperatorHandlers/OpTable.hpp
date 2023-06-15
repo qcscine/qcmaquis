@@ -27,13 +27,13 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
     typename std::vector<op_t>::iterator it_pt = this->begin();
     for (; it_pt != this->end(); ++it_pt) {
         cmp_result = tag_detail::equal(*it_pt, sample);
-        if (cmp_result.first)
-            break;
+        if (cmp_result.first) { break; }
     }
     if (it_pt == this->end()) {
         return std::make_pair(this->register_op(sample), 1.0);
-    } else
+    } else {
         return std::make_pair(it_pt - this->begin(), cmp_result.second);
+    }
 
 }
 
@@ -44,8 +44,7 @@ bool OPTable<Matrix, SymmGroup>::hasRegistered(const op_t& sample)
     typename std::vector<op_t>::iterator it_pt = this->begin();
     for (; it_pt != this->end(); ++it_pt) {
         cmp_result = tag_detail::equal(*it_pt, sample);
-        if (cmp_result.first)
-            break;
+        if (cmp_result.first) { break; }
     }
     return !(it_pt == this->end());
 }

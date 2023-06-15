@@ -8,6 +8,8 @@
 #ifndef GENERIC_SWEEPS_SIMULATION_H
 #define GENERIC_SWEEPS_SIMULATION_H
 
+#include <chrono>
+
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
 #include "dmrg/mp_tensors/mps.h"
@@ -18,6 +20,7 @@
 #include "SweepMPOContainer.h"
 #include "SweepMPSUpdater.h"
 #include "SweepOptimizationTypeTrait.h"
+
 
 /**
  * @brief Class representing a generic sweep-based simulation.
@@ -69,6 +72,7 @@ public:
       this->runSingleSweep(iSweep);
   }
 
+
   /** @brief Runs a single sweep of a sweep-based optimization */
   void runSingleSweep(int iSweep) {
     // Prints header
@@ -83,8 +87,10 @@ public:
     Storage::prefetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
     Storage::prefetch(boundaryPropagator_->getRightBoundary(siteRight_));
     auto numberOfMicroIterations = SweepTraitClass::getNumberOfMicroiterations(L_);
+    auto start_sweep = std::chrono::high_resolution_clock::now();
     // == LOOP OVER THE MICROITERATIONS ==
     while (indexOfMicroIteration_ < numberOfMicroIterations) {
+      auto start = std::chrono::high_resolution_clock::now();
       // Useful local variables
       auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
       auto changeDirection = SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_);
@@ -94,7 +100,7 @@ public:
       //   Storage::sync();
       // }
       this->updateSites();
-      printMicroiterInfo(sweepType);
+      if (verbose_) { printMicroiterInfo(sweepType); }
       // Gets the boundary that are needed. Note that, in a forward sweep, the left boundary is assumed
       // to have been generated during the previous boundary update and, therefore, is not fetched.
       if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0)
@@ -123,9 +129,13 @@ public:
       // == MPS UPDATE ==
       auto boundaryGrowthModality = (sweepType == SweepDirectionType::Forward && !changeDirection) ? GrowBoundaryModality::LeftToRight
                                                                                                    : GrowBoundaryModality::RightToLeft;
-      auto truncationResults = mpsUpdater_->generateUnitaryFactor(siteLeft_, siteRight_, boundaryGrowthModality, outputTensor, this->getAlpha(iSweep),
-                                                                  this->get_cutoff(iSweep), this->get_Mmax(iSweep), this->normalizeAtEnd(),
-                                                                  this->activatePerturbation());
+      auto truncationResults = mpsUpdater_->generateUnitaryFactor(
+          siteLeft_, siteRight_,
+          boundaryGrowthModality,
+          outputTensor,
+          this->getAlpha(iSweep), this->get_cutoff(iSweep),
+          this->get_Mmax(iSweep), this->normalizeAtEnd(),
+          this->activatePerturbation());
       // == BOUNDARY PROPAGATION ==
       // First, drops the memory of the right boundary (in the case of a l2r sweep).
       // The memory will anyways be overwritten by the r2l sweep that will follow.
@@ -145,10 +155,17 @@ public:
       indexOfMicroIteration_ += 1;
       if (verbose_)
         maquis::cout << std::endl;
+      auto stop = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double, std::milli> duration_milisec = stop - start;
+      maquis::cout << " [Microiteration took " << duration_milisec.count() << " ms]\n";
     }
     // At the end, just stores to file the final right boundary (if needed, one can use it for the next sweep)
     // Storage::StoreToFile(boundaryPropagator_->getRightBoundary(siteRight_-1));
+
+    auto stop_sweep = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duriation_sweep = stop_sweep - start_sweep;
     this->finalizeSweep();
+    maquis::cout << " [Sweep " << iSweep << " took " << duriation_sweep.count() << " s]\n";
   }
 
   /** @brief Gets the container with the results of each iteration */
@@ -278,7 +295,7 @@ protected:
     if (verbose_) {
       maquis::cout << std::endl;
       maquis::cout << "+----------------------------------+" << std::endl;
-      maquis::cout << " NEW SwEEP-BASED SIMULATION STARTED" << std::endl;
+      maquis::cout << " NEW SWEEP-BASED SIMULATION STARTED" << std::endl;
       maquis::cout << "+----------------------------------+" << std::endl;
       maquis::cout << std::endl;
       maquis::cout << " Simulation settings:" << std::endl;

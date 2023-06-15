@@ -15,8 +15,12 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 
+#include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
+#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
+
 namespace contraction {
 namespace SU2 {
+  using common::BoundaryMPSProduct;
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_rp(size_t b2,

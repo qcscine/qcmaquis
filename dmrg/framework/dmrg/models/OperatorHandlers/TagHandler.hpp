@@ -92,7 +92,7 @@ void TagHandler<Matrix, SymmGroup>::hermitian_pair(typename OPTable<Matrix, Symm
     assert(std::max(pair_tag1, pair_tag2) < hermitian.size());
     assert(pair_tag1 != pair_tag2);
 
-    if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1) return;
+    if (hermitian[pair_tag1] == pair_tag2 && hermitian[pair_tag2] == pair_tag1){ return; }
     assert(hermitian[pair_tag1] == pair_tag1 && hermitian[pair_tag2] == pair_tag2);
     std::swap(hermitian[pair_tag1], hermitian[pair_tag2]);
 }
@@ -108,8 +108,9 @@ template <class Matrix, class SymmGroup>
 std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::get_ops(std::vector<tag_type> const & tags) const
 {
     std::vector<typename OPTable<Matrix, SymmGroup>::value_type> ret(tags.size());
-    for (int k = 0; k < tags.size(); ++k)
+    for (int k = 0; k < tags.size(); ++k) {
         ret[k] = (*operator_table)[tags[k]];
+    }
 
     return ret;
 }
@@ -123,8 +124,9 @@ bool TagHandler<Matrix, SymmGroup>::product_is_null(const typename OPTable<Matri
     op_t& op2 = (*operator_table)[t2];
     gemm(op1, op2, product);
     bool ret = false;
-    if (product.n_blocks() == 0)
+    if (product.n_blocks() == 0) {
         ret = true;
+    }
     return ret;
 };
 
@@ -159,8 +161,9 @@ get_product_tag(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
 
         gemm(op1, op2, product);
         tag_detail::operator_kind prod_kind = tag_detail::bosonic;
-        if (sign_table[t1] != sign_table[t2])
+        if (sign_table[t1] != sign_table[t2]) {
             prod_kind = tag_detail::fermionic;
+        }
 
         // set the product spin descriptor
         product.spin() = couple(get_op(t2).spin(), get_op(t1).spin());

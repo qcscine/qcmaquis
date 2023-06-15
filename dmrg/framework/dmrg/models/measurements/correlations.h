@@ -172,7 +172,7 @@ namespace measurements {
                 if (it >= lattice.size()-(ops.size()-1))
                     throw std::runtime_error("cannot measure correlation with first operator at p="+boost::lexical_cast<std::string>(it)+".");
                 #ifndef NDEBUG
-                maquis::cout << "  site " << *it << std::endl;
+                maquis::cout << "  site " << it << std::endl;
                 #endif
 
                 /// initialize correct maker

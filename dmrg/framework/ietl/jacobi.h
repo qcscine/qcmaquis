@@ -23,6 +23,7 @@
 #include <ietl/gmres.h>
 
 
+#include <chrono>
 #include <complex>
 #include <vector>
 
@@ -368,6 +369,8 @@ namespace ietl
                                                       SOLVER& solver,
                                                       ITER& iter)
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V(iter.max_iterations());
         std::vector<vector_type> VA(iter.max_iterations());
@@ -440,7 +443,12 @@ namespace ietl
             // if (|r|_2 < \epsilon) stop
             ++iter;
             // accept lambda=theta and x=u
-            if(iter.finished(ietl::two_norm(r),theta)) return std::make_pair(theta, u);
+            if(iter.finished(ietl::two_norm(r),theta)) {
+                auto stop = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double, std::milli> duration = stop - start;
+                maquis::cout << " [Eigen decomp took " << duration.count() << " ms]\n";
+                return std::make_pair(theta, u);
+            }
             
             // solve (approximately) a t orthogonal to u from
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r

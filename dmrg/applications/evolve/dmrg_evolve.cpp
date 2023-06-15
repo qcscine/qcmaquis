@@ -33,18 +33,15 @@ int main(int argc, char ** argv)
 
     DmrgOptions opt(argc, argv);
     if (opt.valid) {
-        maquis::cout.precision(10);
         DCOLLECTOR_SET_SIZE(gemm_collector, opt.parms["max_bond_dimension"]+1)
         DCOLLECTOR_SET_SIZE(svd_collector, opt.parms["max_bond_dimension"]+1)
-        timeval now, then, snow, sthen;
-        gettimeofday(&now, NULL);
+        Timer sim("Evolve Simulation");
+        sim.begin();
         maquis::DMRGInterface<std::complex<double>> interface(opt.parms);
         interface.evolve();
-        gettimeofday(&then, NULL);
-        double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+        sim.end();
         DCOLLECTOR_SAVE_TO_FILE(gemm_collector, "collectors.h5", "/results")
         DCOLLECTOR_SAVE_TO_FILE(svd_collector, "collectors.h5", "/results")
-        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
 }
 

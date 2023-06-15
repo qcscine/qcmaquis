@@ -464,22 +464,25 @@ Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 {
     using charge = typename SymmGroup::charge;
 
-    std::vector<charge> oc = inp.charges(), nc = inp.charges();
+    std::vector<charge> oc = inp.charges();
+    std::vector<charge> nc = inp.charges();
     std::transform(nc.begin(), nc.end(), nc.begin(), std::negate<charge>());
     std::sort(nc.begin(), nc.end());
 
-    std::vector<std::size_t> nd(inp.size()), od = inp.sizes();
-    for (unsigned int i = 0; i < nd.size(); ++i)
-        nd[i] = od[std::find(oc.begin(), oc.end(),
-                             -nc[i])-oc.begin()];
+    std::vector<std::size_t> nd(inp.size());
+    std::vector<std::size_t> od = inp.sizes();
+    for (unsigned int i = 0; i < nd.size(); ++i) {
+        nd[i] = od[std::find(oc.begin(), oc.end(), -nc[i])-oc.begin()];
+    }
 
     Index<SymmGroup> ret;
-    for (size_t i=0; i<nc.size(); ++i)
+    for (size_t i=0; i<nc.size(); ++i) {
 #if not defined(WIN32) && not defined(WIN64)
         ret.insert(std::make_pair(nc[i], nd[i]));
 #else
         ret.insert(mypair(nc[i], nd[i]));
 #endif
+    }
     return ret;
 }
 

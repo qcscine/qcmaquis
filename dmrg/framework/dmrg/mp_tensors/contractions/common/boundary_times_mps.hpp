@@ -357,8 +357,9 @@ namespace contraction {
 
                 return data_[k];
             }
-            else
+            else {
                 return data_[k];
+            }
         }
 
         void free(index_type b1) const

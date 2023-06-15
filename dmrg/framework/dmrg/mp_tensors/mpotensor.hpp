@@ -20,22 +20,23 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
     if (tags.size() > 0 && operator_table.get() != NULL) {
         // sort tags in order used by the CSC (sparse) matrix
         std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
-        for (typename prempo_t::const_iterator it = tags.begin(); it != tags.end(); ++it) {
-            internal_value_type & element = col_tags(get<0>(*it), get<1>(*it)).ref();
+        for (const auto& tag : tags) {
+            internal_value_type & element = col_tags(get<0>(tag), get<1>(tag)).ref();
             if (element.size() == 0) {
-                element = internal_value_type(1, std::make_pair(get<2>(*it), get<3>(*it)));
-                row_index[get<0>(*it)].insert(get<1>(*it));
+                element = internal_value_type(1, std::make_pair(get<2>(tag), get<3>(tag)));
+                row_index[get<0>(tag)].insert(get<1>(tag));
             }
             else {
                 // avoid resize, as that might increase the capacity beyond the new size
                 internal_value_type new_element(element.size() + 1);
                 std::copy(element.begin(), element.end(), new_element.begin()+1);
-                *new_element.begin() = std::make_pair(get<2>(*it), get<3>(*it));
+                new_element.front() = std::make_pair(get<2>(tag), get<3>(tag));
                 std::swap(element, new_element);
             }
         }
-        for (std::size_t i = 0; i < operator_table->size(); ++i)
+        for (std::size_t i = 0; i < operator_table->size(); ++i) {
             operator_table->operator[](i).update_sparse();
+        }
     }
     else {
         // Initialize a private operator table
@@ -61,8 +62,9 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t t
     // maquis::cout << "nr1r: " << row_dim() - num_one_rows_ << " nr1c: " << col_dim() - num_one_cols_ << std::endl;
 
     // if the optional Hermitian object h_ is valid, adopt it
-    if (h_.left_size() == left_i && h_.right_size() == right_i)
+    if (h_.left_size() == left_i && h_.right_size() == right_i) {
         herm_info = h_;
+    }
 }
 
 /*
@@ -177,8 +179,9 @@ MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) 
 template<class Matrix, class SymmGroup>
 MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false>
 MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) {
-    if (!this->has(left_index, right_index))
+    if (!this->has(left_index, right_index)) {
         this->set(left_index, right_index, op_t(), 1.);
+    }
     typename CSCMatrix::value_type & p = col_tags(left_index, right_index).ref();
     return MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false>(p, operator_table);
 }
@@ -186,7 +189,7 @@ MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::row_proxy MPOTensor<Matrix, SymmGroup>::row(index_type row_i) const
 {
-    return row_proxy(row_index[row_i].begin(), row_index[row_i].end());
+    return {row_index[row_i].begin(), row_index[row_i].end()};
 }
 
 template<class Matrix, class SymmGroup>
@@ -217,9 +220,7 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(value_type v)
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(value_type v)
 {
-    for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
-        for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            std::for_each((*it1).begin(), (*it1).end(), [&v](std::pair<tag_type, value_type> &element){ element.second /= v; });
+  multiply_by_scalar(1.0 / v);
 }
 
 template<class Matrix, class SymmGroup>

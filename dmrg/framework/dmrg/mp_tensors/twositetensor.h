@@ -54,10 +54,10 @@ public:
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_l2r(std::size_t Mmax, double cutoff) const;
+    split_mps_l2r(std::size_t Mmax, double cutoff, bool verbose=false) const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    split_mps_r2l(std::size_t Mmax, double cutoff) const;
+    split_mps_r2l(std::size_t Mmax, double cutoff, bool verbose=false) const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,

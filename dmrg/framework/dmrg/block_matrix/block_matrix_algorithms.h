@@ -72,8 +72,9 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A, block_matrix<Matrix2, Symm
         C.size_index.resize(C.n_blocks()); // propagating A size_index onto C - otherwise might C.index_sizes();
         for(size_t k = 0; k < A.n_blocks(); ++k){
             size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
-            if(matched_block != B.n_blocks())
+            if(matched_block != B.n_blocks()) {
                 C.size_index(C.find_block(A.basis().left_charge(k), B.basis().right_charge(matched_block))) = A.size_index(k);
+            }
         }
     }
 }
@@ -148,13 +149,12 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
     for (int k = 0; k < B.n_blocks(); ++k) {
         auto matched_block = A_right_basis.position(B.basis().left_charge(k));
         // Match right basis of A with left basis of B
-        if ( matched_block == A.n_blocks() )
-            continue;
+        if ( matched_block == A.n_blocks() ) { continue; }
         // Also match right_basis of bra with B.right_basis()
-        if ( !ref_right_basis.has(B.basis().right_charge(k)) )
-            continue;
-        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
-                                                           A.basis().left_charge(matched_block), B.basis().right_charge(k));
+        if ( !ref_right_basis.has(B.basis().right_charge(k)) ) { continue; }
+        std::size_t new_block = C.insert_block(
+            new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
+            A.basis().left_charge(matched_block), B.basis().right_charge(k));
         parallel::guard proc(scheduler(k));
         gemm(A[matched_block], B[k], C[new_block]);
     }

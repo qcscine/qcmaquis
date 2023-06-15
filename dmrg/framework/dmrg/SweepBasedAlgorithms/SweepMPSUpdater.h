@@ -66,9 +66,11 @@ public:
                                                 boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                 cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                              boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
-                                                                                              perturbDM, verbose_);
+        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_l2r_sweep(
+            mps_[siteLeft], mpo_[siteLeft],
+            boundaryPropagator_->getLeftBoundary(siteLeft),
+            boundaryPropagator_->getRightBoundary(siteRight),
+            alpha, cutoff, mMax, perturbDM, verbose_);
         zeroSiteTensor_ = Contractor::getZeroSiteTensorL2R(mps_[siteLeft+1], mps_[siteLeft], unitaryFactor);
         mps_[siteLeft] = unitaryFactor;
       }
@@ -84,9 +86,11 @@ public:
                                                  boundaryPropagator_->getRightBoundary(siteRight), siteLeft, alpha,
                                                  cutoff, mMax, true, verbose_);
         */
-        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(mps_[siteLeft], mpo_[siteLeft], boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                              boundaryPropagator_->getRightBoundary(siteRight), alpha, cutoff, mMax,
-                                                                                              perturbDM, verbose_);
+        boost::tie(unitaryFactor, truncationOutput) = Contractor::predict_new_state_r2l_sweep(
+            mps_[siteLeft], mpo_[siteLeft],
+            boundaryPropagator_->getLeftBoundary(siteLeft),
+            boundaryPropagator_->getRightBoundary(siteRight),
+            alpha, cutoff, mMax, perturbDM, verbose_);
         zeroSiteTensor_ = Contractor::getZeroSiteTensorR2L(mps_[siteLeft-1], mps_[siteLeft], unitaryFactor);
         mps_[siteLeft] = unitaryFactor;
       }
@@ -189,18 +193,26 @@ public:
     // Actual truncation
     if (boundaryModality == GrowBoundaryModality::LeftToRight) {
       // Write back result from optimization
-      if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff);
-      else
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(mMax, cutoff, alpha, boundaryPropagator_->getLeftBoundary(siteLeft),
-                                                                                               mpo_[siteLeft], perturbDM);
+      if (parms_["twosite_truncation"] == "svd") {
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_l2r(mMax, cutoff, verbose_);
+      }
+      else {
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_l2r(
+            mMax, cutoff, alpha,
+            boundaryPropagator_->getLeftBoundary(siteLeft),
+            mpo_[siteLeft], perturbDM);
+      }
     }
     else if (boundaryModality == GrowBoundaryModality::RightToLeft) {
-      if (parms_["twosite_truncation"] == "svd")
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff);
-      else
-        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(mMax, cutoff, alpha, boundaryPropagator_->getRightBoundary(siteRight),
-                                                                                               mpo_[siteLeft+1], perturbDM);
+      if (parms_["twosite_truncation"] == "svd") {
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.split_mps_r2l(mMax, cutoff, verbose_);
+      }
+      else {
+        boost::tie(mps_[siteLeft], mps_[siteLeft+1], truncationOutput) = tst.predict_split_r2l(
+            mMax, cutoff, alpha,
+            boundaryPropagator_->getRightBoundary(siteRight),
+            mpo_[siteLeft+1], perturbDM);
+      }
     }
     loadedUnitaryFactor_= true;
     return truncationOutput;

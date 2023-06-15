@@ -8,6 +8,7 @@
 #ifndef IETL_JD_SOLVER_H
 #define IETL_JD_SOLVER_H
 
+#include <chrono>
 #include "dmrg/utils/BaseParameters.h"
 #include "ietl_lanczos_solver.h"
 #include "ietl/jacobi.h"
@@ -21,6 +22,8 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
                std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs = std::vector<MPSTensor<Matrix, SymmGroup> >(),
                double thresholdForCompleteness=1.0E-10)
 {
+    
+    auto start = std::chrono::high_resolution_clock::now();
     // Variables initialization
     using ValueType = typename MPSTensor<Matrix, SymmGroup>::value_type; 
     std::pair<ValueType, MPSTensor<Matrix, SymmGroup>> r0;
@@ -72,7 +75,11 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
         auto energy = ietl::dot(initial, sigmaVector);
         r0 = std::make_pair(energy, initial);
     }
-    maquis::cout << " Jacobi-Davidson diagonalization converged after " << iter.iterations() << " iterations." << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration_milisec = stop - start;
+    maquis::cout << " Jacobi-Davidson diagonalization converged after "
+      << iter.iterations() << " iterations."
+      << " [" << duration_milisec.count() << " ms]\n";
     return r0;
 }
 

@@ -41,7 +41,7 @@ public:
         this->vector_results.reserve(positions.size());
         for (auto & position : positions)
         {
-            assert( positions[p].size() == ops.size() );
+            assert( position.size() == ops.size() );
             for (pos_t i=1; i<ops.size(); ++i)
                 if (position[i-1] >= position[i])
                     throw std::runtime_error("measure_local_at requires i1<i2<...<in.");

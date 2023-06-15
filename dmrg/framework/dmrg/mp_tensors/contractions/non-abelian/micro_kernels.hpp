@@ -147,7 +147,8 @@ namespace detail {
     };
 
     template <class Matrix, class SymmGroup>
-    void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W, std::size_t w_block,
+    void op_iterate(typename operator_selector<Matrix, SymmGroup>::type const & W,
+                    std::size_t w_block,
                     typename Matrix::value_type couplings[],
                     std::vector<micro_task<typename Matrix::value_type> > & tasks,
                     micro_task<typename Matrix::value_type> tpl,
@@ -165,9 +166,13 @@ namespace detail {
             std::size_t rspin = it->row_spin;
             std::size_t cspin = it->col_spin;
             std::size_t casenr = 0;
-            if (rspin == 2 && cspin == 2) casenr = 3;
-            else if (rspin == 2) casenr = 1;
-            else if (cspin == 2) casenr = 2;
+            if (rspin == 2 && cspin == 2) {
+              casenr = 3;
+            } else if (rspin == 2) {
+              casenr = 1;
+            } else if (cspin == 2) {
+              casenr = 2;
+            }
 
             //task.source = source + ss1*tpl.l_size;
             task.in_offset = in_offset + ss1*tpl.l_size;

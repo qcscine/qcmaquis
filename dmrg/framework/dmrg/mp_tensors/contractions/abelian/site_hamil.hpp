@@ -39,8 +39,8 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmGroup
     bra_tensor.make_right_paired();
     Index<SymmGroup> indexForTrim = bra_tensor.data().left_basis();
     contraction::common::BoundaryMPSProduct<Matrix, OtherMatrix, SymmGroup, abelian::Gemms> t(ket_tensor, left, mpo, indexForTrim, isHermitian);
-    Index<SymmGroup> right_i = ket_tensor.col_dim(),
-                     out_left_i = physical_i * left_i;
+    Index<SymmGroup> right_i = ket_tensor.col_dim();
+    Index<SymmGroup> out_left_i = physical_i * left_i;
     Index<SymmGroup> right_i_bra = bra_tensor.col_dim();
     common_subset(out_left_i, right_i);
     ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
@@ -78,14 +78,16 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmGroup
         abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), bra_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb,
                              isHermitian);
         block_matrix<Matrix, SymmGroup> tmp;
-        if (mpo.herm_info.right_skip(b2) && isHermitian)
+        if (mpo.herm_info.right_skip(b2) && isHermitian) {
             gemm(contr_grid(0,0), adjoint(right[mpo.herm_info.right_conj(b2)]), tmp);
-        else
+        } else {
             gemm(contr_grid(0,0), right[b2], tmp);
+        }
         contr_grid(0,0).clear();
         parallel_critical
-        for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
+        for (std::size_t k = 0; k < tmp.n_blocks(); ++k) {
             ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
+        }
     });
 #endif
     return ret;

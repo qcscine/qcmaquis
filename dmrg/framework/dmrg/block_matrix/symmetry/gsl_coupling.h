@@ -104,8 +104,8 @@ class WignerWrapper
 
 
         private:
-            typedef std::tuple<int, int, int, int, int, int, int, int, int> gsl_indices;
-            typedef std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices> > map_type;
+            using gsl_indices = std::tuple<int, int, int, int, int, int, int, int, int>;
+            using map_type = std::unordered_map<gsl_indices, double, hash_tuple::hash<gsl_indices>>;
 
             // The map that stores the values
             static map_type map;
