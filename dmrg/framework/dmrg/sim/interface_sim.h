@@ -214,7 +214,7 @@ public:
           int prev_sweep = sweep - meas_each;
           // stop simulation if an energy threshold has been specified
           // Do not check convergence for propagation, since energy should be conserved by definition
-          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms_["imaginary_time"] == "no"))
+          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms["imaginary_time"] == "no"))
             converged = checkEnergyConvergence(energyThreshold);
         }
         if (converged)
