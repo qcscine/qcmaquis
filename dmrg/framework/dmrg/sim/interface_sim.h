@@ -211,11 +211,14 @@ public:
           dumpEnergy(sweep);
           if (!rfile().empty() && always_measurements.size() > 0)
             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
-          // stop simulation if an energy threshold has been specified
           int prev_sweep = sweep - meas_each;
-          if (prev_sweep >= 0)
+          // stop simulation if an energy threshold has been specified
+          // Do not check convergence for propagation, since energy should be conserved by definition
+          if (prev_sweep >= 0 && !(simulationType=="evolve" && parms_["imaginary_time"] == "no"))
             converged = checkEnergyConvergence(energyThreshold);
         }
+        if (converged)
+          maquis::cout << "ALS CONVERGED -- SWEEPING PROCEDURE TERMINATED" << std::endl;
         last_sweep_ = sweep;
         /// write checkpoint
         bool stopped = stop_callback() || converged;
