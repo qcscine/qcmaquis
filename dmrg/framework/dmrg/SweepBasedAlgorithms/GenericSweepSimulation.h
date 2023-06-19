@@ -72,17 +72,17 @@ public:
     nSweeps_ = parms_["nsweeps"];
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
-  };
-    
-  /** @brief Virtual class destructor */
-  virtual ~GenericSweepSimulation() = 0;
+  }
+
+  /** @brief Virtual destructor */
+  virtual ~GenericSweepSimulation() = default; 
 
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.
    *
    * Note that we delegate every action to the derived class, with the exception of the
-   * memory management, which is done here to ensure that
-   *
+   * memory management, which is done here to ensure that the implementation is consistent
+   * for all methods.
    */
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==

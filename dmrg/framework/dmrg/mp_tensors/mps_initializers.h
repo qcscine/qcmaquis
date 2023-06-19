@@ -123,7 +123,7 @@ class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
 public:
   coherent_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
                     std::vector<int> const& site_type_)
-    : coeff(params["init_coeff"].as<std::vector<double> >()), phys_dims(phys_dims_),
+    : coeff(params["init_coeff"].template as<std::vector<double> >()), phys_dims(phys_dims_),
       site_type(site_type_) { }
 
   void operator()(MPS<Matrix, SymmGroup> & mps)
@@ -169,8 +169,8 @@ public:
   basis_mps_init(BaseParameters & params, std::vector<Index<SymmGroup> > const& phys_dims_,
                  std::vector<int> const& site_type_)
     : phys_dims(phys_dims_), site_type(site_type_)
-  { 
-    std::string states = params["init_basis_state"].as<std::string>();
+  {
+    std::string states = params["init_basis_state"].template as<std::string>();
     std::vector<std::string> specifiedStates;
     boost::split(specifiedStates, states, boost::is_any_of("|"));
     std::stringstream ss(specifiedStates[0]);
@@ -226,7 +226,7 @@ public:
                            typename SymmGroup::charge right_end_, std::vector<int> const& site_type_)
         : phys_dims(phys_dims_),
           right_end(right_end_), site_type(site_type_), params(params_)
-    { 
+    {
       std::string states = params["init_basis_state"].template as<std::string>();
       std::vector<std::string> specifiedStates;
       boost::split(specifiedStates, states, boost::is_any_of("|"));
@@ -278,7 +278,7 @@ public:
   {
     if (params["init_space"].str().empty())
       throw std::runtime_error("Init_space needs to be provided to populate basis_state_generic_const. Abort.");
-    basis_index = params["init_space"].template as<std::vector<int> >(); 
+    basis_index = params["init_space"].template as<std::vector<int> >();
   }
 
   // Operator called when initialization occurs

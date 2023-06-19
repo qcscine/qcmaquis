@@ -75,7 +75,7 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemSS_Electronic_Benzene, Benzen
   // Does the IPI iteration "by hand"
   int nIPI = 10;
   for (int iSweep = 0; iSweep < nIPI; iSweep++) {
-    auto linearSolver = SweepBasedLinearSolverSS(hfBenzeneMPS, benzeneMPO, parametersBenzene, benzeneModel, benzeneLattice, false);
+    SweepBasedLinearSolverSS linearSolver(hfBenzeneMPS, benzeneMPO, parametersBenzene, benzeneModel, benzeneLattice, false);
     linearSolver.runSweepSimulation();
     energyFromIPI.push_back(linearSolver.template getSpecificResult<double>("Energy"));
   }

@@ -381,7 +381,7 @@ public:
     //if (isFolded_) {
     //    ietl::mult(sp, inputVec, retSquared, 0, true);
     //    if (params["lin_alg"] == "feast")
-    //        ret = retSquared - 2.*maquis::real(Z)*ret + inputVec*std::norm(Z);
+    //        ret = retSquared - 2.*maquis::real(Z)*ret + inputVec*std::abs(Z);
     //    else
     //        ret = retSquared - 2.*sigma*ret + inputVec*sigma*sigma;
     //}

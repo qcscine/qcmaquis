@@ -372,8 +372,10 @@ public:
     return ret;
   }
 
-  /** @brief Gets the energy for the mps that is stored in the sim object */
-  /** if it is a feastMPS, return the feast energy of the zeroth feast state*/
+  /** 
+   * @brief Gets the energy for the mps that is stored in the sim object
+   * Note that, if it is a feastMPS, return the feast energy of the zeroth feast state
+   */
   RealType get_energy() override {
     if (!feastMPSs_)
       return maquis::real(expval(mps, mpo)/overlap(mps, mps));
