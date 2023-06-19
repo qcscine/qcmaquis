@@ -39,7 +39,7 @@
 namespace FeastHelper {
 
 /** @brief Enum class representing whether a root is accepted or not */
-enum class EigenvalueSelection {Accepted, NotInInterval, HighVariance };
+enum class EigenvalueSelection {Accepted, NotInInterval, HighVariance, TruncatedEnergyLower};
 
 /** @brief Class devoted to the post-processing of the FEAST data */
 template <class SymmGroup>
@@ -79,7 +79,7 @@ public:
       standardDeviationScreening = parms["feast_standard_deviation_threshold"].as<double>();
   }
 
-  /** @brief Updates teh mps container */
+  /** @brief Updates the mps container */
   void updateContainer(std::shared_ptr<ResultContainerType> container) {
     mpsContainer = container;
   }
@@ -255,9 +255,14 @@ public:
     }
     // Finalizes
     screenedEnergies.clear();
-    for (int iState = 0; iState < energies.size(); iState++)
-      if (accepted[iState] == EigenvalueSelection::Accepted)
+    for (int iState = 0; iState < energies.size(); iState++) {
+      if (accepted[iState] == EigenvalueSelection::Accepted) {
         screenedEnergies.push_back(energies[iState]);
+        // Check whether the truncated energy is actually higher than the full FEAST one
+        if (truncatedEnergy[iState] < energies[iState])
+          accepted[iState] = EigenvalueSelection::TruncatedEnergyLower;
+      }
+    }
     return currentFEASTMPSs;
   }
 
@@ -274,6 +279,13 @@ public:
                        << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
                        << std::setw(23) << std::right << std::fixed << std::setprecision(8) << truncatedEnergy[iState]
                        << "  --> ROOT ACCEPTED";
+          break;
+        case EigenvalueSelection::TruncatedEnergyLower:
+          maquis::cout << std::setw(13) << std::internal << iState
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energiesPrev[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << energies[iState]
+                       << std::setw(23) << std::right << std::fixed << std::setprecision(8) << truncatedEnergy[iState]
+                       << "  --> ROOT ACCEPTED, BUT BE AWARE: truncated energy is lower than the full FEAST MPS energy!";
           break;
         case EigenvalueSelection::NotInInterval:
           maquis::cout << std::setw(13) << std::internal << iState
@@ -298,7 +310,7 @@ public:
       maquis::cout << " |   State    |    Energy standard deviation   |" << std::endl;
       maquis::cout << " +---------------------------------------------+" << std::endl;
       for (int iState = 0; iState < energies.size(); iState++) {
-        if (accepted[iState] == EigenvalueSelection::Accepted) {
+        if (accepted[iState] == EigenvalueSelection::Accepted || accepted[iState] == EigenvalueSelection::TruncatedEnergyLower) {
           maquis::cout << std::setw(13) << std::internal << iState
                        << std::setw(23) << std::right << std::fixed << std::setprecision(8) << standardDeviations[iState]
                        << std::endl;
@@ -326,7 +338,7 @@ public:
   auto getScreenedMPSs() const {
     auto screenedMPS = std::make_shared<VectorOfMPSs>();
     for (int iState = 0; iState < currentFEASTMPSs->size(); iState++)
-      if (accepted[iState] == EigenvalueSelection::Accepted)
+      if (accepted[iState] == EigenvalueSelection::Accepted || accepted[iState] == EigenvalueSelection::TruncatedEnergyLower)
         screenedMPS->push_back(currentFEASTMPSs->operator[](iState));
     return screenedMPS;
   }
