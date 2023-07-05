@@ -169,9 +169,22 @@ public:
       std::stringstream ss(list_dets[i]);
       int ichar;
       std::vector<int> tmp_vec;
-      while (ss >> ichar) {
-        tmp_vec.push_back(ichar);
-        ss.ignore(1);
+      if (params["init_state_type"] == "csf"){
+        char jchar;
+        while (ss.get(jchar)) {
+          if (jchar == '2') ichar = 4; // doubly occ to explicitly construct csf
+          else if (jchar == 'u') ichar = 6; // up to explicitly construct csf
+          else if (jchar == 'd') ichar = 7; // down to explicitly construct csf
+          else if  (jchar == '0') ichar = 1; // not occ to explicitly construct csf
+          else throw std::runtime_error("The specificed state contains symbols which are not recognized. Abort.");
+          tmp_vec.push_back(ichar);
+          ss.ignore(1);
+        }
+      } else { // regular determinant
+        while (ss >> ichar) {
+          tmp_vec.push_back(ichar);
+          ss.ignore(1);
+        }
       }
       basis_index.push_back(tmp_vec);
     }
@@ -246,9 +259,22 @@ public:
       boost::split(specifiedStates, states, boost::is_any_of("|"));
       std::stringstream ss(specifiedStates[0]);
       int ichar;
-      while (ss >> ichar) {
-        basis_index.push_back(ichar);
-        ss.ignore(1);
+      if (params["init_state_type"] == "csf" && (sym=="su2u1" || sym=="su2u1pg")){
+        char jchar;
+        while (ss.get(jchar)) {
+          if (jchar == '2') ichar = 4; // doubly occ to explicitly construct csf
+          else if (jchar == 'u') ichar = 6; // up to explicitly construct csf
+          else if (jchar == 'd') ichar = 7; // down to explicitly construct csf
+          else if  (jchar == '0') ichar = 1; // not occ to explicitly construct csf
+          else throw std::runtime_error("The specificed state contains symbols which are not recognized. Abort.");
+          basis_index.push_back(ichar);
+          ss.ignore(1);
+        }
+      } else { // regular determinant
+        while (ss >> ichar) {
+          basis_index.push_back(ichar);
+          ss.ignore(1);
+        }
       }
     }
 
