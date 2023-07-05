@@ -373,4 +373,15 @@ public:
         }
         else {
           state[j][0] = physDim[siteType[j]].element(4-hfIdx);
- 
+        }
+      }
+    }
+    else {
+      state = InitializerHelperFunctions::GenerateIndexFromStringNMode<2>(params, inputVec, physDim, siteType, size);
+    }
+    return state;
+  }
+};
+
+
+#endif // MPS_INITIALIZER_HELPER_H
