@@ -84,6 +84,7 @@ private:
 
         // MPS initialization settings 
         add_option("init_type", "Initialization type of the initial guess MPS. The default is random, also possible are const, basis_state*/hf, etc.", value("default"));
+        add_option("init_state_type", "Type of provided states, can be [csf] for SU2 calcultions, or [det] by default", value("det"));
         add_option("init_coeffs", "Coefficients for coherent init", value(""));
         add_option("init_file", "Filename(s) for coherent initalization", value(""));
         add_option("init_basis_state", "Local indices (ONV) for basis state init (used if [init_type] is [basis_state_generic])", value(""));
