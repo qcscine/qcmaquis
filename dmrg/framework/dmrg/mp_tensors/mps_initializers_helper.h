@@ -225,11 +225,15 @@ public:
     auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
+      maquis::cout << "In GenerateIndexFromString with hfIdx: " << hfIdx << std::endl;
       if (hfIdx>4) {
         if (hfIdx==5 && (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default")) {
           state[j].resize(4);
           for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
             state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
+        } else if (hfIdx==6 || hfIdx==7) { // to explicitly construct a specified csf
+          state[j].resize(1);
+          state[j][0] = (hfIdx==6) ? physDim[siteType[j]].element(1) : physDim[siteType[j]].element(2);
         } else {
           throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
         }
@@ -237,7 +241,7 @@ public:
         state[j].resize(2);
         state[j][0] = physDim[siteType[j]].element(1);
         state[j][1] = physDim[siteType[j]].element(2);
-      } else {
+      } else { //otherwise the occupation is either zero or double
         state[j].resize(1);
         state[j][0] = physDim[siteType[j]].element(4-hfIdx);
       }
@@ -275,6 +279,9 @@ public:
           state[j].resize(4);
           for (int addPhysDim = 0; addPhysDim < 4; ++addPhysDim)
             state[j][addPhysDim] = physDim[siteType[j]].element(addPhysDim);
+        } else if (hfIdx==6 || hfIdx==7) { // to explicitly construct a specified csf
+          state[j].resize(1);
+          state[j][0] = (hfIdx==6) ? physDim[siteType[j]].element(1) : physDim[siteType[j]].element(2);
         } else {
           throw std::runtime_error("HF coefficients range from 1 (empty)  to 4 (doubly occupied). 5 (mix of all possible occupations) only allowed for init_type generic_const/default");
         }
@@ -366,15 +373,4 @@ public:
         }
         else {
           state[j][0] = physDim[siteType[j]].element(4-hfIdx);
-        }
-      }
-    }
-    else {
-      state = InitializerHelperFunctions::GenerateIndexFromStringNMode<2>(params, inputVec, physDim, siteType, size);
-    }
-    return state;
-  }
-};
-
-
-#endif // MPS_INITIALIZER_HELPER_H
+ 
