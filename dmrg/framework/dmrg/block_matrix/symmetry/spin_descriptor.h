@@ -110,10 +110,11 @@ typename SymmGroup::subcharge productSpin(typename SymmGroup::charge a, typename
     typename SymmGroup::subcharge spin_a = SymmGroup::spin(a);
     typename SymmGroup::subcharge spin_b = SymmGroup::spin(b);
 
-    if (spin_a == -1 && spin_b == 1)
+    if (spin_a == -1 && spin_b == 1) {
         return 2;
-    else
+    } else {
         return std::abs(spin_a + spin_b);
+    }
 }
 
 #endif

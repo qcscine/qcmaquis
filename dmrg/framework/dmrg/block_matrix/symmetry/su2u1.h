@@ -39,8 +39,9 @@ public:
     template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
-        for (int i = 1; i < R; ++i)
+        for (int i = 1; i < R; ++i) {
             ret = fuse(ret, v[i]);
+        }
         return ret;
     }
 };
@@ -87,8 +88,9 @@ public:
     template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
-        for (int i = 1; i < R; ++i)
+        for (int i = 1; i < R; ++i) {
             ret = fuse(ret, v[i]);
+        }
         return ret;
     }
 };

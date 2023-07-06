@@ -152,7 +152,8 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
     ietl::lanczos_iteration_nlowest<double>
     iter(100, n_evals, rel_tol, abs_tol);
 
-    std::vector<double> eigen, err;
+    std::vector<double> eigen;
+    std::vector<double> err;
     std::vector<int> multiplicity;
 
     try{

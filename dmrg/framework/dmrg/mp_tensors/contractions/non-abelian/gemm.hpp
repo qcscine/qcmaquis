@@ -26,18 +26,20 @@ T conjugate_correction(typename SymmGroup::charge lc, typename SymmGroup::charge
         ret = T(1.);
     }
     else if (tensor_spin == 1) {
-        if (spin_diff > 0)
+        if (spin_diff > 0) {
             ret = -T( sqrt((S + 1.)/(S + 2.)) );
-        else if (spin_diff < 0)
+        } else if (spin_diff < 0) {
             ret = T( sqrt((S + 2.)/(S + 1.)) );
+        }
     }
     else if (tensor_spin == 2) {
-        if (spin_diff > 0)
+        if (spin_diff > 0) {
             ret = -T( sqrt( (S + 1.) / (S + 3.)) );
-        else if (spin_diff < 0)
+        } else if (spin_diff < 0) {
             ret = -T( sqrt((S + 3.) / (S + 1.)) );
-        else
+        } else {
             ret = T(1.);
+        }
     }
     else {
         throw std::runtime_error("hermitian conjugate for reduced tensor operators only implemented up to rank 1");
@@ -64,11 +66,13 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         for ( ; it != B_end && it->lc == ar; ++it)
         {
             std::size_t matched_block = std::distance(B_begin, it);
-            if (!(spin == -1) && !::SU2::triangle(SymmGroup::spin(A.basis().left_charge(k)), spin, SymmGroup::spin(it->rc)))
+            if (!(spin == -1) && !::SU2::triangle(SymmGroup::spin(A.basis().left_charge(k)), spin, SymmGroup::spin(it->rc))) {
                 continue;
+            }
             std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
-            if (c_block == C.n_blocks())
+            if (c_block == C.n_blocks()) {
                 c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
+            }
             boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
         }
     }
@@ -86,8 +90,9 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
     using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     using value_type = typename Matrix3::value_type;
 
-    if (conj_scales.size() != A.n_blocks())
+    if (conj_scales.size() != A.n_blocks()) {
         conj_scales = std::vector<value_type>(A.n_blocks(), 1.);
+    }
 
     C.clear();
     assert(B.basis().is_sorted());
@@ -97,18 +102,17 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
         //assert(B.basis().left_has(A.basis().left_charge(k)));
-        if (!refIndex.has(A.basis().left_charge(k)))
-            continue;
+        if (!refIndex.has(A.basis().left_charge(k))) { continue; }
 
         charge ar = A.basis().right_charge(k);
         const_iterator it = B.basis().left_lower_bound(ar);
 
-        for ( ; it != B_end && it->lc == ar; ++it)
-        {
+        for ( ; it != B_end && it->lc == ar; ++it) {
             std::size_t matched_block = std::distance(B_begin, it);
             std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
-            if (c_block == C.n_blocks())
+            if (c_block == C.n_blocks()) {
                 c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
+            }
             boost::numeric::bindings::blas::gemm(conj_scales[k], A[k], B[matched_block], value_type(1), C[c_block]);
         }
     }
@@ -128,14 +132,13 @@ DualIndex<SymmGroup> gemm_trim_right_pretend(DualIndex<SymmGroup> const& A,
     for (std::size_t k = 0; k < A.size(); ++k) {
         charge ar = A.right_charge(k);
         const_iterator it = B.basis().left_lower_bound(ar);
-        for ( ; it != B_end && it->lc == ar; ++it)
-        {
-            if (!refIndex.has(it->rc))
-                continue;
+        for ( ; it != B_end && it->lc == ar; ++it) {
+            if (!refIndex.has(it->rc)) { continue; }
             charge lc = A.left_charge(k);
             charge rc = it->rc;
-            if (!ret.has(lc, rc))
+            if (!ret.has(lc, rc)) {
                 ret.insert(typename DualIndex<SymmGroup>::value_type(lc, rc, A.left_size(k), it->rs));
+            }
         }
     }
     return ret;
@@ -153,8 +156,9 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
     using const_iterator = typename DualIndex<SymmGroup>::const_iterator;
     using value_type = typename Matrix3::value_type;
 
-    if (conj_scales.size() != B.n_blocks())
+    if (conj_scales.size() != B.n_blocks()) {
         conj_scales = std::vector<value_type>(B.n_blocks(), 1.);
+    }
     C.clear();
     assert(B.basis().is_sorted());
     const_iterator B_begin = B.basis().begin();
@@ -166,11 +170,11 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
         {
             std::size_t matched_block = std::distance(B_begin, it);
             //assert(A.basis().left_has(it->rc));
-            if (!refIndex.has(it->rc))
-                continue;
+            if (!refIndex.has(it->rc)) { continue; }
             std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
-            if (c_block == C.n_blocks())
+            if (c_block == C.n_blocks()) {
                 c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
+            }
             boost::numeric::bindings::blas::gemm(conj_scales[matched_block], A[k], B[matched_block], value_type(1), C[c_block]);
         }
     }
@@ -193,10 +197,11 @@ void gemm_trim(block_matrix<Matrix1, SymmGroup> const & A,
         charge al = A.basis().left_charge(k);
         charge ar = A.basis().right_charge(k);
         std::size_t matched_block = B.basis().position(ar, al);
-        if (matched_block == B.n_blocks()) continue;
+        if (matched_block == B.n_blocks()) { continue; }
         std::size_t c_block = C.find_block(al, al);
-        if (c_block == C.n_blocks())
+        if (c_block == C.n_blocks()) {
             c_block = C.insert_block(Matrix3(num_rows(A[k]), num_cols(B[matched_block])), al, al);
+        }
         //boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
         boost::numeric::bindings::blas::gemm(conj_scales[ (conjugate_a) ? k : matched_block], A[k], B[matched_block],
                                              value_type(1), C[c_block]);

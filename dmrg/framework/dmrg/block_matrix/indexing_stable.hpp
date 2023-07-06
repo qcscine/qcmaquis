@@ -107,20 +107,24 @@ public:
     {
         // I have to ignore the position_check argument because I can't dereference the end() iterator anyway
         std::size_t pos = position(c);
-        if (pos == data_.size())
-            return 0;
+        if (pos == data_.size()) { return 0; }
         return (*this)[pos].second;
     }
 
     std::size_t position(charge c) const
     {
         const_iterator match;
-        if (sorted_)
-            match = std::lower_bound(data_.begin(), data_.end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
-        else
-            match = std::find_if(data_.begin(), data_.end(), index_detail::is_first_equal<SymmGroup>(c));
+        if (sorted_) {
+            match = std::lower_bound(
+                data_.begin(), data_.end(),
+                std::make_pair(c,0), index_detail::gt<SymmGroup>());
+        } else {
+            match = std::find_if(
+                data_.begin(), data_.end(),
+                index_detail::is_first_equal<SymmGroup>(c));
+        }
 
-        if (match != data_.end() && (*match).first != c) match = data_.end();
+        if (match != data_.end() && (*match).first != c) { match = data_.end(); }
         return std::distance(data_.begin(), match);
     }
 
@@ -137,7 +141,9 @@ public:
     bool has(charge c) const
     {
         if (sorted_) {
-            return std::binary_search(data_.begin(), data_.end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
+            return std::binary_search(
+                data_.begin(), data_.end(),
+                std::make_pair(c,0), index_detail::gt<SymmGroup>());
         }
         else {
             auto it = std::find_if(data_.begin(), data_.end(),
@@ -173,8 +179,9 @@ public:
 
     void shift(charge diff)
     {
-        for (std::size_t k = 0; k < data_.size(); ++k)
+        for (std::size_t k = 0; k < data_.size(); ++k) {
             (*this)[k].first = SymmGroup::fuse((*this)[k].first, diff);
+        }
     }
 
     bool operator==(Index const & o) const
@@ -196,14 +203,16 @@ public:
     std::vector<charge> charges() const
     {
         std::vector<charge> ret(data_.size());
-        for (std::size_t k = 0; k < data_.size(); ++k) ret[k] = (*this)[k].first;
+        std::transform(data_.begin(), data_.end(), ret.begin(),
+            [](const auto& e){ return e.first; });
         return ret;
     }
 
     std::vector<std::size_t> sizes() const
     {
         std::vector<std::size_t> ret(data_.size());
-        for (std::size_t k = 0; k < data_.size(); ++k) ret[k] = (*this)[k].second;
+        std::transform(data_.begin(), data_.end(), ret.begin(),
+            [](const auto& e){ return e.second; });
         return ret;
     }
 
@@ -333,16 +342,17 @@ private:
               Fusion f)
     {
         keys_vals_.rehash((keys_vals_.size() + a.size()*b.size()) / keys_vals_.max_load_factor() + 1); // from http://www.boost.org/doc/libs/1_37_0/doc/html/unordered/buckets.html
-        for (typename Index<SymmGroup>::const_iterator it1 = a.begin(); it1 != a.end(); ++it1)
-            for (typename Index<SymmGroup>::const_iterator it2 = b.begin(); it2 != b.end(); ++it2)
-            {
-                charge pc = f(it1->first, it2->first);
-                if (size_.find(pc) == size_.end())
-                    size_[pc] = 0.;
-                keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc];
+        for (const auto& sym_sector_a : a) {
+            for (const auto& sym_sector_b : b) {
+                charge product_charge = f(sym_sector_a.first, sym_sector_b.first);
+                if (size_.find(product_charge) == size_.end()) {
+                  size_[product_charge] = 0.;
+                }
+                keys_vals_[std::make_pair(sym_sector_a.first, sym_sector_b.first)] = size_[product_charge];
           //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc]));
-                size_[pc] += it1->second * it2->second;
+                size_[product_charge] += sym_sector_a.second * sym_sector_b.second;
             }
+        }
     }
 
 public:
@@ -404,9 +414,9 @@ public:
     basis_iterator_ & operator++()
     {
         ++cur_i;
-        if (cur_i != max_i)
+        if (cur_i != max_i) {
             return *this;
-        else {
+        } else {
             ++cur_block;
             if (cur_block != idx_.end()) {
                 cur_i = 0;
@@ -420,8 +430,9 @@ public:
     {
         assert( k >= 0 );
         basis_iterator_ r = *this;
-        for ( ; k > 0; --k)
+        for ( ; k > 0; --k) {
             ++r;
+        }
         return r;
     }
 
@@ -439,8 +450,9 @@ private:
 template<class SymmGroup>
 basis_iterator_<SymmGroup> operator+(basis_iterator_<SymmGroup> it, std::size_t p)
 {
-    for ( ; p > 0; --p)
+    for ( ; p > 0; --p) {
         ++it;
+    }
     return it;
 }
 
@@ -471,8 +483,9 @@ Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
 
     std::vector<std::size_t> nd(inp.size());
     std::vector<std::size_t> od = inp.sizes();
+    // perform same permutation on sizes (nd) as the sorting of the charges (nc)
     for (unsigned int i = 0; i < nd.size(); ++i) {
-        nd[i] = od[std::find(oc.begin(), oc.end(), -nc[i])-oc.begin()];
+        nd[i] = od[std::distance(oc.begin(), std::find(oc.begin(), oc.end(), -nc[i]))];
     }
 
     Index<SymmGroup> ret;
@@ -508,17 +521,19 @@ Index<SymmGroup> operator*(Index<SymmGroup> const & i1,
     using charge = typename SymmGroup::charge;
 
     Index<SymmGroup> ret;
-    for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1)
+    for (typename Index<SymmGroup>::const_iterator it1 = i1.begin(); it1 != i1.end(); ++it1) {
         for (typename Index<SymmGroup>::const_iterator it2 = i2.begin(); it2 != i2.end(); ++it2)
         {
             charge pdc = SymmGroup::fuse(it1->first, it2->first);
             std::size_t ps = it1->second * it2->second;
             std::size_t match = ret.position(pdc);
-            if (match < ret.size())
+            if (match < ret.size()) {
                 ret[match].second += ps;
-            else
+            } else {
                 ret.insert(std::make_pair(pdc, ps));
+            }
         }
+    }
     ret.sort();
     return ret;
 }
@@ -608,8 +623,9 @@ std::array<T, L+1> operator^(T const & a, std::array<T, L> const & b)
 {
 	std::array<T, L+1> ret;
 	ret[0] = a;
-	for (int i = 0; i < L; i++)
+	for (int i = 0; i < L; i++) {
 		ret[i+1] = b[i];
+  }
 	return ret;
 }
 

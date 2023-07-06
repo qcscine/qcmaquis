@@ -54,13 +54,15 @@ public:
       files_ = parms_["ortho_states"].str();
       std::vector<std::string> files;
       boost::split(files, files_, boost::is_any_of(", "));
-      if (!parms_.is_set("n_ortho_states"))
+      if (!parms_.is_set("n_ortho_states")) {
         throw std::runtime_error("Please set [n_ortho_states]");
-      else
+      } else {
         nOrtho_ = parms_["n_ortho_states"];
+      }
       overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, files, parms_);
-      if (nOrtho_ != overlapPropagator_->getNumberOfOverlapMPSs())
+      if (nOrtho_ != overlapPropagator_->getNumberOfOverlapMPSs()) {
         throw std::runtime_error("Nuber of chkp files not coherent with [n_ortho_states] parameter");
+      }
       orthoLocal_.resize(nOrtho_);
       maquis::cout << "Running a constrained optimization with respect to " << nOrtho_ << " states." << std::endl;
     }
@@ -78,22 +80,25 @@ public:
         boundaryPropagator_->getRightBoundary(siteRight_),
         mpoContainer_.getMPOTensor(siteLeft_));
     // std::cout << "Initial energy " << siteProblem_->get_energy(mpsContainer_.getMPSTensor(siteLeft_)) + mpoContainer_.getMPO().getCoreEnergy() << std::endl;
-    if (overlapPropagator_)
-      for (int iState = 0; iState < nOrtho_; iState++)
+    if (overlapPropagator_) {
+      for (int iState = 0; iState < nOrtho_; iState++) {
         orthoLocal_[iState] = overlapPropagator_->template getOrthogonalVector<SweepType>(iState, siteLeft_, siteRight_);
+      }
+    }
   }
 
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
-    if (parms_["eigensolver"] == std::string("IETL"))
+    if (parms_["eigensolver"] == std::string("IETL")) {
       resultOfLocalSiteProblem_ = solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
-    else if (parms_["eigensolver"] == std::string("IETL_JCD"))
+    } else if (parms_["eigensolver"] == std::string("IETL_JCD")) {
       resultOfLocalSiteProblem_ = solve_ietl_jcd(*(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_);
-    else if (parms_["eigensolver"] == std::string("IETL_DAVIDSON"))
+    } else if (parms_["eigensolver"] == std::string("IETL_DAVIDSON")) {
       resultOfLocalSiteProblem_ = solve_ietl_jcd(*(siteProblem_.get()), mpsToOptimize, parms_, orthoLocal_);
-    else
+    } else {
       throw std::runtime_error("I don't know this eigensolver.");
+    }
     // Loads the final results
     auto energy = resultOfLocalSiteProblem_.first + mpoContainer_.getMPO().getCoreEnergy();
     maquis::cout << std::setprecision(10) << " Energy = " << std::setprecision(16) << energy << std::endl;

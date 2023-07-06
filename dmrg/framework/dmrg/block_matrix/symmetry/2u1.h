@@ -10,6 +10,6 @@
 
 #include "dmrg/block_matrix/symmetry/nu1_tpl.h"
 
-typedef NU1_template<2> TwoU1;
+using TwoU1 = NU1_template<2>;
 
 #endif

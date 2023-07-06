@@ -33,8 +33,8 @@ namespace dual_index_detail
             return lc == o.lc && rc == o.rc && ls == o.ls && rs == o.rs;
         }
 
-        typename SymmGroup::charge lc;
-        typename SymmGroup::charge rc;
+        charge lc;
+        charge rc;
         std::size_t                ls{};
         std::size_t                rs{};
     };
@@ -179,13 +179,34 @@ public:
     const_iterator left_lower_bound(charge row) const
     {
         if (sorted_) {
-            const_iterator it = std::lower_bound(data_.begin(), data_.end(), value_type(row,SymmGroup::IdentityCharge,0,0),
-                                                 dual_index_detail::gt_row<SymmGroup>());
-            return it;
+            return std::lower_bound(
+                data_.begin(), data_.end(),
+                value_type(row, SymmGroup::IdentityCharge,0,0),
+                dual_index_detail::gt_row<SymmGroup>());
         }
         else {
-            return std::find_if(data_.begin(), data_.end(),
-                                dual_index_detail::is_first_equal_row<SymmGroup>(row));
+            return std::find_if(
+                data_.begin(), data_.end(),
+                dual_index_detail::is_first_equal_row<SymmGroup>(row));
+        }
+    }
+
+    std::pair<const_iterator, const_iterator> left_equal_range(charge row) const
+    {
+        if (sorted_) {
+            return std::equal_range(
+                data_.begin(), data_.end(),
+                value_type(row, SymmGroup::IdentityCharge,0,0),
+                dual_index_detail::gt_row<SymmGroup>());
+        }
+        else {
+          throw std::runtime_error("Not implemented for unsorted");
+//            return std::make_pair(std::find_if(
+ //               data_.begin(), data_.end(),
+  //              dual_index_detail::is_first_equal_row<SymmGroup>(row)),
+   //                std::find_if(
+    //            data_.begin(), data_.end(),
+     //           !(dual_index_detail::is_first_equal_row<SymmGroup>(row))));
         }
     }
 

@@ -127,18 +127,18 @@ public:
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
       energiesForIPIIteration.push_back(nextEnergy);
-      energyDifference = std::fabs(nextEnergy - previousEnergy);
+      energyDifference = std::abs(nextEnergy - previousEnergy);
       auto mpsOverlap = overlap(mpsBackup, this->mps)/std::sqrt(norm(mpsBackup)*norm(this->mps));
       auto precision = std::cout.precision();
       maquis::cout << " == RESULTS FOR THE " << nIpiIterations << "-th iteration ==" << std::endl;
       std::cout.precision(10);
       maquis::cout << " - Energy difference for iteration = " << nIpiIterations << " = " << energyDifference << std::endl;
-      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::fabs(mpsOverlap) << std::endl;
+      maquis::cout << " - MPS overlap with solution at previous iteration = " << std::abs(mpsOverlap) << std::endl;
       maquis::cout << std::endl;
       std::cout.precision(precision);
       // Checks convergence and, if not reached, starts a new IPI iteration
       if (nIpiIterations == numberOfOuterIterations || energyDifference < energyConvergenceThreshold ||
-          std::fabs(1.-std::fabs(mpsOverlap)) < overlapConvergenceThreshold)
+          std::abs(1.-std::abs(mpsOverlap)) < overlapConvergenceThreshold)
       {
         maquis::cout << " --> CONVERGENCE REACHED" << std::endl;
         convergedOuter = true;

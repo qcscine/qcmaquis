@@ -378,8 +378,8 @@ private:
       for (size_t i = 0; i < num_rows(data[b]); ++i) {
         for (size_t j = 0; j < num_cols(data[b]); ++j) {
           denom = (precond_->operator[](b)(i, j) - shift_);
-          if (std::fabs(denom) > 1.0E-10)
-            data[b](i, j) /= std::fabs(denom);
+          if (std::abs(denom) > 1.0E-10)
+            data[b](i, j) /= std::abs(denom);
         }
       }
     }

@@ -172,8 +172,7 @@ site_hamil_rbtm(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmG
     Index<SymmGroup> left_i = ket_tensor.row_dim();
     Index<SymmGroup> const & right_i = bra_tensor.col_dim();
     Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
-    Index<SymmGroup> left_i_ket = ket_tensor.row_dim();
-    common_subset(out_right_i, left_i_ket);
+    common_subset(out_right_i, left_i);
     ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
     ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
         [&](const charge& a, const charge& b){ return SymmGroup::fuse(-a, b); });

@@ -40,8 +40,9 @@ public:
     Boundary(Boundary<OtherMatrix, SymmGroup> const& rhs)
     {
         data_.reserve(rhs.aux_dim());
-        for (std::size_t n=0; n<rhs.aux_dim(); ++n)
+        for (std::size_t n=0; n<rhs.aux_dim(); ++n) {
             data_.push_back(rhs[n]);
+        }
     }
 
     std::size_t aux_dim() const { 
@@ -49,22 +50,27 @@ public:
     }
 
     void resize(size_t n){
-        if(n < data_.size()) 
+        if(n < data_.size()) { 
             return data_.resize(n);
+        }
         data_.reserve(n);
-        for(int i = data_.size(); i < n; ++i)
+        for(int i = data_.size(); i < n; ++i) {
             data_.push_back(block_matrix<Matrix, SymmGroup>());
+        }
     }
     
     std::vector<scalar_type> traces() const {
         std::vector<scalar_type> ret; ret.reserve(data_.size());
-        for (size_t k=0; k < data_.size(); ++k) ret.push_back(data_[k].trace());
+        for (size_t k=0; k < data_.size(); ++k) {
+          ret.push_back(data_[k].trace());
+        }
         return ret;
     }
 
     bool reasonable() const {
-        for(size_t i = 0; i < data_.size(); ++i)
-            if(!data_[i].reasonable()) return false;
+        for(size_t i = 0; i < data_.size(); ++i) {
+            if(!data_[i].reasonable()) { return false; }
+        }
         return true;
     }
    
@@ -87,53 +93,58 @@ public:
     Boundary const & operator+=(Boundary const & rhs)
     {
         assert (this->data_.size() == rhs.data_.size()) ;
-        for(size_t i = 0; i < this->data_.size(); ++i)
+        for(size_t i = 0; i < this->data_.size(); ++i) {
             this->data_[i] += rhs.data_[i] ;
+        }
         return *this;
     };
     //
     Boundary const & operator-=(Boundary const & rhs)
     {
         assert (this->data_.size() == rhs.data_.size()) ;
-        for(size_t i = 0; i < this->data_.size(); ++i)
+        for(size_t i = 0; i < this->data_.size(); ++i) {
             this->data_[i] -= rhs.data_[i] ;
+        }
         return *this;
     };
     //
     Boundary const & operator*=(scalar_type const & rhs)
     {
-        for(size_t i = 0; i < this->data_.size(); ++i)
+        for(size_t i = 0; i < this->data_.size(); ++i) {
             this->data_[i] *= rhs ;
+        }
         return *this;
     };
     //
     Boundary const & operator/=(scalar_type const & rhs)
     {
-        for(size_t i = 0; i < this->data_.size(); ++i)
+        for(size_t i = 0; i < this->data_.size(); ++i) {
             this->data_[i] /= rhs ;
+        }
         return *this;
     };
     //
     friend Boundary operator*(scalar_type const & rhs, const Boundary& b_rhs)
     {
         Boundary res(b_rhs);
-        for(size_t i = 0; i < res.data_.size(); ++i)
+        for(size_t i = 0; i < res.data_.size(); ++i) {
             res.data_[i] *= rhs ;
+        }
         return res;
     };
     //
     friend Boundary operator/(scalar_type const & rhs, const Boundary& b_rhs)
     {
       Boundary res(b_rhs);
-      for(size_t i = 0; i < res.data_.size(); ++i)
+      for(size_t i = 0; i < res.data_.size(); ++i) {
             res.data_[i] /= rhs ;
+      }
       return res;
     };
 
     void print() const
     {
-      for (auto x : data_)
-        std::cout << x << std::endl;
+      for (const auto& x : data_) { std::cout << x << std::endl; }
     };
     
     block_matrix<Matrix, SymmGroup> & operator[](std::size_t k) { return data_[k]; }
@@ -152,11 +163,12 @@ Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
     
     for (std::size_t k = 0; k < b.aux_dim(); ++k)
     {
-        block_matrix<Matrix, SymmGroup> U, V, t;
+        block_matrix<Matrix, SymmGroup> U;
+        block_matrix<Matrix, SymmGroup> V;
+        block_matrix<Matrix, SymmGroup> t;
         block_matrix<dmt, SymmGroup> S;
         
-        if (b[k].basis().sum_of_left_sizes() == 0)
-            continue;
+        if (b[k].basis().sum_of_left_sizes() == 0) { continue; }
         
         svd_truncate(b[k], U, V, S, 1e-4, 1, false);
         
@@ -171,8 +183,9 @@ template<class Matrix, class SymmGroup>
 std::size_t size_of(Boundary<Matrix, SymmGroup> const & m)
 {
     size_t r = 0;
-    for (size_t i = 0; i < m.aux_dim(); ++i)
+    for (size_t i = 0; i < m.aux_dim(); ++i) {
         r += size_of(m[i]);
+    }
     return r;
 }
 

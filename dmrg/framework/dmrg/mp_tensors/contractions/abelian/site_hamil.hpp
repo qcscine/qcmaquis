@@ -75,8 +75,10 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor, MPSTensor<Matrix, SymmGroup
 #else
     omp_for(index_type b2, parallel::range<std::size_t>(0,loop_max), {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-        abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), bra_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb,
-                             isHermitian);
+        abelian::lbtm_kernel(
+            b2, contr_grid, left, t, mpo,
+            ket_tensor.data().basis(), bra_tensor.data().basis(),
+            right_i, out_left_i, in_right_pb, out_left_pb, isHermitian);
         block_matrix<Matrix, SymmGroup> tmp;
         if (mpo.herm_info.right_skip(b2) && isHermitian) {
             gemm(contr_grid(0,0), adjoint(right[mpo.herm_info.right_conj(b2)]), tmp);

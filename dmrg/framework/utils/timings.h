@@ -46,7 +46,7 @@ public:
 protected:
     double val = 0.0;
     std::string name;
-    std::chrono::system_clock::time_point t0;
+    std::chrono::time_point<std::chrono::high_resolution_clock> t0;
     unsigned long long nCounter = 0;
 };
 

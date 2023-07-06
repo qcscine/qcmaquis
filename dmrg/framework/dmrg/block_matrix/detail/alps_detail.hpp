@@ -204,14 +204,25 @@ namespace maquis { namespace dmrg { namespace detail {
         size_t rdim,
         T2 alfa_scale)
     {
+        /* for(size_t rr = 0; rr < rdim; ++rr) { */
+        /*     for(size_t ss1 = 0; ss1 < sdim1; ++ss1) { */
+        /*         for(size_t ss2 = 0; ss2 < sdim2; ++ss2) { */
+        /*             T3 alfa_t = alfa(ss1, ss2) * alfa_scale; */
+        /*             iterator_axpy(&in(0, in_offset + ss1*rdim + rr), */
+        /*                           &in(0, in_offset + ss1*rdim + rr) + ldim, */
+        /*                           &out(out_offset + ss2*ldim, rr), */
+        /*                           alfa_t); */
+        /*         } */
+        /*     } */
+        /* } */
+
         for(size_t rr = 0; rr < rdim; ++rr) {
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1) {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                    T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
-                    iterator_axpy(&in(0, in_offset + ss1*rdim + rr),
-                                  &in(0, in_offset + ss1*rdim + rr) + ldim,
-                                  &out(out_offset + ss2*ldim, rr),
-                                  alfa_t);
+                    for(size_t ll = 0; ll < ldim; ++ll) {
+                      out(out_offset + ss2*ldim + ll, rr)
+                        += in(ll, in_offset + ss1*rdim + rr) * alfa_scale * alfa(ss1, ss2);
+                    }
                 }
             }
         }

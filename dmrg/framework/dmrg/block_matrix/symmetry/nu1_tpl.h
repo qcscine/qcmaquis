@@ -40,8 +40,9 @@ public:
     // -- Constructors --
     NU1Charge(S init = 0)
     {
-        for (S i = 0; i < N; ++i)
+        for (S i = 0; i < N; ++i) {
             (*this)[i] = init;
+        }
     }
     NU1Charge(std::vector<S> const & rhs) : NU1Charge(0)
     {
@@ -69,15 +70,17 @@ public:
     template<class Archive>
     void save(Archive & ar) const
     {
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < N; ++i) {
             ar[boost::lexical_cast<std::string>(i)] << (*this)[i];
+        }
     }
     //
     template<class Archive>
     void load(Archive & ar)
     {
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < N; ++i) {
             ar[boost::lexical_cast<std::string>(i)] >> (*this)[i];
+        }
     }
     //
     template <class Archive>
@@ -134,8 +137,9 @@ std::ostream& operator<<(std::ostream& os, NU1Charge<N, S> const & c)
     os << "<";
     for (int i = 0; i < N; ++i) {
         os << c[i];
-        if (i+1 < N)
+        if (i+1 < N) {
             os << ",";
+        }
     }
     os << ">";
     return os;
@@ -147,32 +151,35 @@ struct tpl_ops_
     template<typename T>
     bool operator_lt(T const * a, T const * b) const
     {
-        if (a[I] < b[I])
+        if (a[I] < b[I]) {
             return true;
-        else if (a[I] > b[I])
+        } else if (a[I] > b[I]) {
             return false;
-        else
+        } else {
             return tpl_ops_<N, I+1>().operator_lt(a, b);
+        }
     }
 
     template<typename T>
     bool operator_gt(T const * a, T const * b) const
     {
-        if (a[I] > b[I])
+        if (a[I] > b[I]) {
             return true;
-        else if (a[I] < b[I])
+        } else if (a[I] < b[I]) {
             return false;
-        else
+        } else {
             return tpl_ops_<N, I+1>().operator_gt(a, b);
+        }
     }
 
     template<typename T>
     bool operator_eq(T const * a, T const * b) const
     {
-        if (a[I] != b[I])
+        if (a[I] != b[I]) {
             return false;
-        else
+        } else {
             return tpl_ops_<N, I+1>().operator_eq(a, b);
+        }
     }
 
     template<typename T>
@@ -296,16 +303,18 @@ public:
     template<int R> static charge fuse(std::array<charge, R> const & v)
     {
         charge ret = v[0];
-        for (int i = 1; i < R; ++i)
+        for (int i = 1; i < R; ++i) {
             ret = fuse(ret, v[i]);
+        }
         return ret;
     }
 
     static charge revert(charge& input)
     {
         charge output = charge(0) ;
-        for (std::size_t idx = 0; idx < N; idx++)
+        for (std::size_t idx = 0; idx < N; idx++) {
             output[idx] = input[N-idx-1] ;
+        }
         return output ;
     }
 

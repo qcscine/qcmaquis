@@ -27,16 +27,16 @@ namespace contraction {
 
         std::vector<value_type> ret(bm.n_blocks());
 
-        for (size_t b = 0; b < bm.n_blocks(); ++b)
-        {
+        for (size_t b = 0; b < bm.n_blocks(); ++b) {
             value_type scale = ::SU2::conjugate_correction<typename Matrix::value_type, SymmGroup>
                                  (bm.basis().left_charge(b), bm.basis().right_charge(b), S);
-            if (forward)
+            if (forward) {
                 scale *= (left) ? mpo.herm_info.left_phase(mpo.herm_info.left_conj(k))
                                     : mpo.herm_info.right_phase(mpo.herm_info.right_conj(k));
-            else
+            } else {
                 scale *= (left) ? mpo.herm_info.left_phase(k)
                                     : mpo.herm_info.right_phase(k);
+            }
             ret[b] = scale;
         }
         return ret;
@@ -59,8 +59,9 @@ namespace contraction {
         using value_type = typename Matrix::value_type;
         std::vector<value_type> scales = conjugate_phases(bm, mpo, k, left, forward);
 
-        for (size_t b = 0; b < bm.n_blocks(); ++b)
+        for (size_t b = 0; b < bm.n_blocks(); ++b) {
             bm[b] *= scales[b];
+        }
     }
 
     template <class Matrix, class SymmGroup>
@@ -147,11 +148,11 @@ namespace contraction {
         }
 
         void resize(size_t n){
-            if(n < data_.size())
-                return data_.resize(n);
+            if(n < data_.size()) { return data_.resize(n); }
             data_.reserve(n);
-            for(int i = data_.size(); i < n; ++i)
+            for(int i = data_.size(); i < n; ++i) {
                 data_.push_back(block_matrix<Matrix, SymmGroup>());
+            }
         }
 
         void multiply (index_type b1);
@@ -177,8 +178,9 @@ namespace contraction {
                 }
                 return storage;
             }
-            else
+            else {
                 return data_[k];
+            }
         }
 
     private:
@@ -190,19 +192,16 @@ namespace contraction {
             // Loop over the elements
              omp_for(int b1, parallel::range(0,loop_max), {
                 // exploit single use sparsity (delay multiplication until the object is used)
-                if (mpo.num_row_non_zeros(b1) == 1)
-                    continue;
+                if (mpo.num_row_non_zeros(b1) == 1) { continue; }
                 // exploit hermiticity if available
                 if (mpo.herm_info.left_skip(b1) && isHermitian_) {
                     if (correctConjugate) {
                         std::vector<value_type> scales = conjugate_phases(left[mpo.herm_info.left_conj(b1)], mpo, b1, true, false);
                         typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1], ref_left_basis, scales);
-                    }
-                    else {
+                    } else {
                         typename Gemm::gemm_trim_left()(conjugate(left[mpo.herm_info.left_conj(b1)]), bm, data_[b1], ref_left_basis);
                     }
-                }
-                else {
+                } else {
                     typename Gemm::gemm_trim_left()(transpose(left[b1]), bm, data_[b1], ref_left_basis);
                 }
             });
@@ -297,11 +296,11 @@ namespace contraction {
         }
 
         void resize(size_t n){
-            if(n < data_.size())
-                return data_.resize(n);
+            if(n < data_.size()) { return data_.resize(n); }
             data_.reserve(n);
-            for(int i = data_.size(); i < n; ++i)
+            for(int i = data_.size(); i < n; ++i) {
                 data_.push_back(block_matrix<Matrix, SymmGroup>());
+            }
         }
 
         void multiply (index_type b2);
@@ -311,32 +310,26 @@ namespace contraction {
 
         DualIndex<SymmGroup> basis_at(index_type k) const
         {
-            if (mpo.num_col_non_zeros(k) == 1)
-            {
-                if (mpo.herm_info.right_skip(k) && isHermitian_)
-                {
+            if (mpo.num_col_non_zeros(k) == 1) {
+                if (mpo.herm_info.right_skip(k) && isHermitian_) {
                     block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(k)]);
                     //return typename Gemm::gemm_trim_right()(mps.data(), trv);
                     return SU2::gemm_trim_right_pretend(bm.basis(), trv, ref_right_basis);
-                }
-                else {
+                } else {
                     //return typename Gemm::gemm_trim_right_pretend()(mps.data(), right[k]);
                     return SU2::gemm_trim_right_pretend(bm.basis(), right[k], ref_right_basis);
                 }
-            }
-            else
+            } else {
                 return data_[k].basis();
+            }
         }
 
         //block_matrix<Matrix, SymmGroup> const & at(std::size_t k, block_matrix<Matrix, SymmGroup> & storage) const
         block_matrix<Matrix, SymmGroup> const & at(index_type k) const
         {
-            if (mpo.num_col_non_zeros(k) == 1)
-            {
-                if (!pop_[k])
-                {
-                    if (mpo.herm_info.right_skip(k) && isHermitian_)
-                    {
+            if (mpo.num_col_non_zeros(k) == 1) {
+                if (!pop_[k]) {
+                    if (mpo.herm_info.right_skip(k) && isHermitian_) {
                         //typename Gemm::gemm_trim_right()(mps.data(), transpose(right[mpo.herm_info.right_conj(k)]), storage);
                         block_matrix<typename maquis::traits::adjoint_view<Matrix>::type, SymmGroup> trv = adjoint(right[mpo.herm_info.right_conj(k)]);
                         if (correctConjugate) {
@@ -366,8 +359,7 @@ namespace contraction {
         {
             for (index_type b2 = 0; b2 < mpo.col_dim(); ++b2) {
                 if (mpo.num_col_non_zeros(b2) == 1) {
-                    if (mpo.has(b1,b2))
-                    {
+                    if (mpo.has(b1,b2)) {
                         data_[b2].clear();
                         break;
                     }

@@ -304,13 +304,12 @@ using ::contraction::common::MPSBoundaryProduct;
             if (k == left_b1.basis().size()) { continue; }
 
             for (const auto& otask : otasks) {
+                // 1) &t.at(otask.b2): converts MPSBoundaryProduct to block_matrix (through a GEMM??)
+                // 2) ...[otask.k]: selects k-th block_matrix which returns a matrix
                 detail::task_axpy(
                     otask,
                     &buf(0,0),
                     &t.at(otask.b2)[otask.k](0,0) + otask.in_offset);
-                // 1) &t.at(otask.b2): converts MPSBoundaryProduct to block_matrix (through a GEMM??)
-                // 2) ...[otask.k]: selects k-th block_matrix which returns a matrix
-
             }
 
             charge_gemm(left_b1[k], buf, prod, task.first.second, phases[k]);

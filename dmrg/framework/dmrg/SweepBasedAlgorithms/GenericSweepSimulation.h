@@ -46,17 +46,19 @@ public:
   /** @brief Class constructor */
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                          const Lattice& lattice, bool verbose, std::string simulationName="Optimization")
-    : mps_(mps), parms_(parms), L_(mps_.length()), mpoContainer_(mpo, mps), mpsContainer_(mps),
+    : mps_(mps), siteLeft_(0), siteRight_(1), parms_(parms), L_(mps_.length()), mpoContainer_(mpo, mps), mpsContainer_(mps),
       simulationName_(simulationName), nSweeps_(0), indexOfMicroIteration_(0),
       lattice_(lattice), model_(model), verbose_(verbose)
   {
-    siteLeft_ = 0;
-    siteRight_ = 1;
+    
+    
     mps_.normalize_right();
     nSweeps_ = parms_["nsweeps"];
     boundaryPropagator_ = std::make_shared<BoundaryPropagatorType>(mps_, mpoContainer_.getMPO());
     mpsUpdater_ = std::make_unique<SweepMPSUpdaterType>(mpoContainer_.getMPO(), mps_, boundaryPropagator_, parms_, verbose_);
   };
+
+  virtual ~GenericSweepSimulation() = default;
 
   /**
    * @brief Execution of a generic sweep-based optimization algorithm.
@@ -68,16 +70,16 @@ public:
   void runSweepSimulation() {
     // == LOOP OVER THE SWEEPS ==
     printGenericInfo();
-    for (int iSweep = 0; iSweep < nSweeps_; iSweep++)
+    for (int iSweep = 0; iSweep < nSweeps_; iSweep++) {
       this->runSingleSweep(iSweep);
+    }
   }
 
 
   /** @brief Runs a single sweep of a sweep-based optimization */
   void runSingleSweep(int iSweep) {
     // Prints header
-    if (iSweep == 0)
-      printGenericInfo();
+    if (iSweep == 0) { printGenericInfo(); }
     // Preparatory operations.
     this->prepareSweep();
     indexOfMicroIteration_ = 0;
@@ -103,10 +105,12 @@ public:
       if (verbose_) { printMicroiterInfo(sweepType); }
       // Gets the boundary that are needed. Note that, in a forward sweep, the left boundary is assumed
       // to have been generated during the previous boundary update and, therefore, is not fetched.
-      if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0)
+      if (sweepType == SweepDirectionType::Backward || indexOfMicroIteration_ == 0) {
         Storage::fetch(boundaryPropagator_->getLeftBoundary(siteLeft_));
-      if (sweepType == SweepDirectionType::Forward)
+      }
+      if (sweepType == SweepDirectionType::Forward) {
         Storage::fetch(boundaryPropagator_->getRightBoundary(siteRight_));
+      }
       // Starts prefetching what will be needed in the following microiteration.
       // Note that, for instance, we don't prefetch the left boundary for the l2r sweep because
       // this will be taken care in the boundary propagation (in other words, there is no
@@ -114,14 +118,16 @@ public:
       // propagation)
       if (sweepType == SweepDirectionType::Forward) {
         auto sweepTypeNext = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_+1);
-        if (sweepTypeNext == sweepType)
+        if (sweepTypeNext == sweepType) {
           Storage::prefetch(boundaryPropagator_->getRightBoundary(SweepTraitClass::getIndexOfRightBoundary(L_, indexOfMicroIteration_+1)));
-        else if (sweepTypeNext != SweepDirectionType::EndOfLattice)
+        } else if (sweepTypeNext != SweepDirectionType::EndOfLattice) {
           Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(L_, indexOfMicroIteration_+1)));
+        }
       }
       else if (sweepType == SweepDirectionType::Backward) {
-        if (indexOfMicroIteration_ != numberOfMicroIterations-1)
+        if (indexOfMicroIteration_ != numberOfMicroIterations-1) {
           Storage::prefetch(boundaryPropagator_->getLeftBoundary(SweepTraitClass::getIndexOfLeftBoundary(L_, indexOfMicroIteration_+1)));
+        }
       }
       // == SOLUTION OF THE LOCAL PROBLEM ==
       this->prepareMicroiteration();
@@ -142,10 +148,11 @@ public:
       // Note also that, if we are at a point at which we reverse the direction of the boundary
       // propagation, we don't drop the right boundary because the next step will be a r2l sweep
       // and, therefore, that element of the right boundary won't be overwritten.
-      if (sweepType == SweepDirectionType::Forward && !changeDirection)
+      if (sweepType == SweepDirectionType::Forward && !changeDirection) {
         Storage::drop(boundaryPropagator_->getRightBoundary(siteRight_));
-      else // if (sweepType == SweepDirectionType::Backward)
+      } else { // if (sweepType == SweepDirectionType::Backward)
         Storage::drop(boundaryPropagator_->getLeftBoundary(siteLeft_));
+      }
       // Updates the boundary
       this->propagateBoundaries();
       this->propagateOtherTensors();
@@ -153,8 +160,9 @@ public:
       mpsUpdater_->mergeUnitaryFactor(boundaryGrowthModality, siteLeft_, siteRight_, this->normalizeAtEnd());
       this->finalizeMicroIteration(truncationResults);
       indexOfMicroIteration_ += 1;
-      if (verbose_)
+      if (verbose_) {
         maquis::cout << std::endl;
+      }
       auto stop = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double, std::milli> duration_milisec = stop - start;
       maquis::cout << " [Microiteration took " << duration_milisec.count() << " ms]\n";
@@ -174,8 +182,9 @@ public:
   /** @brief Gets a specific value of the iteration result */
   template<class CastType>
   CastType getSpecificResult(const std::string& resultName) {
-    if (!iterationResults_.has(resultName))
+    if (!iterationResults_.has(resultName)) {
       throw std::runtime_error("Trying to access non-existing simulation result");
+    }
     return boost::any_cast<CastType>(iterationResults_[resultName].get()[0]);
   }
 
@@ -230,19 +239,18 @@ protected:
     auto sweepType = SweepTraitClass::getSweepDirection(L_, indexOfMicroIteration_);
     // Boundary propagation
     if (sweepType == SweepDirectionType::Forward &&
-        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_))
+        !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
       boundaryPropagator_->updateLeftBoundary(siteLeft_+1);
-    else
+    } else {
       boundaryPropagator_->updateRightBoundary(siteRight_-1);
+    }
   };
 
   /** @brief Simple utility function for a logarithmic interpolation */
   static double log_interpolate(double y0, double y1, int N, int i)
   {
-    if (N < 2)
-      return y1;
-    if (y0 == 0)
-      return 0;
+    if (N < 2) { return y1; }
+    if (y0 == 0) { return 0; }
     double x = log(y1/y0)/(N-1);
     return y0*exp(x*i);
   }
@@ -260,12 +268,13 @@ protected:
     double alpha;
     int ngs = parms_.template get<int>("ngrowsweeps");
     int nms = parms_.template get<int>("nmainsweeps");
-    if (iSweep < ngs)
+    if (iSweep < ngs) {
       alpha = parms_.template get<double>("alpha_initial");
-    else if (iSweep < ngs + nms)
+    } else if (iSweep < ngs + nms) {
       alpha = parms_.template get<double>("alpha_main");
-    else
+    } else {
       alpha = parms_.template get<double>("alpha_final");
+    }
     return alpha;
   }
 
@@ -274,10 +283,11 @@ protected:
     std::size_t Mmax;
     if (parms_.is_set("sweep_bond_dimensions")) {
       std::vector<std::size_t> ssizes = parms_.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
-      if (sweep >= ssizes.size())
+      if (sweep >= ssizes.size()) {
         Mmax = *ssizes.rbegin();
-      else
+      } else {
         Mmax = ssizes[sweep];
+      }
     } else {
       Mmax = parms_.template get<std::size_t>("max_bond_dimension");
     }
@@ -301,8 +311,9 @@ protected:
       maquis::cout << " Simulation settings:" << std::endl;
       maquis::cout << " - Simulation type: " << simulationName_ << std::endl;
       maquis::cout << " - Sweep-based modality: " << SweepTraitClass::getSimulationTypeName() << std::endl;
-      if (nSweeps_ != 0)
+      if (nSweeps_ != 0) {
         maquis::cout << " - Maximum number of sweeps: " << nSweeps_ << std::endl;
+      }
     }
   }
 
@@ -324,10 +335,11 @@ protected:
   void printMicroiterInfo(SweepDirectionType sweepType) const {
     if (verbose_) {
       maquis::cout << " MICROITERATION NUMBER = " << indexOfMicroIteration_ << " ";
-      if (sweepType == SweepDirectionType::Forward)
+      if (sweepType == SweepDirectionType::Forward) {
         maquis::cout << " , forward sweep" << std::endl;
-      else
+      } else {
         maquis::cout << " , backward sweep" << std::endl;
+      }
       maquis::cout << " - Left boundaries taken from index: " << siteLeft_ << std::endl;
       maquis::cout << " - Right boundaries taken from index: " << siteRight_ << std::endl;
       maquis::cout << std::endl;

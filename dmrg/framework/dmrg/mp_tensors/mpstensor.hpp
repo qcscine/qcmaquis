@@ -33,13 +33,15 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
 , cur_storage(LeftPaired)
 , cur_normalization(Unorm)
 {
-    Index<SymmGroup> lb = sd*ld, rb = rd;
+    Index<SymmGroup> lb = sd*ld;
+    Index<SymmGroup> rb = rd;
     common_subset(lb, rb);
 
     // remove blocks from the right index that may not be allowed by the left index
     right_i = rb;
     // remove blocks from the left index that may not be allowed by the right index
-    Index<SymmGroup> possible_rp = adjoin(phys_i)*right_i, ltemp = ld;
+    Index<SymmGroup> possible_rp = adjoin(phys_i)*right_i;
+    Index<SymmGroup> ltemp = ld;
     common_subset(ltemp, possible_rp);
     left_i = ltemp;
 
@@ -54,9 +56,9 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     if (fillrand) {
         data().generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
 
-    }
-    else
+    } else {
         data().generate(utils::constant<typename Matrix::value_type>(val));
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -157,8 +159,7 @@ bool MPSTensor<Matrix, SymmGroup>::isobccompatible(Indicator i) const
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 {
-    if (cur_storage == LeftPaired)
-        return;
+    if (cur_storage == LeftPaired) { return; }
 
     block_matrix<Matrix, SymmGroup> tmp;
     reshape_right_to_left_new<Matrix>(phys_i, left_i, right_i,
@@ -172,8 +173,7 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
 {
-    if (cur_storage == RightPaired)
-        return;
+    if (cur_storage == RightPaired) { return; }
 
     block_matrix<Matrix, SymmGroup> tmp;
     reshape_left_to_right_new<Matrix>(phys_i, left_i, right_i,
@@ -189,11 +189,13 @@ void MPSTensor<Matrix, SymmGroup>::leftNormalize(DecompMethod method)
 {
     if (cur_normalization == Unorm || cur_normalization == Rnorm) {
         if (method == QR) {
-            block_matrix<Matrix, SymmGroup> Q, R;
+            block_matrix<Matrix, SymmGroup> Q;
+            block_matrix<Matrix, SymmGroup> R;
             performQR(Q, R);
         }
         else {
-            block_matrix<Matrix, SymmGroup> U, V;
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<Matrix, SymmGroup> V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             performSVD(U, V, S);
         }
@@ -205,11 +207,13 @@ void MPSTensor<Matrix, SymmGroup>::rightNormalize(DecompMethod method)
 {
     if (cur_normalization == Unorm || cur_normalization == Lnorm) {
         if (method == QR) {
-            block_matrix<Matrix, SymmGroup> L, Q;
+            block_matrix<Matrix, SymmGroup> L;
+            block_matrix<Matrix, SymmGroup> Q;
             performLQ(L, Q);
         }
         else {
-            block_matrix<Matrix, SymmGroup> U, V;
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<Matrix, SymmGroup> V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             performSVD(U, V, S);
         }
@@ -222,12 +226,14 @@ MPSTensor<Matrix, SymmGroup>::leftNormalizeAndReturn(DecompMethod method)
 {
     if (cur_normalization == Unorm || cur_normalization == Rnorm) {
         if (method == QR) {
-            block_matrix<Matrix, SymmGroup> Q, R;
+            block_matrix<Matrix, SymmGroup> Q;
+            block_matrix<Matrix, SymmGroup> R;
             performQR(Q, R);
             return R;
         }
         else {
-            block_matrix<Matrix, SymmGroup> U, V;
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<Matrix, SymmGroup> V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             performSVD(U, V, S);
             return U;
@@ -242,12 +248,14 @@ MPSTensor<Matrix, SymmGroup>::rightNormalizeAndReturn(DecompMethod method)
 {
     if (cur_normalization == Unorm || cur_normalization == Lnorm) {
         if (method == QR) {
-            block_matrix<Matrix, SymmGroup> L, Q;
+            block_matrix<Matrix, SymmGroup> L;
+            block_matrix<Matrix, SymmGroup> Q;
             performLQ(L, Q);
             return L;
         }
         else {
-            block_matrix<Matrix, SymmGroup> U, V;
+            block_matrix<Matrix, SymmGroup> U;
+            block_matrix<Matrix, SymmGroup> V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             performSVD(U, V, S);
             return V;
@@ -379,7 +387,8 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     // Bela says: this is a workaround for the very rare condition that site_hamil2 removes blocks
     // This shouldn't be necessary, but as of Rev. 1702, is necessary in some cases
     // If I haven't fixed this by the end of Feb 2012, remind me
-    Index<SymmGroup> i1 = data().left_basis(), i2 = rhs.data().left_basis();
+    Index<SymmGroup> i1 = data().left_basis();
+    Index<SymmGroup> i2 = rhs.data().left_basis();
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
@@ -410,28 +419,27 @@ std::ostream& operator<<(std::ostream& os, MPSTensor<Matrix, SymmGroup> const & 
 template<class Matrix, class SymmGroup>
 bool MPSTensor<Matrix, SymmGroup>::isleftnormalized(bool test) const
 {
-    if (test)
+    if (test) {
         throw std::runtime_error("Not implemented!");
-    else
+    } else {
         return cur_normalization == Lnorm;
+    }
 }
 
 template<class Matrix, class SymmGroup>
 bool MPSTensor<Matrix, SymmGroup>::isrightnormalized(bool test) const
 {
-    if (test)
+    if (test) {
         throw std::runtime_error("Not implemented!");
-    else
+    } else {
         return cur_normalization == Rnorm;
+    }
 }
 
 template<class Matrix, class SymmGroup>
 bool MPSTensor<Matrix, SymmGroup>::isnormalized(bool test) const
 {
-    if (isleftnormalized(test) || isrightnormalized(test))
-        return true;
-    else
-        return false;
+    return (isleftnormalized(test) || isrightnormalized(test));
 }
 
 template<class Matrix, class SymmGroup>
@@ -489,7 +497,8 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
 
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
+        typename SymmGroup::charge lc = data().basis().left_charge(i);
+        typename SymmGroup::charge rc = data().basis().right_charge(i);
         std::size_t matched_block = rhs.data().find_block(lc,rc);
         if (matched_block < rhs.data().n_blocks()) {
             data()[i] += rhs.data()[matched_block];
@@ -514,7 +523,8 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
 
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
+        typename SymmGroup::charge lc = data().basis().left_charge(i);
+        typename SymmGroup::charge rc = data().basis().right_charge(i);
         if (rhs.data().has_block(lc,rc)) {
             data()[i] -= rhs.data()(lc,rc);
         }
@@ -578,16 +588,18 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
 {
     {
         make_left_paired();
-        if ( !weak_equal(right_i, data().right_basis()) )
+        if ( !weak_equal(right_i, data().right_basis()) ) {
             throw std::runtime_error("right basis is wrong");
+        }
 
 //        maquis::cout << "** reasonable left_paired **" << std::endl;
 //        maquis::cout << "reasonable::left_i: " << left_i << std::endl;
 //        maquis::cout << "reasonable::right_i: " << right_i << std::endl;
 //        maquis::cout << "reasonable::data_:" << std::endl << data() << std::endl;
         make_right_paired();
-        if ( !weak_equal(left_i, data().left_basis()) )
+        if ( !weak_equal(left_i, data().left_basis()) ) {
             throw std::runtime_error("left basis is wrong");
+        }
 
 //        maquis::cout << "** reasonable right_paired **" << std::endl;
 //        maquis::cout << "reasonable::left_i: " << left_i << std::endl;
@@ -596,10 +608,10 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
     }
 
     {
-        for (std::size_t i = 0; i < data().n_blocks(); ++i)
-        {
-            if (data().basis().left_charge(i) != data().basis().right_charge(i))
+        for (std::size_t i = 0; i < data().n_blocks(); ++i) {
+            if (data().basis().left_charge(i) != data().basis().right_charge(i)) {
                 throw std::runtime_error("particle number is wrong");
+            }
         }
     }
     return true;
@@ -610,14 +622,17 @@ bool MPSTensor<Matrix, SymmGroup>::num_check() const
 {
         for (std::size_t k = 0; k < data().n_blocks(); ++k)
         {
-            for (size_t i = 0; i<num_rows(data()[k]); ++i)
+            for (size_t i = 0; i<num_rows(data()[k]); ++i) {
                 for (size_t j = 0; j<num_cols(data()[k]); ++j)
                 {
-                    if ( alps::numeric::isnan(data()[k](i,j)) )
+                    if ( alps::numeric::isnan(data()[k](i,j)) ) {
                         throw std::runtime_error("NaN found!");
-                    if ( alps::numeric::isinf(data()[k](i,j)) )
+                    }
+                    if ( alps::numeric::isinf(data()[k](i,j)) ) {
                         throw std::runtime_error("INF found!");
+                    }
                 }
+            }
         }
     return true;
 }
@@ -647,22 +662,24 @@ void MPSTensor<Matrix, SymmGroup>::check_equal (MPSTensor<Matrix, SymmGroup> con
     rhs.make_left_paired();
 
     // Data
-    if (data().n_blocks() != rhs.data().n_blocks())
+    if (data().n_blocks() != rhs.data().n_blocks()) {
         error += "n_blocks doesn't match. ";
-    else {
+    } else {
         for (int b=0; b < data().n_blocks(); ++b) {
-            if (data()[b].num_cols() != rhs.data()[b].num_cols() || data()[b].num_rows() != rhs.data()[b].num_rows())
+            if (data()[b].num_cols() != rhs.data()[b].num_cols() || data()[b].num_rows() != rhs.data()[b].num_rows()) {
                 error += "Size of block doesn't match. ";
-            for (int i=0; i < data()[b].num_rows() && error.empty(); ++i)
-                for (int j=0; j < data()[b].num_cols() && error.empty(); ++j)
-                    if (data()[b](i,j) != rhs.data()[b](i,j))
+            }
+            for (int i=0; i < data()[b].num_rows() && error.empty(); ++i) {
+                for (int j=0; j < data()[b].num_cols() && error.empty(); ++j) {
+                    if (data()[b](i,j) != rhs.data()[b](i,j)) {
                         error += "Data doesn't match. ";
+                    }
+                }
+            }
         }
     }
     // Finalize
-    if (!error.empty())
-        throw std::runtime_error(error);
-
+    if (!error.empty()) { throw std::runtime_error(error); }
 }
 
 template<class Matrix, class SymmGroup>
