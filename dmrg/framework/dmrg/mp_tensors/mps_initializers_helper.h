@@ -225,7 +225,6 @@ public:
     auto state = stateType(size, stateEntryType(1));
     for (int j = 0 ; j < size; ++j) {
       int hfIdx = inputVec[orbitalOrder[j]];
-      maquis::cout << "In GenerateIndexFromString with hfIdx: " << hfIdx << std::endl;
       if (hfIdx>4) {
         if (hfIdx==5 && (params["init_type"] == "basis_state_generic_const" || params["init_type"] == "basis_state_generic_default")) {
           state[j].resize(4);
