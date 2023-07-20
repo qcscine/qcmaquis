@@ -68,16 +68,16 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     // check possible orbital order in existing MPS before(!) model initialization
     if (!chkpfile.empty())
     {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "props.h5"))
+        std::filesystem::path p(chkpfile);
+        if (std::filesystem::exists(p) && std::filesystem::exists(p / "props.h5"))
             maquis::checks::orbital_order_check(parms, chkpfile);
     }
 
     // Load MPS from checkpoint
     if (!chkpfile.empty())
     {
-        boost::filesystem::path p(chkpfile);
-        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
+        std::filesystem::path p(chkpfile);
+        if (std::filesystem::exists(p) && std::filesystem::exists(p / "mps0.h5"))
         {
             storage::archive ar_in(chkpfile+"/props.h5");
             restore = true;
@@ -168,8 +168,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters & parms_)
     }
     if (!dns && !chkpfile.empty())
     {
-        if (!boost::filesystem::exists(chkpfile))
-            boost::filesystem::create_directory(chkpfile);
+        if (!std::filesystem::exists(chkpfile))
+            std::filesystem::create_directory(chkpfile);
         storage::archive ar(chkpfile+"/props.h5", "w");
 
         ar["/parameters"] << parms;

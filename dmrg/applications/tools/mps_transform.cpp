@@ -13,7 +13,6 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include <boost/filesystem.hpp>
 
 using std::cerr;
 using std::cout;
@@ -46,7 +45,7 @@ int main(int argc, char ** argv)
 
         std::string mps_in_file = argv[1];
 
-        if (!boost::filesystem::exists(mps_in_file))
+        if (!std::filesystem::exists(mps_in_file))
             throw std::runtime_error("input MPS " + mps_in_file + " does not exist\n");
         if (*(mps_in_file.rbegin()) == '/')
             mps_in_file.erase(mps_in_file.size()-1, 1);
@@ -105,9 +104,9 @@ int main(int argc, char ** argv)
 
             save(mps_out_file, mps_out);
 
-            if (boost::filesystem::exists(mps_out_file + "/props.h5"))
-                boost::filesystem::remove(mps_out_file + "/props.h5");
-            boost::filesystem::copy(mps_in_file + "/props.h5", mps_out_file + "/props.h5");
+            if (std::filesystem::exists(mps_out_file + "/props.h5"))
+                std::filesystem::remove(mps_out_file + "/props.h5");
+            std::filesystem::copy(mps_in_file + "/props.h5", mps_out_file + "/props.h5");
 
             storage::archive ar_out(mps_out_file + "/props.h5", "w");
             ar_out["/parameters"] << parms;

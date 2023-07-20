@@ -10,8 +10,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <filesystem>
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/filesystem.hpp>
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
 #include "dmrg/models/measurement.h"
 #include "dmrg/utils/checks.h"
@@ -59,7 +59,7 @@ public:
     this->labels_num.clear();
     MPS<Matrix, SymmGroup> bra_mps;
     if (bra_ckp != "") {
-        if(boost::filesystem::exists(bra_ckp))
+        if(std::filesystem::exists(bra_ckp))
             load(bra_ckp, bra_mps);
         else
             throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");

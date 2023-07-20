@@ -101,7 +101,7 @@ namespace maquis {
 
         BaseParameters parms;
 
-        if (!boost::filesystem::exists(checkpoint_name))
+        if (!std::filesystem::exists(checkpoint_name))
             throw std::runtime_error("input MPS " + checkpoint_name + " does not exist\n");
 
         // load source MPS
@@ -134,9 +134,9 @@ namespace maquis {
 
         save(twou1_checkpoint_name, mps_out);
 
-        if (boost::filesystem::exists(twou1_checkpoint_name + "/props.h5"))
-            boost::filesystem::remove(twou1_checkpoint_name + "/props.h5");
-        boost::filesystem::copy(checkpoint_name + "/props.h5", twou1_checkpoint_name + "/props.h5");
+        if (std::filesystem::exists(twou1_checkpoint_name + "/props.h5"))
+            std::filesystem::remove(twou1_checkpoint_name + "/props.h5");
+        std::filesystem::copy(checkpoint_name + "/props.h5", twou1_checkpoint_name + "/props.h5");
 
         storage::archive ar_out(twou1_checkpoint_name + "/props.h5", "w");
         ar_out["/parameters"] << parms;

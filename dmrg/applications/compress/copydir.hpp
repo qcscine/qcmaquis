@@ -30,16 +30,15 @@
 #define MPS_COMPRESS_COPYDIR_HPP
 
 #include <iostream>
-#include <boost/filesystem.hpp>
 
 // An utility function to copy a directory entirely
 // Taken from https://codedump.io/share/zXSwU5VNvaR6/1/how-can-i-copy-a-directory-using-boost-filesystem
 bool copyDir(
-    boost::filesystem::path const & source,
-    boost::filesystem::path const & destination
+    std::filesystem::path const & source,
+    std::filesystem::path const & destination
 )
 {
-    namespace fs = boost::filesystem;
+    namespace fs = std::filesystem;
     try
     {
         // Check whether the function call is valid

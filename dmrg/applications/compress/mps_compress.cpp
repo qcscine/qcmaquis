@@ -34,7 +34,6 @@
 
 #include "dmrg/models/chem/transform_symmetry.hpp"
 
-#include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/lexical_cast.hpp>

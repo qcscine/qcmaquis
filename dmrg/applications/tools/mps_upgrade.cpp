@@ -52,8 +52,8 @@ int main(int argc, char ** argv)
             ih5["/state/MPS/" + *it] >> mps[alps::cast<std::size_t>(*it)];
         
         /// create chkp directory
-        if (!boost::filesystem::exists(argv[2]))
-            boost::filesystem::create_directory(argv[2]);
+        if (!std::filesystem::exists(argv[2]))
+            std::filesystem::create_directory(argv[2]);
         
         /// save in new format
         save(argv[2], mps);

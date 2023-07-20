@@ -14,7 +14,6 @@
 #include <vector>
 #include <string>
 #include <boost/any.hpp>
-#include <boost/filesystem.hpp>
 
 /// lattice common base
 class lattice_impl {

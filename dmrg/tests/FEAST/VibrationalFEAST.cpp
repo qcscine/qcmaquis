@@ -73,8 +73,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_H2CO, WatsonFixture)
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.H2CO.chkp.h5");
-  boost::filesystem::remove_all("ES.H2CO.chkp.h5");
+  std::filesystem::remove_all("GS.H2CO.chkp.h5");
+  std::filesystem::remove_all("ES.H2CO.chkp.h5");
   // FEAST
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;
@@ -172,8 +172,8 @@ BOOST_FIXTURE_TEST_CASE(Test_FEAST_Bilinearly, WatsonFixture)
   interfaceOptimizerES.optimize();
   auto energyFromOptimizerES = interfaceOptimizerES.energy();
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.Bilinearly.chkp.h5");
-  boost::filesystem::remove_all("ES.Bilinearly.chkp.h5");
+  std::filesystem::remove_all("GS.Bilinearly.chkp.h5");
+  std::filesystem::remove_all("ES.Bilinearly.chkp.h5");
   // == DMRG[FEAST] ==
   auto eMin = energyFromOptimizerGS - (energyFromOptimizerES-energyFromOptimizerGS)/10.;
   auto eMax = energyFromOptimizerGS + (energyFromOptimizerES-energyFromOptimizerGS)/10.;

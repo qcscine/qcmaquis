@@ -132,9 +132,9 @@ namespace maquis
             save(checkpoint_name_rotated, mps);
 
             // copy over props.h5 file, overwriting the old one
-            if (boost::filesystem::exists(checkpoint_name_rotated + "/props.h5"))
-                boost::filesystem::remove(checkpoint_name_rotated + "/props.h5");
-            boost::filesystem::copy(checkpoint_name + "/props.h5", checkpoint_name_rotated + "/props.h5");
+            if (std::filesystem::exists(checkpoint_name_rotated + "/props.h5"))
+                std::filesystem::remove(checkpoint_name_rotated + "/props.h5");
+            std::filesystem::copy(checkpoint_name + "/props.h5", checkpoint_name_rotated + "/props.h5");
 
         }
 
@@ -158,7 +158,7 @@ namespace maquis
 
                 std::string su2u1_checkpoint_name = maquis::interface_detail::su2u1_name(pname, state);
                 BaseParameters parms;
-                if (!boost::filesystem::exists(su2u1_checkpoint_name))
+                if (!std::filesystem::exists(su2u1_checkpoint_name))
                     throw std::runtime_error("SU2U1 MPS checkpoint " + su2u1_checkpoint_name + " is required but does not exist\n"
                                               "You might be getting this error because qcm_checkpoint_rename.py did not run properly.\n");
 

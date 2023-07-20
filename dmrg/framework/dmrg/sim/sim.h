@@ -11,7 +11,6 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
-#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include "utils/data_collector.hpp"
 #include "dmrg/utils/DmrgParameters.h"

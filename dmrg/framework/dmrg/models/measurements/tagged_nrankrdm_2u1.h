@@ -52,7 +52,7 @@ public:
     MPS<Matrix, SymmGroup> bra_mps;
     if (bra_ckp != "")
     {
-      if(boost::filesystem::exists(bra_ckp))
+      if(std::filesystem::exists(bra_ckp))
       {
         // Do symmetry check on the bra checkpoint and eventually transform
         // check point group

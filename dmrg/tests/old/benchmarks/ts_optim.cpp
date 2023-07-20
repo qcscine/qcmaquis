@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
         time_model.end();
         maquis::cout << "Parsing model done!\n";
 
-        boost::filesystem::path chkpfile(parms["chkpfile"].str());
+        ::dfilesystem::path chkpfile(parms["chkpfile"].str());
         
         /// Initialize & load MPS
         time_load.begin();

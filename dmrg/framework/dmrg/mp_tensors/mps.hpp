@@ -313,7 +313,7 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 {
     /// get size of MPS
     std::size_t L = 0;
-    while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
+    while (std::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
 
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
@@ -332,8 +332,8 @@ template<class Matrix, class SymmGroup>
 void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
     /// create chkp dir
-    if(parallel::master() && !boost::filesystem::exists(dirname))
-        boost::filesystem::create_directory(dirname);
+    if(parallel::master() && !std::filesystem::exists(dirname))
+        std::filesystem::create_directory(dirname);
 
     parallel::scheduler_balanced scheduler(mps.length());
     size_t loop_max = mps.length();
@@ -359,7 +359,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
         parallel::guard proc(scheduler(k));
         if(!parallel::local()) continue;
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
-        boost::filesystem::rename(fname+".new", fname);
+        std::filesystem::rename(fname+".new", fname);
     });
 }
 

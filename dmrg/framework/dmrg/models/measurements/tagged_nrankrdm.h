@@ -10,8 +10,8 @@
 
 #include <algorithm>
 #include <functional>
+#include <filesystem>
 #include <boost/iterator/counting_iterator.hpp>
-#include <boost/filesystem.hpp>
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
 #include "dmrg/models/measurement.h"
 #include "dmrg/utils/checks.h"

@@ -11,7 +11,6 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/utils/parallel/params.hpp"
 
-#include <boost/filesystem/path.hpp>
 #include <string>
 
 //=======================================================================

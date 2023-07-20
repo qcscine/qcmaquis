@@ -8,7 +8,6 @@
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
-#include <boost/filesystem/operations.hpp>
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/models/lattice/WatsonLattice.hpp"
 #include "Fixtures/WatsonFixture.h"

@@ -8,10 +8,10 @@
 #define BOOST_TEST_MAIN
 
 #include <boost/test/included/unit_test.hpp>
-#include <boost/filesystem/operations.hpp>
 #include "utils/fpcomparison.h"
 #include "utils/io.hpp" // has to be first include because of impi
 #include <iostream>
+#include <boost/filesystem.hpp>
 #include "maquis_dmrg.h"
 #include "test_detail.h"
 #include "Fixtures/LiHFixture.h"

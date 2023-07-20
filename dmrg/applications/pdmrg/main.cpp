@@ -423,8 +423,8 @@ int main(int argc, char ** argv)
             
             std::string chkpfile = parms["chkpfile"];
             /// save state to chkp dir
-            if (!boost::filesystem::exists(chkpfile))
-                boost::filesystem::create_directory(chkpfile);
+            if (!std::filesystem::exists(chkpfile))
+                std::filesystem::create_directory(chkpfile);
             save(chkpfile, full_mps);
             
             /// save status

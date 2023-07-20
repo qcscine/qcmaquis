@@ -8,6 +8,7 @@
 #define BOOST_TEST_MODULE SweepBasedLinearSystemElectronic
 
 #include <iostream>
+#include <filesystem>
 #include <boost/test/included/unit_test.hpp>
 #include "dmrg/SweepBasedAlgorithms/SweepBasedLinearSystem.h"
 #include "dmrg/models/generate_mpo.hpp"
@@ -113,10 +114,10 @@ BOOST_FIXTURE_TEST_CASE(Test_SweepBasedLinearSystemTS_Interface_Electronic_Benze
   auto energyExcitedStateIPI = interfaceExcitedStateIPI.energy();
   BOOST_CHECK_CLOSE(energyFromOptimizerES, energyExcitedStateIPI, 1.0E-7);
   // Cleans up stuff
-  boost::filesystem::remove_all("GS.Benzene.chkp.h5");
-  boost::filesystem::remove_all("ES.Benzene.chkp.h5");
-  boost::filesystem::remove_all("GS.IPI.Benzene.chkp.h5");
-  boost::filesystem::remove_all("ES.IPI.Benzene.chkp.h5");
+  std::filesystem::remove_all("GS.Benzene.chkp.h5");
+  std::filesystem::remove_all("ES.Benzene.chkp.h5");
+  std::filesystem::remove_all("GS.IPI.Benzene.chkp.h5");
+  std::filesystem::remove_all("ES.IPI.Benzene.chkp.h5");
 }
 
 

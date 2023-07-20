@@ -102,7 +102,7 @@ namespace detail {
         else if (parms.is_set("integral_file")) // FCIDUMP file
         {
             std::string integral_file = parms["integral_file"];
-            if (!boost::filesystem::exists(integral_file))
+            if (!std::filesystem::exists(integral_file))
                 throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
 
             orb_string = std::make_unique<std::ifstream>(integral_file.c_str());

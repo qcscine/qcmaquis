@@ -37,7 +37,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-//#include <boost/filesystem.hpp>
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 

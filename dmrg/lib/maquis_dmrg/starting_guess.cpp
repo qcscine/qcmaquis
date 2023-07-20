@@ -177,8 +177,8 @@ namespace maquis
                 for (int i = 0; i < nstates_; i++)
                 {
                     std::string chkpfile = checkpoint_name(pname_guess_, i);
-                    if (boost::filesystem::exists(chkpfile))
-                        boost::filesystem::remove_all(chkpfile);
+                    if (std::filesystem::exists(chkpfile))
+                        std::filesystem::remove_all(chkpfile);
                 }
             }
 
