@@ -33,8 +33,10 @@ message(STATUS "LAPACK library: ${LAPACK_LIBRARIES}")
 # Autodetect ILP64 or LP64 integer interface
 try_run(_IS_32_BIT_INT _COMPILES ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/config/ilp64.cpp
     LINK_LIBRARIES ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES}
-    COPY_FILE ip64test
+    COPY_FILE ${CMAKE_CURRENT_BINARY_DIR}/ip64test
 )
+# Delete the test executable after running
+file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/ip64test)
 
 if (NOT _IS_32_BIT_INT)
     if (LAPACK_64_BIT) # 64-bit integers requested but not supported
