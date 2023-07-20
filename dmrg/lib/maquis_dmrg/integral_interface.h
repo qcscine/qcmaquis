@@ -121,13 +121,13 @@ template <class V, Hamiltonian HamiltonianType=Hamiltonian::Electronic>
 class integral_map
 {
 public:
-    typedef std::unordered_map<index_type<HamiltonianType>, V, integral_hash<HamiltonianType>> map_t;
-    typedef typename map_t::size_type size_type;
+    using map_t = std::unordered_map<index_type<HamiltonianType>, V, integral_hash<HamiltonianType>>;
+    using size_type = typename map_t::size_type;
     // Type which returns std::abs(V), for the integral cutoff
     // Not very clean but std::conditional seems not to work here
-    typedef typename std::complex<V>::value_type value_type;
-    typedef typename map_t::iterator iterator;
-    typedef typename map_t::const_iterator const_iterator;
+    using value_type = typename std::complex<V>::value_type;
+    using iterator = typename map_t::iterator;
+    using const_iterator = typename map_t::const_iterator;
 
     /** @brief Default constructor */
     integral_map() = default;
@@ -142,8 +142,9 @@ public:
      */
     explicit integral_map(const map_t & map, value_type cutoff=0.0) : cutoff_(cutoff)
     {
-        for (auto&& it: map)
+        for (auto&& it: map) {
             (*this)[it->first] = it->second;
+        }
     }
 
     /** @brief Move constructor */

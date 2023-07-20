@@ -13,8 +13,6 @@
 #include "dmrg/models/lattice/SquareLattice.hpp"
 #include "dmrg/models/lattice/OrbitalLattice.hpp"
 #include "dmrg/models/lattice/PreBOLattice.hpp"
-#include "dmrg/models/lattice/WatsonLattice.hpp"
-#include "dmrg/models/lattice/VibronicLattice.hpp"
 
 /**
  * @brief Factory method returning the requested lattice

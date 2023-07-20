@@ -61,17 +61,18 @@ public:
 
   /** @brief Runs a DMRG-based optimization */
   void run(const std::string& simulationType) {
-    if (simulationType == "optimize")
+    if (simulationType == "optimize") {
       this->runAlternatingLeastSquares("optimize", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
-    else if (simulationType == "evolve")
+    } else if (simulationType == "evolve") {
       this->runAlternatingLeastSquares("evolve", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
       //this->evolve();
-    else if (simulationType == "solve_linear_system")
+    } else if (simulationType == "solve_linear_system") {
       this->runAlternatingLeastSquares("linear_system", parms["nsweeps"].template as<int>(), parms["conv_thresh"].template as<double>());
-    else if (simulationType == "ipi")
+    } else if (simulationType == "ipi") {
       this->runInversePowerIteration();
-    else if (simulationType == "feast")
+    } else if (simulationType == "feast") {
       this->runFEASTSimulation();
+    }
   }
 
   /** @brief Runs a FEAST simulation */
@@ -122,7 +123,8 @@ public:
     auto mpsBackup = this->mps;
     // IPI macroiteration
     while (!convergedOuter) {
-      double nextEnergy, energyDifference;
+      double nextEnergy;
+      double energyDifference;
       this->runAlternatingLeastSquares("linear_system", numberOfSweepPerSystem, 0.);
       nIpiIterations += 1;
       nextEnergy = this->get_energy();
@@ -164,16 +166,17 @@ public:
     int chkp_each = parms["chkp_each"];
     // -- Optimizer initialization --
     //std::shared_ptr<opt_base_t> optimizer;
-    if (parms["optimization"] == "singlesite")
+    if (parms["optimization"] == "singlesite") {
       // optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::SingleSite, mps, mpo, parms, model, base::lat);
-    else if(parms["optimization"] == "twosite")
+    } else if(parms["optimization"] == "twosite") {
       // optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
       //                 (mps, mpo, parms, stop_callback, lat, init_site) );
       factory_ = std::make_unique<FactoryType>(simulationType, SweepOptimizationType::TwoSite, mps, mpo, parms, model, base::lat);
-    else
+    } else {
         throw std::runtime_error("Don't know this optimizer");
+    }
     // Retrieve the measurements that should be always done.
     auto always_measurements = this->iteration_measurements(init_sweep);
     auto firstEnergy = this->get_energy();
@@ -188,20 +191,24 @@ public:
         if ((sweep+1) % meas_each == 0 || (sweep+1) == nSweeps) {
           dumpParametersAndIterResults(sweep);
           dumpEnergy(sweep);
-          if (!rfile().empty() && always_measurements.size() > 0)
+          if (!rfile().empty() && always_measurements.size() > 0) {
             this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
+          }
           // stop simulation if an energy threshold has been specified
           int prev_sweep = sweep - meas_each;
-          if (prev_sweep >= 0)
+          if (prev_sweep >= 0) {
             converged = checkEnergyConvergence(energyThreshold);
+          }
         }
         last_sweep_ = sweep;
         /// write checkpoint
         bool stopped = stop_callback() || converged;
-        if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps)
+        if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == nSweeps) {
           checkpoint_simulation(mps, sweep, -1);
-        if (stopped)
+        }
+        if (stopped) {
           break;
+        }
       }
     }
     catch (dmrg::time_limit const& e) {
@@ -284,8 +291,9 @@ public:
     this->measure("/spectrum/results/", all_measurements);
     // MPO creation
     MPO<Matrix, SymmGroup> mpoc = mpo;
-    if (parms["use_compressed"])
+    if (parms["use_compressed"]) {
         mpoc.compress(1e-12);
+    }
     double energy;
     // Measures the energy
     if (parms["MEASURE[Energy]"])
@@ -301,8 +309,9 @@ public:
     // Measures the energy variance
     if (parms["MEASURE[EnergyVariance]"] > 0)
     {
-        if (!parms["MEASURE[Energy]"])
+        if (!parms["MEASURE[Energy]"]) {
             energy = maquis::real(expval(mps, mpoc));
+        }
         auto traitClass = MPOTimesMPSTraitClass<Matrix, SymmGroup>(mps, model, base::lat, model.total_quantum_numbers(parms),
                                                                    parms["max_bond_dimension"]);
         auto outputMPS = traitClass.applyMPO(mpoc);
@@ -320,22 +329,26 @@ public:
     if (!rfile().empty()) {
         BaseParameters parms_meas;
         parms_meas = parms.twou1_measurements();
-        if (!parms_meas.empty())
+        if (!parms_meas.empty()) {
             measure_transform<Matrix, SymmGroup>()(rfile(), "/spectrum/results", base::lat, mps, parms_meas);
+        }
     }
-    else
+    else {
         throw std::runtime_error("Transformed measurements not implemented yet without checkpoints");
+    }
     #endif
   }
 
   results_map_type measure_out() {
     results_map_type ret;
     // Do not measure before a sweep
-    if (this->get_last_sweep() < 0)
+    if (this->get_last_sweep() < 0) {
       throw std::runtime_error("Tried to measure before a sweep");
+    }
     // Run all measurements and fill the result map
-    for (auto&& meas: all_measurements)
+    for (auto&& meas: all_measurements) {
       ret[meas.name()] = measure_and_save<Matrix,SymmGroup>(rfile(), "/spectrum/results", mps).meas_out(meas);
+    }
     // Measurements that require SU2U1->2U1 transformation
 #if defined(HAVE_TwoU1) || defined(HAVE_TwoU1PG)
     BaseParameters parms_meas;
@@ -353,30 +366,33 @@ public:
   /** @brief Gets the energy for the mps that is stored in the sim object */
   /** if it is a feastMPS, return the feast energy of the zeroth feast state*/
   RealType get_energy() {
-    if (!feastMPSs_)
+    if (!feastMPSs_) {
       return maquis::real(expval(mps, mpo)/overlap(mps, mps));
-    else
+    } else {
       return getFEASTEnergy(0);
+    }
   }
 
   /** @brief Gets the FEAST eigenstates - throws an exception if FEAST is not run */
   auto getFEASTEigenstates() {
-    if (!feastMPSs_)
+    if (!feastMPSs_) {
       throw std::runtime_error("FEAST eigenstate requested before running a FEAST simulation");
-    else
+    } else {
       return feastMPSs_;
+    }
   }
 
   /** @brief Gets the FEAST energies -- throws an exception if FEAST is not run */
   RealType getFEASTEnergy(int iState) const {
-    if (!feastMPSs_)
+    if (!feastMPSs_) {
       throw std::runtime_error("FEAST energy requested before running a FEAST simulation");
-    else if (iState >= feastMPSs_->size()) {
+    } else if (iState >= feastMPSs_->size()) {
       std::string errorMessage = "FEAST energy requested for the"+std::to_string(iState)+"-th state, but only "+std::to_string(feastMPSs_->size())+" states are available";
       throw std::runtime_error(errorMessage);
     }
-    else
+    else {
       return maquis::real(expval(feastMPSs_->operator[](iState), mpo)/norm(feastMPSs_->operator[](iState)));
+    }
   }
 
   /**
@@ -393,10 +409,11 @@ public:
       auto modifiedParameters = parms;
       std::string initState = (parms["MODEL"] == "quantum_chemistry") ? "hf" : "basis_state_generic";
       modifiedParameters.set("init_type", initState);
-      if (parms["MODEL"] == "quantum_chemistry")
+      if (parms["MODEL"] == "quantum_chemistry") {
           modifiedParameters.set("hf_occ", determinantString);
-      else
+      } else {
           modifiedParameters.set("init_basis_state", determinantString);
+      }
       auto mpsOverlap = MPSType(lat.size(), *(model.initializer(lat, modifiedParameters)));
       return overlap(mpsOverlap, mps)/std::sqrt(norm(mpsOverlap)*norm(mps));
   }
@@ -404,8 +421,9 @@ public:
   /** @brief Updates the integral and regenerates the data that depends on it */
   void update_integrals(const chem::integral_map<typename Matrix::value_type> & integrals)
   {
-      if (parms.is_set("integral_file") || parms.is_set("integrals"))
+      if (parms.is_set("integral_file") || parms.is_set("integrals")) {
           throw std::runtime_error("updating integrals in the interface not supported yet in the FCIDUMP format");
+      }
       parms.set("integrals_binary", chem::serialize(integrals));
       // construct new model and mpo with new integrals
       // hope this doesn't give any memory leaks
@@ -425,8 +443,9 @@ public:
     {
       // If we are not loading from a checkpoint, last_sweep is set to -1
       // so we need to return an empty iteration_results vector
-      if (get_last_sweep() < 0)
+      if (get_last_sweep() < 0) {
         return iteration_results_;
+      }
       // otherwise, we are restarting but there's something wrong with the checkpoint
       if (!rfile().empty()) {
         try { // Load the iteration results from the last sweep
@@ -438,8 +457,9 @@ public:
           throw std::runtime_error("Error reading iteration results from checkpoint.");
         }
       }
-      else
+      else {
           throw std::runtime_error("No result file specified for restart -- cannot read iteration results!");
+      }
     }
     return iteration_results_;
   }
@@ -489,8 +509,7 @@ private:
     auto emin = *std::min_element(energies_.begin(), energies_.end()-1);
     auto eminNew = *std::min_element(energies_.begin(), energies_.end());
     auto eDiff = std::abs(emin - eminNew);
-    if (eDiff < convergenceThreshold)
-      converged = true;
+    if (eDiff < convergenceThreshold) { converged = true; }
     return converged;
   }
 
@@ -512,10 +531,11 @@ private:
   void dumpParameters(std::string filename = "") {
     if (!chkpfolder().empty()) {
       std::string chkpfilename;
-      if (filename.empty())
+      if (filename.empty()) {
         chkpfilename = chkpfolder();
-      else
+      } else {
         chkpfilename = chkpfolder() + "_" + filename;
+      }
       storage::archive ar(chkpfilename+"/props.h5", "w");
       ar["/parameters"] << parms;
     }

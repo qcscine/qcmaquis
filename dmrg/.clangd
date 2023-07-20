@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [-Wall, -Wextra]
+  Add: [-Wall, -Wextra, -std=c++17]
 
 Diagnostics:
   Suppress: [pp_including_mainfile_in_preamble]

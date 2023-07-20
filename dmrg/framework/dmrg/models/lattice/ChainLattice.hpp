@@ -8,9 +8,7 @@
 #ifndef MAQUIS_DMRG_lattice_hpp
 #define MAQUIS_DMRG_lattice_hpp
 
-#include <numeric>
 #include <sstream>
-#include <set>
 #include <vector>
 #include <boost/lexical_cast.hpp>
 #include "dmrg/models/lattice/lattice.h"

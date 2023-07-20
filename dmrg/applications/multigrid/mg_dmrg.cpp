@@ -16,8 +16,6 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
-#include <boost/function.hpp>
-
 #include "mg_dmrg_traits.h"
 #include "dmrg/sim/symmetry_factory.h"
 

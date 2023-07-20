@@ -8,10 +8,8 @@
 #ifndef SITE_OPERATOR_ALGORITHMS_H
 #define SITE_OPERATOR_ALGORITHMS_H
 
-#include "dmrg/utils/logger.h"
 #include "dmrg/utils/utils.hpp"
 #include "utils/timings.h"
-#include "utils/traits.hpp"
 #include "utils/bindings.hpp"
 
 #include "dmrg/block_matrix/site_operator.h"

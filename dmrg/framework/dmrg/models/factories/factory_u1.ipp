@@ -6,8 +6,6 @@
  */
 
 #include "dmrg/models/factories/factory.h"
-#include "dmrg/models/vibrational/u1/VibronicModel.hpp"
-#include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {

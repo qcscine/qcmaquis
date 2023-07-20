@@ -27,8 +27,8 @@ template <typename ScalarType> // real or complex
 class DMRGInterface
 {
 public:
-    typedef maquis::meas_with_results_type<ScalarType> meas_with_results_type;
-    typedef maquis::results_map_type<ScalarType> results_map_type;
+    using meas_with_results_type = maquis::meas_with_results_type<ScalarType>;
+    using results_map_type = maquis::results_map_type<ScalarType>;
 
     /** @brief Class constructor */
     explicit DMRGInterface(DmrgParameters& parms_);

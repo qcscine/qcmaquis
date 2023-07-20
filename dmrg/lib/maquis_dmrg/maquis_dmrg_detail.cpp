@@ -7,6 +7,7 @@
 
 #include "maquis_dmrg_detail.h"
 #include "dmrg/models/chem/transform_symmetry.hpp"
+#include <filesystem>
 
 namespace maquis {
     namespace interface_detail {
@@ -75,8 +76,7 @@ namespace maquis {
         parms.set("type", 0);
 
         // Kramer's symmetry
-        if (magnetic)
-            parms.set("MAGNETIC", 1);
+        if (magnetic) { parms.set("MAGNETIC", 1); }
     }
 
 // Transforms SU2 checkpoint to 2U1 checkpoint
@@ -101,8 +101,9 @@ namespace maquis {
 
         BaseParameters parms;
 
-        if (!std::filesystem::exists(checkpoint_name))
+        if (!std::filesystem::exists(checkpoint_name)) {
             throw std::runtime_error("input MPS " + checkpoint_name + " does not exist\n");
+        }
 
         // load source MPS
         MPS<matrix, SU2U1grp> mps;
@@ -118,7 +119,8 @@ namespace maquis {
     #elif defined(HAVE_SU2U1)
         parms.set("symmetry", "2u1");
     #endif
-        int Nup, Ndown;
+        int Nup;
+        int Ndown;
         std::string twou1_checkpoint_name;
         int nel = parms["nelec"];
         int multiplicity = parms["spin"];
@@ -134,8 +136,9 @@ namespace maquis {
 
         save(twou1_checkpoint_name, mps_out);
 
-        if (std::filesystem::exists(twou1_checkpoint_name + "/props.h5"))
+        if (std::filesystem::exists(twou1_checkpoint_name + "/props.h5")) {
             std::filesystem::remove(twou1_checkpoint_name + "/props.h5");
+        }
         std::filesystem::copy(checkpoint_name + "/props.h5", twou1_checkpoint_name + "/props.h5");
 
         storage::archive ar_out(twou1_checkpoint_name + "/props.h5", "w");

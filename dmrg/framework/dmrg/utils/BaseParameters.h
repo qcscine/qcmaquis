@@ -16,11 +16,9 @@
 #include <memory>
 #include <map>
 
-#include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <regex>
 #include <boost/algorithm/string.hpp>
-#include <boost/serialization/version.hpp>
 #include <boost/serialization/split_member.hpp>
 
 #include "dmrg/utils/parameter_proxy.h"

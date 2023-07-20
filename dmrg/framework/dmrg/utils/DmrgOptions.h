@@ -9,7 +9,6 @@
 #define UTILS_DMRG_OPTIONS_H
 
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/utils/parallel/params.hpp"
 
 #include <string>
 

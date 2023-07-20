@@ -11,12 +11,10 @@
 #include <mpi.h>
 #endif
 #include <cmath>
-#include <iterator>
 #include <iostream>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <string>
-#include <sstream>
 #include<boost/tokenizer.hpp>
 #include<boost/lexical_cast.hpp>
 #include <algorithm>

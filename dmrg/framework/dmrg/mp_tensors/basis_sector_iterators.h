@@ -12,7 +12,6 @@
 
 #include <boost/operators.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
 
 
 template <class SymmGroup>

@@ -27,8 +27,6 @@
 #include <complex>
 #include <vector>
 
-#include <boost/function.hpp>
-
 namespace ietl
 {
     enum DesiredEigenvalue { Largest, Smallest };

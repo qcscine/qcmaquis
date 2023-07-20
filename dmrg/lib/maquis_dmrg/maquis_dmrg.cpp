@@ -7,6 +7,7 @@
 
 #include "maquis_dmrg.h"
 #include <complex>
+#include <utility>
 
 #include "dmrg/sim/symmetry_factory.h"
 #include "dmrg/sim/matrix_types.h"
@@ -15,8 +16,8 @@
 namespace maquis
 {
     #if defined(HAVE_SU2U1PG)
-    typedef SU2U1PG SU2U1grp;
-    typedef TwoU1PG TwoU1grp;
+    using SU2U1grp = SU2U1PG;
+    using TwoU1grp = TwoU1PG;
     #elif defined(HAVE_SU2U1)
     typedef SU2U1 SU2U1grp;
     typedef TwoU1 TwoU1grp;
@@ -24,19 +25,19 @@ namespace maquis
 
     template<class ScalarType>
     struct simulation_traits {
-        typedef std::shared_ptr<abstract_interface_sim<tmatrix<ScalarType> > > shared_ptr;
+        using shared_ptr = std::shared_ptr<abstract_interface_sim<tmatrix<ScalarType>>>;
         template <class SymmGroup> struct F {
-            typedef interface_sim<tmatrix<ScalarType>, SymmGroup> type;
+            using type = interface_sim<tmatrix<ScalarType>, SymmGroup>;
         };
     };
 
     template <typename ScalarType>
     struct DMRGInterface<ScalarType>::Impl
     {
-        typedef typename simulation_traits<ScalarType>::shared_ptr sim_ptr;
+        using sim_ptr = typename simulation_traits<ScalarType>::shared_ptr;
         sim_ptr sim;
 
-        Impl(sim_ptr sim_) : sim(sim_) {};
+        Impl(sim_ptr sim_) : sim(std::move(sim_)) {};
         ~Impl() = default;
     };
 
@@ -155,8 +156,9 @@ namespace maquis
     template <typename ScalarType>
     const typename DMRGInterface<ScalarType>::results_map_type& DMRGInterface<ScalarType>::measurements()
     {
-        if (measurements_.empty())
+        if (measurements_.empty()) {
             measure();
+        }
         // This is probably not going to work if we call optimize() several times
         // TODO: handle also these cases!
         return measurements_;
@@ -205,8 +207,9 @@ namespace maquis
     template <typename ScalarType>
     const typename DMRGInterface<ScalarType>::meas_with_results_type& DMRGInterface<ScalarType>::getMeasurement(std::string measName)
     {
-        if (measurements().find(measName) == measurements().end())
+        if (measurements().find(measName) == measurements().end()) {
             throw std::runtime_error("Measurement not available!");
+        }
         return measurements().at(measName);
     }
 
