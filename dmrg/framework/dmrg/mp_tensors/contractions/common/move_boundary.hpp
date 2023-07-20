@@ -214,8 +214,7 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTenso
     bra_tensor.make_right_paired();
     block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-        if (mpo.herm_info.left_skip(b1) && isHermitian)
-            continue;
+        if (mpo.herm_info.left_skip(b1) && isHermitian) { continue; }
         Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), bra_basis, left_i, out_right_i, in_left_pb, out_right_pb, isHermitian);
         block_matrix<Matrix, SymmGroup> tmp;
         typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp, MPOTensor_detail::get_spin(mpo, b1, true));

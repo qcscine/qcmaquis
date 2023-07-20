@@ -271,8 +271,7 @@ namespace contraction {
             int loop_max = right.aux_dim();
             omp_for(int b2, parallel::range(0,loop_max), {
                 // exploit single use sparsity (delay multiplication until the object is used)
-                if (mpo.num_col_non_zeros(b2) == 1)
-                    continue;
+                if (mpo.num_col_non_zeros(b2) == 1) { continue; }
                 // exploit hermiticity if available
                 if (mpo.herm_info.right_skip(b2) && isHermitian_)
                 {

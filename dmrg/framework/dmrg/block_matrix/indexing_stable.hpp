@@ -111,6 +111,7 @@ public:
         return (*this)[pos].second;
     }
 
+    /** @brief Returns first index matching input charge   */
     std::size_t position(charge c) const
     {
         const_iterator match;

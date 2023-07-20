@@ -90,6 +90,7 @@ public:
   /** @brief Solution of the site-centered problem */
   MPSTensorType solveLocalProblem() final {
     auto& mpsToOptimize = mpsContainer_.getMPSTensor(siteLeft_);
+    std::cout << "MPS:\n" << mpsToOptimize << '\n';
     if (parms_["eigensolver"] == std::string("IETL")) {
       resultOfLocalSiteProblem_ = solve_ietl_lanczos(*(siteProblem_.get()), mpsToOptimize, parms_);
     } else if (parms_["eigensolver"] == std::string("IETL_JCD")) {

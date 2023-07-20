@@ -114,8 +114,8 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
     C.clear();
     Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        auto matched_block = B_left_basis.position(A.basis().right_charge(k));
         // Match right basis of A with left basis of B
+        auto matched_block = B_left_basis.position(A.basis().right_charge(k));
         if ( matched_block == B.n_blocks() ) { continue; }
         if ( !ref_left_basis.has(A.basis().left_charge(k)) ) { continue; }
         auto new_block = C.insert_block(
