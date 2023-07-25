@@ -124,11 +124,11 @@ namespace tag_detail {
 
 #ifndef NDEBUG
         try { num_check(invscale1); }
-        catch (std::exception e) { maquis::cout << "invscale1 numcheck failed\n"; exit(1);}
+        catch (const std::exception& e) { maquis::cout << "invscale1 numcheck failed\n"; exit(1);}
         try { num_check(invscale2); }
-        catch (std::exception e) { maquis::cout << "invscale2 numcheck failed\n"; exit(1);}
+        catch (const std::exception& e) { maquis::cout << "invscale2 numcheck failed\n"; exit(1);}
         try { num_check(scale); }
-        catch (std::exception e) { maquis::cout << "scale numcheck failed\n"; exit(1);}
+        catch (const std::exception& e) { maquis::cout << "scale numcheck failed\n"; exit(1);}
 #endif
 
         return std::make_pair(true, scale);
