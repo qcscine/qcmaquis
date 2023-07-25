@@ -123,11 +123,6 @@ void lbtm_kernel_execute(size_t b2, ContractionGrid<Matrix, SymmGroup>& contr_gr
                     Matrix const & wblock = W[w_block];
                     Matrix const & iblock = T[t_block];
                     Matrix & oblock = ret[o];
-                    /* std::cout << "phys_s1: " << phys_s1 */ 
-                    /*           << "; phys_s2: " << phys_s2 */
-                    /*           << "; T.basis().left_size(t_block): " << T.basis().left_size(t_block) */
-                    /*           << "; r_size: " << r_size */
-                    /*           << "; alpha: " << access.scale(oi) << '\n'; */
                     parallel::guard proc(scheduler(o));
                     maquis::dmrg::detail::lb_tensor_mpo(
                         oblock, iblock, wblock,
