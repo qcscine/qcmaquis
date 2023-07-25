@@ -306,7 +306,6 @@ generate_right_mpo_basis(MPSTensor<Matrix, SymmGroup> const & bra_tensor, MPSTen
     ret.resize(mpo.row_dim());
     index_type loop_max = mpo.row_dim();
     // Main loop
-    auto now = std::chrono::high_resolution_clock::now();
     omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
         if (mpo.herm_info.left_skip(b1))
             continue;

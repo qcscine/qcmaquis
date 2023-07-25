@@ -622,10 +622,6 @@ std::vector<Op> reshape_right_to_list (Index<SymmGroup> const & phys, Op2 const 
                 }
                 
                 std::size_t in_left_offset = pb(s1->first, -s2->first);
-                std::size_t in_right_offset = 0;
-                
-                std::size_t out_left_offset = 0;
-                std::size_t out_right_offset = 0;
                 
                 Ai(*s1, *s2) = A(std::make_pair(
                       in_left_c,

@@ -74,7 +74,7 @@ public:
 
   /** @brief Class constructor from a single MPS */
   OverlapPropagator(const MPSType& refMPS, const MPSType& otherMPS, int initSite=0)
-    : refMPS_(refMPS), L_(refMPS_.length()), nOrthogonalMPSs_(1)
+    : refMPS_(refMPS), nOrthogonalMPSs_(1), L_(refMPS_.length())
   {
     orthoMPS_.push_back(otherMPS);
     initializeData(initSite);

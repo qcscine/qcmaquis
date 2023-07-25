@@ -42,7 +42,7 @@ namespace MPOTensor_detail
         term_descriptor() = default;
         term_descriptor(typename const_type<internal_value_type, Const>::type & term_descs,
                         op_table_ptr op_tbl_)
-            : operator_table(op_tbl_), term_descriptors(term_descs) {}
+            : term_descriptors(term_descs), operator_table(op_tbl_) {}
 
         std::size_t size() const { return term_descriptors.size(); }
         typename const_type<op_t, Const>::type & op(std::size_t i=0) { return (*operator_table)[term_descriptors[i].first]; }

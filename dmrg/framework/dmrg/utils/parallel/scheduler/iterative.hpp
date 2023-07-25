@@ -15,7 +15,7 @@ namespace parallel {
         typedef traits::resource_iterator resource_iterator;
 
         struct index {
-            index() : max_iterations(1), iteration(0) {}
+            index() :  iteration(0), max_iterations(1) {}
             void set(int i, int max){
                 iteration = i;
                 max_iterations = max;

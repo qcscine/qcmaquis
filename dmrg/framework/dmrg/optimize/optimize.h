@@ -65,17 +65,18 @@ public:
     , parms(parms_)
     , stop_callback(std::move(stop_callback_))
     {
-        std::size_t L = mps.length();
 
         mps.canonize(site);
-        for(int i = 0; i < mps.length(); ++i)
+        for(int i = 0; i < mps.length(); ++i) {
             Storage::StoreToFile(mps[i]);
+        }
 
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
 
-        if (northo > 0 && !parms_.is_set("ortho_states"))
+        if (northo > 0 && !parms_.is_set("ortho_states")) {
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
+        }
 
         if (parms_.is_set("ortho_states")) {
             ortho_mps.resize(northo);
@@ -109,15 +110,17 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
-        for (int n = 0; n < northo; ++n)
+        for (int n = 0; n < northo; ++n) {
             ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
+        }
     }
 
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
-        for (int n = 0; n < northo; ++n)
+        for (int n = 0; n < northo; ++n) {
             ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
+        }
     }
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
@@ -171,10 +174,11 @@ protected:
     double get_cutoff(int sweep) const
     {
         double cutoff;
-        if (sweep >= parms.template get<int>("ngrowsweeps"))
+        if (sweep >= parms.template get<int>("ngrowsweeps")) {
             cutoff = parms.template get<double>("truncation_final");
-        else
+        } else {
             cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
+        }
         return cutoff;
     }
 
@@ -183,12 +187,14 @@ protected:
         std::size_t Mmax;
         if (parms.is_set("sweep_bond_dimensions")) {
             std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
-            if (sweep >= ssizes.size())
+            if (sweep >= ssizes.size()) {
                 Mmax = *ssizes.rbegin();
-            else
+            } else {
                 Mmax = ssizes[sweep];
-        } else
+}
+        } else {
             Mmax = parms.template get<std::size_t>("max_bond_dimension");
+        }
         return Mmax;
     }
 

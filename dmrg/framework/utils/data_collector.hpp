@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <utility>
 #include <vector>
 #include <map>
 
@@ -46,9 +47,9 @@ extern DataCollector num_blocks_svd_collector;
 class DataCollector
 {
 public:
-    typedef std::size_t size_t;
+    using size_t = std::size_t;
     
-	DataCollector(std::string const & name, std::size_t maxsize_=10) : name_(name), maxsize(maxsize_), active_key("none")
+	DataCollector(std::string  name, std::size_t maxsize_=10) : maxsize(maxsize_), active_key("none"), name_(std::move(name))
     {
         data[active_key] = std::vector<size_t>(maxsize, 0);
     }
@@ -57,8 +58,9 @@ public:
 
 	void set_key (std::string const & key)
 	{
-		if (data.count(key) == 0)
+		if (data.count(key) == 0) {
             data[key] = std::vector<size_t>(maxsize, 0);
+    }
         active_key = key;
 	}
 
@@ -73,8 +75,9 @@ public:
 	void add_data (const size_t& val, bool verbose=false)
 	{
 		if (val >= data[active_key].size()) {
-            if (maxsize <= val)
+            if (maxsize <= val) {
                 maxsize = val + 1;
+            }
             data[active_key].resize(maxsize, 0);
         }
            data[active_key][val]++;
@@ -82,8 +85,9 @@ public:
 	void add_data (std::string const & key, const size_t& val)
 	{
 		if (val >= data[key].size()) {
-            if (maxsize <= val)
+            if (maxsize <= val) {
                 maxsize = val + 1;
+            }
             data[key].resize(maxsize, 0);
         }
         data[key][val]++;
@@ -97,12 +101,10 @@ public:
 		} else if (data.size() > 1) {
 			std::vector<std::string> keys;
             std::vector<std::vector<size_t> > values;
-			for (std::map<std::string, std::vector<size_t> >::const_iterator it = data.begin();
-				it != data.end();
-				it++)
+			for (const auto & it : data)
 			{
-                keys.push_back(it->first);
-                values.push_back(it->second);
+                keys.push_back(it.first);
+                values.push_back(it.second);
 			}
 			ar[name_ + "/mean/value"] << values;
 			ar[name_ + "/labels"] << keys;

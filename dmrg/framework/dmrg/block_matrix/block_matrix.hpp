@@ -65,8 +65,8 @@ block_matrix<Matrix, SymmGroup>::block_matrix(DualIndex<SymmGroup> const & basis
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 : basis_(rhs.basis())
-, data_(rhs.data_)
 , size_index(rhs.size_index)
+, data_(rhs.data_)
 , iter_index(rhs.iter_index)
 {
 }
@@ -74,9 +74,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 template<class Matrix, class SymmGroup>
 template <class OtherMatrix>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup> const& rhs)
-: basis_(rhs.basis())
-, size_index(rhs.size_index)
-, iter_index(rhs.iter_index)
+: iter_index(rhs.iter_index), basis_(rhs.basis()), size_index(rhs.size_index)
 {
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k) {

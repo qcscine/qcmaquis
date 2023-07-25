@@ -59,7 +59,7 @@ namespace maquis
 #endif
             Impl(const DmrgParameters& parms, const std::string& pname, int nstates, bool do_fiedler, bool do_cideas,
                  const std::vector<std::vector<int> > & hf_occupations)
-                : parms_(parms), nstates_(nstates), pname_(pname), pname_guess_(pname + "_guess"), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
+                : parms_(parms), pname_(pname), pname_guess_(pname + "_guess"), nstates_(nstates), do_fiedler_(do_fiedler), do_cideas_(do_cideas)
             {
 
                 parms_.erase_measurements();

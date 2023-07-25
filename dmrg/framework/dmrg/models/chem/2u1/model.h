@@ -55,7 +55,6 @@ public:
     {
         // TODO: update this->terms_ with the new parameters
         throw std::runtime_error("update() not yet implemented for this model.");
-        return;
     }
 
     // For this model: site_type == point group irrep
@@ -79,30 +78,31 @@ public:
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (name == "create_up")
+        if (name == "create_up") {
             return create_up[type];
-        else if (name == "create_down")
+        } else if (name == "create_down") {
             return create_down[type];
-        else if (name == "destroy_up")
+        } else if (name == "destroy_up") {
             return destroy_up[type];
-        else if (name == "destroy_down")
+        } else if (name == "destroy_down") {
             return destroy_down[type];
-        else if (name == "count_up")
+        } else if (name == "count_up") {
             return count_up[type];
-        else if (name == "count_down")
+        } else if (name == "count_down") {
             return count_down[type];
-        else if (name == "e2d")
+        } else if (name == "e2d") {
             return e2d[type];
-        else if (name == "d2e")
+        } else if (name == "d2e") {
             return d2e[type];
-        else if (name == "docc")
+        } else if (name == "docc") {
             return docc[type];
-	else if (name == "d2u")
+        } else if (name == "d2u") {
             return d2u[type];
-        else if (name == "u2d")
+        } else if (name == "u2d") {
             return u2d[type];
-        else
+        } else {
             throw std::runtime_error("Operator not valid for this model.");
+        }
         return 0;
     }
 
@@ -176,14 +176,15 @@ public:
                 if (std::regex_match(lhs, what, expression)) {
 
                     std::vector<op_t> meas_op;
-                    if (it.second == "Nup")
+                    if (it.second == "Nup") {
                         meas_op = count_up_ops;
-                    else if (it.second == "Ndown")
+                    } else if (it.second == "Ndown") {
                         meas_op = count_down_ops;
-                    else if (it.second == "Nup*Ndown" || it.second == "docc")
+                    } else if (it.second == "Nup*Ndown" || it.second == "docc") {
                         meas_op = docc_ops;
-                    else
+                    } else {
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
+                    }
 
                     meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
@@ -220,43 +221,41 @@ public:
         for (auto&& it: parms.get_range()) {
             std::string lhs = it.first;
 
-            std::string name, value;
-            bool half_only, nearest_neighbors_only;
+            std::string name;
+            std::string value;
+            bool half_only;
             if (std::regex_match(lhs, what, expression)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
-                nearest_neighbors_only = false;
             }
             if (std::regex_match(lhs, what, expression_half)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
-                nearest_neighbors_only = false;
             }
             if (std::regex_match(lhs, what, expression_nn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = false;
-                nearest_neighbors_only = true;
             }
             if (std::regex_match(lhs, what, expression_halfnn)) {
                 value = it.second;
                 name = what.str(1);
                 half_only = true;
-                nearest_neighbors_only = true;
             }
 
             if (std::regex_match(lhs, what, expression_twoptdm) ||
                     std::regex_match(lhs, what, expression_transition_twoptdm)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans2rdm]"){
                     name = "transition_twoptdm";
                     bra_ckp = it.second;
                 }
-                else
+                else {
                     name = "twoptdm";
+                }
 
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
@@ -301,7 +300,7 @@ public:
                      std::regex_match(lhs, what, expression_transition_twoptdm_duud) ||
                      std::regex_match(lhs, what, expression_transition_twoptdm_dddd) ) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 bra_ckp = it.second;
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 if(lhs == "MEASURE[trans2rdm_aaaa]"){
@@ -357,20 +356,21 @@ public:
             else if (std::regex_match(lhs, what, expression_threeptdm) ||
                      std::regex_match(lhs, what, expression_transition_threeptdm)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans3rdm]"){
                     name = "transition_threeptdm";
                     std::vector<std::string> value_split;
 
                     value = it.second;
                     boost::split( value_split, value, boost::is_any_of(";"));
-                    if(value_split.size() > 1)
+                    if(value_split.size() > 1) {
                     	bra_ckp = value_split[0];
-                    else
+                    } else {
                     	bra_ckp = it.second;
-                }
-                else
+                    }
+                } else {
                     name = "threeptdm";
+                }
 
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
@@ -472,8 +472,9 @@ public:
                     maquis::cout << " " << std::endl;
                     */
                    // check if positions are out of bounds
-                   for (auto&& p: positions)
+                   for (auto&& p: positions) {
                         assert(p < parms["L"]);
+                   }
 
                 }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
@@ -482,7 +483,7 @@ public:
 
             else if (std::regex_match(lhs, what, expression_fourptdm)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 name = "fourptdm";
 
                 // stknecht - may 2015: collapsing operator combinations - check for odd electron/open shell systems
@@ -723,8 +724,9 @@ public:
                     maquis::cout << " " << std::endl;
                     */
                     // check if positions exceed L
-                    for (auto&& p: positions)
+                    for (auto&& p: positions) {
                         assert(p < parms["L"]);
+                    }
                 }
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -733,7 +735,7 @@ public:
             else if (std::regex_match(lhs, what, expression_oneptdm_uu) ||
                      std::regex_match(lhs, what, expression_transition_oneptdm_uu)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans1rdm_aa]"){
                     name = "transition_oneptdm_aa";
                     bra_ckp = it.second;
@@ -751,7 +753,6 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -760,7 +761,7 @@ public:
             else if (std::regex_match(lhs, what, expression_oneptdm_dd) ||
                      std::regex_match(lhs, what, expression_transition_oneptdm_dd)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans1rdm_bb]"){
                     name = "transition_oneptdm_bb";
                     bra_ckp = it.second;
@@ -778,7 +779,6 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -787,7 +787,7 @@ public:
             else if (std::regex_match(lhs, what, expression_oneptdm_ud) ||
                      std::regex_match(lhs, what, expression_transition_oneptdm_ud)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans1rdm_ab]"){
                     name = "transition_oneptdm_ab";
                     bra_ckp = it.second;
@@ -805,7 +805,6 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -814,7 +813,7 @@ public:
             else if (std::regex_match(lhs, what, expression_oneptdm_du) ||
                      std::regex_match(lhs, what, expression_transition_oneptdm_du)) {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans1rdm_ba]"){
                     name = "transition_oneptdm_ba";
                     bra_ckp = it.second;
@@ -832,7 +831,6 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
-                nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -844,7 +842,7 @@ public:
                     std::regex_match(lhs, what, expression_oneptspdm))
                     {
 
-                std::string bra_ckp("");
+                std::string bra_ckp{};
                 if(lhs == "MEASURE[trans1rdm]"){
                     name = "transition_oneptdm";
                     bra_ckp = it.second;
@@ -898,7 +896,6 @@ public:
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, factor));
                 }
 
-                nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -979,13 +976,15 @@ public:
                         meas_operators.push_back(destroy_down_count_up);
                         ++f_ops;
                     }
-                    else
+                    else {
                         throw std::runtime_error("Unrecognized operator in correlation measurement: "
                                                     + boost::lexical_cast<std::string>(*it2) + "\n");
+                    }
                 }
 
-                if (f_ops % 2 != 0)
+                if (f_ops % 2 != 0) {
                     throw std::runtime_error("In " + name + ": Number of fermionic operators has to be even in correlation measurements.");
+                }
 
                 /// parse positions p1,p2,p3,... (or `space`)
                 std::vector<pos_t> positions;
@@ -1026,8 +1025,9 @@ private:
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));
-            for (std::size_t b = 0; b < op.n_blocks(); ++b)
+            for (std::size_t b = 0; b < op.n_blocks(); ++b) {
                 mod[b] = op[b];
+            }
 
             ret.push_back(mod);
         }

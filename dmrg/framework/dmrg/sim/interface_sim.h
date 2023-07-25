@@ -50,6 +50,8 @@ class interface_sim : public sim<Matrix, SymmGroup>, public abstract_interface_s
   using base::chkpfolder;
   using base::lat;
   using base::model;
+  using base::results_archive_path;
+  using base::checkpoint_simulation;
 
 public:
   /**

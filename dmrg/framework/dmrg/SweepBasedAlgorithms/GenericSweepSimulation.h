@@ -9,6 +9,7 @@
 #define GENERIC_SWEEPS_SIMULATION_H
 
 #include <chrono>
+#include <utility>
 
 #include "dmrg/models/lattice/lattice.h"
 #include "dmrg/models/model.h"
@@ -46,9 +47,10 @@ public:
   /** @brief Class constructor */
   GenericSweepSimulation(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                          const Lattice& lattice, bool verbose, std::string simulationName="Optimization")
-    : mps_(mps), siteLeft_(0), siteRight_(1), parms_(parms), L_(mps_.length()), mpoContainer_(mpo, mps), mpsContainer_(mps),
-      simulationName_(simulationName), nSweeps_(0), indexOfMicroIteration_(0),
-      lattice_(lattice), model_(model), verbose_(verbose)
+    : mps_(mps), mpoContainer_(mpo, mps), mpsContainer_(mps),
+      L_(mps_.length()), indexOfMicroIteration_(0), siteLeft_(0), siteRight_(1),
+      nSweeps_(0), parms_(parms), simulationName_(std::move(simulationName)),
+      model_(model), lattice_(lattice), verbose_(verbose)
   {
     
     

@@ -93,7 +93,6 @@ public:
   void write_string(std::size_t, const char *);
 
 private:
-  bool valid_; // flag to indicate the state of the message buffers
   detail::Buffer buf_; // the message buffer for other message passing systems
 };
 
@@ -150,7 +149,6 @@ public:
   void read_string(std::size_t, char *);
 
 private:
-  bool valid_; // state of the message buffer
   detail::Buffer buf_; // the message buffer
   Process theSender_; // the process that sent the message
   void receive(const Process*,int32_t);   // receive a message

@@ -61,10 +61,7 @@ namespace measurements_details {
             //maquis::cout << " index " << p << " --> accumulated charge (after ) " << acc << " local charge " << local << std::endl;
           }
 
-          if (acc == symm::IdentityCharge)
-            return true;
-
-          return false;
+          return (acc == symm::IdentityCharge);
         }
     };
 
@@ -146,12 +143,10 @@ namespace measurements_details {
                 p1_end   = positions_first[2];
                 p2_end   = positions_first[3];
             }
-            for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
-            for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
-            {
-                for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
-                {
-                    if(p4 > p3 || p4 > p1 || p3 > p1) continue;
+            for (pos_t p4 = p4_start ; p4 < p4_end; ++p4) {
+            for (pos_t p3 = p3_start ; p3 < p3_end; ++p3) {
+                for (pos_t p1 = p1_start; p1 >= p1_end; --p1) {
+                    if(p4 > p3 || p4 > p1 || p3 > p1) { continue; }
 
                     if(positions_first.empty()){
                         p2_start = p1;
@@ -160,13 +155,13 @@ namespace measurements_details {
 
                     for (pos_t p2 = p2_start; p2 >= p2_end; --p2)
                     {
-                        if(p3 > p2) continue;
+                        if(p3 > p2) { continue; }
 
                         // third index must be different if p1 == p2
-                        if(p1 == p2 && p3 == p1) continue;
+                        if(p1 == p2 && p3 == p1) { continue; }
 
                         // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
-                        if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2)) continue;
+                        if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2)) { continue; }
 
                         bool double_equal = (p1 == p2 && p3 == p4);             // case 1
                         bool     ij_equal = (p1 == p2 && p2 != p3 && p3 != p4); // case 2
@@ -174,75 +169,80 @@ namespace measurements_details {
                         bool     kl_equal = (p1 != p2 && p2 != p3 && p3 == p4); // case 4
                         bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
 
-                        for (pos_t p5 = p1; p5 >= 0; --p5)
-                        for (pos_t p6 = p1; p6 >= 0; --p6)
-                        for (pos_t p7 = 0; p7 < p_max; ++p7)
-                        {
+                        for (pos_t p5 = p1; p5 >= 0; --p5) {
+                        for (pos_t p6 = p1; p6 >= 0; --p6) {
+                        for (pos_t p7 = 0; p7 < p_max; ++p7) {
                             // set restrictions on index p6
-                            if ((double_equal || ij_equal) && p6 > p5 ) continue;
+                            if ((double_equal || ij_equal) && p6 > p5 ) { continue; }
 
                             // set restrictions on index p7
-                            if(double_equal)
-                                if(p7 > p5) continue;
-                            else
-                                if(p7 > p1) continue;
+                            if(double_equal) {
+                                if(p7 > p5) { continue; }
+                            } else {
+                                if(p7 > p1) { continue; }
+                            }
 
-                            if(p5 == p6 && p5 == p7) continue;
+
+                            if(p5 == p6 && p5 == p7) { continue; }
 
                             pos_t p8_end = 0;
-                            if (double_equal)
+                            if (double_equal) {
                             // set restrictions on index p8
                                 p8_end = p5+1;
-                            else if (kl_equal)
+                            } else if (kl_equal) {
                                 p8_end = p7+1;
-                            else
+                            } else {
                                 p8_end = p1+1;
+                            }
 
                             for (pos_t p8 = 0; p8 < p8_end; ++p8)
                             {
                                 // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
-                                if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) continue;
+                                if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6)) { continue; }
 
                                 // case 1
-                                if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                                if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                                if(double_equal && p8 > p7 && p7 > p6 && (p8 > p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) continue;
-                                if(double_equal && p8 < p7 && p7 > p6 && (p8 == p5 || p8 == p6 || p7 == p5 || p7 == p6)) continue;
-                                if(double_equal && p8 < p7 && p7 > p6 && p8 <  p6 ) continue;
+                                if(double_equal && p8 > p7 &&            (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) { continue; }
+                                if(double_equal && p8 > p7 && p7 > p6 && (p8 < p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) { continue; }
+                                if(double_equal && p8 > p7 && p7 > p6 && (p8 > p6 || p8 == p5 || p8 == p6 || p5 == p6 || p5 == p7 || p6 == p7)) { continue; }
+                                if(double_equal && p8 < p7 && p7 > p6 && (p8 == p5 || p8 == p6 || p7 == p5 || p7 == p6)) { continue; }
+                                if(double_equal && p8 < p7 && p7 > p6 && p8 <  p6 ) { continue; }
                                 // case 2/3/4: 2x2 equal indices
-                                if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) continue;
+                                if((ij_equal || jk_equal || kl_equal) && p5 == p6 && p7 == p8 && p7 > p6) { continue; }
 
                                 // case 2/4: 2 equal indices
-                                if((ij_equal || kl_equal) && (p5 == p7 || p5 == p8 || p6 == p7|| p6 == p8)) continue;
+                                if((ij_equal || kl_equal) && (p5 == p7 || p5 == p8 || p6 == p7|| p6 == p8)) { continue; }
 
                                 // case 3
                                 if(jk_equal){
                                     // 2 equal indices
-                                    if(p5 == p7 || p6 == p7 || p6 == p8) continue;
-                                    if(p5 == p6 && p7 != p8 && p6 > p7) continue;
-                                    if(p5 == p8 && p7 > p6) continue;
+                                    if(p5 == p7 || p6 == p7 || p6 == p8) { continue; }
+                                    if(p5 == p6 && p7 != p8 && p6 > p7) { continue; }
+                                    if(p5 == p8 && p7 > p6) { continue; }
                                     // none equal
-                                    if(std::min(p5,p6) != std::min(p7,p8) && p7 != p8 && p7 > p6) continue;
+                                    if(std::min(p5,p6) != std::min(p7,p8) && p7 != p8 && p7 > p6) { continue; }
                                 }
 
                                 // case 5
                                 if(none_equal){
-                                    if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) continue;
+                                    if((p5 == p6 && p7 == p8 && p5 < p7) || (p5 == p7 && p6 == p8 && p5 < p6) || (p5 == p8 && p6 == p7 && p5 < p6)) { continue; }
                                 }
 
                                 // defines position vector for spin-free 4-RDM element
                                 std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6, p7, p8};
 
                                 // check norm of lhs and rhs - skip if norm of rhs > lhs
-                                if(compare_norm(positions)) continue;
+                                if(compare_norm(positions)) { continue; }
 
                                 // execute functor
                                 fun(positions);
                             }
                         }
+}
+}
                     }
                 }
             }
+}
             return fun.get();
         }
     };
@@ -284,29 +284,33 @@ namespace measurements_details {
                 p3_end   = positions_first[2]+1;
             }
 
-            for (pos_t p1 = p1_start; p1 < p1_end; ++p1)
-            for (pos_t p2 = p2_start; p2 < p2_end; ++p2)
-            for (pos_t p3 = p3_start; p3 < p3_end; ++p3)
-            for (pos_t p4 = 0;                p4 < p4_end; ++p4)
+            for (pos_t p1 = p1_start; p1 < p1_end; ++p1) {
+            for (pos_t p2 = p2_start; p2 < p2_end; ++p2) {
+            for (pos_t p3 = p3_start; p3 < p3_end; ++p3) {
+            for (pos_t p4 = 0;                p4 < p4_end; ++p4) {
             for (pos_t p5 = 0;                p5 < p5_end; ++p5)
             {
                 // index restrictions
-                if(p1 < p2 ) continue;
-                if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) continue;
-                if(!bra_neq_ket && p4 < std::min(p1, p2)) continue;
-                if(!bra_neq_ket && p5 < std::min(p1, p2)) continue;
+                if(p1 < p2 ) { continue; }
+                if((p1 == p2 && p1 == p3) || (p3 < std::min(p1, p2))) { continue; }
+                if(!bra_neq_ket && p4 < std::min(p1, p2)) { continue; }
+                if(!bra_neq_ket && p5 < std::min(p1, p2)) { continue; }
 
 
                 for (pos_t p6 = std::min(p4, p5); p6 < p6_end; ++p6)
                 {
                     // sixth index must be different if p4 == p5
-                    if(p4 == p5 && p4 == p6) continue;
+                    if(p4 == p5 && p4 == p6) { continue; }
 
                     // do with the indices what's required to do -- define a vector with all positions and pass it on to the functor
                     std::vector<pos_t> positions{p1, p2, p3, p4, p5, p6};
                     fun(positions);
                 }
             }
+}
+}
+}
+}
             return fun.get();
         }
     };
@@ -318,16 +322,19 @@ namespace measurements_details {
         using pos_t = Lattice::pos_t;
         typename F::return_type operator()(F fun, pos_t L, bool bra_neq_ket = false, const std::vector<pos_t> & positions_first = std::vector<pos_t>())
         {
-            for (pos_t p1 = 0; p1 < L; ++p1)
-            for (pos_t p2 = 0; p2 < L; ++p2)
+            for (pos_t p1 = 0; p1 < L; ++p1) {
+            for (pos_t p2 = 0; p2 < L; ++p2) {
             // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
             // if bra != ket, pertmutation symmetry is only pqrs == qpsr
-            for (pos_t p3 = (bra_neq_ket) ? 0 : std::min(p1,p2); p3 < L; ++p3)
+            for (pos_t p3 = (bra_neq_ket) ? 0 : std::min(p1,p2); p3 < L; ++p3) {
             for (pos_t p4 = p3; p4 < L; ++p4)
             {
                 std::vector<pos_t> positions{p1, p2, p3, p4};
                 fun(positions);
             }
+}
+}
+}
             return fun.get();
         }
     };

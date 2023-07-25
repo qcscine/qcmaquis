@@ -13,9 +13,8 @@ typename WignerWrapper::map_type WignerWrapper::map;
 
 void WignerWrapper::fill_cache(int max)
 {
-    if (!UseCache) return;
+    if (!UseCache) { return; }
 
-    double dummy;
     for (int i = 0; i <= max; i++)
     for (int j = 0; j <= 2; j++)
     for (int k = 0; k <= max; k++)
@@ -28,7 +27,7 @@ void WignerWrapper::fill_cache(int max)
     {
         // maybe not required
         // only include cases l==m==n for l==0
-        if ((l == m && m == n) && (l != 0)) continue;
+        if ((l == m && m == n) && (l != 0)) { continue; }
 
         if (!triangle_9j_fails(i,j,k,l,m,n,o,p,q)) // make sure zero values are not cached
             map[std::make_tuple(i,j,k,l,m,n,o,p,q)] = WignerWrapper::wigner9j_nocache(i,j,k,l,m,n,o,p,q);

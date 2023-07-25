@@ -55,14 +55,16 @@ public:
   SweepBasedLinearSystem(MPSType& mps, const MPOType& mpo, BaseParameters& parms, const ModelType& model,
                          const Lattice& lattice, bool verbose)
     : Base(mps, mpo, parms, model, lattice, verbose, std::string("Linear system solver")),
-      adaptiveBondDimension_(false), shiftParameter_(0.), isPrecond_(false), rhsMps_(mps)
+      rhsMps_(mps), adaptiveBondDimension_(false),
+      isPrecond_(false), shiftParameter_(0.), 
+      overlapPropagator_(std::make_unique<OverlapPropagatorType>(mps_, rhsMps_))
   {
     /* // Folded simulation --> To be reactivated when implementing the folded operator
     if (parms["pI_folded"] == "yes") {
         maquis::cout << " Activating folded treatment " << std::endl;
         isSquared = true;
     } */
-    overlapPropagator_ = std::make_unique<OverlapPropagatorType>(mps_, rhsMps_);
+    
     /* To be reactivated when implementing the folded operator
     if (isSquared) {
       leftSquared_.resize(mpo.length()+1);
@@ -77,10 +79,12 @@ public:
     }
     // Note that we subtract the core energy to the shift parameter (the SiteProblem object
     // does not include that contribution)
-    if (parms_.is_set("ipi_shift"))
+    if (parms_.is_set("ipi_shift")) {
       shiftParameter_ = parms["ipi_shift"].as<ValueType>()-mpoContainer_.getMPO().getCoreEnergy();
-    if (parms_["linsystem_precond"] == "yes")
+    }
+    if (parms_["linsystem_precond"] == "yes") {
       isPrecond_ = true;
+    }
     calculateExactError_ = (parms_["linsystem_exact_error"] == "yes");
   }
 
@@ -99,11 +103,12 @@ public:
     siteProblem_ = std::make_unique<SiteProblemType>(boundaryPropagator_->getLeftBoundary(siteLeft_), boundaryPropagator_->getRightBoundary(siteRight_),
                                                      mpoContainer_.getMPOTensor(siteLeft_));
     rhs_ = overlapPropagator_->template getOrthogonalVector<SweepType>(siteLeft_, siteRight_);
-    if (isPrecond_)
+    if (isPrecond_) {
       preconditioner_ = std::make_unique<BlockMatrixType>(contraction::diagonal_hamiltonian(boundaryPropagator_->getLeftBoundary(siteLeft_),
                                                                                             boundaryPropagator_->getRightBoundary(siteRight_),
                                                                                             mpoContainer_.getMPOTensor(siteLeft_),
                                                                                             mpsContainer_.getMPSTensor(siteLeft_)));
+    }
   }
 
   /** @brief Solution of the site-centered problem */
@@ -124,14 +129,16 @@ public:
     if (sweepType == SweepDirectionType::Forward &&
         !SweepTraitClass::changeDirectionNextMicroiteration(L_, indexOfMicroIteration_)) {
       rhsMps_.move_normalization_l2r(siteLeft_, siteLeft_+1);
-      if (overlapPropagator_)
+      if (overlapPropagator_) {
         overlapPropagator_->updateLeftOverlapBoundaries(siteLeft_+1);
+      }
     }
     else {
       auto mpsCopy = rhsMps_;
       rhsMps_.move_normalization_r2l(siteRight_-1, siteRight_-2);
-      if (overlapPropagator_)
+      if (overlapPropagator_) {
         overlapPropagator_->updateRightOverlapBoundaries(siteRight_-1);
+      }
     }
   }
 
@@ -169,8 +176,9 @@ public:
       maquis::cout << std::setw(17) << std::right << iIter
                    << std::setw(19) << std::setprecision(10) << std::scientific << std::right << energyPerMicroIter_[iIter]
                    << std::setw(19) << std::setprecision(10) << std::scientific << std::right << errorPerMicroIter_[iIter] << std::endl;
-      if ((iIter+1)%(SweepTraitClass::getNumberOfMicroiterations(L_)) == 0)
+      if ((iIter+1)%(SweepTraitClass::getNumberOfMicroiterations(L_)) == 0) {
         maquis::cout << " +----------------+------------------+------------------+" << std::endl;
+      }
     }
     maquis::cout << std::endl;
   }
