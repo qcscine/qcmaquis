@@ -45,8 +45,10 @@ public:
 
   FEASTPostProcessor(int numberOfStates, int numberOfQuadrature, const std::vector<ComplexNumber>& w, const ModelType& inputModel,
                      const LatticeType& inputLattice, BaseParameters& parms_, double eMin_, double eMax_)
-    : nStates(numberOfStates), nQuad(numberOfQuadrature), weights(w), model(inputModel), lattice(inputLattice), calculateStandardDeviation(false),
-      eMin(eMin_), eMax(eMax_), parms(parms_), screenedEnergies()
+    : parms(parms_), nStates(numberOfStates), nQuad(numberOfQuadrature),
+      weights(w), model(inputModel),
+      lattice(inputLattice), calculateStandardDeviation(false),
+      eMin(eMin_), eMax(eMax_)
   {
     energies = std::vector<double>(nStates, 0);
     energiesPrev = std::vector<double>(nStates, 0);

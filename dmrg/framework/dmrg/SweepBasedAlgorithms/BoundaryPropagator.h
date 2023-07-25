@@ -43,7 +43,7 @@ public:
 
   /** @brief Class constructor */
   BoundaryPropagator(const MPSType& mps, const MPOType& mpo, int initSite=0)
-    : L_(mps.length()), initSite_(initSite), mps_(mps), mpo_(mpo)
+    : L_(mps.length()), initSite_(initSite), mpo_(mpo), mps_(mps)
   {
     left_.resize(L_+1);
     right_.resize(L_+1);

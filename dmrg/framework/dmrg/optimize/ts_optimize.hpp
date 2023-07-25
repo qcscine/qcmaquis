@@ -39,8 +39,8 @@ public:
                 std::function<bool ()> stop_callback_,
                 const Lattice& lat,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)), lat_(lat)
-    , initial_site((initial_site_ < 0) ? 0 : initial_site_)
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_)),
+      initial_site((initial_site_ < 0) ? 0 : initial_site_), lat_(lat)
     {
         parallel::guard::serial guard;
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
@@ -48,7 +48,7 @@ public:
 
     inline int to_site(const int L, const int i) const
     {
-        if (i < 0) return 0;
+        if (i < 0) { return 0; }
         /// i, or (L-1) - (i - (L-1))
         return (i < L-1) ? i : 2*L - 2 - i;
     }

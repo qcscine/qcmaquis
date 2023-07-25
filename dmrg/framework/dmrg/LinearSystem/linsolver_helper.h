@@ -18,7 +18,7 @@ class Givens {
 public:
     
     /** @brief Default constructor */        
-    explicit Givens() : activated_(false), c_(0.) {};
+    explicit Givens() : c_(0.), activated_(false) {};
 
     /** @brief Constructor from a pair */
     Givens(ScalarType x0, ScalarType x1) : activated_(true) {

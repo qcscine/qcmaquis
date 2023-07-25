@@ -147,7 +147,8 @@ namespace maquis
 
         // Constructor that takes project names and states to get the multiplicities
         Impl(const std::vector<std::string> & project_names, const std::vector<std::vector<int> >& states)
-            : project_names_(project_names), nel_(-1), multiplicities_(states.size()), states_(states)
+            : states_(states), project_names_(project_names),
+              multiplicities_(states.size()), nel_(-1)
         {
             assert(project_names.size() == states.size());
 

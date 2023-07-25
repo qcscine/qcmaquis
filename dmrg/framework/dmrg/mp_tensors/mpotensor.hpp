@@ -12,8 +12,9 @@ template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld, index_type rd, prempo_t tags,
                                         op_table_ptr tbl_, MPOTensor_detail::Hermitian h_,
                                         spin_index const & lspins, spin_index const & rspins)
-    : left_i(ld), right_i(rd), left_spins(lspins), right_spins(rspins), col_tags(ld, rd),
-      operator_table(tbl_), herm_info(ld, rd)
+    : herm_info(ld, rd), left_i(ld), right_i(rd),
+      left_spins(lspins), right_spins(rspins),
+      col_tags(ld, rd), operator_table(tbl_)
 {
     using namespace boost::tuples;
     row_index.resize(ld);

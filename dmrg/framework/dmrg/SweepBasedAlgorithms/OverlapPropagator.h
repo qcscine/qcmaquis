@@ -82,7 +82,8 @@ public:
 
   /** @brief Class constructor from a vector of MPS */
   OverlapPropagator(const MPSType& refMPS, const std::vector<MPSType>& otherMPSs, int initSite=0)
-    : refMPS_(refMPS), L_(refMPS_.length()), nOrthogonalMPSs_(otherMPSs.size()), orthoMPS_(otherMPSs)
+    : refMPS_(refMPS), orthoMPS_(otherMPSs),
+      nOrthogonalMPSs_(otherMPSs.size()), L_(refMPS_.length())
   {
     initializeData(initSite);
   }

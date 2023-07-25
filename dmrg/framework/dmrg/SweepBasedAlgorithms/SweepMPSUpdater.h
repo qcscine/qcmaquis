@@ -44,7 +44,8 @@ public:
   /** @brief Class constructor */
   SweepMPSUpdater(const MPOType& mpo, MPSType& mps, std::shared_ptr<BoundaryPropagatorType> boundaryPropagator,
                   BaseParameters& parms, bool verbose)
-    : mpo_(mpo), mps_(mps), boundaryPropagator_(boundaryPropagator), parms_(parms), L_(mps_.size()), verbose_(verbose),
+    : boundaryPropagator_(boundaryPropagator), mpo_(mpo), mps_(mps),
+      parms_(parms), L_(mps_.size()), verbose_(verbose),
       loadedUnitaryFactor_(false)
   {}
 

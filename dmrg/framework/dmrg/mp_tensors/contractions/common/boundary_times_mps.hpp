@@ -102,7 +102,8 @@ namespace contraction {
         BoundaryMPSProduct(block_matrix<Matrix, SymmGroup> const & bm_, Boundary<OtherMatrix, SymmGroup> const & left_,
                            MPOTensor<Matrix, SymmGroup> const & mpo_, Index<SymmGroup> const & ref_left_basis_,
                            bool isHermitian=true, bool correctConjugate_=true)
-            : bm(bm_), left(left_), mpo(mpo_), data_(left_.aux_dim()), ref_left_basis(ref_left_basis_),
+            : data_(left_.aux_dim()), bm(bm_), left(left_), mpo(mpo_),
+              ref_left_basis(ref_left_basis_),
               correctConjugate(correctConjugate_), isHermitian_(isHermitian)
         {
             populateData();

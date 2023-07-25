@@ -94,8 +94,8 @@ public:
 
     // Class constructors
     Index() : sorted_(true) {}
-    Index(std::size_t s_) : sorted_(true), data_(s_) {}
-    Index(std::initializer_list<data_entry_type> data) : sorted_(true), data_{data} {}
+    Index(std::size_t s_) : data_(s_), sorted_(true)  {}
+    Index(std::initializer_list<data_entry_type> data) : data_{data}, sorted_(true) {}
 
     std::size_t size_of_block(charge c) const
     {

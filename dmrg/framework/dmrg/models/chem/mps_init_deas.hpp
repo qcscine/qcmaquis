@@ -38,8 +38,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     , phys_dims(phys_dims_)
     , site_types(site_type)
     , di(parms, phys_dims_, right_end_, site_type)
-    , right_end(right_end_)
     , total_dets()
+    , right_end(right_end_)
     {
         using entanglement_detail::comp;
         //using entanglement_detail::mpair;

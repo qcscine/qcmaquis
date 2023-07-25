@@ -27,7 +27,7 @@ namespace detail {
         ChemHelper(BaseParameters & parms, Lattice const & lat_
                    , std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_
                    , std::shared_ptr<TagHandler<M, S> > tag_handler_)
-            : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
+            : ident(ident_), fill(fill_), tag_handler(tag_handler_), lat(lat_)
         {
             boost::tie(idx_, matrix_elements) = parse_integrals<InputType, S>(parms, lat);
 
