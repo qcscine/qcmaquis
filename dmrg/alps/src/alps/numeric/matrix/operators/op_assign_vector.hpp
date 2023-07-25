@@ -36,7 +36,7 @@ namespace alps {
 namespace numeric {
     namespace detail {
             template <typename T, typename T2>
-            struct multiplies : public std::binary_function<T,T2,T>
+            struct multiplies
             {
                 inline T operator()(T t, T2 const& t2) const
                 {

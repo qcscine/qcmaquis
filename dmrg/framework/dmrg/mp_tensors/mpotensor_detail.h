@@ -54,11 +54,12 @@ namespace MPOTensor_detail
     };
 
     template <class ConstIterator>
-    class IteratorWrapper : public std::iterator<std::forward_iterator_tag, typename std::iterator_traits<ConstIterator>::value_type>
+    class IteratorWrapper
     {
         using internal_iterator = ConstIterator;
 
     public:
+        using iterator_category = std::forward_iterator_tag;
         using self_type = IteratorWrapper<ConstIterator>;
         using value_type = typename std::iterator_traits<internal_iterator>::value_type;
 
