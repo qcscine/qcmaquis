@@ -17,7 +17,8 @@ namespace parallel {
         template<class Matrix>
         scheduler_balanced(const Matrix& m) : max_k(m.n_blocks()) {}
         scheduler_balanced(size_t max) : max_k(max) {}
-        resource_iterator operator()(int k) const {
+
+        virtual resource_iterator operator()(int k) const {
             return traits::balance(k,max_k);
         }
         bool propagate() const {

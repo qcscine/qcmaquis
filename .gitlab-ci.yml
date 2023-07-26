@@ -1,14 +1,27 @@
-image: gitlab.chab.ethz.ch:4567/reiher/docker/qcmaquis-gcc:latest
+image: gitlab.chab.ethz.ch:4567/reiher/docker/scine-gcc:latest
 
 # Pipeline that compiles the code with increasingly complex models
 
 stages:
+  - buildDeps
   - buildBasic
   - testBasic  
   - buildAdvanced
   - testAdvanced
   - buildFinal
   - testFinal
+
+
+build-deps:
+  stage: buildDeps
+  tags:
+    - default_docker
+  script:
+    apt-get -y \
+      libhdf5-dev \
+      libgsl-dev \
+      libblas-dev \
+      liblapack-dev
 
 # Conventional electronic-structure tests
 

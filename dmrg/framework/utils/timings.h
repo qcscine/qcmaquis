@@ -24,7 +24,7 @@ public:
         return *this;
     }
 
-    void begin() {
+    virtual void begin() {
         t0 = std::chrono::high_resolution_clock::now();
     }
 
