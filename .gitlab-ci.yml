@@ -17,7 +17,7 @@ build-deps:
   tags:
     - default_docker
   script:
-    apt-get install -y \
+    sudo apt-get install -y \
       libhdf5-dev \
       libgsl-dev \
       libblas-dev \
