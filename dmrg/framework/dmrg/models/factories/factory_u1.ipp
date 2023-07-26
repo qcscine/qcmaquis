@@ -7,6 +7,11 @@
 
 #include "dmrg/models/factories/factory.h"
 
+#ifdef DMRG_VIBRONIC
+#include "dmrg/models/vibrational/u1/VibronicModel.hpp"
+#include "dmrg/models/vibrational/u1/ExcitonicModel.hpp"
+#endif
+
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {
     using PointerType = std::shared_ptr<model_impl<Matrix, U1> >;

@@ -40,9 +40,11 @@ struct TimeStepTraits<TimeStepDistributor::FourthOrderMagnus> {
   static constexpr int numberOfFactorsPerExponential = 2;
   using InternalValueType = std::array<std::pair<double, double>, 2>;
   using FactorsType = std::array<InternalValueType, numberOfExponentials>;
+  // @kszenes constexpr sqrt func only implemented in c++26
+  static constexpr double sqrtof3 = 1.7320508075688772;
   static constexpr FactorsType factorsAndSteps 
-    = { InternalValueType({std::make_pair((3.-2.*sqrt(3.))/12., 0.5+sqrt(3.)/6.), std::make_pair((3.+2.*sqrt(3.))/12., 0.5-sqrt(3.)/6.)}),
-        InternalValueType({std::make_pair((3.+2.*sqrt(3.))/12., 0.5+sqrt(3.)/6.), std::make_pair((3.-2.*sqrt(3.))/12., 0.5-sqrt(3.)/6.)}) };
+    = { InternalValueType({std::make_pair((3.-2.*sqrtof3)/12., 0.5+sqrtof3/6.), std::make_pair((3.+2.*sqrtof3)/12., 0.5-sqrtof3/6.)}),
+        InternalValueType({std::make_pair((3.+2.*sqrtof3)/12., 0.5+sqrtof3/6.), std::make_pair((3.-2.*sqrtof3)/12., 0.5-sqrtof3/6.)}) };
 };
 
 template<>
